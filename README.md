@@ -1,4 +1,4 @@
-![IKASAN](../../developer/docs/quickstart-images/Ikasan-title-transparent.png)
+![IKASAN](./ikasaneip/developer/docs/quickstart-images/Ikasan-title-transparent.png)
 
 # Ikasan Visualisation Dashboard
 

@@ -1,4 +1,4 @@
-![IKASAN](../../developer/docs/quickstart-images/Ikasan-title-transparent.png)
+     ![IKASAN](../../developer/docs/quickstart-images/Ikasan-title-transparent.png)
 
 # Ikasan Visualisation Dashboard Security - Role Management
 The 'Role Management' screen provides the ability for users to be able to view and administer all 'Roles' within Ikasan. From this screen users can perform the following tasks:
