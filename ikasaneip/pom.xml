@@ -184,7 +184,7 @@
         <contributor>
             <name>Kerry Kenneally</name>
             <roles>
-                <role>graphic designerCanvas</role>
+                <role>graphic designer</role>
             </roles>
             <timezone>0</timezone>
         </contributor>
@@ -1288,7 +1288,13 @@
             <dependency>
                 <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-visualisation</artifactId>
-                <version>${ikasan.core.version}</version>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
+                <artifactId>designer</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
