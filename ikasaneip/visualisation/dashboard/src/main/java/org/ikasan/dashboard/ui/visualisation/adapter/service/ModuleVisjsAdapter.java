@@ -13,7 +13,6 @@ import org.ikasan.spec.component.transformation.Converter;
 import org.ikasan.spec.component.transformation.Translator;
 import org.ikasan.spec.metadata.*;
 import org.ikasan.spec.module.StartupType;
-import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.trigger.TriggerJobType;
 import org.ikasan.spec.trigger.TriggerRelationship;
 import org.ikasan.vaadin.visjs.network.NodeFoundStatus;

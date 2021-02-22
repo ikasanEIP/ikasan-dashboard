@@ -81,6 +81,22 @@ public class ModuleFilteringGrid extends Grid<ModuleMetaData>
         hr.getCell(getColumnByKey(columnKey)).setComponent(textField);
     }
 
+    /**
+     * Add general filter
+     *
+     * @param textField
+     * @param setFilter
+     */
+    public void addGridFiltering(TextField textField, Consumer<String> setFilter)
+    {
+        textField.addValueChangeListener(ev->{
+
+            setFilter.accept(ev.getValue());
+
+            filteredDataProvider.refreshAll();
+        });
+    }
+
     public void init()
     {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
