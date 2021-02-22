@@ -5,10 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.business.stream.metadata.model.BusinessStream;
 import org.ikasan.dashboard.ui.visualisation.correlate.XpathCorrelator;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.Destination;
-import org.ikasan.spec.metadata.BusinessStreamMetaData;
-import org.ikasan.vaadin.visjs.network.Edge;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.IntegratedSystem;
+import org.ikasan.spec.metadata.BusinessStreamMetaData;
+import org.ikasan.vaadin.visjs.network.Edge;
 
 import java.io.IOException;
 import java.util.ArrayList;
