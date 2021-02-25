@@ -9,14 +9,12 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dnd.DropTarget;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import org.ikasan.designer.component.ColorPicker;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
 import org.ikasan.designer.pallet.DesignerPalletItem;
@@ -62,30 +60,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
 
         dropTarget.addDropListener(event -> {
             // move the dragged component to inside the drop target component
-            event.getDragSourceComponent().ifPresent(action -> {
-                ((DesignerPalletItem)action).executeCanvasAddAction();
-                designerCanvas.addPalletItem(((DesignerPalletItem)action));
-                switch(((DesignerPalletItem)action).getDesignerPalletItemType()) {
-                    case ICON:
-                        designerCanvas.addIcon(((DesignerPalletItem)action).getIdentifier(), ((DesignerPalletItem)action).getSrc(), 62, 62);
-                        break;
-                    case RECTANGLE:
-                        designerCanvas.addBoundary(100, 300);
-                        break;
-                    case TRIANGLE:
-                        designerCanvas.addTriangleBoundary(300, 300);
-                        break;
-                    case OVAL:
-                        designerCanvas.addOval(300, 300);
-                        break;
-                    case CIRCLE:
-                        designerCanvas.addCircle();
-                        break;
-                    case LABEL:
-                        designerCanvas.addLabel();
-                        break;
-                }
-            });
+            event.getDragSourceComponent().ifPresent(action -> this.addItemToCanvas((DesignerPalletItem)action));
         });
 
         this.toolAccordion = new Accordion();
@@ -181,11 +156,20 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
         pasteButton.getElement().appendChild(IronIcons.CONTENT_PASTE.create().getElement());
         actions.add(pasteButton);
 
-        Checkbox readOnly = new Checkbox("Read Only");
-        readOnly.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<Checkbox, Boolean>>)
-            checkboxBooleanComponentValueChangeEvent -> this.designerCanvas.setReadonly(checkboxBooleanComponentValueChangeEvent.getValue()));
+        Button download = new Button();
+        download.getElement().appendChild(IronIcons.FILE_DOWNLOAD.create().getElement());
+        actions.add(download);
+        download.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
+            this.exportPng();
+        });
 
-        actions.add(readOnly);
+
+        Div svg = new Div();
+        svg.setId("downloadPng");
+        svg.setVisible(true);
+
+        actions.add(svg);
+
 
         Div tools = new Div();
         tools.setId("canvas-tools");
@@ -195,6 +179,37 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
         this.add(designerLayout);
 
         this.initialised = true;
+    }
+
+    public void addItemToCanvas(DesignerPalletItem item) {
+        item.executeCanvasAddAction();
+        designerCanvas.addPalletItem(item);
+        switch(item.getDesignerPalletItemType()) {
+            case ICON:
+                designerCanvas.addIcon(item.getIdentifier(),
+                    item.getSrc(), item.getItemHeight(),
+                    item.getItemWidth());
+                break;
+            case RECTANGLE:
+                designerCanvas.addBoundary(100, 300);
+                break;
+            case TRIANGLE:
+                designerCanvas.addTriangleBoundary(300, 300);
+                break;
+            case OVAL:
+                designerCanvas.addOval(300, 300);
+                break;
+            case CIRCLE:
+                designerCanvas.addCircle();
+                break;
+            case LABEL:
+                designerCanvas.addLabel("Click me", 100, 100);
+                break;
+        }
+    }
+
+    public void addLabelToItem(DesignerPalletItem item, String label) {
+        designerCanvas.addLabelToFigure(item.getIdentifier(), label);
     }
 
     private Image getDivider() {
@@ -271,6 +286,10 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
 
     public void exportJson(){
         this.designerCanvas.exportJson();
+    }
+
+    public void exportPng(){
+        this.designerCanvas.exportPng();
     }
 }
 

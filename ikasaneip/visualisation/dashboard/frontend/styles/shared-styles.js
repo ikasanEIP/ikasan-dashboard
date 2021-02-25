@@ -129,6 +129,7 @@ $_documentContainer.innerHTML = `<custom-style>
         <style>
             [part~="overlay"]{
                 max-width: none !important;
+                min-width: 0px !important;
             }
         </style>
     </template>

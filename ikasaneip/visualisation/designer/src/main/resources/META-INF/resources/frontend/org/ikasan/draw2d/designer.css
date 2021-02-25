@@ -37,3 +37,7 @@ div#canvas-actions {
     overflow: scroll;
     /*background-color: #FFFFFF;*/
 }
+
+.paletteDiv {
+    column-gap: 5px;
+}
