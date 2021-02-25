@@ -54,7 +54,12 @@ public class ShapeContextMenu extends Dialog {
             designer.exportJson();
         });
 
-        this.add(select, numberField, strokeField, button);
+        Button pngButton = new Button("Export PNG");
+        pngButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
+            designer.exportPng();
+        });
+
+        this.add(select, numberField, strokeField, button, pngButton);
 
     }
 }

@@ -120,9 +120,14 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
             ui -> getElement().callJsFunction("$connector.addCircle"));
     }
 
-    public void addLabel() {
+    public void addLabel(String label, int x, int y) {
         runBeforeClientResponse(
-            ui -> getElement().callJsFunction("$connector.addLabel"));
+            ui -> getElement().callJsFunction("$connector.addLabel", label, x, y));
+    }
+
+    public void addLabelToFigure(String figureIdentifier, String label) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.addLabelToFigure", figureIdentifier, label));
     }
 
     public void populateContextMenu() {
@@ -131,6 +136,14 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
 
             try {
                 Container container = mapper.readValue(result, Container.class);
+
+                if(container.getFigures().size() == 1 && container.getFigures().get(0).getType().equals("draw2d.Connection")) {
+                    CanvasItemRightClickEvent event = new CanvasItemRightClickEvent(this.designerPalletItemMap.get(container.getFigures().get(0).getIdentifier()),
+                        container.getWindowx(), container.getWindowy(), container.getFigures().get(0));
+
+                    this.canvasItemRightClickEventListeners.forEach(listener -> listener.rightClickEvent(event));
+                    return;
+                }
 
                 for (Figure figure : container.getFigures()) {
                     if (container.getX() > figure.getX() && container.getX() < figure.getX() + figure.getWidth()
@@ -142,7 +155,6 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
                         this.canvasItemRightClickEventListeners.forEach(listener -> listener.rightClickEvent(event));
                     }
                 }
-
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -251,5 +263,9 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
         getElement().callJsFunction("$connector.exportJson").then(String.class, result -> {
             logger.info(result);
         });
+    }
+
+    public void exportPng(){
+        getElement().callJsFunction("$connector.exportPng");
     }
 }
