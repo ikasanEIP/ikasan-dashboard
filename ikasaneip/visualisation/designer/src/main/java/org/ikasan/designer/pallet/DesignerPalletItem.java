@@ -31,7 +31,7 @@ public class DesignerPalletItem extends Image {
 
     public void executeCanvasAddAction() {
         if(this.canvasAddAction != null) {
-            this.canvasAddAction.execute();
+            this.canvasAddAction.execute(this);
         }
     }
 

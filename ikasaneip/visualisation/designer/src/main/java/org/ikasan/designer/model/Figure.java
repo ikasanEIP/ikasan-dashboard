@@ -6,6 +6,7 @@ public class Figure {
     private int y;
     private int width;
     private int height;
+    private String type;
 
     public String getIdentifier() {
         return identifier;
@@ -47,6 +48,14 @@ public class Figure {
         this.height = height;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("Figure{");
@@ -55,6 +64,7 @@ public class Figure {
         sb.append(", y=").append(y);
         sb.append(", width=").append(width);
         sb.append(", height=").append(height);
+        sb.append(", type='").append(type).append('\'');
         sb.append('}');
         return sb.toString();
     }

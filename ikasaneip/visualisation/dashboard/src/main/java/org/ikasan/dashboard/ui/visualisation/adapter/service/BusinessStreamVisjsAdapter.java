@@ -41,10 +41,12 @@ public class BusinessStreamVisjsAdapter
      */
     public org.ikasan.dashboard.ui.visualisation.model.business.stream.BusinessStream toBusinessStreamGraph(BusinessStreamMetaData<BusinessStream> businessStreamMetaData) throws IOException
     {
-        return new org.ikasan.dashboard.ui.visualisation.model.business.stream.BusinessStream(getFlows(businessStreamMetaData.getBusinessStream().getFlows()),
-            getIntegratedSystem(businessStreamMetaData.getBusinessStream().getIntegratedSystems()),
-            getEdges(businessStreamMetaData.getBusinessStream().getEdges()), getDestinations(businessStreamMetaData.getBusinessStream().getDestinations()),
-            getBoundaries(businessStreamMetaData.getBusinessStream().getBoundaries()));
+//        return new org.ikasan.dashboard.ui.visualisation.model.business.stream.BusinessStream(getFlows(businessStreamMetaData.getBusinessStream().getFlows()),
+//            getIntegratedSystem(businessStreamMetaData.getBusinessStream().getIntegratedSystems()),
+//            getEdges(businessStreamMetaData.getBusinessStream().getEdges()), getDestinations(businessStreamMetaData.getBusinessStream().getDestinations()),
+//            getBoundaries(businessStreamMetaData.getBusinessStream().getBoundaries()));
+
+        return null;
     }
 
     /**
@@ -126,8 +128,10 @@ public class BusinessStreamVisjsAdapter
      */
     private IntegratedSystem getIntegratedSystem(org.ikasan.business.stream.metadata.model.IntegratedSystem integratedSystem)
     {
-        return new IntegratedSystem(integratedSystem.getId(), integratedSystem.getName(), integratedSystem.getImage(),
-            integratedSystem.getSize(), integratedSystem.getX(), integratedSystem.getY());
+//        return new IntegratedSystem(integratedSystem.getId(), integratedSystem.getName(), integratedSystem.getImage(),
+//            integratedSystem.getSize(), integratedSystem.getX(), integratedSystem.getY());
+
+        return null;
     }
 
     /**
@@ -188,30 +192,30 @@ public class BusinessStreamVisjsAdapter
         return new Destination(destination.getId(), destination.getName(), destination.getX(), destination.getY());
     }
 
-    /**
-     * Helper method to convert raw Boundaries to decorated Boundaries.
-     *
-     * @param boundaries
-     * @return
-     */
-    private List<Boundary> getBoundaries(List<org.ikasan.business.stream.metadata.model.Boundary> boundaries)
-    {
-        ArrayList<Boundary> boundaries1 = new ArrayList<>();
-
-        boundaries.forEach(boundary -> boundaries1.add(getBoundary(boundary)));
-
-        return boundaries1;
-    }
-
-    /**
-     * Helper method to convert a raw Boundary to a decorated Boundary.
-     *
-     * @param boundary
-     * @return
-     */
-    private Boundary getBoundary(org.ikasan.business.stream.metadata.model.Boundary boundary)
-    {
-        return new Boundary(boundary.getX(), boundary.getY(), boundary.getW(), boundary.getH()
-            , boundary.getColour(), boundary.getLabel());
-    }
+//    /**
+//     * Helper method to convert raw Boundaries to decorated Boundaries.
+//     *
+//     * @param boundaries
+//     * @return
+//     */
+//    private List<Boundary> getBoundaries(List<org.ikasan.business.stream.metadata.model.Boundary> boundaries)
+//    {
+//        ArrayList<Boundary> boundaries1 = new ArrayList<>();
+//
+//        boundaries.forEach(boundary -> boundaries1.add(getBoundary(boundary)));
+//
+//        return boundaries1;
+//    }
+//
+//    /**
+//     * Helper method to convert a raw Boundary to a decorated Boundary.
+//     *
+//     * @param boundary
+//     * @return
+//     */
+//    private Boundary getBoundary(org.ikasan.business.stream.metadata.model.Boundary boundary)
+//    {
+//        return new Boundary(boundary.getX(), boundary.getY(), boundary.getW(), boundary.getH()
+//            , boundary.getColour(), boundary.getLabel());
+//    }
 }

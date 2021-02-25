@@ -21268,16 +21268,33 @@ _packages2.default.io.png.Writer = _packages2.default.io.Writer.extend(
             var sourceHeight = cropBoundingBox.h;
 
             var croppedCanvas = document.createElement('canvas');
-            croppedCanvas.width = sourceWidth;
-            croppedCanvas.height = sourceHeight;
+
+            let scaleFactor = 5;
+
+            croppedCanvas.width = sourceWidth * scaleFactor;
+            croppedCanvas.height = sourceHeight * scaleFactor;
+            croppedCanvas.getContext("2d").scale(scaleFactor, scaleFactor);
 
             croppedCanvas.getContext("2d").drawImage(fullSizeCanvas, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, sourceWidth, sourceHeight);
 
             var dataUrl = croppedCanvas.toDataURL("image/png");
             var base64Image = dataUrl.replace("data:image/png;base64,", "");
+
+            if(window.navigator.msSaveBlob) {
+                window.navigator.msSaveBlob(croppedCanvas.msToBlob(), "canvas.png")
+            }
+            else {
+                  const a = document.createElement("a");
+                  document.body.appendChild(a);
+                  a.href = croppedCanvas.toDataURL("image/png", 1);
+                  a.download = 'canvas.jpg';
+                  a.click();
+                  document.body.removeChild(a);
+            }
+
             resultCallback(dataUrl, base64Image);
           } else {
-            var img = fullSizeCanvas.toDataURL("image/png");
+            var img = fullSizeCanvas.toDataURL("image/png", 1);
             resultCallback(img, img.replace("data:image/png;base64,", ""));
           }
         } finally {
