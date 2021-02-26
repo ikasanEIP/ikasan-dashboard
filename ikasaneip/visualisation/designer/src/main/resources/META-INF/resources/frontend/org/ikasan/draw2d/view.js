@@ -22,10 +22,18 @@ View = draw2d.Canvas.extend({
 
         this.installEditPolicy(  new draw2d.policy.connection.DragConnectionCreatePolicy({
             createConnection: function() {
-                // return my special kind of connection
+                let router = new draw2d.layout.connection.ManhattanConnectionRouter();
+                let decorator = new draw2d.decoration.connection.ArrowDecorator();
+                decorator.setBackgroundColor("#ffffff");
+
                 let con =  new draw2d.Connection({
-                    targetDecorator: new draw2d.decoration.connection.ArrowDecorator(),
-                    router: new draw2d.layout.connection.ManhattanConnectionRouter()
+                    targetDecorator: decorator,
+                    outlineColor:"#ffffff",
+                    outlineStroke:1,
+                    color:"#000000",
+                    router: router,
+                    stroke:2,
+                    radius:5
                 });
                 return con;
             }
