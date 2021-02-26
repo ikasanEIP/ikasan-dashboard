@@ -164,11 +164,12 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
         });
 
 
-        Div svg = new Div();
-        svg.setId("downloadPng");
-        svg.setVisible(true);
-
-        actions.add(svg);
+        Button save = new Button();
+        save.getElement().appendChild(IronIcons.SAVE.create().getElement());
+        actions.add(save);
+        save.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
+            this.exportJson();
+        });
 
 
         Div tools = new Div();
@@ -286,6 +287,10 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
 
     public void exportJson(){
         this.designerCanvas.exportJson();
+    }
+
+    public void importJson(){
+        this.designerCanvas.importJson();
     }
 
     public void exportPng(){

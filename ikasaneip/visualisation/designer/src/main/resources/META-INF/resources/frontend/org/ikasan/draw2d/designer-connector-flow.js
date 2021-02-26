@@ -262,6 +262,18 @@
                 debugger;
                 if(figure.NAME === 'draw2d.Connection') {
                     figure.setColor(color);
+
+                    let targetDecorator = figure.getTargetDecorator();
+                    if(targetDecorator != null) {
+                        targetDecorator.setBackgroundColor(color);
+                        targetDecorator.setColor(color);
+                    }
+
+                    let sourceDecorator = figure.getSourceDecorator();
+                    if(sourceDecorator != null) {
+                        sourceDecorator.setBackgroundColor(color);
+                        sourceDecorator.setColor(color);
+                    }
                 }
                 else {
                     figure.setBackgroundColor(color);
@@ -303,7 +315,7 @@
         }
 
         designer.$connector.exportJson = function () {
-            debugger
+            debugger;
             let writer = new draw2d.io.json.Writer();
             let result = null;
             writer.marshal(designer.$connector.designer, function(json){
@@ -312,6 +324,15 @@
 
             return result;
         }
+
+        designer.$connector.importJson = function (jsonDocument) {
+            debugger
+            let reader = new draw2d.io.json.Reader();
+            reader.unmarshal(designer.$connector.designer, jsonDocument);
+        }
+
+
+
 
         let pngResult = null;
 

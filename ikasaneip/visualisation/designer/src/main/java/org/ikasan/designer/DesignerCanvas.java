@@ -9,7 +9,6 @@ import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.function.SerializableConsumer;
-import elemental.json.JsonArray;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
@@ -24,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Wraps a visjs network diagram. See http://visjs.org/network_examples.html
@@ -35,12 +36,17 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
 
     Logger logger = LoggerFactory.getLogger(DesignerCanvas.class);
 
+    private String canvasJson;
+
     private final ObjectMapper mapper = new ObjectMapper();
     private Map<String, DesignerPalletItem> designerPalletItemMap = new HashMap<>();
     private List<CanvasItemRightClickEventListener> canvasItemRightClickEventListeners
         = new ArrayList<>();
     private List<CanvasItemDoubleClickEventListener> canvasItemDoubleClickEventListeners
         = new ArrayList<>();
+
+    ScheduledExecutorService executorService
+        = Executors.newSingleThreadScheduledExecutor();
 
     public DesignerCanvas() {
         super();
@@ -92,7 +98,6 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
-        // FIXME does not work this.diagamDestroy();
     }
 
     public void addIcon(String identifier, String image, double h, double w) {
@@ -205,6 +210,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
     public void setReadonly(boolean readonly) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setReadOnly", readonly));
+        this.exportJson();
     }
 
     public void rotateSelected(int angle) {
@@ -261,11 +267,19 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
 
     public void exportJson(){
         getElement().callJsFunction("$connector.exportJson").then(String.class, result -> {
+            this.canvasJson = result;
             logger.info(result);
         });
+    }
+
+    public void importJson(){
+        if(this.canvasJson != null) {
+            getElement().callJsFunction("$connector.importJson", this.canvasJson);
+        }
     }
 
     public void exportPng(){
         getElement().callJsFunction("$connector.exportPng");
     }
+
 }
