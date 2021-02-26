@@ -1,7 +1,11 @@
 package org.ikasan.designer.pallet;
 
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.server.StreamResource;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.UUID;
 
 public class DesignerPalletItem extends Image {
@@ -22,6 +26,24 @@ public class DesignerPalletItem extends Image {
      */
     public DesignerPalletItem(String imageSrc, DesignerPalletItemType designerPalletItemType, CanvasAddAction canvasAddAction, int itemWidth, int itemHeight) {
         super(imageSrc, "");
+        this.identifier = UUID.randomUUID().toString();
+        this.designerPalletItemType = designerPalletItemType;
+        this.canvasAddAction = canvasAddAction;
+        this.itemWidth = itemWidth;
+        this.itemHeight = itemHeight;
+    }
+
+    /**
+     * Constructor
+     *
+     * @param streamResource
+     * @param designerPalletItemType
+     * @param canvasAddAction
+     * @param itemWidth
+     * @param itemHeight
+     */
+    public DesignerPalletItem(StreamResource streamResource, DesignerPalletItemType designerPalletItemType, CanvasAddAction canvasAddAction, int itemWidth, int itemHeight) {
+        super(streamResource, "");
         this.identifier = UUID.randomUUID().toString();
         this.designerPalletItemType = designerPalletItemType;
         this.canvasAddAction = canvasAddAction;

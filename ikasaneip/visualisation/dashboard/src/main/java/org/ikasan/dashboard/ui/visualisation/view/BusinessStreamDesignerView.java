@@ -1,7 +1,5 @@
 package org.ikasan.dashboard.ui.visualisation.view;
 
-import com.github.appreciated.css.grid.sizes.Flex;
-import com.github.appreciated.layout.FluentGridLayout;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.componentfactory.TooltipAlignment;
 import com.vaadin.componentfactory.TooltipPosition;
@@ -9,16 +7,13 @@ import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.component.dnd.DragSource;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.select.Select;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
@@ -33,21 +28,33 @@ import org.ikasan.designer.event.CanvasItemRightClickEventListener;
 import org.ikasan.designer.menu.LineContextMenu;
 import org.ikasan.designer.menu.ShapeContextMenu;
 import org.ikasan.designer.pallet.*;
-import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 
 @Route(value = "designer", layout = IkasanAppLayout.class)
 @UIScope
 @PageTitle("Ikasan - Designer")
 @Component
-public class BusinessStreamDesignerView extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener, CanvasItemDoubleClickEventListener
+        public class BusinessStreamDesignerView extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener, CanvasItemDoubleClickEventListener, BeforeLeaveObserver
 {
     Logger logger = LoggerFactory.getLogger(BusinessStreamDesignerView.class);
 
@@ -60,6 +67,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
 
     @Resource
     private ModuleMetaDataService moduleMetadataService;
+
 
     /**
      * Constructor
@@ -129,27 +137,47 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         return layout;
     }
 
-    private com.vaadin.flow.component.Component createIntegratedSystemsPalette(){
+    private com.vaadin.flow.component.Component createIntegratedSystemsPalette() {
         DesignerPalletItem computerImage = new DesignerPalletIconItem("frontend/images/computer.png", designerPalletItem -> {
 
         }, 62, 62);
 
         computerImage.setWidth("30px");
+        computerImage.setHeight("30px");
         computerImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
             if(imageClickEvent.getClickCount() == 2) {
                 this.businessStreamDesigner.addItemToCanvas(computerImage);
             }
         });
         DragSource.create(computerImage);
+        computerImage.getElement().getStyle().set("margin-right", "15px");
+        computerImage.getElement().getStyle().set("margin-bottom", "15px");
 
+        FlexLayout layout = new FlexLayout();
+        layout.add(computerImage);
+        layout.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+        layout.setAlignContent(FlexLayout.ContentAlignment.START);
 
-        FluentGridLayout layout = new FluentGridLayout()
-            .withTemplateRows(new Flex(1))
-            .withTemplateColumns(new Flex(1))
-            .withRowAndColumn(computerImage, 1, 1, 1, 1)
-            .withPadding(false)
-            .withSpacing(true)
-            .withOverflow(FluentGridLayout.Overflow.AUTO);
+        IntStream.range(1, 5).forEach(i -> {
+            try {
+
+                this.getIntegratedSystems().forEach(item -> {
+                    item.setWidth("30px");
+                    item.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
+                        if(imageClickEvent.getClickCount() == 2) {
+                            this.businessStreamDesigner.addItemToCanvas(item);
+                        }
+                    });
+                    DragSource.create(item);
+                    item.getElement().getStyle().set("margin-right", "15px");
+                    item.getElement().getStyle().set("margin-bottom", "15px");
+                    layout.add(item);
+                });
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
 
         return layout;
     }
@@ -216,6 +244,55 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         return layout;
     }
 
+    private List<DesignerPalletItem> getIntegratedSystems() throws IOException {
+        ArrayList<DesignerPalletItem> images = new ArrayList<>();
+
+        Files.list(Paths.get("/sandbox/mick/images")).forEach(
+            file -> {
+                int width = 0;
+                int height = 0;
+
+                try {
+                    FileInputStream fileInputStream = new FileInputStream(file.toFile());
+                    BufferedImage bimg = ImageIO.read(fileInputStream);
+                    width = bimg.getWidth();
+                    height = bimg.getHeight();
+
+                    if(width > 100) {
+                        int multiple = width / 100;
+
+                        height = height / multiple;
+                        width = width / multiple;
+                    }
+
+                    fileInputStream.close();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                StreamResource res = new StreamResource(file.getFileName().toString(), () -> {
+                    // eg. load image data from classpath (src/main/resources/images/image.png)
+                    try {
+                        return new FileInputStream(file.toFile());
+                    }
+                    catch (FileNotFoundException e) {
+                        return null;
+                    }
+                    catch (IOException e) {
+                        return null;
+                    }
+                });
+                DesignerPalletItem palletIconItem = new DesignerPalletIconItem(res, designerPalletItem -> {
+                    }, width, height);
+
+                images.add(palletIconItem);
+            }
+        );
+
+        return images;
+    }
+
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
@@ -225,6 +302,12 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             this.init();
             initialised = true;
         }
+
+        this.businessStreamDesigner.importJson();
+    }
+
+    @Override
+    public void beforeLeave(BeforeLeaveEvent beforeLeaveEvent) {
     }
 
     @Override
