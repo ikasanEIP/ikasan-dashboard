@@ -711,6 +711,7 @@
             </activation>
             <modules>
                 <!-- ikasan eip core -->
+                <module>solr</module>
                 <module>visualisation</module>
             </modules>
 
@@ -722,6 +723,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
+                <module>solr</module>
                 <module>visualisation</module>
             </modules>
         </profile>
