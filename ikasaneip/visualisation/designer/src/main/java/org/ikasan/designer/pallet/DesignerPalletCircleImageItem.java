@@ -1,6 +1,6 @@
 package org.ikasan.designer.pallet;
 
-public class DesignerPalletCircleItem extends DesignerPalletItem {
+public class DesignerPalletCircleImageItem extends DesignerPalletImageItem {
 
     /**
      * Constructor
@@ -10,7 +10,7 @@ public class DesignerPalletCircleItem extends DesignerPalletItem {
      * @param width
      * @param height
      */
-    public DesignerPalletCircleItem(String src, CanvasAddAction canvasAddAction, int width, int height) {
+    public DesignerPalletCircleImageItem(String src, CanvasAddAction canvasAddAction, int width, int height) {
         super(src, DesignerPalletItemType.CIRCLE, canvasAddAction, width, height);
     }
 

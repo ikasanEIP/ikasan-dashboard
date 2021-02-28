@@ -1,5 +1,5 @@
 package org.ikasan.designer.pallet;
 
 public enum DesignerPalletItemType {
-    ICON, RECTANGLE, TRIANGLE, OVAL, CIRCLE, LABEL;
+    ICON, RECTANGLE, TRIANGLE, OVAL, CIRCLE, LABEL, ACTION;
 }

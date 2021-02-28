@@ -1,20 +1,20 @@
 package org.ikasan.designer.event;
 
 import org.ikasan.designer.model.Figure;
-import org.ikasan.designer.pallet.DesignerPalletItem;
+import org.ikasan.designer.pallet.DesignerPalletImageItem;
 
 public class CanvasItemDoubleClickEvent extends CanvasItemEvent {
 
     /**
      * Constructor
      *
-     * @param designerPalletItem
+     * @param designerPalletImageItem
      * @param clickLocationX
      * @param clickLocationY
      * @param figure
      */
-    public CanvasItemDoubleClickEvent(DesignerPalletItem designerPalletItem, int clickLocationX,
+    public CanvasItemDoubleClickEvent(DesignerPalletImageItem designerPalletImageItem, int clickLocationX,
                                       int clickLocationY, Figure figure) {
-        super(designerPalletItem, clickLocationX, clickLocationY, figure);
+        super(designerPalletImageItem, clickLocationX, clickLocationY, figure);
     }
 }

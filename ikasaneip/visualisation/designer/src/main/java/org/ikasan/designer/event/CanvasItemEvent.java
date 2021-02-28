@@ -1,24 +1,24 @@
 package org.ikasan.designer.event;
 
 import org.ikasan.designer.model.Figure;
-import org.ikasan.designer.pallet.DesignerPalletItem;
+import org.ikasan.designer.pallet.DesignerPalletImageItem;
 
 public abstract class CanvasItemEvent {
-    private DesignerPalletItem designerPalletItem;
+    private DesignerPalletImageItem designerPalletImageItem;
     private int clickLocationX;
     private int clickLocationY;
     private Figure figure;
 
-    protected CanvasItemEvent(DesignerPalletItem designerPalletItem, int clickLocationX,
+    protected CanvasItemEvent(DesignerPalletImageItem designerPalletImageItem, int clickLocationX,
                               int clickLocationY, Figure figure) {
-        this.designerPalletItem = designerPalletItem;
+        this.designerPalletImageItem = designerPalletImageItem;
         this.clickLocationX = clickLocationX;
         this.clickLocationY = clickLocationY;
         this.figure = figure;
     }
 
-    public DesignerPalletItem getItem() {
-        return designerPalletItem;
+    public DesignerPalletImageItem getItem() {
+        return designerPalletImageItem;
     }
 
     public int getClickLocationX() {

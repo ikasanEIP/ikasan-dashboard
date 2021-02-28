@@ -104,11 +104,12 @@
 
         designer.$connector.addIcon = function (identifier, image, h, w) {
             debugger;
-            let messageChannel = new draw2d.shape.basic.Image({id: identifier, path: image, width:w, height:h, x:x, y:y, keepAspectRatio: true});
-            messageChannel.createPort("input");
-            messageChannel.createPort("output");
+            let icon = new draw2d.shape.basic.Image({id: identifier, path: image, width:w, height:h, x:x, y:y, keepAspectRatio: true});
+            icon.createPort("input");
+            icon.createPort("output");
 
-            designer.$connector.designer.add(messageChannel);
+            let command = new draw2d.command.CommandAdd(_this, icon, x, y);
+            _this.getCommandStack().execute(command);
         }
 
         designer.$connector.bringToFront = function () {
@@ -174,7 +175,9 @@
 
             boundary.uninstallEditPolicy(new draw2d.policy.figure.RectangleSelectionFeedbackPolicy());
             boundary.installEditPolicy(new RotateRectangleSelectionFeedbackPolicy());
-            designer.$connector.designer.add(boundary);
+
+            let command = new draw2d.command.CommandAdd(_this, boundary, x, y);
+            _this.getCommandStack().execute(command);
         }
 
         designer.$connector.designer.on("dblclick", function(emitter, event){
@@ -184,24 +187,46 @@
             element.$server.doubleClickEvent(JSON.stringify(figureLite));
         });
 
+        designer.$connector.undo = function () {
+            _this.getCommandStack().undo();
+        }
+
+        designer.$connector.redo = function () {
+            _this.getCommandStack().redo();
+        }
+
+        designer.$connector.copy = function () {
+            designer.$connector.designer.copy();
+        }
+
+        designer.$connector.paste = function () {
+            designer.$connector.designer.paste();
+        }
+
+        designer.$connector.delete = function () {
+            designer.$connector.designer.delete();
+        }
 
         designer.$connector.addTriangle = function (h, w) {
             let triangle = new TriangleFigure({x: x, y:y, width:w, height:h, bgColor:"rgba(255,255,255,0)"});
 
-            designer.$connector.designer.add(triangle);
+            let command = new draw2d.command.CommandAdd(_this, triangle, x, y);
+            _this.getCommandStack().execute(command);
         }
 
 
         designer.$connector.addOval = function (h, w) {
             let oval =  new draw2d.shape.basic.Oval({width:w,height:h, x:x, y:y, bgColor:"rgba(255,255,255,0)"});
 
-            designer.$connector.designer.add(oval);
+            let command = new draw2d.command.CommandAdd(_this, oval, x, y);
+            _this.getCommandStack().execute(command);
         }
 
         designer.$connector.addCircle = function () {
             let circle =new draw2d.shape.basic.Circle({diameter:80, x:x, y:y, bgColor:"rgba(255,255,255,0)"});
 
-            designer.$connector.designer.add(circle);
+            let command = new draw2d.command.CommandAdd(_this, circle, x, y);
+            _this.getCommandStack().execute(command);
         }
 
         designer.$connector.addLabel = function (labelString, x, y) {
@@ -219,7 +244,8 @@
 
             label.installEditor(new draw2d.ui.LabelInplaceEditor());
 
-            designer.$connector.designer.add(label);
+            let command = new draw2d.command.CommandAdd(_this, label, x, y);
+            _this.getCommandStack().execute(command);
         }
 
         designer.$connector.addLabelToFigure = function (figureIdentifier, labelString) {
@@ -232,6 +258,8 @@
 
             if(_figure != null) {
 
+                let x = _figure.x - (_figure.width / 2);
+                let y = _figure.y + _figure.getHeight();
                 let label = new draw2d.shape.basic.Label({
                     text: labelString,
                     color: "rgba(255,255,255,0)",
@@ -240,10 +268,11 @@
                     outlineColor: "rgba(255,255,255,0)",
                     fontFamily: "Trebuchet MS",
                     fontSize: "12pt",
-                    x: _figure.x - (_figure.width / 2), y: _figure.y + _figure.getHeight()
+                    x: x, y: y
                 });
 
-                designer.$connector.designer.add(label);
+                let command = new draw2d.command.CommandAdd(_this, label, x, y);
+                _this.getCommandStack().execute(command);
 
                 label.setX(_figure.x - (label.getWidth() / 2) + (_figure.getWidth() / 2));
 

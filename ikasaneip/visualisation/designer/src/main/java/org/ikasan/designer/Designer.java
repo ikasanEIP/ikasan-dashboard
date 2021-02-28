@@ -5,19 +5,23 @@ import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.dnd.DropTarget;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import nc.unc.vaadin.flow.polymer.iron.icons.IronImageIcons;
 import org.ikasan.designer.component.ColorPicker;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
-import org.ikasan.designer.pallet.DesignerPalletItem;
+import org.ikasan.designer.pallet.DesignerPalletImageItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +35,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
     private DesignerCanvas designerCanvas;
     private Accordion toolAccordion = new Accordion();
     private List<ItemPallet> itemPalettes;
+    private ColorPicker paintButton = new ColorPicker();
 
 
     private boolean initialised = false;
@@ -51,17 +56,19 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
         init();
     }
 
-    private void init()
+    protected void init()
     {
-        this.designerCanvas = new DesignerCanvas();
-        this.designerCanvas.setSizeUndefined();
+//        this.designerCanvas = new DesignerCanvas();
+//        this.designerCanvas.setSizeUndefined();
+//
+//        DropTarget<DesignerCanvas> dropTarget = DropTarget.create(this.designerCanvas);
+//
+//        dropTarget.addDropListener(event -> {
+//            // move the dragged component to inside the drop target component
+//            event.getDragSourceComponent().ifPresent(action -> this.addItemToCanvas((DesignerPalletItem)action));
+//        });
 
-        DropTarget<DesignerCanvas> dropTarget = DropTarget.create(this.designerCanvas);
-
-        dropTarget.addDropListener(event -> {
-            // move the dragged component to inside the drop target component
-            event.getDragSourceComponent().ifPresent(action -> this.addItemToCanvas((DesignerPalletItem)action));
-        });
+        this.initBase();
 
         this.toolAccordion = new Accordion();
         this.toolAccordion.getElement().getStyle().set("font-size", "8pt");
@@ -78,84 +85,148 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
         HorizontalLayout designerLayout = new HorizontalLayout();
         designerLayout.setSizeUndefined();
         designerLayout.getElement().getThemeList().remove("padding");
+
+
+
+        Div tools = new Div();
+        tools.setId("canvas-palette");
+        tools.add(toolLayout);
+
+        designerLayout.add(this.buildMenuBar(), this.initCanvasActions(), tools, this.designerCanvas);
+        this.add(designerLayout);
+
+        this.initialised = true;
+    }
+
+    protected Div buildMenuBar() {
+        MenuBar menuBar = new MenuBar();
+        Text selected = new Text("");
+
+        MenuItem file = menuBar.addItem("File");
+        MenuItem edit = menuBar.addItem("Edit");
+        menuBar.addItem("Help", e -> selected.setText("Sign Out"));
+
+        SubMenu fileSubMenu = file.getSubMenu();
+        MenuItem newDiagram = fileSubMenu.addItem("New");
+        MenuItem open = fileSubMenu.addItem("Open");
+        open.addClickShortcut(Key.KEY_O, KeyModifier.CONTROL);
+
+        fileSubMenu.add(new Hr());
+        MenuItem save = fileSubMenu.addItem("Save");
+        MenuItem saveAs = fileSubMenu.addItem("Save as");
+
+        fileSubMenu.add(new Hr());
+
+        MenuItem publish = fileSubMenu.addItem("Publish");
+        publish.setCheckable(true);
+        publish.setChecked(false);
+        MenuItem suppress = fileSubMenu.addItem("Suppress");
+        suppress.setCheckable(true);
+        suppress.setChecked(false);
+
+        fileSubMenu.add(new Hr());
+
+        MenuItem exportAs = fileSubMenu.addItem("Export as");
+
+        exportAs.getSubMenu().addItem("png",
+            e -> selected.setText("Edit Profile"));
+        exportAs.getSubMenu().addItem("jpg",
+            e -> selected.setText("Privacy Settings"));
+        exportAs.getSubMenu().addItem("json",
+            e -> selected.setText("Privacy Settings"));
+        exportAs.getSubMenu().addItem("svg",
+            e -> selected.setText("Privacy Settings"));
+
+        fileSubMenu.add(new Hr());
+
+        MenuItem close = fileSubMenu.addItem("Close");
+
+        Div div = new Div();
+        div.setId("canvas-menu");
+        div.add(menuBar);
+       return div;
+    }
+
+    protected Div initCanvasActions() {
         Div actions = new Div();
         actions.setId("canvas-actions");
+
+        // Group canvas items
         Button groupButton = new Button();
         groupButton.addClickListener(buttonClickEvent -> {
             this.designerCanvas.group();
         });
         groupButton.getElement().appendChild(FontAwesome.Regular.OBJECT_GROUP.create().getElement());
         actions.add(groupButton);
+
+        // Ungroup canvas items
         Button ungroupButton = new Button();
         ungroupButton.addClickListener(buttonClickEvent -> {
             this.designerCanvas.ungroup();
         });
         ungroupButton.getElement().appendChild(FontAwesome.Regular.OBJECT_UNGROUP.create().getElement());
         actions.add(ungroupButton);
+
+        // Bring selected items to front
         Button toFrontButton = new Button();
         toFrontButton.addClickListener(buttonClickEvent -> {
             this.designerCanvas.bringToFront();
         });
         toFrontButton.getElement().appendChild(IronIcons.FLIP_TO_FRONT.create().getElement());
         actions.add(toFrontButton);
+
+        // Send selected items to back
         Button toBackButton = new Button();
         toBackButton.addClickListener(buttonClickEvent -> {
             this.designerCanvas.sendToBack();
         });
         toBackButton.getElement().appendChild(IronIcons.FLIP_TO_BACK.create().getElement());
-
         actions.add(toBackButton, getDivider());
 
-//        TextField rotateAngle = new TextField("Angle");
-//        actions.add(rotateAngle);
+        // Undo
         Button undoButton = new Button();
         undoButton.getElement().appendChild(IronIcons.UNDO.create().getElement());
-        undoButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-//            designer.rotateSelected(-Integer.valueOf(rotateAngle.getValue()));
-        });
+        undoButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.undo());
         actions.add(undoButton);
+
+        // Redo
         Button redoButton = new Button();
         redoButton.getElement().appendChild(IronIcons.REDO.create().getElement());
-        redoButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-//            designer.rotateSelected(Integer.valueOf(rotateAngle.getValue()));
-        });
+        redoButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.redo());
         actions.add(redoButton, getDivider());
+
+        // Zoom in
         Button zoomInButton = new Button();
         zoomInButton.getElement().appendChild(IronIcons.ZOOM_IN.create().getElement());
         zoomInButton.setId("canvas_zoom_in");
         actions.add(zoomInButton);
+
+        // Zoom out
         Button zoomOutButton = new Button();
         zoomOutButton.getElement().appendChild(IronIcons.ZOOM_OUT.create().getElement());
         zoomOutButton.setId("canvas_zoom_out");
         actions.add(zoomOutButton, getDivider());
 
-        ColorPicker paintButton = new ColorPicker();
-        paintButton.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<TextField, String>>)
-            textFieldStringComponentValueChangeEvent -> {
-                this.designerCanvas.setBackgroundColor(textFieldStringComponentValueChangeEvent.getValue());
-        });
-
-//        paintButton.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<TextField, String>>)
-//            textFieldStringComponentValueChangeEvent -> {
-//            icon.getStyle().set("background-color", textFieldStringComponentValueChangeEvent.getValue());
-//        });
-//        paintButton.addInputListener((ComponentEventListener<InputEvent>) inputEvent -> {
-//            icon.getStyle().set("background-color", paintButton.getValue());
-//        });
-//        paintButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-//           ColorPicker colorPicker = new ColorPicker();
-//
-//        });
-
-
-        actions.add(paintButton, getDivider());
+        // Copy
         Button copyButton = new Button();
         copyButton.getElement().appendChild(IronIcons.CONTENT_COPY.create().getElement());
+        copyButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.designerCanvas.copy());
         actions.add(copyButton);
+
+        // Paste
         Button pasteButton = new Button();
         pasteButton.getElement().appendChild(IronIcons.CONTENT_PASTE.create().getElement());
+        pasteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.designerCanvas.paste());
         actions.add(pasteButton);
 
+        // Delete
+        Button deleteButton = new Button();
+        deleteButton.getElement().appendChild(IronIcons.DELETE.create().getElement());
+        deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.designerCanvas.delete());
+        actions.add(deleteButton, getDivider());
+
+
+        // Export as selected format
         Button download = new Button();
         download.getElement().appendChild(IronIcons.FILE_DOWNLOAD.create().getElement());
         actions.add(download);
@@ -163,26 +234,58 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
             this.exportPng();
         });
 
+        // Open another design
+        Button open = new Button();
+        open.getElement().appendChild(IronIcons.FOLDER_OPEN.create().getElement());
+        actions.add(open);
+        open.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
+            this.exportJson();
+        });
 
+        // Save current design
         Button save = new Button();
         save.getElement().appendChild(IronIcons.SAVE.create().getElement());
-        actions.add(save);
+        actions.add(save, getDivider());
         save.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             this.exportJson();
         });
 
+        Button eyeDropper = new Button();
+        eyeDropper.getElement().appendChild(IronImageIcons.COLORIZE.create().getElement());
+        actions.add(eyeDropper);
+        eyeDropper.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
 
-        Div tools = new Div();
-        tools.setId("canvas-tools");
-        tools.add(toolLayout);
+        });
 
-        designerLayout.add(actions, tools, this.designerCanvas);
-        this.add(designerLayout);
+        paintButton = new ColorPicker();
+        paintButton.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<TextField, String>>)
+            textFieldStringComponentValueChangeEvent -> {
+                this.designerCanvas.setBackgroundColor(textFieldStringComponentValueChangeEvent.getValue());
+            });
+        actions.add(paintButton, getDivider());
 
-        this.initialised = true;
+        return actions;
     }
 
-    public void addItemToCanvas(DesignerPalletItem item) {
+    protected void initBase() {
+        this.designerCanvas = new DesignerCanvas();
+        this.designerCanvas.setSizeUndefined();
+
+        DropTarget<DesignerCanvas> dropTarget = DropTarget.create(this.designerCanvas);
+
+        dropTarget.addDropListener(event -> {
+            // move the dragged component to inside the drop target component
+            event.getDragSourceComponent().ifPresent(action -> this.addItemToCanvas((DesignerPalletImageItem)action));
+        });
+
+        paintButton = new ColorPicker();
+        paintButton.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<TextField, String>>)
+            textFieldStringComponentValueChangeEvent -> {
+                this.designerCanvas.setBackgroundColor(textFieldStringComponentValueChangeEvent.getValue());
+            });
+    }
+
+    public void addItemToCanvas(DesignerPalletImageItem item) {
         item.executeCanvasAddAction();
         designerCanvas.addPalletItem(item);
         switch(item.getDesignerPalletItemType()) {
@@ -209,7 +312,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
         }
     }
 
-    public void addLabelToItem(DesignerPalletItem item, String label) {
+    public void addLabelToItem(DesignerPalletImageItem item, String label) {
         designerCanvas.addLabelToFigure(item.getIdentifier(), label);
     }
 
@@ -236,6 +339,9 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
             this.init();
             initialised = true;
         }
+
+        this.paintButton.attachSpectrum();
+//        this.initBase();
     }
 
     @Override
@@ -295,6 +401,14 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
 
     public void exportPng(){
         this.designerCanvas.exportPng();
+    }
+
+    public void undo(){
+        this.designerCanvas.undo();
+    }
+
+    public void redo(){
+        this.designerCanvas.redo();
     }
 }
 

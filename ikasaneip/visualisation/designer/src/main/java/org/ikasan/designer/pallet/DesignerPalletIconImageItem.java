@@ -2,7 +2,7 @@ package org.ikasan.designer.pallet;
 
 import com.vaadin.flow.server.StreamResource;
 
-public class DesignerPalletIconItem extends DesignerPalletItem {
+public class DesignerPalletIconImageItem extends DesignerPalletImageItem {
 
     /**
      * Constructor
@@ -12,7 +12,7 @@ public class DesignerPalletIconItem extends DesignerPalletItem {
      * @param width
      * @param height
      */
-    public DesignerPalletIconItem(String src, CanvasAddAction canvasAddAction, int width, int height) {
+    public DesignerPalletIconImageItem(String src, CanvasAddAction canvasAddAction, int width, int height) {
         super(src, DesignerPalletItemType.ICON, canvasAddAction, width, height);
     }
 
@@ -24,7 +24,7 @@ public class DesignerPalletIconItem extends DesignerPalletItem {
      * @param width
      * @param height
      */
-    public DesignerPalletIconItem(StreamResource streamResource, CanvasAddAction canvasAddAction, int width, int height) {
+    public DesignerPalletIconImageItem(StreamResource streamResource, CanvasAddAction canvasAddAction, int width, int height) {
         super(streamResource, DesignerPalletItemType.ICON, canvasAddAction, width, height);
     }
 

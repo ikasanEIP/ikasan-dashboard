@@ -9,7 +9,7 @@ View = draw2d.Canvas.extend({
         let _this = this;
 
         this._super(id, 16000, 16000);
-        this.clippboardFigure=null;
+        this.clipboardFigure = new draw2d.util.ArrayList();
         this.grid =  new draw2d.policy.canvas.ShowGridEditPolicy(20);
 
         this.setScrollArea("#"+id);
@@ -65,7 +65,9 @@ View = draw2d.Canvas.extend({
         });
         Mousetrap.bind(['right'],function (event) {
             var diff = _this.getZoom()<0.5?0.5:1;
-            _this.getSelection().each(function(i,f){f.translate(diff,0);});
+            _this.getSelection().each(function(i,f){
+                f.translate(diff,0);
+            });
             return false;
         });
         Mousetrap.bind(['down'],function (event) {
@@ -75,24 +77,22 @@ View = draw2d.Canvas.extend({
         });
 
         Mousetrap.bind(['ctrl+c', 'command+c'], $.proxy(function (event) {
-            var primarySelection = this.getSelection().getPrimary();
-            if(primarySelection!==null){
-                this.clippboardFigure = primarySelection.clone();
-                this.clippboardFigure.translate(5,5);
-            }
+            this.copy();
             return false;
         },this));
 
         Mousetrap.bind(['ctrl+v', 'command+v'], $.proxy(function (event) {
-            if(this.clippboardFigure!==null){
-                var cloneToAdd = this.clippboardFigure.clone();
-                var command = new draw2d.command.CommandAdd(this, cloneToAdd, cloneToAdd.getPosition());
-                this.getCommandStack().execute(command);
-                this.setCurrentSelection(cloneToAdd);
-            }
+            this.paste()
             return false;
         },this));
 
+        Mousetrap.bind(['ctrl+z', 'command+z'], $.proxy(function (event) {
+            this.getCommandStack().undo();
+        },this));
+
+        Mousetrap.bind(['ctrl+y', 'command+y'], $.proxy(function (event) {
+            this.getCommandStack().redo();
+        },this));
 
         var zoom=new draw2d.policy.canvas.WheelZoomPolicy();
         this.installEditPolicy(zoom);
@@ -108,7 +108,7 @@ View = draw2d.Canvas.extend({
         // Inject the ZoomIn Button and the callbacks
         //
         $("#canvas_zoom_in").on("click",function(){
-            setZoom(_this.getZoom()*1.2,true);
+            setZoom(_this.getZoom()*0.8,true);
         });
 
         // Inject the OneToOne Button
@@ -120,7 +120,7 @@ View = draw2d.Canvas.extend({
         // Inject the ZoomOut Button and the callback
         //
         $("#canvas_zoom_out").on("click",function(){
-            setZoom(_this.getZoom()*0.8,true);
+            setZoom(_this.getZoom()*1.2,true);
         });
 
         $('#canvas_config_grid').on('change', function (e) {
@@ -138,6 +138,46 @@ View = draw2d.Canvas.extend({
 
         this.reset();
 
+    },
+
+    paste:function() {
+        if(this.clipboardFigure!==null){
+            let _this = this;
+            _this.setCurrentSelection(new draw2d.util.ArrayList());
+            this.clipboardFigure.each(function(i,f) {
+                let cloneToAdd = f.clone();
+                let command = new draw2d.command.CommandAdd(_this, cloneToAdd, cloneToAdd.getPosition());
+                _this.getCommandStack().execute(command);
+                _this.addSelection(cloneToAdd);
+            });
+        }
+    },
+
+    copy:function() {
+        this.clipboardFigure = new draw2d.util.ArrayList();
+        let _this = this;
+        this.getSelection().each(function(i,f){
+            let figure = f.clone();
+            figure.translate(5,5);
+            _this.clipboardFigure.add(figure);
+        });
+    },
+
+    delete:function() {
+        let _this = this;
+        this.clipboardFigure = new draw2d.util.ArrayList();
+        this.getSelection().each(function(i,f){
+            debugger;
+            _this.clipboardFigure.add(f)
+        });
+
+        this.clipboardFigure.each(function(i,f) {
+            debugger;
+            let command = new draw2d.command.CommandDelete(f);
+            _this.getCommandStack().execute(command);
+        });
+
+        this.clipboardFigure = new draw2d.util.ArrayList();
     },
 
     setCursor:function(cursor)
