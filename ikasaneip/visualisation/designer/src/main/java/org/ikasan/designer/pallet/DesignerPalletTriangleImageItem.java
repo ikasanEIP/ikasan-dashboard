@@ -1,6 +1,6 @@
 package org.ikasan.designer.pallet;
 
-public class DesignerPalletTriangleItem extends DesignerPalletItem {
+public class DesignerPalletTriangleImageItem extends DesignerPalletImageItem {
 
     /**
      * Constructor
@@ -10,7 +10,7 @@ public class DesignerPalletTriangleItem extends DesignerPalletItem {
      * @param width
      * @param height
      */
-    public DesignerPalletTriangleItem(String src, CanvasAddAction canvasAddAction, int width, int height) {
+    public DesignerPalletTriangleImageItem(String src, CanvasAddAction canvasAddAction, int width, int height) {
         super(src, DesignerPalletItemType.TRIANGLE, canvasAddAction, width, height);
     }
 

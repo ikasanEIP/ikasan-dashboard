@@ -1,14 +1,17 @@
 package org.ikasan.dashboard.ui.visualisation.view;
 
+import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.componentfactory.TooltipAlignment;
 import com.vaadin.componentfactory.TooltipPosition;
 import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -19,6 +22,8 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
+import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamIntegratedSystemUploadDialog;
+import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamUploadDialog;
 import org.ikasan.dashboard.ui.visualisation.component.FlowSelectDialog;
 import org.ikasan.designer.*;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
@@ -43,10 +48,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 
@@ -95,7 +96,7 @@ import java.util.stream.IntStream;
     }
 
     private com.vaadin.flow.component.Component createGeneralPalette(){
-        DesignerPalletItem flowImage = new DesignerPalletIconItem("frontend/images/flow.png", designerPalletItem -> {
+        DesignerPalletImageItem flowImage = new DesignerPalletIconImageItem("frontend/images/flow.png", designerPalletItem -> {
             FlowSelectDialog dialog = new FlowSelectDialog(this.moduleMetadataService);
 
             dialog.open();
@@ -118,7 +119,7 @@ import java.util.stream.IntStream;
 
         Tooltip tooltip = TooltipHelper.getTooltip(flowImage,"This icon represents an Ikasan flow.", TooltipPosition.RIGHT, TooltipAlignment.RIGHT);
 
-        DesignerPalletItem channelImage = new DesignerPalletIconItem("frontend/images/message-channel.png", designerPalletItem -> {
+        DesignerPalletImageItem channelImage = new DesignerPalletIconImageItem("frontend/images/message-channel.png", designerPalletItem -> {
 
         }, 95, 63);
         channelImage.setWidth("30px");
@@ -138,12 +139,12 @@ import java.util.stream.IntStream;
     }
 
     private com.vaadin.flow.component.Component createIntegratedSystemsPalette() {
-        DesignerPalletItem computerImage = new DesignerPalletIconItem("frontend/images/computer.png", designerPalletItem -> {
+        DesignerPalletImageItem computerImage = new DesignerPalletIconImageItem("frontend/images/computer.png", designerPalletItem -> {
 
         }, 62, 62);
 
-        computerImage.setWidth("30px");
-        computerImage.setHeight("30px");
+        computerImage.setWidth("35px");
+        computerImage.setHeight("35px");
         computerImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
             if(imageClickEvent.getClickCount() == 2) {
                 this.businessStreamDesigner.addItemToCanvas(computerImage);
@@ -158,33 +159,47 @@ import java.util.stream.IntStream;
         layout.setFlexWrap(FlexLayout.FlexWrap.WRAP);
         layout.setAlignContent(FlexLayout.ContentAlignment.START);
 
-        IntStream.range(1, 5).forEach(i -> {
-            try {
+        try {
 
-                this.getIntegratedSystems().forEach(item -> {
-                    item.setWidth("30px");
-                    item.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
+            this.getIntegratedSystems().forEach(item -> {
+                if(item instanceof Image) {
+                    ((Image)item.getComponent()).setWidth("35px");
+                    ((Image)item.getComponent()).addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
                         if(imageClickEvent.getClickCount() == 2) {
-                            this.businessStreamDesigner.addItemToCanvas(item);
+                            this.businessStreamDesigner.addItemToCanvas((DesignerPalletImageItem)item);
                         }
                     });
-                    DragSource.create(item);
-                    item.getElement().getStyle().set("margin-right", "15px");
-                    item.getElement().getStyle().set("margin-bottom", "15px");
-                    layout.add(item);
-                });
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
+                    DragSource.create(item.getComponent());
+                    item.getComponent().getElement().getStyle().set("margin-right", "15px");
+                    item.getComponent().getElement().getStyle().set("margin-bottom", "15px");
+                    layout.add(item.getComponent());
+                }
+            });
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        DesignerPalletButtonItem palletIconItem = new DesignerPalletButtonItem(VaadinIcon.PLUS.create(), designerPalletItem -> {
+        }, "35px", "35px");
+
+        palletIconItem.getComponent().addClickListener((ComponentEventListener<ClickEvent<Button>>) imageClickEvent -> {
+            BusinessStreamIntegratedSystemUploadDialog uploadDialog = new BusinessStreamIntegratedSystemUploadDialog();
+            uploadDialog.open();
+
+//            uploadDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
+//                dialogOpenedChangeEvent -> populateBusinessStreamGrid());
         });
+        palletIconItem.getComponent().getElement().getStyle().set("margin-right", "15px");
+        palletIconItem.getComponent().getElement().getStyle().set("margin-bottom", "15px");
+        layout.add(palletIconItem.getComponent());
 
         return layout;
     }
 
     private com.vaadin.flow.component.Component createBoundariesPalette(){
 
-        DesignerPalletItem rectangleImage = new DesignerPalletRectangleItem("frontend/images/rectangle.png", designerPalletItem -> {
+        DesignerPalletImageItem rectangleImage = new DesignerPalletRectangleImageItem("frontend/images/rectangle.png", designerPalletItem -> {
 
         }, 100, 100);
         rectangleImage.setWidth("30px");
@@ -195,7 +210,7 @@ import java.util.stream.IntStream;
             }
         });
 
-        DesignerPalletItem triangleImage = new DesignerPalletTriangleItem("frontend/images/triangle.png", designerPalletItem -> {
+        DesignerPalletImageItem triangleImage = new DesignerPalletTriangleImageItem("frontend/images/triangle.png", designerPalletItem -> {
 
         }, 100, 100);
         triangleImage.setWidth("30px");
@@ -206,7 +221,7 @@ import java.util.stream.IntStream;
             }
         });
 
-        DesignerPalletItem ovalImage = new DesignerPalletOvalItem("frontend/images/oval.png", designerPalletItem -> {
+        DesignerPalletImageItem ovalImage = new DesignerPalletOvalImageItem("frontend/images/oval.png", designerPalletItem -> {
         }, 100, 100);
         ovalImage.setWidth("30px");
         DragSource.create(ovalImage);
@@ -216,7 +231,7 @@ import java.util.stream.IntStream;
             }
         });
 
-        DesignerPalletItem circleImage = new DesignerPalletCircleItem("frontend/images/circle.png", designerPalletItem -> {
+        DesignerPalletImageItem circleImage = new DesignerPalletCircleImageItem("frontend/images/circle.png", designerPalletItem -> {
 
         }, 100, 100);
         circleImage.setWidth("30px");
@@ -227,7 +242,7 @@ import java.util.stream.IntStream;
             }
         });
 
-        DesignerPalletItem labelImage = new DesignerPalletLabelItem("frontend/images/text.png", designerPalletItem   -> {
+        DesignerPalletImageItem labelImage = new DesignerPalletLabelImageItem("frontend/images/text.png", designerPalletItem   -> {
         }, 100, 100);
         labelImage.setWidth("30px");
         DragSource.create(labelImage);
@@ -283,7 +298,7 @@ import java.util.stream.IntStream;
                         return null;
                     }
                 });
-                DesignerPalletItem palletIconItem = new DesignerPalletIconItem(res, designerPalletItem -> {
+                DesignerPalletImageItem palletIconItem = new DesignerPalletIconImageItem(res, designerPalletItem -> {
                     }, width, height);
 
                 images.add(palletIconItem);

@@ -1,75 +1,16 @@
 package org.ikasan.designer.pallet;
 
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.component.Component;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.util.UUID;
+public interface DesignerPalletItem<COMPONENT extends Component> {
 
-public class DesignerPalletItem extends Image {
-    private String identifier;
-    private DesignerPalletItemType designerPalletItemType;
-    private CanvasAddAction canvasAddAction;
-    private int itemWidth;
-    private int itemHeight;
+    DesignerPalletItemType getDesignerPalletItemType();
 
-    /**
-     * Constructor
-     *
-     * @param imageSrc
-     * @param designerPalletItemType
-     * @param canvasAddAction
-     * @param itemWidth
-     * @param itemHeight
-     */
-    public DesignerPalletItem(String imageSrc, DesignerPalletItemType designerPalletItemType, CanvasAddAction canvasAddAction, int itemWidth, int itemHeight) {
-        super(imageSrc, "");
-        this.identifier = UUID.randomUUID().toString();
-        this.designerPalletItemType = designerPalletItemType;
-        this.canvasAddAction = canvasAddAction;
-        this.itemWidth = itemWidth;
-        this.itemHeight = itemHeight;
-    }
+    String getIdentifier();
 
-    /**
-     * Constructor
-     *
-     * @param streamResource
-     * @param designerPalletItemType
-     * @param canvasAddAction
-     * @param itemWidth
-     * @param itemHeight
-     */
-    public DesignerPalletItem(StreamResource streamResource, DesignerPalletItemType designerPalletItemType, CanvasAddAction canvasAddAction, int itemWidth, int itemHeight) {
-        super(streamResource, "");
-        this.identifier = UUID.randomUUID().toString();
-        this.designerPalletItemType = designerPalletItemType;
-        this.canvasAddAction = canvasAddAction;
-        this.itemWidth = itemWidth;
-        this.itemHeight = itemHeight;
-    }
+    int getItemWidth();
 
-    public void executeCanvasAddAction() {
-        if(this.canvasAddAction != null) {
-            this.canvasAddAction.execute(this);
-        }
-    }
+    int getItemHeight();
 
-    public DesignerPalletItemType getDesignerPalletItemType() {
-        return designerPalletItemType;
-    }
-
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    public int getItemWidth() {
-        return itemWidth;
-    }
-
-    public int getItemHeight() {
-        return itemHeight;
-    }
+    COMPONENT getComponent();
 }

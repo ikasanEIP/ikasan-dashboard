@@ -19,9 +19,11 @@ public class ColorPicker extends TextField {
 
 
     private void init(){
+        UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery.js");
+        UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery-ui.js");
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/color-picker/spectrum.js");
         this.identifier = UUID.randomUUID().toString();
-        this.setId(identifier);
+        this.setId("color-picker");
 
         EditorIcons.Icon icon = EditorIcons.FORMAT_COLOR_FILL.create();
         icon.setSize("18px");
@@ -31,15 +33,20 @@ public class ColorPicker extends TextField {
         this.setPrefixComponent(icon);
         this.setValueChangeMode(ValueChangeMode.TIMEOUT);
 
-        this.getElement().getStyle().set("font-size", "10pt");
+        this.getElement().getStyle().set("font-size", "8pt");
+        this.setWidth("155px");
 
-        getElement().executeJs("$('#"+this.identifier+"').spectrum({\n" +
-                "  togglePaletteOnly: \"true\",\n" +
-                "    showPalette: \"true\",\n" +
-                "    showAlpha: true,\n" +
-                "    preferredFormat: \"rgb\",\n" +
-                "    showInput: true,  \n" +
-                "    showButtons: false,  \n" +
-                "});");
+        this.attachSpectrum();
+    }
+
+    public void attachSpectrum() {
+        getElement().executeJs("$('#color-picker').spectrum({\n" +
+            "  togglePaletteOnly: \"true\",\n" +
+            "    showPalette: \"true\",\n" +
+            "    showAlpha: true,\n" +
+            "    preferredFormat: \"rgb\",\n" +
+            "    showInput: true,  \n" +
+            "    showButtons: false,  \n" +
+            "});");
     }
 }

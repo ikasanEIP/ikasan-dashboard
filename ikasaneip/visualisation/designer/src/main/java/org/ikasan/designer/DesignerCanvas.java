@@ -15,7 +15,7 @@ import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
 import org.ikasan.designer.model.Container;
 import org.ikasan.designer.model.Figure;
-import org.ikasan.designer.pallet.DesignerPalletItem;
+import org.ikasan.designer.pallet.DesignerPalletImageItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +39,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
     private String canvasJson;
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private Map<String, DesignerPalletItem> designerPalletItemMap = new HashMap<>();
+    private Map<String, DesignerPalletImageItem> designerPalletItemMap = new HashMap<>();
     private List<CanvasItemRightClickEventListener> canvasItemRightClickEventListeners
         = new ArrayList<>();
     private List<CanvasItemDoubleClickEventListener> canvasItemDoubleClickEventListeners
@@ -223,8 +223,8 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
             .runWhenAttached(ui -> ui.beforeClientResponse(this, context -> command.accept(ui)));
     }
 
-    public void addPalletItem(DesignerPalletItem designerPalletItem) {
-        this.designerPalletItemMap.put(designerPalletItem.getIdentifier(), designerPalletItem);
+    public void addPalletItem(DesignerPalletImageItem designerPalletImageItem) {
+        this.designerPalletItemMap.put(designerPalletImageItem.getIdentifier(), designerPalletImageItem);
     }
 
     public void addCanvasItemRightClickEventListener(CanvasItemRightClickEventListener listener) {
@@ -282,4 +282,23 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
         getElement().callJsFunction("$connector.exportPng");
     }
 
+    public void undo(){
+            getElement().callJsFunction("$connector.undo");
+    }
+
+    public void redo(){
+        getElement().callJsFunction("$connector.redo");
+    }
+
+    public void copy(){
+        getElement().callJsFunction("$connector.copy");
+    }
+
+    public void paste(){
+        getElement().callJsFunction("$connector.paste");
+    }
+
+    public void delete(){
+        getElement().callJsFunction("$connector.delete");
+    }
 }

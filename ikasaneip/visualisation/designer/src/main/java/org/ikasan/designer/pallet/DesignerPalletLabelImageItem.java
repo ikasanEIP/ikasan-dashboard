@@ -1,6 +1,6 @@
 package org.ikasan.designer.pallet;
 
-public class DesignerPalletLabelItem extends DesignerPalletItem {
+public class DesignerPalletLabelImageItem extends DesignerPalletImageItem {
 
     /**
      * Constructor
@@ -10,7 +10,7 @@ public class DesignerPalletLabelItem extends DesignerPalletItem {
      * @param width
      * @param height
      */
-    public DesignerPalletLabelItem(String src, CanvasAddAction canvasAddAction, int width, int height) {
+    public DesignerPalletLabelImageItem(String src, CanvasAddAction canvasAddAction, int width, int height) {
         super(src, DesignerPalletItemType.LABEL, canvasAddAction, width, height);
     }
 
