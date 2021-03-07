@@ -13,6 +13,9 @@ import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
+import org.ikasan.designer.function.OpenFunction;
+import org.ikasan.designer.function.SaveAsFunction;
+import org.ikasan.designer.function.SaveFunction;
 import org.ikasan.designer.model.Container;
 import org.ikasan.designer.model.Figure;
 import org.ikasan.designer.pallet.DesignerPalletImageItem;
@@ -25,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Function;
 
 /**
  * Wraps a visjs network diagram. See http://visjs.org/network_examples.html
@@ -45,10 +49,12 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
     private List<CanvasItemDoubleClickEventListener> canvasItemDoubleClickEventListeners
         = new ArrayList<>();
 
-    ScheduledExecutorService executorService
-        = Executors.newSingleThreadScheduledExecutor();
+    private SaveFunction saveFunction;
+    private SaveAsFunction saveAsFunction;
 
-    public DesignerCanvas() {
+    private boolean saved = true;
+
+    public DesignerCanvas(SaveFunction saveFunction, SaveAsFunction saveAsFunction) {
         super();
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery.js");
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery-ui.js");
@@ -59,6 +65,10 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/RotateRectangleFeedbackSelectionPolicy.js");
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/RotateHandle.js");
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/Triangle.js");
+        UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/NoDecorator.js");
+
+        this.saveFunction = saveFunction;
+        this.saveAsFunction = saveAsFunction;
 
         // Dont transfer empty options.
         mapper.setSerializationInclusion(Include.NON_EMPTY);
@@ -103,36 +113,43 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
     public void addIcon(String identifier, String image, double h, double w) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addIcon", identifier, image, h, w));
+        this.saved = false;
     }
 
     public void addBoundary(double h, double w) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addBoundary", h, w));
+        this.saved = false;
     }
 
     public void addTriangleBoundary(double h, double w) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addTriangle", h, w));
+        this.saved = false;
     }
 
     public void addOval(double h, double w) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addOval", h, w));
+        this.saved = false;
     }
 
     public void addCircle() {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addCircle"));
+        this.saved = false;
     }
 
     public void addLabel(String label, int x, int y) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addLabel", label, x, y));
+        this.saved = false;
     }
 
     public void addLabelToFigure(String figureIdentifier, String label) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addLabelToFigure", figureIdentifier, label));
+        this.saved = false;
     }
 
     public void populateContextMenu() {
@@ -167,44 +184,76 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
         });
     }
 
+    public void setFont(String font) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.setFont", font));
+        this.saved = false;
+    }
+
+    public void setLineTargetDecorator(String decorator) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.setTargetDecorator", decorator));
+        this.saved = false;
+    }
+
+    public void setLineSourceDecorator(String decorator) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.setSourceDecorator", decorator));
+        this.saved = false;
+    }
+
+    public void setFontSize(String fontSize) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.setFontSize", fontSize));
+        this.saved = false;
+    }
+
     public void bringToFront() {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.bringToFront"));
+        this.saved = false;
     }
 
     public void sendToBack() {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.sendToBack"));
+        this.saved = false;
     }
 
     public void group() {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.group"));
+        this.saved = false;
     }
 
     public void ungroup() {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.ungroup"));
+        this.saved = false;
     }
 
     public void setBackgroundColor(String color) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setBackgroundColor", color));
+        this.saved = false;
     }
 
     public void setLineType(String pattern) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setLineType", pattern));
+        this.saved = false;
     }
 
     public void setRadius(double radius) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setRadius", radius));
+        this.saved = false;
     }
 
     public void setStroke(int width) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setStroke", width));
+        this.saved = false;
     }
 
     public void setReadonly(boolean readonly) {
@@ -216,6 +265,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
     public void rotateSelected(int angle) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.rotate", angle));
+        this.saved = false;
     }
 
     public void runBeforeClientResponse(SerializableConsumer<UI> command) {
@@ -266,39 +316,85 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
     }
 
     public void exportJson(){
+        getElement().callJsFunction("$connector.exportJson").then(String.class, canvasJson -> {
+            this.canvasJson = canvasJson;
+            logger.info(canvasJson);
+        });
+    }
+
+    public void save(String id, String name, String description){
+        getElement().callJsFunction("$connector.exportJson").then(String.class, canvasJson -> {
+            this.canvasJson = canvasJson;
+            logger.info(canvasJson);
+
+            if(this.saveFunction != null) {
+                this.saveFunction.save(id, name, description, canvasJson);
+            }
+
+            this.saved = true;
+        });
+    }
+
+    public void saveAs(){
         getElement().callJsFunction("$connector.exportJson").then(String.class, result -> {
             this.canvasJson = result;
             logger.info(result);
+
+            if(this.saveAsFunction != null) {
+                this.saveAsFunction.saveAs(result);
+            }
+
+            this.saved = true;
         });
     }
 
     public void importJson(){
         if(this.canvasJson != null) {
+
             getElement().callJsFunction("$connector.importJson", this.canvasJson);
         }
     }
 
     public void exportPng(){
         getElement().callJsFunction("$connector.exportPng");
+        this.saved = false;
     }
 
     public void undo(){
-            getElement().callJsFunction("$connector.undo");
+        getElement().callJsFunction("$connector.undo");
+        this.saved = false;
     }
 
     public void redo(){
         getElement().callJsFunction("$connector.redo");
+        this.saved = false;
     }
 
     public void copy(){
         getElement().callJsFunction("$connector.copy");
+        this.saved = false;
     }
 
     public void paste(){
         getElement().callJsFunction("$connector.paste");
+        this.saved = false;
     }
 
     public void delete(){
         getElement().callJsFunction("$connector.delete");
+        this.saved = false;
+    }
+
+    public void clear(){
+        getElement().callJsFunction("$connector.clear");
+        this.saved = false;
+    }
+
+    public void setCanvasJson(String canvasJson) {
+        this.canvasJson = canvasJson;
+    }
+
+    public boolean isSaved() {
+        return saved;
     }
 }

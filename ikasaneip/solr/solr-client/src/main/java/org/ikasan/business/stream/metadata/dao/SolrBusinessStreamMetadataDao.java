@@ -54,7 +54,7 @@ public class SolrBusinessStreamMetadataDao extends SolrDaoBase<SolrBusinessStrea
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, SolrBusinessStream businessStreamMetaData)
     {
         SolrInputDocument document = new SolrInputDocument();
-        document.addField(ID, "businessStream-"+businessStreamMetaData.getId());
+        document.addField(ID, businessStreamMetaData.getId());
         document.addField(TYPE, BUSINESS_STREAM_METADATA);
         document.addField(MODULE_NAME, businessStreamMetaData.getName());
         document.addField(FLOW_NAME, businessStreamMetaData.getDescription());

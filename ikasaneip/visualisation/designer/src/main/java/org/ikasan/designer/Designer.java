@@ -21,6 +21,9 @@ import nc.unc.vaadin.flow.polymer.iron.icons.IronImageIcons;
 import org.ikasan.designer.component.ColorPicker;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
+import org.ikasan.designer.function.OpenFunction;
+import org.ikasan.designer.function.SaveAsFunction;
+import org.ikasan.designer.function.SaveFunction;
 import org.ikasan.designer.pallet.DesignerPalletImageItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +39,13 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
     private Accordion toolAccordion = new Accordion();
     private List<ItemPallet> itemPalettes;
     private ColorPicker paintButton = new ColorPicker();
+    private OpenFunction openFunction;
+    private SaveFunction saveFunction;
+    private SaveAsFunction saveAsFunction;
+
+    private String diagramId;
+    private String diagramName;
+    private String diagramDescription;
 
 
     private boolean initialised = false;
@@ -43,13 +53,18 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
     /**
      * Constructor
      */
-    public Designer()
+    public Designer(OpenFunction openFunction, SaveFunction saveFunction
+        , SaveAsFunction saveAsFunction)
     {
         this.setMargin(false);
         this.setSpacing(false);
 
         this.setHeight("100%");
         this.setWidth("100%");
+
+        this.openFunction = openFunction;
+        this.saveFunction = saveFunction;
+        this.saveAsFunction = saveAsFunction;
 
 
         this.itemPalettes = new ArrayList<>();
@@ -58,16 +73,6 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
 
     protected void init()
     {
-//        this.designerCanvas = new DesignerCanvas();
-//        this.designerCanvas.setSizeUndefined();
-//
-//        DropTarget<DesignerCanvas> dropTarget = DropTarget.create(this.designerCanvas);
-//
-//        dropTarget.addDropListener(event -> {
-//            // move the dragged component to inside the drop target component
-//            event.getDragSourceComponent().ifPresent(action -> this.addItemToCanvas((DesignerPalletItem)action));
-//        });
-
         this.initBase();
 
         this.toolAccordion = new Accordion();
@@ -85,7 +90,6 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
         HorizontalLayout designerLayout = new HorizontalLayout();
         designerLayout.setSizeUndefined();
         designerLayout.getElement().getThemeList().remove("padding");
-
 
 
         Div tools = new Div();
@@ -109,11 +113,26 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
         SubMenu fileSubMenu = file.getSubMenu();
         MenuItem newDiagram = fileSubMenu.addItem("New");
         MenuItem open = fileSubMenu.addItem("Open");
-        open.addClickShortcut(Key.KEY_O, KeyModifier.CONTROL);
+        open.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent
+            -> {
+            this.openFunction.open(this.designerCanvas);
+        });
 
         fileSubMenu.add(new Hr());
         MenuItem save = fileSubMenu.addItem("Save");
+        save.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent
+            -> {
+            if(this.openFunction.getId() != null) {
+                this.diagramId = this.openFunction.getId();
+                this.diagramName = this.openFunction.getName();
+                this.diagramDescription = this.openFunction.getDescription();
+                this.designerCanvas.save(this.diagramId, this.diagramName, this.diagramDescription);
+            } else {
+                this.designerCanvas.saveAs();
+            }
+        });
         MenuItem saveAs = fileSubMenu.addItem("Save as");
+        saveAs.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> this.designerCanvas.saveAs());
 
         fileSubMenu.add(new Hr());
 
@@ -268,7 +287,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
     }
 
     protected void initBase() {
-        this.designerCanvas = new DesignerCanvas();
+        this.designerCanvas = new DesignerCanvas(this.saveFunction, this.saveAsFunction);
         this.designerCanvas.setSizeUndefined();
 
         DropTarget<DesignerCanvas> dropTarget = DropTarget.create(this.designerCanvas);
@@ -367,7 +386,26 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
 //        broadcasterRegistration = null;
     }
 
+    public void setFont(String font) {
+        this.designerCanvas.setFont(font);
+    }
+
+    public void setLineTargetDecorator(String decorator) {
+        this.designerCanvas.setLineTargetDecorator(decorator);
+    }
+
+    public void setLineSourceDecorator(String decorator) {
+        this.designerCanvas.setLineSourceDecorator(decorator);
+    }
+
+    public void setFontSize(String fontSize) {
+        this.designerCanvas.setFontSize(fontSize);
+    }
+
     public void setLineType(String pattern) {
+        if(pattern.equals("EMPTY")){
+            pattern = "";
+        }
         designerCanvas.setLineType(pattern);
     }
 

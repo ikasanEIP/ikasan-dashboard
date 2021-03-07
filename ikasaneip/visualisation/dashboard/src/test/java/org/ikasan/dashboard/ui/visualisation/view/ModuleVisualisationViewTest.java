@@ -2,13 +2,8 @@ package org.ikasan.dashboard.ui.visualisation.view;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.Query;
-import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterLayout;
 import org.apache.commons.io.IOUtils;
 import org.ikasan.dashboard.ui.UITest;
-import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
-import org.ikasan.dashboard.ui.search.view.SearchView;
 import org.ikasan.spec.metadata.ConfigurationMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -21,8 +16,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
 
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 

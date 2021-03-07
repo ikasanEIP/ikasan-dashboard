@@ -13,7 +13,7 @@ import org.ikasan.designer.Designer;
 public class LineContextMenu extends Dialog {
 
     public LineContextMenu(Designer designer, int x, int y) {
-        this.setWidth("50px");
+        this.setWidth("200px");
         this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "align-self", "flex-start");
         this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "position", "absolute");
         this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "left", x + "px");
@@ -21,42 +21,46 @@ public class LineContextMenu extends Dialog {
 
         Image noArrow = new Image("frontend/images/line-arrow-none.png", "");
         noArrow.getElement().getStyle().set("cursor", "pointer");
-        noArrow.setWidth("200px");
+        noArrow.setWidth("180px");
         noArrow.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
-
+            designer.setLineTargetDecorator("NONE");
+            designer.setLineSourceDecorator("NONE");
+            this.close();
         });
 
         Image leftArrow = new Image("frontend/images/line-arrow-left.png", "");
         leftArrow.getElement().getStyle().set("cursor", "pointer");
-        leftArrow.setWidth("200px");
+        leftArrow.setWidth("180px");
         leftArrow.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
-
+            designer.setLineTargetDecorator("NONE");
+            designer.setLineSourceDecorator("ARROW");
+            this.close();
         });
 
         Image rightArrow = new Image("frontend/images/line-arrow-right.png", "");
         rightArrow.getElement().getStyle().set("cursor", "pointer");
-        rightArrow.setWidth("200px");
+        rightArrow.setWidth("180px");
         rightArrow.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
-
+            designer.setLineTargetDecorator("ARROW");
+            designer.setLineSourceDecorator("NONE");
+            this.close();
         });
 
         Image bothArrow = new Image("frontend/images/line-arrow-both.png", "");
         bothArrow.getElement().getStyle().set("cursor", "pointer");
-        bothArrow.setWidth("200px");
+        bothArrow.setWidth("180px");
         bothArrow.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
-
+            designer.setLineTargetDecorator("ARROW");
+            designer.setLineSourceDecorator("ARROW");
+            this.close();
         });
-
-//        ColorPicker colorPicker = new ColorPicker();
-//        colorPicker.setWidth("200px");
-
 
         VerticalLayout layout = new VerticalLayout();
         layout.setWidthFull();
         layout.add(noArrow, leftArrow, rightArrow, bothArrow);
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, noArrow, leftArrow, rightArrow, bothArrow);
 
-        super.setCloseOnOutsideClick(false);
+        super.setCloseOnOutsideClick(true);
 
         this.add(layout);
     }

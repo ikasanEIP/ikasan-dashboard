@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.visualisation.view;
 
-import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.componentfactory.TooltipAlignment;
 import com.vaadin.componentfactory.TooltipPosition;
@@ -9,6 +8,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.component.dnd.DragSource;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -22,20 +22,27 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
+import org.ikasan.dashboard.ui.visualisation.actions.BusinessStreamOpenFunction;
+import org.ikasan.dashboard.ui.visualisation.actions.BusinessStreamSaveAsFunction;
+import org.ikasan.dashboard.ui.visualisation.actions.BusinessStreamSaveFunction;
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamIntegratedSystemUploadDialog;
-import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamUploadDialog;
 import org.ikasan.dashboard.ui.visualisation.component.FlowSelectDialog;
-import org.ikasan.designer.*;
+import org.ikasan.designer.Designer;
+import org.ikasan.designer.ItemPallet;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
+import org.ikasan.designer.menu.LabelContextMenu;
 import org.ikasan.designer.menu.LineContextMenu;
 import org.ikasan.designer.menu.ShapeContextMenu;
 import org.ikasan.designer.pallet.*;
+import org.ikasan.spec.metadata.BusinessStreamMetaData;
+import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -45,10 +52,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
 
 @Route(value = "designer", layout = IkasanAppLayout.class)
@@ -66,8 +73,18 @@ import java.util.stream.IntStream;
 
     private Designer businessStreamDesigner;
 
+    private FlexLayout integratedSystemPalette;
+
     @Resource
     private ModuleMetaDataService moduleMetadataService;
+
+    @Resource
+    private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
+
+    @Value(value = "${integrated.systems.image.path}")
+    private String integratedSystemsImagePath;
+
+    private ArrayList<Image> integratedSystems;
 
 
     /**
@@ -84,13 +101,17 @@ import java.util.stream.IntStream;
 
     private void init()
     {
-        businessStreamDesigner = new Designer();
+        this.integratedSystemPalette = this.createIntegratedSystemsPalette();
+
+        businessStreamDesigner = new Designer(new BusinessStreamOpenFunction(this.businessStreamMetaDataService, this.integratedSystems)
+            ,new BusinessStreamSaveFunction(this.businessStreamMetaDataService), new BusinessStreamSaveAsFunction(this.businessStreamMetaDataService));
         businessStreamDesigner.addCanvasItemRightClickEventListener(this);
         businessStreamDesigner.addCanvasItemDoubleClickEventListener(this);
         businessStreamDesigner.setSizeFull();
         businessStreamDesigner.addItemPallet(new ItemPallet("General", this.createGeneralPalette()));
-        businessStreamDesigner.addItemPallet(new ItemPallet("Integrated Systems", this.createIntegratedSystemsPalette()));
+        businessStreamDesigner.addItemPallet(new ItemPallet("Integrated Systems", this.integratedSystemPalette));
         businessStreamDesigner.addItemPallet(new ItemPallet("Boundaries", this.createBoundariesPalette()));
+
 
         this.add(businessStreamDesigner);
     }
@@ -117,7 +138,8 @@ import java.util.stream.IntStream;
         });
         DragSource.create(flowImage);
 
-        Tooltip tooltip = TooltipHelper.getTooltip(flowImage,"This icon represents an Ikasan flow.", TooltipPosition.RIGHT, TooltipAlignment.RIGHT);
+        Tooltip tooltip = TooltipHelper.getTooltip(flowImage,"This icon represents an Ikasan flow."
+            , TooltipPosition.RIGHT, TooltipAlignment.RIGHT);
 
         DesignerPalletImageItem channelImage = new DesignerPalletIconImageItem("frontend/images/message-channel.png", designerPalletItem -> {
 
@@ -138,7 +160,7 @@ import java.util.stream.IntStream;
         return layout;
     }
 
-    private com.vaadin.flow.component.Component createIntegratedSystemsPalette() {
+    private FlexLayout createIntegratedSystemsPalette() {
         DesignerPalletImageItem computerImage = new DesignerPalletIconImageItem("frontend/images/computer.png", designerPalletItem -> {
 
         }, 62, 62);
@@ -160,19 +182,10 @@ import java.util.stream.IntStream;
         layout.setAlignContent(FlexLayout.ContentAlignment.START);
 
         try {
-
-            this.getIntegratedSystems().forEach(item -> {
-                if(item instanceof Image) {
-                    ((Image)item.getComponent()).setWidth("35px");
-                    ((Image)item.getComponent()).addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
-                        if(imageClickEvent.getClickCount() == 2) {
-                            this.businessStreamDesigner.addItemToCanvas((DesignerPalletImageItem)item);
-                        }
-                    });
-                    DragSource.create(item.getComponent());
-                    item.getComponent().getElement().getStyle().set("margin-right", "15px");
-                    item.getComponent().getElement().getStyle().set("margin-bottom", "15px");
-                    layout.add(item.getComponent());
+            this.integratedSystems = this.getIntegratedSystems();
+            this.integratedSystems.forEach(item -> {
+                if(item instanceof DesignerPalletImageItem) {
+                    this.addItemToLayout((DesignerPalletImageItem) item, layout);
                 }
             });
         }
@@ -184,17 +197,41 @@ import java.util.stream.IntStream;
         }, "35px", "35px");
 
         palletIconItem.getComponent().addClickListener((ComponentEventListener<ClickEvent<Button>>) imageClickEvent -> {
-            BusinessStreamIntegratedSystemUploadDialog uploadDialog = new BusinessStreamIntegratedSystemUploadDialog();
+            BusinessStreamIntegratedSystemUploadDialog uploadDialog
+                = new BusinessStreamIntegratedSystemUploadDialog(this.integratedSystemsImagePath);
             uploadDialog.open();
 
-//            uploadDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
-//                dialogOpenedChangeEvent -> populateBusinessStreamGrid());
+            uploadDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
+                dialogOpenedChangeEvent -> {
+                if(!dialogOpenedChangeEvent.isOpened()) {
+                    if(uploadDialog.isUploaded()) {
+                        this.addItemToLayout(this.getImageItem(uploadDialog.getFilePath()), this.integratedSystemPalette);
+                    }
+                }
+            });
         });
         palletIconItem.getComponent().getElement().getStyle().set("margin-right", "15px");
         palletIconItem.getComponent().getElement().getStyle().set("margin-bottom", "15px");
         layout.add(palletIconItem.getComponent());
 
         return layout;
+    }
+
+    private void addItemToLayout(DesignerPalletImageItem item, FlexLayout layout) {
+        item.getComponent().setWidth("35px");
+        item.getComponent().addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
+            if(imageClickEvent.getClickCount() == 2) {
+                this.businessStreamDesigner.addItemToCanvas(item);
+            }
+        });
+        DragSource.create(item.getComponent());
+        item.getComponent().getElement().getStyle().set("margin-right", "15px");
+        item.getComponent().getElement().getStyle().set("margin-bottom", "15px");
+
+        com.vaadin.flow.component.Component component = layout.getComponentAt(layout.getComponentCount()-1);
+        layout.remove(component);
+        layout.add(new Div(item.getComponent()));
+        layout.add(component);
     }
 
     private com.vaadin.flow.component.Component createBoundariesPalette(){
@@ -259,53 +296,56 @@ import java.util.stream.IntStream;
         return layout;
     }
 
-    private List<DesignerPalletItem> getIntegratedSystems() throws IOException {
-        ArrayList<DesignerPalletItem> images = new ArrayList<>();
+    private ArrayList<Image> getIntegratedSystems() throws IOException {
+        ArrayList<Image> images = new ArrayList<>();
 
-        Files.list(Paths.get("/sandbox/mick/images")).forEach(
-            file -> {
-                int width = 0;
-                int height = 0;
-
-                try {
-                    FileInputStream fileInputStream = new FileInputStream(file.toFile());
-                    BufferedImage bimg = ImageIO.read(fileInputStream);
-                    width = bimg.getWidth();
-                    height = bimg.getHeight();
-
-                    if(width > 100) {
-                        int multiple = width / 100;
-
-                        height = height / multiple;
-                        width = width / multiple;
-                    }
-
-                    fileInputStream.close();
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                StreamResource res = new StreamResource(file.getFileName().toString(), () -> {
-                    // eg. load image data from classpath (src/main/resources/images/image.png)
-                    try {
-                        return new FileInputStream(file.toFile());
-                    }
-                    catch (FileNotFoundException e) {
-                        return null;
-                    }
-                    catch (IOException e) {
-                        return null;
-                    }
-                });
-                DesignerPalletImageItem palletIconItem = new DesignerPalletIconImageItem(res, designerPalletItem -> {
-                    }, width, height);
-
-                images.add(palletIconItem);
-            }
-        );
+        Files.list(Paths.get(this.integratedSystemsImagePath)).forEach(
+            file -> images.add(getImageItem(file)));
 
         return images;
+    }
+
+    private DesignerPalletImageItem getImageItem(Path file) {
+        int width = 0;
+        int height = 0;
+
+        try {
+            FileInputStream fileInputStream = new FileInputStream(file.toFile());
+            BufferedImage bimg = ImageIO.read(fileInputStream);
+            width = bimg.getWidth();
+            height = bimg.getHeight();
+
+            if(width > 100) {
+                int multiple = width / 100;
+
+                height = height / multiple;
+                width = width / multiple;
+            }
+
+            fileInputStream.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        StreamResource res = new StreamResource(file.getFileName().toString(), () -> {
+            // eg. load image data from classpath (src/main/resources/images/image.png)
+            try {
+                return new FileInputStream(file.toFile());
+            }
+            catch (FileNotFoundException e) {
+                return null;
+            }
+            catch (IOException e) {
+                return null;
+            }
+        });
+
+
+        DesignerPalletImageItem palletIconItem = new DesignerPalletIconImageItem(res, designerPalletItem -> {
+        }, width, height);
+
+        return palletIconItem;
     }
 
 
@@ -356,8 +396,13 @@ import java.util.stream.IntStream;
                 canvasItemRightClickEvent.getClickLocationX(), canvasItemRightClickEvent.getClickLocationY());
             lineContextMenu.open();
         }
-        else {
-            ShapeContextMenu shapeContextMenu = new ShapeContextMenu(this.businessStreamDesigner,
+        else if(canvasItemRightClickEvent.getFigure().getType().equals("draw2d.shape.basic.Label")) {
+            LabelContextMenu lineContextMenu = new LabelContextMenu(this.businessStreamDesigner, canvasItemRightClickEvent.getFigure(),
+                canvasItemRightClickEvent.getClickLocationX(), canvasItemRightClickEvent.getClickLocationY());
+            lineContextMenu.open();
+        }
+        else if(!canvasItemRightClickEvent.getFigure().getType().equals("draw2d.shape.basic.Image")) {
+            ShapeContextMenu shapeContextMenu = new ShapeContextMenu(this.businessStreamDesigner, canvasItemRightClickEvent.getFigure(),
                 canvasItemRightClickEvent.getClickLocationX(), canvasItemRightClickEvent.getClickLocationY());
             shapeContextMenu.open();
         }
