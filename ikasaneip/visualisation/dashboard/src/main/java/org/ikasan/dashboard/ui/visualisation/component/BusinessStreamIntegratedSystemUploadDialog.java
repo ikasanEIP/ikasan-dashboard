@@ -20,20 +20,28 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class BusinessStreamIntegratedSystemUploadDialog extends AbstractCloseableResizableDialog
 {
-    byte[] businessStreamFile;
-
+    private byte[] businessStreamFile;
+    private String filename;
+    private String uploadPath;
+    private boolean uploaded=false;
 
     /**
      * Constructor
      *
      */
-    public BusinessStreamIntegratedSystemUploadDialog()
+    public BusinessStreamIntegratedSystemUploadDialog(String uploadPath)
     {
+        this.uploadPath = uploadPath;
         init();
     }
 
@@ -68,8 +76,9 @@ public class BusinessStreamIntegratedSystemUploadDialog extends AbstractCloseabl
 
             try
             {
-                businessStreamFile = new byte[inputStream.available()];
+                this.businessStreamFile = new byte[inputStream.available()];
                 inputStream.read(businessStreamFile);
+                this.filename = event.getFileName();
             }
             catch (IOException e)
             {
@@ -80,7 +89,15 @@ public class BusinessStreamIntegratedSystemUploadDialog extends AbstractCloseabl
         Button saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
         {
+            try {
+                this.writeFile();
+                this.uploaded = true;
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
 
+            this.close();
         });
 
         Button cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
@@ -93,7 +110,32 @@ public class BusinessStreamIntegratedSystemUploadDialog extends AbstractCloseabl
         verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, upload, buttonLayout);
         this.content.add(verticalLayout);
         super.setWidth("400px");
-        super.setHeight("250px");
+        super.setHeight("300px");
         super.showResize(false);
+    }
+
+    private void writeFile() throws IOException {
+        FileOutputStream fileWriter = null;
+        try {
+            fileWriter = new FileOutputStream(this.uploadPath + "/" + filename);
+            fileWriter.write(this.businessStreamFile);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        finally {
+            if(fileWriter != null) {
+                fileWriter.flush();
+                fileWriter.close();
+            }
+        }
+    }
+
+    public Path getFilePath() {
+        return Paths.get(this.uploadPath + "/" +this.filename);
+    }
+
+    public boolean isUploaded() {
+        return uploaded;
     }
 }

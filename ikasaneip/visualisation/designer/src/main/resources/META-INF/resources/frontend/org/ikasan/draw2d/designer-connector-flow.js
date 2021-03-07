@@ -57,13 +57,14 @@
         // });
 
         class FigureLite {
-            constructor(name, x, y, width, height, type) {
+            constructor(name, x, y, width, height, type, atttributes) {
                 this.identifier = name;
                 this.x = x;
                 this.y = y;
                 this.width = width;
                 this.height= height;
                 this.type = type;
+                this.attributes = JSON.stringify(atttributes);
             }
 
         }
@@ -93,7 +94,8 @@
             // });
 
             _this.getSelection().each((i, figure)=>{
-                figures.push(new FigureLite(figure.getId(), figure.x, figure.y, figure.getWidth(), figure.getHeight(), figure.NAME));
+                figures.push(new FigureLite(figure.getId(), figure.x, figure.y, figure.getWidth()
+                    , figure.getHeight(), figure.NAME, figure.getPersistentAttributes()));
             });
 
             let container = new Container(figures, canvasRightClickX, canvasRightClickY, rightClickX, rightClickY);
@@ -162,15 +164,12 @@
 
         designer.$connector.addBoundary = function (h, w) {
             let boundary =  new draw2d.shape.basic.Rectangle({
+                bgColor:"rgba(255,255,255,0)",
                 x: x,
                 y: y,
-                bgColor: "#ffffff",
-                alpha  : 0.7,
                 width: w,
                 height: h,
                 radius: 10,
-                dash: "--",
-                rotationAngle: 15,
             });
 
             boundary.uninstallEditPolicy(new draw2d.policy.figure.RectangleSelectionFeedbackPolicy());
@@ -182,7 +181,7 @@
 
         designer.$connector.designer.on("dblclick", function(emitter, event){
             let figure = event.figure;
-            let figureLite = new FigureLite(figure.getId(), figure.x, figure.y, figure.getWidth(), figure.getHeight(), figure.NAME);
+            let figureLite = new FigureLite(figure.getId(), figure.x, figure.y, figure.getWidth(), figure.getHeight(), figure.NAME, figure.getPersistentAttributes());
             let element = document.getElementById("canvas-wrapper");
             element.$server.doubleClickEvent(JSON.stringify(figureLite));
         });
@@ -205,6 +204,10 @@
 
         designer.$connector.delete = function () {
             designer.$connector.designer.delete();
+        }
+
+        designer.$connector.clear = function () {
+            designer.$connector.designer.clear();
         }
 
         designer.$connector.addTriangle = function (h, w) {
@@ -236,7 +239,7 @@
                 fontColor:"#0d0d0d",
                 bgColor:"rgba(255,255,255,0)",
                 outlineColor:"rgba(255,255,255,0)",
-                fontFamily: "Trebuchet MS",
+                fontFamily: "Helvetica",
                 fontSize: "12pt",
                 x:x, y:y
             });
@@ -246,6 +249,33 @@
 
             let command = new draw2d.command.CommandAdd(_this, label, x, y);
             _this.getCommandStack().execute(command);
+        }
+
+        designer.$connector.setFont = function (font) {
+            debugger;
+            _this.getFigures().each((i, figure)=>{
+                debugger;
+                if(figure.isSelected()) {
+                    debugger;
+                    // figure.setDashArray(pattern);
+
+                    let command = new draw2d.command.CommandAttr(figure, {fontFamily:font});
+                    _this.getCommandStack().execute(command);
+                }
+            });
+        }
+
+        designer.$connector.setFontSize = function (fontSize) {
+            debugger;
+            _this.getFigures().each((i, figure)=>{
+                debugger;
+                if(figure.isSelected()) {
+                    debugger;
+
+                    let command = new draw2d.command.CommandAttr(figure, {fontSize:fontSize});
+                    _this.getCommandStack().execute(command);
+                }
+            });
         }
 
         designer.$connector.addLabelToFigure = function (figureIdentifier, labelString) {
@@ -312,14 +342,51 @@
 
         designer.$connector.setLineType = function (pattern) {
             debugger;
-            _this.getFigures().each((i, figure)=>{
+            _this.getSelection().each((i, figure)=>{
                 debugger;
-                if(figure.isSelected()) {
-                    debugger;
-                    figure.setDashArray(pattern);
+                // figure.setDashArray(pattern);
+
+                let command = new draw2d.command.CommandAttr(figure, {dasharray:pattern});
+                _this.getCommandStack().execute(command);
+            });
+        }
+
+        designer.$connector.setTargetDecorator = function (decorator) {
+            _this.getSelection().each((i, figure)=>{
+                debugger;
+                if(figure.NAME === 'draw2d.Connection') {
+                    if(decorator === "ARROW"){
+                        let arrow = new draw2d.decoration.connection.ArrowDecorator();
+                        let command = new draw2d.command.CommandAttr(figure, {targetDecorator:arrow});
+                        _this.getCommandStack().execute(command);
+                    }
+                    else {
+                        let circle = new NoDecorator();
+                        let command = new draw2d.command.CommandAttr(figure, {targetDecorator:circle});
+                        _this.getCommandStack().execute(command);
+                    }
                 }
             });
         }
+
+        designer.$connector.setSourceDecorator = function (decorator) {
+            _this.getSelection().each((i, figure)=>{
+                debugger;
+                if(figure.NAME === 'draw2d.Connection') {
+                    if(decorator === "ARROW"){
+                        let arrow = new draw2d.decoration.connection.ArrowDecorator();
+                        let command = new draw2d.command.CommandAttr(figure, {sourceDecorator:arrow});
+                        _this.getCommandStack().execute(command);
+                    }
+                    else {
+                        let circle = new NoDecorator();
+                        let command = new draw2d.command.CommandAttr(figure, {sourceDecorator:circle});
+                        _this.getCommandStack().execute(command);
+                    }
+                }
+            });
+        }
+
 
         designer.$connector.setRadius = function (radius) {
             debugger;
@@ -358,6 +425,14 @@
             debugger
             let reader = new draw2d.io.json.Reader();
             reader.unmarshal(designer.$connector.designer, jsonDocument);
+
+            _this.getFigures().each((i, figure)=>{
+                debugger;
+                if(figure.NAME === 'draw2d.shape.basic.Image') {
+                    debugger;
+                    figure.setKeepAspectRatio(true);
+                }
+            });
         }
 
 

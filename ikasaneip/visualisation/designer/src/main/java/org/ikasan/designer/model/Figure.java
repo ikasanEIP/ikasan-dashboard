@@ -1,5 +1,7 @@
 package org.ikasan.designer.model;
 
+import org.json.JSONObject;
+
 public class Figure {
     private String identifier;
     private int x;
@@ -7,6 +9,8 @@ public class Figure {
     private int width;
     private int height;
     private String type;
+    private String attributes;
+    private JSONObject attributesObject;
 
     public String getIdentifier() {
         return identifier;
@@ -56,6 +60,28 @@ public class Figure {
         this.type = type;
     }
 
+    public String getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(String attributes) {
+        this.attributes = attributes;
+    }
+
+    public String getAttributeStringValue(String name) {
+        if(this.attributesObject == null){
+            this.attributesObject = new JSONObject(this.attributes);
+        }
+        return this.attributesObject.getString(name);
+    }
+
+    public Number getAttributeNumberValue(String name) {
+        if(this.attributesObject == null){
+            this.attributesObject = new JSONObject(this.attributes);
+        }
+        return this.attributesObject.getNumber(name);
+    }
+
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("Figure{");
@@ -65,6 +91,7 @@ public class Figure {
         sb.append(", width=").append(width);
         sb.append(", height=").append(height);
         sb.append(", type='").append(type).append('\'');
+        sb.append(", attributes='").append(attributes).append('\'');
         sb.append('}');
         return sb.toString();
     }

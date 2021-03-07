@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.search.component;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.dashboard.ui.util.SecurityConstants;

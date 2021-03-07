@@ -148,6 +148,10 @@ View = draw2d.Canvas.extend({
                 let cloneToAdd = f.clone();
                 let command = new draw2d.command.CommandAdd(_this, cloneToAdd, cloneToAdd.getPosition());
                 _this.getCommandStack().execute(command);
+                if(cloneToAdd.NAME === 'draw2d.shape.basic.Image') {
+                    debugger;
+                    cloneToAdd.setKeepAspectRatio(true);
+                }
                 _this.addSelection(cloneToAdd);
             });
         }
