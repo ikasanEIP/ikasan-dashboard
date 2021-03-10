@@ -6,7 +6,9 @@ public interface DesignerPalletItem<COMPONENT extends Component> {
 
     DesignerPalletItemType getDesignerPalletItemType();
 
-    String getIdentifier();
+    DesignerItemIdentifier getIdentifier();
+
+    void setIdentifier(DesignerItemIdentifier identifier);
 
     int getItemWidth();
 

@@ -56,15 +56,9 @@ public class BusinessStreamOpenFunction implements OpenFunction {
             if(!businessStreamOpenDialog.isOpened() && businessStreamOpenDialog.getBusinessStreamMetaData() != null) {
                 this.businessStreamMetaData = businessStreamOpenDialog.getBusinessStreamMetaData();
 
-
-
                 try {
-                    System.out.println(businessStreamOpenDialog.getBusinessStreamMetaData().getJson());
-
                     String json = this.designerDynamicImageManager
                         .parse(businessStreamOpenDialog.getBusinessStreamMetaData().getJson());
-
-                    System.out.println(json);
 
                     designerCanvas.setCanvasJson(json);
                 }

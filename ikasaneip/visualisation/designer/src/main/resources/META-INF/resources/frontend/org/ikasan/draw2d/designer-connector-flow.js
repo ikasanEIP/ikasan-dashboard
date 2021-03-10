@@ -1,5 +1,5 @@
     window.Vaadin.Flow.designerConnector = {
-    initLazy : function(designer) {
+    initLazy : function(designer, name) {
 
         // Check whether the connector was already initialized for the Iron list
         if (designer.$connector) {
@@ -10,7 +10,8 @@
         designer.$connector = {};
         this.clippboardFigure=null;
 
-        designer.$connector.designer = new View(this, "canvas-wrapper");
+        let canvasName = name;
+        designer.$connector.designer = new View(this, name);
 
         let _this = designer.$connector.designer;
 
@@ -182,7 +183,7 @@
         designer.$connector.designer.on("dblclick", function(emitter, event){
             let figure = event.figure;
             let figureLite = new FigureLite(figure.getId(), figure.x, figure.y, figure.getWidth(), figure.getHeight(), figure.NAME, figure.getPersistentAttributes());
-            let element = document.getElementById("canvas-wrapper");
+            let element = document.getElementById(canvasName);
             element.$server.doubleClickEvent(JSON.stringify(figureLite));
         });
 
@@ -490,26 +491,8 @@
             return pngResult;
         }
 
-        $(document).addEventListener("DOMContentLoaded",function () {
-
-
-            setTimeout(function() {
-                _this.exportPng();
-            },1);
-
-            // add an event listener to the Canvas for change notifications.
-            // We just dump the current canvas document into the IMG
-            //
-            designer.$connector.designer.getCommandStack().addEventListener(function(e){
-                if(e.isPostChangeEvent()){
-                    _this.exportPng();
-                }
-            });
-        });
-
-
-
         designer.$connector.setReadOnly = function (readonly) {
+            debugger;
             if(readonly === true){
                 designer.$connector.designer.uninstallEditPolicy( new draw2d.policy.canvas.FadeoutDecorationPolicy());
                 designer.$connector.designer.uninstallEditPolicy( new draw2d.policy.canvas.SnapToGeometryEditPolicy());
@@ -526,7 +509,22 @@
             }
         }
 
+        $(document).addEventListener("DOMContentLoaded",function () {
 
+
+            setTimeout(function() {
+                _this.exportPng();
+            },1);
+
+            // add an event listener to the Canvas for change notifications.
+            // We just dump the current canvas document into the IMG
+            //
+            designer.$connector.designer.getCommandStack().addEventListener(function(e){
+                if(e.isPostChangeEvent()){
+                    _this.exportPng();
+                }
+            });
+        });
 
     }
 }

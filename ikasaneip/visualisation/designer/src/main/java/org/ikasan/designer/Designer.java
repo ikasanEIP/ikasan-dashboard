@@ -17,10 +17,17 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.BeforeLeaveEvent;
+import com.vaadin.flow.router.BeforeLeaveObserver;
 import nc.unc.vaadin.flow.polymer.iron.icons.IronImageIcons;
+import org.ikasan.designer.action.IgnoreSaveAndNavigateAction;
+import org.ikasan.designer.action.IgnoreSaveAndNewAction;
+import org.ikasan.designer.action.IgnoreSaveAndOpenAction;
 import org.ikasan.designer.component.ColorPicker;
+import org.ikasan.designer.component.SavePromptDialog;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
+import org.ikasan.designer.function.ManageFunction;
 import org.ikasan.designer.function.OpenFunction;
 import org.ikasan.designer.function.SaveAsFunction;
 import org.ikasan.designer.function.SaveFunction;
@@ -31,7 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Designer extends VerticalLayout implements BeforeEnterObserver
+public class Designer extends VerticalLayout implements BeforeEnterObserver, BeforeLeaveObserver
 {
     Logger logger = LoggerFactory.getLogger(Designer.class);
 
@@ -42,6 +49,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
     private OpenFunction openFunction;
     private SaveFunction saveFunction;
     private SaveAsFunction saveAsFunction;
+    private ManageFunction manageFunction;
 
     private String diagramId;
     private String diagramName;
@@ -54,7 +62,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
      * Constructor
      */
     public Designer(OpenFunction openFunction, SaveFunction saveFunction
-        , SaveAsFunction saveAsFunction)
+        , SaveAsFunction saveAsFunction, ManageFunction manageFunction)
     {
         this.setMargin(false);
         this.setSpacing(false);
@@ -65,6 +73,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
         this.openFunction = openFunction;
         this.saveFunction = saveFunction;
         this.saveAsFunction = saveAsFunction;
+        this.manageFunction = manageFunction;
 
 
         this.itemPalettes = new ArrayList<>();
@@ -112,13 +121,27 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
 
         SubMenu fileSubMenu = file.getSubMenu();
         MenuItem newDiagram = fileSubMenu.addItem("New");
+        newDiagram.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> {
+            if(!this.designerCanvas.isSaved()) {
+                SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndNewAction(this.designerCanvas));
+                savePromptDialog.open();
+            }
+        });
+
         MenuItem open = fileSubMenu.addItem("Open");
-        open.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent
-            -> {
-            this.openFunction.open(this.designerCanvas);
+        open.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> {
+            if(!this.designerCanvas.isSaved()) {
+                SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndOpenAction(this.openFunction
+                    , this.designerCanvas));
+                savePromptDialog.open();
+            }
+            else {
+                this.openFunction.open(this.designerCanvas);
+            }
         });
 
         fileSubMenu.add(new Hr());
+
         MenuItem save = fileSubMenu.addItem("Save");
         save.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent
             -> {
@@ -131,6 +154,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
                 this.designerCanvas.saveAs();
             }
         });
+
         MenuItem saveAs = fileSubMenu.addItem("Save as");
         saveAs.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> this.designerCanvas.saveAs());
 
@@ -139,6 +163,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
         MenuItem publish = fileSubMenu.addItem("Publish");
         publish.setCheckable(true);
         publish.setChecked(false);
+
         MenuItem suppress = fileSubMenu.addItem("Suppress");
         suppress.setCheckable(true);
         suppress.setChecked(false);
@@ -158,7 +183,10 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
 
         fileSubMenu.add(new Hr());
 
-        MenuItem close = fileSubMenu.addItem("Close");
+        MenuItem manage = fileSubMenu.addItem("Manage");
+        manage.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> {
+           this.manageFunction.open();
+        });
 
         Div div = new Div();
         div.setId("canvas-menu");
@@ -287,14 +315,14 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
     }
 
     protected void initBase() {
-        this.designerCanvas = new DesignerCanvas(this.saveFunction, this.saveAsFunction);
+        this.designerCanvas = new DesignerCanvas(this.saveFunction, this.saveAsFunction, "canvas-wrapper");
         this.designerCanvas.setSizeUndefined();
 
         DropTarget<DesignerCanvas> dropTarget = DropTarget.create(this.designerCanvas);
 
         dropTarget.addDropListener(event -> {
             // move the dragged component to inside the drop target component
-            event.getDragSourceComponent().ifPresent(action -> this.addItemToCanvas((DesignerPalletImageItem)action));
+            event.getDragSourceComponent().ifPresent(action -> ((DesignerPalletImageItem)action).executeCanvasAddAction());
         });
 
         paintButton = new ColorPicker();
@@ -305,11 +333,10 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
     }
 
     public void addItemToCanvas(DesignerPalletImageItem item) {
-        item.executeCanvasAddAction();
         designerCanvas.addPalletItem(item);
         switch(item.getDesignerPalletItemType()) {
             case ICON:
-                designerCanvas.addIcon(item.getIdentifier(),
+                designerCanvas.addIcon(item.getIdentifier().toString(),
                     item.getSrc(), item.getItemHeight(),
                     item.getItemWidth());
                 break;
@@ -332,7 +359,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
     }
 
     public void addLabelToItem(DesignerPalletImageItem item, String label) {
-        designerCanvas.addLabelToFigure(item.getIdentifier(), label);
+        designerCanvas.addLabelToFigure(item.getIdentifier().toString(), label);
     }
 
     private Image getDivider() {
@@ -360,7 +387,16 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver
         }
 
         this.paintButton.attachSpectrum();
-//        this.initBase();
+    }
+
+    @Override
+    public void beforeLeave(BeforeLeaveEvent beforeLeaveEvent) {
+        if(!this.designerCanvas.isSaved()) {
+            BeforeLeaveEvent.ContinueNavigationAction action = beforeLeaveEvent.postpone();
+
+            SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndNavigateAction(action));
+            savePromptDialog.open();
+        }
     }
 
     @Override

@@ -23,7 +23,6 @@ public abstract class DesignerPalletImageItem extends Image implements DesignerP
      */
     public DesignerPalletImageItem(String imageSrc, DesignerPalletItemType designerPalletItemType, CanvasAddAction canvasAddAction, int itemWidth, int itemHeight) {
         super(imageSrc, "");
-        this.identifier = UUID.randomUUID().toString();
         this.designerPalletItemType = designerPalletItemType;
         this.canvasAddAction = canvasAddAction;
         this.itemWidth = itemWidth;
@@ -41,7 +40,6 @@ public abstract class DesignerPalletImageItem extends Image implements DesignerP
      */
     public DesignerPalletImageItem(StreamResource streamResource, DesignerPalletItemType designerPalletItemType, CanvasAddAction canvasAddAction, int itemWidth, int itemHeight) {
         super(streamResource, "");
-        this.identifier = UUID.randomUUID().toString();
         this.designerPalletItemType = designerPalletItemType;
         this.canvasAddAction = canvasAddAction;
         this.itemWidth = itemWidth;
@@ -58,8 +56,13 @@ public abstract class DesignerPalletImageItem extends Image implements DesignerP
         return designerPalletItemType;
     }
 
-    public String getIdentifier() {
-        return identifier;
+    public DesignerItemIdentifier getIdentifier() {
+        return DesignerItemIdentifier.getIdentifier(identifier);
+    }
+
+    @Override
+    public void setIdentifier(DesignerItemIdentifier identifier) {
+        this.identifier = identifier.toString();
     }
 
     public int getItemWidth() {

@@ -11,6 +11,19 @@ div#canvas-wrapper {
     background-color: #FFFFFF;
 }
 
+div#canvas-viewport {
+    border:1px solid #E0E0E0;
+    padding: 0px;
+    margin: 0px;
+    position: absolute;
+    top: 160px;
+    right: 0px;
+    left: 0px;
+    bottom: 0px;
+    overflow: scroll;
+    background-color: #FFFFFF;
+}
+
 div#canvas-palette {
     /*border:1px solid #E0E0E0;*/
     padding: 0px;
