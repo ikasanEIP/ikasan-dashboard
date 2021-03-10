@@ -2,7 +2,10 @@ package org.ikasan.dashboard.ui.visualisation.component;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -18,6 +21,12 @@ import org.ikasan.dashboard.ui.visualisation.adapter.service.BusinessStreamVisjs
 import org.ikasan.dashboard.ui.visualisation.component.util.SearchFoundStatus;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.BusinessStream;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
+import org.ikasan.designer.Designer;
+import org.ikasan.designer.DesignerCanvas;
+import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
+import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
+import org.ikasan.designer.event.CanvasItemRightClickEvent;
+import org.ikasan.designer.event.CanvasItemRightClickEventListener;
 import org.ikasan.rest.client.ConfigurationRestServiceImpl;
 import org.ikasan.rest.client.TriggerRestServiceImpl;
 import org.ikasan.rest.client.*;
@@ -53,9 +62,10 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 
-public class BusinessStreamVisualisation extends VerticalLayout implements BeforeEnterObserver {
+public class BusinessStreamVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener, CanvasItemDoubleClickEventListener {
     private Logger logger = LoggerFactory.getLogger(BusinessStreamVisualisation.class);
     private NetworkDiagram networkDiagram;
+    private DesignerCanvas designerCanvas;
 
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService;
 
@@ -166,31 +176,32 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
     public void createBusinessStreamGraphGraph(BusinessStreamMetaData businessStreamMetaData) throws IOException {
         BusinessStreamVisjsAdapter adapter = new BusinessStreamVisjsAdapter();
 
-        this.businessStream = adapter.toBusinessStreamGraph(businessStreamMetaData);
+//        this.businessStream = adapter.toBusinessStreamGraph(businessStreamMetaData);
+//
+//        nodes = new ArrayList<>();
+//        nodes.addAll(businessStream.getFlows());
+//        nodes.addAll(businessStream.getDestinations());
+//        nodes.addAll(businessStream.getIntegratedSystems());
+//
+//        flows = new ArrayList<>();
+//        flows.addAll(businessStream.getFlows());
 
-        nodes = new ArrayList<>();
-        nodes.addAll(businessStream.getFlows());
-        nodes.addAll(businessStream.getDestinations());
-        nodes.addAll(businessStream.getIntegratedSystems());
-
-        flows = new ArrayList<>();
-        flows.addAll(businessStream.getFlows());
-
-        if (this.networkDiagram != null) {
-            this.remove(networkDiagram);
+        if (this.designerCanvas != null) {
+            this.remove(designerCanvas);
         }
 
-        this.populateFlowMap(businessStream.getFlows());
+//        this.populateFlowMap(businessStream.getFlows());
 
-        updateNetworkDiagram(nodes, businessStream.getEdges());
+//        updateNetworkDiagram(nodes, businessStream.getEdges());
 
-//        businessStream.getBoundaries()
-//            .forEach(boundary -> this.networkDiagram.drawBoundary(boundary.getX(),
-//                boundary.getY(), boundary.getW(), boundary.getH(), boundary.getLabel(), boundary.getColour()));
-//
-//        this.networkDiagram.scale(0.8);
+        this.designerCanvas = new DesignerCanvas("canvas-viewport");
+        this.designerCanvas.setReadonly(true);
+        this.designerCanvas.setCanvasJson(businessStreamMetaData.getJson());
+        this.designerCanvas.importJson();
+        this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
+        this.designerCanvas.addCanvasItemRightClickEventListener(this);
 
-        this.add(networkDiagram);
+        this.add(designerCanvas);
     }
 
     /**
@@ -292,7 +303,6 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
             }
         });
 
-//        this.networkDiagram.diagramFit();
 
     }
 
@@ -490,5 +500,18 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
     public BusinessStream getBusinessStream() {
         return this.businessStream;
+    }
+
+    @Override
+    public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
+        Dialog dialog = new Dialog();
+
+        dialog.add(new H1("Double click!"), new Text(canvasItemDoubleClickEvent.getFigure().toString()));
+        dialog.open();
+    }
+
+    @Override
+    public void rightClickEvent(CanvasItemRightClickEvent canvasItemRightClickEvent) {
+
     }
 }

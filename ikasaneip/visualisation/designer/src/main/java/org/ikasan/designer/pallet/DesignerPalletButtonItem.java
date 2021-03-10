@@ -29,7 +29,12 @@ public class DesignerPalletButtonItem extends Button implements DesignerPalletIt
         return designerPalletItemType;
     }
 
-    public String getIdentifier() {
+    public DesignerItemIdentifier getIdentifier() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setIdentifier(DesignerItemIdentifier identifier) {
         throw new UnsupportedOperationException();
     }
 

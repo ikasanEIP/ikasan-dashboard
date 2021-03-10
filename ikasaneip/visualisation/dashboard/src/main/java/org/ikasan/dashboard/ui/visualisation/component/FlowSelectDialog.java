@@ -53,12 +53,9 @@ public class FlowSelectDialog extends AbstractCloseableResizableDialog {
 
         this.flowsGrid.init();
 
-        super.content.removeClassName("dialog-content");
-        super.content.setAlignItems(FlexComponent.Alignment.START);
-
         super.showResize(false);
 
-        this.add(div);
+        super.content.add(div);
         this.setHeight("550px");
         this.setWidth("700px");
     }

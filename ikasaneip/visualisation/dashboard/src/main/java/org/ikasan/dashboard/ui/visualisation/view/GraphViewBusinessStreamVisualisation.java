@@ -182,8 +182,8 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
         businessStreamVisualisation.createBusinessStreamGraphGraph(businessStreamMetaData);
 
         this.businessStreamLabel.setText(name);
-        this.businessStreamStatusPanel.setBusinessStream((org.ikasan.business.stream.metadata.model.BusinessStream)
-            businessStreamMetaData.getBusinessStream());
+//        this.businessStreamStatusPanel.setBusinessStream((org.ikasan.business.stream.metadata.model.BusinessStream)
+//            businessStreamMetaData.getBusinessStream());
         this.businessStreamStatusPanel.setBusinessStreamVisualisation(businessStreamVisualisation);
 
         this.add(businessStreamVisualisation);

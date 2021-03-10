@@ -22,11 +22,14 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
+import org.ikasan.dashboard.ui.visualisation.actions.BusinessStreamManageFunction;
 import org.ikasan.dashboard.ui.visualisation.actions.BusinessStreamOpenFunction;
 import org.ikasan.dashboard.ui.visualisation.actions.BusinessStreamSaveAsFunction;
 import org.ikasan.dashboard.ui.visualisation.actions.BusinessStreamSaveFunction;
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamIntegratedSystemUploadDialog;
 import org.ikasan.dashboard.ui.visualisation.component.FlowSelectDialog;
+import org.ikasan.dashboard.ui.visualisation.component.MessageChannelNameDialog;
+import org.ikasan.dashboard.ui.visualisation.util.BusinessStreamItemTypes;
 import org.ikasan.designer.Designer;
 import org.ikasan.designer.ItemPallet;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
@@ -55,7 +58,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.UUID;
 
 
 @Route(value = "designer", layout = IkasanAppLayout.class)
@@ -104,7 +107,9 @@ import java.util.List;
         this.integratedSystemPalette = this.createIntegratedSystemsPalette();
 
         businessStreamDesigner = new Designer(new BusinessStreamOpenFunction(this.businessStreamMetaDataService, this.integratedSystems)
-            ,new BusinessStreamSaveFunction(this.businessStreamMetaDataService), new BusinessStreamSaveAsFunction(this.businessStreamMetaDataService));
+            ,new BusinessStreamSaveFunction(this.businessStreamMetaDataService), new BusinessStreamSaveAsFunction(this.businessStreamMetaDataService),
+            new BusinessStreamManageFunction(this.businessStreamMetaDataService));
+
         businessStreamDesigner.addCanvasItemRightClickEventListener(this);
         businessStreamDesigner.addCanvasItemDoubleClickEventListener(this);
         businessStreamDesigner.setSizeFull();
@@ -124,8 +129,14 @@ import java.util.List;
 
             dialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent -> {
                 if(!dialogOpenedChangeEvent.isOpened() && dialog.getFlow() != null) {
+                    designerPalletItem.setIdentifier(new DesignerItemIdentifier(BusinessStreamItemTypes.FLOW.name(),
+                        dialog.getFlow().getModuleName() + "." + dialog.getFlow().getFlowName(), UUID.randomUUID().toString()));
+
+                    this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
+
                     businessStreamDesigner.addLabelToItem(designerPalletItem
                         , dialog.getFlow().getModuleName() + "." + dialog.getFlow().getFlowName());
+
                 }
             });
 
@@ -133,7 +144,7 @@ import java.util.List;
         flowImage.setWidth("30px");
         flowImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
             if(imageClickEvent.getClickCount() == 2) {
-                this.businessStreamDesigner.addItemToCanvas(flowImage);
+                flowImage.executeCanvasAddAction();
             }
         });
         DragSource.create(flowImage);
@@ -142,12 +153,26 @@ import java.util.List;
             , TooltipPosition.RIGHT, TooltipAlignment.RIGHT);
 
         DesignerPalletImageItem channelImage = new DesignerPalletIconImageItem("frontend/images/message-channel.png", designerPalletItem -> {
+            MessageChannelNameDialog messageChannelNameDialog =  new MessageChannelNameDialog();
+            messageChannelNameDialog.open();
+
+            messageChannelNameDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent -> {
+                if(!dialogOpenedChangeEvent.isOpened() && messageChannelNameDialog.isOkPressed()) {
+                    designerPalletItem.setIdentifier(new DesignerItemIdentifier(BusinessStreamItemTypes.MESSAGE_CHANNEL.name(),
+                        messageChannelNameDialog.getMessageChannelName(), UUID.randomUUID().toString()));
+
+                    this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
+
+                    businessStreamDesigner.addLabelToItem(designerPalletItem, messageChannelNameDialog.getMessageChannelName());
+
+                }
+            });
 
         }, 95, 63);
         channelImage.setWidth("30px");
         channelImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
             if(imageClickEvent.getClickCount() == 2) {
-                this.businessStreamDesigner.addItemToCanvas(channelImage);
+                channelImage.executeCanvasAddAction();
             }
         });
         DragSource.create(channelImage);

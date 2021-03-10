@@ -9,6 +9,8 @@ import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
@@ -36,7 +38,7 @@ import java.util.function.Function;
 @SuppressWarnings("serial")
 @Tag("div")
 @StyleSheet("./org/ikasan/draw2d/designer.css")
-public class DesignerCanvas extends VerticalLayout implements HasSize {
+public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnterObserver {
 
     Logger logger = LoggerFactory.getLogger(DesignerCanvas.class);
 
@@ -54,8 +56,12 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
 
     private boolean saved = true;
 
-    public DesignerCanvas(SaveFunction saveFunction, SaveAsFunction saveAsFunction) {
+    private String name;
+
+    public DesignerCanvas(String name) {
         super();
+        this.name = name;
+
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery.js");
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery-ui.js");
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/draw2d.js");
@@ -67,9 +73,6 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/Triangle.js");
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/NoDecorator.js");
 
-        this.saveFunction = saveFunction;
-        this.saveAsFunction = saveAsFunction;
-
         // Dont transfer empty options.
         mapper.setSerializationInclusion(Include.NON_EMPTY);
         // Dont transfer getter and setter
@@ -79,7 +82,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
         // remains utf8 escaped chars
         mapper.configure(Feature.ESCAPE_NON_ASCII, true);
 
-        this.setId("canvas-wrapper");
+        this.setId(name);
 
         ContextMenu contextMenu = new ContextMenu();
         contextMenu.setTarget(this);
@@ -90,13 +93,19 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
         });
     }
 
+    public DesignerCanvas(SaveFunction saveFunction, SaveAsFunction saveAsFunction, String name) {
+        this(name);
+        this.saveFunction = saveFunction;
+        this.saveAsFunction = saveAsFunction;
+    }
+
     private void initConnector() {
         getUI()
             .orElseThrow(() -> new IllegalStateException(
                 "Connector can only be initialized for an attached Designer"))
             .getPage()
-            .executeJs("window.Vaadin.Flow.designerConnector.initLazy($0)",
-                getElement());
+            .executeJs("window.Vaadin.Flow.designerConnector.initLazy($0, $1)",
+                getElement(), this.name);
     }
 
     @Override
@@ -259,7 +268,6 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
     public void setReadonly(boolean readonly) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setReadOnly", readonly));
-        this.exportJson();
     }
 
     public void rotateSelected(int angle) {
@@ -274,7 +282,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
     }
 
     public void addPalletItem(DesignerPalletImageItem designerPalletImageItem) {
-        this.designerPalletItemMap.put(designerPalletImageItem.getIdentifier(), designerPalletImageItem);
+        this.designerPalletItemMap.put(designerPalletImageItem.getIdentifier().toString(), designerPalletImageItem);
     }
 
     public void addCanvasItemRightClickEventListener(CanvasItemRightClickEventListener listener) {
@@ -350,7 +358,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
 
     public void importJson(){
         if(this.canvasJson != null) {
-
+            this.saved = true;
             getElement().callJsFunction("$connector.importJson", this.canvasJson);
         }
     }
@@ -387,7 +395,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
 
     public void clear(){
         getElement().callJsFunction("$connector.clear");
-        this.saved = false;
+        this.saved = true;
     }
 
     public void setCanvasJson(String canvasJson) {
@@ -396,5 +404,10 @@ public class DesignerCanvas extends VerticalLayout implements HasSize {
 
     public boolean isSaved() {
         return saved;
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        this.saved = true;
     }
 }

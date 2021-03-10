@@ -1,21 +1,32 @@
 package org.ikasan.dashboard.ui.visualisation.component;
 
+import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.server.StreamResource;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
+import org.ikasan.dashboard.ui.general.component.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.general.component.TableButton;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.component.filter.BusinessStreamSearchFilter;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
+import org.vaadin.olli.FileDownloadWrapper;
 
-public class BusinessStreamOpenDialog extends AbstractCloseableResizableDialog {
+import java.io.ByteArrayInputStream;
+
+public class BusinessStreamManageDialog extends AbstractCloseableResizableDialog {
 
     private BusinessStreamFilteringGrid businessStreamGrid;
 
@@ -24,7 +35,7 @@ public class BusinessStreamOpenDialog extends AbstractCloseableResizableDialog {
 
     private BusinessStreamMetaData businessStreamMetaData;
 
-    public BusinessStreamOpenDialog(BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService) {
+    public BusinessStreamManageDialog(BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService) {
         this.businessStreamMetaDataService = businessStreamMetaDataService;
         createGrid();
 
@@ -68,6 +79,58 @@ public class BusinessStreamOpenDialog extends AbstractCloseableResizableDialog {
             .withProperty("description", BusinessStreamMetaData::getDescription)).setHeader(getTranslation("table-header.business-stream-description", UI.getCurrent().getLocale()))
             .setKey("description")
             .setFlexGrow(32);
+        businessStreamGrid.addColumn(new ComponentRenderer<>(businessStreamMetaData->
+        {
+            Button editButton = new TableButton(VaadinIcon.EDIT.create());
+            editButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
+            {
+                BusinessStreamUploadDialog uploadDialog = new  BusinessStreamUploadDialog(businessStreamMetaData, this.businessStreamMetaDataService);
+                uploadDialog.open();
+
+            });
+
+            ComponentSecurityVisibility.applySecurity(editButton, SecurityConstants.PLATORM_CONFIGURATON_ADMIN,
+                SecurityConstants.PLATORM_CONFIGURATON_WRITE, SecurityConstants.ALL_AUTHORITY);
+
+            VerticalLayout layout = new VerticalLayout();
+            layout.setSizeFull();
+            layout.add(editButton);
+            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, editButton);
+            return layout;
+        })).setWidth("30px");
+        businessStreamGrid.addColumn(new ComponentRenderer<>(businessStreamMetaData->
+        {
+            Button downloadButton = new TableButton(VaadinIcon.DOWNLOAD.create());
+            StreamResource streamResource = new StreamResource(businessStreamMetaData.getName().concat(".json")
+                , () -> new ByteArrayInputStream(businessStreamMetaData.getJson().getBytes()));
+
+            FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
+            buttonWrapper.wrapComponent(downloadButton);
+
+            VerticalLayout layout = new VerticalLayout();
+            layout.setSizeFull();
+            layout.add(buttonWrapper);
+            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonWrapper);
+            return layout;
+        })).setWidth("30px");
+        businessStreamGrid.addColumn(new ComponentRenderer<>(businessStreamMetaData->
+        {
+            Button deleteButton = new TableButton(VaadinIcon.TRASH.create());
+            deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
+            {
+                this.businessStreamMetaDataService.delete(businessStreamMetaData.getId());
+                this.businessStreamGrid.getDataProvider().refreshAll();
+            });
+
+            ComponentSecurityVisibility.applySecurity(deleteButton, SecurityConstants.PLATORM_CONFIGURATON_ADMIN,
+                SecurityConstants.PLATORM_CONFIGURATON_WRITE, SecurityConstants.ALL_AUTHORITY);
+
+            VerticalLayout layout = new VerticalLayout();
+            layout.setSizeFull();
+            layout.add(deleteButton);
+            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, deleteButton);
+            return layout;
+        })).setWidth("30px");
 
         businessStreamGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<BusinessStreamMetaData>>) doubleClickEvent -> {
             this.businessStreamMetaData = doubleClickEvent.getItem();
