@@ -66,6 +66,7 @@ import org.vaadin.tabs.PagedTabs;
 import javax.annotation.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -595,15 +596,18 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver, Se
         if(this.businessStreamVisualisation != null) {
             BusinessStream businessStream = this.businessStreamVisualisation.getBusinessStream();
 
-            List<String> moduleNames = businessStream.getFlows()
-                .stream()
-                .map(flow -> flow.getModuleName())
-                .collect(Collectors.toList());
+            // todo sort out module and flows
+            List<String> moduleNames = new ArrayList<>();
+//                businessStream.getFlows()
+//                .stream()
+//                .map(flow -> flow.getModuleName())
+//                .collect(Collectors.toList());
 
-            List<String> flowNames = businessStream.getFlows()
-                .stream()
-                .map(flow -> flow.getFlowName())
-                .collect(Collectors.toList());
+            List<String> flowNames = new ArrayList<>();
+//                businessStream.getFlows()
+//                .stream()
+//                .map(flow -> flow.getFlowName())
+//                .collect(Collectors.toList());
 
             this.searchResults.search(startDate, endDate, searchTerm, entityTypes, negateQuery, moduleNames, flowNames);
         }

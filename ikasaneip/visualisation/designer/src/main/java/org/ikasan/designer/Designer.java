@@ -338,22 +338,22 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
             case ICON:
                 designerCanvas.addIcon(item.getIdentifier().toString(),
                     item.getSrc(), item.getItemHeight(),
-                    item.getItemWidth());
+                    item.getItemWidth(), false);
                 break;
             case RECTANGLE:
-                designerCanvas.addBoundary(100, 300);
+                designerCanvas.addBoundary(item.getItemHeight(), item.getItemWidth());
                 break;
             case TRIANGLE:
-                designerCanvas.addTriangleBoundary(300, 300);
+                designerCanvas.addTriangleBoundary(item.getItemHeight(), item.getItemWidth());
                 break;
             case OVAL:
-                designerCanvas.addOval(300, 300);
+                designerCanvas.addOval(item.getItemHeight(),item.getItemWidth());
                 break;
             case CIRCLE:
-                designerCanvas.addCircle();
+                designerCanvas.addCircle(item.getItemHeight());
                 break;
             case LABEL:
-                designerCanvas.addLabel("Click me", 100, 100);
+                designerCanvas.addLabel("Double click me to edit!");
                 break;
         }
     }

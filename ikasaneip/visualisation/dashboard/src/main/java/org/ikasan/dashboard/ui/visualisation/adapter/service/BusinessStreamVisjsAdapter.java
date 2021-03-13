@@ -89,7 +89,7 @@ public class BusinessStreamVisjsAdapter
      */
     private Flow getFlow(org.ikasan.business.stream.metadata.model.Flow flow)
     {
-        Flow f = new Flow(flow.getId(), flow.getModuleName(), flow.getFlowName(), flow.getX(), flow.getY());
+        Flow f = new Flow(flow.getId(), flow.getModuleName(), flow.getFlowName(), flow.getX(), flow.getY(), 0, 0);
         if(flow.getCorrelator() != null)
         {
             if(flow.getCorrelator().getType().equals("xpath"))

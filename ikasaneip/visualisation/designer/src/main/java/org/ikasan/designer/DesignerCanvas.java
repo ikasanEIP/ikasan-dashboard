@@ -119,15 +119,34 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         super.onDetach(detachEvent);
     }
 
-    public void addIcon(String identifier, String image, double h, double w) {
+    public void addIcon(String identifier, String image, double h, double w, boolean isClickable) {
         runBeforeClientResponse(
-            ui -> getElement().callJsFunction("$connector.addIcon", identifier, image, h, w));
+            ui -> getElement().callJsFunction("$connector.addIconNoCoordinates", identifier, image, h, w, isClickable));
         this.saved = false;
     }
 
+    public void addIcon(String identifier, String image, double x, double y, double h, double w, boolean showPorts, boolean isClickable) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.addIcon", identifier, image, x, y, h, w, showPorts, isClickable));
+        this.saved = false;
+    }
+
+    public void manageClickableItems() {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.manageClickableItems"));
+        this.saved = false;
+    }
+
+
     public void addBoundary(double h, double w) {
         runBeforeClientResponse(
-            ui -> getElement().callJsFunction("$connector.addBoundary", h, w));
+            ui -> getElement().callJsFunction("$connector.addBoundarySimple", h, w));
+        this.saved = false;
+    }
+
+    public void addBoundary(double x, double y, double h, double w, String colour) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.addBoundary", x, y, h, w, colour));
         this.saved = false;
     }
 
@@ -143,15 +162,15 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.saved = false;
     }
 
-    public void addCircle() {
+    public void addCircle(double diameter) {
         runBeforeClientResponse(
-            ui -> getElement().callJsFunction("$connector.addCircle"));
+            ui -> getElement().callJsFunction("$connector.addCircle", diameter));
         this.saved = false;
     }
 
-    public void addLabel(String label, int x, int y) {
+    public void addLabel(String label) {
         runBeforeClientResponse(
-            ui -> getElement().callJsFunction("$connector.addLabel", label, x, y));
+            ui -> getElement().callJsFunction("$connector.addLabel", label));
         this.saved = false;
     }
 
@@ -266,6 +285,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     }
 
     public void setReadonly(boolean readonly) {
+        this.importJson();
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setReadOnly", readonly));
     }
