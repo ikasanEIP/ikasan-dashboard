@@ -105,7 +105,7 @@
             return JSON.stringify(container);
         }
 
-        designer.$connector.addIcon = function (identifier, image, h, w) {
+        designer.$connector.addIconNoCoordinates = function (identifier, image, h, w, isClickable) {
             debugger;
             let icon = new draw2d.shape.basic.Image({id: identifier, path: image, width:w, height:h, x:x, y:y, keepAspectRatio: true});
             icon.createPort("input");
@@ -113,6 +113,28 @@
 
             let command = new draw2d.command.CommandAdd(_this, icon, x, y);
             _this.getCommandStack().execute(command);
+
+            if(isClickable === true) {
+                icon.shape.attr({"cursor": "pointer"});
+            }
+        }
+
+        designer.$connector.addIcon = function (identifier, image, x, y, h, w, showPorts, isClickable) {
+            debugger;
+            let icon = new draw2d.shape.basic.Image({id: identifier, path: image, width:w, height:h, x:x, y:y, keepAspectRatio: true});
+
+            if(showPorts === true) {
+                icon.createPort("input");
+                icon.createPort("output");
+
+            }
+
+            let command = new draw2d.command.CommandAdd(_this, icon, x, y);
+            _this.getCommandStack().execute(command);
+
+            if(isClickable === true) {
+                icon.shape.attr({"cursor": "pointer"});
+            }
         }
 
         designer.$connector.bringToFront = function () {
@@ -163,7 +185,7 @@
             });
         }
 
-        designer.$connector.addBoundary = function (h, w) {
+        designer.$connector.addBoundarySimple = function (h, w) {
             let boundary =  new draw2d.shape.basic.Rectangle({
                 bgColor:"rgba(255,255,255,0)",
                 x: x,
@@ -180,9 +202,31 @@
             _this.getCommandStack().execute(command);
         }
 
+        designer.$connector.addBoundary = function (x, y, h, w, colour) {
+            let boundary =  new draw2d.shape.basic.Rectangle({
+                bgColor:"rgba(255,255,255,0)",
+                color:colour,
+                x: x,
+                y: y,
+                width: w,
+                height: h,
+                radius: 10,
+                stroke: 3,
+            });
+
+            boundary.uninstallEditPolicy(new draw2d.policy.figure.RectangleSelectionFeedbackPolicy());
+            boundary.installEditPolicy(new RotateRectangleSelectionFeedbackPolicy());
+
+            let command = new draw2d.command.CommandAdd(_this, boundary, x, y);
+            _this.getCommandStack().execute(command);
+
+            boundary.toBack();
+        }
+
         designer.$connector.designer.on("dblclick", function(emitter, event){
             let figure = event.figure;
-            let figureLite = new FigureLite(figure.getId(), figure.x, figure.y, figure.getWidth(), figure.getHeight(), figure.NAME, figure.getPersistentAttributes());
+            let figureLite = new FigureLite(figure.getId(), figure.x, figure.y, figure.getWidth()
+                , figure.getHeight(), figure.NAME, figure.getPersistentAttributes());
             let element = document.getElementById(canvasName);
             element.$server.doubleClickEvent(JSON.stringify(figureLite));
         });
@@ -226,14 +270,14 @@
             _this.getCommandStack().execute(command);
         }
 
-        designer.$connector.addCircle = function () {
-            let circle =new draw2d.shape.basic.Circle({diameter:80, x:x, y:y, bgColor:"rgba(255,255,255,0)"});
+        designer.$connector.addCircle = function (d) {
+            let circle =new draw2d.shape.basic.Circle({diameter:d, x:x, y:y, bgColor:"rgba(255,255,255,0)"});
 
             let command = new draw2d.command.CommandAdd(_this, circle, x, y);
             _this.getCommandStack().execute(command);
         }
 
-        designer.$connector.addLabel = function (labelString, x, y) {
+        designer.$connector.addLabel = function (labelString) {
             let label = new draw2d.shape.basic.Label({
                 text: labelString,
                 color:"rgba(255,255,255,0)",
@@ -290,7 +334,7 @@
             if(_figure != null) {
 
                 let x = _figure.x - (_figure.width / 2);
-                let y = _figure.y + _figure.getHeight();
+                let y = _figure.y + _figure.getHeight() + 10;
                 let label = new draw2d.shape.basic.Label({
                     text: labelString,
                     color: "rgba(255,255,255,0)",
@@ -428,10 +472,67 @@
             reader.unmarshal(designer.$connector.designer, jsonDocument);
 
             _this.getFigures().each((i, figure)=>{
+                if(figure.NAME === 'draw2d.shape.basic.Image') {
+                    figure.setKeepAspectRatio(true);
+                    // We want to bring images to the front so that
+                    // they can be double clicked!
+                    figure.toFront();
+
+                    if(figure.id.startsWith("FLOW")) {
+
+                    }
+                }
+            });
+
+            let xCoords = [];
+            let yCoords = [];
+            designer.$connector.designer.getFigures().each(function(i,f){
+                let b = f.getBoundingBox();
+                xCoords.push(b.x, b.x+b.w);
+                yCoords.push(b.y, b.y+b.h);
+            });
+            debugger;
+
+            let minX   = Math.min.apply(Math, xCoords);
+            let minY   = Math.min.apply(Math, yCoords);
+            let width  = Math.max.apply(Math, xCoords)-minX;
+            let height = Math.max.apply(Math, yCoords)-minY;
+
+            let widthZoomFactor = width / 1300;
+            let heightZoomFactor = height / 750;
+
+            let zoomFactor = 0;
+
+            if(widthZoomFactor > heightZoomFactor) {
+                zoomFactor = widthZoomFactor;
+            }
+            else {
+                zoomFactor = heightZoomFactor;
+            }
+
+            if (zoomFactor < 1) {
+                zoomFactor = 1;
+            }
+
+            designer.$connector.designer.setZoom(zoomFactor)
+
+            if(zoomFactor > 1) {
+                designer.$connector.designer.scrollTo(minY/zoomFactor - 20, minX/zoomFactor - 20);
+            }
+        }
+
+        designer.$connector.manageClickableItems = function () {
+            debugger
+            _this.getFigures().each((i, figure)=>{
                 debugger;
                 if(figure.NAME === 'draw2d.shape.basic.Image') {
-                    debugger;
-                    figure.setKeepAspectRatio(true);
+                    // We want to bring images to the front so that
+                    // they can be double clicked!
+                    figure.toFront();
+
+                    if(figure.id.startsWith("FLOW")) {
+                        figure.shape.attr({"cursor": "pointer"});
+                    }
                 }
             });
         }

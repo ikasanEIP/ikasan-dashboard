@@ -187,7 +187,9 @@ import java.util.UUID;
 
     private FlexLayout createIntegratedSystemsPalette() {
         DesignerPalletImageItem computerImage = new DesignerPalletIconImageItem("frontend/images/computer.png", designerPalletItem -> {
-
+            designerPalletItem.setIdentifier(new DesignerItemIdentifier(BusinessStreamItemTypes.INTEGRATED_SYSTEM.name(),
+                DesignerItemIdentifier.NOT_APPLICABLE, UUID.randomUUID().toString()));
+            this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
         }, 62, 62);
 
         computerImage.setWidth("35px");
@@ -230,7 +232,8 @@ import java.util.UUID;
                 dialogOpenedChangeEvent -> {
                 if(!dialogOpenedChangeEvent.isOpened()) {
                     if(uploadDialog.isUploaded()) {
-                        this.addItemToLayout(this.getImageItem(uploadDialog.getFilePath()), this.integratedSystemPalette);
+                        this.addItemToLayout(this.getImageItem(uploadDialog.getFilePath(), BusinessStreamItemTypes.INTEGRATED_SYSTEM.name())
+                            , this.integratedSystemPalette);
                     }
                 }
             });
@@ -245,9 +248,7 @@ import java.util.UUID;
     private void addItemToLayout(DesignerPalletImageItem item, FlexLayout layout) {
         item.getComponent().setWidth("35px");
         item.getComponent().addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
-            if(imageClickEvent.getClickCount() == 2) {
-                this.businessStreamDesigner.addItemToCanvas(item);
-            }
+            item.executeCanvasAddAction();
         });
         DragSource.create(item.getComponent());
         item.getComponent().getElement().getStyle().set("margin-right", "15px");
@@ -262,55 +263,67 @@ import java.util.UUID;
     private com.vaadin.flow.component.Component createBoundariesPalette(){
 
         DesignerPalletImageItem rectangleImage = new DesignerPalletRectangleImageItem("frontend/images/rectangle.png", designerPalletItem -> {
-
+            designerPalletItem.setIdentifier(new DesignerItemIdentifier(DesignerPalletItemType.RECTANGLE.name(),
+                DesignerItemIdentifier.NOT_APPLICABLE, UUID.randomUUID().toString()));
+            this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
         }, 100, 100);
         rectangleImage.setWidth("30px");
         DragSource.create(rectangleImage);
         rectangleImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
             if(imageClickEvent.getClickCount() == 2) {
-                this.businessStreamDesigner.addItemToCanvas(rectangleImage);
+                rectangleImage.executeCanvasAddAction();
             }
         });
 
         DesignerPalletImageItem triangleImage = new DesignerPalletTriangleImageItem("frontend/images/triangle.png", designerPalletItem -> {
-
+            designerPalletItem.setIdentifier(new DesignerItemIdentifier(DesignerPalletItemType.TRIANGLE.name(),
+                DesignerItemIdentifier.NOT_APPLICABLE, UUID.randomUUID().toString()));
+            this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
         }, 100, 100);
         triangleImage.setWidth("30px");
         DragSource.create(triangleImage);
         triangleImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
             if(imageClickEvent.getClickCount() == 2) {
-                this.businessStreamDesigner.addItemToCanvas(triangleImage);
+                triangleImage.executeCanvasAddAction();
             }
         });
 
         DesignerPalletImageItem ovalImage = new DesignerPalletOvalImageItem("frontend/images/oval.png", designerPalletItem -> {
-        }, 100, 100);
+            designerPalletItem.setIdentifier(new DesignerItemIdentifier(DesignerPalletItemType.OVAL.name(),
+                DesignerItemIdentifier.NOT_APPLICABLE, UUID.randomUUID().toString()));
+            this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
+        }, 200, 100);
         ovalImage.setWidth("30px");
         DragSource.create(ovalImage);
         ovalImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
             if(imageClickEvent.getClickCount() == 2) {
-                this.businessStreamDesigner.addItemToCanvas(ovalImage);
+                ovalImage.executeCanvasAddAction();
             }
         });
 
         DesignerPalletImageItem circleImage = new DesignerPalletCircleImageItem("frontend/images/circle.png", designerPalletItem -> {
-
-        }, 100, 100);
+            designerPalletItem.setIdentifier(new DesignerItemIdentifier(DesignerPalletItemType.CIRCLE.name(),
+                DesignerItemIdentifier.NOT_APPLICABLE, UUID.randomUUID().toString()));
+            this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
+        }, 200, 200);
         circleImage.setWidth("30px");
         DragSource.create(circleImage);
         circleImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
             if(imageClickEvent.getClickCount() == 2) {
-                this.businessStreamDesigner.addItemToCanvas(circleImage);
+                circleImage.executeCanvasAddAction();
             }
         });
 
         DesignerPalletImageItem labelImage = new DesignerPalletLabelImageItem("frontend/images/text.png", designerPalletItem   -> {
-        }, 100, 100);
+            designerPalletItem.setIdentifier(new DesignerItemIdentifier(DesignerPalletItemType.LABEL.name(),
+                DesignerItemIdentifier.NOT_APPLICABLE, UUID.randomUUID().toString()));
+            this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
+        }, 200, 50);
         labelImage.setWidth("30px");
         DragSource.create(labelImage);
         labelImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
             if(imageClickEvent.getClickCount() == 2) {
-                this.businessStreamDesigner.addItemToCanvas(labelImage);
+                labelImage.executeCanvasAddAction();
             }
         });
 
@@ -325,12 +338,12 @@ import java.util.UUID;
         ArrayList<Image> images = new ArrayList<>();
 
         Files.list(Paths.get(this.integratedSystemsImagePath)).forEach(
-            file -> images.add(getImageItem(file)));
+            file -> images.add(getImageItem(file, BusinessStreamItemTypes.INTEGRATED_SYSTEM.name())));
 
         return images;
     }
 
-    private DesignerPalletImageItem getImageItem(Path file) {
+    private DesignerPalletImageItem getImageItem(Path file, String type) {
         int width = 0;
         int height = 0;
 
@@ -368,6 +381,9 @@ import java.util.UUID;
 
 
         DesignerPalletImageItem palletIconItem = new DesignerPalletIconImageItem(res, designerPalletItem -> {
+            designerPalletItem.setIdentifier(new DesignerItemIdentifier(type,
+                DesignerItemIdentifier.NOT_APPLICABLE, UUID.randomUUID().toString()));
+            this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
         }, width, height);
 
         return palletIconItem;

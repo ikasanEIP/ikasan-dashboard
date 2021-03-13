@@ -2,10 +2,9 @@ package org.ikasan.dashboard.ui.visualisation.component;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -21,18 +20,16 @@ import org.ikasan.dashboard.ui.visualisation.adapter.service.BusinessStreamVisjs
 import org.ikasan.dashboard.ui.visualisation.component.util.SearchFoundStatus;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.BusinessStream;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
-import org.ikasan.designer.Designer;
+import org.ikasan.dashboard.ui.visualisation.util.BusinessStreamItemTypes;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
-import org.ikasan.rest.client.ConfigurationRestServiceImpl;
-import org.ikasan.rest.client.TriggerRestServiceImpl;
-import org.ikasan.rest.client.*;
+import org.ikasan.designer.json.DesignerJsonHelper;
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.spec.error.reporting.ErrorReportingService;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.ConfigurationMetaDataService;
@@ -52,6 +49,7 @@ import org.ikasan.vaadin.visjs.network.options.edges.Arrows;
 import org.ikasan.vaadin.visjs.network.options.edges.EdgeColor;
 import org.ikasan.vaadin.visjs.network.options.edges.Edges;
 import org.ikasan.vaadin.visjs.network.options.physics.Physics;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -195,126 +193,127 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 //        updateNetworkDiagram(nodes, businessStream.getEdges());
 
         this.designerCanvas = new DesignerCanvas("canvas-viewport");
-        this.designerCanvas.setReadonly(true);
         this.designerCanvas.setCanvasJson(businessStreamMetaData.getJson());
         this.designerCanvas.importJson();
+        this.designerCanvas.manageClickableItems();
+        this.designerCanvas.setReadonly(true);
         this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
         this.designerCanvas.addCanvasItemRightClickEventListener(this);
+
+        this.populateFlowMap(businessStreamMetaData);
 
         this.add(designerCanvas);
     }
 
-    /**
-     * Method to update the network diagram with the node and edge lists.
-     *
-     * @param nodes a list containing all network nodes.
-     * @param edges a list containing all the network edges.
-     */
-    protected void updateNetworkDiagram(List<Node> nodes, List<Edge> edges) {
-        Physics physics = new Physics();
-        physics.setEnabled(false);
-
-        networkDiagram = new NetworkDiagram
-            (Options.builder()
-                .withAutoResize(false)
-                .withPhysics(physics)
-                .withInteraction(Interaction.builder().withDragNodes(false).build())
-                .withEdges(
-                    Edges.builder()
-                        .withArrows(new Arrows(new ArrowHead()))
-                        .withColor(EdgeColor.builder()
-                            .withColor("#000000")
-                            .build())
-                        .withDashes(false)
-                        .build())
-                .build());
-
-        networkDiagram.setSizeFull();
-
-        networkDiagram.setNodes(nodes);
-        networkDiagram.setEdges(edges);
-
-        networkDiagram.addDoubleClickListener(doubleClickEvent ->
-        {
-            logger.debug(doubleClickEvent.getParams().toString());
-
-            JsonArray nodesArray = doubleClickEvent.getParams().getArray("nodes");
-
-            if (nodesArray.length() > 0) {
-                String nodeId = nodesArray.get(0).asString();
-
-                logger.debug(nodeId);
-                logger.debug("Flow + " + this.flowMap.get(nodeId));
-
-                if (this.flowMap.get(nodeId) != null) {
-                    ModuleMetaData moduleMetaData = this.moduleMetaDataService
-                        .findById(nodeId.substring(0, nodeId.indexOf(".")));
-
-                    logger.debug("ModuleMetaData + " + moduleMetaData);
-
-                    FlowVisualisationDialog flowVisualisationDialog
-                        = new FlowVisualisationDialog(this.moduleControlRestService, this.configurationRestService,
-                        this.triggerRestService, this.configurationMetadataService, moduleMetaData
-                        , this.flowMap.get(nodeId), this.solrSearchService
-                        , this.stringSearchFoundStatusMap.get(nodeId), this.hospitalAuditService
-                        , this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService
-                        , this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert);
-
-                    flowVisualisationDialog.open();
-                }
-            } else {
-                JsonObject coordinates = doubleClickEvent.getParams().getObject("pointer").getObject("canvas");
-
-                this.flows.forEach(flow -> {
-                    SearchFoundStatus searchFoundStatus = this.stringSearchFoundStatusMap.get(flow.getId());
-                    if (flow.wiretapClickedOn(coordinates.getNumber("x"), coordinates.getNumber("y"))) {
-                        logger.debug("wiretap clicked: " + flow.getModuleName() + " " + flow.getFlowName());
-                        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
-                            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
-                        searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), "wiretap", false
-                            , flow.getModuleName(), flow.getFlowName());
-                        searchResultsDialog.open();
-                    }
-                    if (flow.errorClickedOn(coordinates.getNumber("x"), coordinates.getNumber("y"))) {
-                        logger.debug("error clicked: " + flow.getModuleName() + " " + flow.getFlowName());
-                        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
-                            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
-                        searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), "error", false
-                            , flow.getModuleName(), flow.getFlowName());
-                        searchResultsDialog.open();
-                    }
-                    if (flow.exclusionClickedOn(coordinates.getNumber("x"), coordinates.getNumber("y"))) {
-                        logger.debug("exclusion clicked: " + flow.getModuleName() + " " + flow.getFlowName());
-                        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
-                            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
-                        searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), "exclusion", false
-                            , flow.getModuleName(), flow.getFlowName());
-                        searchResultsDialog.open();
-                    }
-                    if (flow.replayClickedOn(coordinates.getNumber("x"), coordinates.getNumber("y"))) {
-                        logger.debug("replay clicked: " + flow.getModuleName() + " " + flow.getFlowName());
-                        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
-                            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
-                        searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), "replay", false
-                            , flow.getModuleName(), flow.getFlowName());
-                        searchResultsDialog.open();
-                    }
-                });
-            }
-        });
-
-
-    }
+//    /**
+//     * Method to update the network diagram with the node and edge lists.
+//     *
+//     * @param nodes a list containing all network nodes.
+//     * @param edges a list containing all the network edges.
+//     */
+//    protected void updateNetworkDiagram(List<Node> nodes, List<Edge> edges) {
+//        Physics physics = new Physics();
+//        physics.setEnabled(false);
+//
+//        networkDiagram = new NetworkDiagram
+//            (Options.builder()
+//                .withAutoResize(false)
+//                .withPhysics(physics)
+//                .withInteraction(Interaction.builder().withDragNodes(false).build())
+//                .withEdges(
+//                    Edges.builder()
+//                        .withArrows(new Arrows(new ArrowHead()))
+//                        .withColor(EdgeColor.builder()
+//                            .withColor("#000000")
+//                            .build())
+//                        .withDashes(false)
+//                        .build())
+//                .build());
+//
+//        networkDiagram.setSizeFull();
+//
+//        networkDiagram.setNodes(nodes);
+//        networkDiagram.setEdges(edges);
+//
+//        networkDiagram.addDoubleClickListener(doubleClickEvent ->
+//        {
+//            logger.debug(doubleClickEvent.getParams().toString());
+//
+//            JsonArray nodesArray = doubleClickEvent.getParams().getArray("nodes");
+//
+//            if (nodesArray.length() > 0) {
+//                String nodeId = nodesArray.get(0).asString();
+//
+//                logger.debug(nodeId);
+//                logger.debug("Flow + " + this.flowMap.get(nodeId));
+//
+//                if (this.flowMap.get(nodeId) != null) {
+//                    ModuleMetaData moduleMetaData = this.moduleMetaDataService
+//                        .findById(nodeId.substring(0, nodeId.indexOf(".")));
+//
+//                    logger.debug("ModuleMetaData + " + moduleMetaData);
+//
+//                    FlowVisualisationDialog flowVisualisationDialog
+//                        = new FlowVisualisationDialog(this.moduleControlRestService, this.configurationRestService,
+//                        this.triggerRestService, this.configurationMetadataService, moduleMetaData
+//                        , this.flowMap.get(nodeId), this.solrSearchService
+//                        , this.stringSearchFoundStatusMap.get(nodeId), this.hospitalAuditService
+//                        , this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService
+//                        , this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert);
+//
+//                    flowVisualisationDialog.open();
+//                }
+//            } else {
+//                JsonObject coordinates = doubleClickEvent.getParams().getObject("pointer").getObject("canvas");
+//
+//                this.flows.forEach(flow -> {
+//                    SearchFoundStatus searchFoundStatus = this.stringSearchFoundStatusMap.get(flow.getId());
+//                    if (flow.wiretapClickedOn(coordinates.getNumber("x"), coordinates.getNumber("y"))) {
+//                        logger.debug("wiretap clicked: " + flow.getModuleName() + " " + flow.getFlowName());
+//                        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
+//                            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
+//                        searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), "wiretap", false
+//                            , flow.getModuleName(), flow.getFlowName());
+//                        searchResultsDialog.open();
+//                    }
+//                    if (flow.errorClickedOn(coordinates.getNumber("x"), coordinates.getNumber("y"))) {
+//                        logger.debug("error clicked: " + flow.getModuleName() + " " + flow.getFlowName());
+//                        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
+//                            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
+//                        searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), "error", false
+//                            , flow.getModuleName(), flow.getFlowName());
+//                        searchResultsDialog.open();
+//                    }
+//                    if (flow.exclusionClickedOn(coordinates.getNumber("x"), coordinates.getNumber("y"))) {
+//                        logger.debug("exclusion clicked: " + flow.getModuleName() + " " + flow.getFlowName());
+//                        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
+//                            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
+//                        searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), "exclusion", false
+//                            , flow.getModuleName(), flow.getFlowName());
+//                        searchResultsDialog.open();
+//                    }
+//                    if (flow.replayClickedOn(coordinates.getNumber("x"), coordinates.getNumber("y"))) {
+//                        logger.debug("replay clicked: " + flow.getModuleName() + " " + flow.getFlowName());
+//                        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
+//                            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
+//                        searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), "replay", false
+//                            , flow.getModuleName(), flow.getFlowName());
+//                        searchResultsDialog.open();
+//                    }
+//                });
+//            }
+//        });
+//
+//
+//    }
 
     private void drawFlowStatus(FlowState state) {
         if (this.flowMap != null && flowMap.containsKey(state.getModuleName() + "." + state.getFlowName())) {
             Flow flow = flowMap.get(state.getModuleName() + "." + state.getFlowName());
-            this.networkDiagram.drawStatusBorder(flow.getX() - 40
-                , flow.getY() - 30, 80
-                , 60, state.getState().getStateColour());
-        }
 
-        this.networkDiagram.diagamRedraw();
+            this.designerCanvas.addBoundary(flow.getX() - 5
+                , flow.getY() - 5, flow.getHeight() + 10, flow.getWidth() + 10, state.getState().getStateColour());
+        }
     }
 
     public void search(List<String> entityTypes, String searchTerm, long startTime, long endTime) {
@@ -329,7 +328,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         HashMap<String, Boolean> exclusionMap = new HashMap<>();
         HashMap<String, Boolean> replayMap = new HashMap<>();
 
-        this.businessStream.getFlows().forEach(flow -> {
+        this.flowMap.values().forEach(flow -> {
             entityTypes.forEach(entityType -> {
                 IkasanSolrDocumentSearchResults results = this.solrSearchService.search(Set.of(flow.getModuleName()), Set.of(flow.getFlowName()), searchTerm, startTime
                     , endTime, 0, Arrays.asList(entityType), false, null, null);
@@ -372,26 +371,94 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         this.flows = (ArrayList<Flow>) this.flows.stream().map(flow -> {
             SearchFoundStatus searchFoundStatus = this.stringSearchFoundStatusMap.get(flow.getId());
 
+            int centreX = flow.getX() + (flow.getWidth() / 2);
             if(searchFoundStatus != null) {
+                int numFound = 0;
+
                 if (wiretapMap.get(flow.getId()) != null && wiretapMap.get(flow.getId())) {
                     flow.setWiretapFoundStatus(NodeFoundStatus.FOUND);
                     searchFoundStatus.setWiretapFound(true);
+
+                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.WIRETAP.name(), flow.getId(),
+                            UUID.randomUUID().toString()).toString(),"frontend/images/wiretap-service.png"
+                        , flow.getX()-20, flow.getY()-20, 35, 35, false, true);
+
+                    numFound++;
                 }
 
                 if (errorMap.get(flow.getId()) != null && errorMap.get(flow.getId())) {
                     flow.setErrorFoundStatus(NodeFoundStatus.FOUND);
                     searchFoundStatus.setErrorFound(true);
+//                    4
+//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.ERROR.name(), flow.getId(),
+//                            UUID.randomUUID().toString()).toString(),"frontend/images/error-service.png"
+//                        , centreX-85, flow.getY()-45, 35, 35, false, true);
+//
+//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.WIRETAP.name(), flow.getId(),
+//                            UUID.randomUUID().toString()).toString(),"frontend/images/wiretap-service.png"
+//                        , centreX-40, flow.getY()-45, 35, 35, false, true);
+//
+//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.EXCLUSION.name(), flow.getId(),
+//                            UUID.randomUUID().toString()).toString(),"frontend/images/hospital-service.png"
+//                        , centreX+5, flow.getY()-45, 35, 35, false, true);
+//
+//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.REPLAY.name(), flow.getId(),
+//                            UUID.randomUUID().toString()).toString(),"frontend/images/replay-service.png"
+//                        , centreX+50, flow.getY()-45, 35, 35, false, true);
+
+
+////                  3
+//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.WIRETAP.name(), flow.getId(),
+//                            UUID.randomUUID().toString()).toString(),"frontend/images/wiretap-service.png"
+//                        , centreX-62.5, flow.getY()-45, 35, 35, false, true);
+//
+//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.EXCLUSION.name(), flow.getId(),
+//                            UUID.randomUUID().toString()).toString(),"frontend/images/hospital-service.png"
+//                        , centreX-17.5, flow.getY()-45, 35, 35, false, true);
+//
+//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.REPLAY.name(), flow.getId(),
+//                            UUID.randomUUID().toString()).toString(),"frontend/images/replay-service.png"
+//                        , centreX+27.5, flow.getY()-45, 35, 35, false, true);
+
+//                  2
+//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.WIRETAP.name(), flow.getId(),
+//                            UUID.randomUUID().toString()).toString(),"frontend/images/wiretap-service.png"
+//                        , centreX-40, flow.getY()-45, 35, 35, false, true);
+//
+//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.EXCLUSION.name(), flow.getId(),
+//                            UUID.randomUUID().toString()).toString(),"frontend/images/hospital-service.png"
+//                        , centreX+5, flow.getY()-45, 35, 35, false, true);
+
+                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.EXCLUSION.name(), flow.getId(),
+                            UUID.randomUUID().toString()).toString(),"frontend/images/hospital-service.png"
+                        , centreX-17.5, flow.getY()-45, 35, 35, false, true);
+
+                    numFound++;
                 }
 
                 if (exclusionMap.get(flow.getId()) != null && exclusionMap.get(flow.getId())) {
                     flow.setExclusionFoundStatus(NodeFoundStatus.FOUND);
                     searchFoundStatus.setExclusionFound(true);
+
+                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.EXCLUSION.name(), flow.getId(),
+                            UUID.randomUUID().toString()).toString(),"frontend/images/hospital-service.png"
+                        , flow.getX()-20, flow.getY()-20, 35, 35, false, true);
+
+                    numFound++;
                 }
 
                 if (replayMap.get(flow.getId()) != null && replayMap.get(flow.getId())) {
                     flow.setReplayFoundStatus(NodeFoundStatus.FOUND);
                     searchFoundStatus.setReplayFound(true);
+
+                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.REPLAY.name(), flow.getId(),
+                            UUID.randomUUID().toString()).toString(),"frontend/images/replay-service.png"
+                        , flow.getX()-20, flow.getY()-20, 35, 35, false, true);
+
+                    numFound++;
                 }
+
+
 
                 this.stringSearchFoundStatusMap.put(flow.getModuleName() + flow.getFlowName()
                     , searchFoundStatus);
@@ -399,13 +466,6 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
             return flow;
         }).collect(Collectors.toList());
-
-        UI.getCurrent().access(() ->
-            networkDiagram.updateNodesStates((ArrayList<Node>) ((ArrayList<?>) this.flows)));
-        UI.getCurrent().access(() ->
-            this.networkDiagram.drawNodeFoundStatus());
-
-        this.networkDiagram.diagamRedraw();
     }
 
     @Override
@@ -414,43 +474,58 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
     }
 
     public void redraw() {
-        if (this.businessStream != null) {
-            nodes = new ArrayList<>();
-            nodes.addAll(businessStream.getFlows());
-            nodes.addAll(businessStream.getDestinations());
-            nodes.addAll(businessStream.getIntegratedSystems());
+        for (String key : this.flowMap.keySet()) {
+            if (key.contains(".")) {
+                ModuleMetaData module = this.moduleMetaDataService
+                    .findById(key.substring(0, key.indexOf(".")));
 
-            if (this.networkDiagram != null) {
-                this.remove(networkDiagram);
-            }
+                if (module != null) {
+                    FlowState flowState = FlowStateCache.instance().get(module, key.substring(key.indexOf(".") + 1));
 
-            this.populateFlowMap(businessStream.getFlows());
-
-            updateNetworkDiagram(nodes, businessStream.getEdges());
-
-//            businessStream.getBoundaries()
-//                .forEach(boundary -> this.networkDiagram.drawBoundary(boundary.getX(),
-//                    boundary.getY(), boundary.getW(), boundary.getH(), boundary.getLabel(), boundary.getColour()));
-//
-//            this.networkDiagram.scale(0.7);
-
-            for (String key : this.flowMap.keySet()) {
-                if (key.contains(".")) {
-                    ModuleMetaData module = this.moduleMetaDataService
-                        .findById(key.substring(0, key.indexOf(".")));
-
-                    if (module != null) {
-                        FlowState flowState = FlowStateCache.instance().get(module, key.substring(key.indexOf(".") + 1));
-
-                        if (flowState != null) {
-                            this.drawFlowStatus(flowState);
-                        }
+                    if (flowState != null) {
+                        this.drawFlowStatus(flowState);
                     }
                 }
             }
-
-            this.add(networkDiagram);
         }
+
+//        if (this.businessStream != null) {
+//            nodes = new ArrayList<>();
+//            nodes.addAll(businessStream.getFlows());
+//            nodes.addAll(businessStream.getDestinations());
+//            nodes.addAll(businessStream.getIntegratedSystems());
+//
+//            if (this.networkDiagram != null) {
+//                this.remove(networkDiagram);
+//            }
+//
+////            this.populateFlowMap(businessStream.getFlows());
+//
+//            updateNetworkDiagram(nodes, businessStream.getEdges());
+//
+////            businessStream.getBoundaries()
+////                .forEach(boundary -> this.networkDiagram.drawBoundary(boundary.getX(),
+////                    boundary.getY(), boundary.getW(), boundary.getH(), boundary.getLabel(), boundary.getColour()));
+////
+////            this.networkDiagram.scale(0.7);
+//
+//            for (String key : this.flowMap.keySet()) {
+//                if (key.contains(".")) {
+//                    ModuleMetaData module = this.moduleMetaDataService
+//                        .findById(key.substring(0, key.indexOf(".")));
+//
+//                    if (module != null) {
+//                        FlowState flowState = FlowStateCache.instance().get(module, key.substring(key.indexOf(".") + 1));
+//
+//                        if (flowState != null) {
+//                            this.drawFlowStatus(flowState);
+//                        }
+//                    }
+//                }
+//            }
+//
+//            this.add(networkDiagram);
+//        }
     }
 
     @Override
@@ -487,6 +562,29 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         });
     }
 
+    private void populateFlowMap(BusinessStreamMetaData businessStreamMetaData) {
+        List<JSONObject> flows = DesignerJsonHelper.getIdentifierTypeItems(BusinessStreamItemTypes.FLOW.name(),
+            businessStreamMetaData.getJson());
+
+        this.flowMap = new HashMap<>();
+        this.stringSearchFoundStatusMap = new HashMap<>();
+
+        flows.forEach(flowJson -> {
+            DesignerItemIdentifier identifier
+                = DesignerItemIdentifier.getIdentifier(flowJson.getString("id"));
+            Flow flow = new Flow(identifier.getName(), identifier.getName().substring(0, identifier.getName().indexOf(".")),
+                identifier.getName().substring(identifier.getName().indexOf(".") + 1),
+                flowJson.getNumber("x").intValue(), flowJson.getNumber("y").intValue(),
+                flowJson.getNumber("width").intValue(), flowJson.getNumber("height").intValue());
+
+            this.flowMap.put(flow.getId(), flow);
+            this.flows.add(flow);
+            this.stringSearchFoundStatusMap
+                .put(flow.getId(), new SearchFoundStatus());
+        });
+
+    }
+
     private void populateFlowMap(List<Flow> flows) {
         this.flowMap = flows
             .stream()
@@ -504,10 +602,52 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
     @Override
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
-        Dialog dialog = new Dialog();
 
-        dialog.add(new H1("Double click!"), new Text(canvasItemDoubleClickEvent.getFigure().toString()));
-        dialog.open();
+        DesignerItemIdentifier identifier = null;
+
+        try {
+             identifier = DesignerItemIdentifier
+                .getIdentifier(canvasItemDoubleClickEvent.getFigure().getIdentifier());
+        }
+        catch (IllegalArgumentException e){
+            // we ignore any events that we cannot parse the identifier for.
+            return;
+        }
+
+        if(identifier.getType().equals(BusinessStreamItemTypes.FLOW.name())) {
+            String nodeId = identifier.getName();
+
+            logger.debug(nodeId);
+            logger.debug("Flow + " + this.flowMap.get(nodeId));
+
+            if (this.flowMap.get(nodeId) != null) {
+                ModuleMetaData moduleMetaData = this.moduleMetaDataService
+                    .findById(nodeId.substring(0, nodeId.indexOf(".")));
+
+                logger.debug("ModuleMetaData + " + moduleMetaData);
+
+                FlowVisualisationDialog flowVisualisationDialog
+                    = new FlowVisualisationDialog(this.moduleControlRestService, this.configurationRestService,
+                    this.triggerRestService, this.configurationMetadataService, moduleMetaData
+                    , this.flowMap.get(nodeId), this.solrSearchService
+                    , this.stringSearchFoundStatusMap.get(nodeId), this.hospitalAuditService
+                    , this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService
+                    , this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert);
+
+                flowVisualisationDialog.open();
+            }
+        }
+        else if(identifier.getType().equals(BusinessStreamItemTypes.ERROR.name())) {
+            SearchFoundStatus searchFoundStatus = this.stringSearchFoundStatusMap.get(identifier.getName());
+
+            Flow flow =  this.flowMap.get(identifier.getName());
+            logger.debug("error clicked: " + flow.getModuleName() + " " + flow.getFlowName());
+            SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
+                this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
+            searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), "error", false
+                , flow.getModuleName(), flow.getFlowName());
+            searchResultsDialog.open();
+        }
     }
 
     @Override

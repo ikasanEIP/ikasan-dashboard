@@ -11,6 +11,7 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.SearchResultsDialog;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.search.SearchConstants;
@@ -41,7 +42,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class FlowVisualisationDialog extends Dialog {
+public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
     Logger logger = LoggerFactory.getLogger(FlowVisualisationDialog.class);
 
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService;
@@ -152,7 +153,7 @@ public class FlowVisualisationDialog extends Dialog {
             throw new IllegalArgumentException("moduleMetaDataService cannot be null!");
         }
 
-
+        this.showResize(false);
         this.init(moduleMetaData, flow.getFlowName());
     }
 
@@ -203,7 +204,7 @@ public class FlowVisualisationDialog extends Dialog {
 
             headerLayout.add(flowImage, flowLabel, controlPanelLayout);
             headerLayout.setMargin(false);
-            this.add(headerLayout);
+            super.content.add(headerLayout);
         }
         this.moduleVisualisation.setWidth("1400px");
         this.moduleVisualisation.setHeight("80vh");
@@ -216,7 +217,7 @@ public class FlowVisualisationDialog extends Dialog {
 
         bottomLayout.add(this.moduleVisualisation, this.searchLayout);
 
-        this.add(bottomLayout);
+        super.content.add(bottomLayout);
         this.setWidth("98vw");
         this.setHeight("98vh");
     }
