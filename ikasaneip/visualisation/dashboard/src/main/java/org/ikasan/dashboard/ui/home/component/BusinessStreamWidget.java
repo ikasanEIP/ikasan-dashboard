@@ -1,10 +1,8 @@
 package org.ikasan.dashboard.ui.home.component;
 
-import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.grid.HeaderRow;
-import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
@@ -12,11 +10,17 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.router.RouteConfiguration;
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamFilteringGrid;
 import org.ikasan.dashboard.ui.visualisation.component.filter.BusinessStreamSearchFilter;
+import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
+import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
+
+import java.util.List;
 
 
 @CssImport("./styles/dashboard-view.css")
@@ -73,10 +77,20 @@ public class BusinessStreamWidget extends Div {
             .setKey("description")
             .setFlexGrow(32);
 
-        businessStreamGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<BusinessStreamMetaData>>) doubleClickEvent -> {
-            BusinessStreamDialog businessStreamDialog = new BusinessStreamDialog();
-            businessStreamDialog.open();
-        });
+        businessStreamGrid.addColumn(new ComponentRenderer<>(businessStreamMetaData -> {
+            HorizontalLayout horizontalLayout = new HorizontalLayout();
+
+            String route = RouteConfiguration.forSessionScope()
+                .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":" + businessStreamMetaData.getName());
+            Anchor link = new Anchor(route, "view");
+            link.setTarget("_blank");
+            add(link);
+            horizontalLayout.add(link);
+            link.getStyle().set("color", "blue");
+
+            return horizontalLayout;
+        })).setWidth("60px");
+
 
         this.businessStreamGrid.addGridFiltering(textField, businessStreamSearchFilter::setBusinessStreamNameFilter);
     }

@@ -49,7 +49,7 @@ public class ModuleVisualisationViewTest extends UITest
     {
         UI.getCurrent().navigate("visualisation");
 
-        GraphView graphView = _get(GraphView.class);
+        GraphVisualisation graphView = _get(GraphVisualisation.class);
 
         Assertions.assertNotNull(graphView);
 

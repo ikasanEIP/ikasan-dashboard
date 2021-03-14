@@ -1,8 +1,7 @@
 package org.ikasan.dashboard.ui.home.component;
 
-import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
@@ -10,9 +9,13 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.router.RouteConfiguration;
 import org.ikasan.dashboard.ui.visualisation.component.ModuleFilteringGrid;
 import org.ikasan.dashboard.ui.visualisation.component.filter.ModuleSearchFilter;
+import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
+import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 
@@ -69,14 +72,20 @@ public class ModuleWidget extends Div {
             .setHeader(getTranslation("table-header.module-description", UI.getCurrent().getLocale()))
             .setKey("description")
             .setFlexGrow(32);
+        modulesGrid.addColumn(new ComponentRenderer<>(moduleMetaData -> {
+            HorizontalLayout horizontalLayout = new HorizontalLayout();
+
+            String route = RouteConfiguration.forSessionScope()
+                .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.MODULE.name() + ":" + moduleMetaData.getName());
+            Anchor link = new Anchor(route, "view");
+            link.setTarget("_blank");
+            add(link);
+            horizontalLayout.add(link);
+            link.getStyle().set("color", "blue");
+
+            return horizontalLayout;
+        })).setWidth("60px");
 
         this.modulesGrid.addGridFiltering(textField, moduleSearchFilter::setModuleNameFilter);
-
-        modulesGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<ModuleMetaData>>)
-            doubleClickEvent ->
-            {
-                ModuleStreamDialog moduleStreamDialog = new ModuleStreamDialog();
-                moduleStreamDialog.open();
-            });
     }
 }

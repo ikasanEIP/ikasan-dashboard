@@ -106,7 +106,7 @@ public class BusinessStreamSaveAsDialog extends AbstractCloseableResizableDialog
             }
 
 
-            this.id = "businessStream"+UUID.randomUUID().toString();
+            this.id = businessStreamNameTextfield.getValue();
             this.name = businessStreamNameTextfield.getValue();
             this.description = businessStreamDescriptionTextfield.getValue();
             BusinessStreamMetaData saveBusinessStreamMetaData = new BusinessStreamMetaDataImpl();
