@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -18,12 +19,15 @@ import org.ikasan.designer.event.CanvasItemRightClickEventListener;
 import org.ikasan.designer.function.OpenFunction;
 import org.ikasan.designer.function.SaveAsFunction;
 import org.ikasan.designer.function.SaveFunction;
+import org.ikasan.designer.json.DesignerDynamicImageManager;
 import org.ikasan.designer.model.Container;
 import org.ikasan.designer.model.Figure;
 import org.ikasan.designer.pallet.DesignerPalletImageItem;
+import org.ikasan.designer.util.DynamicImageHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,10 +61,19 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     private boolean saved = true;
 
     private String name;
+    private String dynamicImagePath;
 
-    public DesignerCanvas(String name) {
+    private List<Image> dynamicImages;
+
+    private DesignerDynamicImageManager designerDynamicImageManager;
+
+    private boolean readonly;
+
+    public DesignerCanvas(String name, String dynamicImagePath, boolean readonly) {
         super();
         this.name = name;
+        this.dynamicImagePath = dynamicImagePath;
+        this.readonly = readonly;
 
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery.js");
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery-ui.js");
@@ -91,10 +104,23 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
             contextMenu.setVisible(false);
             populateContextMenu();
         });
+
+        try {
+            this.dynamicImages = DynamicImageHelper.loadDynamicImages(this.dynamicImagePath);
+            this.designerDynamicImageManager = new DesignerDynamicImageManager(this.dynamicImages);
+
+            this.dynamicImages.forEach(image -> {
+                this.add(image);
+                image.setVisible(false);
+            });
+        }
+        catch (IOException e) {
+            logger.warn("Could not load dynamic images", e);
+        }
     }
 
-    public DesignerCanvas(SaveFunction saveFunction, SaveAsFunction saveAsFunction, String name) {
-        this(name);
+    public DesignerCanvas(SaveFunction saveFunction, SaveAsFunction saveAsFunction, String name, String dynamicImagePath, boolean readonly) {
+        this(name, dynamicImagePath, readonly);
         this.saveFunction = saveFunction;
         this.saveAsFunction = saveAsFunction;
     }
@@ -105,7 +131,9 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
                 "Connector can only be initialized for an attached Designer"))
             .getPage()
             .executeJs("window.Vaadin.Flow.designerConnector.initLazy($0, $1)",
-                getElement(), this.name);
+                getElement(), this.name, this.readonly);
+
+        this.setReadonly(this.readonly);
     }
 
     @Override
@@ -144,9 +172,15 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.saved = false;
     }
 
-    public void addBoundary(double x, double y, double h, double w, String colour) {
+    public void addBoundary(String identifier, String shapeIdentifier, double x, double y, double h, double w, String colour) {
         runBeforeClientResponse(
-            ui -> getElement().callJsFunction("$connector.addBoundary", x, y, h, w, colour));
+            ui -> getElement().callJsFunction("$connector.addBoundaryToShape", identifier, shapeIdentifier, x, y, h, w, colour));
+        this.saved = false;
+    }
+
+    public void removeFigure(String identifier) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.removeFigure", identifier));
         this.saved = false;
     }
 
@@ -285,7 +319,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     }
 
     public void setReadonly(boolean readonly) {
-        this.importJson();
+        this.readonly = readonly;
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setReadOnly", readonly));
     }
@@ -418,8 +452,13 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.saved = true;
     }
 
-    public void setCanvasJson(String canvasJson) {
-        this.canvasJson = canvasJson;
+    public void setCanvasJson(String canvasJson) throws IOException {
+        if(this.designerDynamicImageManager != null) {
+            this.canvasJson = this.designerDynamicImageManager.parse(canvasJson);
+        }
+        else {
+            this.canvasJson = canvasJson;
+        }
     }
 
     public boolean isSaved() {

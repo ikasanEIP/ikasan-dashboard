@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class DesignerDynamicImageManager {
 
@@ -14,7 +15,7 @@ public class DesignerDynamicImageManager {
 
     private HashMap<String, Image> imageHashMap;
 
-    public DesignerDynamicImageManager(ArrayList<Image> images) {
+    public DesignerDynamicImageManager(List<Image> images) {
         this.initImages(images);
     }
 
@@ -50,7 +51,7 @@ public class DesignerDynamicImageManager {
         }
     }
 
-    private void initImages(ArrayList<Image> images)  {
+    private void initImages(List<Image> images)  {
         this.imageHashMap = new HashMap<>();
 
         images.forEach(image -> {

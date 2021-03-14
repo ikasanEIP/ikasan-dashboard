@@ -1,7 +1,11 @@
 package org.ikasan.dashboard.ui.visualisation.model.business.stream;
 
 import org.ikasan.dashboard.ui.visualisation.correlate.Correlator;;
+import org.ikasan.dashboard.ui.visualisation.util.BusinessStreamItemTypes;
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 import org.ikasan.vaadin.visjs.network.NodeFoundStatus;
+
+import java.util.UUID;
 
 public class Flow extends Node
 {
@@ -13,9 +17,15 @@ public class Flow extends Node
     private int width;
     private int height;
 
+    private String statusIdentifier = UUID.randomUUID().toString();
+    private String errorIdentifier = UUID.randomUUID().toString();
+    private String exclusionIdentifier = UUID.randomUUID().toString();
+    private String wiretapIdentifier = UUID.randomUUID().toString();
+    private String replayIdentifier = UUID.randomUUID().toString();
+
     public Flow(String id, String moduleName, String flowName, int x, int y, int width, int height)
     {
-        super(id, x, y);
+        super(DesignerItemIdentifier.getIdentifier(id), x, y);
         this.moduleName = moduleName;
         this.flowName = flowName;
         super.setWiretapFoundStatus(NodeFoundStatus.EMPTY);
@@ -125,5 +135,29 @@ public class Flow extends Node
 
     public int getHeight() {
         return height;
+    }
+
+    public String getStatusIdentifier() {
+        return statusIdentifier;
+    }
+
+    public DesignerItemIdentifier getErrorIdentifier() {
+        return new DesignerItemIdentifier(BusinessStreamItemTypes.ERROR.name(), this.getId().getName(),
+            this.errorIdentifier);
+    }
+
+    public DesignerItemIdentifier getExclusionIdentifier() {
+        return new DesignerItemIdentifier(BusinessStreamItemTypes.EXCLUSION.name(), this.getId().getName(),
+            this.exclusionIdentifier);
+    }
+
+    public DesignerItemIdentifier getWiretapIdentifier() {
+        return new DesignerItemIdentifier(BusinessStreamItemTypes.WIRETAP.name(), this.getId().getName(),
+            this.wiretapIdentifier);
+    }
+
+    public DesignerItemIdentifier getReplayIdentifier() {
+        return new DesignerItemIdentifier(BusinessStreamItemTypes.REPLAY.name(), this.getId().getName(),
+            this.replayIdentifier);
     }
 }

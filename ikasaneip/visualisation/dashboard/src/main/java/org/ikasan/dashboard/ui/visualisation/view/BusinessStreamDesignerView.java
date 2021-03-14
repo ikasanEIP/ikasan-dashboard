@@ -108,7 +108,7 @@ import java.util.UUID;
 
         businessStreamDesigner = new Designer(new BusinessStreamOpenFunction(this.businessStreamMetaDataService, this.integratedSystems)
             ,new BusinessStreamSaveFunction(this.businessStreamMetaDataService), new BusinessStreamSaveAsFunction(this.businessStreamMetaDataService),
-            new BusinessStreamManageFunction(this.businessStreamMetaDataService));
+            new BusinessStreamManageFunction(this.businessStreamMetaDataService), this.integratedSystemsImagePath);
 
         businessStreamDesigner.addCanvasItemRightClickEventListener(this);
         businessStreamDesigner.addCanvasItemDoubleClickEventListener(this);
@@ -248,7 +248,9 @@ import java.util.UUID;
     private void addItemToLayout(DesignerPalletImageItem item, FlexLayout layout) {
         item.getComponent().setWidth("35px");
         item.getComponent().addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
-            item.executeCanvasAddAction();
+            if(imageClickEvent.getClickCount() == 2) {
+                item.executeCanvasAddAction();
+            }
         });
         DragSource.create(item.getComponent());
         item.getComponent().getElement().getStyle().set("margin-right", "15px");

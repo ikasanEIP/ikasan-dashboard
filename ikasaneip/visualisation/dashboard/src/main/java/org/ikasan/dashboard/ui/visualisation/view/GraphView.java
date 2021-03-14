@@ -38,6 +38,7 @@ import org.ikasan.dashboard.ui.visualisation.component.ModuleFilteringGrid;
 import org.ikasan.dashboard.ui.visualisation.component.filter.BusinessStreamSearchFilter;
 import org.ikasan.dashboard.ui.visualisation.component.filter.ModuleSearchFilter;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.BusinessStream;
+import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
 import org.ikasan.rest.client.ReplayRestServiceImpl;
 import org.ikasan.rest.client.ResubmissionRestServiceImpl;
 import org.ikasan.solr.model.IkasanSolrDocument;
@@ -55,6 +56,7 @@ import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.vaadin.erik.SlideMode;
 import org.vaadin.erik.SlideTab;
@@ -119,6 +121,9 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver, Se
 
     @Resource
     private BatchInsert<ModuleMetaData> moduleMetadataBatchInsert;
+
+    @Value(value = "${integrated.systems.image.path}")
+    private String dynamicImagePath;
 
     private SearchResults searchResults;
 
@@ -447,7 +452,7 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver, Se
             this.moduleControlRestService, this.moduleMetadataService, this.configurationRestService
             , this.triggerRestService, this.configurationMetadataService, this.hospitalAuditService,
             this.resubmissionRestService, this.replayRestService, this.replayAuditService, this.metaDataApplicationRestService,
-            this.moduleMetadataBatchInsert);
+            this.moduleMetadataBatchInsert, this.dynamicImagePath);
 
         businessStreamVisualisation.createBusinessStreamGraph(name, businessStreamMetaData);
 
@@ -594,20 +599,17 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver, Se
         }
 
         if(this.businessStreamVisualisation != null) {
-            BusinessStream businessStream = this.businessStreamVisualisation.getBusinessStream();
+            List<Flow> flows = this.businessStreamVisualisation.getFlows();
 
-            // todo sort out module and flows
-            List<String> moduleNames = new ArrayList<>();
-//                businessStream.getFlows()
-//                .stream()
-//                .map(flow -> flow.getModuleName())
-//                .collect(Collectors.toList());
+            List<String> moduleNames = flows
+                .stream()
+                .map(flow -> flow.getModuleName())
+                .collect(Collectors.toList());
 
-            List<String> flowNames = new ArrayList<>();
-//                businessStream.getFlows()
-//                .stream()
-//                .map(flow -> flow.getFlowName())
-//                .collect(Collectors.toList());
+            List<String> flowNames = flows
+                .stream()
+                .map(flow -> flow.getFlowName())
+                .collect(Collectors.toList());
 
             this.searchResults.search(startDate, endDate, searchTerm, entityTypes, negateQuery, moduleNames, flowNames);
         }

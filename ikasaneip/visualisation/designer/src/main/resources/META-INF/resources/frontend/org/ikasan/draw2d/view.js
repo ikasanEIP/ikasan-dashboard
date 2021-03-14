@@ -5,7 +5,7 @@ View = draw2d.Canvas.extend({
     rightMouseX:0,
     rightMouseY:0,
 
-    init:function(app, id){
+    init:function(app, id, readonly){
         let _this = this;
 
         this._super(id, 16000, 16000);
@@ -53,46 +53,54 @@ View = draw2d.Canvas.extend({
         }
         this.installEditPolicy(policy);
 
-        Mousetrap.bind(['left'],function (event) {
-            var diff = _this.getZoom()<0.5?0.5:1;
-            _this.getSelection().each(function(i,f){f.translate(-diff,0);});
-            return false;
-        });
-        Mousetrap.bind(['up'],function (event) {
-            var diff = _this.getZoom()<0.5?0.5:1;
-            _this.getSelection().each(function(i,f){f.translate(0,-diff);});
-            return false;
-        });
-        Mousetrap.bind(['right'],function (event) {
-            var diff = _this.getZoom()<0.5?0.5:1;
-            _this.getSelection().each(function(i,f){
-                f.translate(diff,0);
+        if(!readonly === true) {
+            Mousetrap.bind(['left'], function (event) {
+                var diff = _this.getZoom() < 0.5 ? 0.5 : 1;
+                _this.getSelection().each(function (i, f) {
+                    f.translate(-diff, 0);
+                });
+                return false;
             });
-            return false;
-        });
-        Mousetrap.bind(['down'],function (event) {
-            var diff = _this.getZoom()<0.5?0.5:1;
-            _this.getSelection().each(function(i,f){f.translate(0,diff);});
-            return false;
-        });
+            Mousetrap.bind(['up'], function (event) {
+                var diff = _this.getZoom() < 0.5 ? 0.5 : 1;
+                _this.getSelection().each(function (i, f) {
+                    f.translate(0, -diff);
+                });
+                return false;
+            });
+            Mousetrap.bind(['right'], function (event) {
+                var diff = _this.getZoom() < 0.5 ? 0.5 : 1;
+                _this.getSelection().each(function (i, f) {
+                    f.translate(diff, 0);
+                });
+                return false;
+            });
+            Mousetrap.bind(['down'], function (event) {
+                var diff = _this.getZoom() < 0.5 ? 0.5 : 1;
+                _this.getSelection().each(function (i, f) {
+                    f.translate(0, diff);
+                });
+                return false;
+            });
 
-        Mousetrap.bind(['ctrl+c', 'command+c'], $.proxy(function (event) {
-            this.copy();
-            return false;
-        },this));
+            Mousetrap.bind(['ctrl+c', 'command+c'], $.proxy(function (event) {
+                this.copy();
+                return false;
+            }, this));
 
-        Mousetrap.bind(['ctrl+v', 'command+v'], $.proxy(function (event) {
-            this.paste()
-            return false;
-        },this));
+            Mousetrap.bind(['ctrl+v', 'command+v'], $.proxy(function (event) {
+                this.paste()
+                return false;
+            }, this));
 
-        Mousetrap.bind(['ctrl+z', 'command+z'], $.proxy(function (event) {
-            this.getCommandStack().undo();
-        },this));
+            Mousetrap.bind(['ctrl+z', 'command+z'], $.proxy(function (event) {
+                this.getCommandStack().undo();
+            }, this));
 
-        Mousetrap.bind(['ctrl+y', 'command+y'], $.proxy(function (event) {
-            this.getCommandStack().redo();
-        },this));
+            Mousetrap.bind(['ctrl+y', 'command+y'], $.proxy(function (event) {
+                this.getCommandStack().redo();
+            }, this));
+        }
 
         var zoom=new draw2d.policy.canvas.WheelZoomPolicy();
         this.installEditPolicy(zoom);
