@@ -71,20 +71,14 @@
             console.log(_this.getLines());
             let figures = new Array();
 
-            // _this.getFigures().each((i, figure)=>{
-            //     figures.push(new FigureLite(figure.getId(), figure.x, figure.y, figure.getWidth(), figure.getHeight(), JSON.stringify(figure.getPersistentAttributes())));
-            // });
-            //
-            // _this.getLines().each((i, figure)=>{
-            //     figures.push(new FigureLite(figure.getId(), figure.x, figure.y, figure.getWidth(), figure.getHeight(), JSON.stringify(figure.getPersistentAttributes())));
-            // });
 
             _this.getSelection().each((i, figure)=>{
                 figures.push(new FigureLite(figure.getId(), figure.x, figure.y, figure.getWidth()
                     , figure.getHeight(), figure.NAME, figure.getPersistentAttributes()));
             });
 
-            let container = new Container(figures, canvasRightClickX, canvasRightClickY, rightClickX, rightClickY);
+            let container = new Container(figures,  designer.$connector.designer.getRightMouseX(),  designer.$connector.designer.getRightMouseY()
+                , rightClickX, rightClickY);
 
             console.log(JSON.stringify(container));
             return JSON.stringify(container);
