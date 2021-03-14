@@ -53,15 +53,15 @@ public class EventLifeIdDeepLinkView extends VerticalLayout implements HasUrlPar
             , replayRestService, moduleMetadataService, replayAuditService);
         this.searchResults.setSizeFull();
 
-        Button returnToDashboardButton = new Button("Return to dashboard");
-        returnToDashboardButton.addClickListener(new ComponentEventListener<ClickEvent<Button>>() {
-            @Override
-            public void onComponentEvent(ClickEvent<Button> buttonClickEvent) {
-                UI.getCurrent().navigate("");
-            }
-        });
+//        Button returnToDashboardButton = new Button("Return to dashboard");
+//        returnToDashboardButton.addClickListener(new ComponentEventListener<ClickEvent<Button>>() {
+//            @Override
+//            public void onComponentEvent(ClickEvent<Button> buttonClickEvent) {
+//                UI.getCurrent().navigate("");
+//            }
+//        });
 
-        this.add(returnToDashboardButton);
+//        this.add(returnToDashboardButton);
         this.add(searchResults);
         this.setSizeFull();
     }

@@ -70,6 +70,8 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
 
     protected boolean asActionListener = true;
 
+    private UI current;
+
     public ControlPanel(ModuleControlService moduleControlRestService)
     {
         this.moduleControlRestService = moduleControlRestService;
@@ -234,7 +236,6 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
 
     protected void performAction(ProgressIndicatorDialog progressIndicatorDialog, String action)
     {
-        final UI current = UI.getCurrent();
         final I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator().getI18NProvider();
         Executor executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
@@ -332,17 +333,17 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
     @Override
     protected void onAttach(AttachEvent attachEvent)
     {
-        UI ui = attachEvent.getUI();
+        current = attachEvent.getUI();
         flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState ->
         {
             logger.debug("Received flow state: " + flowState);
-            setFlowState(ui, flowState);
+            setFlowState(current, flowState);
         });
 
         cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState ->
         {
             logger.debug("Received flow state: " + flowState);
-            setFlowState(ui, flowState);
+            setFlowState(current, flowState);
         });
 
         this.startButtonTooltip.attachToComponent(startButton);

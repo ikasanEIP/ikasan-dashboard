@@ -333,8 +333,7 @@ public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
     }
 
     private Optional<org.ikasan.dashboard.ui.visualisation.model.flow.Flow> getCurrentFlow
-        (List<org.ikasan.dashboard.ui.visualisation.model.flow.Flow> flows
-        , String flowName){
+        (List<org.ikasan.dashboard.ui.visualisation.model.flow.Flow> flows, String flowName){
         return flows.stream().filter(flow -> flowName.equals(flow.getName())).findFirst();
     }
 
