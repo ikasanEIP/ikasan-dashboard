@@ -1,5 +1,5 @@
     window.Vaadin.Flow.designerConnector = {
-    initLazy : function(designer, name) {
+    initLazy : function(designer, name, readonly) {
 
         // Check whether the connector was already initialized for the Iron list
         if (designer.$connector) {
@@ -11,18 +11,9 @@
         this.clippboardFigure=null;
 
         let canvasName = name;
-        designer.$connector.designer = new View(this, name);
+        designer.$connector.designer = new View(this, name, readonly);
 
         let _this = designer.$connector.designer;
-
-        Mousetrap.bind(['ctrl+a', 'command+a'], $.proxy(function (event) {
-            debugger;
-            _this.getFigures().each((i, figure)=>{
-                figure.select(false);
-            });
-
-            return false;
-        },this));
 
         let x=100;
         let y=100;
@@ -33,7 +24,7 @@
         let rightClickY=0;
 
         $(document).ready(function () {
-            $("#canvas-wrapper").mouseover(function (e) {
+            $("#"+canvasName).mouseover(function (e) {
                 if(e.offsetX > 100) {
                     x = e.offsetX;
                 }
@@ -41,7 +32,8 @@
                     y=e.offsetY;
                 }
             });
-            $("#canvas-wrapper").on("contextmenu", function(e){
+            $("#"+canvasName).on("contextmenu", function(e){
+                console.log("Context Menu Mouse click:" + e.offsetX + "," + e.offsetY);
                 canvasRightClickX=e.offsetX;
                 canvasRightClickY=e.offsetY;
                 rightClickX=e.pageX;
@@ -49,13 +41,6 @@
                 return false;
             });
         });
-
-
-        // $(document).on("contextmenu", function(e){
-        //     rightClickX=e.pageX;
-        //     rightClickY=e.pageY
-        //     return false;
-        // });
 
         class FigureLite {
             constructor(name, x, y, width, height, type, atttributes) {
@@ -105,11 +90,28 @@
             return JSON.stringify(container);
         }
 
+
         designer.$connector.addIconNoCoordinates = function (identifier, image, h, w, isClickable) {
             debugger;
             let icon = new draw2d.shape.basic.Image({id: identifier, path: image, width:w, height:h, x:x, y:y, keepAspectRatio: true});
-            icon.createPort("input");
-            icon.createPort("output");
+
+            let inputLocator  = new draw2d.layout.locator.InputPortLocator();
+            let outputLocator = new draw2d.layout.locator.OutputPortLocator();
+
+
+            icon.createPort("hybrid", inputLocator);
+            icon.createPort("hybrid", inputLocator);
+            icon.createPort("hybrid", inputLocator);
+
+            icon.createPort("hybrid", outputLocator);
+            icon.createPort("hybrid", outputLocator);
+            icon.createPort("hybrid", outputLocator);
+
+            let ports = icon.getPorts();
+
+            ports.each((i, port) => {
+                port.setDiameter(5);
+            });
 
             let command = new draw2d.command.CommandAdd(_this, icon, x, y);
             _this.getCommandStack().execute(command);
@@ -202,8 +204,9 @@
             _this.getCommandStack().execute(command);
         }
 
-        designer.$connector.addBoundary = function (x, y, h, w, colour) {
+        designer.$connector.addBoundaryToShape = function (identifier, shapeIdentifier, x, y, h, w, colour) {
             let boundary =  new draw2d.shape.basic.Rectangle({
+                id: identifier,
                 bgColor:"rgba(255,255,255,0)",
                 color:colour,
                 x: x,
@@ -220,7 +223,7 @@
             let command = new draw2d.command.CommandAdd(_this, boundary, x, y);
             _this.getCommandStack().execute(command);
 
-            boundary.toBack();
+            _this.getFigure(shapeIdentifier).toFront();
         }
 
         designer.$connector.designer.on("dblclick", function(emitter, event){
@@ -318,6 +321,15 @@
                     debugger;
 
                     let command = new draw2d.command.CommandAttr(figure, {fontSize:fontSize});
+                    _this.getCommandStack().execute(command);
+                }
+            });
+        }
+
+        designer.$connector.removeFigure = function (figureIdentifier) {
+            _this.getFigures().each((i, figure)=>{
+                if(figure.id === figureIdentifier) {
+                    let command = new draw2d.command.CommandDelete(figure);
                     _this.getCommandStack().execute(command);
                 }
             });
@@ -472,21 +484,18 @@
             reader.unmarshal(designer.$connector.designer, jsonDocument);
 
             _this.getFigures().each((i, figure)=>{
+                console.log(i + " init " +figure.getId());
                 if(figure.NAME === 'draw2d.shape.basic.Image') {
                     figure.setKeepAspectRatio(true);
                     // We want to bring images to the front so that
                     // they can be double clicked!
                     figure.toFront();
-
-                    if(figure.id.startsWith("FLOW")) {
-
-                    }
                 }
             });
 
             let xCoords = [];
             let yCoords = [];
-            designer.$connector.designer.getFigures().each(function(i,f){
+            _this.getFigures().each(function(i,f){
                 let b = f.getBoundingBox();
                 xCoords.push(b.x, b.x+b.w);
                 yCoords.push(b.y, b.y+b.h);
@@ -515,25 +524,22 @@
             }
 
             designer.$connector.designer.setZoom(zoomFactor)
-
-            if(zoomFactor > 1) {
-                designer.$connector.designer.scrollTo(minY/zoomFactor - 20, minX/zoomFactor - 20);
-            }
+            designer.$connector.designer.scrollTo(minY/zoomFactor - 20, minX/zoomFactor - 20);
         }
 
         designer.$connector.manageClickableItems = function () {
-            debugger
-            _this.getFigures().each((i, figure)=>{
-                debugger;
+            let _figures = _this.getFigures();
+            console.log(_figures);
+            _figures.each((i, figure)=>{
+                console.log(i + " " +figure.getId());
                 if(figure.NAME === 'draw2d.shape.basic.Image') {
-                    // We want to bring images to the front so that
-                    // they can be double clicked!
-                    figure.toFront();
-
-                    if(figure.id.startsWith("FLOW")) {
+                    if(figure.getId().startsWith("FLOW")) {
+                        debugger;
                         figure.shape.attr({"cursor": "pointer"});
                     }
                 }
+
+                return true;
             });
         }
 

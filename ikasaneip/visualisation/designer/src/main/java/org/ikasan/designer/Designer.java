@@ -55,6 +55,8 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
     private String diagramName;
     private String diagramDescription;
 
+    private String dynamicImagePath;
+
 
     private boolean initialised = false;
 
@@ -62,7 +64,8 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
      * Constructor
      */
     public Designer(OpenFunction openFunction, SaveFunction saveFunction
-        , SaveAsFunction saveAsFunction, ManageFunction manageFunction)
+        , SaveAsFunction saveAsFunction, ManageFunction manageFunction,
+                    String dynamicImagePath)
     {
         this.setMargin(false);
         this.setSpacing(false);
@@ -75,6 +78,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         this.saveAsFunction = saveAsFunction;
         this.manageFunction = manageFunction;
 
+        this.dynamicImagePath = dynamicImagePath;
 
         this.itemPalettes = new ArrayList<>();
         init();
@@ -315,7 +319,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
     }
 
     protected void initBase() {
-        this.designerCanvas = new DesignerCanvas(this.saveFunction, this.saveAsFunction, "canvas-wrapper");
+        this.designerCanvas = new DesignerCanvas(this.saveFunction, this.saveAsFunction, "canvas-wrapper", this.dynamicImagePath, false);
         this.designerCanvas.setSizeUndefined();
 
         DropTarget<DesignerCanvas> dropTarget = DropTarget.create(this.designerCanvas);

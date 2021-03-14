@@ -1,10 +1,11 @@
 package org.ikasan.dashboard.ui.visualisation.model.business.stream;
 
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 import org.ikasan.vaadin.visjs.network.NodeFoundStatus;
 
 public class Node
 {
-    private String id;
+    private DesignerItemIdentifier id;
     private String edgeColour = "rgba(0, 255, 0, 0.8)";
     private String fillColour = "rgba(0, 255, 0, 0.2)";
     private String wiretapFoundStatus = NodeFoundStatus.EMPTY;
@@ -16,19 +17,19 @@ public class Node
     private int y;
 
 
-    public Node(String id, int x, int y)
+    public Node(DesignerItemIdentifier id, int x, int y)
     {
         this.id = id;
         this.x = x;
         this.y = y;
     }
 
-    public String getId()
+    public DesignerItemIdentifier getId()
     {
         return id;
     }
 
-    public void setId(String id)
+    public void setId(DesignerItemIdentifier id)
     {
         this.id = id;
     }

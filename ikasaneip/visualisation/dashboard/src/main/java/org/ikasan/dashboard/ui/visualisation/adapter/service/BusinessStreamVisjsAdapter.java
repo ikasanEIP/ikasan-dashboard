@@ -189,7 +189,7 @@ public class BusinessStreamVisjsAdapter
      */
     private Destination getDestination(org.ikasan.business.stream.metadata.model.Destination destination)
     {
-        return new Destination(destination.getId(), destination.getName(), destination.getX(), destination.getY());
+        return null;
     }
 
 //    /**

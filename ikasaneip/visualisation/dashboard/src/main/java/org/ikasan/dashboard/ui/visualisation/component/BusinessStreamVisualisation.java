@@ -3,14 +3,10 @@ package org.ikasan.dashboard.ui.visualisation.component;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.shared.Registration;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
@@ -18,7 +14,6 @@ import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.general.component.SearchResultsDialog;
 import org.ikasan.dashboard.ui.visualisation.adapter.service.BusinessStreamVisjsAdapter;
 import org.ikasan.dashboard.ui.visualisation.component.util.SearchFoundStatus;
-import org.ikasan.dashboard.ui.visualisation.model.business.stream.BusinessStream;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
 import org.ikasan.dashboard.ui.visualisation.util.BusinessStreamItemTypes;
 import org.ikasan.designer.DesignerCanvas;
@@ -38,31 +33,17 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.*;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.solr.SolrGeneralService;
-import org.ikasan.vaadin.visjs.network.Edge;
-import org.ikasan.vaadin.visjs.network.NetworkDiagram;
-import org.ikasan.vaadin.visjs.network.Node;
 import org.ikasan.vaadin.visjs.network.NodeFoundStatus;
-import org.ikasan.vaadin.visjs.network.options.Interaction;
-import org.ikasan.vaadin.visjs.network.options.Options;
-import org.ikasan.vaadin.visjs.network.options.edges.ArrowHead;
-import org.ikasan.vaadin.visjs.network.options.edges.Arrows;
-import org.ikasan.vaadin.visjs.network.options.edges.EdgeColor;
-import org.ikasan.vaadin.visjs.network.options.edges.Edges;
-import org.ikasan.vaadin.visjs.network.options.physics.Physics;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toMap;
 
 public class BusinessStreamVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener, CanvasItemDoubleClickEventListener {
     private Logger logger = LoggerFactory.getLogger(BusinessStreamVisualisation.class);
-    private NetworkDiagram networkDiagram;
     private DesignerCanvas designerCanvas;
 
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService;
@@ -76,14 +57,10 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
     private ModuleMetaDataService moduleMetaDataService;
     private ConfigurationMetaDataService configurationMetadataService;
 
-    private BusinessStream businessStream;
-    private ArrayList<Node> nodes = new ArrayList<>();
-    private ArrayList<Flow> flows = new ArrayList<>();
+    private List<Flow> flows = new ArrayList<>();
 
     private Map<String, Flow> flowMap;
     private Map<String, SearchFoundStatus> stringSearchFoundStatusMap;
-
-    private UI current;
 
     private HospitalAuditService hospitalAuditService;
 
@@ -99,6 +76,8 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
     private BatchInsert<ModuleMetaData> moduleMetaDataBatchInsert;
 
+    private String dynamicImagePath;
+
     public BusinessStreamVisualisation(ModuleControlService moduleControlRestService
         , ConfigurationService configurationRestService, TriggerService triggerRestService
         , ModuleMetaDataService moduleMetaDataService
@@ -107,7 +86,8 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         , HospitalAuditService hospitalAuditService
         , ResubmissionService resubmissionRestService, ReplayService replayRestService
         , ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService
-        , MetaDataService metaDataApplicationRestService, BatchInsert<ModuleMetaData> moduleMetaDataBatchInsert) {
+        , MetaDataService metaDataApplicationRestService, BatchInsert<ModuleMetaData> moduleMetaDataBatchInsert
+        , String dynamicImagePath) {
         this.moduleControlRestService = moduleControlRestService;
         if (this.moduleControlRestService == null) {
             throw new IllegalArgumentException("moduleControlRestService cannot be null!");
@@ -160,8 +140,10 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         if (this.moduleMetaDataBatchInsert == null) {
             throw new IllegalArgumentException("moduleMetaDataBatchInsert cannot be null!");
         }
-
-        current = UI.getCurrent();
+        this.dynamicImagePath = dynamicImagePath;
+        if (this.dynamicImagePath == null) {
+            throw new IllegalArgumentException("dynamicImagePath cannot be null!");
+        }
 
         this.setMargin(false);
         this.setSpacing(false);
@@ -174,144 +156,32 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
     public void createBusinessStreamGraphGraph(BusinessStreamMetaData businessStreamMetaData) throws IOException {
         BusinessStreamVisjsAdapter adapter = new BusinessStreamVisjsAdapter();
 
-//        this.businessStream = adapter.toBusinessStreamGraph(businessStreamMetaData);
-//
-//        nodes = new ArrayList<>();
-//        nodes.addAll(businessStream.getFlows());
-//        nodes.addAll(businessStream.getDestinations());
-//        nodes.addAll(businessStream.getIntegratedSystems());
-//
-//        flows = new ArrayList<>();
-//        flows.addAll(businessStream.getFlows());
-
         if (this.designerCanvas != null) {
             this.remove(designerCanvas);
         }
 
-//        this.populateFlowMap(businessStream.getFlows());
 
-//        updateNetworkDiagram(nodes, businessStream.getEdges());
-
-        this.designerCanvas = new DesignerCanvas("canvas-viewport");
+        this.designerCanvas = new DesignerCanvas("canvas-viewport", this.dynamicImagePath, true);
         this.designerCanvas.setCanvasJson(businessStreamMetaData.getJson());
         this.designerCanvas.importJson();
-        this.designerCanvas.manageClickableItems();
-        this.designerCanvas.setReadonly(true);
+//        this.designerCanvas.setReadonly(true);
         this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
         this.designerCanvas.addCanvasItemRightClickEventListener(this);
 
         this.populateFlowMap(businessStreamMetaData);
 
+        this.designerCanvas.manageClickableItems();
+
         this.add(designerCanvas);
     }
-
-//    /**
-//     * Method to update the network diagram with the node and edge lists.
-//     *
-//     * @param nodes a list containing all network nodes.
-//     * @param edges a list containing all the network edges.
-//     */
-//    protected void updateNetworkDiagram(List<Node> nodes, List<Edge> edges) {
-//        Physics physics = new Physics();
-//        physics.setEnabled(false);
-//
-//        networkDiagram = new NetworkDiagram
-//            (Options.builder()
-//                .withAutoResize(false)
-//                .withPhysics(physics)
-//                .withInteraction(Interaction.builder().withDragNodes(false).build())
-//                .withEdges(
-//                    Edges.builder()
-//                        .withArrows(new Arrows(new ArrowHead()))
-//                        .withColor(EdgeColor.builder()
-//                            .withColor("#000000")
-//                            .build())
-//                        .withDashes(false)
-//                        .build())
-//                .build());
-//
-//        networkDiagram.setSizeFull();
-//
-//        networkDiagram.setNodes(nodes);
-//        networkDiagram.setEdges(edges);
-//
-//        networkDiagram.addDoubleClickListener(doubleClickEvent ->
-//        {
-//            logger.debug(doubleClickEvent.getParams().toString());
-//
-//            JsonArray nodesArray = doubleClickEvent.getParams().getArray("nodes");
-//
-//            if (nodesArray.length() > 0) {
-//                String nodeId = nodesArray.get(0).asString();
-//
-//                logger.debug(nodeId);
-//                logger.debug("Flow + " + this.flowMap.get(nodeId));
-//
-//                if (this.flowMap.get(nodeId) != null) {
-//                    ModuleMetaData moduleMetaData = this.moduleMetaDataService
-//                        .findById(nodeId.substring(0, nodeId.indexOf(".")));
-//
-//                    logger.debug("ModuleMetaData + " + moduleMetaData);
-//
-//                    FlowVisualisationDialog flowVisualisationDialog
-//                        = new FlowVisualisationDialog(this.moduleControlRestService, this.configurationRestService,
-//                        this.triggerRestService, this.configurationMetadataService, moduleMetaData
-//                        , this.flowMap.get(nodeId), this.solrSearchService
-//                        , this.stringSearchFoundStatusMap.get(nodeId), this.hospitalAuditService
-//                        , this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService
-//                        , this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert);
-//
-//                    flowVisualisationDialog.open();
-//                }
-//            } else {
-//                JsonObject coordinates = doubleClickEvent.getParams().getObject("pointer").getObject("canvas");
-//
-//                this.flows.forEach(flow -> {
-//                    SearchFoundStatus searchFoundStatus = this.stringSearchFoundStatusMap.get(flow.getId());
-//                    if (flow.wiretapClickedOn(coordinates.getNumber("x"), coordinates.getNumber("y"))) {
-//                        logger.debug("wiretap clicked: " + flow.getModuleName() + " " + flow.getFlowName());
-//                        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
-//                            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
-//                        searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), "wiretap", false
-//                            , flow.getModuleName(), flow.getFlowName());
-//                        searchResultsDialog.open();
-//                    }
-//                    if (flow.errorClickedOn(coordinates.getNumber("x"), coordinates.getNumber("y"))) {
-//                        logger.debug("error clicked: " + flow.getModuleName() + " " + flow.getFlowName());
-//                        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
-//                            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
-//                        searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), "error", false
-//                            , flow.getModuleName(), flow.getFlowName());
-//                        searchResultsDialog.open();
-//                    }
-//                    if (flow.exclusionClickedOn(coordinates.getNumber("x"), coordinates.getNumber("y"))) {
-//                        logger.debug("exclusion clicked: " + flow.getModuleName() + " " + flow.getFlowName());
-//                        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
-//                            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
-//                        searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), "exclusion", false
-//                            , flow.getModuleName(), flow.getFlowName());
-//                        searchResultsDialog.open();
-//                    }
-//                    if (flow.replayClickedOn(coordinates.getNumber("x"), coordinates.getNumber("y"))) {
-//                        logger.debug("replay clicked: " + flow.getModuleName() + " " + flow.getFlowName());
-//                        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
-//                            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
-//                        searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), "replay", false
-//                            , flow.getModuleName(), flow.getFlowName());
-//                        searchResultsDialog.open();
-//                    }
-//                });
-//            }
-//        });
-//
-//
-//    }
 
     private void drawFlowStatus(FlowState state) {
         if (this.flowMap != null && flowMap.containsKey(state.getModuleName() + "." + state.getFlowName())) {
             Flow flow = flowMap.get(state.getModuleName() + "." + state.getFlowName());
 
-            this.designerCanvas.addBoundary(flow.getX() - 5
+            this.designerCanvas.removeFigure(flow.getStatusIdentifier());
+
+            this.designerCanvas.addBoundary(flow.getStatusIdentifier(), flow.getId().toString(), flow.getX() - 5
                 , flow.getY() - 5, flow.getHeight() + 10, flow.getWidth() + 10, state.getState().getStateColour());
         }
     }
@@ -334,16 +204,16 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
                     , endTime, 0, Arrays.asList(entityType), false, null, null);
 
                 if (entityType.equals("wiretap")) {
-                    wiretapMap.put(flow.getId(), results.getTotalNumberOfResults() > 0);
+                    wiretapMap.put(flow.getId().getName(), results.getTotalNumberOfResults() > 0);
                 }
                 else if (entityType.equals("error")) {
-                    errorMap.put(flow.getId(), results.getTotalNumberOfResults() > 0);
+                    errorMap.put(flow.getId().getName(), results.getTotalNumberOfResults() > 0);
                 }
                 else if (entityType.equals("exclusion")) {
-                    exclusionMap.put(flow.getId(), results.getTotalNumberOfResults() > 0);
+                    exclusionMap.put(flow.getId().getName(), results.getTotalNumberOfResults() > 0);
                 }
                 else if (entityType.equals("replay")) {
-                    replayMap.put(flow.getId(), results.getTotalNumberOfResults() > 0);
+                    replayMap.put(flow.getId().getName(), results.getTotalNumberOfResults() > 0);
                 }
             });
         });
@@ -368,97 +238,37 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
             flow.setReplayFoundStatus(NodeFoundStatus.NOT_FOUND);
         });
 
-        this.flows = (ArrayList<Flow>) this.flows.stream().map(flow -> {
-            SearchFoundStatus searchFoundStatus = this.stringSearchFoundStatusMap.get(flow.getId());
+        this.flows = this.flows.stream().map(flow -> {
+            SearchFoundStatus searchFoundStatus = this.stringSearchFoundStatusMap.get(flow.getId().getName());
 
-            int centreX = flow.getX() + (flow.getWidth() / 2);
             if(searchFoundStatus != null) {
                 int numFound = 0;
 
-                if (wiretapMap.get(flow.getId()) != null && wiretapMap.get(flow.getId())) {
+                if (wiretapMap.get(flow.getId().getName()) != null && wiretapMap.get(flow.getId().getName())) {
                     flow.setWiretapFoundStatus(NodeFoundStatus.FOUND);
                     searchFoundStatus.setWiretapFound(true);
-
-                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.WIRETAP.name(), flow.getId(),
-                            UUID.randomUUID().toString()).toString(),"frontend/images/wiretap-service.png"
-                        , flow.getX()-20, flow.getY()-20, 35, 35, false, true);
-
                     numFound++;
                 }
 
-                if (errorMap.get(flow.getId()) != null && errorMap.get(flow.getId())) {
+                if (errorMap.get(flow.getId().getName()) != null && errorMap.get(flow.getId().getName())) {
                     flow.setErrorFoundStatus(NodeFoundStatus.FOUND);
                     searchFoundStatus.setErrorFound(true);
-//                    4
-//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.ERROR.name(), flow.getId(),
-//                            UUID.randomUUID().toString()).toString(),"frontend/images/error-service.png"
-//                        , centreX-85, flow.getY()-45, 35, 35, false, true);
-//
-//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.WIRETAP.name(), flow.getId(),
-//                            UUID.randomUUID().toString()).toString(),"frontend/images/wiretap-service.png"
-//                        , centreX-40, flow.getY()-45, 35, 35, false, true);
-//
-//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.EXCLUSION.name(), flow.getId(),
-//                            UUID.randomUUID().toString()).toString(),"frontend/images/hospital-service.png"
-//                        , centreX+5, flow.getY()-45, 35, 35, false, true);
-//
-//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.REPLAY.name(), flow.getId(),
-//                            UUID.randomUUID().toString()).toString(),"frontend/images/replay-service.png"
-//                        , centreX+50, flow.getY()-45, 35, 35, false, true);
-
-
-////                  3
-//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.WIRETAP.name(), flow.getId(),
-//                            UUID.randomUUID().toString()).toString(),"frontend/images/wiretap-service.png"
-//                        , centreX-62.5, flow.getY()-45, 35, 35, false, true);
-//
-//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.EXCLUSION.name(), flow.getId(),
-//                            UUID.randomUUID().toString()).toString(),"frontend/images/hospital-service.png"
-//                        , centreX-17.5, flow.getY()-45, 35, 35, false, true);
-//
-//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.REPLAY.name(), flow.getId(),
-//                            UUID.randomUUID().toString()).toString(),"frontend/images/replay-service.png"
-//                        , centreX+27.5, flow.getY()-45, 35, 35, false, true);
-
-//                  2
-//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.WIRETAP.name(), flow.getId(),
-//                            UUID.randomUUID().toString()).toString(),"frontend/images/wiretap-service.png"
-//                        , centreX-40, flow.getY()-45, 35, 35, false, true);
-//
-//                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.EXCLUSION.name(), flow.getId(),
-//                            UUID.randomUUID().toString()).toString(),"frontend/images/hospital-service.png"
-//                        , centreX+5, flow.getY()-45, 35, 35, false, true);
-
-                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.EXCLUSION.name(), flow.getId(),
-                            UUID.randomUUID().toString()).toString(),"frontend/images/hospital-service.png"
-                        , centreX-17.5, flow.getY()-45, 35, 35, false, true);
-
                     numFound++;
                 }
 
-                if (exclusionMap.get(flow.getId()) != null && exclusionMap.get(flow.getId())) {
+                if (exclusionMap.get(flow.getId().getName()) != null && exclusionMap.get(flow.getId().getName())) {
                     flow.setExclusionFoundStatus(NodeFoundStatus.FOUND);
                     searchFoundStatus.setExclusionFound(true);
-
-                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.EXCLUSION.name(), flow.getId(),
-                            UUID.randomUUID().toString()).toString(),"frontend/images/hospital-service.png"
-                        , flow.getX()-20, flow.getY()-20, 35, 35, false, true);
-
                     numFound++;
                 }
 
-                if (replayMap.get(flow.getId()) != null && replayMap.get(flow.getId())) {
+                if (replayMap.get(flow.getId().getName()) != null && replayMap.get(flow.getId().getName())) {
                     flow.setReplayFoundStatus(NodeFoundStatus.FOUND);
                     searchFoundStatus.setReplayFound(true);
-
-                    this.designerCanvas.addIcon(new DesignerItemIdentifier(BusinessStreamItemTypes.REPLAY.name(), flow.getId(),
-                            UUID.randomUUID().toString()).toString(),"frontend/images/replay-service.png"
-                        , flow.getX()-20, flow.getY()-20, 35, 35, false, true);
-
                     numFound++;
                 }
 
-
+                this.addSearchFoundIconToFlow(flow, this.getSearchIconCoordinates(flow, numFound));
 
                 this.stringSearchFoundStatusMap.put(flow.getModuleName() + flow.getFlowName()
                     , searchFoundStatus);
@@ -466,6 +276,67 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
             return flow;
         }).collect(Collectors.toList());
+    }
+
+    private void addSearchFoundIconToFlow(Flow flow, List<Double> xCoordinates) {
+        int offset = 0;
+
+        this.designerCanvas.removeFigure(flow.getErrorIdentifier().toString());
+        this.designerCanvas.removeFigure(flow.getWiretapIdentifier().toString());
+        this.designerCanvas.removeFigure(flow.getExclusionIdentifier().toString());
+        this.designerCanvas.removeFigure(flow.getReplayIdentifier().toString());
+
+        if(flow.getErrorFoundStatus().equals(NodeFoundStatus.FOUND)) {
+            this.designerCanvas.addIcon(flow.getErrorIdentifier().toString(), "frontend/images/error-service.png"
+                , xCoordinates.get(offset++), flow.getY() - 45, 35, 35, false, true);
+        }
+
+        if(flow.getWiretapFoundStatus().equals(NodeFoundStatus.FOUND)) {
+            this.designerCanvas.addIcon(flow.getWiretapIdentifier().toString(),"frontend/images/wiretap-service.png"
+                , xCoordinates.get(offset++), flow.getY()-45, 35, 35, false, true);
+        }
+
+        if(flow.getExclusionFoundStatus().equals(NodeFoundStatus.FOUND)) {
+            this.designerCanvas.addIcon(flow.getExclusionIdentifier().toString(),"frontend/images/hospital-service.png"
+                , xCoordinates.get(offset++), flow.getY()-45, 35, 35, false, true);
+        }
+
+        if(flow.getReplayFoundStatus().equals(NodeFoundStatus.FOUND)) {
+            this.designerCanvas.addIcon(flow.getReplayIdentifier().toString(),"frontend/images/replay-service.png"
+                , xCoordinates.get(offset++), flow.getY()-45, 35, 35, false, true);
+        }
+    }
+
+    private List<Double> getSearchIconCoordinates(Flow flow, int numFound) {
+        int centreX = flow.getX() + (flow.getWidth() / 2);
+
+        ArrayList<Double> xCoordinates = new ArrayList();
+        if(numFound == 1){
+            xCoordinates.add(centreX-17.5);
+            xCoordinates.add(0d);
+            xCoordinates.add(0d);
+            xCoordinates.add(0d);
+        }
+        else if(numFound == 2){
+            xCoordinates.add(centreX-40d);
+            xCoordinates.add(centreX+5d);
+            xCoordinates.add(0d);
+            xCoordinates.add(0d);
+        }
+        else if(numFound == 3){
+            xCoordinates.add(centreX-62.5);
+            xCoordinates.add(centreX-17.5);
+            xCoordinates.add(centreX+27.5);
+            xCoordinates.add(0d);
+        }
+        else if(numFound == 4){
+            xCoordinates.add(centreX-84d);
+            xCoordinates.add(centreX-40d);
+            xCoordinates.add(centreX+5d);
+            xCoordinates.add(centreX+50d);
+        }
+
+        return xCoordinates;
     }
 
     @Override
@@ -488,44 +359,6 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
                 }
             }
         }
-
-//        if (this.businessStream != null) {
-//            nodes = new ArrayList<>();
-//            nodes.addAll(businessStream.getFlows());
-//            nodes.addAll(businessStream.getDestinations());
-//            nodes.addAll(businessStream.getIntegratedSystems());
-//
-//            if (this.networkDiagram != null) {
-//                this.remove(networkDiagram);
-//            }
-//
-////            this.populateFlowMap(businessStream.getFlows());
-//
-//            updateNetworkDiagram(nodes, businessStream.getEdges());
-//
-////            businessStream.getBoundaries()
-////                .forEach(boundary -> this.networkDiagram.drawBoundary(boundary.getX(),
-////                    boundary.getY(), boundary.getW(), boundary.getH(), boundary.getLabel(), boundary.getColour()));
-////
-////            this.networkDiagram.scale(0.7);
-//
-//            for (String key : this.flowMap.keySet()) {
-//                if (key.contains(".")) {
-//                    ModuleMetaData module = this.moduleMetaDataService
-//                        .findById(key.substring(0, key.indexOf(".")));
-//
-//                    if (module != null) {
-//                        FlowState flowState = FlowStateCache.instance().get(module, key.substring(key.indexOf(".") + 1));
-//
-//                        if (flowState != null) {
-//                            this.drawFlowStatus(flowState);
-//                        }
-//                    }
-//                }
-//            }
-//
-//            this.add(networkDiagram);
-//        }
     }
 
     @Override
@@ -572,38 +405,27 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         flows.forEach(flowJson -> {
             DesignerItemIdentifier identifier
                 = DesignerItemIdentifier.getIdentifier(flowJson.getString("id"));
-            Flow flow = new Flow(identifier.getName(), identifier.getName().substring(0, identifier.getName().indexOf(".")),
+            Flow flow = new Flow(identifier.toString(), identifier.getName().substring(0, identifier.getName().indexOf(".")),
                 identifier.getName().substring(identifier.getName().indexOf(".") + 1),
                 flowJson.getNumber("x").intValue(), flowJson.getNumber("y").intValue(),
                 flowJson.getNumber("width").intValue(), flowJson.getNumber("height").intValue());
 
-            this.flowMap.put(flow.getId(), flow);
+            this.flowMap.put(flow.getId().getName(), flow);
             this.flows.add(flow);
             this.stringSearchFoundStatusMap
-                .put(flow.getId(), new SearchFoundStatus());
+                .put(flow.getId().getName(), new SearchFoundStatus());
         });
 
     }
 
-    private void populateFlowMap(List<Flow> flows) {
-        this.flowMap = flows
-            .stream()
-            .collect(toMap(Flow::getId, Function.identity()));
-
-        this.stringSearchFoundStatusMap = new HashMap<>();
-
-        flows.forEach(flow -> this.stringSearchFoundStatusMap
-            .put(flow.getId(), new SearchFoundStatus()));
-    }
-
-    public BusinessStream getBusinessStream() {
-        return this.businessStream;
+    public List<Flow> getFlows() {
+        return this.flows;
     }
 
     @Override
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
 
-        DesignerItemIdentifier identifier = null;
+        DesignerItemIdentifier identifier;
 
         try {
              identifier = DesignerItemIdentifier
@@ -615,43 +437,60 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         }
 
         if(identifier.getType().equals(BusinessStreamItemTypes.FLOW.name())) {
-            String nodeId = identifier.getName();
-
-            logger.debug(nodeId);
-            logger.debug("Flow + " + this.flowMap.get(nodeId));
-
-            if (this.flowMap.get(nodeId) != null) {
-                ModuleMetaData moduleMetaData = this.moduleMetaDataService
-                    .findById(nodeId.substring(0, nodeId.indexOf(".")));
-
-                logger.debug("ModuleMetaData + " + moduleMetaData);
-
-                FlowVisualisationDialog flowVisualisationDialog
-                    = new FlowVisualisationDialog(this.moduleControlRestService, this.configurationRestService,
-                    this.triggerRestService, this.configurationMetadataService, moduleMetaData
-                    , this.flowMap.get(nodeId), this.solrSearchService
-                    , this.stringSearchFoundStatusMap.get(nodeId), this.hospitalAuditService
-                    , this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService
-                    , this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert);
-
-                flowVisualisationDialog.open();
-            }
+            this.openFlowVisualisation(identifier);
         }
-        else if(identifier.getType().equals(BusinessStreamItemTypes.ERROR.name())) {
-            SearchFoundStatus searchFoundStatus = this.stringSearchFoundStatusMap.get(identifier.getName());
+        else if(identifier.getType().equals(BusinessStreamItemTypes.ERROR.name()) ||
+            identifier.getType().equals(BusinessStreamItemTypes.EXCLUSION.name()) ||
+            identifier.getType().equals(BusinessStreamItemTypes.WIRETAP.name()) ||
+            identifier.getType().equals(BusinessStreamItemTypes.REPLAY.name())) {
+            this.openSearchResultsDialog(identifier);
+        }
+    }
 
-            Flow flow =  this.flowMap.get(identifier.getName());
-            logger.debug("error clicked: " + flow.getModuleName() + " " + flow.getFlowName());
-            SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
-                this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
-            searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), "error", false
-                , flow.getModuleName(), flow.getFlowName());
-            searchResultsDialog.open();
+    private void openSearchResultsDialog(DesignerItemIdentifier identifier) {
+        SearchFoundStatus searchFoundStatus = this.stringSearchFoundStatusMap.get(identifier.getName());
+
+        Flow flow =  this.flowMap.get(identifier.getName());
+        logger.debug("error clicked: " + flow.getModuleName() + " " + flow.getFlowName());
+        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
+            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
+        searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), identifier.getType().toLowerCase(), false
+            , flow.getModuleName(), flow.getFlowName());
+        searchResultsDialog.open();
+    }
+
+    private void openFlowVisualisation(DesignerItemIdentifier identifier) {
+        String nodeId = identifier.getName();
+
+        logger.debug(nodeId);
+        logger.debug("Flow + " + this.flowMap.get(nodeId));
+
+        if (this.flowMap.get(nodeId) != null) {
+            ModuleMetaData moduleMetaData = this.moduleMetaDataService
+                .findById(nodeId.substring(0, nodeId.indexOf(".")));
+
+            logger.debug("ModuleMetaData + " + moduleMetaData);
+
+            FlowVisualisationDialog flowVisualisationDialog
+                = new FlowVisualisationDialog(this.moduleControlRestService, this.configurationRestService,
+                this.triggerRestService, this.configurationMetadataService, moduleMetaData
+                , this.flowMap.get(nodeId), this.solrSearchService
+                , this.stringSearchFoundStatusMap.get(nodeId), this.hospitalAuditService
+                , this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService
+                , this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert);
+
+            flowVisualisationDialog.open();
         }
     }
 
     @Override
     public void rightClickEvent(CanvasItemRightClickEvent canvasItemRightClickEvent) {
+        if(canvasItemRightClickEvent.getFigure().getType().equals(BusinessStreamItemTypes.FLOW.name())) {
+            ModuleControlContextMenu moduleControlContextMenu = new ModuleControlContextMenu(canvasItemRightClickEvent.getClickLocationX(),
+                canvasItemRightClickEvent.getClickLocationY());
 
+            moduleControlContextMenu.open();
+
+        }
     }
 }

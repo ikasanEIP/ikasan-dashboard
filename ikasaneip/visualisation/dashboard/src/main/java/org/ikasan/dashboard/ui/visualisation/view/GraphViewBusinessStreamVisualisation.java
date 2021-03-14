@@ -13,10 +13,9 @@ import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamStatusPanel
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamVisualisation;
 import org.ikasan.dashboard.ui.visualisation.event.GraphViewChangeEvent;
 import org.ikasan.dashboard.ui.visualisation.event.GraphViewChangeListener;
-import org.ikasan.dashboard.ui.visualisation.model.business.stream.BusinessStream;
+import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.spec.error.reporting.ErrorReportingService;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.ConfigurationMetaDataService;
@@ -72,6 +71,8 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
 
     private List<GraphViewChangeListener> graphViewChangeListeners;
 
+    private String dynamicImagePath;
+
     /**
      * Constructor
      */
@@ -79,7 +80,7 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
         , ModuleControlService moduleControlRestService, ModuleMetaDataService moduleMetadataService, ConfigurationService configurationRestService
         , TriggerService triggerRestService, ConfigurationMetaDataService configurationMetadataService, HospitalAuditService hospitalAuditService
         , ResubmissionService resubmissionRestService, ReplayService replayRestService, BatchInsert replayAuditService, MetaDataService metaDataApplicationRestService
-        , BatchInsert<ModuleMetaData> moduleMetaDataBatchInsert)
+        , BatchInsert<ModuleMetaData> moduleMetaDataBatchInsert, String dynamicImagePath)
     {
         this.setMargin(false);
         this.setSizeFull();
@@ -132,6 +133,10 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
         if (this.moduleMetaDataBatchInsert == null) {
             throw new IllegalArgumentException("moduleMetaDataBatchInsert cannot be null!");
         }
+        this.dynamicImagePath = dynamicImagePath;
+        if (this.dynamicImagePath == null) {
+            throw new IllegalArgumentException("dynamicImagePath cannot be null!");
+        }
 
         this.graphViewChangeListeners = new ArrayList<>();
 
@@ -177,7 +182,7 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
             this.configurationRestService, this.triggerRestService, this.moduleMetadataService
             , this.configurationMetadataService, this.solrSearchService, this.hospitalAuditService,
             this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService,
-            this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert);
+            this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert, this.dynamicImagePath);
 
         businessStreamVisualisation.createBusinessStreamGraphGraph(businessStreamMetaData);
 
@@ -222,9 +227,9 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
         }
     }
 
-    public BusinessStream getBusinessStream() {
+    public List<Flow> getFlows() {
         if(this.businessStreamVisualisation != null) {
-            return this.businessStreamVisualisation.getBusinessStream();
+            return this.businessStreamVisualisation.getFlows();
         }
 
         return null;
