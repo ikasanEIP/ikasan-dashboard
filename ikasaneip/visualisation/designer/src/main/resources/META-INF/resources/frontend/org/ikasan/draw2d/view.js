@@ -83,6 +83,16 @@ View = draw2d.Canvas.extend({
                 return false;
             });
 
+            Mousetrap.bind(['ctrl+a', 'command+a'], $.proxy(function (event) {
+                debugger;
+                _this.getFigures().each((i, figure)=>{
+                    figure.select(false);
+                });
+
+                return false;
+            },this));
+
+
             Mousetrap.bind(['ctrl+c', 'command+c'], $.proxy(function (event) {
                 this.copy();
                 return false;
