@@ -25,6 +25,7 @@ import javax.annotation.Resource;
 @Component
 @CssImport("./styles/dashboard-view.css")
 @CssImport(value="./styles/hospital-events.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
+@CssImport(value="./styles/live-errors.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 public class DashboardView extends HorizontalLayout implements BeforeEnterObserver
 {
     @Resource
@@ -54,7 +55,7 @@ public class DashboardView extends HorizontalLayout implements BeforeEnterObserv
         if(!initialised) {
             board.addRow(new BusinessStreamWidget(this.businessStreamMetaDataService)
                 , new ModuleWidget(moduleMetadataService), new StatusWidget(moduleMetadataService));
-            board.addRow(new HospitalEventsWidget(solrGeneralService), new SystemEventWidget());
+            board.addRow(new HospitalEventsWidget(solrGeneralService), new SystemEventWidget(solrGeneralService));
 
             initialised = true;
         }
