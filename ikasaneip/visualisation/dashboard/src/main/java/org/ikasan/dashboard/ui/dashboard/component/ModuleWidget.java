@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.ui.home.component;
+package org.ikasan.dashboard.ui.dashboard.component;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Anchor;

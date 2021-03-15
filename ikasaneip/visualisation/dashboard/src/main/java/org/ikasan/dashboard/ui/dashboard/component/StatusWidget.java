@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.ui.home.component;
+package org.ikasan.dashboard.ui.dashboard.component;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickEvent;
@@ -17,11 +17,9 @@ import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
-import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.visualisation.component.FlowListFilteringGrid;
 import org.ikasan.dashboard.ui.visualisation.component.filter.FlowSearchFilter;
-import org.ikasan.dashboard.ui.visualisation.model.designer.business.stream.Flow;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.spec.metadata.FlowMetaData;

@@ -1,15 +1,10 @@
-package org.ikasan.dashboard.ui.home.component;
+package org.ikasan.dashboard.ui.dashboard.component;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
 import com.vaadin.flow.component.html.Div;
 
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.logging.Logger;
 
 public class SystemEventWidget extends Div {
 

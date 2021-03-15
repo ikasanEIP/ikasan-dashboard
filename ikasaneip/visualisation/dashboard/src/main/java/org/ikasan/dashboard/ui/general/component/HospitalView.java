@@ -343,12 +343,14 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
         ExclusionEventAction exclusionEventAction = new ExclusionEventActionImpl();
         exclusionEventAction.setComment(comment);
         exclusionEventAction.setActionedBy(user);
-        exclusionEventAction.setAction(String.format(translatedEventActionMessage, comment, action, user, errorOccurrence.getEvent()));
+        exclusionEventAction.setAction(String.format(translatedEventActionMessage, comment, action, user
+            , DateFormatter.getFormattedDate(System.currentTimeMillis()), errorOccurrence.getEvent()));
+
         // the error uri is in fact the id of excluded events
         exclusionEventAction.setErrorUri(document.getId());
         exclusionEventAction.setModuleName(document.getModuleName());
         exclusionEventAction.setFlowName(document.getFlowName());
-        exclusionEventAction.setTimestamp(System.currentTimeMillis());
+        exclusionEventAction.setTimestamp(document.getTimestamp());
         exclusionEventAction.setEvent(document.getEvent());
 
         return exclusionEventAction;
