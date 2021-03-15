@@ -4,7 +4,7 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 
-public class ModuleStreamDialog extends AbstractCloseableResizableDialog {
+public class    ModuleStreamDialog extends AbstractCloseableResizableDialog {
     public ModuleStreamDialog() {
         super.title.setText("Module ");
 

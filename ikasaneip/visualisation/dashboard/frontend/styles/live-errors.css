@@ -1,0 +1,11 @@
+:host(.live-errors) .highcharts-color-0 {
+    stroke: #ef5350;
+    fill: #ef5350;
+}
+
+:host(.live-errors) .highcharts-plot-lines-0 .highcharts-plot-line {
+    stroke: #c0c0c0;
+}
+
+:host(.live-errors) .highcharts-markers > .highcharts-point {
+}
