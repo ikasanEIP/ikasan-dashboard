@@ -130,6 +130,9 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
                 SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndNewAction(this.designerCanvas));
                 savePromptDialog.open();
             }
+            else {
+                this.designerCanvas.clear();
+            }
         });
 
         MenuItem open = fileSubMenu.addItem("Open");
