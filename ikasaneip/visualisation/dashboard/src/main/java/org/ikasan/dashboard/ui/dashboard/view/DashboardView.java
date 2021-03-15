@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.ui.home.view;
+package org.ikasan.dashboard.ui.dashboard.view;
 
 import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -7,28 +7,25 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
-import org.ikasan.dashboard.ui.home.component.*;
+import org.ikasan.dashboard.ui.dashboard.component.*;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
-import org.ikasan.dashboard.ui.visualisation.view.MapView;
+import org.ikasan.solr.model.IkasanSolrDocument;
+import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.solr.SolrGeneralService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.stream.IntStream;
 
 @Route(value = "", layout = IkasanAppLayout.class)
 @UIScope
 @Component
 @CssImport("./styles/dashboard-view.css")
-public class HomeView extends HorizontalLayout implements BeforeEnterObserver
+@CssImport(value="./styles/hospital-events.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
+public class DashboardView extends HorizontalLayout implements BeforeEnterObserver
 {
     @Resource
     private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
@@ -36,11 +33,14 @@ public class HomeView extends HorizontalLayout implements BeforeEnterObserver
     @Autowired
     private ModuleMetaDataService moduleMetadataService;
 
+    @Resource
+    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+
     private Board board;
 
     private boolean initialised = false;
 
-    public HomeView()
+    public DashboardView()
     {
         board = new Board();
         board.addClassName("styled");
@@ -54,7 +54,7 @@ public class HomeView extends HorizontalLayout implements BeforeEnterObserver
         if(!initialised) {
             board.addRow(new BusinessStreamWidget(this.businessStreamMetaDataService)
                 , new ModuleWidget(moduleMetadataService), new StatusWidget(moduleMetadataService));
-            board.addRow(new HospitalEventsWidget(), new SystemEventWidget());
+            board.addRow(new HospitalEventsWidget(solrGeneralService), new SystemEventWidget());
 
             initialised = true;
         }

@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.ui.home.component;
+package org.ikasan.dashboard.ui.dashboard.component;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -19,8 +19,6 @@ import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
-
-import java.util.List;
 
 
 @CssImport("./styles/dashboard-view.css")

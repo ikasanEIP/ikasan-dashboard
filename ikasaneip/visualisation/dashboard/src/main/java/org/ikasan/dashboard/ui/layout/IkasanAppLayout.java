@@ -28,7 +28,7 @@ import com.vaadin.flow.theme.material.Material;
 import org.ikasan.dashboard.ui.administration.view.*;
 import org.ikasan.dashboard.ui.general.component.AboutIkasanDialog;
 import org.ikasan.dashboard.ui.general.component.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.home.view.HomeView;
+import org.ikasan.dashboard.ui.dashboard.view.DashboardView;
 import org.ikasan.dashboard.ui.search.view.SearchView;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
@@ -127,7 +127,7 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
 
         LeftAppMenuBuilder leftAppMenuBuilder = LeftAppMenuBuilder.get();
 
-        this.dashboardMenuItem = new LeftNavigationItem("Dashboard", VaadinIcon.DASHBOARD.create(), HomeView.class);
+        this.dashboardMenuItem = new LeftNavigationItem("Dashboard", VaadinIcon.DASHBOARD.create(), DashboardView.class);
         this.dashboardMenuItem.setId("dashboardMenuItem");
         leftAppMenuBuilder = leftAppMenuBuilder.add(dashboardMenuItem);
 

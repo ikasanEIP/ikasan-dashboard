@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.ui.home.component;
+package org.ikasan.dashboard.ui.dashboard.component;
 
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
