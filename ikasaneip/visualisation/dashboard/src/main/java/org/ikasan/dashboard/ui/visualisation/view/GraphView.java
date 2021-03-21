@@ -3,6 +3,7 @@ package org.ikasan.dashboard.ui.visualisation.view;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -99,7 +100,10 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver
         this.setMargin(false);
 
         this.setWidth("100%");
-        this.setHeight("88vh");
+        this.setHeight("100%");
+
+        this.getElement().getThemeList().remove("padding");
+        this.getElement().getThemeList().remove("spacing");
     }
 
     private void init() {

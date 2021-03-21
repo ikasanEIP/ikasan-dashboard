@@ -12,7 +12,6 @@ import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.general.component.SearchResultsDialog;
-import org.ikasan.dashboard.ui.visualisation.adapter.service.BusinessStreamVisjsAdapter;
 import org.ikasan.dashboard.ui.visualisation.component.util.SearchFoundStatus;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
 import org.ikasan.dashboard.ui.visualisation.util.BusinessStreamItemTypes;
@@ -77,6 +76,10 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
     private BatchInsert<ModuleMetaData> moduleMetaDataBatchInsert;
 
     private String dynamicImagePath;
+
+    private BusinessStreamMetaData businessStreamMetaData;
+
+    private boolean initialised = false;
 
     public BusinessStreamVisualisation(ModuleControlService moduleControlRestService
         , ConfigurationService configurationRestService, TriggerService triggerRestService
@@ -154,25 +157,32 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
      * @param businessStreamMetaData
      */
     public void createBusinessStreamGraphGraph(BusinessStreamMetaData businessStreamMetaData) throws IOException {
-        BusinessStreamVisjsAdapter adapter = new BusinessStreamVisjsAdapter();
+        this.businessStreamMetaData = businessStreamMetaData;
+        this.initialised = false;
+        init();
+    }
 
-        if (this.designerCanvas != null) {
-            this.remove(designerCanvas);
+    private void init() throws IOException{
+        if(!initialised) {
+            if (this.designerCanvas != null) {
+                this.remove(designerCanvas);
+            }
+
+
+            this.designerCanvas = new DesignerCanvas("canvas-viewport", this.dynamicImagePath, true);
+            this.designerCanvas.setCanvasJson(businessStreamMetaData.getJson());
+            this.designerCanvas.importJson();
+            this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
+            this.designerCanvas.addCanvasItemRightClickEventListener(this);
+
+            this.populateFlowMap(businessStreamMetaData);
+
+            this.designerCanvas.manageClickableItems();
+
+            this.add(designerCanvas);
+
+            this.initialised = true;
         }
-
-
-        this.designerCanvas = new DesignerCanvas("canvas-viewport", this.dynamicImagePath, true);
-        this.designerCanvas.setCanvasJson(businessStreamMetaData.getJson());
-        this.designerCanvas.importJson();
-//        this.designerCanvas.setReadonly(true);
-        this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
-        this.designerCanvas.addCanvasItemRightClickEventListener(this);
-
-        this.populateFlowMap(businessStreamMetaData);
-
-        this.designerCanvas.manageClickableItems();
-
-        this.add(designerCanvas);
     }
 
     private void drawFlowStatus(FlowState state) {
@@ -341,6 +351,13 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+
+        try {
+            this.init();
+        }
+        catch (IOException e) {
+            logger.warn("Could not initialise business stream!", e);
+        }
         this.redraw();
     }
 
@@ -363,7 +380,10 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        this.redraw();
+        if(this.designerCanvas != null){
+            this.redraw();
+        }
+
         UI ui = attachEvent.getUI();
         flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState ->
         {

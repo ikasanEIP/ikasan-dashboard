@@ -125,7 +125,7 @@ public class StatusWidget extends Div {
         this.errorIcon.getElement().getStyle().set("margin-left", "5px");
         this.errorIcon.getElement().getStyle().set( "cursor", "pointer");
         this.errorIcon.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-            this.createGrid(this.stateMap.get(State.STOPPED_IN_ERROR));
+            this.createGrid(this.stateMap.get(State.STOPPED_IN_ERROR_STATE));
         });
         this.errorDiv.add(errorIcon);
 

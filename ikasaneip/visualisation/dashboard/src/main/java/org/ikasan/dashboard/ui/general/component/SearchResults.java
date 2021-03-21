@@ -303,39 +303,39 @@ public class SearchResults extends Div {
             .setFlexGrow(8)
             .setResizable(true);
 
-        // Add the event details column to the grid
-        this.searchResultsGrid.addColumn(TemplateRenderer.<IkasanSolrDocument>of(
-            "<div>[[item.event]]</div>")
-            .withProperty("event",
-                ikasanSolrDocument -> {
-                    if(ikasanSolrDocument.getType().equals("error"))
-                    {
-                        if (ikasanSolrDocument.getErrorMessage() == null)
-                        {
-                            return "";
-                        } else
-                        {
-                            int endIndex = ikasanSolrDocument.getErrorMessage().length() > 200 ? 200 : ikasanSolrDocument.getErrorMessage().length();
-                            return ikasanSolrDocument.getErrorMessage().substring(0, endIndex);
-                        }
-                    }
-                    else
-                    {
-                        if (ikasanSolrDocument.getEvent() == null)
-                        {
-                            return "";
-                        } else
-                        {
-                            int endIndex = ikasanSolrDocument.getEvent().length() > 200 ? 200 : ikasanSolrDocument.getEvent().length();
-                            return ikasanSolrDocument.getEvent().substring(0, endIndex);
-                        }
-                    }
-                }))
-            .setKey("payload")
-            .setHeader(getTranslation("table-header.event-details", UI.getCurrent().getLocale()))
-            .setSortable(false)
-            .setFlexGrow(12)
-            .setResizable(true);
+//        // Add the event details column to the grid
+//        this.searchResultsGrid.addColumn(TemplateRenderer.<IkasanSolrDocument>of(
+//            "<div>[[item.event]]</div>")
+//            .withProperty("event",
+//                ikasanSolrDocument -> {
+//                    if(ikasanSolrDocument.getType().equals("error"))
+//                    {
+//                        if (ikasanSolrDocument.getErrorMessage() == null)
+//                        {
+//                            return "";
+//                        } else
+//                        {
+//                            int endIndex = ikasanSolrDocument.getErrorMessage().length() > 200 ? 200 : ikasanSolrDocument.getErrorMessage().length();
+//                            return ikasanSolrDocument.getErrorMessage().substring(0, endIndex);
+//                        }
+//                    }
+//                    else
+//                    {
+//                        if (ikasanSolrDocument.getEvent() == null)
+//                        {
+//                            return "";
+//                        } else
+//                        {
+//                            int endIndex = ikasanSolrDocument.getEvent().length() > 200 ? 200 : ikasanSolrDocument.getEvent().length();
+//                            return ikasanSolrDocument.getEvent().substring(0, endIndex);
+//                        }
+//                    }
+//                }))
+//            .setKey("payload")
+//            .setHeader(getTranslation("table-header.event-details", UI.getCurrent().getLocale()))
+//            .setSortable(false)
+//            .setFlexGrow(12)
+//            .setResizable(true);
 
         // Add the timestamp column to the grid
         this.searchResultsGrid.addColumn(TemplateRenderer.<IkasanSolrDocument>of(

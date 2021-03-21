@@ -65,7 +65,7 @@ import java.util.UUID;
 @UIScope
 @PageTitle("Ikasan - Designer")
 @Component
-        public class BusinessStreamDesignerView extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener, CanvasItemDoubleClickEventListener, BeforeLeaveObserver
+public class BusinessStreamDesignerView extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener, CanvasItemDoubleClickEventListener, BeforeLeaveObserver
 {
     Logger logger = LoggerFactory.getLogger(BusinessStreamDesignerView.class);
 
@@ -88,7 +88,6 @@ import java.util.UUID;
     private String integratedSystemsImagePath;
 
     private ArrayList<Image> integratedSystems;
-
 
     /**
      * Constructor
@@ -421,7 +420,6 @@ import java.util.UUID;
                 logger.debug("Received flow state: " + flowState);
             });
         });
-
     }
 
     @Override

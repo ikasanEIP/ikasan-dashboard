@@ -1,6 +1,8 @@
 package org.ikasan.dashboard.ui.dashboard.component;
 
+import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.events.PointClickEvent;
 import com.vaadin.flow.component.charts.model.*;
@@ -27,6 +29,8 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
 
     private Chart chart;
+    private DataSeries exclusionSeries;
+    private DataSeries actionedSeries;
 
     public HospitalEventsWidget(SolrGeneralService solrGeneralService) {
         this.solrGeneralService = solrGeneralService;
@@ -43,7 +47,7 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
         this.removeAll();
         Div div = new Div();
         div.addClassNames("card-counter");
-        div.setHeight("275px");
+        div.setHeight("325px");
 
         chart = new Chart();
         chart.setClassName("hospital-events");
@@ -60,7 +64,7 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
 
         Tooltip tooltip = new Tooltip();
         tooltip.setPointFormat("<span>{series.name}</span>: <b>{point.y}</b><br/>");
-        tooltip.setValueDecimals(2);
+        tooltip.setValueDecimals(0);
         tooltip.setShared(true);
         configuration.setTooltip(tooltip);
 
@@ -68,21 +72,19 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
 
         List<DayExclusion> dayExclusions = this.loadAllData(midnightToday);
 
-        final DataSeries series = new DataSeries();
-        series.setName("Exclusions");
-        series.add(new DataSeriesItem(midnightToday - (8*MILLI_IN_DAY), dayExclusions.get(8).exclusions));
-        series.add(new DataSeriesItem(midnightToday - (7*MILLI_IN_DAY), dayExclusions.get(7).exclusions));
-        series.add(new DataSeriesItem(midnightToday - (6*MILLI_IN_DAY), dayExclusions.get(6).exclusions));
-        series.add(new DataSeriesItem(midnightToday - (5*MILLI_IN_DAY), dayExclusions.get(5).exclusions));
-        series.add(new DataSeriesItem(midnightToday - (4*MILLI_IN_DAY), dayExclusions.get(4).exclusions));
-        series.add(new DataSeriesItem(midnightToday - (3*MILLI_IN_DAY), dayExclusions.get(3).exclusions));
-        series.add(new DataSeriesItem(midnightToday - (2*MILLI_IN_DAY), dayExclusions.get(2).exclusions));
-        series.add(new DataSeriesItem(midnightToday - (1*MILLI_IN_DAY), dayExclusions.get(1).exclusions));
-        series.add(new DataSeriesItem(midnightToday - (0*MILLI_IN_DAY), dayExclusions.get(0).exclusions));
+        exclusionSeries = new DataSeries();
+        exclusionSeries.setName("Exclusions");
+        exclusionSeries.add(new DataSeriesItem(midnightToday - (8*MILLI_IN_DAY), dayExclusions.get(8).exclusions));
+        exclusionSeries.add(new DataSeriesItem(midnightToday - (7*MILLI_IN_DAY), dayExclusions.get(7).exclusions));
+        exclusionSeries.add(new DataSeriesItem(midnightToday - (6*MILLI_IN_DAY), dayExclusions.get(6).exclusions));
+        exclusionSeries.add(new DataSeriesItem(midnightToday - (5*MILLI_IN_DAY), dayExclusions.get(5).exclusions));
+        exclusionSeries.add(new DataSeriesItem(midnightToday - (4*MILLI_IN_DAY), dayExclusions.get(4).exclusions));
+        exclusionSeries.add(new DataSeriesItem(midnightToday - (3*MILLI_IN_DAY), dayExclusions.get(3).exclusions));
+        exclusionSeries.add(new DataSeriesItem(midnightToday - (2*MILLI_IN_DAY), dayExclusions.get(2).exclusions));
+        exclusionSeries.add(new DataSeriesItem(midnightToday - (1*MILLI_IN_DAY), dayExclusions.get(1).exclusions));
+        exclusionSeries.add(new DataSeriesItem(midnightToday - (0*MILLI_IN_DAY), dayExclusions.get(0).exclusions));
 
-        configuration.addSeries(series);
-
-        final DataSeries actionedSeries = new DataSeries();
+        actionedSeries = new DataSeries();
         actionedSeries.setName("Actioned Exclusions");
         actionedSeries.add(new DataSeriesItem(midnightToday - (8*MILLI_IN_DAY), dayExclusions.get(8).actionedExclusions));
         actionedSeries.add(new DataSeriesItem(midnightToday - (7*MILLI_IN_DAY), dayExclusions.get(7).actionedExclusions));
@@ -94,18 +96,96 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
         actionedSeries.add(new DataSeriesItem(midnightToday - (1*MILLI_IN_DAY), dayExclusions.get(1).actionedExclusions));
         actionedSeries.add(new DataSeriesItem(midnightToday - (0*MILLI_IN_DAY), dayExclusions.get(0).actionedExclusions));
 
-        configuration.addSeries(actionedSeries);
+        chart.getConfiguration().setSeries(exclusionSeries, actionedSeries);
 
         chart.setHeight("260px");
-        chart.setWidthFull();
+        chart.setWidth("95%");
+        chart.getStyle().set("position", "absolute");
+        chart.getStyle().set("top", "50px");
+        chart.getStyle().set("right", "10px");
+        chart.getStyle().set("left", "10px");
+
 
         chart.addPointClickListener((ComponentEventListener<PointClickEvent>) pointClickEvent -> {
-            pointClickEvent.getCategory();
+            String category = pointClickEvent.getCategory();
+            pointClickEvent.getSeriesItemIndex();
         });
 
-        div.add(chart);
+        Button refreshButton = new Button();
+        refreshButton.getStyle().set("position", "absolute");
+        refreshButton.getStyle().set("top", "10px");
+        refreshButton.getStyle().set("right", "10px");
+
+        refreshButton.addClickListener(buttonClickEvent -> {
+            this.refresh();
+        });
+        refreshButton.getElement().appendChild(IronIcons.REFRESH.create().getElement());
+
+        div.add(refreshButton, chart);
 
         this.add(div);
+    }
+
+    private void refresh(){
+        long midnightToday = this.getMidnightTodayMilliseconds();
+
+        List<DayExclusion> dayExclusions = this.loadAllData(midnightToday);
+
+        exclusionSeries.get(0).setY(dayExclusions.get(8).exclusions);
+        exclusionSeries.get(0).setX(midnightToday - (8*MILLI_IN_DAY));
+        exclusionSeries.update(exclusionSeries.get(0));
+        exclusionSeries.get(1).setY(dayExclusions.get(7).exclusions);
+        exclusionSeries.get(1).setX(midnightToday - (7*MILLI_IN_DAY));
+        exclusionSeries.update(exclusionSeries.get(1));
+        exclusionSeries.get(2).setY(dayExclusions.get(6).exclusions);
+        exclusionSeries.get(2).setX(midnightToday - (6*MILLI_IN_DAY));
+        exclusionSeries.update(exclusionSeries.get(2));
+        exclusionSeries.get(3).setY(dayExclusions.get(5).exclusions);
+        exclusionSeries.get(3).setX(midnightToday - (5*MILLI_IN_DAY));
+        exclusionSeries.update(exclusionSeries.get(3));
+        exclusionSeries.get(4).setY(dayExclusions.get(4).exclusions);
+        exclusionSeries.get(4).setX(midnightToday - (4*MILLI_IN_DAY));
+        exclusionSeries.update(exclusionSeries.get(4));
+        exclusionSeries.get(5).setY(dayExclusions.get(3).exclusions);
+        exclusionSeries.get(5).setX(midnightToday - (3*MILLI_IN_DAY));
+        exclusionSeries.update(exclusionSeries.get(5));
+        exclusionSeries.get(6).setY(dayExclusions.get(2).exclusions);
+        exclusionSeries.get(6).setX(midnightToday - (2*MILLI_IN_DAY));
+        exclusionSeries.update(exclusionSeries.get(6));
+        exclusionSeries.get(7).setY(dayExclusions.get(1).exclusions);
+        exclusionSeries.get(7).setX(midnightToday - (1*MILLI_IN_DAY));
+        exclusionSeries.update(exclusionSeries.get(7));
+        exclusionSeries.get(8).setY(dayExclusions.get(0).exclusions);
+        exclusionSeries.get(8).setX(midnightToday - (0*MILLI_IN_DAY));
+        exclusionSeries.update(exclusionSeries.get(8));
+
+        actionedSeries.get(0).setY(dayExclusions.get(8).actionedExclusions);
+        actionedSeries.get(0).setX(midnightToday - (8*MILLI_IN_DAY));
+        actionedSeries.update(actionedSeries.get(0));
+        actionedSeries.get(1).setY(dayExclusions.get(7).actionedExclusions);
+        actionedSeries.get(1).setX(midnightToday - (7*MILLI_IN_DAY));
+        actionedSeries.update(actionedSeries.get(1));
+        actionedSeries.get(2).setY(dayExclusions.get(6).actionedExclusions);
+        actionedSeries.get(2).setX(midnightToday - (6*MILLI_IN_DAY));
+        actionedSeries.update(actionedSeries.get(2));
+        actionedSeries.get(3).setY(dayExclusions.get(5).actionedExclusions);
+        actionedSeries.get(3).setX(midnightToday - (5*MILLI_IN_DAY));
+        actionedSeries.update(actionedSeries.get(3));
+        actionedSeries.get(4).setY(dayExclusions.get(4).actionedExclusions);
+        actionedSeries.get(4).setX(midnightToday - (4*MILLI_IN_DAY));
+        actionedSeries.update(actionedSeries.get(4));
+        actionedSeries.get(5).setY(dayExclusions.get(3).actionedExclusions);
+        actionedSeries.get(5).setX(midnightToday - (3*MILLI_IN_DAY));
+        actionedSeries.update(actionedSeries.get(5));
+        actionedSeries.get(6).setY(dayExclusions.get(2).actionedExclusions);
+        actionedSeries.get(6).setX(midnightToday - (2*MILLI_IN_DAY));
+        actionedSeries.update(actionedSeries.get(6));
+        actionedSeries.get(7).setY(dayExclusions.get(1).actionedExclusions);
+        actionedSeries.get(7).setX(midnightToday - (1*MILLI_IN_DAY));
+        actionedSeries.update(actionedSeries.get(7));
+        actionedSeries.get(8).setY(dayExclusions.get(0).actionedExclusions);
+        actionedSeries.get(8).setX(midnightToday - (0*MILLI_IN_DAY));
+        actionedSeries.update(actionedSeries.get(8));
     }
 
     private List<DayExclusion> loadAllData(long midnightToday) {
