@@ -3,7 +3,9 @@ package org.ikasan.dashboard.ui.visualisation.view;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.shared.Registration;
@@ -49,9 +51,10 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
 
     private BusinessStreamVisualisation businessStreamVisualisation;
 
-    private HorizontalLayout headerLayout = new HorizontalLayout();
+    private VerticalLayout headerLayout;
 
-    private H2 businessStreamLabel = new H2();
+    private H2 businessStreamLabel;
+    private Paragraph businessStreamDescription;
 
     private Registration broadcasterRegistration;
 
@@ -144,20 +147,8 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
     }
 
     private void init() {
-        this.headerLayout = new HorizontalLayout();
-        this.headerLayout.setWidth("100%");
-        this.headerLayout.setHeight("50px");
-        this.headerLayout.add(this.businessStreamLabel);
-        this.headerLayout.setVerticalComponentAlignment(Alignment.CENTER, this.businessStreamLabel);
-        this.headerLayout.setSpacing(false);
-        this.headerLayout.setMargin(false);
-
-        this.businessStreamStatusPanel = new BusinessStreamStatusPanel(moduleControlRestService, moduleMetadataService);
-        this.graphViewChangeListeners.add(businessStreamStatusPanel);
-
-        this.headerLayout.add(businessStreamStatusPanel);
-
-        this.add(this.headerLayout);
+        this.getThemeList().remove("padding");
+        this.getThemeList().remove("spacing");
     }
 
     /**
@@ -175,23 +166,41 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
     protected void createBusinessStreamGraph(String name, BusinessStreamMetaData businessStreamMetaData) throws IOException {
 
         if (this.businessStreamVisualisation != null) {
-            this.remove(businessStreamVisualisation);
+            this.removeAll();
         }
 
-        businessStreamVisualisation = new BusinessStreamVisualisation(this.moduleControlRestService,
+        this.businessStreamLabel = new H2();
+        this.businessStreamLabel.getStyle().set("padding", "0px");
+        this.businessStreamLabel.getStyle().set("margin", "0px");
+
+        this.businessStreamLabel.setText(name);
+        this.businessStreamDescription = new Paragraph();
+        this.businessStreamDescription.getStyle().set("padding", "0px");
+        this.businessStreamDescription.getStyle().set("margin-top", "20px");
+        this.businessStreamDescription.setText(businessStreamMetaData.getDescription());
+
+        this.headerLayout = new VerticalLayout();
+        this.headerLayout.setWidth("100%");
+//        this.headerLayout.getStyle().set("height", "100px");
+//        this.headerLayout.getStyle().set("padding", "0px");
+//        this.headerLayout.getStyle().set("margin", "0px");
+
+//        this.businessStreamStatusPanel = new BusinessStreamStatusPanel(this.moduleControlRestService, this.moduleMetadataService);
+//        this.businessStreamStatusPanel.setBusinessStreamVisualisation(businessStreamVisualisation);
+
+        this.headerLayout.add(this.businessStreamLabel, this.businessStreamDescription);
+
+        this.add(this.headerLayout);
+
+        this.businessStreamVisualisation = new BusinessStreamVisualisation(this.moduleControlRestService,
             this.configurationRestService, this.triggerRestService, this.moduleMetadataService
             , this.configurationMetadataService, this.solrSearchService, this.hospitalAuditService,
             this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService,
             this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert, this.dynamicImagePath);
 
-        businessStreamVisualisation.createBusinessStreamGraphGraph(businessStreamMetaData);
+        this.businessStreamVisualisation.createBusinessStreamGraphGraph(businessStreamMetaData);
 
-        this.businessStreamLabel.setText(name);
-//        this.businessStreamStatusPanel.setBusinessStream((org.ikasan.business.stream.metadata.model.BusinessStream)
-//            businessStreamMetaData.getBusinessStream());
-        this.businessStreamStatusPanel.setBusinessStreamVisualisation(businessStreamVisualisation);
-
-        this.add(businessStreamVisualisation);
+        this.add(this.businessStreamVisualisation);
 
         this.fireModuleFlowChangeEvent();
     }

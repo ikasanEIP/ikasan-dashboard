@@ -67,6 +67,8 @@ import org.vaadin.tabs.PagedTabs;
 import javax.annotation.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -144,7 +146,10 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         this.setMargin(false);
 
         this.setWidth("100%");
-        this.setHeight("88vh");
+        this.setHeight("100%");
+
+        this.getElement().getThemeList().remove("padding");
+        this.getElement().getThemeList().remove("spacing");
     }
 
     private void init()
@@ -356,8 +361,10 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         this.populateBusinessStreamGrid();
 
         try {
-            if(this.visualisationType != null && this.visualisationType.equals(VisualisationType.BUSINESS_STREAM.name())) {
-                BusinessStreamMetaData businessStreamMetaData = this.businessStreamMetaDataService.findById(this.visualisationName);
+            if(this.visualisationType != null && this.visualisationType.equals(VisualisationType.BUSINESS_STREAM.name())
+                && this.businessStreamVisualisation == null) {
+                BusinessStreamMetaData businessStreamMetaData = this.businessStreamMetaDataService.findById(URLDecoder.decode(this.visualisationName
+                    , StandardCharsets.UTF_8.toString()));
 
                 if(businessStreamMetaData != null) {
                     this.createBusinessStreamGraph(businessStreamMetaData.getName(), businessStreamMetaData);
@@ -365,8 +372,10 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
                     this.moduleVisualisation = null;
                 }
             }
-            else if(this.visualisationType != null && this.visualisationType.equals(VisualisationType.MODULE.name())) {
-                ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(this.visualisationName);
+            else if(this.visualisationType != null && this.visualisationType.equals(VisualisationType.MODULE.name())
+                && this.moduleVisualisation == null) {
+                ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(URLDecoder.decode(this.visualisationName
+                    , StandardCharsets.UTF_8.toString()));
 
                 if(moduleMetaData != null) {
                     this.createModuleVisualisation(moduleMetaData);
@@ -374,7 +383,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
                     this.businessStreamVisualisation = null;
                 }
             }
-            else if(this.visualisationType != null && this.visualisationType.equals(VisualisationType.FLOW.name())) {
+            else if(this.visualisationType != null && this.visualisationType.equals(VisualisationType.FLOW.name()) && this.moduleVisualisation == null) {
                 String moduleName = this.visualisationName.substring(0, this.visualisationName.indexOf("."));
                 String flowName = this.visualisationName.substring(this.visualisationName.indexOf(".") + 1);
 

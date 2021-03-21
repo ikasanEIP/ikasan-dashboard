@@ -501,8 +501,8 @@
             let width  = Math.max.apply(Math, xCoords)-minX;
             let height = Math.max.apply(Math, yCoords)-minY;
 
-            let widthZoomFactor = width / 1300;
-            let heightZoomFactor = height / 750;
+            let widthZoomFactor = width / 1500;
+            let heightZoomFactor = height / 800;
 
             let zoomFactor = 0;
 
@@ -517,15 +517,14 @@
                 zoomFactor = 1;
             }
 
+
             designer.$connector.designer.setZoom(zoomFactor)
-            designer.$connector.designer.scrollTo(minY/zoomFactor - 20, minX/zoomFactor - 20);
+            designer.$connector.designer.scrollTo((minY/zoomFactor)-((800-(height/zoomFactor))/4), (minX-100)/zoomFactor);
         }
 
         designer.$connector.manageClickableItems = function () {
             let _figures = _this.getFigures();
-            console.log(_figures);
             _figures.each((i, figure)=>{
-                console.log(i + " " +figure.getId());
                 if(figure.NAME === 'draw2d.shape.basic.Image') {
                     if(figure.getId().startsWith("FLOW")) {
                         debugger;

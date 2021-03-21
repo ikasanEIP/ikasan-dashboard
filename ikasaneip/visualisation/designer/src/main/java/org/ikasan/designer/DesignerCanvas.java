@@ -36,10 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 
-/**
- * Wraps a visjs network diagram. See http://visjs.org/network_examples.html
- */
-@SuppressWarnings("serial")
+
 @Tag("div")
 @StyleSheet("./org/ikasan/draw2d/designer.css")
 public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnterObserver {
@@ -69,11 +66,15 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
 
     private boolean readonly;
 
+
     public DesignerCanvas(String name, String dynamicImagePath, boolean readonly) {
         super();
         this.name = name;
         this.dynamicImagePath = dynamicImagePath;
         this.readonly = readonly;
+
+        this.getElement().getThemeList().remove("padding");
+        this.getElement().getThemeList().remove("spacing");
 
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery.js");
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery-ui.js");
@@ -139,7 +140,11 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
+
         initConnector();
+        if(this.canvasJson != null) {
+            this.importJson();
+        }
     }
 
     @Override

@@ -1,7 +1,9 @@
 package org.ikasan.dashboard.ui.dashboard.component;
 
 
+import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
 import com.vaadin.flow.component.html.Div;
@@ -12,7 +14,6 @@ import org.ikasan.spec.solr.SolrGeneralService;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -20,23 +21,25 @@ import java.util.concurrent.TimeUnit;
 
 public class SystemEventWidget extends Div {
 
+    private static int REPORTING_INTERVAL = 60000;
+
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+
+    private DataSeries series;
 
     public SystemEventWidget(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService) {
         this.solrGeneralService = solrGeneralService;
 
         Div div = new Div();
         div.addClassNames("card-counter");
-        div.setHeight("275px");
-
-        final Random random = new Random();
+        div.setHeight("325px");
 
         final Chart chart = new Chart();
         chart.setClassName("live-errors");
 
         final Configuration configuration = chart.getConfiguration();
         configuration.getChart().setType(ChartType.SPLINE);
-        configuration.getTitle().setText("Live Error Occurrences");
+        configuration.getTitle().setText("Error Occurrences");
 
         XAxis xAxis = configuration.getxAxis();
         xAxis.setType(AxisType.DATETIME);
@@ -45,30 +48,56 @@ public class SystemEventWidget extends Div {
         YAxis yAxis = configuration.getyAxis();
         yAxis.setTitle(new AxisTitle("Count"));
 
-        configuration.getTooltip().setEnabled(false);
+        configuration.getTooltip().setEnabled(true);
         configuration.getLegend().setEnabled(false);
 
-        final DataSeries series = new DataSeries();
+        Tooltip tooltip = new Tooltip();
+        tooltip.setPointFormat("<span>{series.name}</span>: <b>{point.y}</b><br/>");
+        tooltip.setValueDecimals(0);
+        tooltip.setShared(false);
+        configuration.setTooltip(tooltip);
+
+        series = new DataSeries();
         series.setPlotOptions(new PlotOptionsSpline());
-        series.setName("Random data");
+        series.setName("Error Occurrences");
         for (int i = -19; i <= 0; i++) {
-            series.add(new DataSeriesItem(System.currentTimeMillis() + i * 1000, random.nextDouble()));
+            long x = System.currentTimeMillis() + i * REPORTING_INTERVAL;
+            series.add(new DataSeriesItem(x, this.loadData("error", x-REPORTING_INTERVAL, x)
+                .getTotalNumberOfResults()));
         }
 
+        chart.getConfiguration().setSeries(series);
+
         chart.setHeight("260px");
-        chart.setWidthFull();
+        chart.setWidth("95%");
+        chart.getStyle().set("position", "absolute");
+        chart.getStyle().set("top", "50px");
+        chart.getStyle().set("right", "10px");
+        chart.getStyle().set("left", "10px");
 
-        configuration.setSeries(series);
 
-        runWhileAttached(chart, () -> {
-            final long x = System.currentTimeMillis();
-            series.add(new DataSeriesItem(x, this.loadData("error", x-5000, x)
-                .getTotalNumberOfResults()), true, true);
-        }, 5000, 1000);
+        Button refreshButton = new Button();
+        refreshButton.getStyle().set("position", "absolute");
+        refreshButton.getStyle().set("top", "10px");
+        refreshButton.getStyle().set("right", "10px");
 
-        div.add(chart);
+        refreshButton.addClickListener(buttonClickEvent -> {
+            this.refresh();
+        });
+        refreshButton.getElement().appendChild(IronIcons.REFRESH.create().getElement());
+
+        div.add(refreshButton, chart);
 
         this.add(div);
+    }
+
+    private void refresh() {
+        for (int i = -19; i <= 0; i++) {
+            long x = System.currentTimeMillis() + i * REPORTING_INTERVAL;
+            series.get(i+19).setX(x);
+            series.get(i+19).setY(this.loadData("error", x-REPORTING_INTERVAL, x).getTotalNumberOfResults());
+            series.update(series.get(i+19));
+        }
     }
 
     private IkasanSolrDocumentSearchResults loadData(String type, long startTime, long endTime) {

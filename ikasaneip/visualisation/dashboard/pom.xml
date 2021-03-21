@@ -81,6 +81,19 @@
             </exclusions>
         </dependency>
 
+<!--        <dependency>-->
+<!--            <groupId>com.vaadin</groupId>-->
+<!--            <artifactId>vaadin-charts-flow</artifactId>-->
+<!--            <version>8.0.2</version>-->
+<!--        </dependency>-->
+
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin</artifactId>
+        </dependency>
+
+
         <dependency>
             <groupId>org.vaadin.olli</groupId>
             <artifactId>file-download-wrapper</artifactId>
@@ -89,6 +102,12 @@
         <dependency>
             <groupId>io.github.ciesielskis</groupId>
             <artifactId>ace-editor</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>vaadin-charts-flow</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

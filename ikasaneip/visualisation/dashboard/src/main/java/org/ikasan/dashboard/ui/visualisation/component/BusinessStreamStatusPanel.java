@@ -3,7 +3,10 @@ package org.ikasan.dashboard.ui.visualisation.component;
 import com.vaadin.componentfactory.Tooltip;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.shared.Registration;
@@ -51,6 +54,8 @@ public class BusinessStreamStatusPanel extends HorizontalLayout implements Graph
 
     private Map<String, ModuleMetaData> moduleMetaDataMap;
 
+    private Div runningDiv;
+
     public BusinessStreamStatusPanel(ModuleControlService moduleControlRestService,
                                      ModuleMetaDataService moduleMetaDataService)
     {
@@ -71,6 +76,19 @@ public class BusinessStreamStatusPanel extends HorizontalLayout implements Graph
         recoveringLabel.getStyle().set("font-size", "8pt");
         Label pausedLabel = new Label(getTranslation("status-label.paused", UI.getCurrent().getLocale()));
         pausedLabel.getStyle().set("font-size", "8pt");
+
+        this.runningDiv = new Div();
+        this.runningDiv.addClassNames("card-counter", "running");
+        this.runningDiv.setHeight("45px");
+        this.runningDiv.setWidth("60px");
+        this.add(runningDiv);
+//        this.runningIcon = VaadinIcon.ARROW_CIRCLE_RIGHT.create();
+//        this.runningIcon.getElement().getStyle().set("margin-left", "5px");
+//        this.runningIcon.getElement().getStyle().set( "cursor", "pointer");
+//        this.runningIcon.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+//            this.createGrid(this.stateMap.get(State.RUNNING_STATE));
+//        });
+//        this.runningDiv.add(runningIcon);
 
         runningButton = this.createStatusButton();
         runningButton.setText("0");

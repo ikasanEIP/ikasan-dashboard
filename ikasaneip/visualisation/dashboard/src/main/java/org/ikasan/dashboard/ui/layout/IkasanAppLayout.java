@@ -118,9 +118,9 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
             .get(LeftLayouts.LeftHybridSmall.class)
             .withIconComponent(ikasan)
             .withAppBar(AppBarBuilder.get()
-                .add(enButton)
-                .add(jpButton)
-                .add(deButton)
+//                .add(enButton)
+//                .add(jpButton)
+//                .add(deButton)
                 .add(aboutButton)
                 .add(logout)
                 .build());

@@ -1,6 +1,8 @@
 package org.ikasan.dashboard.ui.visualisation.view;
 
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.Push;
@@ -35,7 +37,7 @@ import java.util.List;
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
 @Theme(Material.class)
-@PreserveOnRefresh
+//@PreserveOnRefresh
 @Route(value = "visualisationTab")
 @UIScope
 @Component
@@ -104,18 +106,25 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
 
     @Override
     public void setParameter(BeforeEvent beforeEvent, String parameter) {
-        logger.info(String.format("Deep link event life identifier [%s]", parameter));
-        this.visualisationType = parameter.substring(0, parameter.indexOf(":"));
-        this.visualisationName = parameter.substring(parameter.indexOf(":") + 1);
+        if(parameter.contains(":")) {
+            logger.info(String.format("Deep link event life identifier [%s]", parameter));
+            this.visualisationType = parameter.substring(0, parameter.indexOf(":"));
+            this.visualisationName = parameter.substring(parameter.indexOf(":") + 1);
+        }
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         if(!initialised) {
+            // Go to default view if there is no visualisation name
+            if(this.visualisationName == null) {
+                UI.getCurrent().navigate("");
+            }
             this.init();
             this.graphVisualisation.setVisualisationName(this.visualisationName);
             this.graphVisualisation.setVisualisationType(this.visualisationType);
             this.graphVisualisation.beforeEnter(beforeEnterEvent);
+            this.initialised = true;
         }
     }
 }

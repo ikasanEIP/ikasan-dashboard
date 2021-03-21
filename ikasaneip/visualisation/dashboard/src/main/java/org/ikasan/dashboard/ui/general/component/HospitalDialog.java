@@ -36,6 +36,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -341,12 +342,13 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         ExclusionEventAction exclusionEventAction = new ExclusionEventActionImpl();
         exclusionEventAction.setComment(comment);
         exclusionEventAction.setActionedBy(user);
-        exclusionEventAction.setAction(String.format(translatedEventActionMessage, comment, action, user, errorOccurrence.getEvent()));
+        exclusionEventAction.setAction(String.format(translatedEventActionMessage, comment, action, user
+            , DateFormatter.getFormattedDateWithTimezone(ZonedDateTime.now()), errorOccurrence.getEvent()));
         // the error uri is in fact the id of excluded events
         exclusionEventAction.setErrorUri(document.getId());
         exclusionEventAction.setModuleName(document.getModuleName());
         exclusionEventAction.setFlowName(document.getFlowName());
-        exclusionEventAction.setTimestamp(System.currentTimeMillis());
+        exclusionEventAction.setTimestamp(document.getTimestamp());
         exclusionEventAction.setEvent(document.getEvent());
 
         return exclusionEventAction;
