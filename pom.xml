@@ -47,12 +47,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-      <groupId>org.sonatype.oss</groupId>
-      <artifactId>oss-parent</artifactId>
-      <version>7</version>
-      <relativePath />
-    </parent>
+<!--    <parent>-->
+<!--      <groupId>org.sonatype.oss</groupId>-->
+<!--      <artifactId>oss-parent</artifactId>-->
+<!--      <version>7</version>-->
+<!--      <relativePath />-->
+<!--    </parent>-->
 
     <groupId>org.ikasan</groupId>
     <artifactId>ikasan-dashboard-parent</artifactId>
@@ -72,8 +72,32 @@
     </modules>
 
     <scm>
-        <connection>scm:git:https://github.com/ikasanEIP/ikasan.git</connection>
-        <developerConnection>scm:git:https://github.com/ikasanEIP/ikasan.git</developerConnection>
-        <url>scm:git:https://github.com/ikasanEIP/ikasan.git</url>
+        <connection>scm:git:https://github.com/ikasanEIP/ikasan-dashboard.git</connection>
+        <developerConnection>scm:git:https://github.com/ikasanEIP/ikasan-dashboard.git</developerConnection>
+        <url>scm:git:https://github.com/ikasanEIP/ikasan-dashboard.git</url>
     </scm>
+
+    <distributionManagement>
+        <!--        <repository>-->
+        <!--            <id>ikasaneip-releases</id>-->
+        <!--            <name>Ikasan EIP Releases Repository</name>-->
+        <!--            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>-->
+        <!--        </repository>-->
+        <!--        <snapshotRepository>-->
+        <!--            <id>ikasaneip-snapshots</id>-->
+        <!--            <name>Ikasan EIP Snapshot Repository</name>-->
+        <!--            &lt;!&ndash;url>http://oss.sonatype.org/content/repositories/ikasaneip-snapshots/</url &ndash;&gt;-->
+        <!--            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>-->
+        <!--        </snapshotRepository>-->
+        <repository>
+            <id>github</id>
+            <name>GitHub IkasanEIP Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/mick-stewart73/ikasan-dashboard-old</url>
+        </repository>
+        <snapshotRepository>
+            <id>github</id>
+            <name>GitHub IkasanEIP Snapshot Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/mick-stewart73/ikasan-dashboard-old</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

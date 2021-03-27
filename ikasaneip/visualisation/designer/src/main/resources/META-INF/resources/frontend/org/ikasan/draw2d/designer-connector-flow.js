@@ -113,6 +113,9 @@
             if(isClickable === true) {
                 icon.shape.attr({"cursor": "pointer"});
             }
+
+            let figure = designer.$connector.designer.getFigure(icon.getId());
+            figure.toFront();
         }
 
         designer.$connector.addIcon = function (identifier, image, x, y, h, w, showPorts, isClickable) {
@@ -196,6 +199,7 @@
 
             let command = new draw2d.command.CommandAdd(_this, boundary, x, y);
             _this.getCommandStack().execute(command);
+            boundary.toFront();
         }
 
         designer.$connector.addBoundaryToShape = function (identifier, shapeIdentifier, x, y, h, w, colour) {
@@ -257,6 +261,7 @@
 
             let command = new draw2d.command.CommandAdd(_this, triangle, x, y);
             _this.getCommandStack().execute(command);
+            triangle.toFront();
         }
 
 
@@ -272,6 +277,7 @@
 
             let command = new draw2d.command.CommandAdd(_this, circle, x, y);
             _this.getCommandStack().execute(command);
+            circle.toFront();
         }
 
         designer.$connector.addLabel = function (labelString) {
@@ -291,6 +297,7 @@
 
             let command = new draw2d.command.CommandAdd(_this, label, x, y);
             _this.getCommandStack().execute(command);
+            label.toFront();
         }
 
         designer.$connector.setFont = function (font) {
@@ -330,12 +337,7 @@
         }
 
         designer.$connector.addLabelToFigure = function (figureIdentifier, labelString) {
-            let _figure = null;
-            _this.getFigures().each((i, figure)=>{
-                if(figure.id === figureIdentifier) {
-                    _figure = figure;
-                }
-            });
+            let _figure = _this.getFigure(figureIdentifier);
 
             if(_figure != null) {
 
@@ -361,7 +363,12 @@
                 figuresToGroup.add(label);
                 figuresToGroup.add(_figure);
 
-                _this.getCommandStack().execute(new draw2d.command.CommandGroup(_this, figuresToGroup))
+                _this.getCommandStack().execute(new draw2d.command.CommandGroup(_this, figuresToGroup));
+
+                label.toFront();
+                _figure.toFront();
+
+                _this.getPrimarySelection().toFront();
             }
         }
 
@@ -494,12 +501,14 @@
                 xCoords.push(b.x, b.x+b.w);
                 yCoords.push(b.y, b.y+b.h);
             });
-            debugger;
 
             let minX   = Math.min.apply(Math, xCoords);
             let minY   = Math.min.apply(Math, yCoords);
             let width  = Math.max.apply(Math, xCoords)-minX;
             let height = Math.max.apply(Math, yCoords)-minY;
+
+            x = minX + 100;
+            y = minY + 100;
 
             let widthZoomFactor = width / 1500;
             let heightZoomFactor = height / 800;
