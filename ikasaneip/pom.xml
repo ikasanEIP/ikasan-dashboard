@@ -339,8 +339,7 @@
         <version.org.mockftpserver>2.6</version.org.mockftpserver>
         <version.org.apache.sshd>2.1.0</version.org.apache.sshd>
         <version.com.fasterxml.jackson.core>2.10.0</version.com.fasterxml.jackson.core>
-
-        <version.vaadin>14.4.4</version.vaadin>
+        <version.vaadin>14.4.9</version.vaadin>
         <version.org.vaadin.tabs>1.2.0</version.org.vaadin.tabs>
         <version.com.vaadin.componentfactory>1.2.2</version.com.vaadin.componentfactory>
         <version.org.vaadin.olli>3.0.1</version.org.vaadin.olli>
@@ -363,24 +362,33 @@
         <version.app.layout.addon>4.0.0</version.app.layout.addon>
         <version.vaadin.css.grid>2.0.0.beta3</version.vaadin.css.grid>
         <version.karibu.testing.v10>1.2.6</version.karibu.testing.v10>
-
-        <ikasan.core.version>3.1.0</ikasan.core.version>
+        <ikasan.core.version>3.2.0-SNAPSHOT</ikasan.core.version>
     </properties>
 
     <!-- Distribution for releases -->
-    <distributionManagement>
-        <repository>
-            <id>ikasaneip-releases</id>
-            <name>Ikasan EIP Releases Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>ikasaneip-snapshots</id>
-            <name>Ikasan EIP Snapshot Repository</name>
-            <!--url>http://oss.sonatype.org/content/repositories/ikasaneip-snapshots/</url -->
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
+<!--    <distributionManagement>-->
+<!--&lt;!&ndash;        <repository>&ndash;&gt;-->
+<!--&lt;!&ndash;            <id>ikasaneip-releases</id>&ndash;&gt;-->
+<!--&lt;!&ndash;            <name>Ikasan EIP Releases Repository</name>&ndash;&gt;-->
+<!--&lt;!&ndash;            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>&ndash;&gt;-->
+<!--&lt;!&ndash;        </repository>&ndash;&gt;-->
+<!--&lt;!&ndash;        <snapshotRepository>&ndash;&gt;-->
+<!--&lt;!&ndash;            <id>ikasaneip-snapshots</id>&ndash;&gt;-->
+<!--&lt;!&ndash;            <name>Ikasan EIP Snapshot Repository</name>&ndash;&gt;-->
+<!--&lt;!&ndash;            &lt;!&ndash;url>http://oss.sonatype.org/content/repositories/ikasaneip-snapshots/</url &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>&ndash;&gt;-->
+<!--&lt;!&ndash;        </snapshotRepository>&ndash;&gt;-->
+<!--        <repository>-->
+<!--            <id>github</id>-->
+<!--            <name>GitHub IkasanEIP Apache Maven Packages</name>-->
+<!--            <url>https://maven.pkg.github.com/mick-stewart73/ikasan-dashboard-old</url>-->
+<!--        </repository>-->
+<!--        <snapshotRepository>-->
+<!--            <id>github</id>-->
+<!--            <name>GitHub IkasanEIP Snapshot Apache Maven Packages</name>-->
+<!--            <url>https://maven.pkg.github.com/mick-stewart73/ikasan-dashboard-old</url>-->
+<!--        </snapshotRepository>-->
+<!--    </distributionManagement>-->
     <build>
         <pluginManagement>
             <plugins>
@@ -1006,13 +1014,13 @@
             <dependency>
                 <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-solr-client</artifactId>
-                <version>${ikasan.core.version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-solr-security</artifactId>
-                <version>${ikasan.core.version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
@@ -1288,7 +1296,13 @@
             <dependency>
                 <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-visualisation</artifactId>
-                <version>${ikasan.core.version}</version>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
+                <artifactId>designer</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>

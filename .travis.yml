@@ -7,11 +7,11 @@ cache:
   - $HOME/.m2  
 ## export GPG details
 before_install:
-  - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
-  - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
+# - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
+# - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
 
 install:
-  - mvn --file ikasaneip/pom.xml --settings .settings.xml test -Dmaven.javadoc.skip=true -Djava.security.egd=file:/dev/./urandom -Pall -B -V
+  - mvn --file ikasaneip/pom.xml -DskipTests=true --settings .settings.xml test -Dmaven.javadoc.skip=true -Djava.security.egd=file:/dev/./urandom -Pall -B -V
 #  - if [[ $TRAVIS_BRANCH == "feature/travis-release-IKASAN-1758" ]]; then  mvn --file ikasaneip/pom.xml  clean deploy -Djava.security.egd=file:/dev/./urandom -Pall,release-sign-artifacts -B  -V --settings .settings.xml; fi
 
 ## Build and release to maven central
@@ -21,10 +21,10 @@ install:
 
 deploy:
   # deploy develop 3.1.x to oss
-  - provider: script
-    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Pall -B  -V --settings .settings.xml
-    on:
-      branch: 3.1.x
+#  - provider: script
+#    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Pall -B  -V --settings .settings.xml
+#    on:
+#      branch: 3.1.x
   # deploy develop 3.2.x to oss
   - provider: script
     script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Pall -B  -V --settings .settings.xml

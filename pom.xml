@@ -47,12 +47,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-      <groupId>org.sonatype.oss</groupId>
-      <artifactId>oss-parent</artifactId>
-      <version>7</version>
-      <relativePath />
-    </parent>
+<!--    <parent>-->
+<!--      <groupId>org.sonatype.oss</groupId>-->
+<!--      <artifactId>oss-parent</artifactId>-->
+<!--      <version>7</version>-->
+<!--      <relativePath />-->
+<!--    </parent>-->
 
     <groupId>org.ikasan</groupId>
     <artifactId>ikasan-dashboard-parent</artifactId>
@@ -72,8 +72,8 @@
     </modules>
 
     <scm>
-        <connection>scm:git:https://github.com/ikasanEIP/ikasan.git</connection>
-        <developerConnection>scm:git:https://github.com/ikasanEIP/ikasan.git</developerConnection>
-        <url>scm:git:https://github.com/ikasanEIP/ikasan.git</url>
+        <connection>scm:git:https://github.com/ikasanEIP/ikasan-dashboard.git</connection>
+        <developerConnection>scm:git:https://github.com/ikasanEIP/ikasan-dashboard.git</developerConnection>
+        <url>scm:git:https://github.com/ikasanEIP/ikasan-dashboard.git</url>
     </scm>
 </project>
