@@ -37,7 +37,6 @@ import java.util.List;
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
 @Theme(Material.class)
-//@PreserveOnRefresh
 @Route(value = "visualisationTab")
 @UIScope
 @Component

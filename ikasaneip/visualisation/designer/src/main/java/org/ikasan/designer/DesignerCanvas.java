@@ -418,6 +418,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     public void importJson(){
         if(this.canvasJson != null) {
             this.saved = true;
+            this.clear();
             getElement().callJsFunction("$connector.importJson", this.canvasJson);
         }
     }

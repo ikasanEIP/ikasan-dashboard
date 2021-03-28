@@ -55,7 +55,7 @@
         <module>vis.js</module>
         <module>designer</module>
         <module>dashboard</module>
-        <module>dashboard-dist</module>
+<!--        <module>dashboard-dist</module>-->
     </modules>
 
     <!-- Required otherwise Maven enforcer will fail due to Dependency convergence errors for com.vaadin & org.webjars.bowergithub.vaadin -->

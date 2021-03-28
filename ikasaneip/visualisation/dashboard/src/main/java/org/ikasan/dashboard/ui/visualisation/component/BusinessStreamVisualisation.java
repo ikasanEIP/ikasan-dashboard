@@ -351,7 +351,6 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-
         try {
             this.init();
         }

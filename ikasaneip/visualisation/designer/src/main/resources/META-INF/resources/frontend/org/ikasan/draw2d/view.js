@@ -53,7 +53,7 @@ View = draw2d.Canvas.extend({
         }
         this.installEditPolicy(policy);
 
-        if(!readonly === true) {
+        if(readonly === false) {
             Mousetrap.bind(['left'], function (event) {
                 var diff = _this.getZoom() < 0.5 ? 0.5 : 1;
                 _this.getSelection().each(function (i, f) {
