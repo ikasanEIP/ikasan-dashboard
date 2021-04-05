@@ -29,6 +29,7 @@ import org.ikasan.dashboard.ui.administration.view.*;
 import org.ikasan.dashboard.ui.general.component.AboutIkasanDialog;
 import org.ikasan.dashboard.ui.general.component.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.dashboard.view.DashboardView;
+import org.ikasan.dashboard.ui.scheduler.view.SchedulerView;
 import org.ikasan.dashboard.ui.search.view.SearchView;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
@@ -63,6 +64,7 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
     private LeftNavigationItem dashboardMenuItem;
     private LeftNavigationItem searchMenuItem;
     private LeftNavigationItem visualisationMenuItem;
+    private LeftNavigationItem schedulerMenuItem;
     private LeftNavigationItem systemEventMenuItem;
     private LeftNavigationItem userManagementMenuItem;
     private LeftNavigationItem groupManagementMenuItem;
@@ -140,6 +142,11 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
         this.visualisationMenuItem.setId("visualisationMenuItem");
 
         leftAppMenuBuilder = leftAppMenuBuilder.add(this.visualisationMenuItem);
+
+        this.schedulerMenuItem = new LeftNavigationItem("Scheduler", VaadinIcon.CLOCK.create(), SchedulerView.class);
+        this.schedulerMenuItem.setId("schedulerMenuItem");
+
+        leftAppMenuBuilder = leftAppMenuBuilder.add(this.schedulerMenuItem);
 
         LeftSubMenuBuilder leftSubMenuBuilder = LeftSubMenuBuilder
             .get(getTranslation("menu-item.administration", UI.getCurrent().getLocale(), null), VaadinIcon.TOOLS.create());
