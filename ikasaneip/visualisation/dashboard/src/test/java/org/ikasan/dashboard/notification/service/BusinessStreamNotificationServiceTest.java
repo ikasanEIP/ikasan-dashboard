@@ -98,7 +98,8 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
                 = businessStreamNotificationService.getBusinessStreamExclusions("wriggle", 0L, 100);
 
             Assert.assertTrue("Business Stream Exclusions found!", businessStreamExclusions.isPresent());
-            Assert.assertEquals("Exclusions found!", 1, businessStreamExclusions.get().getBusinessStreamExclusions().size());
+            Assert.assertEquals("Exclusions found!", 1
+                , businessStreamExclusions.get().getBusinessStreamExclusions().size());
         }
     }
 

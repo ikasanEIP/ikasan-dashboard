@@ -6,18 +6,28 @@ import com.vaadin.flow.component.button.Button;
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.dashboard.ui.general.component.AboutIkasanDialog;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.module.metadata.service.SolrModuleMetadataServiceImpl;
+import org.ikasan.security.model.User;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
+import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
+import org.ikasan.solr.service.SolrGeneralServiceImpl;
+import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.rules.TestName;
 import org.mockito.Mockito;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.ArrayList;
+import java.util.HashSet;
 
 import static com.github.mvysny.kaributesting.v10.LocatorJ._click;
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class IkasanAppLayoutTest extends UITest {
 
@@ -25,6 +35,7 @@ public class IkasanAppLayoutTest extends UITest {
     public TestName testName = new TestName();
 
     public void setup_expectations() {
+
         IkasanAuthentication mockIkasanAuthentication = mock(IkasanAuthentication.class);
         // Setup the mock authentication.
         SecurityContextHolder.getContext().setAuthentication(mockIkasanAuthentication);
@@ -36,6 +47,9 @@ public class IkasanAppLayoutTest extends UITest {
             .thenReturn(user);
         Mockito.when(user.isRequiresPasswordChange())
             .thenReturn(false);
+
+        Mockito.when(mockIkasanAuthentication.getPrincipal()).thenReturn(this.user);
+        when(this.user.getPrincipals()).thenReturn(new HashSet<>());
 
         if(testName.getMethodName().equals("test_admin_user_security")) {
             Mockito.when(mockIkasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))

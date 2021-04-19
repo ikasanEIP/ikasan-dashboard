@@ -10,11 +10,15 @@ import com.vaadin.flow.spring.SpringServlet;
 import kotlin.jvm.functions.Function0;
 import org.ikasan.dashboard.Application;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.module.metadata.service.SolrModuleMetadataServiceImpl;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
+import org.ikasan.solr.service.SolrGeneralServiceImpl;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,7 +39,7 @@ import java.util.stream.IntStream;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {Application.class},
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class UITest
 {
     @Autowired
@@ -52,6 +56,12 @@ public abstract class UITest
     @MockBean
     protected User user;
 
+    @MockBean
+    protected SolrGeneralServiceImpl solrSearchService;
+
+    @MockBean
+    protected ModuleMetaDataService moduleMetadataService;
+
     public abstract void setup_expectations();
 
     protected void setup_general_expectations() {
@@ -67,6 +77,18 @@ public abstract class UITest
             .thenReturn(user);
         Mockito.when(user.isRequiresPasswordChange())
             .thenReturn(false);
+
+        IkasanSolrDocumentSearchResults results = new IkasanSolrDocumentSearchResults(new ArrayList<>(), 0, 1L);
+
+        Mockito.when(this.solrSearchService.search(Mockito.anySet(), Mockito.anySet(), Mockito.isNull(), Mockito.anyLong(),
+            Mockito.anyLong(), Mockito.anyInt(), Mockito.anyList(), Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(results);
+
+        ModuleMetadataSearchResults moduleMetadataSearchResults = new ModuleMetadataSearchResults(new ArrayList<>(), 0, 0);
+
+
+        Mockito.when(this.moduleMetadataService.find(Mockito.anyList(), Mockito.anyInt(), Mockito.anyInt()))
+            .thenReturn(moduleMetadataSearchResults);
     }
 
     private static Routes routes;

@@ -33,8 +33,6 @@ import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 import static org.mockito.ArgumentMatchers.*;
 
 public class SystemEventSearchViewTest extends UITest {
-    @MockBean
-    private SolrGeneralServiceImpl solrSearchService;
 
     @MockBean
     private Set<IkasanPrincipal> principals;

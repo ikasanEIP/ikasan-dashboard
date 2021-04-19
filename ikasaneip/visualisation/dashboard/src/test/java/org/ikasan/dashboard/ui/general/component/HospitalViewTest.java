@@ -28,12 +28,6 @@ import static org.mockito.Mockito.verify;
 public class HospitalViewTest extends UITest {
 
     @MockBean
-    private SolrGeneralService solrSearchService;
-
-    @MockBean
-    private ModuleMetaDataService moduleMetadataService;
-
-    @MockBean
     private ModuleMetaData moduleMetaData;
 
     @MockBean

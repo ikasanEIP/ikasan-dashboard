@@ -29,9 +29,6 @@ public class ModuleVisualisationViewTest extends UITest
     public static final String BAD_XML = "/data/graph/bad.xml";
 
 
-   @MockBean
-    private ModuleMetaDataService moduleMetadataService;
-
     @MockBean
     private ConfigurationMetaDataService configurationMetadataService;
 

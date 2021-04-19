@@ -6,8 +6,6 @@ import org.ikasan.dashboard.notification.model.BusinessStreamExclusion;
 import org.ikasan.dashboard.notification.model.BusinessStreamExclusions;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.spec.error.reporting.ErrorOccurrence;
-import org.ikasan.spec.error.reporting.ErrorReportingService;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.solr.SolrGeneralService;

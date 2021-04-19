@@ -12,7 +12,6 @@ import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.security.model.IkasanPrincipal;
 import org.ikasan.security.model.Role;
 import org.ikasan.security.model.RoleModule;
-import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -29,9 +28,7 @@ import static com.github.mvysny.kaributesting.v10.ButtonKt._click;
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 import static org.mockito.ArgumentMatchers.*;
 
-public class SolrSearchFilteringGridTest extends UITest {
-    @MockBean
-    private SolrGeneralServiceImpl solrSearchService;
+    public class SolrSearchFilteringGridTest extends UITest {
 
     @MockBean
     private Set<IkasanPrincipal> principals;
@@ -51,6 +48,7 @@ public class SolrSearchFilteringGridTest extends UITest {
     @MockBean
     private RoleModule roleModule;
 
+
     public void setup_expectations() {
         Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
@@ -66,6 +64,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_filtered_data_provider_not_null_after_search() throws IOException
     {
+        UI.getCurrent().navigate("Search");
+
         SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
         Assertions.assertNotNull(solrSearchFilteringGrid);
 
@@ -77,7 +77,7 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_filtered_data_provider_null_before_search() throws IOException
     {
-        UI.getCurrent().navigate("");
+        UI.getCurrent().navigate("Search");
 
         SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
         Assertions.assertNotNull(solrSearchFilteringGrid);
@@ -89,7 +89,7 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_filtered_data_provider_null_before_search_add_filter() throws IOException
     {
-        UI.getCurrent().navigate("");
+        UI.getCurrent().navigate("Search");
 
         SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
         Assertions.assertNotNull(solrSearchFilteringGrid);
@@ -103,6 +103,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_filter_user_all()
     {
+        UI.getCurrent().navigate("Search");
+
         SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
         Assertions.assertNotNull(solrSearchFilteringGrid);
 
@@ -124,6 +126,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_non_admin_user_search_no_associated_modules()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -166,6 +170,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_non_admin_user_search_with_module_name_filter_no_associated_modules()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -211,6 +217,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_event_id_filter_non_admin_user_search_with_associated_module_wiretap()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -254,6 +262,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_event_id_filter_admin_user_search_wiretap()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
         Mockito.when(this.solrSearchService.search(Mockito.isNull(),
@@ -284,6 +294,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_module_name_filter_non_admin_user_search_with_associated_module_wiretap()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -327,6 +339,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_module_name_filter_admin_user_search_wiretap()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
         Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
@@ -357,6 +371,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_flow_name_filter_non_admin_user_search_with_associated_module_wiretap()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -401,6 +417,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_flow_name_filter_admin_user_search_wiretap()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
         Mockito.when(this.solrSearchService.search(Mockito.isNull(),
@@ -432,6 +450,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_component_name_filter_non_admin_user_search_with_associated_module_wiretap()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -476,6 +496,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_component_name_filter_admin_user_search_wiretap()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -508,6 +530,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_event_id_filter_non_admin_user_search_with_associated_module_replay_event()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -551,6 +575,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_event_id_filter_admin_user_search_replay_event()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -582,6 +608,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_module_name_filter_non_admin_user_search_with_associated_module_replay_event()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -625,6 +653,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_module_name_filter_admin_user_search_replay_event()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -656,6 +686,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_flow_name_filter_non_admin_user_search_with_associated_module_replay_event()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -700,6 +732,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_flow_name_filter_admin_user_search_replay_event()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -732,6 +766,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_component_name_filter_non_admin_user_search_with_associated_module_replay_event()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -776,6 +812,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_component_name_filter_admin_user_search_replay_event()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -808,6 +846,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_event_id_filter_non_admin_user_search_with_associated_module_exclusion()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -851,6 +891,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_event_id_filter_admin_user_search_exclusion()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -882,6 +924,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_module_name_filter_non_admin_user_search_with_associated_module_exclusion()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -925,6 +969,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_module_name_filter_admin_user_search_exclusion()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -956,6 +1002,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_flow_name_filter_non_admin_user_search_with_associated_module_exclusion()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -1000,6 +1048,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_flow_name_filter_admin_user_search_with_exclusion()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -1032,6 +1082,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_component_name_filter_non_admin_user_search_with_associated_module_exclusion()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -1076,6 +1128,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_component_name_filter_admin_user_search_exclusion()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -1108,6 +1162,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_event_id_filter_non_admin_user_search_with_associated_module_error()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -1151,6 +1207,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_event_id_filter_admin_user_search_error()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -1182,6 +1240,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_module_name_filter_non_admin_user_search_with_associated_module_error()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -1225,6 +1285,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_module_name_filter_admin_user_search_error()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -1256,6 +1318,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_flow_name_filter_non_admin_user_search_with_associated_module_replay_error()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -1300,6 +1364,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_flow_name_filter_admin_user_search_error()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -1332,6 +1398,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_component_name_filter_non_admin_user_search_with_associated_module_replay_error()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -1376,6 +1444,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_component_name_filter_admin_user_search_error()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -1408,6 +1478,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_event_id_filter_non_admin_user_search_with_associated_module_all_event_types()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -1452,6 +1524,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_event_id_filter_admin_user_search_all_event_types()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -1484,6 +1558,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_module_name_filter_non_admin_user_search_with_associated_module_all_event_types()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -1528,6 +1604,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_module_name_filter_admin_user_search_all_event_types()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -1560,6 +1638,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_flow_name_filter_non_admin_user_search_with_associated_module_all_event_types()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -1605,6 +1685,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_flow_name_filter_admin_user_search_all_event_types()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -1638,6 +1720,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_component_name_filter_non_admin_user_search_with_associated_module_all_event_types()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -1683,6 +1767,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_and_component_name_filter_admin_user_search_all_event_types()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -1716,6 +1802,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_no_filter_non_admin_user_search_with_associated_module_all_event_types()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
@@ -1758,6 +1846,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_no_filter_admin_user_search_all_event_types()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
         Mockito.when(this.solrSearchService.search(Mockito.isNull(),
@@ -1787,6 +1877,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_no_filter_admin_user_search_no_event_types()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
         Mockito.when(this.solrSearchService.search(Mockito.isNull(),
@@ -1816,6 +1908,8 @@ public class SolrSearchFilteringGridTest extends UITest {
     @Test
     public void test_search_with_sort_order()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
         Mockito.when(this.solrSearchService.search(Mockito.isNull(),

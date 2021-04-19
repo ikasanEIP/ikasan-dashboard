@@ -45,9 +45,6 @@ public class BusinessStreamViewTest extends UITest
     ConfigurationParameterMetaData configurationParameterMetaData = mockery.mock(ConfigurationParameterMetaData.class);
 
     @MockBean
-    private ModuleMetaDataService moduleMetadataService;
-
-    @MockBean
     private ConfigurationMetaDataService configurationMetadataService;
 
     @MockBean

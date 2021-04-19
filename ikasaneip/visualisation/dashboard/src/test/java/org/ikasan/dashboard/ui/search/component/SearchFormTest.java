@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.search.component;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
@@ -17,6 +18,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_security_wiretap_read()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_READ))
@@ -40,6 +43,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_security_wiretap_write()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_WRITE))
@@ -63,6 +68,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_security_wiretap_admin()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ADMIN))
@@ -86,6 +93,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_security_error_read()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_READ))
@@ -109,6 +118,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_security_error_write()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_WRITE))
@@ -132,6 +143,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_security_error_admin()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ADMIN))
@@ -155,6 +168,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_security_exclusion_read()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_READ))
@@ -178,6 +193,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_security_exclusion_write()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_WRITE))
@@ -201,6 +218,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_security_exclusion_admin()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ADMIN))
@@ -224,6 +243,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_security_replay_read()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_READ))
@@ -247,6 +268,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_security_replay_write()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_WRITE))
@@ -270,6 +293,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_security_replay_admin()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ADMIN))
@@ -293,6 +318,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_security_all()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
@@ -314,6 +341,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_wiretap_button_click()
     {
+        UI.getCurrent().navigate("Search");
+
         SearchForm searchForm = _get(SearchForm.class);
 
         Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "wiretapChecked"));
@@ -330,6 +359,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_error_button_click()
     {
+        UI.getCurrent().navigate("Search");
+
         SearchForm searchForm = _get(SearchForm.class);
 
         Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "errorChecked"));
@@ -346,6 +377,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_exclusion_button_click()
     {
+        UI.getCurrent().navigate("Search");
+
         SearchForm searchForm = _get(SearchForm.class);
 
         Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "hospitalChecked"));
@@ -362,6 +395,8 @@ public class SearchFormTest extends UITest {
     @Test
     public void test_replay_button_click()
     {
+        UI.getCurrent().navigate("Search");
+
         SearchForm searchForm = _get(SearchForm.class);
 
         Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "replayChecked"));
