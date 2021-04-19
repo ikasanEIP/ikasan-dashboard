@@ -158,7 +158,7 @@ public class SolrBusinessStreamMetadataDaoTest extends SolrTestCaseJ4
 
             dao.save(solrBusinessStream);
 
-            BusinessStreamMetaData businessStreamMetaData = dao.findById("businessStream-businessStream");
+            BusinessStreamMetaData businessStreamMetaData = dao.findById("businessStream");
 
             Assert.assertEquals("name equals","businessStream", businessStreamMetaData.getName());
             Assert.assertEquals("meta data equals", businessStream, businessStreamMetaData.getJson());
@@ -397,7 +397,7 @@ public class SolrBusinessStreamMetadataDaoTest extends SolrTestCaseJ4
         SolrBusinessStreamMetadataDao dao = new SolrBusinessStreamMetadataDao();
         SolrInputDocument solrInputDocument = dao.convertEntityToSolrInputDocument(1L, solrBusinessStream);
 
-        Assert.assertEquals("businessStream-businessStream1", solrInputDocument.getFieldValue(SolrDaoBase.ID));
+        Assert.assertEquals("businessStream1", solrInputDocument.getFieldValue(SolrDaoBase.ID));
         Assert.assertEquals("businessStreamMetaData", solrInputDocument.getFieldValue(SolrDaoBase.TYPE));
         Assert.assertEquals("businessStream1", solrInputDocument.getFieldValue(SolrDaoBase.MODULE_NAME));
         Assert.assertEquals("businessStream1Description", solrInputDocument.getFieldValue(SolrDaoBase.FLOW_NAME));

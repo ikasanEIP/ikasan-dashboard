@@ -122,7 +122,7 @@ public class SolrBusinessStreamMetadataServiceImplTest extends SolrTestCaseJ4
 
             dao.save(solrBusinessStream);
 
-            BusinessStreamMetaData<BusinessStream> businessStreamMetaData = solrBusinessStreamMetaDataService.findById("businessStream-businessStream");
+            BusinessStreamMetaData<BusinessStream> businessStreamMetaData = solrBusinessStreamMetaDataService.findById("businessStream");
 
             Assert.assertEquals("name equals","businessStream", businessStreamMetaData.getName());
             Assert.assertEquals("meta data equals", businessStream, businessStreamMetaData.getJson());
@@ -182,7 +182,7 @@ public class SolrBusinessStreamMetadataServiceImplTest extends SolrTestCaseJ4
 
             dao.save(solrBusinessStream);
 
-            BusinessStreamMetaData businessStreamMetaData = solrBusinessStreamMetaDataService.findById("businessStream-businessStream");
+            BusinessStreamMetaData businessStreamMetaData = solrBusinessStreamMetaDataService.findById("businessStream");
 
             Assert.assertEquals("name equals","businessStream", businessStreamMetaData.getName());
             Assert.assertEquals("meta data equals", businessStream, businessStreamMetaData.getJson());
