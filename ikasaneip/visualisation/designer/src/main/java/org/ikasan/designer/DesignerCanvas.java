@@ -131,7 +131,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
             .orElseThrow(() -> new IllegalStateException(
                 "Connector can only be initialized for an attached Designer"))
             .getPage()
-            .executeJs("window.Vaadin.Flow.designerConnector.initLazy($0, $1)",
+            .executeJs("window.Vaadin.Flow.designerConnector.initLazy($0, $1, $2)",
                 getElement(), this.name, this.readonly);
 
         this.setReadonly(this.readonly);
