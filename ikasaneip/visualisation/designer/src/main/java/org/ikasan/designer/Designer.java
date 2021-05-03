@@ -2,6 +2,9 @@ package org.ikasan.designer;
 
 import com.flowingcode.vaadin.addons.fontawesome.FontAwesome;
 import com.flowingcode.vaadin.addons.ironicons.IronIcons;
+import com.vaadin.componentfactory.Tooltip;
+import com.vaadin.componentfactory.TooltipAlignment;
+import com.vaadin.componentfactory.TooltipPosition;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
@@ -11,6 +14,7 @@ import com.vaadin.flow.component.dnd.DropTarget;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -211,7 +215,11 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
             this.designerCanvas.group();
         });
         groupButton.getElement().appendChild(FontAwesome.Regular.OBJECT_GROUP.create().getElement());
-        actions.add(groupButton);
+        Tooltip groupButtonTooltip = getTooltip(groupButton,"Group elements"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+
+        actions.add(groupButton, groupButtonTooltip);
+
 
         // Ungroup canvas items
         Button ungroupButton = new Button();
@@ -219,7 +227,11 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
             this.designerCanvas.ungroup();
         });
         ungroupButton.getElement().appendChild(FontAwesome.Regular.OBJECT_UNGROUP.create().getElement());
-        actions.add(ungroupButton);
+        Tooltip ungroupButtonTooltip = getTooltip(ungroupButton,"Ungroup elements"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+
+        actions.add(ungroupButton, ungroupButtonTooltip);
+
 
         // Bring selected items to front
         Button toFrontButton = new Button();
@@ -227,7 +239,9 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
             this.designerCanvas.bringToFront();
         });
         toFrontButton.getElement().appendChild(IronIcons.FLIP_TO_FRONT.create().getElement());
-        actions.add(toFrontButton);
+        Tooltip toFrontButtontip = getTooltip(toFrontButton,"Bring to front"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(toFrontButton, toFrontButtontip);
 
         // Send selected items to back
         Button toBackButton = new Button();
@@ -235,55 +249,73 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
             this.designerCanvas.sendToBack();
         });
         toBackButton.getElement().appendChild(IronIcons.FLIP_TO_BACK.create().getElement());
-        actions.add(toBackButton, getDivider());
+        Tooltip toBackButtontip = getTooltip(toBackButton,"Send to back"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(toBackButton, getDivider(), toBackButtontip);
 
         // Undo
         Button undoButton = new Button();
         undoButton.getElement().appendChild(IronIcons.UNDO.create().getElement());
         undoButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.undo());
-        actions.add(undoButton);
+        Tooltip undoButtonTooltip = getTooltip(undoButton,"Undo"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(undoButton, undoButtonTooltip);
 
         // Redo
         Button redoButton = new Button();
         redoButton.getElement().appendChild(IronIcons.REDO.create().getElement());
         redoButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.redo());
-        actions.add(redoButton, getDivider());
+        Tooltip redoButtonTooltip = getTooltip(redoButton,"Redo"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(redoButton, getDivider(), redoButtonTooltip);
 
         // Zoom in
         Button zoomInButton = new Button();
         zoomInButton.getElement().appendChild(IronIcons.ZOOM_IN.create().getElement());
         zoomInButton.setId("canvas_zoom_in");
-        actions.add(zoomInButton);
+        Tooltip zoomInButtonTooltip = getTooltip(zoomInButton,"Zoom in"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(zoomInButton, zoomInButtonTooltip);
 
         // Zoom out
         Button zoomOutButton = new Button();
         zoomOutButton.getElement().appendChild(IronIcons.ZOOM_OUT.create().getElement());
         zoomOutButton.setId("canvas_zoom_out");
-        actions.add(zoomOutButton, getDivider());
+        Tooltip zoomOutButtonTooltip = getTooltip(zoomOutButton,"Zoom out"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(zoomOutButton, getDivider(), zoomOutButtonTooltip);
 
         // Copy
         Button copyButton = new Button();
         copyButton.getElement().appendChild(IronIcons.CONTENT_COPY.create().getElement());
         copyButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.designerCanvas.copy());
-        actions.add(copyButton);
+        Tooltip copyButtonTooltip = getTooltip(copyButton,"Copy"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(copyButton, copyButtonTooltip);
 
         // Paste
         Button pasteButton = new Button();
         pasteButton.getElement().appendChild(IronIcons.CONTENT_PASTE.create().getElement());
         pasteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.designerCanvas.paste());
-        actions.add(pasteButton);
+        Tooltip pasteButtonTooltip = getTooltip(pasteButton,"Paste"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(pasteButton, pasteButtonTooltip);
 
         // Delete
         Button deleteButton = new Button();
         deleteButton.getElement().appendChild(IronIcons.DELETE.create().getElement());
         deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.designerCanvas.delete());
-        actions.add(deleteButton, getDivider());
+        Tooltip deleteButtonTooltip = getTooltip(deleteButton,"Delete"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(deleteButton, getDivider(), deleteButtonTooltip);
 
 
         // Export as selected format
         Button download = new Button();
         download.getElement().appendChild(IronIcons.FILE_DOWNLOAD.create().getElement());
-        actions.add(download);
+        Tooltip downloadTooltip = getTooltip(download,"Export PNG Image"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(download, downloadTooltip);
         download.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             this.exportPng();
         });
@@ -291,7 +323,9 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         // Open another design
         Button open = new Button();
         open.getElement().appendChild(IronIcons.FOLDER_OPEN.create().getElement());
-        actions.add(open);
+        Tooltip openTooltip = getTooltip(open,"Open diagram"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(open, openTooltip);
         open.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             this.exportJson();
         });
@@ -299,24 +333,28 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         // Save current design
         Button save = new Button();
         save.getElement().appendChild(IronIcons.SAVE.create().getElement());
-        actions.add(save, getDivider());
+        Tooltip saveTooltip = getTooltip(save,"Save current diagram"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(save, getDivider(), saveTooltip);
         save.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             this.exportJson();
         });
 
-        Button eyeDropper = new Button();
-        eyeDropper.getElement().appendChild(IronImageIcons.COLORIZE.create().getElement());
-        actions.add(eyeDropper);
-        eyeDropper.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-
-        });
+//        Button eyeDropper = new Button();
+//        eyeDropper.getElement().appendChild(IronImageIcons.COLORIZE.create().getElement());
+//        actions.add(eyeDropper);
+//        eyeDropper.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
+//
+//        });
 
         paintButton = new ColorPicker();
         paintButton.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<TextField, String>>)
             textFieldStringComponentValueChangeEvent -> {
                 this.designerCanvas.setBackgroundColor(textFieldStringComponentValueChangeEvent.getValue());
             });
-        actions.add(paintButton, getDivider());
+        Tooltip paintButtonTooltip = getTooltip(paintButton,"Choose colour"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(paintButton, getDivider(), paintButtonTooltip);
 
         return actions;
     }
@@ -490,6 +528,27 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
 
     public void redo(){
         this.designerCanvas.redo();
+    }
+
+    public static Tooltip getTooltip(Component component, String message, TooltipPosition position, TooltipAlignment alignment)
+    {
+        Tooltip tooltip = new Tooltip();
+
+        tooltip.getElement().getStyle().set("background-color", "#232F34");
+        tooltip.getElement().getStyle().set("color", "#FFFFFF");
+        tooltip.getElement().getStyle().set("border-radius", "10px");
+        tooltip.getElement().getStyle().set("padding", "10px");
+        tooltip.getElement().getStyle().set("font-size", "8pt");
+        tooltip.getElement().getStyle().set("z-index", "100");
+
+        tooltip.attachToComponent(component);
+
+        tooltip.setPosition(position);
+        tooltip.setAlignment(alignment);
+
+        tooltip.add(new Paragraph(message));
+
+        return tooltip;
     }
 }
 

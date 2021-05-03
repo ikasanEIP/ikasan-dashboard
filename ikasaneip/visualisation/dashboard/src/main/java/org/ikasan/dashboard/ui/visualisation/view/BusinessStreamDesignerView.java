@@ -114,7 +114,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         businessStreamDesigner.setSizeFull();
         businessStreamDesigner.addItemPallet(new ItemPallet("General", this.createGeneralPalette()));
         businessStreamDesigner.addItemPallet(new ItemPallet("Integrated Systems", this.integratedSystemPalette));
-        businessStreamDesigner.addItemPallet(new ItemPallet("Boundaries", this.createBoundariesPalette()));
+        businessStreamDesigner.addItemPallet(new ItemPallet("Shapes", this.createShapesPalette()));
 
 
         this.add(businessStreamDesigner);
@@ -148,8 +148,8 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         });
         DragSource.create(flowImage);
 
-        Tooltip tooltip = TooltipHelper.getTooltip(flowImage,"This icon represents an Ikasan flow."
-            , TooltipPosition.RIGHT, TooltipAlignment.RIGHT);
+        Tooltip tooltip = TooltipHelper.getTooltip(flowImage,"Ikasan flow"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
 
         DesignerPalletImageItem channelImage = new DesignerPalletIconImageItem("frontend/images/message-channel.png", designerPalletItem -> {
             MessageChannelNameDialog messageChannelNameDialog =  new MessageChannelNameDialog();
@@ -176,10 +176,30 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         });
         DragSource.create(channelImage);
 
-        HorizontalLayout layout = new HorizontalLayout();
-        layout.add(flowImage, channelImage);
+        Tooltip channelImageTooltip = TooltipHelper.getTooltip(channelImage,"Message channel"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
 
-        layout.add(tooltip);
+
+        DesignerPalletImageItem labelImage = new DesignerPalletLabelImageItem("frontend/images/text.png", designerPalletItem   -> {
+            designerPalletItem.setIdentifier(new DesignerItemIdentifier(DesignerPalletItemType.LABEL.name(),
+                DesignerItemIdentifier.NOT_APPLICABLE, UUID.randomUUID().toString()));
+            this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
+        }, 95, 63);
+        labelImage.setWidth("20px");
+        DragSource.create(labelImage);
+        labelImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
+            if(imageClickEvent.getClickCount() == 2) {
+                labelImage.executeCanvasAddAction();
+            }
+        });
+
+        Tooltip labelImageTooltip = TooltipHelper.getTooltip(labelImage,"Text"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.add(flowImage, channelImage, labelImage);
+
+        layout.add(tooltip, channelImageTooltip, labelImageTooltip);
 
         return layout;
     }
@@ -261,7 +281,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         layout.add(component);
     }
 
-    private com.vaadin.flow.component.Component createBoundariesPalette(){
+    private com.vaadin.flow.component.Component createShapesPalette(){
 
         DesignerPalletImageItem rectangleImage = new DesignerPalletRectangleImageItem("frontend/images/rectangle.png", designerPalletItem -> {
             designerPalletItem.setIdentifier(new DesignerItemIdentifier(DesignerPalletItemType.RECTANGLE.name(),
@@ -269,6 +289,8 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
         }, 100, 100);
         rectangleImage.setWidth("30px");
+        Tooltip rectangleImageTooltip = TooltipHelper.getTooltip(rectangleImage,"Rectangle"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         DragSource.create(rectangleImage);
         rectangleImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
             if(imageClickEvent.getClickCount() == 2) {
@@ -282,6 +304,8 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
         }, 100, 100);
         triangleImage.setWidth("30px");
+        Tooltip triangleImageTooltip = TooltipHelper.getTooltip(triangleImage,"Triangle"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         DragSource.create(triangleImage);
         triangleImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
             if(imageClickEvent.getClickCount() == 2) {
@@ -295,6 +319,8 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
         }, 200, 100);
         ovalImage.setWidth("30px");
+        Tooltip ovalImageTooltip = TooltipHelper.getTooltip(ovalImage,"Oval"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         DragSource.create(ovalImage);
         ovalImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
             if(imageClickEvent.getClickCount() == 2) {
@@ -308,6 +334,8 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
         }, 200, 200);
         circleImage.setWidth("30px");
+        Tooltip circleImageTooltip = TooltipHelper.getTooltip(circleImage,"Circle"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         DragSource.create(circleImage);
         circleImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
             if(imageClickEvent.getClickCount() == 2) {
@@ -315,22 +343,9 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             }
         });
 
-        DesignerPalletImageItem labelImage = new DesignerPalletLabelImageItem("frontend/images/text.png", designerPalletItem   -> {
-            designerPalletItem.setIdentifier(new DesignerItemIdentifier(DesignerPalletItemType.LABEL.name(),
-                DesignerItemIdentifier.NOT_APPLICABLE, UUID.randomUUID().toString()));
-            this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
-        }, 200, 50);
-        labelImage.setWidth("30px");
-        DragSource.create(labelImage);
-        labelImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
-            if(imageClickEvent.getClickCount() == 2) {
-                labelImage.executeCanvasAddAction();
-            }
-        });
-
 
         HorizontalLayout layout = new HorizontalLayout();
-        layout.add(rectangleImage, triangleImage, ovalImage, circleImage, labelImage);
+        layout.add(rectangleImage, rectangleImageTooltip, triangleImage, triangleImageTooltip, ovalImage, ovalImageTooltip, circleImage, circleImageTooltip);
 
         return layout;
     }
@@ -451,10 +466,10 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
 
     @Override
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
-        Dialog dialog = new Dialog();
-
-        dialog.add(new H1("Double click!"), new Text(canvasItemDoubleClickEvent.getFigure().toString()));
-        dialog.open();
+//        Dialog dialog = new Dialog();
+//
+//        dialog.add(new H1("Double click!"), new Text(canvasItemDoubleClickEvent.getFigure().toString()));
+//        dialog.open();
     }
 }
 
