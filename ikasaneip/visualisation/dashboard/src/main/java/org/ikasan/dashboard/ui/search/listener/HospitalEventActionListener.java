@@ -39,11 +39,13 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
     private ResubmissionService resubmissionRestService;
     private IkasanAuthentication ikasanAuthentication;
+    private DateFormatter dateFormatter;
 
     public HospitalEventActionListener(String translatedEventActionMessage, SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService,
                                        ModuleMetaDataService moduleMetadataService, ResubmissionService resubmissionRestService,
                                        SolrSearchFilteringGrid searchResultsGrid, HashMap<String, Checkbox> selectionBoxes,
-                                       HashMap<String, IkasanSolrDocument> selectionItems, IkasanAuthentication ikasanAuthentication) {
+                                       HashMap<String, IkasanSolrDocument> selectionItems, IkasanAuthentication ikasanAuthentication,
+                                       DateFormatter dateFormatter) {
         super(moduleMetadataService, searchResultsGrid, selectionBoxes, selectionItems);
         this.translatedEventActionMessage = translatedEventActionMessage;
         if (this.translatedEventActionMessage == null) {
@@ -60,6 +62,10 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
         this.ikasanAuthentication = ikasanAuthentication;
         if (this.ikasanAuthentication == null) {
             throw new IllegalArgumentException("ikasanAuthentication cannot be null!");
+        }
+        this.dateFormatter = dateFormatter;
+        if (this.dateFormatter == null) {
+            throw new IllegalArgumentException("dateFormatter cannot be null!");
         }
     }
 
@@ -125,7 +131,7 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
         exclusionEventAction.setComment(comment);
         exclusionEventAction.setActionedBy(user);
         exclusionEventAction.setAction(String.format(translatedEventActionMessage, comment, action
-            , user , DateFormatter.getFormattedDateWithTimezone(ZonedDateTime.now()), errorOccurrence.getEvent()));
+            , user , this.dateFormatter.getFormattedDateWithTimezone(ZonedDateTime.now()), errorOccurrence.getEvent()));
         // the error uri is in fact the id of excluded events
         exclusionEventAction.setErrorUri(document.getId());
         exclusionEventAction.setModuleName(document.getModuleName());

@@ -12,6 +12,7 @@ import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.search.component.ChangePasswordDialog;
 import org.ikasan.dashboard.ui.search.component.SearchForm;
 import org.ikasan.dashboard.ui.search.listener.SearchListener;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -60,6 +61,9 @@ public class SearchView extends VerticalLayout implements BeforeEnterObserver, S
     @Resource
     private UserService userService;
 
+    @Resource
+    private DateFormatter dateFormatter;
+
     private boolean initialised = false;
 
     private SearchForm searchForm;
@@ -88,7 +92,7 @@ public class SearchView extends VerticalLayout implements BeforeEnterObserver, S
      */
     protected void createSearchResults() {
         this.searchResults = new SearchResults(solrGeneralService, hospitalAuditService, resubmissionRestService, replayRestService,
-            moduleMetadataService, replayAuditService);
+            moduleMetadataService, replayAuditService, this.dateFormatter);
         this.searchResults.setSizeFull();
     }
 

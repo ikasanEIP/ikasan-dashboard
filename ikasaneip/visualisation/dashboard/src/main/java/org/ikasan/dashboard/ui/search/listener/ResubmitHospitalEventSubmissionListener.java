@@ -14,6 +14,7 @@ import org.ikasan.dashboard.ui.general.component.HospitalCommentsDialog;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.rest.client.ResubmissionRestServiceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
@@ -44,9 +45,9 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
     public ResubmitHospitalEventSubmissionListener(HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService
         , ModuleMetaDataService moduleMetadataService, SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService
         , String actionMessage, SolrSearchFilteringGrid searchResultsGrid, HashMap<String, Checkbox> selectionBoxes
-        , HashMap<String, IkasanSolrDocument> selectionItems, IkasanAuthentication ikasanAuthentication) {
+        , HashMap<String, IkasanSolrDocument> selectionItems, IkasanAuthentication ikasanAuthentication, DateFormatter dateFormatter) {
         super(actionMessage, solrGeneralService, moduleMetadataService, resubmissionRestService
-            , searchResultsGrid, selectionBoxes, selectionItems, ikasanAuthentication);
+            , searchResultsGrid, selectionBoxes, selectionItems, ikasanAuthentication, dateFormatter);
         this.hospitalAuditService = hospitalAuditService;
         if (this.hospitalAuditService == null) {
             throw new IllegalArgumentException("hospitalAuditService cannot be null!");

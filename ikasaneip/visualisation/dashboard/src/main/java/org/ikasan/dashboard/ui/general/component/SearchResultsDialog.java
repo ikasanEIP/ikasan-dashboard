@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.general.component;
 
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.error.reporting.ErrorReportingService;
@@ -19,9 +20,9 @@ public class SearchResultsDialog extends AbstractCloseableResizableDialog {
 
     public SearchResultsDialog(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService
         , HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService
-        , ReplayService replayRestService, ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService){
+        , ReplayService replayRestService, ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService, DateFormatter dateFormatter){
         searchResults = new SearchResults(solrGeneralService, hospitalAuditService,
-            resubmissionRestService, replayRestService, moduleMetadataService, replayAuditService);
+            resubmissionRestService, replayRestService, moduleMetadataService, replayAuditService, dateFormatter);
         searchResults.tooltipBottom();
 
         searchResults.setSizeFull();

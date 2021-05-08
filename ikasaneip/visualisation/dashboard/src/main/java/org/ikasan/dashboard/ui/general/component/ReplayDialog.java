@@ -55,7 +55,10 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     private ReplayService replayRestService;
     private BatchInsert replayAuditService;
 
-    public ReplayDialog(ReplayService replayRestService, BatchInsert replayAuditService)
+    private DateFormatter dateFormatter;
+
+    public ReplayDialog(ReplayService replayRestService, BatchInsert replayAuditService,
+                        DateFormatter dateFormatter)
     {
         this.replayRestService = replayRestService;
         if(this.replayRestService == null)
@@ -66,6 +69,11 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         if(this.replayAuditService == null)
         {
             throw new IllegalArgumentException("solrGeneralService cannot be null!");
+        }
+        this.dateFormatter = dateFormatter;
+        if(this.dateFormatter == null)
+        {
+            throw new IllegalArgumentException("dateFormatter cannot be null!");
         }
 
         moduleNameTf = new TextField(getTranslation("text-field.module-name", UI.getCurrent().getLocale(), null));
@@ -203,7 +211,7 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         this.moduleNameTf.setValue(replayEvent.getModuleName());
         this.flowNameTf.setValue(replayEvent.getFlowName());
         this.eventIdTf.setValue(replayEvent.getEventId());
-        this.dateTimeTf.setValue(DateFormatter.getFormattedDate(replayEvent.getTimestamp()));
+        this.dateTimeTf.setValue(this.dateFormatter.getFormattedDate(replayEvent.getTimestamp()));
 
         super.open(replayEvent.getEvent());
     }

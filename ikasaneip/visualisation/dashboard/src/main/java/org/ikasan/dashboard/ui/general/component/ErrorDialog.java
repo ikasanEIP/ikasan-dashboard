@@ -41,7 +41,9 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     private String errorEvent;
     private String errorDetails;
 
-    public ErrorDialog()
+    private DateFormatter dateFormatter;
+
+    public ErrorDialog(DateFormatter dateFormatter)
     {
         moduleNameTf = new TextField(getTranslation("text-field.module-name", UI.getCurrent().getLocale(), null));
         flowNameTf = new TextField(getTranslation("text-field.flow-name", UI.getCurrent().getLocale(), null));
@@ -51,6 +53,7 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         errorActionTf = new TextField(getTranslation("text-field.error-action", UI.getCurrent().getLocale(), null));
         dateTimeTf = new TextField(getTranslation("text-field.date-time", UI.getCurrent().getLocale(), null));
         errorClassTf = new TextField(getTranslation("text-field.exception-class", UI.getCurrent().getLocale(), null));
+        this.dateFormatter = dateFormatter;
     }
 
     @Override
@@ -142,7 +145,7 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         this.eventIdTf.setValue(Optional.ofNullable(errorEvent.getEventId()).orElse(""));
         this.errorUriTf.setValue(Optional.ofNullable(errorEvent.getErrorUri()).orElse(""));
         this.errorActionTf.setValue(Optional.ofNullable(errorEvent.getErrorAction()).orElse(""));
-        this.dateTimeTf.setValue(DateFormatter.getFormattedDate(errorEvent.getTimestamp()));
+        this.dateTimeTf.setValue(this.dateFormatter.getFormattedDate(errorEvent.getTimestamp()));
         this.errorClassTf.setValue(Optional.ofNullable(errorEvent.getExceptionClass()).orElse(""));
 
         this.errorEvent = errorEvent.getEvent();

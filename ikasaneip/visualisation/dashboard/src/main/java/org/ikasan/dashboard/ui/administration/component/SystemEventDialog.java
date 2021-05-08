@@ -39,12 +39,16 @@ public class SystemEventDialog extends AbstractEntityViewDialog<IkasanSolrDocume
     private Button downloadButton;
     private Tooltip downloadButtonTooltip;
 
+    private DateFormatter dateFormatter;
+
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    public SystemEventDialog() {
+    public SystemEventDialog(DateFormatter dateFormatter) {
         actionedByTf = new TextField(getTranslation("text-field.action-performed-by", UI.getCurrent().getLocale()));
         contextTf = new TextField(getTranslation("text-field.system-event-context", UI.getCurrent().getLocale()));
         dateTimeTf = new TextField(getTranslation("text-field.date-time", UI.getCurrent().getLocale()));
+
+        this.dateFormatter = dateFormatter;
     }
 
     @Override
@@ -91,7 +95,7 @@ public class SystemEventDialog extends AbstractEntityViewDialog<IkasanSolrDocume
             this.actionedByTf.setValue(systemEventImpl.getActor());
             this.contextTf.setValue(SystemEventFormatter.getContext(systemEventImpl));
 
-            this.dateTimeTf.setValue(DateFormatter.getFormattedDate(systemEvent.getTimestamp()));
+            this.dateTimeTf.setValue(this.dateFormatter.getFormattedDate(systemEvent.getTimestamp()));
 
             open(systemEventImpl.getAction(), systemEventImpl);
         }

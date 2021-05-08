@@ -40,13 +40,17 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
 
     private Label resultsLabel = new Label();
 
+    private DateFormatter dateFormatter;
+
     /**
      * Constructor
      */
-    public SystemEventSearchView(SolrGeneralServiceImpl solrSearchService)
+    public SystemEventSearchView(SolrGeneralServiceImpl solrSearchService,
+                                 DateFormatter dateFormatter)
     {
         super();
         this.solrSearchService = solrSearchService;
+        this.dateFormatter = dateFormatter;
     }
 
     protected void init()
@@ -123,7 +127,7 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
         this.searchResultsGrid.addColumn(TemplateRenderer.<IkasanSolrDocument>of(
             "<div>[[item.date]]</div>")
             .withProperty("date",
-                ikasanSolrDocument -> DateFormatter.getFormattedDate(ikasanSolrDocument.getTimeStamp())))
+                ikasanSolrDocument -> this.dateFormatter.getFormattedDate(ikasanSolrDocument.getTimeStamp())))
             .setHeader(getTranslation("table-header.timestamp", UI.getCurrent().getLocale()))
             .setSortable(true)
             .setKey("timestamp")
@@ -141,7 +145,7 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
 
         this.searchResultsGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<IkasanSolrDocument>>)
             ikasanSolrDocumentItemDoubleClickEvent -> {
-                SystemEventDialog systemEventDialog = new SystemEventDialog();
+                SystemEventDialog systemEventDialog = new SystemEventDialog(this.dateFormatter);
                 systemEventDialog.populate(ikasanSolrDocumentItemDoubleClickEvent.getItem());
             });
 

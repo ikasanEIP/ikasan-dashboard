@@ -15,6 +15,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.material.Material;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.rest.client.ReplayRestServiceImpl;
 import org.ikasan.rest.client.ResubmissionRestServiceImpl;
 import org.ikasan.solr.model.IkasanSolrDocument;
@@ -47,21 +48,12 @@ public class EventLifeIdDeepLinkView extends VerticalLayout implements HasUrlPar
     public EventLifeIdDeepLinkView(ModuleMetaDataService moduleMetadataService,
                                    SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService,
                                    HospitalAuditService hospitalAuditService, ResubmissionRestServiceImpl resubmissionRestService,
-                                   ReplayRestServiceImpl replayRestService, BatchInsert replayAuditService)
+                                   ReplayRestServiceImpl replayRestService, BatchInsert replayAuditService, DateFormatter dateFormatter)
     {
         this.searchResults = new SearchResults(solrGeneralService, hospitalAuditService, resubmissionRestService
-            , replayRestService, moduleMetadataService, replayAuditService);
+            , replayRestService, moduleMetadataService, replayAuditService, dateFormatter);
         this.searchResults.setSizeFull();
 
-//        Button returnToDashboardButton = new Button("Return to dashboard");
-//        returnToDashboardButton.addClickListener(new ComponentEventListener<ClickEvent<Button>>() {
-//            @Override
-//            public void onComponentEvent(ClickEvent<Button> buttonClickEvent) {
-//                UI.getCurrent().navigate("");
-//            }
-//        });
-
-//        this.add(returnToDashboardButton);
         this.add(searchResults);
         this.setSizeFull();
     }

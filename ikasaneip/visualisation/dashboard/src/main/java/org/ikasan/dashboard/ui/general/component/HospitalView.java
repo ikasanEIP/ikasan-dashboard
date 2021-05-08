@@ -90,8 +90,10 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
 
     private String translatedEventActionMessage;
 
+    private DateFormatter dateFormatter;
+
     public HospitalView(HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService
-        , ModuleMetaDataService moduleMetadataService, SolrGeneralService solrGeneralService)
+        , ModuleMetaDataService moduleMetadataService, SolrGeneralService solrGeneralService, DateFormatter dateFormatter)
     {
         this.hospitalAuditService = hospitalAuditService;
         if(this.hospitalAuditService == null)
@@ -112,6 +114,11 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
         if(this.solrGeneralService == null)
         {
             throw new IllegalArgumentException("solrGeneralService cannot be null!");
+        }
+        this.dateFormatter = dateFormatter;
+        if(this.dateFormatter == null)
+        {
+            throw new IllegalArgumentException("dateFormatter cannot be null!");
         }
 
         moduleNameTf = new TextField(getTranslation("text-field.module-name", UI.getCurrent().getLocale(), null));
@@ -313,7 +320,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
         this.flowNameTf.setValue(Optional.ofNullable(ikasanSolrDocument.getFlowName()).orElse(""));
         this.eventIdTf.setValue(Optional.ofNullable(ikasanSolrDocument.getEventId()).orElse(""));
         this.errorUriTf.setValue(Optional.ofNullable(this.getErrorUri(ikasanSolrDocument.getId())).orElse(""));
-        this.dateTimeTf.setValue(DateFormatter.getFormattedDate(ikasanSolrDocument.getTimestamp()));
+        this.dateTimeTf.setValue(this.dateFormatter.getFormattedDate(ikasanSolrDocument.getTimestamp()));
 
         this.errorOccurrence = this.solrGeneralService
             .findByErrorUri("error", this.getErrorUri(ikasanSolrDocument.getId()));
@@ -344,7 +351,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
         exclusionEventAction.setComment(comment);
         exclusionEventAction.setActionedBy(user);
         exclusionEventAction.setAction(String.format(translatedEventActionMessage, comment, action, user
-            , DateFormatter.getFormattedDate(System.currentTimeMillis()), errorOccurrence.getEvent()));
+            , this.dateFormatter.getFormattedDate(System.currentTimeMillis()), errorOccurrence.getEvent()));
 
         // the error uri is in fact the id of excluded events
         exclusionEventAction.setErrorUri(document.getId());

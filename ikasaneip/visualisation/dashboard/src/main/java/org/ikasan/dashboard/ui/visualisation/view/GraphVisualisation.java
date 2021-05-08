@@ -30,6 +30,7 @@ import org.ikasan.dashboard.ui.general.component.*;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.search.component.SearchForm;
 import org.ikasan.dashboard.ui.search.listener.SearchListener;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleVisjsAdapter;
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamFilteringGrid;
@@ -117,6 +118,8 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
     private String visualisationType;
     private String visualisationName;
 
+    private DateFormatter dateFormatter;
+
     /**
      * Constructor
      */
@@ -125,7 +128,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
                               BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService,
                               SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService, HospitalAuditService hospitalAuditService,
                               ResubmissionRestServiceImpl resubmissionRestService, ReplayRestServiceImpl replayRestService, BatchInsert replayAuditService, MetaDataService metaDataApplicationRestService,
-                              BatchInsert<ModuleMetaData> moduleMetadataBatchInsert, TriggerService triggerRestService, String dynamicImagePath)
+                              BatchInsert<ModuleMetaData> moduleMetadataBatchInsert, TriggerService triggerRestService, String dynamicImagePath, DateFormatter dateFormatter)
     {
         this.solrSearchService = solrSearchService;
         this.moduleControlRestService = moduleControlRestService;
@@ -142,6 +145,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         this.moduleMetadataBatchInsert = moduleMetadataBatchInsert;
         this.triggerRestService = triggerRestService;
         this.dynamicImagePath = dynamicImagePath;
+        this.dateFormatter = dateFormatter;
 
         this.setMargin(false);
 
@@ -156,7 +160,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
     {
         this.searchResults = new SearchResults(this.solrGeneralService,
             this.hospitalAuditService, this.resubmissionRestService, this.replayRestService,
-            this.moduleMetadataService, this.replayAuditService);
+            this.moduleMetadataService, this.replayAuditService, this.dateFormatter);
         this.searchResults.setHeight("50vh");
         this.searchResults.setWidth("100%");
 
@@ -470,7 +474,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
             this.moduleControlRestService, this.moduleMetadataService, this.configurationRestService
             , this.triggerRestService, this.configurationMetadataService, this.hospitalAuditService,
             this.resubmissionRestService, this.replayRestService, this.replayAuditService, this.metaDataApplicationRestService,
-            this.moduleMetadataBatchInsert, this.dynamicImagePath);
+            this.moduleMetadataBatchInsert, this.dynamicImagePath, this.dateFormatter);
 
         businessStreamVisualisation.createBusinessStreamGraph(name, businessStreamMetaData);
 

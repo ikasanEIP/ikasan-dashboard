@@ -11,6 +11,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.ui.search.listener.SearchListener;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamStatusPanel;
 import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamVisualisation;
 import org.ikasan.dashboard.ui.visualisation.event.GraphViewChangeEvent;
@@ -76,6 +77,8 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
 
     private String dynamicImagePath;
 
+    private DateFormatter dateFormatter;
+
     /**
      * Constructor
      */
@@ -83,7 +86,7 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
         , ModuleControlService moduleControlRestService, ModuleMetaDataService moduleMetadataService, ConfigurationService configurationRestService
         , TriggerService triggerRestService, ConfigurationMetaDataService configurationMetadataService, HospitalAuditService hospitalAuditService
         , ResubmissionService resubmissionRestService, ReplayService replayRestService, BatchInsert replayAuditService, MetaDataService metaDataApplicationRestService
-        , BatchInsert<ModuleMetaData> moduleMetaDataBatchInsert, String dynamicImagePath)
+        , BatchInsert<ModuleMetaData> moduleMetaDataBatchInsert, String dynamicImagePath, DateFormatter dateFormatter)
     {
         this.setMargin(false);
         this.setSizeFull();
@@ -139,6 +142,10 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
         this.dynamicImagePath = dynamicImagePath;
         if (this.dynamicImagePath == null) {
             throw new IllegalArgumentException("dynamicImagePath cannot be null!");
+        }
+        this.dateFormatter = dateFormatter;
+        if (this.dateFormatter == null) {
+            throw new IllegalArgumentException("dateFormatter cannot be null!");
         }
 
         this.graphViewChangeListeners = new ArrayList<>();
@@ -196,7 +203,7 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
             this.configurationRestService, this.triggerRestService, this.moduleMetadataService
             , this.configurationMetadataService, this.solrSearchService, this.hospitalAuditService,
             this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService,
-            this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert, this.dynamicImagePath);
+            this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert, this.dynamicImagePath, this.dateFormatter);
 
         this.businessStreamVisualisation.createBusinessStreamGraphGraph(businessStreamMetaData);
 

@@ -15,6 +15,7 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.SearchResultsDialog;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.search.SearchConstants;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleVisjsAdapter;
 import org.ikasan.dashboard.ui.visualisation.component.util.SearchFoundStatus;
 import org.ikasan.dashboard.ui.visualisation.event.GraphViewChangeEvent;
@@ -83,6 +84,8 @@ public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
 
     private BatchInsert<ModuleMetaData> moduleMetaDataService;
 
+    private DateFormatter dateFormatter;
+
     public FlowVisualisationDialog(ModuleControlService moduleControlRestService
         , ConfigurationService configurationRestService
         , TriggerService triggerRestService, ConfigurationMetaDataService configurationMetadataService
@@ -91,7 +94,7 @@ public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
         , HospitalAuditService hospitalAuditService
         , ResubmissionService resubmissionRestService, ReplayService replayRestService
         , ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService
-        , MetaDataService metaDataApplicationRestService, BatchInsert<ModuleMetaData> moduleMetaDataService)
+        , MetaDataService metaDataApplicationRestService, BatchInsert<ModuleMetaData> moduleMetaDataService, DateFormatter dateFormatter)
     {
         this.moduleControlRestService = moduleControlRestService;
         if(this.moduleControlRestService == null){
@@ -151,6 +154,10 @@ public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
         this.moduleMetaDataService = moduleMetaDataService;
         if (this.moduleMetaDataService == null) {
             throw new IllegalArgumentException("moduleMetaDataService cannot be null!");
+        }
+        this.dateFormatter = dateFormatter;
+        if (this.dateFormatter == null) {
+            throw new IllegalArgumentException("dateFormatter cannot be null!");
         }
 
         this.showResize(false);
@@ -290,7 +297,7 @@ public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
     protected void search(String type)
     {
         SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
-            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
+            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService, this.dateFormatter);
         searchResultsDialog.search(this.searchFoundStatus.getStartTime(), this.searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm()
             , type, false, flow.getModuleName(), flow.getFlowName());
         searchResultsDialog.open();

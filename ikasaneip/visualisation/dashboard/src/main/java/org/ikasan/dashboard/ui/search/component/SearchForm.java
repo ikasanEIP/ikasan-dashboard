@@ -325,8 +325,8 @@ public class SearchForm extends VerticalLayout {
 
             this.searchListeners.forEach(searchListener -> {
                 searchListener.search(searchTerm.getTerm(), entityTypes, this.negateQueryCheckbox.getValue(),
-                    Date.from(startDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime() + DateTimeUtil.getMilliFromTime(this.startTimePicker.getValue()),
-                    Date.from(endDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime() + DateTimeUtil.getMilliFromTime(this.endTimePicker.getValue()));
+                    Date.from(startDate.getValue().atStartOfDay(ZoneId.of("Europe/London")).toInstant()).getTime() + DateTimeUtil.getMilliFromTime(this.startTimePicker.getValue()),
+                    Date.from(endDate.getValue().atStartOfDay(ZoneId.of("Europe/London")).toInstant()).getTime() + DateTimeUtil.getMilliFromTime(this.endTimePicker.getValue()));
             });
         });
     }

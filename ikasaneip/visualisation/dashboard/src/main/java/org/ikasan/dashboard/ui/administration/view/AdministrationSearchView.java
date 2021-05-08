@@ -10,6 +10,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,9 @@ public class AdministrationSearchView extends VerticalLayout implements BeforeEn
 
     private SystemEventSearchView systemEventSearchView;
 
+    @Resource
+    private DateFormatter dateFormatter;
+
     /**
      * Constructor
      */
@@ -47,7 +51,7 @@ public class AdministrationSearchView extends VerticalLayout implements BeforeEn
         tabs.getElement().getThemeList().remove("padding");
         tabs.setSizeFull();
 
-        this.systemEventSearchView = new SystemEventSearchView(this.solrSearchService);
+        this.systemEventSearchView = new SystemEventSearchView(this.solrSearchService, this.dateFormatter);
         this.systemEventSearchView.init();
         this.systemEventSearchView.getThemeList().remove("padding");
 

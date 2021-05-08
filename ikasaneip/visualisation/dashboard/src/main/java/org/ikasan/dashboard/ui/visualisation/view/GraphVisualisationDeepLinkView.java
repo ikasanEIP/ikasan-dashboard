@@ -12,6 +12,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.material.Material;
 import org.ikasan.dashboard.ui.general.component.SearchResults;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.rest.client.ReplayRestServiceImpl;
 import org.ikasan.rest.client.ResubmissionRestServiceImpl;
 import org.ikasan.solr.model.IkasanSolrDocument;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,12 +71,14 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
     private String visualisationType = null;
     private String visualisationName = null;
 
+    private DateFormatter dateFormatter;
+
     public GraphVisualisationDeepLinkView(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService, ModuleControlService moduleControlRestService,
                                           ModuleMetaDataService moduleMetadataService, ConfigurationService configurationRestService, ConfigurationMetaDataService configurationMetadataService,
                                           BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService,
                                           SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService, HospitalAuditService hospitalAuditService,
                                           ResubmissionRestServiceImpl resubmissionRestService, ReplayRestServiceImpl replayRestService, BatchInsert replayAuditService, MetaDataService metaDataApplicationRestService,
-                                          BatchInsert<ModuleMetaData> moduleMetadataBatchInsert, TriggerService triggerRestService)
+                                          BatchInsert<ModuleMetaData> moduleMetadataBatchInsert, TriggerService triggerRestService, DateFormatter dateFormatter)
     {
         this.solrSearchService = solrSearchService;
         this.moduleControlRestService = moduleControlRestService;
@@ -90,6 +94,7 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
         this.metaDataApplicationRestService = metaDataApplicationRestService;
         this.moduleMetadataBatchInsert = moduleMetadataBatchInsert;
         this.triggerRestService = triggerRestService;
+        this.dateFormatter = dateFormatter;
     }
 
     private void init() {
@@ -97,7 +102,8 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
             moduleControlRestService, moduleMetadataService, configurationRestService,
             configurationMetadataService, businessStreamMetaDataService, solrGeneralService,
             hospitalAuditService, resubmissionRestService, replayRestService, replayAuditService,
-            metaDataApplicationRestService, moduleMetadataBatchInsert, triggerRestService, dynamicImagePath);
+            metaDataApplicationRestService, moduleMetadataBatchInsert, triggerRestService, dynamicImagePath,
+            this.dateFormatter);
 
         this.add(graphVisualisation);
         this.setSizeFull();

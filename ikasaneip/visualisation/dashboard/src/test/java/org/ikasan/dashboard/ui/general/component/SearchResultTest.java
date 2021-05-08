@@ -10,6 +10,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.dashboard.ui.search.component.SearchForm;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.error.reporting.service.SolrErrorReportingServiceImpl;
 import org.ikasan.replay.service.SolrReplayAuditServiceImpl;
 import org.ikasan.rest.client.ReplayRestServiceImpl;
@@ -28,6 +29,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -54,6 +56,9 @@ public class SearchResultTest extends UITest {
     @MockBean
     private SolrReplayAuditServiceImpl replayAuditService;
 
+    @Resource
+    private DateFormatter dateFormatter;
+
     @Override
     public void setup_expectations() {
 
@@ -65,7 +70,7 @@ public class SearchResultTest extends UITest {
         UI.getCurrent().navigate("Search");
 
         SearchResults searchResults = new SearchResults(this.solrSearchService, this.hospitalAuditService
-            , resubmissionRestService, replayRestService, moduleMetadataService, replayAuditService);
+            , resubmissionRestService, replayRestService, moduleMetadataService, replayAuditService, this.dateFormatter);
 
         Assertions.assertNotNull(searchResults);
 

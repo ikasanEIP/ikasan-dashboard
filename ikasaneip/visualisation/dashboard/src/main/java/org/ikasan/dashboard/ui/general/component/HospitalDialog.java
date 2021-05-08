@@ -74,8 +74,11 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
 
     private SolrSearchFilteringGrid searchResultsGrid;
 
+    private DateFormatter dateFormatter;
+
     public HospitalDialog(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService, HospitalAuditService hospitalAuditService,
-                          ResubmissionService resubmissionRestService, ModuleMetaDataService moduleMetadataService, SolrSearchFilteringGrid searchResultsGrid)
+                          ResubmissionService resubmissionRestService, ModuleMetaDataService moduleMetadataService, SolrSearchFilteringGrid searchResultsGrid,
+                          DateFormatter dateFormatter)
     {
         this.solrGeneralService = solrGeneralService;
         if(this.solrGeneralService == null)
@@ -101,6 +104,11 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         if(this.searchResultsGrid == null)
         {
             throw new IllegalArgumentException("searchResultsGrid cannot be null!");
+        }
+        this.dateFormatter = dateFormatter;
+        if(this.dateFormatter == null)
+        {
+            throw new IllegalArgumentException("dateFormatter cannot be null!");
         }
 
         moduleNameTf = new TextField(getTranslation("text-field.module-name", UI.getCurrent().getLocale(), null));
@@ -315,7 +323,7 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         this.flowNameTf.setValue(Optional.ofNullable(ikasanSolrDocument.getFlowName()).orElse(""));
         this.eventIdTf.setValue(Optional.ofNullable(ikasanSolrDocument.getEventId()).orElse(""));
         this.errorUriTf.setValue(Optional.ofNullable(this.getErrorUri(ikasanSolrDocument.getId())).orElse(""));
-        this.dateTimeTf.setValue(DateFormatter.getFormattedDate(ikasanSolrDocument.getTimestamp()));
+        this.dateTimeTf.setValue(this.dateFormatter.getFormattedDate(ikasanSolrDocument.getTimestamp()));
 
         this.errorOccurrence = this.solrGeneralService
             .findByErrorUri("error", this.getErrorUri(ikasanSolrDocument.getId()));
@@ -343,7 +351,7 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         exclusionEventAction.setComment(comment);
         exclusionEventAction.setActionedBy(user);
         exclusionEventAction.setAction(String.format(translatedEventActionMessage, comment, action, user
-            , DateFormatter.getFormattedDateWithTimezone(ZonedDateTime.now()), errorOccurrence.getEvent()));
+            , this.dateFormatter.getFormattedDateWithTimezone(ZonedDateTime.now()), errorOccurrence.getEvent()));
         // the error uri is in fact the id of excluded events
         exclusionEventAction.setErrorUri(document.getId());
         exclusionEventAction.setModuleName(document.getModuleName());

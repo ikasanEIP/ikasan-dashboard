@@ -12,6 +12,7 @@ import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.general.component.SearchResultsDialog;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.visualisation.component.util.SearchFoundStatus;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
 import org.ikasan.dashboard.ui.visualisation.util.BusinessStreamItemTypes;
@@ -81,6 +82,8 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
     private boolean initialised = false;
 
+    private DateFormatter dateFormatter;
+
     public BusinessStreamVisualisation(ModuleControlService moduleControlRestService
         , ConfigurationService configurationRestService, TriggerService triggerRestService
         , ModuleMetaDataService moduleMetaDataService
@@ -90,7 +93,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         , ResubmissionService resubmissionRestService, ReplayService replayRestService
         , ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService
         , MetaDataService metaDataApplicationRestService, BatchInsert<ModuleMetaData> moduleMetaDataBatchInsert
-        , String dynamicImagePath) {
+        , String dynamicImagePath, DateFormatter dateFormatter) {
         this.moduleControlRestService = moduleControlRestService;
         if (this.moduleControlRestService == null) {
             throw new IllegalArgumentException("moduleControlRestService cannot be null!");
@@ -146,6 +149,10 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         this.dynamicImagePath = dynamicImagePath;
         if (this.dynamicImagePath == null) {
             throw new IllegalArgumentException("dynamicImagePath cannot be null!");
+        }
+        this.dateFormatter = dateFormatter;
+        if (this.dateFormatter == null) {
+            throw new IllegalArgumentException("dateFormatter cannot be null!");
         }
 
         this.setMargin(false);
@@ -472,7 +479,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         Flow flow =  this.flowMap.get(identifier.getName());
         logger.debug("error clicked: " + flow.getModuleName() + " " + flow.getFlowName());
         SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
-            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
+            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService, dateFormatter);
         searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), identifier.getType().toLowerCase(), false
             , flow.getModuleName(), flow.getFlowName());
         searchResultsDialog.open();
@@ -496,7 +503,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
                 , this.flowMap.get(nodeId), this.solrSearchService
                 , this.stringSearchFoundStatusMap.get(nodeId), this.hospitalAuditService
                 , this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService
-                , this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert);
+                , this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert, this.dateFormatter);
 
             flowVisualisationDialog.open();
         }

@@ -13,6 +13,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.rest.client.ReplayRestServiceImpl;
 import org.ikasan.rest.client.ResubmissionRestServiceImpl;
 import org.ikasan.solr.model.IkasanSolrDocument;
@@ -83,6 +84,9 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private BatchInsert<ModuleMetaData> moduleMetadataBatchInsert;
 
+    @Resource
+    private DateFormatter dateFormatter;
+
     @Value(value = "${integrated.systems.image.path}")
     private String dynamicImagePath;
 
@@ -111,7 +115,8 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver
             this.moduleControlRestService, this.moduleMetadataService, this.configurationRestService,
             this.configurationMetadataService, this.businessStreamMetaDataService, this.solrGeneralService,
             this.hospitalAuditService, this.resubmissionRestService, this.replayRestService, this.replayAuditService,
-            this.metaDataApplicationRestService, this.moduleMetadataBatchInsert, this.triggerRestService, this.dynamicImagePath);
+            this.metaDataApplicationRestService, this.moduleMetadataBatchInsert, this.triggerRestService, this.dynamicImagePath,
+            this.dateFormatter);
 
         this.add(graphVisualisation);
 

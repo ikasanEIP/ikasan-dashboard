@@ -65,6 +65,9 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
     @Resource
     private SystemEventLogger systemEventLogger;
 
+    @Resource
+    private  DateFormatter dateFormatter;
+
     private FilteringGrid<User> userGrid;
 
     private DataProvider<User, UserFilter> dataProvider;
@@ -143,7 +146,7 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
         this.userGrid.addColumn(TemplateRenderer.<User>of(
             "<div>[[item.date]]</div>")
             .withProperty("date",
-                user -> DateFormatter.getFormattedDate(user.getPreviousAccessTimestamp())))
+                user -> this.dateFormatter.getFormattedDate(user.getPreviousAccessTimestamp())))
             .setKey("lastaccess").setHeader(getTranslation("table-header.last-access", UI.getCurrent().getLocale(), null)).setSortable(true);
 
         HeaderRow hr = userGrid.appendHeaderRow();
