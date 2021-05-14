@@ -11,16 +11,16 @@ import java.util.Date;
 @Component
 public class DateFormatter
 {
-    public static final String DATE_FORMAT_TABLE_VIEWS = "dd/MM/yyyy HH:mm:ss.SSS";
+    public static final String DATE_FORMAT_TABLE_VIEWS = "dd/MM/yyyy HH:mm:ss.SSS '['VV '-' z']'";
     public static final DateTimeFormatter DATE_FORMAT_WITH_TIMEZONE = DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
     @Value("${deployment.timezone.id}")
     public String zoneId;
 
-    private static SimpleDateFormat tableFormatter;
+    private DateTimeFormatter tableFormatter;
 
     public DateFormatter() {
-        tableFormatter = new SimpleDateFormat(DATE_FORMAT_TABLE_VIEWS);
+        tableFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT_TABLE_VIEWS);
     }
 
     public String getFormattedDate(long timestamp)
@@ -33,7 +33,7 @@ public class DateFormatter
         ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
             ZoneId.of(zoneId));
 
-        return getFormattedDateWithTimezone(zdt);
+        return this.tableFormatter.format(zdt);
     }
 
     public String getFormattedDateWithTimezone(ZonedDateTime dateTime)
