@@ -130,7 +130,7 @@ public class FlowListFilteringGrid extends Grid<FlowMetaData>
 
     private List<FlowMetaData> getResults(FlowSearchFilter filter, int offset, int limit)
     {
-        return this.flows;
+        return this.flows.subList(offset, flows.size()<limit+offset ? flows.size() : limit+offset);
 //        IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 //
 //        final List<String> moduleNames = new ArrayList<>();
