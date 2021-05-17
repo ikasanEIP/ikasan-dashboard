@@ -189,6 +189,8 @@ public class FlowFilteringGrid extends Grid<Flow>
         if(flows.size() > limit) {
             return flows.subList(0, limit);
         }
+
+        return flows;
     }
 
     public long getResultSize()
