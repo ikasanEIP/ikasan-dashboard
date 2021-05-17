@@ -181,10 +181,14 @@ public class FlowFilteringGrid extends Grid<Flow>
             results = new ModuleMetadataSearchResults(new ArrayList<>(), 0, 0);
         }
 
-        return results.getResultList()
+        List<Flow> flows = results.getResultList()
             .stream()
             .flatMap(metaData -> metaData.getFlows().stream().map(flowMetaData -> new Flow(metaData.getName(), flowMetaData.getName())))
             .collect(Collectors.toList());
+
+        if(flows.size() > limit) {
+            return flows.subList(0, limit);
+        }
     }
 
     public long getResultSize()
