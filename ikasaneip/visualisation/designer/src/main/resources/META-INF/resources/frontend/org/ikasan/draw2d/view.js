@@ -22,7 +22,7 @@ View = draw2d.Canvas.extend({
 
         this.installEditPolicy(  new draw2d.policy.connection.DragConnectionCreatePolicy({
             createConnection: function() {
-                let router = new draw2d.layout.connection.ManhattanConnectionRouter();
+                let router = new draw2d.layout.connection.InteractiveManhattanConnectionRouter();
                 let decorator = new draw2d.decoration.connection.ArrowDecorator();
                 decorator.setBackgroundColor("#ffffff");
 
