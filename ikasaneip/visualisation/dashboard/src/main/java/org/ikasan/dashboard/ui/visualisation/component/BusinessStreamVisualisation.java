@@ -1,9 +1,17 @@
 package org.ikasan.dashboard.ui.visualisation.component;
 
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.UI;
+import com.flowingcode.vaadin.addons.fontawesome.FontAwesome;
+import com.flowingcode.vaadin.addons.ironicons.IronIcons;
+import com.vaadin.componentfactory.Tooltip;
+import com.vaadin.componentfactory.TooltipAlignment;
+import com.vaadin.componentfactory.TooltipPosition;
+import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.shared.Registration;
@@ -17,6 +25,7 @@ import org.ikasan.dashboard.ui.visualisation.component.util.SearchFoundStatus;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
 import org.ikasan.dashboard.ui.visualisation.util.BusinessStreamItemTypes;
 import org.ikasan.designer.DesignerCanvas;
+import org.ikasan.designer.component.ColorPicker;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
@@ -186,10 +195,45 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
             this.designerCanvas.manageClickableItems();
 
-            this.add(designerCanvas);
+            this.add(initCanvasActions(), designerCanvas);
 
             this.initialised = true;
         }
+    }
+
+    protected Component initCanvasActions() {
+        HorizontalLayout actions = new HorizontalLayout();
+        actions.setSpacing(false);
+        actions.setPadding(false);
+        actions.setId("canvas-actions");
+
+        // Zoom in
+        Button zoomInButton = new Button();
+        zoomInButton.getElement().appendChild(IronIcons.ZOOM_IN.create().getElement());
+        zoomInButton.setId("canvas_zoom_in");
+        Tooltip zoomInButtonTooltip = getTooltip(zoomInButton,"Zoom in"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(zoomInButton, zoomInButtonTooltip);
+
+        // Zoom out
+        Button zoomOutButton = new Button();
+        zoomOutButton.getElement().appendChild(IronIcons.ZOOM_OUT.create().getElement());
+        zoomOutButton.setId("canvas_zoom_out");
+        Tooltip zoomOutButtonTooltip = getTooltip(zoomOutButton,"Zoom out"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(zoomOutButton, zoomOutButtonTooltip);
+
+        // Export as selected format
+        Button download = new Button();
+        download.getElement().appendChild(IronIcons.FILE_DOWNLOAD.create().getElement());
+        Tooltip downloadTooltip = getTooltip(download,"Export as image"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        actions.add(download, downloadTooltip);
+        download.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
+            this.exportPng();
+        });
+
+        return actions;
     }
 
     private void drawFlowStatus(FlowState state) {
@@ -518,5 +562,30 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
             moduleControlContextMenu.open();
 
         }
+    }
+
+    public void exportPng(){
+        this.designerCanvas.exportPng();
+    }
+
+    public static Tooltip getTooltip(Component component, String message, TooltipPosition position, TooltipAlignment alignment)
+    {
+        Tooltip tooltip = new Tooltip();
+
+        tooltip.getElement().getStyle().set("background-color", "#232F34");
+        tooltip.getElement().getStyle().set("color", "#FFFFFF");
+        tooltip.getElement().getStyle().set("border-radius", "10px");
+        tooltip.getElement().getStyle().set("padding", "10px");
+        tooltip.getElement().getStyle().set("font-size", "8pt");
+        tooltip.getElement().getStyle().set("z-index", "100");
+
+        tooltip.attachToComponent(component);
+
+        tooltip.setPosition(position);
+        tooltip.setAlignment(alignment);
+
+        tooltip.add(new Paragraph(message));
+
+        return tooltip;
     }
 }
