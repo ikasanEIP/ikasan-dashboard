@@ -79,7 +79,9 @@ public class FlowStateCache implements Consumer<FlowState>
 
         if(!this.contains(module, flowName))
         {
-            refreshFromSource(module.getName(), flowName, module.getUrl());
+            Runnable updateFromSourceRunnable = () -> refreshFromSource
+                (module.getName(), flowName, module.getUrl());
+            this.executor.execute(updateFromSourceRunnable);
         }
 
         return this.cache.get(module.getName()+flowName);
