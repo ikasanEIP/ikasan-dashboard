@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class FlowStateCache implements Consumer<FlowState>
@@ -20,6 +23,8 @@ public class FlowStateCache implements Consumer<FlowState>
     private Logger logger = LoggerFactory.getLogger(FlowStateCache.class);
 
     private static FlowStateCache INSTANCE;
+
+    private ExecutorService executor = Executors.newFixedThreadPool(10);
 
     public static FlowStateCache instance()
     {
@@ -58,7 +63,9 @@ public class FlowStateCache implements Consumer<FlowState>
     {
         if(!this.contains(module, flow))
         {
-            refreshFromSource(module.getName(), flow.getName(), module.getUrl());
+            Runnable updateFromSourceRunnable = () -> refreshFromSource
+                (module.getName(), flow.getName(), module.getUrl());
+            this.executor.execute(updateFromSourceRunnable);
         }
 
         return this.cache.get(module.getName()+flow.getName());
@@ -133,5 +140,17 @@ public class FlowStateCache implements Consumer<FlowState>
         }
 
         return state;
+    }
+
+    public void teardown() {
+        this.executor.shutdown();
+        try {
+            if (!executor.awaitTermination(2000, TimeUnit.MILLISECONDS)) {
+                executor.shutdownNow();
+            }
+        }
+        catch (InterruptedException e) {
+            executor.shutdownNow();
+        }
     }
 }
