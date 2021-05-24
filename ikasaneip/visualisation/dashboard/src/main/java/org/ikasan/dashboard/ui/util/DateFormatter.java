@@ -1,21 +1,19 @@
 package org.ikasan.dashboard.ui.util;
 
+import com.vaadin.flow.component.UI;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.text.SimpleDateFormat;
-import java.time.*;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 @Component
 public class DateFormatter
 {
     public static final String DATE_FORMAT_TABLE_VIEWS = "dd/MM/yyyy HH:mm:ss.SSS '['VV '-' z']'";
     public static final DateTimeFormatter DATE_FORMAT_WITH_TIMEZONE = DateTimeFormatter.ISO_ZONED_DATE_TIME;
-
-    @Value("${deployment.timezone.id}")
-    public String zoneId;
 
     private DateTimeFormatter tableFormatter;
 
@@ -31,12 +29,12 @@ public class DateFormatter
         }
 
         ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
-            ZoneId.of(zoneId));
+            DateTimeUtil.getZoneId());
 
         return this.tableFormatter.format(zdt);
     }
 
-    public String getFormattedDateWithTimezone(ZonedDateTime dateTime)
+    public String getFormattedDate(ZonedDateTime dateTime)
     {
         return DATE_FORMAT_WITH_TIMEZONE.format(dateTime);
     }

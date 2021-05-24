@@ -55,7 +55,7 @@ public class DashboardView extends HorizontalLayout implements BeforeEnterObserv
         if(!initialised) {
             board.addRow(new BusinessStreamWidget(this.businessStreamMetaDataService)
                 , new ModuleWidget(moduleMetadataService), new StatusWidget(moduleMetadataService));
-            board.addRow(new HospitalEventsWidget(solrGeneralService), new SystemEventWidget(solrGeneralService));
+            board.addRow(new HospitalEventsWidget(solrGeneralService), new ErrorEventWidget(solrGeneralService));
 
             initialised = true;
         }

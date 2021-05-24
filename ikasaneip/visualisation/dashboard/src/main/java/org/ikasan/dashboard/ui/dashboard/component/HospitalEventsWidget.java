@@ -9,14 +9,12 @@ import com.vaadin.flow.component.charts.model.*;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.solr.SolrGeneralService;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -68,9 +66,9 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
         tooltip.setShared(true);
         configuration.setTooltip(tooltip);
 
-        long midnightToday = this.getMidnightTodayMilliseconds();
+        long midnightToday = this.getMidnightTodayMillisecondsWithZOneOffset();
 
-        List<DayExclusion> dayExclusions = this.loadAllData(midnightToday);
+        List<DayExclusion> dayExclusions = this.loadAllData(this.getMidnightTodayMillisecondsUTC());
 
         exclusionSeries = new DataSeries();
         exclusionSeries.setName("Exclusions");
@@ -127,9 +125,9 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
     }
 
     private void refresh(){
-        long midnightToday = this.getMidnightTodayMilliseconds();
+        long midnightToday = this.getMidnightTodayMillisecondsWithZOneOffset();
 
-        List<DayExclusion> dayExclusions = this.loadAllData(midnightToday);
+        List<DayExclusion> dayExclusions = this.loadAllData(getMidnightTodayMillisecondsUTC());
 
         exclusionSeries.get(0).setY(dayExclusions.get(8).exclusions);
         exclusionSeries.get(0).setX(midnightToday - (8*MILLI_IN_DAY));
@@ -210,10 +208,16 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
              startTime, endTime, 0, List.of(type),false, null, null);
     }
 
-    private long getMidnightTodayMilliseconds() {
-        LocalDateTime zdt = LocalDate.now().atTime(LocalTime.MIDNIGHT);
+    private long getMidnightTodayMillisecondsWithZOneOffset() {
+        return Instant.now().atZone(DateTimeUtil.getZoneId())
+            .toLocalDate().atTime(LocalTime.MIDNIGHT).toInstant(ZoneOffset.ofTotalSeconds(0))
+            .toEpochMilli();
+    }
 
-        return zdt.toInstant(ZoneOffset.UTC).toEpochMilli();
+    private long getMidnightTodayMillisecondsUTC() {
+        return Instant.now().atZone(ZoneId.of("UTC"))
+            .toLocalDate().atTime(LocalTime.MIDNIGHT).toInstant(ZoneOffset.ofTotalSeconds(0))
+            .toEpochMilli();
     }
 
     private class DayExclusion {

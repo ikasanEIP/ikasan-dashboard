@@ -8,18 +8,21 @@ import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.server.Command;
+import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.solr.SolrGeneralService;
 
+import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class SystemEventWidget extends Div {
+public class ErrorEventWidget extends Div {
 
     private static int REPORTING_INTERVAL = 60000;
 
@@ -27,7 +30,7 @@ public class SystemEventWidget extends Div {
 
     private DataSeries series;
 
-    public SystemEventWidget(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService) {
+    public ErrorEventWidget(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService) {
         this.solrGeneralService = solrGeneralService;
 
         Div div = new Div();
@@ -61,7 +64,7 @@ public class SystemEventWidget extends Div {
         series.setPlotOptions(new PlotOptionsSpline());
         series.setName("Error Occurrences");
         for (int i = -19; i <= 0; i++) {
-            long x = System.currentTimeMillis() + i * REPORTING_INTERVAL;
+            long x = System.currentTimeMillis() + TimeZone.getTimeZone(DateTimeUtil.getZoneOffset()).getRawOffset() + i * REPORTING_INTERVAL;
             series.add(new DataSeriesItem(x, this.loadData("error", x-REPORTING_INTERVAL, x)
                 .getTotalNumberOfResults()));
         }
@@ -93,7 +96,7 @@ public class SystemEventWidget extends Div {
 
     private void refresh() {
         for (int i = -19; i <= 0; i++) {
-            long x = System.currentTimeMillis() + i * REPORTING_INTERVAL;
+            long x = System.currentTimeMillis() + TimeZone.getTimeZone(DateTimeUtil.getZoneOffset()).getRawOffset() + i * REPORTING_INTERVAL;
             series.get(i+19).setX(x);
             series.get(i+19).setY(this.loadData("error", x-REPORTING_INTERVAL, x).getTotalNumberOfResults());
             series.update(series.get(i+19));

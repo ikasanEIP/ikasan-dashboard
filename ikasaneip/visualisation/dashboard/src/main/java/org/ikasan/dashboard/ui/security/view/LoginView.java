@@ -16,6 +16,7 @@ import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.security.ContextCache;
+import org.ikasan.dashboard.ui.util.SessionAttributeConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.security.service.AuthenticationService;
@@ -78,18 +79,23 @@ public class LoginView extends VerticalLayout implements PageConfigurator, HasUr
 
                 this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_LOGIN_CONSTANTS
                     , SystemEventConstants.DASHBOARD_LOGIN_CONSTANTS, authentication.getName());
+
+                UI.getCurrent().getPage().retrieveExtendedClientDetails(extendedClientDetails -> {
+                    UI.getCurrent().getSession().setAttribute(SessionAttributeConstants.TIMEZONE_ID,
+                        extendedClientDetails.getTimeZoneId());
+
+                    String context = ContextCache.getContext(UI.getCurrent().getSession().getSession().getId());
+                    if(context != null && isRouteValid(context)) {
+                        UI.getCurrent().navigate(context);
+                    }
+                    else {
+                        UI.getCurrent().navigate("");
+                    }
+                });
             }
             catch (AuthenticationServiceException e)
             {
                 login.setError(true);
-            }
-
-            String context = ContextCache.getContext(UI.getCurrent().getSession().getSession().getId());
-            if(context != null && isRouteValid(context)) {
-                UI.getCurrent().navigate(context);
-            }
-            else {
-                UI.getCurrent().navigate("");
             }
         });
 

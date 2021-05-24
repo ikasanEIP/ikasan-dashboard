@@ -131,7 +131,7 @@ public class SystemEventSearchView extends VerticalLayout implements SearchListe
             .setHeader(getTranslation("table-header.timestamp", UI.getCurrent().getLocale()))
             .setSortable(true)
             .setKey("timestamp")
-            .setFlexGrow(2)
+            .setFlexGrow(4)
             .setResizable(true);
 
         HeaderRow hr = searchResultsGrid.appendHeaderRow();

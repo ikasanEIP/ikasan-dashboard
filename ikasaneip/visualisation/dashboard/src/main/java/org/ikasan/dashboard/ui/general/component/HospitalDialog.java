@@ -20,12 +20,9 @@ import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.rest.client.ResubmissionRestServiceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.spec.error.reporting.ErrorOccurrence;
-import org.ikasan.spec.error.reporting.ErrorReportingService;
 import org.ikasan.spec.hospital.model.ExclusionEventAction;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -351,7 +348,7 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         exclusionEventAction.setComment(comment);
         exclusionEventAction.setActionedBy(user);
         exclusionEventAction.setAction(String.format(translatedEventActionMessage, comment, action, user
-            , this.dateFormatter.getFormattedDateWithTimezone(ZonedDateTime.now()), errorOccurrence.getEvent()));
+            , this.dateFormatter.getFormattedDate(ZonedDateTime.now()), errorOccurrence.getEvent()));
         // the error uri is in fact the id of excluded events
         exclusionEventAction.setErrorUri(document.getId());
         exclusionEventAction.setModuleName(document.getModuleName());
