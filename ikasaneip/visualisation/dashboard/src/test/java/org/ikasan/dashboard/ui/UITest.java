@@ -10,6 +10,7 @@ import com.vaadin.flow.spring.SpringServlet;
 import kotlin.jvm.functions.Function0;
 import org.ikasan.dashboard.Application;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.SessionAttributeConstants;
 import org.ikasan.module.metadata.service.SolrModuleMetadataServiceImpl;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.UserService;
@@ -44,8 +45,6 @@ public abstract class UITest
 {
     @Autowired
     protected ApplicationContext ctx;
-
-    private boolean routesRegistered;
 
     @MockBean
     protected IkasanAuthentication ikasanAuthentication;
@@ -89,6 +88,7 @@ public abstract class UITest
 
         Mockito.when(this.moduleMetadataService.find(Mockito.anyList(), Mockito.anyInt(), Mockito.anyInt()))
             .thenReturn(moduleMetadataSearchResults);
+
     }
 
     private static Routes routes;
@@ -110,6 +110,9 @@ public abstract class UITest
         final Function0<UI> uiFactory = UI::new;
         final SpringServlet servlet = new MockSpringServlet(routes, ctx, uiFactory);
         MockVaadin.setup(uiFactory, servlet);
+
+        UI.getCurrent().getSession().setAttribute(SessionAttributeConstants.TIMEZONE_ID,
+            "Europe/London");
     }
 
     @After
