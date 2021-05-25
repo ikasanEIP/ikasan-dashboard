@@ -35,6 +35,11 @@ public class DateTimeUtil
       * @return
      */
     public static final ZoneId getZoneId() {
+        if(UI.getCurrent() == null || UI.getCurrent().getSession() == null
+            || UI.getCurrent().getSession().getAttribute(SessionAttributeConstants.TIMEZONE_ID) == null) {
+            return ZoneId.of("UTC");
+        }
+
         return ZoneId.of((String) UI.getCurrent().getSession()
             .getAttribute(SessionAttributeConstants.TIMEZONE_ID));
     }
@@ -45,6 +50,11 @@ public class DateTimeUtil
      * @return
      */
     public static final ZoneOffset getZoneOffset() {
+        if(UI.getCurrent() == null || UI.getCurrent().getSession() == null
+            || UI.getCurrent().getSession().getAttribute(SessionAttributeConstants.TIMEZONE_ID) == null) {
+            return ZoneId.of("UTC").getRules().getOffset(Instant.now());
+        }
+
         return ZoneId.of((String) UI.getCurrent().getSession()
             .getAttribute(SessionAttributeConstants.TIMEZONE_ID)).getRules().getOffset(Instant.now());
     }
