@@ -4,20 +4,19 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
-import org.ikasan.rest.client.ConfigurationRestServiceImpl;
 import org.ikasan.spec.module.client.ConfigurationService;
 
-public class FlowOptionsDialog extends Dialog
+public class FlowOptionsDialog extends AbstractCloseableResizableDialog
 {
     protected ConfigurationService configurationRestService;
     protected Module module;
@@ -31,6 +30,7 @@ public class FlowOptionsDialog extends Dialog
         this.flow = flow;
         this.configurationRestService = configurationRestService;
         this.moduleVisualisation = moduleVisualisation;
+        super.showResize(false);
 
         init();
     }

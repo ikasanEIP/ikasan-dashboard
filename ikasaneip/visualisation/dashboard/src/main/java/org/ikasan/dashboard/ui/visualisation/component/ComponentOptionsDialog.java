@@ -10,6 +10,7 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
@@ -31,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ComponentOptionsDialog extends Dialog {
+public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
     Logger logger = LoggerFactory.getLogger(ComponentOptionsDialog.class);
 
     protected ConfigurationService configurationRestService;
@@ -71,7 +72,7 @@ public class ComponentOptionsDialog extends Dialog {
         this.abstractWiretapNode = abstractWiretapNode;
         this.metaDataApplicationRestService = metaDataApplicationRestService;
         this.moduleMetaDataService = moduleMetaDataService;
-
+        showResize(false);
         init();
     }
 

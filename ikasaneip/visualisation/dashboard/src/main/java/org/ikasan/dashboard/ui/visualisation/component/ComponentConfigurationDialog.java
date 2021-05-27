@@ -4,9 +4,13 @@ import com.vaadin.flow.component.UI;
 import org.ikasan.dashboard.ui.general.component.AbstractConfigurationDialog;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
 import org.ikasan.spec.module.client.ConfigurationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ComponentConfigurationDialog extends AbstractConfigurationDialog
 {
+    Logger logger = LoggerFactory.getLogger(ComponentConfigurationDialog.class);
+
     /**
      * Constructor
      *
@@ -26,12 +30,19 @@ public class ComponentConfigurationDialog extends AbstractConfigurationDialog
     @Override
     protected boolean loadConfigurationMetaData()
     {
-        this.configurationMetaData = this.configurationRestService
-            .getConfiguredResourceConfiguration(module.getUrl(), module.getName(), flowName, componentName);
+        try {
+            this.configurationMetaData = this.configurationRestService
+                .getConfiguredResourceConfiguration(module.getUrl(), module.getName(), flowName, componentName);
 
-        super.title.setText(getTranslation("button.component-configuration", UI.getCurrent().getLocale())
-            + " - " + this.configurationMetaData.getConfigurationId());
+            super.title.setText(getTranslation("button.component-configuration", UI.getCurrent().getLocale())
+                + " - " + this.configurationMetaData.getConfigurationId());
 
-        return this.configurationMetaData != null;
+            return this.configurationMetaData != null;
+        } catch (Exception e) {
+            logger.error(String.format("An error has occurred attempting to open configuration for component. " +
+                "Module Name[%s], Module URL[%s], Flow Name[%s], Component Name[%s]", module.getName(), module.getUrl(),
+                flowName, componentName), e);
+            return false;
+        }
     }
 }
