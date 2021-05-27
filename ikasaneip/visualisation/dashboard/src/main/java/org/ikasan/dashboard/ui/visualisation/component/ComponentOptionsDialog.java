@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
-    Logger logger = LoggerFactory.getLogger(ComponentOptionsDialog.class);
+    private static Logger logger = LoggerFactory.getLogger(ComponentOptionsDialog.class);
 
     protected ConfigurationService configurationRestService;
 
@@ -164,7 +164,10 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
             , SecurityConstants.WIRETAP_ADMIN
             , SecurityConstants.WIRETAP_WRITE);
 
-        this.add(verticalLayout);
+
+        super.content.add(verticalLayout);
+        this.setHeight("550px");
+        this.setWidth("550px");
     }
 
     private void openComponentConfiguration() {

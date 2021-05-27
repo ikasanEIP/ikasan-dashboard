@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 public class ComponentConfigurationDialog extends AbstractConfigurationDialog
 {
-    Logger logger = LoggerFactory.getLogger(ComponentConfigurationDialog.class);
+    private static Logger logger = LoggerFactory.getLogger(ComponentConfigurationDialog.class);
 
     /**
      * Constructor
