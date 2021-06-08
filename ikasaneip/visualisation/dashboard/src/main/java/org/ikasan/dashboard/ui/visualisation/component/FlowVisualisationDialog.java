@@ -11,9 +11,11 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.SearchResultsDialog;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.search.SearchConstants;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleVisjsAdapter;
 import org.ikasan.dashboard.ui.visualisation.component.util.SearchFoundStatus;
 import org.ikasan.dashboard.ui.visualisation.event.GraphViewChangeEvent;
@@ -41,7 +43,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class FlowVisualisationDialog extends Dialog {
+public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
     Logger logger = LoggerFactory.getLogger(FlowVisualisationDialog.class);
 
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrSearchService;
@@ -82,6 +84,8 @@ public class FlowVisualisationDialog extends Dialog {
 
     private BatchInsert<ModuleMetaData> moduleMetaDataService;
 
+    private DateFormatter dateFormatter;
+
     public FlowVisualisationDialog(ModuleControlService moduleControlRestService
         , ConfigurationService configurationRestService
         , TriggerService triggerRestService, ConfigurationMetaDataService configurationMetadataService
@@ -90,7 +94,7 @@ public class FlowVisualisationDialog extends Dialog {
         , HospitalAuditService hospitalAuditService
         , ResubmissionService resubmissionRestService, ReplayService replayRestService
         , ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService
-        , MetaDataService metaDataApplicationRestService, BatchInsert<ModuleMetaData> moduleMetaDataService)
+        , MetaDataService metaDataApplicationRestService, BatchInsert<ModuleMetaData> moduleMetaDataService, DateFormatter dateFormatter)
     {
         this.moduleControlRestService = moduleControlRestService;
         if(this.moduleControlRestService == null){
@@ -151,8 +155,12 @@ public class FlowVisualisationDialog extends Dialog {
         if (this.moduleMetaDataService == null) {
             throw new IllegalArgumentException("moduleMetaDataService cannot be null!");
         }
+        this.dateFormatter = dateFormatter;
+        if (this.dateFormatter == null) {
+            throw new IllegalArgumentException("dateFormatter cannot be null!");
+        }
 
-
+        this.showResize(false);
         this.init(moduleMetaData, flow.getFlowName());
     }
 
@@ -184,7 +192,7 @@ public class FlowVisualisationDialog extends Dialog {
             Image flowImage = new Image("/frontend/images/flow.png", "");
             flowImage.setHeight("70px");
 
-            H3 flowLabel = new H3(flow.get().getName());
+            H3 flowLabel = new H3(module.getName() + " -> " + flow.get().getName());
             flowLabel.setWidthFull();
 
             this.flowControlPanel = new ControlPanel(this.moduleControlRestService);
@@ -203,7 +211,7 @@ public class FlowVisualisationDialog extends Dialog {
 
             headerLayout.add(flowImage, flowLabel, controlPanelLayout);
             headerLayout.setMargin(false);
-            this.add(headerLayout);
+            super.content.add(headerLayout);
         }
         this.moduleVisualisation.setWidth("1400px");
         this.moduleVisualisation.setHeight("80vh");
@@ -216,7 +224,7 @@ public class FlowVisualisationDialog extends Dialog {
 
         bottomLayout.add(this.moduleVisualisation, this.searchLayout);
 
-        this.add(bottomLayout);
+        super.content.add(bottomLayout);
         this.setWidth("98vw");
         this.setHeight("98vh");
     }
@@ -227,6 +235,7 @@ public class FlowVisualisationDialog extends Dialog {
         Image wiretapImage = new Image("frontend/images/wiretap-service.png", "");
         wiretapImage.setHeight("40px");
         wiretapButton = new Button(wiretapImage);
+        this.wiretapButton.setVisible(true);
         wiretapButtonTooltip = TooltipHelper.getTooltipForComponentTopLeft(wiretapButton, getTranslation("tooltip.search-wiretap-events", UI.getCurrent().getLocale()));
         if(!this.searchFoundStatus.getWiretapFound()) {
             this.wiretapButton.setVisible(false);
@@ -266,6 +275,7 @@ public class FlowVisualisationDialog extends Dialog {
         replayButton = new Button(replayButtonImage);
         replayButtonTooltip = TooltipHelper.getTooltipForComponentTopLeft(replayButton, getTranslation("tooltip.search-replay-events"
             , UI.getCurrent().getLocale()));
+        this.replayButton.setVisible(true);
         if(!this.searchFoundStatus.getReplayFound()) {
             this.replayButton.setVisible(false);
         }
@@ -287,7 +297,7 @@ public class FlowVisualisationDialog extends Dialog {
     protected void search(String type)
     {
         SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
-            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService);
+            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService, this.dateFormatter);
         searchResultsDialog.search(this.searchFoundStatus.getStartTime(), this.searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm()
             , type, false, flow.getModuleName(), flow.getFlowName());
         searchResultsDialog.open();
@@ -318,10 +328,10 @@ public class FlowVisualisationDialog extends Dialog {
         VerticalLayout buttonLayout = new VerticalLayout();
         buttonLayout.setSpacing(false);
         buttonLayout.setMargin(false);
-        buttonLayout.setHeight("40px");
-        buttonLayout.setWidth("40px");
-        button.setHeight("40px");
-        button.setWidth("40px");
+        buttonLayout.setHeight("86px");
+        buttonLayout.setWidth("44px");
+        button.setHeight("46px");
+        button.setWidth("44px");
 
         buttonLayout.add(button);
         buttonLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, button);
@@ -330,8 +340,7 @@ public class FlowVisualisationDialog extends Dialog {
     }
 
     private Optional<org.ikasan.dashboard.ui.visualisation.model.flow.Flow> getCurrentFlow
-        (List<org.ikasan.dashboard.ui.visualisation.model.flow.Flow> flows
-        , String flowName){
+        (List<org.ikasan.dashboard.ui.visualisation.model.flow.Flow> flows, String flowName){
         return flows.stream().filter(flow -> flowName.equals(flow.getName())).findFirst();
     }
 

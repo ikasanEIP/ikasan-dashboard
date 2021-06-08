@@ -7,6 +7,7 @@ import org.ikasan.dashboard.ui.util.SearchConstants;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.component.filter.ModuleSearchFilter;
 import org.ikasan.dashboard.ui.visualisation.view.GraphView;
+import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisation;
 import org.ikasan.security.model.IkasanPrincipal;
 import org.ikasan.security.model.Role;
 import org.ikasan.security.model.RoleModule;
@@ -34,9 +35,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 
 public class ModuleFilteringGridTest extends UITest {
-    @MockBean
-    private ModuleMetaDataService moduleMetaDataService;
-
+    
     @MockBean
     private ModuleMetadataSearchResults moduleMetadataSearchResults;
 
@@ -79,7 +78,7 @@ public class ModuleFilteringGridTest extends UITest {
         Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
         Mockito.when(this.roleModules.iterator()).thenReturn(new HashSet<RoleModule>().iterator(), new HashSet<RoleModule>().iterator());
 
-        Mockito.when(this.moduleMetaDataService.find(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals(SearchConstants.NONSENSE_STRING))
+        Mockito.when(this.moduleMetadataService.find(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals(SearchConstants.NONSENSE_STRING))
             , Mockito.anyInt(), Mockito.anyInt()))
             .thenReturn(this.moduleMetadataSearchResults);
 
@@ -95,7 +94,9 @@ public class ModuleFilteringGridTest extends UITest {
         GraphView graphView = _get(GraphView.class);
         Assertions.assertNotNull(graphView);
 
-        ModuleFilteringGrid moduleFilteringGrid = (ModuleFilteringGrid)ReflectionTestUtils.getField(graphView, "modulesGrid");
+        GraphVisualisation graphVisualisation = (GraphVisualisation)ReflectionTestUtils.getField(graphView, "graphVisualisation");
+        ModuleFilteringGrid moduleFilteringGrid = (ModuleFilteringGrid)ReflectionTestUtils.getField(graphVisualisation, "modulesGrid");
+
         Assertions.assertNotNull(moduleFilteringGrid);
 
         Assert.assertEquals(0, GridKt._size(moduleFilteringGrid));
@@ -120,7 +121,7 @@ public class ModuleFilteringGridTest extends UITest {
         Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator(), Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
         Mockito.when(this.roleModule.getModuleName()).thenReturn("moduleName0");
 
-        Mockito.when(this.moduleMetaDataService.find(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("moduleName0"))
+        Mockito.when(this.moduleMetadataService.find(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("moduleName0"))
             , Mockito.anyInt(), Mockito.anyInt()))
             .thenReturn(this.moduleMetadataSearchResults);
 
@@ -136,7 +137,9 @@ public class ModuleFilteringGridTest extends UITest {
         GraphView graphView = _get(GraphView.class);
         Assertions.assertNotNull(graphView);
 
-        ModuleFilteringGrid moduleFilteringGrid = (ModuleFilteringGrid)ReflectionTestUtils.getField(graphView, "modulesGrid");
+        GraphVisualisation graphVisualisation = (GraphVisualisation)ReflectionTestUtils.getField(graphView, "graphVisualisation");
+        ModuleFilteringGrid moduleFilteringGrid = (ModuleFilteringGrid)ReflectionTestUtils.getField(graphVisualisation, "modulesGrid");
+
         Assertions.assertNotNull(moduleFilteringGrid);
 
         Assert.assertEquals(1, GridKt._size(moduleFilteringGrid));
@@ -154,7 +157,7 @@ public class ModuleFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.moduleMetaDataService.find(argThat(strings -> strings.size() == 0)
+        Mockito.when(this.moduleMetadataService.find(argThat(strings -> strings.size() == 0)
             , Mockito.anyInt(), Mockito.anyInt()))
             .thenReturn(this.moduleMetadataSearchResults);
 
@@ -170,7 +173,9 @@ public class ModuleFilteringGridTest extends UITest {
         GraphView graphView = _get(GraphView.class);
         Assertions.assertNotNull(graphView);
 
-        ModuleFilteringGrid moduleFilteringGrid = (ModuleFilteringGrid)ReflectionTestUtils.getField(graphView, "modulesGrid");
+        GraphVisualisation graphVisualisation = (GraphVisualisation)ReflectionTestUtils.getField(graphView, "graphVisualisation");
+        ModuleFilteringGrid moduleFilteringGrid = (ModuleFilteringGrid)ReflectionTestUtils.getField(graphVisualisation, "modulesGrid");
+
         Assertions.assertNotNull(moduleFilteringGrid);
 
         Assert.assertEquals(25, GridKt._size(moduleFilteringGrid));
@@ -188,7 +193,7 @@ public class ModuleFilteringGridTest extends UITest {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.moduleMetaDataService.find(argThat(strings -> strings != null && strings.size() == 0)
+        Mockito.when(this.moduleMetadataService.find(argThat(strings -> strings != null && strings.size() == 0)
             , Mockito.anyInt(), Mockito.anyInt()))
             .thenReturn(this.moduleMetadataSearchResults);
 
@@ -201,7 +206,7 @@ public class ModuleFilteringGridTest extends UITest {
 
         ModuleMetadataSearchResults results = mock(ModuleMetadataSearchResults.class);
 
-        Mockito.when(this.moduleMetaDataService.find(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*module*"))
+        Mockito.when(this.moduleMetadataService.find(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*module*"))
             , Mockito.anyInt(), Mockito.anyInt()))
             .thenReturn(results);
 
@@ -217,7 +222,9 @@ public class ModuleFilteringGridTest extends UITest {
         GraphView graphView = _get(GraphView.class);
         Assertions.assertNotNull(graphView);
 
-        ModuleFilteringGrid moduleFilteringGrid = (ModuleFilteringGrid)ReflectionTestUtils.getField(graphView, "modulesGrid");
+        GraphVisualisation graphVisualisation = (GraphVisualisation)ReflectionTestUtils.getField(graphView, "graphVisualisation");
+        ModuleFilteringGrid moduleFilteringGrid = (ModuleFilteringGrid)ReflectionTestUtils.getField(graphVisualisation, "modulesGrid");
+
         Assertions.assertNotNull(moduleFilteringGrid);
 
         Assert.assertEquals(25, GridKt._size(moduleFilteringGrid));
@@ -254,7 +261,7 @@ public class ModuleFilteringGridTest extends UITest {
         Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator(), Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
         Mockito.when(this.roleModule.getModuleName()).thenReturn("someModule", "moduleName0");
 
-        Mockito.when(this.moduleMetaDataService.find(argThat(strings -> strings != null && strings.size() == 1 && strings.stream().findFirst().get().equals("someModule"))
+        Mockito.when(this.moduleMetadataService.find(argThat(strings -> strings != null && strings.size() == 1 && strings.stream().findFirst().get().equals("someModule"))
             , Mockito.anyInt(), Mockito.anyInt()))
             .thenReturn(this.moduleMetadataSearchResults);
 
@@ -267,7 +274,7 @@ public class ModuleFilteringGridTest extends UITest {
 
         ModuleMetadataSearchResults results = mock(ModuleMetadataSearchResults.class);
 
-        Mockito.when(this.moduleMetaDataService.find(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("moduleName0"))
+        Mockito.when(this.moduleMetadataService.find(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("moduleName0"))
             , Mockito.anyInt(), Mockito.anyInt()))
             .thenReturn(results);
 
@@ -283,7 +290,9 @@ public class ModuleFilteringGridTest extends UITest {
         GraphView graphView = _get(GraphView.class);
         Assertions.assertNotNull(graphView);
 
-        ModuleFilteringGrid moduleFilteringGrid = (ModuleFilteringGrid)ReflectionTestUtils.getField(graphView, "modulesGrid");
+        GraphVisualisation graphVisualisation = (GraphVisualisation)ReflectionTestUtils.getField(graphView, "graphVisualisation");
+        ModuleFilteringGrid moduleFilteringGrid = (ModuleFilteringGrid)ReflectionTestUtils.getField(graphVisualisation, "modulesGrid");
+
         Assertions.assertNotNull(moduleFilteringGrid);
 
         Assert.assertEquals(25, GridKt._size(moduleFilteringGrid));

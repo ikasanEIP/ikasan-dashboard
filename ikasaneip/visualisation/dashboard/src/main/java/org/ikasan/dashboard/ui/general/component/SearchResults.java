@@ -86,9 +86,12 @@ public class SearchResults extends Div {
 
     private SearchFilter searchFilter = new SearchFilter();
 
+    private DateFormatter dateFormatter;
+
     public SearchResults(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService,
                          HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService,
-                         ReplayService replayRestService, ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService){
+                         ReplayService replayRestService, ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService,
+                         DateFormatter dateFormatter){
         this.solrGeneralService = solrGeneralService;
         if(this.solrGeneralService == null) {
             throw new IllegalArgumentException("solrGeneralService cannot be null!!");
@@ -112,6 +115,10 @@ public class SearchResults extends Div {
         this.replayAuditService = replayAuditService;
         if(this.replayAuditService == null) {
             throw new IllegalArgumentException("replayAuditService cannot be null!!");
+        }
+        this.dateFormatter = dateFormatter;
+        if(this.dateFormatter == null) {
+            throw new IllegalArgumentException("dateFormatter cannot be null!!");
         }
 
         this.createSearchResultsGrid();
@@ -303,48 +310,14 @@ public class SearchResults extends Div {
             .setFlexGrow(8)
             .setResizable(true);
 
-        // Add the event details column to the grid
-        this.searchResultsGrid.addColumn(TemplateRenderer.<IkasanSolrDocument>of(
-            "<div>[[item.event]]</div>")
-            .withProperty("event",
-                ikasanSolrDocument -> {
-                    if(ikasanSolrDocument.getType().equals("error"))
-                    {
-                        if (ikasanSolrDocument.getErrorMessage() == null)
-                        {
-                            return "";
-                        } else
-                        {
-                            int endIndex = ikasanSolrDocument.getErrorMessage().length() > 200 ? 200 : ikasanSolrDocument.getErrorMessage().length();
-                            return ikasanSolrDocument.getErrorMessage().substring(0, endIndex);
-                        }
-                    }
-                    else
-                    {
-                        if (ikasanSolrDocument.getEvent() == null)
-                        {
-                            return "";
-                        } else
-                        {
-                            int endIndex = ikasanSolrDocument.getEvent().length() > 200 ? 200 : ikasanSolrDocument.getEvent().length();
-                            return ikasanSolrDocument.getEvent().substring(0, endIndex);
-                        }
-                    }
-                }))
-            .setKey("payload")
-            .setHeader(getTranslation("table-header.event-details", UI.getCurrent().getLocale()))
-            .setSortable(false)
-            .setFlexGrow(12)
-            .setResizable(true);
-
         // Add the timestamp column to the grid
         this.searchResultsGrid.addColumn(TemplateRenderer.<IkasanSolrDocument>of(
             "<div>[[item.date]]</div>")
             .withProperty("date",
-                ikasanSolrDocument -> DateFormatter.getFormattedDate(ikasanSolrDocument.getTimeStamp()))).setHeader(getTranslation("table-header.timestamp", UI.getCurrent().getLocale()))
+                ikasanSolrDocument -> this.dateFormatter.getFormattedDate(ikasanSolrDocument.getTimeStamp()))).setHeader(getTranslation("table-header.timestamp", UI.getCurrent().getLocale()))
             .setSortable(true)
             .setKey("timestamp")
-            .setFlexGrow(2)
+            .setFlexGrow(6)
             .setResizable(true);
 
         // Add the select column to the grid
@@ -389,23 +362,23 @@ public class SearchResults extends Div {
             {
                 if(ikasanSolrDocumentItemDoubleClickEvent.getItem().getType().equalsIgnoreCase(SearchConstants.WIRETAP))
                 {
-                    WiretapDialog wiretapDialog = new WiretapDialog();
+                    WiretapDialog wiretapDialog = new WiretapDialog(this.dateFormatter);
                     wiretapDialog.populate(ikasanSolrDocumentItemDoubleClickEvent.getItem());
                 }
                 else if(ikasanSolrDocumentItemDoubleClickEvent.getItem().getType().equalsIgnoreCase(SearchConstants.ERROR))
                 {
-                    ErrorDialog errorDialog = new ErrorDialog();
+                    ErrorDialog errorDialog = new ErrorDialog(this.dateFormatter);
                     errorDialog.populate(ikasanSolrDocumentItemDoubleClickEvent.getItem());
                 }
                 else if(ikasanSolrDocumentItemDoubleClickEvent.getItem().getType().equalsIgnoreCase(SearchConstants.REPLAY))
                 {
-                    ReplayDialog replayDialog = new ReplayDialog(this.replayRestService, this.replayAuditService);
+                    ReplayDialog replayDialog = new ReplayDialog(this.replayRestService, this.replayAuditService, this.dateFormatter);
                     replayDialog.populate(ikasanSolrDocumentItemDoubleClickEvent.getItem());
                 }
                 else if(ikasanSolrDocumentItemDoubleClickEvent.getItem().getType().equalsIgnoreCase(SearchConstants.EXCLUSION))
                 {
                     HospitalDialog hospitalDialog = new HospitalDialog(this.solrGeneralService, this.hospitalAuditService
-                        , this.resubmissionRestService, this.moduleMetadataService, this.searchResultsGrid);
+                        , this.resubmissionRestService, this.moduleMetadataService, this.searchResultsGrid, this.dateFormatter);
                     hospitalDialog.populate(ikasanSolrDocumentItemDoubleClickEvent.getItem());
                 }
             });
@@ -489,7 +462,7 @@ public class SearchResults extends Div {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.resubmitHospitalEventSubmissionListener = new  ResubmitHospitalEventSubmissionListener(this.hospitalAuditService, this.resubmissionRestService
-            , this.moduleMetadataService, this.solrGeneralService, translatedEventActionMessage, this.searchResultsGrid, this.selectionBoxes, this.selectionItems, authentication);
+            , this.moduleMetadataService, this.solrGeneralService, translatedEventActionMessage, this.searchResultsGrid, this.selectionBoxes, this.selectionItems, authentication, this.dateFormatter);
         this.resubmitHospitalEventRegistration = this.resubmitButton.addClickListener(this.resubmitHospitalEventSubmissionListener);
     }
 
@@ -506,7 +479,8 @@ public class SearchResults extends Div {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.ignoreHospitalEventSubmissionListener = new IgnoreHospitalEventSubmissionListener(this.hospitalAuditService, this.resubmissionRestService
-            , this.moduleMetadataService, this.solrGeneralService, translatedEventActionMessage, this.searchResultsGrid, this.selectionBoxes, this.selectionItems, authentication);
+            , this.moduleMetadataService, this.solrGeneralService, translatedEventActionMessage, this.searchResultsGrid, this.selectionBoxes
+            , this.selectionItems, authentication, this.dateFormatter);
         this.ignoreHospitalEventRegistration = this.ignoreButton.addClickListener(ignoreHospitalEventSubmissionListener);
     }
 

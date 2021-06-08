@@ -37,13 +37,17 @@ public class WiretapDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     private Button downloadButton;
     private Tooltip downloadButtonTooltip;
 
-    public WiretapDialog()
+    private DateFormatter dateFormatter;
+
+    public WiretapDialog(DateFormatter dateFormatter)
     {
         moduleNameTf = new TextField(getTranslation("text-field.module-name", UI.getCurrent().getLocale(), null));
         flowNameTf = new TextField(getTranslation("text-field.flow-name", UI.getCurrent().getLocale(), null));
         componentNameTf = new TextField(getTranslation("text-field.component-name", UI.getCurrent().getLocale(), null));
         eventIdTf = new TextField(getTranslation("text-field.event-id", UI.getCurrent().getLocale(), null));
         dateTimeTf = new TextField(getTranslation("text-field.date-time", UI.getCurrent().getLocale(), null));
+
+        this.dateFormatter = dateFormatter;
     }
 
     @Override
@@ -109,7 +113,7 @@ public class WiretapDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         link.getStyle().set("color", "blue");
         this.eventIdTf.setValue(" ");
         eventIdTf.setPrefixComponent(link);
-        this.dateTimeTf.setValue(DateFormatter.getFormattedDate(wiretapEvent.getTimestamp()));
+        this.dateTimeTf.setValue(this.dateFormatter.getFormattedDate(wiretapEvent.getTimestamp()));
 
         super.open(wiretapEvent.getEvent());
     }

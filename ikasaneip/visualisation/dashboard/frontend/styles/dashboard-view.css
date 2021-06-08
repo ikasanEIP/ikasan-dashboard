@@ -1,0 +1,106 @@
+.card-counter{
+    box-shadow: 2px 2px 10px #DADADA;
+    margin: 15px;
+    padding: 5px 10px;
+    background-color: #fff;
+    height: 100px;
+    border-radius: 15px;
+    transition: transform .5s ease;
+    position: relative;
+}
+
+
+.card-counter:hover{
+    box-shadow: 4px 4px 20px #DADADA;
+    transition: .3s linear all;
+}
+
+.card-counter.stopped{
+    background-color: #000000;
+    color: #FFF;
+    font-size: 16pt;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.card-counter.stoppedInError{
+    background-color: #ef5350;
+    color: #FFF;
+    font-size: 16pt;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.card-counter.running{
+    background-color: #66bb6a;
+    color: #FFF;
+    font-size: 16pt;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.card-counter.recovering    {
+    background-color: rgba(241, 90, 35, 1.0);
+    color: #FFF;
+    font-size: 16pt;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.card-counter.paused    {
+    background-color: rgba(133,181,225,1.0);
+    color: #FFF;
+    font-size: 16pt;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.card-counter.unknown    {
+    background-color: rgba(210, 215, 211, 1);
+    color: #000000;
+    font-size: 16pt;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.slide-in {
+    z-index: 10; /* to position it in front of the other content */
+    position: absolute;
+    overflow: hidden; /* to prevent scrollbar appearing */
+}
+
+.slide-in.from-left {
+    left: 0;
+}
+
+.slide-in.from-right {
+    right: 0;
+}
+
+
+.slide-in.from-left .card-counter {
+    transform: translateX(-100%);
+    -webkit-transform: translateX(-100%);
+}
+
+.slide-in.from-right .card-counter {
+    transform: translateX(100%);
+    -webkit-transform: translateX(100%);
+}
+
+.slide-in.show .card-counter {
+    transform: translateX(0);
+    -webkit-transform: translateX(0);
+}

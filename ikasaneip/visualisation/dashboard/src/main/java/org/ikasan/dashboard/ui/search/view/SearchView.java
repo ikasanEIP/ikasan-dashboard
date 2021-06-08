@@ -12,14 +12,12 @@ import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.search.component.ChangePasswordDialog;
 import org.ikasan.dashboard.ui.search.component.SearchForm;
 import org.ikasan.dashboard.ui.search.listener.SearchListener;
-import org.ikasan.rest.client.ReplayRestServiceImpl;
-import org.ikasan.rest.client.ResubmissionRestServiceImpl;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.spec.error.reporting.ErrorReportingService;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ReplayService;
@@ -34,7 +32,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.List;
 
-@Route(value = "", layout = IkasanAppLayout.class)
+@Route(value = "Search", layout = IkasanAppLayout.class)
 @UIScope
 @Component
 @PageTitle("Ikasan - Search")
@@ -62,6 +60,9 @@ public class SearchView extends VerticalLayout implements BeforeEnterObserver, S
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private DateFormatter dateFormatter;
 
     private boolean initialised = false;
 
@@ -91,7 +92,7 @@ public class SearchView extends VerticalLayout implements BeforeEnterObserver, S
      */
     protected void createSearchResults() {
         this.searchResults = new SearchResults(solrGeneralService, hospitalAuditService, resubmissionRestService, replayRestService,
-            moduleMetadataService, replayAuditService);
+            moduleMetadataService, replayAuditService, this.dateFormatter);
         this.searchResults.setSizeFull();
     }
 

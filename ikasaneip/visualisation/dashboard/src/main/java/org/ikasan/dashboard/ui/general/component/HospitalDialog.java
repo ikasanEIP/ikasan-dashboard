@@ -20,12 +20,9 @@ import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.rest.client.ResubmissionRestServiceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.spec.error.reporting.ErrorOccurrence;
-import org.ikasan.spec.error.reporting.ErrorReportingService;
 import org.ikasan.spec.hospital.model.ExclusionEventAction;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -36,6 +33,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -73,8 +71,11 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
 
     private SolrSearchFilteringGrid searchResultsGrid;
 
+    private DateFormatter dateFormatter;
+
     public HospitalDialog(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService, HospitalAuditService hospitalAuditService,
-                          ResubmissionService resubmissionRestService, ModuleMetaDataService moduleMetadataService, SolrSearchFilteringGrid searchResultsGrid)
+                          ResubmissionService resubmissionRestService, ModuleMetaDataService moduleMetadataService, SolrSearchFilteringGrid searchResultsGrid,
+                          DateFormatter dateFormatter)
     {
         this.solrGeneralService = solrGeneralService;
         if(this.solrGeneralService == null)
@@ -100,6 +101,11 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         if(this.searchResultsGrid == null)
         {
             throw new IllegalArgumentException("searchResultsGrid cannot be null!");
+        }
+        this.dateFormatter = dateFormatter;
+        if(this.dateFormatter == null)
+        {
+            throw new IllegalArgumentException("dateFormatter cannot be null!");
         }
 
         moduleNameTf = new TextField(getTranslation("text-field.module-name", UI.getCurrent().getLocale(), null));
@@ -314,7 +320,7 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         this.flowNameTf.setValue(Optional.ofNullable(ikasanSolrDocument.getFlowName()).orElse(""));
         this.eventIdTf.setValue(Optional.ofNullable(ikasanSolrDocument.getEventId()).orElse(""));
         this.errorUriTf.setValue(Optional.ofNullable(this.getErrorUri(ikasanSolrDocument.getId())).orElse(""));
-        this.dateTimeTf.setValue(DateFormatter.getFormattedDate(ikasanSolrDocument.getTimestamp()));
+        this.dateTimeTf.setValue(this.dateFormatter.getFormattedDate(ikasanSolrDocument.getTimestamp()));
 
         this.errorOccurrence = this.solrGeneralService
             .findByErrorUri("error", this.getErrorUri(ikasanSolrDocument.getId()));
@@ -341,12 +347,13 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         ExclusionEventAction exclusionEventAction = new ExclusionEventActionImpl();
         exclusionEventAction.setComment(comment);
         exclusionEventAction.setActionedBy(user);
-        exclusionEventAction.setAction(String.format(translatedEventActionMessage, comment, action, user, errorOccurrence.getEvent()));
+        exclusionEventAction.setAction(String.format(translatedEventActionMessage, comment, action, user
+            , this.dateFormatter.getFormattedDate(ZonedDateTime.now()), errorOccurrence.getEvent()));
         // the error uri is in fact the id of excluded events
         exclusionEventAction.setErrorUri(document.getId());
         exclusionEventAction.setModuleName(document.getModuleName());
         exclusionEventAction.setFlowName(document.getFlowName());
-        exclusionEventAction.setTimestamp(System.currentTimeMillis());
+        exclusionEventAction.setTimestamp(document.getTimestamp());
         exclusionEventAction.setEvent(document.getEvent());
 
         return exclusionEventAction;

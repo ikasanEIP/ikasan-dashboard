@@ -11,6 +11,7 @@ import org.ikasan.configurationService.metadata.JsonConfigurationMetaDataProvide
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.view.GraphView;
+import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisation;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationMetaDataProvider;
@@ -61,15 +62,9 @@ public class ComponentConfigurationDialogTest extends UITest {
     JsonArray jsonNodes = mockery.mock(JsonArray.class, "nodes");
     JsonValue jsonValue = mockery.mock(JsonValue.class, "node");
 
-    @MockBean
-    private SolrGeneralServiceImpl solrSearchService;
-
 
     @MockBean
     private ConfigurationService configurationRestService;
-
-    @MockBean
-    private ModuleMetaDataService moduleMetadataService;
 
     @MockBean
     private ConfigurationMetaDataService configurationMetadataService;
@@ -95,7 +90,8 @@ public class ComponentConfigurationDialogTest extends UITest {
 
         JsonModuleMetaDataProvider provider = new JsonModuleMetaDataProvider(new JsonFlowMetaDataProvider());
 
-        ReflectionTestUtils.invokeMethod(graphView, "createModuleVisualisation", provider.deserialiseModule(loadDataFile(MODULE_JSON)));
+        GraphVisualisation graphVisualisation = (GraphVisualisation)ReflectionTestUtils.getField(graphView, "graphVisualisation");
+        ReflectionTestUtils.invokeMethod(graphVisualisation, "createModuleVisualisation", provider.deserialiseModule(loadDataFile(MODULE_JSON)));
 
         NetworkDiagram networkDiagram = _get(NetworkDiagram.class);
 

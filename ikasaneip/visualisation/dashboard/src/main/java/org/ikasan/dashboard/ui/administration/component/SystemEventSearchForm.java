@@ -145,8 +145,8 @@ public class SystemEventSearchForm extends VerticalLayout {
 
             this.searchListeners.forEach(searchListener -> {
                 searchListener.search(searchTerm.getTerm(), List.of("systemEvent"), false,
-                    Date.from(startDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime() + DateTimeUtil.getMilliFromTime(this.startTimePicker.getValue()),
-                    Date.from(endDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime() + DateTimeUtil.getMilliFromTime(this.endTimePicker.getValue()));
+                    Date.from(startDate.getValue().atStartOfDay(DateTimeUtil.getZoneId()).toInstant()).getTime() + DateTimeUtil.getMilliFromTime(this.startTimePicker.getValue()),
+                    Date.from(endDate.getValue().atStartOfDay(DateTimeUtil.getZoneId()).toInstant()).getTime() + DateTimeUtil.getMilliFromTime(this.endTimePicker.getValue()));
             });
         });
     }

@@ -339,8 +339,7 @@
         <version.org.mockftpserver>2.6</version.org.mockftpserver>
         <version.org.apache.sshd>2.1.0</version.org.apache.sshd>
         <version.com.fasterxml.jackson.core>2.10.0</version.com.fasterxml.jackson.core>
-
-        <version.vaadin>14.4.4</version.vaadin>
+        <version.vaadin>14.4.9</version.vaadin>
         <version.org.vaadin.tabs>1.2.0</version.org.vaadin.tabs>
         <version.com.vaadin.componentfactory>1.2.2</version.com.vaadin.componentfactory>
         <version.org.vaadin.olli>3.0.1</version.org.vaadin.olli>
@@ -362,9 +361,8 @@
         <version.opentest4j>1.2.0</version.opentest4j>
         <version.app.layout.addon>4.0.0</version.app.layout.addon>
         <version.vaadin.css.grid>2.0.0.beta3</version.vaadin.css.grid>
-        <version.karibu.testing.v10>1.2.6</version.karibu.testing.v10>
-
-        <ikasan.core.version>3.1.0</ikasan.core.version>
+        <version.karibu.testing.v10>1.2.12</version.karibu.testing.v10>
+        <ikasan.core.version>3.2.0-SNAPSHOT</ikasan.core.version>
     </properties>
 
     <!-- Distribution for releases -->
@@ -1006,13 +1004,13 @@
             <dependency>
                 <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-solr-client</artifactId>
-                <version>${ikasan.core.version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-solr-security</artifactId>
-                <version>${ikasan.core.version}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
@@ -1288,7 +1286,13 @@
             <dependency>
                 <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-visualisation</artifactId>
-                <version>${ikasan.core.version}</version>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
+                <artifactId>designer</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>

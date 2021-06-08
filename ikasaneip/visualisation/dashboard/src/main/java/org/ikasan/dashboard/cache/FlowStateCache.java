@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class FlowStateCache implements Consumer<FlowState>
@@ -20,6 +23,8 @@ public class FlowStateCache implements Consumer<FlowState>
     private Logger logger = LoggerFactory.getLogger(FlowStateCache.class);
 
     private static FlowStateCache INSTANCE;
+
+    private ExecutorService executor = Executors.newFixedThreadPool(10);
 
     public static FlowStateCache instance()
     {
@@ -53,11 +58,14 @@ public class FlowStateCache implements Consumer<FlowState>
         CacheStateBroadcaster.broadcast(flowState);
     }
 
+
     public FlowState get(Module module, Flow flow)
     {
         if(!this.contains(module, flow))
         {
-            refreshFromSource(module.getName(), flow.getName(), module.getUrl());
+            Runnable updateFromSourceRunnable = () -> refreshFromSource
+                (module.getName(), flow.getName(), module.getUrl());
+            this.executor.execute(updateFromSourceRunnable);
         }
 
         return this.cache.get(module.getName()+flow.getName());
@@ -65,9 +73,15 @@ public class FlowStateCache implements Consumer<FlowState>
 
     public FlowState get(ModuleMetaData module, String flowName)
     {
+        if(module == null) {
+            return null;
+        }
+
         if(!this.contains(module, flowName))
         {
-            refreshFromSource(module.getName(), flowName, module.getUrl());
+            Runnable updateFromSourceRunnable = () -> refreshFromSource
+                (module.getName(), flowName, module.getUrl());
+            this.executor.execute(updateFromSourceRunnable);
         }
 
         return this.cache.get(module.getName()+flowName);
@@ -82,7 +96,16 @@ public class FlowStateCache implements Consumer<FlowState>
     public boolean contains(ModuleMetaData module, String flowName)
     {
         logger.debug("Check contains: " + module + flowName);
+        if(module == null) {
+            return false;
+        }
         return this.cache.containsKey(module.getName()+flowName);
+    }
+
+    public boolean contains(String moduleName, String flowName)
+    {
+        logger.debug("Check contains: " + moduleName + flowName);
+        return this.cache.containsKey(moduleName+flowName);
     }
 
     @Override
@@ -119,5 +142,17 @@ public class FlowStateCache implements Consumer<FlowState>
         }
 
         return state;
+    }
+
+    public void teardown() {
+        this.executor.shutdown();
+        try {
+            if (!executor.awaitTermination(2000, TimeUnit.MILLISECONDS)) {
+                executor.shutdownNow();
+            }
+        }
+        catch (InterruptedException e) {
+            executor.shutdownNow();
+        }
     }
 }

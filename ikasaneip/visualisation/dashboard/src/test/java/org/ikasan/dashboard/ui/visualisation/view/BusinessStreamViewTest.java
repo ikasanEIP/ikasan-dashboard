@@ -45,9 +45,6 @@ public class BusinessStreamViewTest extends UITest
     ConfigurationParameterMetaData configurationParameterMetaData = mockery.mock(ConfigurationParameterMetaData.class);
 
     @MockBean
-    private ModuleMetaDataService moduleMetadataService;
-
-    @MockBean
     private ConfigurationMetaDataService configurationMetadataService;
 
     @MockBean
@@ -80,7 +77,7 @@ public class BusinessStreamViewTest extends UITest
 
         UI.getCurrent().navigate("visualisation");
 
-        GraphView graphView = _get(GraphView.class);
+        GraphVisualisation graphView = _get(GraphVisualisation.class);
 
         Assertions.assertNotNull(graphView);
 

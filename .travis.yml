@@ -4,9 +4,10 @@ jdk:
    - openjdk11
 cache:
   directories:
-  - $HOME/.m2  
+  - $HOME/.m2
 ## export GPG details
 before_install:
+#  - echo -e "machine github.com\n  login $GITHUB_USER\n  password $GITHUB_PASSWORD" > $HOME/.netrc
   - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
   - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
 
@@ -29,7 +30,7 @@ deploy:
   - provider: script
     script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Pall -B  -V --settings .settings.xml
     on:
-      branch: 3.2.x      
+      branch: 3.2.x
   # Push release to oss
   - provider: script
     script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Pall,release-sign-artifacts -B  -V --settings .settings.xml

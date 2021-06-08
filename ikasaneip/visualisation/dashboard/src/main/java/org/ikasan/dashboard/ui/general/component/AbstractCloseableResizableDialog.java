@@ -121,4 +121,9 @@ public abstract class AbstractCloseableResizableDialog extends Dialog
         isFullScreen = !isFullScreen;
         isDocked = false;
     }
+
+    public void showResize(boolean show) {
+        this.max.setVisible(show);
+        this.min.setVisible(show);
+    }
 }

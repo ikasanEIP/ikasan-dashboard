@@ -1,17 +1,11 @@
 package org.ikasan.dashboard.ui.visualisation.model.business.stream;
 
-import org.ikasan.vaadin.visjs.network.Node;
-import org.ikasan.vaadin.visjs.network.options.nodes.Nodes;
-import org.ikasan.vaadin.visjs.network.util.Shape;
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 
 public class IntegratedSystem extends Node
 {
-    public static final String IMAGE = "frontend/images/computer.png";
-
-    public IntegratedSystem(String id, String name, int x, int y)
+    public IntegratedSystem(DesignerItemIdentifier id, int x, int y)
     {
-        super(id, name, Nodes.builder().withShape(Shape.image).withx(x).withy(y).withImage(IMAGE));
-        super.setEdgeColour("rgba(255, 255, 255, 1)");
-        super.setFillColour("rgba(255, 255, 255, 1)");
+        super(id, x, y);
     }
 }

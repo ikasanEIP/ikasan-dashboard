@@ -65,6 +65,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-solr-distribution</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>${version.com.h2database}</version>
@@ -74,39 +81,28 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>com.googlecode.maven-download-plugin</groupId>
-                <artifactId>download-maven-plugin</artifactId>
-                <version>1.4.2</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.2</version>
                 <executions>
                     <execution>
-                        <id>install-solr</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <url>https://repo1.maven.org/maven2/org/ikasan/ikasan-solr-distribution/${ikasan.core.version}/ikasan-solr-distribution-${ikasan.core.version}.zip</url>
-                            <unpack>false</unpack>
-                            <outputDirectory>${project.build.directory}</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.8</version>
-                <executions>
-                    <execution>
+                        <id>unpack</id>
                         <phase>package</phase>
-                        <configuration>
-                            <tasks>
-                                <echo message="unzipping ikasan solr distribution" />
-                                <unzip src="${project.build.directory}/ikasan-solr-distribution-${ikasan.core.version}.zip" dest="target/solr-dist/" />
-                            </tasks>
-                        </configuration>
                         <goals>
-                            <goal>run</goal>
+                            <goal>unpack</goal>
                         </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.ikasan</groupId>
+                                    <artifactId>ikasan-solr-distribution</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>target/solr-dist/</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

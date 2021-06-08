@@ -24,10 +24,7 @@ import org.ikasan.dashboard.ui.search.listener.SearchListener;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
@@ -77,7 +74,7 @@ public class SearchForm extends VerticalLayout {
         searchLayout.setWidth("1200px");
         searchLayout.setSpacing(false);
 
-        LocalDate nowDate = LocalDate.now();
+        LocalDate nowDate = Instant.now().atZone(DateTimeUtil.getZoneId()).toLocalDate();
 
         HorizontalLayout startDateTimeLayout = new HorizontalLayout();
         this.startDate = new DatePicker(nowDate);
@@ -325,8 +322,8 @@ public class SearchForm extends VerticalLayout {
 
             this.searchListeners.forEach(searchListener -> {
                 searchListener.search(searchTerm.getTerm(), entityTypes, this.negateQueryCheckbox.getValue(),
-                    Date.from(startDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime() + DateTimeUtil.getMilliFromTime(this.startTimePicker.getValue()),
-                    Date.from(endDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime() + DateTimeUtil.getMilliFromTime(this.endTimePicker.getValue()));
+                    Date.from(startDate.getValue().atStartOfDay(DateTimeUtil.getZoneId()).toInstant()).getTime() + DateTimeUtil.getMilliFromTime(this.startTimePicker.getValue()),
+                    Date.from(endDate.getValue().atStartOfDay(DateTimeUtil.getZoneId()).toInstant()).getTime() + DateTimeUtil.getMilliFromTime(this.endTimePicker.getValue()));
             });
         });
     }

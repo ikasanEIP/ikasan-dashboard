@@ -21,10 +21,6 @@ import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 
 public class EventLifeIdDeepLinkViewTest extends UITest {
 
-    @MockBean
-    private SolrGeneralServiceImpl solrSearchService;
-
-
     @Override
     public void setup_expectations() {
 

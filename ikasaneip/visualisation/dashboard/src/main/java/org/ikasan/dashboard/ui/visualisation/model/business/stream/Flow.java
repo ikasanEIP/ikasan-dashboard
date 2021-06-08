@@ -1,26 +1,36 @@
 package org.ikasan.dashboard.ui.visualisation.model.business.stream;
 
-import org.ikasan.dashboard.ui.visualisation.correlate.Correlator;
-import org.ikasan.vaadin.visjs.network.Node;
+import org.ikasan.dashboard.ui.visualisation.correlate.Correlator;;
+import org.ikasan.dashboard.ui.visualisation.util.BusinessStreamItemTypes;
+import org.ikasan.designer.pallet.DesignerItemIdentifier;
 import org.ikasan.vaadin.visjs.network.NodeFoundStatus;
-import org.ikasan.vaadin.visjs.network.options.nodes.Nodes;
-import org.ikasan.vaadin.visjs.network.util.Shape;
+
+import java.util.UUID;
 
 public class Flow extends Node
 {
     private String state = FlowState.RUNNING;
     private String moduleName;
     private String flowName;
-    private String wireapEvent;
+    private String wiretapEvent;
     private Correlator correlator;
+    private int width;
+    private int height;
 
-    public Flow(String id, String moduleName, String flowName, int x, int y)
+    private String statusIdentifier = UUID.randomUUID().toString();
+    private String errorIdentifier = UUID.randomUUID().toString();
+    private String exclusionIdentifier = UUID.randomUUID().toString();
+    private String wiretapIdentifier = UUID.randomUUID().toString();
+    private String replayIdentifier = UUID.randomUUID().toString();
+
+    public Flow(String id, String moduleName, String flowName, int x, int y, int width, int height)
     {
-        super(id, ("\n").concat(moduleName).concat("\n").concat(flowName), Nodes.builder().withShape(Shape.image).withx(x)
-            .withy(y).withImage("frontend/images/flow.png").withSize(20));
+        super(DesignerItemIdentifier.getIdentifier(id), x, y);
         this.moduleName = moduleName;
         this.flowName = flowName;
         super.setWiretapFoundStatus(NodeFoundStatus.EMPTY);
+        this.width = width;
+        this.height = height;
     }
 
 
@@ -98,14 +108,14 @@ public class Flow extends Node
         super.setReplayFoundStatus(replayFoundStatus);
     }
 
-    public String getWireapEvent()
+    public String getWiretapEvent()
     {
-        return wireapEvent;
+        return wiretapEvent;
     }
 
-    public void setWireapEvent(String wireapEvent)
+    public void setWiretapEvent(String wiretapEvent)
     {
-        this.wireapEvent = wireapEvent;
+        this.wiretapEvent = wiretapEvent;
     }
 
     public Correlator getCorrelator()
@@ -118,67 +128,36 @@ public class Flow extends Node
         this.correlator = correlator;
     }
 
-    public boolean wiretapClickedOn(double x, double y)
-    {
-        if(super.getWiretapFoundStatus().equals(NodeFoundStatus.FOUND))
-        {
-            if(x >= super.getX() + super.wiretapFoundImageX
-                && x <= super.getX() + super.wiretapFoundImageX + super.wiretapFoundImageW
-                && y >= super.getY() + super.wiretapFoundImageY
-                && y <= super.getY() + super.wiretapFoundImageY + super.wiretapFoundImageH)
-            {
-                return true;
-            }
-        }
 
-        return false;
+    public int getWidth() {
+        return width;
     }
 
-    public boolean errorClickedOn(double x, double y)
-    {
-        if(super.getErrorFoundStatus().equals(NodeFoundStatus.FOUND))
-        {
-            if(x >= super.getX() + super.errorFoundImageX
-                && x <= super.getX() + super.errorFoundImageX + super.errorFoundImageW
-                && y >= super.getY() + super.errorFoundImageY
-                && y <= super.getY() + super.errorFoundImageY + super.errorFoundImageH)
-            {
-                return true;
-            }
-        }
-
-        return false;
+    public int getHeight() {
+        return height;
     }
 
-    public boolean exclusionClickedOn(double x, double y)
-    {
-        if(super.getExclusionFoundStatus().equals(NodeFoundStatus.FOUND))
-        {
-            if(x >= super.getX() + super.exclusionFoundImageX
-                && x <= super.getX() + super.exclusionFoundImageX + super.exclusionFoundImageW
-                && y >= super.getY() + super.exclusionFoundImageY
-                && y <= super.getY() + super.exclusionFoundImageY + super.exclusionFoundImageH)
-            {
-                return true;
-            }
-        }
-
-        return false;
+    public String getStatusIdentifier() {
+        return statusIdentifier;
     }
 
-    public boolean replayClickedOn(double x, double y)
-    {
-        if(super.getReplayFoundStatus().equals(NodeFoundStatus.FOUND))
-        {
-            if(x >= super.getX() + super.replayFoundImageX
-                && x <= super.getX() + super.replayFoundImageX + super.replayFoundImageW
-                && y <= super.getY() - super.replayFoundImageY
-                && y >= super.getY() - super.replayFoundImageY - super.replayFoundImageH)
-            {
-                return true;
-            }
-        }
+    public DesignerItemIdentifier getErrorIdentifier() {
+        return new DesignerItemIdentifier(BusinessStreamItemTypes.ERROR.name(), this.getId().getName(),
+            this.errorIdentifier);
+    }
 
-        return false;
+    public DesignerItemIdentifier getExclusionIdentifier() {
+        return new DesignerItemIdentifier(BusinessStreamItemTypes.EXCLUSION.name(), this.getId().getName(),
+            this.exclusionIdentifier);
+    }
+
+    public DesignerItemIdentifier getWiretapIdentifier() {
+        return new DesignerItemIdentifier(BusinessStreamItemTypes.WIRETAP.name(), this.getId().getName(),
+            this.wiretapIdentifier);
+    }
+
+    public DesignerItemIdentifier getReplayIdentifier() {
+        return new DesignerItemIdentifier(BusinessStreamItemTypes.REPLAY.name(), this.getId().getName(),
+            this.replayIdentifier);
     }
 }

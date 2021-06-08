@@ -4,7 +4,6 @@ import com.github.mvysny.kaributesting.v10.GridKt;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.textfield.TextField;
-import liquibase.pro.packaged.S;
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.dashboard.ui.administration.component.SystemEventDialog;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
@@ -34,8 +33,6 @@ import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 import static org.mockito.ArgumentMatchers.*;
 
 public class SystemEventSearchViewTest extends UITest {
-    @MockBean
-    private SolrGeneralServiceImpl solrSearchService;
 
     @MockBean
     private Set<IkasanPrincipal> principals;

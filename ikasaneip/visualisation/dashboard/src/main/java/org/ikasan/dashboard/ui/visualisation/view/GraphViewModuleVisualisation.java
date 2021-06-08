@@ -289,5 +289,10 @@ public class GraphViewModuleVisualisation extends VerticalLayout {
     public Flow getCurrentFlow() {
         return this.moduleVisualisation.getCurrentFlow();
     }
+
+    public void setCurrentFlow(Flow flow) {
+        this.flowComboBox.setValue(flow);
+        this.moduleVisualisation.setCurrentFlow(flow);
+    }
 }
 

@@ -18,7 +18,7 @@ public class SearchViewTest extends UITest
     @Test
     public void testSearchView() throws IOException
     {
-        UI.getCurrent().navigate("");
+        UI.getCurrent().navigate("Search");
 
         try
         {

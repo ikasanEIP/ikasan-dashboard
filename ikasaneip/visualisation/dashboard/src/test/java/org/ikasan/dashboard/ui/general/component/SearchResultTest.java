@@ -1,16 +1,16 @@
 package org.ikasan.dashboard.ui.general.component;
 
 import com.github.mvysny.kaributesting.v10.GridKt;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.provider.SortDirection;
-import io.github.ciesielskis.AceEditor;
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.dashboard.ui.search.component.SearchForm;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.error.reporting.service.SolrErrorReportingServiceImpl;
 import org.ikasan.replay.service.SolrReplayAuditServiceImpl;
 import org.ikasan.rest.client.ReplayRestServiceImpl;
@@ -21,6 +21,7 @@ import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
@@ -28,6 +29,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -37,9 +39,6 @@ import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 import static org.mockito.ArgumentMatchers.eq;
 
 public class SearchResultTest extends UITest {
-
-    @MockBean
-    private SolrGeneralServiceImpl solrSearchService;
 
     @MockBean
     private SolrErrorReportingServiceImpl solrErrorReportingService;
@@ -53,21 +52,25 @@ public class SearchResultTest extends UITest {
     @MockBean
     private ReplayRestServiceImpl replayRestService;
 
-    @MockBean
-    private ModuleMetaDataService moduleMetaDataService;
 
     @MockBean
     private SolrReplayAuditServiceImpl replayAuditService;
+
+    @Resource
+    private DateFormatter dateFormatter;
 
     @Override
     public void setup_expectations() {
 
     }
 
+
     @Test
     public void test_no_results_found() {
+        UI.getCurrent().navigate("Search");
+
         SearchResults searchResults = new SearchResults(this.solrSearchService, this.hospitalAuditService
-            , resubmissionRestService, replayRestService, moduleMetaDataService, replayAuditService);
+            , resubmissionRestService, replayRestService, moduleMetadataService, replayAuditService, this.dateFormatter);
 
         Assertions.assertNotNull(searchResults);
 
@@ -86,6 +89,8 @@ public class SearchResultTest extends UITest {
     @Test
     public void test_search_and_filter_user_all()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -118,6 +123,8 @@ public class SearchResultTest extends UITest {
     @Test
     public void test_search_and_grid_rendered_with_wiretap_image()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -142,6 +149,8 @@ public class SearchResultTest extends UITest {
     @Test
     public void test_search_and_wiretap_row_double_clicked()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -176,6 +185,8 @@ public class SearchResultTest extends UITest {
     @Test
     public void test_search_and_grid_rendered_with_error_image()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -200,6 +211,8 @@ public class SearchResultTest extends UITest {
     @Test
     public void test_search_and_error_row_double_clicked()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -240,6 +253,8 @@ public class SearchResultTest extends UITest {
     @Test
     public void test_search_and_grid_rendered_with_exclusion_image()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -264,6 +279,8 @@ public class SearchResultTest extends UITest {
     @Test
     public void test_search_and_exclusion_row_double_clicked()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -303,6 +320,8 @@ public class SearchResultTest extends UITest {
     @Test
     public void test_search_and_grid_rendered_with_replay_image()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -327,6 +346,8 @@ public class SearchResultTest extends UITest {
     @Test
     public void test_search_and_replay_row_double_clicked()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -359,6 +380,8 @@ public class SearchResultTest extends UITest {
     @Test
     public void test_search_replay_and_select_all()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -394,6 +417,8 @@ public class SearchResultTest extends UITest {
     @Test
     public void test_search_exclusion_and_select_all()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -429,6 +454,8 @@ public class SearchResultTest extends UITest {
     @Test
     public void test_search_wiretap_and_select_all()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
@@ -455,6 +482,8 @@ public class SearchResultTest extends UITest {
     @Test
     public void test_search_error_and_select_all()
     {
+        UI.getCurrent().navigate("Search");
+
         Mockito.when(this.solrSearchService.search(Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.isNull(),
             Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyList(),
             Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))

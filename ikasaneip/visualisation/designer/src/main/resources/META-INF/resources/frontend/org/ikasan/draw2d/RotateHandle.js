@@ -1,0 +1,905 @@
+RotateHandle = draw2d.shape.basic.Rectangle.extend(
+    /** @lends draw2d.ResizeHandle.prototype */
+    {
+
+        NAME: "draw2d.RotateHandle",
+
+        /**
+         * Creates a new figure element which are not assigned to any canvas.
+         *
+         * @param {draw2d.Figure} the owner if the resize handle
+         * @param {Number} type the type of the ResizeHandle.
+         */
+        init: function (attr, setter, getter) {
+
+            this.zoomCallback = ()=> {
+                this.attr({
+                    width:  this.origWidth*this.getCanvas().getZoom(),
+                    height: this.origHeight*this.getCanvas().getZoom(),
+                    radius: this.origRadius*this.getCanvas().getZoom(),
+                    stroke: this.origStroke*this.getCanvas().getZoom()
+                })
+
+                // size of the ResizeHandle has changed. Force a reposition of handle
+                //
+                if(!this.blockEvent)
+                    this.owner.fireEvent("move",{})
+            }
+
+            this._super(
+                extend({
+                    // set some good defaults
+                    bgColor: "#FDFDFD",
+                    stroke: 0.5,
+                    width:10,
+                    height:10,
+                    minWidth:0.3,
+                    minHeight:0.3,
+                    color: "#a0a0a0",
+                    radius: 1,
+                    selectable:false
+                    // and allow to override them
+                }, attr),
+                extend({
+                    owner : this.setOwner,
+                    type : this.setType
+                },setter),
+                extend({
+                    owner : this.getOwner,
+                    type : this.getType
+                },getter))
+
+            // required in the SelectionEditPolicy to indicate the type of figure
+            // which the user clicks
+            this.isResizeHandle = true
+
+            this.command = null
+            this.commandMove = null
+            this.commandResize = null
+            this.useGradient = true
+
+
+            this.origRadius = this.radius
+            this.origWidth = this.width
+            this.origHeight = this.height
+            this.origStroke = this.stroke
+
+            this.oldRotationAngle = 0
+
+            this.ax = null
+            this.ay = null
+            this.bx = null
+            this.by = null
+            this.cx = null
+            this.cy = null
+
+            this.mouseX = null
+            this.mouseY = null
+
+            let _self = this;
+
+            $(document).ready(function () {
+                $("#canvas-wrapper").mousemove(function (e) {
+                    _self.setMouseX(e.offsetX);
+                    _self.setMouseY(e.offsetY);
+                });
+            });
+
+            this.isRotation = false
+        },
+
+
+        isRotationAction: function () {
+            return this.isRotation;
+        },
+
+        setMouseX: function (x) {
+            this.mouseX = x;
+        },
+
+        setMouseY: function (y) {
+            this.mouseY = y;
+        },
+
+        /**
+         *
+         * The edge of the rectangle for the snapTo mechanism.
+         *
+         * @return {draw2d.SnapToHelper} enum of the direction (NORTH, NORTH_WEST, EAST,...)
+         */
+        getSnapToDirection: function () {
+            switch (this.type) {
+                case 1:
+                    return draw2d.SnapToHelper.NORTH_WEST
+                case 2:
+                    return draw2d.SnapToHelper.NORTH
+                case 3:
+                    return draw2d.SnapToHelper.NORTH_EAST
+                case 4:
+                    return draw2d.SnapToHelper.EAST
+                case 5:
+                    return draw2d.SnapToHelper.SOUTH_EAST
+                case 6:
+                    return draw2d.SnapToHelper.SOUTH
+                case 7:
+                    return draw2d.SnapToHelper.SOUTH_WEST
+                case 8:
+                    return draw2d.SnapToHelper.WEST
+                case 9:
+                    return draw2d.SnapToHelper.NSEW
+                default:
+                    return draw2d.SnapToHelper.EAST
+            }
+        },
+
+        /**
+         * @inheritdoc
+         */
+        createShapeElement: function () {
+            this.shape = this._super()
+
+            this.shape.node.setAttribute("type", this.type)
+            this.updateCursor(this.shape)
+
+            return this.shape
+        },
+
+
+        /**
+         *
+         * Returns the current used SVG as string
+         *
+         * @returns {String}
+         */
+        getOwner: function()
+        {
+            return this.owner;
+        },
+
+        setOwner: function( owner){
+            this.owner = owner
+
+            return this
+        },
+
+
+        /**
+         *
+         * Returns the current used SVG as string
+         *
+         * @returns {String}
+         */
+        getType: function()
+        {
+            return this.type;
+        },
+
+        setType: function( type){
+            this.type = type
+
+            return this
+        },
+
+        /**
+         *
+         * calculate and set the cursor of the reize handle
+         * @private
+         */
+        updateCursor: function (shape) {
+            if (shape === null) {
+                return this
+            }
+
+            if (this.isDraggable() === false) {
+                shape.attr({"cursor": "default"})
+                return this
+            }
+
+            switch (this.type) {
+                case 1:
+                    shape.attr({"cursor": "nw-resize"})
+                    break
+                case 2:
+                    shape.attr({"cursor": "n-resize"})
+                    break
+                case 3:
+                    shape.attr({"cursor": "ne-resize"})
+                    break
+                case 4:
+                    shape.attr({"cursor": "e-resize"})
+                    break
+                case 5:
+                    shape.attr({"cursor": "se-resize"})
+                    break
+                case 6:
+                    shape.attr({"cursor": "s-resize"})
+                    break
+                case 7:
+                    shape.attr({"cursor": "sw-resize"})
+                    break
+                case 8:
+                    shape.attr({"cursor": "w-resize"})
+                    break
+                default:
+                    shape.attr({"cursor": "move"})
+                    break
+            }
+            return this
+        },
+
+        /**
+         *
+         * Adjust the draggable flag of the resize handle and update the cursor of the shape in relation
+         * to the type of resize handle. north, south,west,..
+         *
+         * @param flag
+         * @returns {this}
+         */
+        setDraggable: function (flag) {
+            this._super(flag)
+            this.updateCursor(this.shape)
+
+            return this
+        },
+
+        /**
+         *
+         * Will be called if the drag and drop action beginns. You can return [false] if you
+         * want avoid that the figure can be move.
+         *
+         * @param {Number} x the x-coordinate of the mouse event
+         * @param {Number} y the y-coordinate of the mouse event
+         * @param {Boolean} shiftKey true if the shift key has been pressed during this event
+         * @param {Boolean} ctrlKey true if the ctrl key has been pressed during the event
+         *
+         * @returns {Boolean} true whenever the drag drop operation is allowed.
+         **/
+        onDragStart: function (x, y, shiftKey, ctrlKey) {
+            // This happens if the selected figure has set the "nonResizeable" flag
+            // In this case the ResizeHandle can't be dragged. => no resize
+            //
+            if (!this.isDraggable()) {
+                return false
+            }
+
+            this.ox = this.getAbsoluteX()
+            this.oy = this.getAbsoluteY()
+
+            this.commandMove = this.owner.createCommand(new draw2d.command.CommandType(draw2d.command.CommandType.MOVE))
+            this.commandResize = this.owner.createCommand(new draw2d.command.CommandType(draw2d.command.CommandType.RESIZE))
+
+            return true
+        },
+
+
+        /**
+         *
+         * Called by the framework if the figure is moved by user interaction.
+         *
+         * @param {Number} dx the move x offset
+         * @param {Number} dy the move y offset
+         * @param {Number} dx2 The x diff since the last call of this dragging operation
+         * @param {Number} dy2 The y diff since the last call of this dragging operation
+         *
+         */
+        onDrag: function (dx, dy, dx2, dy2) {
+            if (this.isDraggable() === false) {
+                return
+            }
+
+            console.log("before this.x: " + this.x + " this.y: " + this.y)
+            this.setPosition(this.getAbsoluteX(), this.getAbsoluteY())
+            console.log("after this.x: " + this.x + " this.y: " + this.y)
+
+            let oldX = this.x
+            let oldY = this.y
+
+            // call the super.drag method with all snapTo### handler and adjustments
+            this._super(dx, dy, dx2, dy2)
+
+            // console.log("before this.x: " + this.x + " this.y: " + this.y)
+            // this.setPosition(this.getAbsoluteX(), this.getAbsoluteY())
+            // console.log("after this.x: " + this.x + " this.y: " + this.y)
+
+            console.log("this.x: " + this.x + " oldX:  " + oldX + " this.y: " + this.y + " oldY:  " + oldY)
+
+            let diffX = this.x - oldX
+            let diffY = this.y - oldY
+
+            let obj = this.owner
+            let objPosX = obj.getAbsoluteX()
+            let objPosY = obj.getAbsoluteY()
+            let objWidth = obj.getWidth()
+            let objHeight = obj.getHeight()
+
+            let newX = null
+            let newY = null
+            let corrPos = null
+
+            console.log("(obj.getRotationAngle(): " + obj.getRotationAngle())
+
+            if((obj.getRotationAngle() > 0 && obj.getRotationAngle() <= 90 ) || (obj.getRotationAngle() < 0 && obj.getRotationAngle() >= -90 )) {
+                diffX = diffX *-1
+                diffY = diffY *-1
+            }
+
+            console.log("diffX: " + diffX + " diffY:  " + diffY)
+
+            switch (this.type) {
+                case 1:
+                    console.log("case1 dx: " + dx + " dy:  " + dy + " dx2: " +  dx2 + " dy2 " + dy2)
+                    obj.setDimension(objWidth - diffX, objHeight - diffY)
+                    newX = objPosX + (objWidth - obj.getWidth())
+                    newY = objPosY + (objHeight - obj.getHeight())
+
+                    this.isRotation = false;
+
+                    obj.setPosition(newX, newY)
+                    break
+                case 2:
+                    console.log("case2 dx: " + dx + " dy:  " + dy + " dx2: " +  dx2 + " dy2 " + dy2)
+                    obj.setDimension(objWidth, objHeight - diffY)
+                    newX = objPosX
+                    newY = objPosY + (objHeight - obj.getHeight())
+
+                    this.isRotation = false;
+
+                    obj.setPosition(newX, newY)
+                    break
+                case 3:
+                    console.log("case3 dx: " + dx + " dy:  " + dy + " dx2: " +  dx2 + " dy2 " + dy2)
+                    obj.setDimension(objWidth + diffX, objHeight - diffY)
+                    newX = objPosX
+                    newY = objPosY + (objHeight - obj.getHeight())
+
+                    this.isRotation = false;
+
+                    obj.setPosition(newX, newY)
+                    break
+                case 4:
+                    console.log("case4 dx: " + dx + " dy:  " + dy + " dx2: " +  dx2 + " dy2 " + dy2)
+                    obj.setDimension(objWidth + diffX, objHeight)
+
+                    this.isRotation = false;
+
+                    break
+                case 5:
+                    console.log("case5 dx: " + dx + " dy:  " + dy + " dx2: " +  dx2 + " dy2 " + dy2)
+                    obj.setDimension(objWidth + diffX, objHeight + diffY)
+
+                    this.isRotation = false;
+
+                    break
+                case 6:
+                    console.log("case6 dx: " + dx + " dy:  " + dy + " dx2: " +  dx2 + " dy2 " + dy2)
+                    obj.setDimension(objWidth, objHeight + diffY)
+
+                    this.isRotation = false;
+
+                    break
+                case 7:
+                    console.log("case7 dx: " + dx + " dy:  " + dy + " dx2: " +  dx2 + " dy2 " + dy2)
+                    obj.setDimension(objWidth - diffX, objHeight + diffY)
+                    newX = objPosX + (objWidth - obj.getWidth())
+                    newY = objPosY
+                    obj.setPosition(newX, newY)
+
+                    this.isRotation = false;
+
+                    break
+                case 8:
+                    console.log("case8 dx: " + dx + " dy:  " + dy + " dx2: " +  dx2 + " dy2 " + dy2)
+                    obj.setDimension(objWidth - diffX, objHeight)
+                    newX = objPosX + (objWidth - obj.getWidth())
+                    newY = objPosY
+                    obj.setPosition(newX, newY)
+
+                    this.isRotation = false;
+
+                    break
+                case 69:
+                    console.log("case69 dx: " + dx + " dy:  " + dy + " dx2: " +  dx2 + " dy2 " + dy2)
+                    let clockwise = null
+
+                    let centreX = objPosX + (objWidth / 2);
+                    let centreY = objPosY + (objHeight / 2);
+
+                    // let angle = Math.atan2(this.mouseY-centreY, this.mouseX-centreX);
+                    // let radians = (angle * 180 / Math.PI);
+
+                    let radians = Math.atan2(this.mouseX-centreX, this.mouseY-centreY);
+                    // let degree = (radians * (180 / Math.PI) * -1) + 90;
+                    let degree = (radians * (180 / Math.PI) * -1) ;
+
+
+
+                    // let diffX = centreX - this.mouseX;
+                    // let diffY = centreY - this.mouseY;
+                    // let tan = diffY / diffX;
+                    //
+                    // let atan = Math.atan(tan)* 180 / Math.PI;;
+                    // if(diffY > 0 && diffX > 0) {
+                    //     atan += 180;
+                    // }
+                    // else if(diffY < 0 && diffX > 0) {
+                    //     atan -= 180;
+                    // }
+
+                    console.log('degree:' + degree + ' mouseX: ' + this.mouseX + ' mouseY: '
+                        + this.mouseY + ' centreX: ' + centreX + ' centreY' + centreY);
+
+                    obj.setRotationAngle(degree)
+
+                    // if(this.ax == null && this.ay == null) {
+                    //     this.ax = this.mouseX;
+                    //     this.ay = this.mouseY;
+                    //
+                    //     // console.log('ax:' + this.ax + ' ay:' +  this.ay)
+                    // }
+                    // else if(this.bx == null && this.by == null && this.ax != this.mouseX && this.ay != this.mouseY) {
+                    //     this.bx = this.mouseX;
+                    //     this.by = this.mouseY;
+                    //     // console.log('bx:' + this.bx + ' by:' +  this.by)
+                    // }
+                    // else if(this.cx == null && this.cy == null && this.bx != null && this.by != null && this.bx != this.mouseX && this.by != this.mouseY) {
+                    //     this.cx = this.mouseX;
+                    //     this.cy = this.mouseY;
+                    //     // console.log('cx:' + this.cx + ' cy:' +  this.cy)
+                    //
+                    //     clockwise = this.mouseDirection(centreX, centreY, this.bx, this.by, this.cx, this.cy)
+                    //
+                    //     console.log('clockwise:' + clockwise)
+                    //
+                    //     this.ax = null;
+                    //     this.ay = null;
+                    //     this.bx = null;
+                    //     this.by = null;
+                    //     this.cx = null;
+                    //     this.cy = null;
+                    // }
+                    //
+                    //
+                    // if(clockwise != null && clockwise > 0) {
+                    //     obj.setRotationAngle((obj.getRotationAngle() + -1) %360)
+                    //     clockwise = null
+                    // }
+                    // else if(clockwise != null && clockwise < 0) {
+                    //     obj.setRotationAngle((obj.getRotationAngle() + 1) %360)
+                    //     clockwise = null
+                    // }
+
+                    this.isRotation = true;
+                    this.setPosition(this.x, this.y)
+                    break
+            }
+
+            if (newX !== null) {
+                // may the setPosition has changed regarding any constraint or edit policies. In this case
+                // we must adjust the dimension with the related correction
+                //
+                corrPos = obj.getPosition()
+                if (corrPos.x !== newX || corrPos.y !== newY) {
+                    obj.setDimension(obj.getWidth() - (corrPos.x - newX), obj.getHeight() - (corrPos.y - newY))
+                }
+            }
+        },
+
+
+        mouseDirection: function(ax, ay, bx, by, cx, cy) {
+            let area2 = (bx - ax)*(cy - ay) - (by - ay)*(cx - ax);
+            if (area2 < 0) return -1; // clockwise
+            if (area2 > 0) return +1; // counter-clockwise
+            return 0; // collinear
+        },
+
+        dTrig: function (trigFunc, angle) {
+            return trigFunc(angle * Math.PI / 180);
+        },
+
+        calculatePointsAfterRotation: function (relativeX, relativeY, centreX, centreY ) {
+            let rotationAngle = 0;
+
+            if(this.owner.getRotationAngle() > 0) {
+                rotationAngle = this.owner.getRotationAngle() - 180;
+            }
+            else if (this.owner.getRotationAngle() < 0) {
+                rotationAngle = 180 + this.owner.getRotationAngle();
+            }
+
+            let cosRotationAngle = this.dTrig(Math.cos, rotationAngle);
+            let sinRotationAngle = this.dTrig(Math.sin, rotationAngle);
+
+            // console.log('cosRotationAngle:' + cosRotationAngle + ' sinRotationAngle:' + sinRotationAngle)
+
+            let newXx = (relativeX * cosRotationAngle) - (relativeY * sinRotationAngle)
+            let newYy = (relativeX * sinRotationAngle) + (relativeY * cosRotationAngle)
+
+            // console.log('newXx:' + newXx + ' newYy:' + newYy)
+
+            let newPositionX = centreX + newXx;
+            let newPositionY = centreY + newYy;
+
+            // console.log('newPositionX:' + newPositionX + ' newPositionY:' + newPositionY)
+
+            this.x = newPositionX;
+            this.y = newPositionY;
+        },
+
+        /**
+         *
+         * Will be called after a drag and drop action.<br>
+         *
+         * @param {Number} x the x-coordinate of the mouse event
+         * @param {Number} y the y-coordinate of the mouse event
+         * @param {Boolean} shiftKey true if the shift key has been pressed during this event
+         * @param {Boolean} ctrlKey true if the ctrl key has been pressed during the event
+         * @private
+         **/
+        onDragEnd: function (x, y, shiftKey, ctrlKey) {
+            if (!this.isDraggable()) {
+                return
+            }
+
+            // An non draggable resizeHandle doesn't create a move/resize command.
+            // This happens if the selected figure has set the "nonResizeable" flag.
+            //
+            if (this.commandMove !== null) {
+                this.commandMove.setPosition(this.owner.getX(), this.owner.getY())
+                this.canvas.getCommandStack().execute(this.commandMove)
+                this.commandMove = null
+            }
+
+            if (this.commandResize !== null) {
+                this.commandResize.setDimension(this.owner.getWidth(), this.owner.getHeight())
+                this.canvas.getCommandStack().execute(this.commandResize)
+                this.commandResize = null
+            }
+        },
+
+        /**
+         * Set the position of the object.<br>
+         * The ResizeHandle overrides the Figure.setPosition method. The base
+         * class updates the resize handles during the update of the Dimension/Position. This
+         * is not neccessary for the ResizeHandles. Performance issue.
+         *
+         * @param {Number|draw2d.geo.Point} x The new x coordinate of the figure
+         * @param {Number} y The new y coordinate of the figure
+         **/
+        setPosition: function (x, y) {
+            let obj = this.owner
+            let objPosX = obj.getAbsoluteX()
+            let objPosY = obj.getAbsoluteY()
+            let objWidth = obj.getWidth()
+            let objHeight = obj.getHeight()
+
+            let centreX = objPosX + (objWidth / 2) - (this.getWidth() / 2);
+            let centreY = objPosY + (objHeight / 2) - (this.getHeight() / 2);
+
+            if (x instanceof draw2d.geo.Point) {
+                this.x = x.x
+                this.y = x.y
+            }
+            else {
+                this.x = x
+                this.y = y
+            }
+
+
+            // if(this.isRotationAction()) {
+                if (this.type === 1) {
+
+                    // console.log('this.x:' + this.getAbsoluteX() + ' this.y:' + this.getAbsoluteY() + ' obj.getRotationAngle(): ' + obj.getRotationAngle())
+                    // console.log('objPosX:' + objPosX + ' objPosY:' + objPosY)
+                    //
+                    // console.log('centreX:' + centreX + ' centreY:' + centreY)
+
+                    // let relativeX = objPosX - this.getWidth() - centreX;
+                    // let relativeY = objPosY - this.getHeight() - centreY;
+
+                    let relativeX = this.x - centreX;
+                    let relativeY = this.y - centreY;
+
+                    this.calculatePointsAfterRotation(relativeX, relativeY, centreX, centreY);
+                } else if (this.type === 2) {
+                    // let relativeX = objPosX + (objWidth / 2) - (this.getWidth() / 2) - centreX;
+                    // let relativeY = objPosY - this.getHeight() - centreY;
+
+                    let relativeX = this.x - centreX;
+                    let relativeY = this.y - centreY;
+
+                    this.calculatePointsAfterRotation(relativeX, relativeY, centreX, centreY);
+                } else if (this.type === 3) {
+                    // let relativeX = objPosX + objWidth - centreX;
+                    // let relativeY = objPosY - this.getHeight() - centreY;
+
+                    let relativeX = this.x - centreX;
+                    let relativeY = this.y - centreY;
+
+                    this.calculatePointsAfterRotation(relativeX, relativeY, centreX, centreY);
+                } else if (this.type === 4) {
+                    // let relativeX = objPosX + objWidth - centreX;
+                    // let relativeY = objPosY + (objHeight / 2) - (this.getHeight() / 2) - centreY;
+
+                    let relativeX = this.x - centreX;
+                    let relativeY = this.y - (this.getHeight() / 2) - centreY;
+
+                    this.calculatePointsAfterRotation(relativeX, relativeY, centreX, centreY);
+                } else if (this.type === 5) {
+                    // let relativeX = objPosX + objWidth - centreX;
+                    // let relativeY = objPosY + objHeight - centreY;
+
+                    let relativeX = this.x - centreX;
+                    let relativeY = this.y - centreY;
+
+                    this.calculatePointsAfterRotation(relativeX, relativeY, centreX, centreY);
+                } else if (this.type === 6) {
+                    // let relativeX = objPosX + (objWidth / 2) - (this.getWidth() / 2) - centreX;
+                    // let relativeY = objPosY + objHeight - centreY;
+
+                    let relativeX = this.x - (this.getWidth() / 2) - centreX;
+                    let relativeY = this.y - centreY;
+
+                    this.calculatePointsAfterRotation(relativeX, relativeY, centreX, centreY);
+                } else if (this.type === 7) {
+                    // let relativeX = objPosX - this.getWidth() - centreX;
+                    // let relativeY = objPosY + objHeight - centreY;
+
+                    let relativeX = this.x - centreX;
+                    let relativeY = this.y - centreY;
+
+                    this.calculatePointsAfterRotation(relativeX, relativeY, centreX, centreY);
+                } else if (this.type === 8) {
+                    // let relativeX = objPosX - this.getWidth() - centreX;
+                    // let relativeY = objPosY + (objHeight / 2) - (this.getHeight() / 2) - centreY;
+
+                    let relativeX = this.x - centreX;
+                    let relativeY = this.y - (this.getHeight() / 2) - centreY;
+
+                    this.calculatePointsAfterRotation(relativeX, relativeY, centreX, centreY);
+                } else if (this.type === 69) {
+
+                    // console.log('this.x:' + this.getAbsoluteX() + ' this.y:' + this.getAbsoluteY() + ' obj.getRotationAngle(): ' + obj.getRotationAngle())
+                    // console.log('objPosX:' + objPosX + ' objPosY:' + objPosY)
+                    //
+                    // console.log('centreX:' + centreX + ' centreY:' + centreY)
+
+
+                    let relativeX = objPosX + (objWidth / 2) - (this.getWidth() / 2) - centreX;
+                    let relativeY = objPosY - 50 - centreY - (this.getHeight() / 2);
+
+                    this.calculatePointsAfterRotation(relativeX, relativeY, centreX, centreY);
+                }
+            // }
+            /*else {
+                if (x instanceof draw2d.geo.Point) {
+                    this.x = x.x
+                    this.y = x.y
+                }
+                else {
+                    this.x = x
+                    this.y = y
+                }
+                // if (this.type === 1) {
+                //
+                //     console.log('this.x:' + this.getAbsoluteX() + ' this.y:' + this.getAbsoluteY() + ' obj.getRotationAngle(): ' + obj.getRotationAngle())
+                //     console.log('objPosX:' + objPosX + ' objPosY:' + objPosY)
+                //
+                //     console.log('centreX:' + centreX + ' centreY:' + centreY)
+                //
+                //     let relativeX = this.x - centreX;
+                //     let relativeY = this.y - this.getHeight() - centreY;
+                //
+                //     this.calculatePointsAfterRotation(relativeX, relativeY, centreX, centreY);
+                // }
+                // else {
+                //     this.x = x
+                //     this.y = y
+                // }
+            }*/
+
+            if (this.repaintBlocked === true || this.shape === null) {
+                return this
+            }
+
+            // performance improvement by setting the coordinates direct.
+            this.shape.attr({x: this.x, y: this.y})
+
+            this.applyTransformation()
+        },
+
+        /**
+         *
+         * Set the new dimension of the the ResizeHandle. If you didn't pass any width/height the best default for the
+         * platform will be used.
+         *
+         * Additional the "snapTo" anchor is re-calculated in relation to the type of ResizeHandle
+         *
+         * @param {Number} [width] new width of the resize handle
+         * @param {Number} [height] new width of the resize handle
+         */
+        setDimension: function (width, height) {
+
+            if (typeof height !== "undefined") {
+                this._super(width, height)
+            }
+            else {
+                if (draw2d.isTouchDevice) {
+                    this._super(15, 15)
+                }
+                else {
+                    this._super(8, 8)
+                }
+            }
+
+
+            let offset = this.getWidth()
+            let offset2 = offset / 2
+
+            switch (this.type) {
+                case 1:
+                    this.setSnapToGridAnchor(new draw2d.geo.Point(offset, offset))
+                    break
+                case 2:
+                    this.setSnapToGridAnchor(new draw2d.geo.Point(offset2, offset))
+                    break
+                case 3:
+                    this.setSnapToGridAnchor(new draw2d.geo.Point(0, offset))
+                    break
+                case 4:
+                    this.setSnapToGridAnchor(new draw2d.geo.Point(0, offset2))
+                    break
+                case 5:
+                    this.setSnapToGridAnchor(new draw2d.geo.Point(0, 0))
+                    break
+                case 6:
+                    this.setSnapToGridAnchor(new draw2d.geo.Point(offset2, 0))
+                    break
+                case 7:
+                    this.setSnapToGridAnchor(new draw2d.geo.Point(offset, 0))
+                    break
+                case 8:
+                    this.setSnapToGridAnchor(new draw2d.geo.Point(offset, offset2))
+                    break
+                case 9:
+                    this.setSnapToGridAnchor(new draw2d.geo.Point(offset2, offset2))
+                    break
+            }
+
+            return this
+        },
+
+        /**
+         *
+         * Show the ResizeHandle and add it to the canvas.<br>
+         * Additional bring it in to the front of other figures if we didn't use
+         * an overlayCanvas.
+         *
+         * If the ResizeHandle is place inside an overlayCanvas it is automatically on top.
+         *
+         * @param {draw2d.Canvas} canvas the canvas to use
+         **/
+        show: function (canvas) {
+            // don't call the parent function. The parent functions delete this object
+            // and a resize handle can't be deleted.
+            this.setCanvas(canvas)
+
+            this.canvas.resizeHandles.add(this)
+            this.shape.insertAfter(this.owner.getShapeElement())
+
+            try{
+                this.blockEvent=true
+                this.zoomCallback()
+            }
+            finally{
+                this.blockEvent=false
+            }
+            this.repaint()
+
+            return this
+        },
+
+        /**
+         *
+         * Hide the resize handle and remove it from the canvas.
+         *
+         **/
+        hide: function () {
+            // don't call the parent function. The parent functions delete this object
+            // and a resize handle shouldn't be deleted.
+            if (this.shape === null) {
+                return
+            }
+
+            this.canvas.resizeHandles.remove(this)
+            this.setCanvas(null)
+
+            return this
+        },
+
+        setCanvas: function (canvas) {
+
+            if(this.canvas!==null){
+                this.canvas.off(this.zoomCallback);
+            }
+
+            this._super(canvas)
+
+            if(this.canvas!==null){
+                this.canvas.on("zoom", this.zoomCallback);
+            }
+        },
+
+        /**
+         *
+         * Set the new background color of the figure. It is possible to hands over
+         * <code>null</code> to set the background transparent.
+         *
+         * @param {draw2d.util.Color} color The new background color of the figure
+         **/
+        setBackgroundColor: function (color) {
+            color = new draw2d.util.Color(color)
+
+            this.bgGradient = "90-" + color.darker(0.2).hash() + "-" + color.hash()
+            this._super(color)
+
+            return this
+        },
+
+        /**
+         * @inheritdoc
+         */
+        repaint: function (attributes) {
+
+            if (this.repaintBlocked === true || this.shape === null) {
+                return
+            }
+
+            attributes = attributes || {}
+
+            if (this.bgColor.hash() === "none") {
+                attributes.fill = "none"
+            }
+            else if (this.getAlpha() < 0.9 || this.useGradient === false) {
+                attributes.fill = this.bgColor.rgba()
+            }
+            else {
+                attributes.fill = this.bgGradient
+            }
+
+
+            this._super(attributes)
+        },
+
+        /**
+         *
+         * return true if the element can be used in combination with the
+         * SnapToHelper feature.
+         *
+         * @returns {Boolean}
+         **/
+        supportsSnapToHelper: function () {
+            return true
+        },
+
+        /**
+         *
+         * Override this method and redirect them to the cavas. A ResizeHandle didn't support
+         * Keyboard interaction at the moment.
+         *
+         * @param {Number} keyCode the id of the pressed key
+         * @param {Boolean} ctrl true if the user has pressed the CTRL/STRG key as well.
+         **/
+        onKeyDown: function (keyCode, ctrl) {
+            // don't call the parent function. The parent functions delete this object
+            // and a resize handle can't be deleted.
+            this.canvas.onKeyDown(keyCode, ctrl)
+        },
+
+        /**
+         * @inheritdoc
+         */
+        fireEvent: function (event, args) {
+            // A resizeHandle doesn't fire this event.
+            // Normally this set the document dirty. This is not necessary for a ResizeHandle.
+        }
+    })

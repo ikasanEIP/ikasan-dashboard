@@ -33,7 +33,6 @@ public class StatusPanel extends HorizontalLayout implements GraphViewChangeList
     private Button pauseButton;
 
     private Module currentModule;
-    private Flow currentFlow;
 
     private Registration broadcasterRegistration;
     private ModuleControlService moduleControlRestService;
@@ -249,7 +248,6 @@ public class StatusPanel extends HorizontalLayout implements GraphViewChangeList
     public void onChange(GraphViewChangeEvent event)
     {
         this.currentModule = event.getModule();
-        this.currentFlow = event.getFlow();
 
         calculateStatus();
     }

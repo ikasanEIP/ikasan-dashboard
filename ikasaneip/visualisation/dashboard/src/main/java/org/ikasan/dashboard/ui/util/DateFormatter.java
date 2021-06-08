@@ -1,29 +1,41 @@
 package org.ikasan.dashboard.ui.util;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import com.vaadin.flow.component.UI;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
+@Component
 public class DateFormatter
 {
-    public static final String DATE_FORMAT_TABLE_VIEWS = "dd/MM/yyyy HH:mm:ss.SSS";
-    public static final String DATE_FORMAT_CALENDAR_VIEWS = "dd/MM/yyyy HH:mm:ss";
+    public static final String DATE_FORMAT_TABLE_VIEWS = "dd/MM/yyyy HH:mm:ss.SSS '['VV '-' z']'";
+    public static final DateTimeFormatter DATE_FORMAT_WITH_TIMEZONE = DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
-    private static SimpleDateFormat tableFormatter;
+    private DateTimeFormatter tableFormatter;
 
-    static
-    {
-        tableFormatter = new SimpleDateFormat(DATE_FORMAT_TABLE_VIEWS);
+    public DateFormatter() {
+        tableFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT_TABLE_VIEWS);
     }
 
-    public static String getFormattedDate(long timestamp)
+    public String getFormattedDate(long timestamp)
     {
         if(timestamp == 0)
         {
             return "N/A";
         }
 
-        Date date = new Date(timestamp);
+        ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
+            DateTimeUtil.getZoneId());
 
-        return tableFormatter.format(date);
+        return this.tableFormatter.format(zdt);
+    }
+
+    public String getFormattedDate(ZonedDateTime dateTime)
+    {
+        return DATE_FORMAT_WITH_TIMEZONE.format(dateTime);
     }
 }

@@ -5,10 +5,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.dashboard.ui.UITest;
-import org.ikasan.rest.client.ResubmissionRestServiceImpl;
 import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.ikasan.spec.hospital.model.ExclusionEventAction;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -29,12 +26,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class HospitalViewTest extends UITest {
-
-    @MockBean
-    private SolrGeneralService solrSearchService;
-
-    @MockBean
-    private ModuleMetaDataService moduleMetadataService;
 
     @MockBean
     private ModuleMetaData moduleMetaData;

@@ -13,7 +13,6 @@ import org.ikasan.spec.component.transformation.Converter;
 import org.ikasan.spec.component.transformation.Translator;
 import org.ikasan.spec.metadata.*;
 import org.ikasan.spec.module.StartupType;
-import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.trigger.TriggerJobType;
 import org.ikasan.spec.trigger.TriggerRelationship;
 import org.ikasan.vaadin.visjs.network.NodeFoundStatus;
@@ -51,8 +50,12 @@ public class ModuleVisjsAdapter
         Module module = new Module(moduleMetaData.getUrl(), moduleMetaData.getName(), moduleMetaData.getDescription()
             , moduleMetaData.getVersion(), configurationMetaDataHashMap, componentMap);
 
-        Map<String, ConfigurationMetaData> configurationMetaDataMap = configurationMetaData.stream().
-            collect(Collectors.toMap(metaData -> metaData.getConfigurationId(), metaData -> metaData));
+        Map<String, ConfigurationMetaData> configurationMetaDataMap = new HashMap<>();
+
+        if(configurationMetaData != null) {
+            configurationMetaDataMap = configurationMetaData.stream().
+                collect(Collectors.toMap(metaData -> metaData.getConfigurationId(), metaData -> metaData));
+        }
 
         identifier = 0;
 

@@ -10,11 +10,10 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
 import org.ikasan.dashboard.ui.search.model.hospital.ExclusionEventActionImpl;
+import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.spec.error.reporting.ErrorOccurrence;
-import org.ikasan.spec.error.reporting.ErrorReportingService;
 import org.ikasan.spec.hospital.model.ExclusionEventAction;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -23,6 +22,7 @@ import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,11 +35,13 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
     private ResubmissionService resubmissionRestService;
     private IkasanAuthentication ikasanAuthentication;
+    private DateFormatter dateFormatter;
 
     public HospitalEventActionListener(String translatedEventActionMessage, SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService,
                                        ModuleMetaDataService moduleMetadataService, ResubmissionService resubmissionRestService,
                                        SolrSearchFilteringGrid searchResultsGrid, HashMap<String, Checkbox> selectionBoxes,
-                                       HashMap<String, IkasanSolrDocument> selectionItems, IkasanAuthentication ikasanAuthentication) {
+                                       HashMap<String, IkasanSolrDocument> selectionItems, IkasanAuthentication ikasanAuthentication,
+                                       DateFormatter dateFormatter) {
         super(moduleMetadataService, searchResultsGrid, selectionBoxes, selectionItems);
         this.translatedEventActionMessage = translatedEventActionMessage;
         if (this.translatedEventActionMessage == null) {
@@ -56,6 +58,10 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
         this.ikasanAuthentication = ikasanAuthentication;
         if (this.ikasanAuthentication == null) {
             throw new IllegalArgumentException("ikasanAuthentication cannot be null!");
+        }
+        this.dateFormatter = dateFormatter;
+        if (this.dateFormatter == null) {
+            throw new IllegalArgumentException("dateFormatter cannot be null!");
         }
     }
 
@@ -120,12 +126,13 @@ public abstract class HospitalEventActionListener extends IkasanEventActionListe
         ExclusionEventAction exclusionEventAction = new ExclusionEventActionImpl();
         exclusionEventAction.setComment(comment);
         exclusionEventAction.setActionedBy(user);
-        exclusionEventAction.setAction(String.format(translatedEventActionMessage, comment, action, user, errorOccurrence.getEvent()));
+        exclusionEventAction.setAction(String.format(translatedEventActionMessage, comment, action
+            , user , this.dateFormatter.getFormattedDate(ZonedDateTime.now()), errorOccurrence.getEvent()));
         // the error uri is in fact the id of excluded events
         exclusionEventAction.setErrorUri(document.getId());
         exclusionEventAction.setModuleName(document.getModuleName());
         exclusionEventAction.setFlowName(document.getFlowName());
-        exclusionEventAction.setTimestamp(System.currentTimeMillis());
+        exclusionEventAction.setTimestamp(document.getTimestamp());
         exclusionEventAction.setEvent(document.getEvent());
 
         return exclusionEventAction;

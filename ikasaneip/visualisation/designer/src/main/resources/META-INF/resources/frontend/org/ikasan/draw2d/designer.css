@@ -1,0 +1,65 @@
+div#canvas-wrapper {
+    border:1px solid #E0E0E0;
+    padding: 0px;
+    margin: 0px;
+    position: absolute;
+    top: 140px;
+    right: 0px;
+    left: 250px;
+    bottom: 0px;
+    overflow: scroll;
+    background-color: #FFFFFF;
+}
+
+div#canvas-viewport {
+    border:1px solid #E0E0E0;
+    padding: 0px;
+    margin: 0px;
+    position: relative;
+    top: 0px;
+    right: 0px;
+    left: 0px;
+    bottom: 0px;
+    overflow: scroll;
+    height: 100%;
+    width: 100%;
+    background-color: #FFFFFF;
+}
+
+div#canvas-palette {
+    padding: 0px;
+    margin: 0px;
+    position: absolute;
+    top: 140px;
+    width: 250px;
+    left: 0px;
+    bottom: 15px;
+    overflow: scroll;
+}
+
+div#canvas-menu {
+    padding: 0px;
+    margin: 0px;
+    position: absolute;
+    top: 65px;
+    height: 40px;
+    left: 15px;
+    right: 15px;
+    color:black;
+    font-size: 10pt;
+    background-color: #FFFFFF;
+}
+
+div#canvas-actions {
+    padding: 0px;
+    margin: 0px;
+    position: absolute;
+    top: 95px;
+    height: 45px;
+    left: 15px;
+    right: 15px;
+}
+
+.paletteDiv {
+    column-gap: 5px;
+}
