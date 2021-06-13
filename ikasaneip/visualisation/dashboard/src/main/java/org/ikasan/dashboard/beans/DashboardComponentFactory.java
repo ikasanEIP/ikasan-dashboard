@@ -12,6 +12,8 @@ import org.ikasan.exclusion.dao.SolrExclusionEventDao;
 import org.ikasan.exclusion.service.SolrExclusionServiceImpl;
 import org.ikasan.hospital.dao.SolrHospitalDao;
 import org.ikasan.hospital.service.SolrHospitalServiceImpl;
+import org.ikasan.metrics.dao.SolrMetricsDao;
+import org.ikasan.metrics.service.SolrMetricsServiceImpl;
 import org.ikasan.module.metadata.dao.SolrModuleMetadataDao;
 import org.ikasan.module.metadata.service.SolrModuleMetadataServiceImpl;
 import org.ikasan.replay.dao.SolrReplayAuditDao;
@@ -23,9 +25,11 @@ import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
 import org.ikasan.spec.exclusion.ExclusionEvent;
+import org.ikasan.spec.history.FlowInvocationMetric;
 import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetaDataProvider;
+import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayEvent;
 import org.ikasan.spec.replay.ReplayManagementService;
@@ -114,6 +118,32 @@ public class DashboardComponentFactory
         dao.initStandalone(solrUrl, 30);
 
         SolrReplayServiceImpl service = new SolrReplayServiceImpl(dao);
+        service.setSolrUsername(solrUsername);
+        service.setSolrPassword(solrPassword);
+
+        return service;
+    }
+
+    @Bean("flowInvocationMetricBatchInsert")
+    public BatchInsert<FlowInvocationMetric> solrMetricsBatchInsert()
+    {
+        SolrMetricsDao dao = new SolrMetricsDao();
+        dao.initStandalone(solrUrl, 30);
+
+        SolrMetricsServiceImpl service = new SolrMetricsServiceImpl(dao);
+        service.setSolrUsername(solrUsername);
+        service.setSolrPassword(solrPassword);
+
+        return service;
+    }
+
+    @Bean("flowInvocationMetricBatchInsert")
+    public MetricsService solrMetricsService()
+    {
+        SolrMetricsDao dao = new SolrMetricsDao();
+        dao.initStandalone(solrUrl, 30);
+
+        SolrMetricsServiceImpl service = new SolrMetricsServiceImpl(dao);
         service.setSolrUsername(solrUsername);
         service.setSolrPassword(solrPassword);
 
