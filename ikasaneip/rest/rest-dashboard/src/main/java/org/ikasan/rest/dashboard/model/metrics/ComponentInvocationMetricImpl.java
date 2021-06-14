@@ -57,8 +57,6 @@ public class ComponentInvocationMetricImpl implements ComponentInvocationMetric<
             afterEventIdentifier, afterRelatedEventIdentifier;
     private long startTimeMillis, endTimeMillis, id;
 
-    private FlowInvocationMetricImpl flowInvocation;
-    
     private Set<CustomMetric> metrics;
 
     private MetricEventImpl wiretapFlowEvent;
@@ -183,15 +181,5 @@ public class ComponentInvocationMetricImpl implements ComponentInvocationMetric<
     public void setWiretapFlowEvent(MetricEventImpl wiretapFlowEvent)
     {
         this.wiretapFlowEvent = wiretapFlowEvent;
-    }
-
-    public FlowInvocationMetricImpl getFlowInvocation()
-    {
-        return flowInvocation;
-    }
-
-    public void setFlowInvocation(FlowInvocationMetricImpl flowInvocation)
-    {
-        this.flowInvocation = flowInvocation;
     }
 }

@@ -163,6 +163,54 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     }
 
     /**
+     * Helper method to build the query that is issued to Solr.
+     *
+     * @param moduleNames
+     * @param flowNames
+     * @param componentNames
+     * @param fromDate
+     * @param untilDate
+     * @param searchTerm
+     * @param eventId
+     * @param types
+     * @return String
+     */
+    protected String buildQuery(Collection<String> moduleNames, Collection<String> flowNames, Date fromDate
+        , Date untilDate, String searchTerm, String eventId, String type, boolean negateQuery) throws IOException
+    {
+        // Setup the predicates
+        StringBuffer moduleNamesBuffer =  this.buildStringListQueryPart(moduleNames, MODULE_NAME);
+        StringBuffer flowNamesBuffer = this.buildStringListQueryPart(flowNames, FLOW_NAME);
+        StringBuffer dateBuffer = this.buildDatePredicate(CREATED_DATE_TIME, fromDate, untilDate);
+        StringBuffer payloadBuffer = this.buildSearchStringPredicate(searchTerm, PAYLOAD_CONTENT, negateQuery);
+        StringBuffer errorBuffer = this.buildSearchStringPredicate(searchTerm, ERROR_DETAIL, negateQuery);
+        StringBuffer errorUriBuffer = this.buildSearchStringPredicate(searchTerm, ERROR_URI, negateQuery);
+        StringBuffer eventBuffer = this.buildSearchStringPredicate(searchTerm, EVENT, negateQuery);
+        StringBuffer eventIdBuffer = this.buildFieldPredicate(eventId, EVENT);
+        StringBuffer typeBuffer =  this.buildFieldPredicate(type, TYPE);
+
+        String logicalOperator = OR;
+        if (negateQuery)
+        {
+            logicalOperator = AND;
+        }
+
+        // Construct the query
+        StringBuffer bufferFinalQuery = new StringBuffer();
+        Boolean hasPrevious = this.addQueryPart(bufferFinalQuery, payloadBuffer, false, AND, true, false);
+        hasPrevious = this.addQueryPart(bufferFinalQuery, errorBuffer, hasPrevious, logicalOperator, false, false);
+        hasPrevious = this.addQueryPart(bufferFinalQuery, errorUriBuffer, hasPrevious, logicalOperator, false, false);
+        hasPrevious = this.addQueryPart(bufferFinalQuery, eventBuffer, hasPrevious, logicalOperator, false, true);
+        hasPrevious = this.addQueryPart(bufferFinalQuery, moduleNamesBuffer, hasPrevious, AND, false, false);
+        hasPrevious = this.addQueryPart(bufferFinalQuery, flowNamesBuffer, hasPrevious, AND, false, false);
+        hasPrevious = this.addQueryPart(bufferFinalQuery, eventIdBuffer, hasPrevious, AND, false, false);
+        hasPrevious = this.addQueryPart(bufferFinalQuery, typeBuffer, hasPrevious, AND, false, false);
+        this.addQueryPart(bufferFinalQuery, dateBuffer, hasPrevious, AND, false, false);
+
+        return bufferFinalQuery.toString();
+    }
+
+    /**
      * Helper method to build query parts.
      *
      * @param values
