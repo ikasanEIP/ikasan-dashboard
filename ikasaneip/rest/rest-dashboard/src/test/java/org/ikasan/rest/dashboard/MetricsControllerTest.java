@@ -1,9 +1,14 @@
 package org.ikasan.rest.dashboard;
 
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ikasan.rest.dashboard.model.metrics.FlowInvocationMetricImpl;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -17,6 +22,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -39,10 +46,15 @@ public class MetricsControllerTest extends  AbstractRestMvcTest
     @Autowired
     WebApplicationContext webApplicationContext;
 
+    private ObjectMapper objectMapper;
+
+    @Autowired
     @Before
     public void setUp()
     {
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
 
@@ -73,4 +85,48 @@ public class MetricsControllerTest extends  AbstractRestMvcTest
         assertThat(content,containsString( "Cannot parse metrics JSON!"));
     }
 
+    @Test
+    public void get_metrics_within_timeframe_success() throws Exception
+    {
+        String uri = "/rest/metrics/0/100000000";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+
+        JSONAssert.assertEquals(objectMapper.writeValueAsString(objectMapper.readValue(loadDataFile(METRICS_JSON)
+            , objectMapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class)))
+            , mvcResult.getResponse().getContentAsString(), false);
+    }
+
+    @Test
+    public void get_metrics_for_module_within_timeframe_success() throws Exception
+    {
+        String uri = "/rest/metrics/my-module/0/100000000";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+
+        JSONAssert.assertEquals(objectMapper.writeValueAsString(objectMapper.readValue(loadDataFile(METRICS_JSON)
+            , objectMapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class)))
+            , mvcResult.getResponse().getContentAsString(), false);
+    }
+
+    @Test
+    public void get_metrics_for_module_and_flow_within_timeframe_success() throws Exception
+    {
+        String uri = "/rest/metrics/my-module/my-flow/0/100000000";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+
+        JSONAssert.assertEquals(objectMapper.writeValueAsString(objectMapper.readValue(loadDataFile(METRICS_JSON)
+            , objectMapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class)))
+            , mvcResult.getResponse().getContentAsString(), false);
+    }
 }

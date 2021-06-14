@@ -74,7 +74,6 @@ public class MetricEventImpl implements WiretapEvent<String>, Serializable
     private String relatedEventId;
 
 
-
     @Override
     public long getIdentifier()
     {

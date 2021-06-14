@@ -1,13 +1,10 @@
 package org.ikasan.rest.dashboard.model.metrics;
 
-import org.ikasan.rest.dashboard.model.metrics.ComponentInvocationMetricImpl;
-
 import java.io.Serializable;
 
 public class CustomMetric implements Serializable
 {
 	private Long id;
-	private ComponentInvocationMetricImpl componentInvocationMetricImpl;
 	private String name;
 	private String value;
 
@@ -32,22 +29,6 @@ public class CustomMetric implements Serializable
 	private void setId(Long id)
 	{
 		this.id = id;
-	}
-
-	/**
-	 * @return the messageHistoryFlowEvent
-	 */
-	public ComponentInvocationMetricImpl getComponentInvocationMetricImpl()
-	{
-		return componentInvocationMetricImpl;
-	}
-	
-	/**
-	 * @param componentInvocationMetricImpl the messageHistoryFlowEvent to set
-	 */
-	public void setComponentInvocationMetricImpl(ComponentInvocationMetricImpl componentInvocationMetricImpl)
-	{
-		this.componentInvocationMetricImpl = componentInvocationMetricImpl;
 	}
 	
 	/**

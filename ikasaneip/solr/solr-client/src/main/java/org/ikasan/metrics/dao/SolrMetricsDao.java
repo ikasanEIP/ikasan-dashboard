@@ -7,6 +7,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
+import org.ikasan.metrics.model.FlowInvocationMetricImpl;
 import org.ikasan.metrics.model.SolrFlowInvocationMetric;
 import org.ikasan.module.metadata.model.SolrModule;
 import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
@@ -68,7 +69,7 @@ public class SolrMetricsDao extends SolrDaoBase<FlowInvocationMetric> {
 
     public List<FlowInvocationMetric> getMetrics(long startTime, long endTime) {
         try {
-            String query = super.buildQuery(Set.of(), Set.of(), Set.of(), new Date(startTime), new Date(endTime), null
+            String query = super.buildQuery(Set.of(), Set.of(), new Date(startTime), new Date(endTime), null
                 , null, "metric", false);
 
             List<FlowInvocationMetric> results = this.findByQuery(query)
@@ -85,7 +86,7 @@ public class SolrMetricsDao extends SolrDaoBase<FlowInvocationMetric> {
 
     public List<FlowInvocationMetric> getMetrics(String moduleName, long startTime, long endTime) {
         try {
-            String query = super.buildQuery(Set.of(moduleName), Set.of(), Set.of(), new Date(startTime), new Date(endTime), null
+            String query = super.buildQuery(Set.of(moduleName), Set.of(), new Date(startTime), new Date(endTime), null
                 , null, "metric", false);
 
             List<FlowInvocationMetric> results = this.findByQuery(query)
@@ -102,7 +103,7 @@ public class SolrMetricsDao extends SolrDaoBase<FlowInvocationMetric> {
 
     public List<FlowInvocationMetric> getMetrics(String moduleName, String flowName, long startTime, long endTime) {
         try {
-            String query = super.buildQuery(Set.of(moduleName), Set.of(flowName), Set.of(), new Date(startTime), new Date(endTime), null
+            String query = super.buildQuery(Set.of(moduleName), Set.of(flowName), new Date(startTime), new Date(endTime), null
                 , null, "metric", false);
 
             List<FlowInvocationMetric> results = this.findByQuery(query)
@@ -155,7 +156,7 @@ public class SolrMetricsDao extends SolrDaoBase<FlowInvocationMetric> {
         try
         {
             FlowInvocationMetric solrModuleMetaData
-                = mapper.readValue(rawFlowInvocationMetric, FlowInvocationMetric.class);
+                = mapper.readValue(rawFlowInvocationMetric, FlowInvocationMetricImpl.class);
 
             return solrModuleMetaData;
         }

@@ -9,7 +9,7 @@
     </parent>
 
 	<groupId>org.ikasan</groupId>
-	<artifactId>designer</artifactId>
+	<artifactId>ikasan-designer</artifactId>
 	<name>Ikasan Designer</name>
 	<description>Integration of vis.js library for Ikasan platform</description>
 
