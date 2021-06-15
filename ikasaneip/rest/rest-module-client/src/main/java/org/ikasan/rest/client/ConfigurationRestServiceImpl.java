@@ -140,7 +140,6 @@ public class ConfigurationRestServiceImpl extends ModuleRestService implements C
 
     private List<ConfigurationMetaData> getConfigurations(String url,String moduleName, String flowName)
     {
-
         HttpHeaders headers = createHttpHeaders();
         HttpEntity entity = new HttpEntity(headers);
         try
@@ -148,7 +147,7 @@ public class ConfigurationRestServiceImpl extends ModuleRestService implements C
             ResponseEntity<String> response;
             if(moduleName != null && flowName != null )
             {
-                Map<String, String> parameters = new HashMap<String, String>()
+                Map<String, String> parameters = new HashMap()
                 {{put("moduleName", moduleName);put("flowName", flowName);}};
 
                 response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class,parameters);
@@ -195,7 +194,7 @@ public class ConfigurationRestServiceImpl extends ModuleRestService implements C
         HttpEntity entity = new HttpEntity(headers);
         try
         {
-            Map<String, String> parameters = new HashMap<String, String>()
+            Map<String, String> parameters = new HashMap<>()
             {{put("moduleName", moduleName);put("flowName", flowName);}};
 
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class, parameters);
