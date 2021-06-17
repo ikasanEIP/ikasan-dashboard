@@ -81,6 +81,9 @@ public class IkasanRestAutoConfiguration
     private BatchInsert flowInvocationMetricBatchInsert;
 
     @Resource
+    private BatchInsert scheduledProcessEventBatchInsert;
+
+    @Resource
     @Qualifier("moduleMetadataService")
     private ModuleMetaDataService moduleMetadataService;
 
@@ -128,14 +131,19 @@ public class IkasanRestAutoConfiguration
     }
 
     @Bean
+    public ScheduledProcessEventController scheduledProcessEventController()
+    {
+        return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert);
+    }
+
+    @Bean
     public ModulesController modulesController( )
     {
         return new ModulesController(moduleMetadataService);
     }
 
     @Bean
-    public MetricsController metricsApplication()
-    {
+    public MetricsController metricsApplication() {
         return new MetricsController(this.flowInvocationMetricBatchInsert, this.metricsService);
     }
 
