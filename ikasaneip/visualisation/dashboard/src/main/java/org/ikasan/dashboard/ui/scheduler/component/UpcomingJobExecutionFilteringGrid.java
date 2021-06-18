@@ -81,7 +81,7 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<JobExecutio
             .setKey("businessStreams")
             .setFlexGrow(5);
         super.addColumn(TemplateRenderer.<JobExecution>of("<div style='white-space:normal'>[[item.nextExecutionTime]]</div>")
-            .withProperty("nextExecutionTime", jobExecution -> DateFormatter.getFormattedDateWithTimezone(jobExecution.getNextExecution())))
+            .withProperty("nextExecutionTime", jobExecution -> jobExecution.getNextExecution()) )
             .setHeader("Next Execution Time")
             .setKey("nextExecutionTime")
             .setFlexGrow(3);

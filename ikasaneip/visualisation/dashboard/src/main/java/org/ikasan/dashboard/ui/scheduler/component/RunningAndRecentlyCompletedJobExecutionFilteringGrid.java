@@ -66,7 +66,7 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
             .setKey("businessStreams")
             .setFlexGrow(5);
         super.addColumn(TemplateRenderer.<JobExecution>of("<div style='white-space:normal'>[[item.executionTime]]</div>")
-            .withProperty("executionTime", jobExecution -> DateFormatter.getFormattedDateWithTimezone(jobExecution.getExecutionTime())))
+            .withProperty("executionTime", jobExecution -> jobExecution.getExecutionTime()))
             .setHeader("Execution Time")
             .setKey("executionTime")
             .setFlexGrow(3);

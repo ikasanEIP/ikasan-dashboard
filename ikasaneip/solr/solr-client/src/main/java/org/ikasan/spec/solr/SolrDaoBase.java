@@ -2,6 +2,7 @@ package org.ikasan.spec.solr;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.QueryRequest;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Created by Ikasan Development Team on 14/02/2017.
@@ -167,12 +169,10 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
      *
      * @param moduleNames
      * @param flowNames
-     * @param componentNames
      * @param fromDate
      * @param untilDate
      * @param searchTerm
      * @param eventId
-     * @param types
      * @return String
      */
     protected String buildQuery(Collection<String> moduleNames, Collection<String> flowNames, Date fromDate
@@ -619,4 +619,36 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
      * @return
      */
     protected abstract SolrInputDocument convertEntityToSolrInputDocument(Long expiry, T event);
+
+    /**
+     * This method returns all values for a given field based on the query.
+     *
+     * @param query
+     * @param field
+     * @return
+     */
+    protected List<String> fieldFacetQuery(String query, String field) {
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(query);
+        solrQuery.addFacetField(field);
+        solrQuery.setRows(0);
+        solrQuery.setFacetLimit(-1);
+
+        QueryRequest req = new QueryRequest(solrQuery);
+        req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+
+        try {
+            QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
+
+            return rsp.getFacetField(field).getValues()
+                .stream()
+                .filter(count -> count.getCount() > 0)
+                .map(count -> count.getName())
+                .collect(Collectors.toList());
+        }
+        catch (Exception e) {
+            throw new RuntimeException(String.format("An error has occurred performing a facet field query" +
+                ". Query[%s]: Field[%s]", query, field), e);
+        }
+    }
 }
