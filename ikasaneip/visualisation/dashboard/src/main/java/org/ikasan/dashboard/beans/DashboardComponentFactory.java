@@ -21,6 +21,8 @@ import org.ikasan.replay.dao.SolrReplayDao;
 import org.ikasan.replay.service.SolrReplayAuditServiceImpl;
 import org.ikasan.replay.service.SolrReplayServiceImpl;
 import org.ikasan.rest.client.ModuleControlRestServiceImpl;
+import org.ikasan.scheduled.dao.SolrScheduledProcessEventDao;
+import org.ikasan.scheduled.service.SolrScheduledProcessEventServiceImpl;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
@@ -32,9 +34,8 @@ import org.ikasan.spec.metadata.ModuleMetaDataProvider;
 import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayEvent;
-import org.ikasan.spec.replay.ReplayManagementService;
+import org.ikasan.spec.scheduled.ScheduledProcessEventService;
 import org.ikasan.spec.wiretap.WiretapEvent;
-import org.ikasan.spec.wiretap.WiretapService;
 import org.ikasan.systemevent.dao.SolrSystemEventDao;
 import org.ikasan.systemevent.service.SolrSystemEventServiceImpl;
 import org.ikasan.topology.metadata.JsonFlowMetaDataProvider;
@@ -144,6 +145,19 @@ public class DashboardComponentFactory
         dao.initStandalone(solrUrl, 30);
 
         SolrMetricsServiceImpl service = new SolrMetricsServiceImpl(dao);
+        service.setSolrUsername(solrUsername);
+        service.setSolrPassword(solrPassword);
+
+        return service;
+    }
+
+    @Bean("scheduledProcessEventBatchInsert")
+    public ScheduledProcessEventService solrScheduledProcessEventService()
+    {
+        SolrScheduledProcessEventDao dao = new SolrScheduledProcessEventDao();
+        dao.initStandalone(solrUrl, 30);
+
+        SolrScheduledProcessEventServiceImpl service = new SolrScheduledProcessEventServiceImpl(dao);
         service.setSolrUsername(solrUsername);
         service.setSolrPassword(solrPassword);
 

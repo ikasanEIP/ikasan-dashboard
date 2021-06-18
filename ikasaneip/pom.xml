@@ -875,6 +875,12 @@
 
             <dependency>
                 <groupId>org.ikasan</groupId>
+                <artifactId>ikasan-spec-scheduled</artifactId>
+                <version>${ikasan.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-topology</artifactId>
                 <version>${ikasan.core.version}</version>
             </dependency>
@@ -889,6 +895,7 @@
                 <artifactId>ikasan-housekeeping-module</artifactId>
                 <version>${ikasan.core.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-housekeeping-dashboard</artifactId>
