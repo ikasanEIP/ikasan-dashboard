@@ -34,7 +34,7 @@ public abstract class AbstractConfigurationDialog extends AbstractCloseableResiz
     private static Logger logger = LoggerFactory.getLogger(AbstractConfigurationDialog.class);
 
     protected ConfigurationService configurationRestService;
-    protected ConfigurationMetaData<List<ConfigurationParameterMetaData >> configurationMetaData;
+    protected ConfigurationMetaData<List<ConfigurationParameterMetaData>> configurationMetaData;
     protected Module module;
     protected String flowName;
     protected String componentName;

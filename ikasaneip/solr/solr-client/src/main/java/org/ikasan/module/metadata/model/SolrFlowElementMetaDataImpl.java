@@ -113,4 +113,19 @@ public class SolrFlowElementMetaDataImpl implements FlowElementMetaData
     {
         this.decorators = decorators;
     }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("SolrFlowElementMetaDataImpl{");
+        sb.append("componentName='").append(componentName).append('\'');
+        sb.append(", description='").append(description).append('\'');
+        sb.append(", componentType='").append(componentType).append('\'');
+        sb.append(", implementingClass='").append(implementingClass).append('\'');
+        sb.append(", isConfigurable=").append(isConfigurable);
+        sb.append(", configurationId='").append(configurationId).append('\'');
+        sb.append(", invokerConfigurationId='").append(invokerConfigurationId).append('\'');
+        sb.append(", decorators=").append(decorators);
+        sb.append('}');
+        return sb.toString();
+    }
 }

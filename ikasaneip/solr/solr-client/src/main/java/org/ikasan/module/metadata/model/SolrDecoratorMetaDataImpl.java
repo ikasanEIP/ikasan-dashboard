@@ -56,4 +56,15 @@ public class SolrDecoratorMetaDataImpl implements DecoratorMetaData
     {
         this.configurationId = configurationId;
     }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("SolrDecoratorMetaDataImpl{");
+        sb.append("type='").append(type).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", configurationId='").append(configurationId).append('\'');
+        sb.append(", isConfigurable=").append(isConfigurable);
+        sb.append('}');
+        return sb.toString();
+    }
 }

@@ -1,4 +1,4 @@
-package org.ikasan.scheduled;
+package org.ikasan.scheduled.dao;
 
 import org.ikasan.scheduled.dao.SolrScheduledProcessEventDao;
 import org.junit.Before;
@@ -20,7 +20,7 @@ public class ScheduleProcessEventDaoTest {
 
     @Test
     public void test() {
-        List<String> agents = this.dao.getAllAgents();
+        List<String> agents = this.dao.getAllAgentNames();
         System.out.println(agents);
 
         agents.forEach(agent -> {

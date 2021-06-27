@@ -36,7 +36,7 @@ import java.util.List;
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
 @Component
 @UIScope
-public class LoginView extends VerticalLayout implements PageConfigurator, HasUrlParameter<String>
+public class LoginView extends VerticalLayout implements PageConfigurator//, HasUrlParameter<String>
 {
     public static final String ROUTE = "login";
 
@@ -128,8 +128,8 @@ public class LoginView extends VerticalLayout implements PageConfigurator, HasUr
         settings.addLink("icons/icon.png", attributes);
     }
 
-    @Override
-    public void setParameter(BeforeEvent beforeEvent, String parameter) {
-//        this.route = parameter;
-    }
+//    @Override
+//    public void setParameter(BeforeEvent beforeEvent, String parameter) {
+////        this.route = parameter;
+//    }
 }

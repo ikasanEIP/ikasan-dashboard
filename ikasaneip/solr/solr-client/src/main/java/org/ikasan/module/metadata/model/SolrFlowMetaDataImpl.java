@@ -96,4 +96,18 @@ public class SolrFlowMetaDataImpl implements FlowMetaData
     public void setFlowStartupComment(String flowStartupComment) {
         this.flowStartupComment = flowStartupComment;
     }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("SolrFlowMetaDataImpl{");
+        sb.append("name='").append(name).append('\'');
+        sb.append(", consumer=").append(consumer);
+        sb.append(", transitions=").append(transitions);
+        sb.append(", flowElements=").append(flowElements);
+        sb.append(", configurationId='").append(configurationId).append('\'');
+        sb.append(", flowStartupType='").append(flowStartupType).append('\'');
+        sb.append(", flowStartupComment='").append(flowStartupComment).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }
