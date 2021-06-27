@@ -20,9 +20,8 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
+public class SchedulerConfigurationDialog extends AbstractCloseableResizableDialog {
 
-    private ComboBox<String> agentCb;
     private TextField jobNameTf;
     private TextField jobGroupTf;
     private TextArea jobDescriptionTa;
@@ -35,15 +34,11 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
     private RadioButtonGroup eagerRg;
 
 
-    public NewSchedulerJobDialog() {
+    public SchedulerConfigurationDialog() {
         super.showResize(false);
-        super.title.setText("New Scheduler Job");
+        super.title.setText("Scheduler Configuration");
 
         FormLayout formLayout = new FormLayout();
-        this.agentCb = new ComboBox<>("Agent");
-        this.agentCb.setClearButtonVisible(true);
-        this.agentCb.setItems(List.of("Agent 1", "Agent 2", "Agent 3", "Agent 4", "Agent 5"));
-        formLayout.add(agentCb, 2);
         this.jobNameTf = new TextField("Job name");
         formLayout.add(jobNameTf);
         this.jobGroupTf = new TextField("Job group");
@@ -75,7 +70,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         this.eagerRg.setLabel("Eager");
         formLayout.add(this.eagerRg);
 
-        this.setHeight("850px");
+        this.setHeight("800px");
         this.setWidth("1000px");
 
         Button saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));

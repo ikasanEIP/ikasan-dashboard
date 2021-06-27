@@ -22,7 +22,7 @@ import org.ikasan.replay.service.SolrReplayAuditServiceImpl;
 import org.ikasan.replay.service.SolrReplayServiceImpl;
 import org.ikasan.rest.client.ModuleControlRestServiceImpl;
 import org.ikasan.scheduled.dao.SolrScheduledProcessEventDao;
-import org.ikasan.scheduled.service.SolrScheduledProcessEventServiceImpl;
+import org.ikasan.scheduled.service.SolrScheduledProcessServiceImpl;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
@@ -34,7 +34,7 @@ import org.ikasan.spec.metadata.ModuleMetaDataProvider;
 import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayEvent;
-import org.ikasan.spec.scheduled.ScheduledProcessEventService;
+import org.ikasan.spec.scheduled.ScheduledProcessService;
 import org.ikasan.spec.wiretap.WiretapEvent;
 import org.ikasan.systemevent.dao.SolrSystemEventDao;
 import org.ikasan.systemevent.service.SolrSystemEventServiceImpl;
@@ -152,12 +152,18 @@ public class DashboardComponentFactory
     }
 
     @Bean("scheduledProcessEventBatchInsert")
-    public ScheduledProcessEventService solrScheduledProcessEventService()
+    public ScheduledProcessService solrScheduledProcessEventService()
     {
         SolrScheduledProcessEventDao dao = new SolrScheduledProcessEventDao();
         dao.initStandalone(solrUrl, 30);
 
-        SolrScheduledProcessEventServiceImpl service = new SolrScheduledProcessEventServiceImpl(dao);
+        SolrModuleMetadataDao solrModuleMetadataDao = new SolrModuleMetadataDao();
+        dao.initStandalone(solrUrl, 30);
+
+        SolrComponentConfigurationMetadataDao solrComponentConfigurationMetadataDao = new SolrComponentConfigurationMetadataDao();
+        dao.initStandalone(solrUrl, 30);
+
+        SolrScheduledProcessServiceImpl service = new SolrScheduledProcessServiceImpl(dao, solrModuleMetadataDao, solrComponentConfigurationMetadataDao);
         service.setSolrUsername(solrUsername);
         service.setSolrPassword(solrPassword);
 

@@ -109,14 +109,11 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<JobExecutio
         super.addColumn(new ComponentRenderer<>(businessStreamMetaData->
         {
             Button editButton = new TableButton(VaadinIcon.EDIT.create());
-//            editButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
-//            {
-//                BusinessStreamUploadDialog uploadDialog = new  BusinessStreamUploadDialog(businessStreamMetaData, this.businessStreamMetaDataService);
-//                uploadDialog.open();
-//
-//                uploadDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
-//                    dialogOpenedChangeEvent -> populateBusinessStreamGrid());
-//            });
+            editButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
+            {
+                SchedulerConfigurationDialog schedulerConfigurationDialog = new SchedulerConfigurationDialog();
+                schedulerConfigurationDialog.open();
+            });
 //
 //            ComponentSecurityVisibility.applySecurity(editButton, SecurityConstants.PLATORM_CONFIGURATON_ADMIN,
 //                SecurityConstants.PLATORM_CONFIGURATON_WRITE, SecurityConstants.ALL_AUTHORITY);
