@@ -1,11 +1,8 @@
 package org.ikasan.dashboard.ui.util;
 
-import com.vaadin.flow.component.UI;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 

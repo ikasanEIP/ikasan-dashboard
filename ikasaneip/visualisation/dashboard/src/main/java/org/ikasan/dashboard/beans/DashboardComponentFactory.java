@@ -156,12 +156,18 @@ public class DashboardComponentFactory
     {
         SolrScheduledProcessEventDao dao = new SolrScheduledProcessEventDao();
         dao.initStandalone(solrUrl, 30);
+        dao.setSolrUsername(solrUsername);
+        dao.setSolrPassword(solrPassword);
 
         SolrModuleMetadataDao solrModuleMetadataDao = new SolrModuleMetadataDao();
-        dao.initStandalone(solrUrl, 30);
+        solrModuleMetadataDao.initStandalone(solrUrl, 30);
+        solrModuleMetadataDao.setSolrUsername(solrUsername);
+        solrModuleMetadataDao.setSolrPassword(solrPassword);
 
         SolrComponentConfigurationMetadataDao solrComponentConfigurationMetadataDao = new SolrComponentConfigurationMetadataDao();
-        dao.initStandalone(solrUrl, 30);
+        solrComponentConfigurationMetadataDao.initStandalone(solrUrl, 30);
+        solrComponentConfigurationMetadataDao.setSolrUsername(solrUsername);
+        solrComponentConfigurationMetadataDao.setSolrPassword(solrPassword);
 
         SolrScheduledProcessServiceImpl service = new SolrScheduledProcessServiceImpl(dao, solrModuleMetadataDao, solrComponentConfigurationMetadataDao);
         service.setSolrUsername(solrUsername);

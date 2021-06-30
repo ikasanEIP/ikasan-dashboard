@@ -1,12 +1,15 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
-import org.ikasan.dashboard.ui.scheduler.model.SearchResults;
+import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
+import org.ikasan.spec.solr.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,10 +21,10 @@ public abstract class FilteringGrid<DATA, FILTER, RESULTS extends SearchResults>
 {
     private Logger logger = LoggerFactory.getLogger(FilteringGrid.class);
 
-    private DataProvider<DATA, FILTER> dataProvider;
-    private ConfigurableFilterDataProvider<DATA,Void, FILTER> filteredDataProvider;
+    protected DataProvider<DATA, FILTER> dataProvider;
+    protected ConfigurableFilterDataProvider<DATA,Void, FILTER> filteredDataProvider;
 
-    private FILTER searchFilter;
+    protected FILTER searchFilter;
 
     private long resultSize = 0;
 
@@ -68,6 +71,17 @@ public abstract class FilteringGrid<DATA, FILTER, RESULTS extends SearchResults>
             filteredDataProvider.refreshAll();
         });
     }
+
+    /**
+     * Add grid filtering
+     *
+     * @param date
+     * @param startTime
+     * @param endTime
+     * @param startTimeFilter
+     * @param endTimeFilter
+     */
+    public abstract void addGridFiltering(DatePicker date, TimePicker startTime, TimePicker endTime, Consumer<Long> startTimeFilter, Consumer<Long> endTimeFilter);
 
     public void init()
     {
@@ -120,6 +134,11 @@ public abstract class FilteringGrid<DATA, FILTER, RESULTS extends SearchResults>
         filteredDataProvider.setFilter(this.searchFilter);
 
         this.setDataProvider(filteredDataProvider);
+    }
+
+    public void refresh() {
+        this.dataProvider.refreshAll();
+        this.filteredDataProvider.refreshAll();
     }
 
     protected abstract RESULTS getResults(FILTER filter, int offset, int limit);

@@ -22,6 +22,7 @@ public class ConfigurationRestServiceImpl extends ModuleRestService implements C
 {
     Logger logger = LoggerFactory.getLogger(ConfigurationRestServiceImpl.class);
 
+    protected final static String MODULE_CONFIGURATION_URL = "/rest/configuration/module";
     protected final static String FLOW_CONFIGURATION_URL = "/rest/configuration/{moduleName}/{flowName}/flow";
     protected final static String FLOW_COMPONENTS_CONFIGURATION_URL = "/rest/configuration/{moduleName}/{flowName}/components";
     protected final static String CONFIGURED_RESOURCE_CONFIGURATION_URL = "/rest/configuration/{moduleName}/{flowName}/{componentName}";
@@ -80,6 +81,13 @@ public class ConfigurationRestServiceImpl extends ModuleRestService implements C
 
         String url = contextUrl + FLOW_INVOKERS_CONFIGURATION_URL;
         return getConfigurations(url,moduleName,flowName);
+    }
+
+    @Override
+    public ConfigurationMetaData getModuleConfiguration(String contextUrl)
+    {
+        String url = contextUrl + MODULE_CONFIGURATION_URL;
+        return getConfiguration(url, null, null);
     }
 
     @Override

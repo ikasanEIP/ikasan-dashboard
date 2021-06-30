@@ -2,22 +2,8 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
-import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.timepicker.TimePicker;
-import org.ikasan.dashboard.ui.scheduler.model.UpcomingJobExecutionFilter;
-import org.ikasan.dashboard.ui.scheduler.service.JobExecutionService;
-import org.ikasan.spec.metadata.BusinessStreamMetaData;
-import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
-
-import java.time.Duration;
 
 
 @CssImport("./styles/dashboard-view.css")

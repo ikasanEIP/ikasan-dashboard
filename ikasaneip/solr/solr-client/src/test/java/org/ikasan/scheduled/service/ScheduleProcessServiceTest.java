@@ -92,12 +92,24 @@ public class ScheduleProcessServiceTest {
     }
 
     @Test
+    public void get_all_upcoming_jobs() {
+            this.solrScheduledProcessService.getUpComingScheduledProcesses(System.currentTimeMillis(),
+                System.currentTimeMillis() + 100000L).getResultList().forEach(upcomingScheduledProcess -> System.out.println(upcomingScheduledProcess));
+    }
+
+    @Test
     public void get_processed_jobs_for_agent() {
         List<String> agents = this.dao.getAllAgentNames();
         System.out.println(agents);
 
         agents.forEach(agent ->
-            this.solrScheduledProcessService.getScheduledProcessEvents(agent, "flow 1" ,System.currentTimeMillis() - 100000000L,
-                System.currentTimeMillis()).forEach(upcomingScheduledProcess -> System.out.println(upcomingScheduledProcess)));
+            this.solrScheduledProcessService.getScheduledProcessEvents(agent, System.currentTimeMillis() - 100000000L,
+                System.currentTimeMillis()).getResultList().forEach(upcomingScheduledProcess -> System.out.println(upcomingScheduledProcess)));
+    }
+
+    @Test
+    public void get_processed_jobs() {
+        this.solrScheduledProcessService.getScheduledProcessEvents(System.currentTimeMillis() - 100000L,
+                System.currentTimeMillis()).getResultList().forEach(upcomingScheduledProcess -> System.out.println(upcomingScheduledProcess));
     }
 }

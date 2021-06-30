@@ -6,14 +6,16 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.module.metadata.model.SolrModule;
+import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.model.SolrScheduledProcessEvent;
+import org.ikasan.scheduled.model.SolrScheduledProcessEventRecord;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -52,6 +54,9 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
             document.addField(ID, SCHEDULED_PROCESS_EVENT + "-" + UUID.randomUUID());
         }
 
+        document.addField(FLOW_NAME, scheduledProcessEvent.getJobGroup());
+        document.addField(COMPONENT_NAME, scheduledProcessEvent.getJobName());
+
         if(scheduledProcessEvent.getFireTime() > 0) {
             document.addField(CREATED_DATE_TIME, scheduledProcessEvent.getFireTime());
         }
@@ -70,41 +75,90 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
     }
 
     public List<String> getJobGroupsForAgent(String agent) {
-        return super.fieldFacetQuery("type:wiretap AND moduleName:" + addParenthesisToString(agent), "flowName");
+        return super.fieldFacetQuery("type:scheduledProcessEvent AND moduleName:" + addParenthesisToString(agent), "flowName");
     }
 
     public List<String> getJobsForAgentAndJobGroup(String agent, String jobGroup) {
-        return super.fieldFacetQuery("type:wiretap AND moduleName:"
+        return super.fieldFacetQuery("type:scheduledProcessEvent AND moduleName:"
             + addParenthesisToString(agent) + " AND flowName:" + addParenthesisToString(jobGroup), "componentName");
     }
 
-    public List<SolrScheduledProcessEvent> getScheduleProcessEvents(String agent, long startTime, long endTime) {
+    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduleProcessEvents(String agent, long startTime, long endTime) {
         StringBuffer agentQuery = super.buildFieldPredicate(addParenthesisToString(agent), SolrDaoBase.MODULE_NAME);
         StringBuffer typeQuery = super.buildFieldPredicate("scheduledProcessEvent", SolrDaoBase.TYPE);
-        StringBuffer betweenDates = super.buildDatePredicate("timestamp", new Date(startTime), new Date(endTime));
+        StringBuffer betweenDates = super.buildDatePredicate(SolrDaoBase.CREATED_DATE_TIME, new Date(startTime), new Date(endTime));
 
         SolrQuery query = new SolrQuery();
         query.setQuery(agentQuery.toString() + " AND " + typeQuery + " AND " + betweenDates);
-        query.setRows(100000);
+        query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
 
-        System.out.println(query);
-
+        query.setRows(0);
         try
         {
             QueryRequest req = new QueryRequest(query);
             req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
             QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
+            query.setRows((int)rsp.getResults().getNumFound());
 
-            System.out.println("Result size: " + rsp.getResults().getNumFound());
+            req = new QueryRequest(query);
+            req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+            rsp = req.process(this.solrClient, SolrConstants.CORE);
 
-            return rsp.getBeans(SolrScheduledProcessEvent.class);
+            return new ScheduledProcessEventSearchResults(this.convert(rsp.getBeans(SolrScheduledProcessEventRecord.class)),
+                rsp.getResults().getNumFound(), rsp.getElapsedTime());
         }
         catch (Exception e)
         {
             throw new RuntimeException("Error resolving solr solr scheduled process event by query [" + query
                 + "] from the ikasan solr index!", e);
         }
+    }
+
+    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduleProcessEvents(long startTime, long endTime) {
+        StringBuffer typeQuery = super.buildFieldPredicate("scheduledProcessEvent", SolrDaoBase.TYPE);
+        StringBuffer betweenDates = super.buildDatePredicate(SolrDaoBase.CREATED_DATE_TIME, new Date(startTime), new Date(endTime));
+
+        SolrQuery query = new SolrQuery();
+        query.setQuery(typeQuery + " AND " + betweenDates);
+        query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
+
+        query.setRows(0);
+        try
+        {
+            QueryRequest req = new QueryRequest(query);
+            req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+
+            QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
+            query.setRows((int)rsp.getResults().getNumFound());
+
+            req = new QueryRequest(query);
+            req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+            rsp = req.process(this.solrClient, SolrConstants.CORE);
+
+            return new ScheduledProcessEventSearchResults(this.convert(rsp.getBeans(SolrScheduledProcessEventRecord.class)),
+                rsp.getResults().getNumFound(), rsp.getElapsedTime());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Error resolving solr solr scheduled process event by query [" + query
+                + "] from the ikasan solr index!", e);
+        }
+    }
+
+    private List<ScheduledProcessEvent> convert(List<SolrScheduledProcessEventRecord> records) {
+        List<ScheduledProcessEvent> converted = new ArrayList<>();
+
+        records.forEach(record -> {
+            try {
+                converted.add(this.objectMapper.readValue(record.getScheduledProcessEvent(), SolrScheduledProcessEvent.class));
+            }
+            catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        });
+
+        return converted;
     }
 
     public List<String> getConfigurationsForAgent(String agent) {

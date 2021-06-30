@@ -10,6 +10,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.module.metadata.model.*;
 import org.ikasan.spec.metadata.*;
+import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
@@ -184,6 +185,61 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData>
         }
 
         query.setFilterQueries(moduleNamesBuffer.toString());
+
+        ModuleMetadataSearchResults results;
+
+        try
+        {
+            QueryRequest req = new QueryRequest(query);
+            req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+
+            QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
+
+            List<SolrModule> beans = rsp.getBeans(SolrModule.class);
+
+            results = new ModuleMetadataSearchResults(beans.stream()
+                .map(solrModule -> convert(solrModule.getModuleMetaData()))
+                .collect(Collectors.toList()), rsp.getResults().getNumFound(), rsp.getQTime());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Error resolving solr module meta data by query [" + query + "] from the ikasan solr index!", e);
+        }
+
+        return results;
+    }
+
+    /**
+     * Get using offset with filtering capabilities.
+     *
+     * @param modulesNames
+     * @param startOffset
+     * @param resultSize
+     * @return
+     */
+    public ModuleMetadataSearchResults find(List<String> modulesNames, ModuleType moduleType, Integer startOffset, Integer resultSize)
+    {
+        String queryString = "type:\"" + MODULE_METADATA + "\"";
+
+        SolrQuery query = new SolrQuery();
+        query.setQuery(queryString);
+        query.setStart(startOffset);
+        query.setRows(resultSize);
+
+        StringBuffer filterBuffer = new StringBuffer();
+
+        if(modulesNames != null && modulesNames.size() > 0)
+        {
+            filterBuffer.append(this.buildPredicate(ID, modulesNames));
+        }
+
+        if(filterBuffer.length() > 0) {
+            filterBuffer.append(" AND ");
+        }
+
+        filterBuffer.append("payload:\"*\\\"type\\\":\\\""+moduleType+"\\\"*\"");
+
+        query.setFilterQueries(filterBuffer.toString());
 
         ModuleMetadataSearchResults results;
 

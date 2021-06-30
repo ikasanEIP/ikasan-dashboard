@@ -2,10 +2,8 @@ package org.ikasan.dashboard.ui.util;
 
 import com.vaadin.flow.component.UI;
 
-import java.time.Instant;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.util.*;
 
 public class DateTimeUtil
 {
@@ -57,5 +55,57 @@ public class DateTimeUtil
 
         return ZoneId.of((String) UI.getCurrent().getSession()
             .getAttribute(SessionAttributeConstants.TIMEZONE_ID)).getRules().getOffset(Instant.now());
+    }
+
+    public static final List<String> getOrderedZoneIdsWithOffset() {
+        Map<String, String> sortedMap = new LinkedHashMap<>();
+
+        List<TimezonePair> allZoneIdsAndItsOffSet = getAllZoneIdsAndItsOffSet();
+
+        allZoneIdsAndItsOffSet.sort((o1, o2) -> o1.zoneId.compareTo(o2.zoneId));
+
+        List<String> results = new ArrayList();
+
+        // print map
+        allZoneIdsAndItsOffSet.forEach(timezonePair ->
+            results.add(String.format("%35s (UTC%s) %n", timezonePair.zoneId, timezonePair.offset).trim()));
+
+        return results;
+    }
+
+    public static final  List<TimezonePair> getAllZoneIdsAndItsOffSet() {
+
+        List<TimezonePair> result = new ArrayList<>();
+
+        LocalDateTime localDateTime = LocalDateTime.now();
+
+        for (String zoneId : ZoneId.getAvailableZoneIds()) {
+
+            ZoneId id = ZoneId.of(zoneId);
+
+            // LocalDateTime -> ZonedDateTime
+            ZonedDateTime zonedDateTime = localDateTime.atZone(id);
+
+            // ZonedDateTime -> ZoneOffset
+            ZoneOffset zoneOffset = zonedDateTime.getOffset();
+
+            //replace Z to +00:00
+            String offset = zoneOffset.getId().replaceAll("Z", "+00:00");
+
+            result.add(new TimezonePair(id.getId(), offset));
+
+        }
+
+        return result;
+    }
+
+    public static class TimezonePair {
+        public final String zoneId;
+        public final String offset;
+
+        public TimezonePair(String zoneId, String offset) {
+            this.zoneId = zoneId;
+            this.offset = offset;
+        }
     }
 }
