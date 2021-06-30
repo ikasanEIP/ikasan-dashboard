@@ -20,6 +20,8 @@ public class ModuleControlRestServiceImpl extends ModuleRestService implements M
 {
     Logger logger = LoggerFactory.getLogger(ModuleControlRestServiceImpl.class);
 
+    protected final static String MODULE_ACTIVATION_STATE_CONTROL_URL= "/rest/moduleControl/activator/{moduleName}/{action}";
+    protected final static String MODULE_ACTIVATION_STATE_URL= "/rest/moduleControl/isActivated/{moduleName}";
     protected final static String CHANGE_FLOW_STATE_URL= "/rest/moduleControl";
     protected final static String CHANGE_FLOW_STARTUP_MODE_URL= "/rest/moduleControl/startupMode";
     protected final static String GET_FLOW_STARTUP_MODE_URL= "/rest/moduleControl/startupMode/{moduleName}/{flowName}";
@@ -70,6 +72,50 @@ public class ModuleControlRestServiceImpl extends ModuleRestService implements M
         catch(RestClientException e){
             logger.warn("Issue getting flow status from module [" + url
                 + "]  and param ["+parameters+"] with response [{"+e.getLocalizedMessage()+"}]");
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public boolean changeModuleActivationState(String contextUrl, String moduleName, String action)
+    {
+        HttpHeaders headers = createHttpHeaders();
+        HttpEntity entity = new HttpEntity(headers);
+        Map<String, String> parameters = new HashMap<String, String>()
+        {{put("moduleName",moduleName);put("action",action);}};
+        String url = contextUrl+MODULE_ACTIVATION_STATE_CONTROL_URL;
+        try
+        {
+            restTemplate.exchange(url, HttpMethod.PUT, entity, String.class, parameters);
+
+            return true;
+        }
+        catch(RestClientException e){
+            logger.warn("Issue updating module activation state [" + url
+                + "] with module ["+moduleName+"] "
+                + "and action ["+action+"]"
+                + " with response [{"+e.getLocalizedMessage()+"}]");
+            return false;
+        }
+    }
+
+    @Override
+    public Optional<String> getModuleActivationState(String contextUrl, String moduleName)
+    {
+        HttpHeaders headers = createHttpHeaders();
+        HttpEntity entity = new HttpEntity(headers);
+        Map<String, String> parameters = new HashMap<String, String>(){{put("moduleName",moduleName);}};
+        String url = contextUrl+MODULE_ACTIVATION_STATE_URL;
+        try
+        {
+            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, entity, String.class, parameters);
+
+            return Optional.of(responseEntity.getBody());
+        }
+        catch(RestClientException e){
+            logger.warn("Issue querying module activation state [" + url
+                + "] with module ["+moduleName+"] "
+                + " with response [{"+e.getLocalizedMessage()+"}]");
             return Optional.empty();
         }
     }

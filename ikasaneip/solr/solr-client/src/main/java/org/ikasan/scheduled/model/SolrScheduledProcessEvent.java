@@ -1,40 +1,177 @@
 package org.ikasan.scheduled.model;
 
-import org.apache.solr.client.solrj.beans.Field;
-import org.ikasan.spec.solr.SolrDaoBase;
+import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 
-public class SolrScheduledProcessEvent {
-    @Field(SolrDaoBase.ID)
-    private String id;
-
-    @Field(SolrDaoBase.MODULE_NAME)
+public class SolrScheduledProcessEvent implements ScheduledProcessEvent {
     private String agentName;
+    private String jobName;
+    private String jobGroup;
+    private String jobDescription;
+    private String commandLine;
+    private String resultOutput;
+    private String resultError;
+    private long pid;
+    private String user;
+    private long fireTime;
+    private long nextFireTime;
+    private boolean successful;
+    private long completionTime;
+    private int returnCode;
 
-    @Field(SolrDaoBase.PAYLOAD_CONTENT)
-    private String scheduledProcessEvent;
-
-
-    public String getId()
-    {
-        return this.id;
+    @Override
+    public int getReturnCode() {
+        return this.returnCode;
     }
 
+    @Override
+    public void setReturnCode(int result) {
+        this.returnCode = result;
+    }
+
+    @Override
+    public boolean isSuccessful() {
+        return this.successful;
+    }
+
+    @Override
+    public void setSuccessful(boolean successful) {
+        this.successful = successful;
+    }
+
+    @Override
+    public long getCompletionTime() {
+        return this.completionTime;
+    }
+
+    @Override
+    public void setCompletionTime(long completionTime) {
+        this.completionTime = completionTime;
+    }
+
+    @Override
     public String getAgentName() {
         return agentName;
     }
 
-    public String getScheduledProcessEvent()
-    {
-        return this.scheduledProcessEvent;
+    @Override
+    public void setAgentName(String agentName) {
+        this.agentName = agentName;
     }
 
     @Override
+    public String getJobName() {
+        return jobName;
+    }
+
+    @Override
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
+    }
+
+    @Override
+    public String getJobGroup() {
+        return jobGroup;
+    }
+
+    @Override
+    public void setJobGroup(String jobGroup) {
+        this.jobGroup = jobGroup;
+    }
+
+    @Override
+    public String getJobDescription() {
+        return this.jobDescription;
+    }
+
+    @Override
+    public void setJobDescription(String jobDescription) {
+        this.jobDescription = jobDescription;
+    }
+
+    @Override
+    public String getCommandLine() {
+        return commandLine;
+    }
+
+    @Override
+    public void setCommandLine(String commandLine) {
+        this.commandLine = commandLine;
+    }
+
+    @Override
+    public String getResultOutput() {
+        return resultOutput;
+    }
+
+    @Override
+    public void setResultOutput(String resultOutput) {
+        this.resultOutput = resultOutput;
+    }
+
+    @Override
+    public String getResultError() {
+        return resultError;
+    }
+
+    @Override
+    public void setResultError(String resultError) {
+        this.resultError = resultError;
+    }
+
+    @Override
+    public long getPid() {
+        return pid;
+    }
+
+    @Override
+    public void setPid(long pid) {
+        this.pid = pid;
+    }
+
+    @Override
+    public String getUser() {
+        return user;
+    }
+
+    @Override
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    @Override
+    public long getFireTime() {
+        return fireTime;
+    }
+
+    @Override
+    public void setFireTime(long fireTime) {
+        this.fireTime = fireTime;
+    }
+
+    @Override
+    public long getNextFireTime() {
+        return nextFireTime;
+    }
+
+    @Override
+    public void setNextFireTime(long nextFireTime) {
+        this.nextFireTime = nextFireTime;
+    }
+    
+
+    @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("SolrScheduledProcessEvent{");
-        sb.append("id='").append(id).append('\'');
-        sb.append(", agentName='").append(agentName).append('\'');
-        sb.append(", scheduledProcessEvent='").append(scheduledProcessEvent).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return "ScheduledProcessEvent{" +
+            "agentName='" + agentName + '\'' +
+            ", jobName='" + jobName + '\'' +
+            ", jobGroup='" + jobGroup + '\'' +
+            ", commandLine='" + commandLine + '\'' +
+            ", resultOutput='" + resultOutput + '\'' +
+            ", resultError='" + resultError + '\'' +
+            ", pid=" + pid +
+            ", user='" + user + '\'' +
+            ", fireTime=" + fireTime +
+            ", nextFireTime=" + nextFireTime +
+            '}';
     }
 }

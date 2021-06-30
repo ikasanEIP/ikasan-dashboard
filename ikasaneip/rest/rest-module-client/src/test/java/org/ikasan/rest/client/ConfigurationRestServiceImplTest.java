@@ -182,6 +182,19 @@ public class ConfigurationRestServiceImplTest
     }
 
     @Test
+    public void getModuleConfiguration_returns_200() throws IOException
+    {
+        stubFor(get(urlEqualTo("/rest/configuration/module"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())).willReturn(
+                aResponse().withBody(loadDataFile(FLOW_CONFIGURATION_METADATA_JSON))
+                    .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                    .withStatus(200)));
+        ConfigurationMetaData result = uut.getModuleConfiguration(contexBaseUrl);
+        assertEquals("messaging-module-JMS to JMS Flow", result.getConfigurationId());
+    }
+
+    @Test
     public void saveConfiguration_returns_200() throws IOException
     {
 

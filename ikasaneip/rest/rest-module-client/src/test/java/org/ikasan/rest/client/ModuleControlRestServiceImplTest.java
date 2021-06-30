@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
@@ -106,6 +107,93 @@ public class ModuleControlRestServiceImplTest
         Optional<FlowDto> result = uut.getFlowState(contexBaseUrl,"test Module Name","flow Test");
         assertEquals(false, result.isPresent());
 
+    }
+
+    @Test
+    public void activateModule()
+    {
+        stubFor(put(urlEqualTo("/rest/moduleControl/activator/test%20Module%20Name/activate"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse()
+                .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .withStatus(200)
+            ));
+        boolean result = uut.changeModuleActivationState(contexBaseUrl,"test Module Name","activate");
+        assertEquals(true, result);
+    }
+
+    @Test
+    public void deactivateModule()
+    {
+        stubFor(put(urlEqualTo("/rest/moduleControl/activator/test%20Module%20Name/deactivate"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse()
+                .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .withStatus(200)
+            ));
+        boolean result = uut.changeModuleActivationState(contexBaseUrl,"test Module Name","deactivate");
+        assertEquals(true, result);
+    }
+
+    @Test
+    public void activationForbidden()
+    {
+        stubFor(put(urlEqualTo("/rest/moduleControl/activator/test%20Module%20Name/deactivate"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse()
+                .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .withStatus(HttpStatus.FORBIDDEN.value())
+            ));
+        boolean result = uut.changeModuleActivationState(contexBaseUrl,"test Module Name","deactivate");
+        assertEquals(false, result);
+    }
+
+    @Test
+    public void activationStatusActivated()
+    {
+        stubFor(put(urlEqualTo("/rest/moduleControl/isActivated/test%20Module%20Name"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse()
+                .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .withBody("activated")
+                .withStatus(HttpStatus.OK.value())
+            ));
+        Optional<String> result = uut.getModuleActivationState(contexBaseUrl,"test Module Name");
+        assertEquals("activated", result.get());
+    }
+
+    @Test
+    public void activationStatusDeactivated()
+    {
+        stubFor(put(urlEqualTo("/rest/moduleControl/isActivated/test%20Module%20Name"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse()
+                .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .withBody("deactivated")
+                .withStatus(HttpStatus.OK.value())
+            ));
+        Optional<String> result = uut.getModuleActivationState(contexBaseUrl,"test Module Name");
+        assertEquals("deactivated", result.get());
+    }
+
+    @Test
+    public void activationStatusForbidden()
+    {
+        stubFor(put(urlEqualTo("/rest/moduleControl/isActivated/test%20Module%20Name"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse()
+                .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .withBody("deactivated")
+                .withStatus(HttpStatus.FORBIDDEN.value())
+            ));
+        Optional<String> result = uut.getModuleActivationState(contexBaseUrl,"test Module Name");
+        assertEquals(false, result.isPresent());
     }
 
     @Test

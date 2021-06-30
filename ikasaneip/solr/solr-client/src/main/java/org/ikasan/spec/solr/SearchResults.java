@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.ui.scheduler.model;
+package org.ikasan.spec.solr;
 
 import java.util.List;
 

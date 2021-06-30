@@ -75,15 +75,17 @@ public class UpcomingScheduledProcess {
     public void setFireTime(long fireTime) {
         this.fireTime = fireTime;
     }
-    
-    
+
+    @Override
     public String toString() {
-        return "ScheduledProcessEvent{" +
-            "agentName='" + agentName + '\'' +
-            ", jobName='" + jobName + '\'' +
-            ", jobGroup='" + jobGroup + '\'' +
-            ", commandLine='" + commandLine + '\'' +
-            ", fireTime='" + fireTime + '\'' +
-            '}';
+        final StringBuffer sb = new StringBuffer("UpcomingScheduledProcess{");
+        sb.append("agentName='").append(agentName).append('\'');
+        sb.append(", jobName='").append(jobName).append('\'');
+        sb.append(", jobGroup='").append(jobGroup).append('\'');
+        sb.append(", jobDescription='").append(jobDescription).append('\'');
+        sb.append(", commandLine='").append(commandLine).append('\'');
+        sb.append(", fireTime=").append(fireTime);
+        sb.append('}');
+        return sb.toString();
     }
 }

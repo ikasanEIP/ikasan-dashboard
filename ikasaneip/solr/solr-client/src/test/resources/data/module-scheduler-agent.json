@@ -2,7 +2,7 @@
   "name": "module name",
   "description": "module description",
   "version": "module version",
-  "type": "INTEGRATION_MODULE",
+  "type": "SCHEDULER_AGENT",
   "flows": [
     {
       "name": "Simple Flow 1",

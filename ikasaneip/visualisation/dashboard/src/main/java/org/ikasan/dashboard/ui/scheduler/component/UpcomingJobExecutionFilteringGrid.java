@@ -3,85 +3,85 @@ package org.ikasan.dashboard.ui.scheduler.component;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.server.StreamResource;
-import org.ikasan.dashboard.ui.general.component.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.general.component.TableButton;
-import org.ikasan.dashboard.ui.scheduler.model.JobExecution;
-import org.ikasan.dashboard.ui.scheduler.model.UpcomingJobExecutionFilter;
-import org.ikasan.dashboard.ui.scheduler.model.UpcomingJobExecutionSearchResults;
-import org.ikasan.dashboard.ui.scheduler.service.JobExecutionService;
+import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.visualisation.component.BusinessStreamUploadDialog;
+import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
-import org.vaadin.olli.FileDownloadWrapper;
+import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
+import org.ikasan.scheduled.model.UpcomingScheduledProcess;
+import org.ikasan.scheduled.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.service.SolrScheduledProcessServiceImpl;
 
-import java.io.ByteArrayInputStream;
+import java.util.function.Consumer;
 
 
-public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<JobExecution, UpcomingJobExecutionFilter, UpcomingJobExecutionSearchResults> {
+public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingScheduledProcess, ScheduledProcessFilter, ScheduledProcessEventSearchResults<UpcomingScheduledProcess>> {
 
-    private JobExecutionService jobExecutionService;
+    private ScheduledProcessManagementService scheduledProcessManagementService;
+    private DateFormatter dateFormatter;
 
     /**
      * Constructors
      *
-     * @param jobExecutionService
+     * @param scheduledProcessManagementService
      * @param searchFilter
      */
-    public UpcomingJobExecutionFilteringGrid(JobExecutionService jobExecutionService, UpcomingJobExecutionFilter searchFilter) {
+    public UpcomingJobExecutionFilteringGrid(ScheduledProcessManagementService scheduledProcessManagementService, ScheduledProcessFilter searchFilter,
+                                             DateFormatter dateFormatter) {
         super(searchFilter);
-        this.jobExecutionService = jobExecutionService;
+        this.scheduledProcessManagementService = scheduledProcessManagementService;
+        this.dateFormatter = dateFormatter;
 
         this.initGrid();
     }
 
     private void initGrid() {
-        super.addColumn(TemplateRenderer.<JobExecution>of("<div style='white-space:normal'>[[item.schedulerName]]</div>")
-            .withProperty("schedulerName", JobExecution::getSchedulerName))
+        super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.schedulerName]]</div>")
+            .withProperty("schedulerName", UpcomingScheduledProcess::getAgentName))
             .setHeader("Agent Name")
             .setKey("schedulerName")
             .setFlexGrow(1);
-        super.addColumn(TemplateRenderer.<JobExecution>of("<div style='white-space:normal'>[[item.jobName]]</div>")
-            .withProperty("jobName", JobExecution::getJobName))
+        super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.jobName]]</div>")
+            .withProperty("jobName", UpcomingScheduledProcess::getJobName))
             .setHeader("Job Name")
             .setKey("jobName")
             .setFlexGrow(1);
-        super.addColumn(TemplateRenderer.<JobExecution>of("<div style='white-space:normal'>[[item.description]]</div>")
-            .withProperty("description", JobExecution::getDescription))
+        super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.description]]</div>")
+            .withProperty("description", UpcomingScheduledProcess::getJobDescription))
             .setHeader("Job Description")
             .setKey("description")
             .setFlexGrow(5);
         super.addColumn(new ComponentRenderer<>(jobExecution -> {
             HorizontalLayout layout = new HorizontalLayout();
 
-            jobExecution.getRelatedBusinessStreams().forEach(businessStreamMetaData -> {
-                String route = RouteConfiguration.forSessionScope()
-                    .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":" + businessStreamMetaData.getName());
-                Anchor link = new Anchor(route, businessStreamMetaData.getName());
-                link.setTarget("_blank");
-                layout.add(link);
-                link.getStyle().set("color", "blue");
-            });
+//            jobExecution.getRelatedBusinessStreams().forEach(businessStreamMetaData -> {
+//                String route = RouteConfiguration.forSessionScope()
+//                    .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":" + businessStreamMetaData.getName());
+//                Anchor link = new Anchor(route, businessStreamMetaData.getName());
+//                link.setTarget("_blank");
+//                layout.add(link);
+//                link.getStyle().set("color", "blue");
+//            });
 
             return layout;
         }))
             .setHeader("Related Business Streams")
             .setKey("businessStreams")
             .setFlexGrow(5);
-        super.addColumn(TemplateRenderer.<JobExecution>of("<div style='white-space:normal'>[[item.nextExecutionTime]]</div>")
-            .withProperty("nextExecutionTime", jobExecution -> jobExecution.getNextExecution()) )
+        super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.nextExecutionTime]]</div>")
+            .withProperty("nextExecutionTime", upcomingScheduledProcess -> this.dateFormatter.getFormattedDate(upcomingScheduledProcess.getFireTime())) )
             .setHeader("Next Execution Time")
             .setKey("nextExecutionTime")
             .setFlexGrow(3);
@@ -161,8 +161,57 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<JobExecutio
         super.init();
     }
 
+    public void addGridFiltering(DatePicker date, TimePicker startTime, TimePicker endTime, Consumer<Long> startTimeFilter, Consumer<Long> endTimeFilter)
+    {
+        date.addValueChangeListener(ev->{
+            long epochMilli = date.getValue().atStartOfDay(DateTimeUtil.getZoneId()).toEpochSecond() * 1000;
+            if((epochMilli
+                + (startTime.getValue().toSecondOfDay()*1000)) < System.currentTimeMillis()) {
+                startTimeFilter.accept(System.currentTimeMillis());
+            }
+            else {
+                startTimeFilter.accept(epochMilli
+                    + (startTime.getValue().toSecondOfDay()*1000));
+            }
+
+            endTimeFilter.accept(epochMilli
+                + (endTime.getValue().toSecondOfDay()*1000));
+
+
+
+            filteredDataProvider.refreshAll();
+        });
+
+        startTime.addValueChangeListener(ev->{
+            long epochMilli = date.getValue().atStartOfDay(DateTimeUtil.getZoneId()).toEpochSecond() * 1000;
+            if((epochMilli
+                + (startTime.getValue().toSecondOfDay()*1000)) < System.currentTimeMillis()) {
+                startTimeFilter.accept(System.currentTimeMillis());
+            }
+            else {
+                startTimeFilter.accept(epochMilli
+                    + (startTime.getValue().toSecondOfDay()*1000));
+            }
+
+            filteredDataProvider.refreshAll();
+        });
+
+        endTime.addValueChangeListener(ev->{
+            long epochMilli = date.getValue().atStartOfDay(DateTimeUtil.getZoneId()).toEpochSecond() * 1000;
+            endTimeFilter.accept(epochMilli
+                + (endTime.getValue().toSecondOfDay()*1000));
+
+            filteredDataProvider.refreshAll();
+        });
+
+    }
+
     @Override
-    protected UpcomingJobExecutionSearchResults getResults(UpcomingJobExecutionFilter upcomingJobExecutionFilter, int offset, int limit) {
-        return this.jobExecutionService.getJobExecutions();
+    protected ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getResults(ScheduledProcessFilter scheduledProcessFilter, int offset, int limit) {
+        ScheduledProcessEventSearchResults<UpcomingScheduledProcess> results =  this.scheduledProcessManagementService.getUpComingScheduledProcesses(scheduledProcessFilter.getStartTime()
+            , scheduledProcessFilter.getEndTime());
+
+        return new ScheduledProcessEventSearchResults(offset+limit > results.getResultList().size() ?results.getResultList().subList(offset, results.getResultList().size()):results.getResultList().subList(offset, offset+limit)
+            , results.getTotalNumberOfResults(), results.getQueryResponseTime());
     }
 }

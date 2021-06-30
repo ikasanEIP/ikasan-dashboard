@@ -24,12 +24,20 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.*;
+import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.rest.client.ModuleRestService;
+import org.ikasan.scheduled.service.ScheduledProcessManagementService;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.module.client.ConfigurationService;
+import org.ikasan.spec.module.client.MetaDataService;
+import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.solr.SolrGeneralService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.vaadin.stefan.fullcalendar.*;
@@ -42,7 +50,10 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Route(value = "scheduler", layout = IkasanAppLayout.class)
 @UIScope
@@ -52,6 +63,8 @@ import java.util.*;
 @CssImport(value="./styles/live-errors.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 public class SchedulerCalendarView extends VerticalLayout implements BeforeEnterObserver
 {
+    Logger logger = LoggerFactory.getLogger(SchedulerCalendarView.class);
+
     private static DateTimeFormatter MONTH_DATE_FORMATTER =  DateTimeFormatter.ofPattern("MMM YYYY");
     private static DateTimeFormatter YEAR_DATE_FORMATTER =  DateTimeFormatter.ofPattern("YYYY");
     private static DateTimeFormatter DAY_DATE_FORMATTER =  DateTimeFormatter.ofPattern("MMMM dd, YYYY");
@@ -64,6 +77,23 @@ public class SchedulerCalendarView extends VerticalLayout implements BeforeEnter
 
     @Resource
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+
+    @Resource
+    private DateFormatter dateFormatter;
+
+    @Resource
+    private ConfigurationService configurationRestService;
+
+    @Resource
+    private ScheduledProcessManagementService scheduledProcessManagementService;
+
+    @Resource
+    private ModuleControlService moduleControlRestService;
+
+    @Resource
+    private MetaDataService metaDataRestService;
+
+    private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
     private Board scheduleJobsTab;
     private Board scheduleJStatsTab;
@@ -80,9 +110,19 @@ public class SchedulerCalendarView extends VerticalLayout implements BeforeEnter
     {
         this.setSpacing(false);
         this.setMargin(false);
+    }
+
+    private void init() {
+        this.schedulerAgentDashboardView = new SchedulerAgentDashboardView(this.moduleMetadataService
+            , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService);
+        this.schedulerAgentDashboardView.addClassName("styled");
+        this.schedulerAgentDashboardView.setSizeFull();
+        this.schedulerAgentDashboardView.setVisible(true);
+
         scheduleJobsTab = new Board();
         scheduleJobsTab.addClassName("styled");
         scheduleJobsTab.setSizeFull();
+        scheduleJobsTab.setVisible(false);
 
         scheduleJStatsTab = new Board();
         scheduleJStatsTab.addClassName("styled");
@@ -98,13 +138,15 @@ public class SchedulerCalendarView extends VerticalLayout implements BeforeEnter
 //        jobManagementTab.setSizeFull();
 //        jobManagementTab.setVisible(false);
 
+        Tab schedulerDashboardTab = new Tab("Scheduler Dashboard");
         Tab schedulerJobTab = new Tab("Scheduler Jobs");
         Tab schedulerStatusTab = new Tab("Scheduler Statistics");
         Tab calendarTab = new Tab("Calendar View");
 //        Tab schedulerJobManagementTab = new Tab("Scheduler Status");
-        Tabs tabs = new Tabs(schedulerJobTab, schedulerStatusTab, calendarTab);
+        Tabs tabs = new Tabs(schedulerDashboardTab, schedulerJobTab, schedulerStatusTab, calendarTab);
 
         Map<Tab, com.vaadin.flow.component.Component> tabsToPages = new HashMap<>();
+        tabsToPages.put(schedulerDashboardTab, this.schedulerAgentDashboardView);
         tabsToPages.put(schedulerJobTab, scheduleJobsTab);
         tabsToPages.put(schedulerStatusTab, scheduleJStatsTab);
         tabsToPages.put(calendarTab, this.calendarView);
@@ -122,7 +164,8 @@ public class SchedulerCalendarView extends VerticalLayout implements BeforeEnter
         addButton.getStyle().set("right", "30px");
 
         addButton.addClickListener(buttonClickEvent -> {
-            NewSchedulerJobDialog newSchedulerJobDialog = new NewSchedulerJobDialog();
+            NewSchedulerJobDialog newSchedulerJobDialog = new NewSchedulerJobDialog(null, this.scheduledProcessManagementService,
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService);
             newSchedulerJobDialog.open();
         });
 
@@ -131,7 +174,7 @@ public class SchedulerCalendarView extends VerticalLayout implements BeforeEnter
 
         addButton.getElement().appendChild(addIcon.getElement());
 
-        this.add(tabs, addButton, scheduleJobsTab, scheduleJStatsTab, this.calendarView);
+        this.add(tabs, addButton, this.schedulerAgentDashboardView, scheduleJobsTab, scheduleJStatsTab, this.calendarView);
     }
 
     private VerticalLayout calendarView() {
@@ -182,7 +225,7 @@ public class SchedulerCalendarView extends VerticalLayout implements BeforeEnter
         Button buttonPrevious = new Button("Previous", VaadinIcon.ANGLE_LEFT.create(),  e -> {
             calendar.previous();
             if(this.comboBoxView.getValue().equals(CalendarViewImpl.LIST_DAY) || this.comboBoxView.getValue().equals(CalendarViewImpl.DAY_GRID_DAY)) {
-                this.localDate = this.localDate.plusDays(1);
+                this.localDate = this.localDate.minusDays(1);
                 dateString.setText(DAY_DATE_FORMATTER.format(localDate));
             }
             else if(this.comboBoxView.getValue().equals(CalendarViewImpl.DAY_GRID_WEEK) || this.comboBoxView.getValue().equals(CalendarViewImpl.LIST_WEEK)) {
@@ -194,7 +237,7 @@ public class SchedulerCalendarView extends VerticalLayout implements BeforeEnter
                 dateString.setText(MONTH_DATE_FORMATTER.format(localDate));
             }
             else if(this.comboBoxView.getValue().equals(CalendarViewImpl.LIST_YEAR)) {
-                this.localDate = this.localDate.plusYears(1);
+                this.localDate = this.localDate.minusYears(1);
                 dateString.setText(YEAR_DATE_FORMATTER.format(localDate));
             }
         });
@@ -327,8 +370,10 @@ public class SchedulerCalendarView extends VerticalLayout implements BeforeEnter
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         if(!initialised) {
-            scheduleJobsTab.addRow(new UpcomingJobExecutionsWidget(this.businessStreamMetaDataService));
-            scheduleJobsTab.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.businessStreamMetaDataService));
+            this.init();
+            this.schedulerAgentDashboardView.beforeEnter(beforeEnterEvent);
+            scheduleJobsTab.addRow(new UpcomingJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter));
+            scheduleJobsTab.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter));
 
             this.scheduleJStatsTab.addRow(new DurationWidget());
             this.scheduleJStatsTab.addRow(new StartAndEndTimeWidget());
@@ -347,6 +392,7 @@ public class SchedulerCalendarView extends VerticalLayout implements BeforeEnter
         cursors.put("enabled", "pointer");
         cursors.put("disabled", "not-allowed");
         extendedProps.put("cursors", cursors);
+
 
         createTimedEntry(calendar, "Agent[Agent 1]\n Job Group[Job Group 1]\n Job[Job 1]", now.withDayOfMonth(3).atTime(10, 0), 0, null);
         createTimedBackgroundEntry(calendar, now.withDayOfMonth(3).atTime(10, 0), 120, null);

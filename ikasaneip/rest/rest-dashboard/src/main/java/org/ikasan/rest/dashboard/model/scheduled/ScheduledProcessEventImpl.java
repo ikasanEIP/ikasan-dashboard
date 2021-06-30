@@ -8,13 +8,45 @@ public class ScheduledProcessEventImpl implements ScheduledProcessEvent {
     private String jobGroup;
     private String jobDescription;
     private String commandLine;
-    private int result;
     private String resultOutput;
     private String resultError;
     private long pid;
     private String user;
     private long fireTime;
     private long nextFireTime;
+    private boolean successful;
+    private long completionTime;
+    private int returnCode;
+
+    @Override
+    public int getReturnCode() {
+        return this.returnCode;
+    }
+
+    @Override
+    public void setReturnCode(int result) {
+        this.returnCode = result;
+    }
+
+    @Override
+    public boolean isSuccessful() {
+        return this.successful;
+    }
+
+    @Override
+    public void setSuccessful(boolean successful) {
+        this.successful = successful;
+    }
+
+    @Override
+    public long getCompletionTime() {
+        return this.completionTime;
+    }
+
+    @Override
+    public void setCompletionTime(long completionTime) {
+        this.completionTime = completionTime;
+    }
 
     @Override
     public String getAgentName() {
@@ -64,16 +96,6 @@ public class ScheduledProcessEventImpl implements ScheduledProcessEvent {
     @Override
     public void setCommandLine(String commandLine) {
         this.commandLine = commandLine;
-    }
-
-    @Override
-    public int getResult() {
-        return result;
-    }
-
-    @Override
-    public void setResult(int result) {
-        this.result = result;
     }
 
     @Override
@@ -144,7 +166,6 @@ public class ScheduledProcessEventImpl implements ScheduledProcessEvent {
             ", jobName='" + jobName + '\'' +
             ", jobGroup='" + jobGroup + '\'' +
             ", commandLine='" + commandLine + '\'' +
-            ", result=" + result +
             ", resultOutput='" + resultOutput + '\'' +
             ", resultError='" + resultError + '\'' +
             ", pid=" + pid +

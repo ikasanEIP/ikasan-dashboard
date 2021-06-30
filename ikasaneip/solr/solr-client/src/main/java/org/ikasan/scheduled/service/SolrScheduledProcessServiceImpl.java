@@ -1,10 +1,11 @@
 package org.ikasan.scheduled.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.configuration.metadata.dao.SolrComponentConfigurationMetadataDao;
-import org.ikasan.configuration.metadata.model.SolrConfigurationParameterMetaData;
 import org.ikasan.module.metadata.dao.SolrModuleMetadataDao;
 import org.ikasan.scheduled.dao.SolrScheduledProcessEventDao;
-import org.ikasan.scheduled.model.SolrScheduledProcessEvent;
+import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
+import org.ikasan.scheduled.model.SolrScheduledProcessEventRecord;
 import org.ikasan.scheduled.model.UpcomingScheduledProcess;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
@@ -19,18 +20,20 @@ import org.quartz.CronExpression;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Created by Ikasan Development Team on 23/09/2017.
+ * Created by Ikasan Development Team.
  */
-public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements ScheduledProcessService,  SolrService<ScheduledProcessEvent>, BatchInsert<ScheduledProcessEvent>
+public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements ScheduledProcessManagementService, ScheduledProcessService, SolrService<ScheduledProcessEvent>, BatchInsert<ScheduledProcessEvent>
 {
     private SolrScheduledProcessEventDao scheduledProcessEventDao;
     private SolrModuleMetadataDao solrModuleMetadataDao;
     private SolrComponentConfigurationMetadataDao solrComponentConfigurationMetadataDao;
+    private ObjectMapper objectMapper;
 
 
     public SolrScheduledProcessServiceImpl(SolrScheduledProcessEventDao solrScheduledProcessEventDao
@@ -51,6 +54,8 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         {
             throw new IllegalArgumentException("systemEventDao cannot be null!");
         }
+
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -173,6 +178,10 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("commandLine"))
             .findFirst().get().getValue();
 
+        if(startTime < System.currentTimeMillis()) {
+            startTime = System.currentTimeMillis();
+        }
+
         try {
             CronExpression cronExpression = new CronExpression(cronExpressionString);
 
@@ -192,7 +201,35 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         return results;
     }
 
-    public List<SolrScheduledProcessEvent> getScheduledProcessEvents(String agent, String flow, long startTime, long endTime) {
+    public ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpComingScheduledProcesses(long startTime, long endTime) {
+
+        List<UpcomingScheduledProcess> results = new ArrayList<>();
+
+        long start = System.currentTimeMillis();
+
+        this.scheduledProcessEventDao.getAllAgentNames().forEach(agentName -> {
+            ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agentName);
+
+            moduleMetaData.getFlows().forEach(flowMetaData -> {
+                results.addAll(this.getUpComingScheduledProcesses(agentName, flowMetaData.getName(), startTime, endTime));
+            });
+        });
+
+        results.sort((o1, o2) -> {
+            if(o1.getFireTime() > o2.getFireTime()) return 1;
+            else if(o1.getFireTime() < o2.getFireTime()) return -1;
+            else return 0;
+        });
+
+
+        return new ScheduledProcessEventSearchResults(results, results.size(), System.currentTimeMillis() - start);
+    }
+
+    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(String agent, long startTime, long endTime) {
         return this.scheduledProcessEventDao.getScheduleProcessEvents(agent, startTime, endTime);
+    }
+
+    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(long startTime, long endTime) {
+        return this.scheduledProcessEventDao.getScheduleProcessEvents(startTime, endTime);
     }
 }
