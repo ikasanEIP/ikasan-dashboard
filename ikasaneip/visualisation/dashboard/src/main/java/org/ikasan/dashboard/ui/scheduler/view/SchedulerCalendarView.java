@@ -25,7 +25,6 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.*;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.rest.client.ModuleRestService;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
@@ -139,16 +138,16 @@ public class SchedulerCalendarView extends VerticalLayout implements BeforeEnter
 //        jobManagementTab.setVisible(false);
 
         Tab schedulerDashboardTab = new Tab("Scheduler Dashboard");
-        Tab schedulerJobTab = new Tab("Scheduler Jobs");
-        Tab schedulerStatusTab = new Tab("Scheduler Statistics");
-        Tab calendarTab = new Tab("Calendar View");
+        Tab schedulerJobTab = new Tab("Scheduled Jobs");
+//        Tab schedulerStatusTab = new Tab("Scheduler Statistics");
+        Tab calendarTab = new Tab("Scheduled Jobs Calendar");
 //        Tab schedulerJobManagementTab = new Tab("Scheduler Status");
-        Tabs tabs = new Tabs(schedulerDashboardTab, schedulerJobTab, schedulerStatusTab, calendarTab);
+        Tabs tabs = new Tabs(schedulerDashboardTab, schedulerJobTab, calendarTab);
 
         Map<Tab, com.vaadin.flow.component.Component> tabsToPages = new HashMap<>();
         tabsToPages.put(schedulerDashboardTab, this.schedulerAgentDashboardView);
         tabsToPages.put(schedulerJobTab, scheduleJobsTab);
-        tabsToPages.put(schedulerStatusTab, scheduleJStatsTab);
+//        tabsToPages.put(schedulerStatusTab, scheduleJStatsTab);
         tabsToPages.put(calendarTab, this.calendarView);
 //        tabsToPages.put(schedulerJobManagementTab, jobManagementTab);
 
@@ -182,8 +181,8 @@ public class SchedulerCalendarView extends VerticalLayout implements BeforeEnter
         calendar = FullCalendarBuilder.create().withAutoBrowserTimezone().build();
         calendar.setWeekNumbersVisible(false);
         calendar.addEntryClickedListener((ComponentEventListener<EntryClickedEvent>) entryClickedEvent -> {
-            SchedulerConfigurationDialog schedulerConfigurationDialog = new SchedulerConfigurationDialog();
-            schedulerConfigurationDialog.open();
+//            ScheduledProcessExecutionDialog scheduledProcessExecutionDialog = new ScheduledProcessExecutionDialog();
+//            scheduledProcessExecutionDialog.open();
         });
 //        Header header = new Header();
 //        header.
@@ -372,8 +371,10 @@ public class SchedulerCalendarView extends VerticalLayout implements BeforeEnter
         if(!initialised) {
             this.init();
             this.schedulerAgentDashboardView.beforeEnter(beforeEnterEvent);
-            scheduleJobsTab.addRow(new UpcomingJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter));
-            scheduleJobsTab.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter));
+            scheduleJobsTab.addRow(new UpcomingJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter, this.configurationRestService,
+                this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService));
+            scheduleJobsTab.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService));
 
             this.scheduleJStatsTab.addRow(new DurationWidget());
             this.scheduleJStatsTab.addRow(new StartAndEndTimeWidget());

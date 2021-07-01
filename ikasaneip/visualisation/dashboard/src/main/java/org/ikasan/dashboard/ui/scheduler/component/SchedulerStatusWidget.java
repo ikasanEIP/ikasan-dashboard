@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.ui.dashboard.component;
+package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.html.Anchor;
@@ -23,15 +23,17 @@ import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView
 import org.ikasan.spec.metadata.FlowMetaData;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.module.ModuleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class StatusWidget extends Div {
-    Logger logger = LoggerFactory.getLogger(StatusWidget.class);
+public class SchedulerStatusWidget extends Div {
+    Logger logger = LoggerFactory.getLogger(SchedulerStatusWidget.class);
 
     private FlowListFilteringGrid flowsGrid;
     private ModuleMetaDataService moduleMetadataService;
@@ -63,7 +65,7 @@ public class StatusWidget extends Div {
 
     private UI ui;
 
-    public StatusWidget(ModuleMetaDataService moduleMetadataService, UI ui) {
+    public SchedulerStatusWidget(ModuleMetaDataService moduleMetadataService, UI ui) {
         this.moduleMetadataService = moduleMetadataService;
         this.ui = ui;
 
@@ -87,7 +89,7 @@ public class StatusWidget extends Div {
         layout.getElement().getStyle().set("margin-top", "20px");
         layout.getElement().getStyle().set("margin-left", "10px");
         layout.setHeight("50px");
-        Label flows = new Label("Flows");
+        Label flows = new Label("Scheduler Agent Status");
         flows.getElement().getStyle().set("font-size", "16pt");
 
 
@@ -189,7 +191,7 @@ public class StatusWidget extends Div {
         layout.getElement().getStyle().set("margin-top", "20px");
         layout.getElement().getStyle().set("margin-left", "10px");
         layout.setHeight("50px");
-        Label flows = new Label("Flows");
+        Label flows = new Label("Scheduler Agent Status");
         flows.getElement().getStyle().set("font-size", "16pt");
 
 
@@ -242,6 +244,10 @@ public class StatusWidget extends Div {
         this.initialiseStateMap();
 
         List<ModuleMetaData> moduleMetaData = this.moduleMetadataService.findAll();
+
+        moduleMetaData = moduleMetaData.stream()
+            .filter(metadata -> metadata.getType() == ModuleType.SCHEDULER_AGENT)
+            .collect(Collectors.toList());
 
         moduleMetaData.forEach(module -> {
             module.getFlows().forEach(flow -> {
@@ -313,9 +319,9 @@ public class StatusWidget extends Div {
         this.recalculate();
 
         this.flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState -> {
-            this.recalculate();
-            logger.info("Flow state update received!" + flowState);
-        });
+                 this.recalculate();
+                logger.info("Flow state update received!" + flowState);
+            });
 
         this.cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState -> {
             this.recalculate();

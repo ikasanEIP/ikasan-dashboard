@@ -1,19 +1,13 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
-import org.ikasan.dashboard.ui.general.component.TableButton;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
@@ -22,7 +16,10 @@ import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView
 import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.model.UpcomingScheduledProcess;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
-import org.ikasan.scheduled.service.SolrScheduledProcessServiceImpl;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.module.client.ConfigurationService;
+import org.ikasan.spec.module.client.MetaDataService;
+import org.ikasan.spec.module.client.ModuleControlService;
 
 import java.util.function.Consumer;
 
@@ -32,6 +29,11 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private DateFormatter dateFormatter;
 
+    private ConfigurationService configurationRestService;
+    private ModuleControlService moduleControlRestService;
+    private MetaDataService metaDataRestService;
+    private ModuleMetaDataService moduleMetaDataService;
+
     /**
      * Constructors
      *
@@ -39,10 +41,15 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
      * @param searchFilter
      */
     public UpcomingJobExecutionFilteringGrid(ScheduledProcessManagementService scheduledProcessManagementService, ScheduledProcessFilter searchFilter,
-                                             DateFormatter dateFormatter) {
+                                             DateFormatter dateFormatter, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                             MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService) {
         super(searchFilter);
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.dateFormatter = dateFormatter;
+        this.configurationRestService = configurationRestService;
+        this.moduleControlRestService = moduleControlRestService;
+        this.metaDataRestService = metaDataRestService;
+        this.moduleMetaDataService = moduleMetaDataService;
 
         this.initGrid();
     }
@@ -106,57 +113,57 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
             .setHeader("Scheduler Statistics")
             .setKey("schedulerStatistics")
             .setFlexGrow(1);
-        super.addColumn(new ComponentRenderer<>(businessStreamMetaData->
-        {
-            Button editButton = new TableButton(VaadinIcon.EDIT.create());
-            editButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
-            {
-                SchedulerConfigurationDialog schedulerConfigurationDialog = new SchedulerConfigurationDialog();
-                schedulerConfigurationDialog.open();
-            });
-//
-//            ComponentSecurityVisibility.applySecurity(editButton, SecurityConstants.PLATORM_CONFIGURATON_ADMIN,
-//                SecurityConstants.PLATORM_CONFIGURATON_WRITE, SecurityConstants.ALL_AUTHORITY);
-
-            VerticalLayout layout = new VerticalLayout();
-            layout.setSizeFull();
-            layout.add(editButton);
-            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, editButton);
-            return layout;
-        })).setWidth("30px");
-        super.addColumn(new ComponentRenderer<>(businessStreamMetaData->
-        {
-            Button downloadButton = new TableButton(VaadinIcon.DOWNLOAD.create());
-//            StreamResource streamResource = new StreamResource(businessStreamMetaData.getName().concat(".json")
-//                , () -> new ByteArrayInputStream(businessStreamMetaData.getJson().getBytes()));
-//
-//            FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
-//            buttonWrapper.wrapComponent(downloadButton);
-
-            VerticalLayout layout = new VerticalLayout();
-            layout.setSizeFull();
-            layout.add(downloadButton);
-            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, downloadButton);
-            return layout;
-        })).setWidth("30px");
-        super.addColumn(new ComponentRenderer<>(businessStreamMetaData->
-        {
-            Button deleteButton = new TableButton(VaadinIcon.TRASH.create());
-//            deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
+//        super.addColumn(new ComponentRenderer<>(businessStreamMetaData->
+//        {
+//            Button editButton = new TableButton(VaadinIcon.EDIT.create());
+//            editButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
 //            {
-//                this.businessStreamMetaDataService.delete(businessStreamMetaData.getId());
-//                this.populateBusinessStreamGrid();
+//                SchedulerConfigurationDialog schedulerConfigurationDialog = new SchedulerConfigurationDialog();
+//                schedulerConfigurationDialog.open();
 //            });
+////
+////            ComponentSecurityVisibility.applySecurity(editButton, SecurityConstants.PLATORM_CONFIGURATON_ADMIN,
+////                SecurityConstants.PLATORM_CONFIGURATON_WRITE, SecurityConstants.ALL_AUTHORITY);
 //
-//            ComponentSecurityVisibility.applySecurity(deleteButton, SecurityConstants.PLATORM_CONFIGURATON_ADMIN,
-//                SecurityConstants.PLATORM_CONFIGURATON_WRITE, SecurityConstants.ALL_AUTHORITY);
-
-            VerticalLayout layout = new VerticalLayout();
-            layout.setSizeFull();
-            layout.add(deleteButton);
-            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, deleteButton);
-            return layout;
-        })).setWidth("30px");
+//            VerticalLayout layout = new VerticalLayout();
+//            layout.setSizeFull();
+//            layout.add(editButton);
+//            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, editButton);
+//            return layout;
+//        })).setWidth("30px");
+//        super.addColumn(new ComponentRenderer<>(businessStreamMetaData->
+//        {
+//            Button downloadButton = new TableButton(VaadinIcon.DOWNLOAD.create());
+////            StreamResource streamResource = new StreamResource(businessStreamMetaData.getName().concat(".json")
+////                , () -> new ByteArrayInputStream(businessStreamMetaData.getJson().getBytes()));
+////
+////            FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
+////            buttonWrapper.wrapComponent(downloadButton);
+//
+//            VerticalLayout layout = new VerticalLayout();
+//            layout.setSizeFull();
+//            layout.add(downloadButton);
+//            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, downloadButton);
+//            return layout;
+//        })).setWidth("30px");
+//        super.addColumn(new ComponentRenderer<>(businessStreamMetaData->
+//        {
+//            Button deleteButton = new TableButton(VaadinIcon.TRASH.create());
+////            deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
+////            {
+////                this.businessStreamMetaDataService.delete(businessStreamMetaData.getId());
+////                this.populateBusinessStreamGrid();
+////            });
+////
+////            ComponentSecurityVisibility.applySecurity(deleteButton, SecurityConstants.PLATORM_CONFIGURATON_ADMIN,
+////                SecurityConstants.PLATORM_CONFIGURATON_WRITE, SecurityConstants.ALL_AUTHORITY);
+//
+//            VerticalLayout layout = new VerticalLayout();
+//            layout.setSizeFull();
+//            layout.add(deleteButton);
+//            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, deleteButton);
+//            return layout;
+//        })).setWidth("30px");
 
         super.init();
     }

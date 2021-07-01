@@ -1,11 +1,12 @@
 package org.ikasan.scheduled.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.configuration.metadata.dao.SolrComponentConfigurationMetadataDao;
 import org.ikasan.module.metadata.dao.SolrModuleMetadataDao;
+import org.ikasan.scheduled.converter.ScheduledProcessAggregateConfigurationConverter;
 import org.ikasan.scheduled.dao.SolrScheduledProcessEventDao;
+import org.ikasan.scheduled.model.ScheduleProcessConfigurationBucket;
+import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
-import org.ikasan.scheduled.model.SolrScheduledProcessEventRecord;
 import org.ikasan.scheduled.model.UpcomingScheduledProcess;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
@@ -20,9 +21,9 @@ import org.quartz.CronExpression;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -33,7 +34,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
     private SolrScheduledProcessEventDao scheduledProcessEventDao;
     private SolrModuleMetadataDao solrModuleMetadataDao;
     private SolrComponentConfigurationMetadataDao solrComponentConfigurationMetadataDao;
-    private ObjectMapper objectMapper;
+    private ScheduledProcessAggregateConfigurationConverter scheduledProcessAggregateConfigurationConverter;
 
 
     public SolrScheduledProcessServiceImpl(SolrScheduledProcessEventDao solrScheduledProcessEventDao
@@ -55,7 +56,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             throw new IllegalArgumentException("systemEventDao cannot be null!");
         }
 
-        this.objectMapper = new ObjectMapper();
+        this.scheduledProcessAggregateConfigurationConverter = new ScheduledProcessAggregateConfigurationConverter();
     }
 
     @Override
@@ -154,6 +155,9 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfigurationMetaData
             = this.getConfigurationForAgentFlowComponent(agent, flow, "Process Execution Broker");
 
+        ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfigurationMetaData
+            = this.getConfigurationForAgentFlowComponent(agent, flow, "Blackout Router");
+
         List<UpcomingScheduledProcess> results = new ArrayList<>();
 
         String cronExpressionString  = (String)scheduledConsumerConfigurationMetaData.getParameters().stream()
@@ -161,22 +165,30 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             .findFirst().get().getValue();
 
 
-        // todo these need to be made configurable upstream
-//        String jobName  = (String)processExecutionBrokerConfigurationMetaData.getParameters().stream()
-//            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("jobName"))
-//            .findFirst().get().getValue();
-//
-//        String jobGroup  = (String)processExecutionBrokerConfigurationMetaData.getParameters().stream()
-//            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("jobGroup"))
-//            .findFirst().get().getValue();
-//
-//        String jobDescription  = (String)processExecutionBrokerConfigurationMetaData.getParameters().stream()
-//            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("jobDescription"))
-//            .findFirst().get().getValue();
 
-        String commandLine  = (String)processExecutionBrokerConfigurationMetaData.getParameters().stream()
+        AtomicReference<String> jobName = new AtomicReference<>();
+
+        scheduledConsumerConfigurationMetaData.getParameters().stream()
+            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("jobName"))
+            .findFirst().ifPresent(value -> jobName.set((String)value.getValue()));
+
+        AtomicReference<String> jobGroup = new AtomicReference<>();
+
+        scheduledConsumerConfigurationMetaData.getParameters().stream()
+            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("jobGroup"))
+            .findFirst().ifPresent(value -> jobGroup.set((String)value.getValue()));
+
+        AtomicReference<String> jobDescription = new AtomicReference<>();
+
+        scheduledConsumerConfigurationMetaData.getParameters().stream()
+            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("description"))
+            .findFirst().ifPresent(value -> jobDescription.set((String)value.getValue()));
+
+        AtomicReference<String> commandLine = new AtomicReference<>();
+
+        processExecutionBrokerConfigurationMetaData.getParameters().stream()
             .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("commandLine"))
-            .findFirst().get().getValue();
+            .findFirst().ifPresent(value -> commandLine.set((String)value.getValue()));
 
         if(startTime < System.currentTimeMillis()) {
             startTime = System.currentTimeMillis();
@@ -187,9 +199,11 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
 
             Date next = cronExpression.getNextValidTimeAfter(new Date(startTime));
 
+            // project the upcoming jobs forward
             while (next.before(new Date(endTime))) {
-                results.add(new UpcomingScheduledProcess(agent, "jobName",
-                    "jobGroup", "jobDescription", commandLine, next.getTime()));
+                results.add(new UpcomingScheduledProcess(agent, jobName.get(),
+                    jobGroup.get(), jobDescription.get(), next.getTime(), scheduledConsumerConfigurationMetaData,
+                    processExecutionBrokerConfigurationMetaData, blackoutRouterConfigurationMetaData));
 
                 next = cronExpression.getNextValidTimeAfter(next);
             }
@@ -231,5 +245,58 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
 
     public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(long startTime, long endTime) {
         return this.scheduledProcessEventDao.getScheduleProcessEvents(startTime, endTime);
+    }
+
+    public ScheduledProcessAggregateConfiguration getScheduleProcessAggregateConfiguration(String agent, String flow) {
+        AtomicReference<ScheduledProcessAggregateConfiguration> scheduledProcessAggregateConfiguration = new AtomicReference<>(new ScheduledProcessAggregateConfiguration());
+        ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agent);
+
+        moduleMetaData.getFlows().stream()
+            .filter(flowMetaData -> flowMetaData.getName().equals(flow))
+            .findFirst()
+            .ifPresent(flowMetaData -> {
+                AtomicReference<String> scheduledConsumerConfigurationId = new AtomicReference<>();
+                flowMetaData.getFlowElements().stream()
+                    .filter(flowElementMetaData -> flowElementMetaData.getComponentName().equals("Scheduled Consumer"))
+                    .findFirst()
+                    .map(flowElementMetaData -> flowElementMetaData.getConfigurationId())
+                    .ifPresent(id -> scheduledConsumerConfigurationId.set(id));
+
+                AtomicReference<String> blackoutRouterConfigurationId = new AtomicReference<>();
+
+                flowMetaData.getFlowElements().stream()
+                    .filter(flowElementMetaData -> flowElementMetaData.getComponentName().equals("Blackout Router"))
+                    .findFirst()
+                    .map(flowElementMetaData -> flowElementMetaData.getConfigurationId())
+                    .ifPresent(id -> blackoutRouterConfigurationId.set(id));
+
+                AtomicReference<String> processExecutionBrokerConfigurationId = new AtomicReference<>();
+
+                flowMetaData.getFlowElements().stream()
+                    .filter(flowElementMetaData -> flowElementMetaData.getComponentName().equals("Process Execution Broker"))
+                    .findFirst()
+                    .map(flowElementMetaData -> flowElementMetaData.getConfigurationId())
+                    .ifPresent(id -> processExecutionBrokerConfigurationId.set(id));
+
+                ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration =
+                    this.solrComponentConfigurationMetadataDao.findById(scheduledConsumerConfigurationId.get());
+                ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfiguration =
+                    this.solrComponentConfigurationMetadataDao.findById(blackoutRouterConfigurationId.get());
+                ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfiguration =
+                    this.solrComponentConfigurationMetadataDao.findById(processExecutionBrokerConfigurationId.get());
+
+                ScheduleProcessConfigurationBucket bucket = new ScheduleProcessConfigurationBucket(scheduledConsumerConfiguration,
+                    processExecutionBrokerConfiguration, blackoutRouterConfiguration);
+
+                scheduledProcessAggregateConfiguration.set(this.scheduledProcessAggregateConfigurationConverter.convert(bucket));
+                scheduledProcessAggregateConfiguration.get().setAgentName(agent);
+            });
+
+
+        return scheduledProcessAggregateConfiguration.get();
+    }
+
+    public void saveConfiguration(ConfigurationMetaData configurationMetaData) {
+        this.solrComponentConfigurationMetadataDao.save(configurationMetaData);
     }
 }

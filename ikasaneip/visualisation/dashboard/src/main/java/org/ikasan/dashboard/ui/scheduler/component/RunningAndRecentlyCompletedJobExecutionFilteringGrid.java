@@ -1,20 +1,27 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
-import com.vaadin.flow.router.RouteConfiguration;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
-import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
-import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
+import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
-import org.ikasan.scheduled.service.SolrScheduledProcessServiceImpl;
+import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.module.client.ConfigurationService;
+import org.ikasan.spec.module.client.MetaDataService;
+import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 
 import java.util.function.Consumer;
@@ -26,6 +33,11 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
 
     private DateFormatter dateFormatter;
 
+    private ConfigurationService configurationRestService;
+    private ModuleControlService moduleControlRestService;
+    private MetaDataService metaDataRestService;
+    private ModuleMetaDataService moduleMetaDataService;
+
     /**
      * Constructor
      *
@@ -33,10 +45,15 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
      * @param searchFilter
      */
     public RunningAndRecentlyCompletedJobExecutionFilteringGrid(ScheduledProcessManagementService scheduledProcessManagementService, ScheduledProcessFilter searchFilter,
-                                                                DateFormatter dateFormatter) {
+                                                                DateFormatter dateFormatter, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                                                MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService) {
         super(searchFilter);
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.dateFormatter = dateFormatter;
+        this.configurationRestService = configurationRestService;
+        this.moduleControlRestService = moduleControlRestService;
+        this.metaDataRestService = metaDataRestService;
+        this.moduleMetaDataService = moduleMetaDataService;
 
         this.initGrid();
     }
@@ -79,26 +96,84 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
             .setHeader("Execution Time")
             .setKey("executionTime")
             .setFlexGrow(3);
-        super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.executionStatus]]</div>")
-            .withProperty("executionStatus", scheduledProcessEvent -> this.dateFormatter.getFormattedDate(scheduledProcessEvent.getFireTime())))
-            .setHeader("Execution Status")
-            .setKey("executionStatus")
-            .setFlexGrow(1);
-        super.addColumn(new ComponentRenderer<>(jobExecution -> {
+        super.addColumn(new ComponentRenderer<>(scheduledProcessEvent->
+        {
             HorizontalLayout layout = new HorizontalLayout();
 
-            String route = RouteConfiguration.forSessionScope()
-                .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":blah");
-            Anchor link = new Anchor(route, "view");
-            link.setTarget("_blank");
-            layout.add(link);
-            link.getStyle().set("color", "blue");
+            Icon jobExecutionDetails = VaadinIcon.RANDOM.create();
+            jobExecutionDetails.getStyle().set("font-size", "32pt");
+            jobExecutionDetails.getStyle().set("cursor", "pointer");
+            jobExecutionDetails.getElement().setAttribute("title", "Job execution details");
 
+            jobExecutionDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(iconClickEvent.getClickCount() == 2) {
+                    ScheduledProcessExecutionDialog scheduledProcessExecutionDialog = new ScheduledProcessExecutionDialog(scheduledProcessEvent);
+                    scheduledProcessExecutionDialog.open();
+                }
+            });
+
+            layout.add(jobExecutionDetails);
+
+            Icon jobDetails = VaadinIcon.CLIPBOARD_TEXT.create();
+            jobDetails.getStyle().set("font-size", "32pt");
+            jobDetails.getStyle().set("cursor", "pointer");
+            jobDetails.getElement().setAttribute("title", "Job details");
+
+            layout.add(jobDetails);
+
+            jobDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(iconClickEvent.getClickCount() == 2) {
+                    ScheduledProcessAggregateConfiguration configuration = this.scheduledProcessManagementService.getScheduleProcessAggregateConfiguration(scheduledProcessEvent.getAgentName(),
+                        scheduledProcessEvent.getJobName());
+
+                    ModuleMetaData agent = this.moduleMetaDataService.findById(scheduledProcessEvent.getAgentName());
+
+                    NewSchedulerJobDialog newSchedulerJobDialog = new NewSchedulerJobDialog(agent,
+                        this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+                        this.metaDataRestService);
+
+                    newSchedulerJobDialog.setScheduleProcessAggregateConfiguration(configuration, false);
+                    newSchedulerJobDialog.open();
+                }
+            });
+
+            Icon chart = VaadinIcon.CHART.create();
+            chart.getStyle().set("font-size", "32pt");
+            chart.getStyle().set("cursor", "pointer");
+            chart.getElement().setAttribute("title", "Job statistics");
+
+            layout.add(chart);
+
+            layout.setSizeFull();
             return layout;
         }))
-            .setHeader("Scheduler Statistics")
-            .setKey("schedulerStatistics")
-            .setFlexGrow(1);
+        .setHeader("Actions")
+        .setKey("actions")
+        .setWidth("70px");
+        super.addColumn(new ComponentRenderer<>(scheduledProcessEvent->
+        {
+            VerticalLayout layout = new VerticalLayout();
+            if(scheduledProcessEvent.isSuccessful()) {
+                Icon check = VaadinIcon.CHECK.create();
+                check.getStyle().set("color", "#66bb6a");
+                check.getStyle().set("font-size", "32pt");
+                layout.add(check);
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, check);
+            }
+            else {
+                Icon exclamation = VaadinIcon.EXCLAMATION.create();
+                exclamation.getStyle().set("color", "#ef5350");
+                exclamation.getStyle().set("font-size", "32pt");
+                layout.add(exclamation);
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, exclamation);
+            }
+
+            layout.setSizeFull();
+            return layout;
+        }))
+        .setHeader("Status")
+        .setKey("executionStatus")
+        .setWidth("30px");
 
         super.init();
     }
