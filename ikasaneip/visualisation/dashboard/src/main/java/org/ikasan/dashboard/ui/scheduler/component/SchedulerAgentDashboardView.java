@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -62,9 +63,8 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         if(!initialised) {
             board.addRow(new AgentWidget(this.moduleMetadataService, this.scheduledProcessManagementService
-                , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService));
-//                , new ModuleWidget(moduleMetadataService), new StatusWidget(moduleMetadataService));
-//            board.addRow(new HospitalEventsWidget(solrGeneralService), new ErrorEventWidget(solrGeneralService));
+                , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService)
+                , new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
 
             initialised = true;
         }

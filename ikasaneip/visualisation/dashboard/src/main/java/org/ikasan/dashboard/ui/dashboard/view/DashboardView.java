@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.dashboard.view;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -54,7 +55,7 @@ public class DashboardView extends HorizontalLayout implements BeforeEnterObserv
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         if(!initialised) {
             board.addRow(new BusinessStreamWidget(this.businessStreamMetaDataService)
-                , new ModuleWidget(moduleMetadataService), new StatusWidget(moduleMetadataService));
+                , new ModuleWidget(moduleMetadataService), new StatusWidget(moduleMetadataService, UI.getCurrent()));
             board.addRow(new HospitalEventsWidget(solrGeneralService), new ErrorEventWidget(solrGeneralService));
 
             initialised = true;

@@ -1,5 +1,6 @@
 package org.ikasan.scheduled.service;
 
+import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.model.UpcomingScheduledProcess;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
@@ -32,4 +33,8 @@ public interface ScheduledProcessManagementService {
     public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(String agent, long startTime, long endTime);
 
     public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(long startTime, long endTime);
+
+    public ScheduledProcessAggregateConfiguration getScheduleProcessAggregateConfiguration(String agent, String flow);
+
+    public void saveConfiguration(ConfigurationMetaData configurationMetaData);
 }

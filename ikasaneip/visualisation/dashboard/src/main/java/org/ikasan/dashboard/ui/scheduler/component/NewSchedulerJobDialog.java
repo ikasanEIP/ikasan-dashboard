@@ -24,11 +24,13 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.converter.StringToLongConverter;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.scheduler.model.ScheduleProcessAggregateConfiguration;
 import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
-import org.ikasan.spec.metadata.*;
+import org.ikasan.spec.metadata.ConfigurationMetaData;
+import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
+import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
@@ -36,8 +38,10 @@ import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -74,6 +78,16 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
     private Button addDateTimeRange;
     private List<DateTimeRange> dateTimeRanges;
 
+    private Button saveButton;
+    private Button cancelButton;
+    private Button successfulReturnCodesButton;
+    private Button passThroughPropertiesButton;
+
+    private Label noBlackOutCronExpressionLabel;
+    private Label noBlackOutDateTimeRangesLabel;
+    private Label noPassThoughPropertiesLabel;
+    private Label noReturnCodesLabel;
+
 
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
@@ -81,7 +95,9 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
 
-    private Binder<ScheduleProcessAggregateConfiguration> formBinder;
+    private ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration = new ScheduledProcessAggregateConfiguration();
+
+    private Binder<ScheduledProcessAggregateConfiguration> formBinder;
 
 
     public NewSchedulerJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
@@ -96,8 +112,23 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
 
+        this.noBlackOutCronExpressionLabel = new Label("no blackout cron expressions");
+        this.noBlackOutCronExpressionLabel.setVisible(false);
+        this.noBlackOutCronExpressionLabel.getStyle().set("color", "rgba(0, 0, 0, 0.38)");
+        this.noBlackOutDateTimeRangesLabel = new Label("no blackout date time ranges");
+        this.noBlackOutDateTimeRangesLabel.setVisible(false);
+        this.noBlackOutDateTimeRangesLabel.getStyle().set("color", "rgba(0, 0, 0, 0.38)");
+        this.noBlackOutDateTimeRangesLabel.getStyle().set("padding-bottom", "20px");
+        this.noPassThoughPropertiesLabel = new Label("no pass through properties");
+        this.noPassThoughPropertiesLabel.setVisible(false);
+        this.noPassThoughPropertiesLabel.getStyle().set("color", "rgba(0, 0, 0, 0.38)");
+        this.noReturnCodesLabel = new Label("no return codes");
+        this.noReturnCodesLabel.setVisible(false);
+        this.noReturnCodesLabel.getStyle().set("color", "rgba(0, 0, 0, 0.38)");
+
+
         this.formBinder
-            = new Binder<>(ScheduleProcessAggregateConfiguration.class);
+            = new Binder<>(ScheduledProcessAggregateConfiguration.class);
 
         this.blackoutCronExpressions = new ArrayList<>();
         this.dateTimeRanges = new ArrayList<>();
@@ -106,20 +137,19 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
 
 
 
-        this.setHeight("850px");
+        this.setHeight("900px");
         this.setWidth("1000px");
 
-        Button saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
+        saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->  {
 
-            ScheduleProcessAggregateConfiguration scheduleProcessAggregateConfiguration = new ScheduleProcessAggregateConfiguration();
             if(!this.performFormValidation(scheduleProcessAggregateConfiguration)) {
                 return;
             }
             createNewScheduledJobFlow(scheduleProcessAggregateConfiguration);
         });
 
-        Button cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
+        cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
         cancelButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.close());
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
@@ -132,6 +162,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         layout.setSizeFull();
         layout.add(this.createConfigurationForm(), buttonLayout);
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
+        layout.getStyle().set("padding-bottom", "20px");
         super.content.add(layout);
     }
 
@@ -147,7 +178,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         }
         formBinder.forField(this.agentCb)
             .withValidator(agentValue -> !agentValue.isEmpty(), "Agent is required!")
-            .bind(ScheduleProcessAggregateConfiguration::getAgentName, ScheduleProcessAggregateConfiguration::setAgentName);
+            .bind(ScheduledProcessAggregateConfiguration::getAgentName, ScheduledProcessAggregateConfiguration::setAgentName);
         formLayout.add(agentCb, 2);
 
         // Fields to capture schedule job properties.
@@ -158,7 +189,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         this.jobNameTf.setRequired(true);
         formBinder.forField(this.jobNameTf)
             .withValidator(jobName -> !jobName.isEmpty(), "Job name is required!")
-            .bind(ScheduleProcessAggregateConfiguration::getJobName, ScheduleProcessAggregateConfiguration::setJobName);
+            .bind(ScheduledProcessAggregateConfiguration::getJobName, ScheduledProcessAggregateConfiguration::setJobName);
         formLayout.add(jobNameTf);
 
 
@@ -166,7 +197,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         this.jobGroupTf.setRequired(true);
         formBinder.forField(this.jobGroupTf)
             .withValidator(jobGroup -> !jobGroup.isEmpty(), "Job group is required!")
-            .bind(ScheduleProcessAggregateConfiguration::getJobGroup, ScheduleProcessAggregateConfiguration::setJobGroup);
+            .bind(ScheduledProcessAggregateConfiguration::getJobGroup, ScheduledProcessAggregateConfiguration::setJobGroup);
         formLayout.add(jobGroupTf);
 
 
@@ -175,7 +206,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         jobDescriptionTa.getStyle().set("minHeight", "100px");
         formBinder.forField(this.jobDescriptionTa)
             .withValidator(jobGroup -> !jobGroup.isEmpty(), "Job description is required!")
-            .bind(ScheduleProcessAggregateConfiguration::getJobDescription, ScheduleProcessAggregateConfiguration::setJobDescription);
+            .bind(ScheduledProcessAggregateConfiguration::getJobDescription, ScheduledProcessAggregateConfiguration::setJobDescription);
         formLayout.add(jobDescriptionTa, 2);
 
 
@@ -184,7 +215,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         formBinder.forField(this.cronExpressionTf)
             // todo some cron validation
             .withValidator(value -> !value.isEmpty(), "Cron expression is required!")
-            .bind(ScheduleProcessAggregateConfiguration::getCronExpression, ScheduleProcessAggregateConfiguration::setCronExpression);
+            .bind(ScheduledProcessAggregateConfiguration::getCronExpression, ScheduledProcessAggregateConfiguration::setCronExpression);
         formLayout.add(cronExpressionTf);
 
 
@@ -196,33 +227,36 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         this.timezoneCb.setItemLabelGenerator((ItemLabelGenerator<DateTimeUtil.TimezonePair>) s -> String.format("%35s (UTC%s) %n", s.zoneId, s.offset).trim());
         this.timezoneCb.setClearButtonVisible(true);
         this.timezoneCb.setPlaceholder("Choose a timezone");
-        formBinder.forField(this.timezoneCb)
-            .withValidator(value -> !value.zoneId.isEmpty(), "Timezone is required!")
-            .bind(ScheduleProcessAggregateConfiguration::getTimezone, ScheduleProcessAggregateConfiguration::setTimezone);
+//        formBinder.forField(this.timezoneCb)
+//            .withValidator(value -> !value.zoneId.isEmpty(), "Timezone is required!");
+//            .bind(ScheduledProcessAggregateConfiguration::getTimezone, ScheduledProcessAggregateConfiguration::setTimezone);
         formLayout.add(timezoneCb);
 
         this.eagerCb = new Checkbox();
         this.eagerCb.setLabel("Eager");
         this.eagerCb.getStyle().set("padding-top", "15px");
         formBinder.forField(this.eagerCb)
-            .bind(ScheduleProcessAggregateConfiguration::isEager, ScheduleProcessAggregateConfiguration::setEager);
+            .withNullRepresentation(false)
+            .bind(ScheduledProcessAggregateConfiguration::isEager, ScheduledProcessAggregateConfiguration::setEager);
         formLayout.add(this.eagerCb);
 
         this.ignoreMisfireCb = new Checkbox();
         this.ignoreMisfireCb.setLabel("Ignore misfire");
         this.ignoreMisfireCb.getStyle().set("padding-top", "15px");
         formBinder.forField(this.ignoreMisfireCb)
-            .bind(ScheduleProcessAggregateConfiguration::isIgnoreMisfire, ScheduleProcessAggregateConfiguration::setIgnoreMisfire);
+            .withNullRepresentation(false)
+            .bind(ScheduledProcessAggregateConfiguration::isIgnoreMisfire, ScheduledProcessAggregateConfiguration::setIgnoreMisfire);
         formLayout.add(this.ignoreMisfireCb);
 
         this.maxEagerCallbacksTf = new TextField("Max eager callbacks");
         formBinder.forField(this.maxEagerCallbacksTf)
             .withConverter(new StringToIntegerConverter("Must be a number!"))
-            .bind(ScheduleProcessAggregateConfiguration::getMaxEagerCallbacks, ScheduleProcessAggregateConfiguration::setMaxEagerCallbacks);
+            .withNullRepresentation(0)
+            .bind(ScheduledProcessAggregateConfiguration::getMaxEagerCallbacks, ScheduledProcessAggregateConfiguration::setMaxEagerCallbacks);
         formLayout.add(maxEagerCallbacksTf, new Div());
 
         Label passThroughPropertiesLabel = new Label("Pass through properties");
-        Button passThroughPropertiesButton = new Button(VaadinIcon.PLUS.create(), e -> {
+        passThroughPropertiesButton = new Button(VaadinIcon.PLUS.create(), e -> {
             TextFieldNameValuePair nvp = new TextFieldNameValuePair();
 
             nvp.nameTf = new TextField("Property name");
@@ -251,7 +285,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
 
         });
 
-        formLayout.add(passThroughPropertiesLabel, passThroughPropertiesButton);
+        formLayout.add(passThroughPropertiesLabel, passThroughPropertiesButton, noPassThoughPropertiesLabel);
 
         // Fields to capture job execution properties.
         H3 jobExecutionLabel = new H3("Job Execution Details");
@@ -261,43 +295,48 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         this.commandLineTf.setRequired(true);
         formBinder.forField(this.commandLineTf)
             .withValidator(value -> !value.isEmpty(), "Command line is required!")
-            .bind(ScheduleProcessAggregateConfiguration::getCommandLine, ScheduleProcessAggregateConfiguration::setCommandLine);
+            .bind(ScheduledProcessAggregateConfiguration::getCommandLine, ScheduledProcessAggregateConfiguration::setCommandLine);
         formLayout.add(commandLineTf, 2);
         commandLineTf.getStyle().set("minHeight", "100px");
 
         this.workingDirectoryTf = new TextField("Working Directory");
         formBinder.forField(this.workingDirectoryTf)
+            .withNullRepresentation("")
 //            .withValidator(value -> !value.isEmpty(), "Working directory is required!")
-            .bind(ScheduleProcessAggregateConfiguration::getWorkingDirectory, ScheduleProcessAggregateConfiguration::setWorkingDirectory);
+            .bind(ScheduledProcessAggregateConfiguration::getWorkingDirectory, ScheduledProcessAggregateConfiguration::setWorkingDirectory);
         formLayout.add(workingDirectoryTf);
 
         this.secondsToWaitForProcessStartTf = new TextField("Seconds to wait for process start");
         formBinder.forField(this.secondsToWaitForProcessStartTf)
 //            .withValidator(value -> !value.isEmpty(), "Seconds to wait for process start is required!")
+            .withNullRepresentation("")
             .withConverter(new StringToLongConverter("Must be a number!"))
-            .bind(ScheduleProcessAggregateConfiguration::getSecondsToWaitForProcessStart, ScheduleProcessAggregateConfiguration::setSecondsToWaitForProcessStart);
+            .bind(ScheduledProcessAggregateConfiguration::getSecondsToWaitForProcessStart, ScheduledProcessAggregateConfiguration::setSecondsToWaitForProcessStart);
         formLayout.add(secondsToWaitForProcessStartTf);
 
         this.stdOutTf = new TextField("Std out");
         formBinder.forField(this.stdOutTf)
+            .withNullRepresentation("")
             .withValidator(value -> !value.isEmpty(), "Standard out is required!")
-            .bind(ScheduleProcessAggregateConfiguration::getStdOut, ScheduleProcessAggregateConfiguration::setStdOut);
+            .bind(ScheduledProcessAggregateConfiguration::getStdOut, ScheduledProcessAggregateConfiguration::setStdOut);
         formLayout.add(stdOutTf);
 
         this.stdErrTf = new TextField("Std err");
         formBinder.forField(this.stdErrTf)
 //            .withValidator(value -> !value.isEmpty(), "Standard err is required!")
-            .bind(ScheduleProcessAggregateConfiguration::getStdErr, ScheduleProcessAggregateConfiguration::setStdErr);
+            .withNullRepresentation("")
+            .bind(ScheduledProcessAggregateConfiguration::getStdErr, ScheduledProcessAggregateConfiguration::setStdErr);
         formLayout.add(this.stdErrTf);
 
         this.retryOnFailCb = new Checkbox("Retry on fail");
         formBinder.forField(this.retryOnFailCb)
-            .bind(ScheduleProcessAggregateConfiguration::isRetryOnFail, ScheduleProcessAggregateConfiguration::setRetryOnFail);
+            .withNullRepresentation(false)
+            .bind(ScheduledProcessAggregateConfiguration::isRetryOnFail, ScheduledProcessAggregateConfiguration::setRetryOnFail);
         this.retryOnFailCb.getStyle().set("padding-top", "15px");
         formLayout.add(this.retryOnFailCb, new Div());
 
         Label successfulReturnCodesLabel = new Label("Successful return codes");
-        Button successfulReturnCodesButton = new Button(VaadinIcon.PLUS.create(), e -> {
+        successfulReturnCodesButton = new Button(VaadinIcon.PLUS.create(), e -> {
             TextField successfulReturnCodeTf = new TextField("Successful return code");
             this.successfulReturnCodes.add(successfulReturnCodeTf);
             successfulReturnCodeTf.setErrorMessage("Return code is required!");
@@ -311,7 +350,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
             formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(successfulReturnCodesLabel.getElement()) + 3, minusButton);
         });
 
-        formLayout.add(successfulReturnCodesLabel, successfulReturnCodesButton);
+        formLayout.add(successfulReturnCodesLabel, successfulReturnCodesButton, this.noReturnCodesLabel);
 
         H3 blackoutLabel = new H3("Blackout Execution Details");
         formLayout.add(blackoutLabel, 2);
@@ -332,7 +371,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
             formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(blackOutCronExpressionLabel.getElement()) + 3, minusButton);
         });
 
-        formLayout.add(blackOutCronExpressionLabel, addBlackoutCron);
+        formLayout.add(blackOutCronExpressionLabel, addBlackoutCron, this.noBlackOutCronExpressionLabel);
 
         Label blackOutDateTimeRangesLabel = new Label("Blackout date time ranges");
         this.addDateTimeRange = new Button(VaadinIcon.PLUS.create(), e -> {
@@ -368,12 +407,12 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
             formLayout.add(startLayout, endLayout);
         });
 
-        formLayout.add(blackOutDateTimeRangesLabel, this.addDateTimeRange);
+        formLayout.add(blackOutDateTimeRangesLabel, this.addDateTimeRange, this.noBlackOutDateTimeRangesLabel);
 
         return formLayout;
     }
 
-    private boolean performFormValidation(ScheduleProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
+    private boolean performFormValidation(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
 
         try {
             AtomicBoolean isValid = new AtomicBoolean(true);
@@ -477,7 +516,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
      *
      * @param scheduleProcessAggregateConfiguration
      */
-    public void createNewScheduledJobFlow(ScheduleProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
+    public void createNewScheduledJobFlow(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
         // Get the module configuration from the module.
         ConfigurationMetaData<List<ConfigurationParameterMetaData>> moduleConfiguration
             = this.configurationRestService.getModuleConfiguration(this.agent.getUrl());
@@ -529,10 +568,13 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         // Save all the configurations back to the agent.
         logger.debug(scheduledConsumerConfiguration.toString());
         this.configurationRestService.storeConfiguration(this.agent.getUrl(), scheduledConsumerConfiguration);
+        this.scheduledProcessManagementService.saveConfiguration(scheduledConsumerConfiguration);
         logger.debug(blackoutRouterConfiguration.toString());
         this.configurationRestService.storeConfiguration(this.agent.getUrl(), blackoutRouterConfiguration);
-        this.configurationRestService.storeConfiguration(this.agent.getUrl(), processExecutionBrokerConfiguration);
+        this.scheduledProcessManagementService.saveConfiguration(blackoutRouterConfiguration);
         logger.debug(processExecutionBrokerConfiguration.toString());
+        this.configurationRestService.storeConfiguration(this.agent.getUrl(), processExecutionBrokerConfiguration);
+        this.scheduledProcessManagementService.saveConfiguration(processExecutionBrokerConfiguration);
     }
 
     /**
@@ -542,7 +584,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
      * @param scheduleProcessAggregateConfiguration
      */
     private void updateScheduleConsumerConfiguration(ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration
-        , ScheduleProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
+        , ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "jobName",
             scheduleProcessAggregateConfiguration.getJobName());
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "jobGroupName",
@@ -552,7 +594,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "cronExpression",
             scheduleProcessAggregateConfiguration.getCronExpression());
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "timezone",
-            scheduleProcessAggregateConfiguration.getTimezone().zoneId);
+            scheduleProcessAggregateConfiguration.getTimezone());
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "ignoreMisfire",
             scheduleProcessAggregateConfiguration.isIgnoreMisfire());
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "eager",
@@ -570,11 +612,11 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
      * @param scheduleProcessAggregateConfiguration
      */
     private void updateProcessExecutionBrokerConfiguration(ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration
-        , ScheduleProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
+        , ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "commandLine",
             scheduleProcessAggregateConfiguration.getCommandLine());
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "workingDirectory",
-            scheduleProcessAggregateConfiguration.getJobGroup());
+            scheduleProcessAggregateConfiguration.getWorkingDirectory());
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "successfulReturnCodes",
             scheduleProcessAggregateConfiguration.getSuccessfulReturnCodes());
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "secondsToWaitForProcessStart",
@@ -594,7 +636,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
      * @param scheduleProcessAggregateConfiguration
      */
     private void updateBlackoutRouterConfiguration(ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration
-        , ScheduleProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
+        , ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "cronExpressions",
             scheduleProcessAggregateConfiguration.getBlackoutCronExpressions());
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "dateTimeRanges",
@@ -602,7 +644,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
     }
 
     /**
-     * General method to set paramaters on a configuration meta data.
+     * General method to set parameters on a configuration meta data.
      *
      * @param params
      * @param paramName
@@ -648,6 +690,60 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         return configurationMetaData.get();
     }
 
+    public void setEnabled(boolean enabled) {
+        this.timezoneCb.setEnabled(enabled);
+
+        this.jobNameTf.setEnabled(enabled);
+        this.jobGroupTf.setEnabled(enabled);
+        this.jobDescriptionTa.setEnabled(enabled);
+        this.cronExpressionTf.setEnabled(enabled);
+        this.timezoneCb.setEnabled(enabled);
+        this.ignoreMisfireCb.setEnabled(enabled);
+        this.eagerCb.setEnabled(enabled);
+        this.maxEagerCallbacksTf.setEnabled(enabled);
+
+        this.passThroughProperties.forEach(passThroughProperty -> {
+            passThroughProperty.nameTf.setEnabled(enabled);
+            passThroughProperty.valueTf.setEnabled(enabled);
+        });
+        if(this.passThroughProperties.size() == 0) {
+            this.noPassThoughPropertiesLabel.setVisible(!enabled);
+        }
+
+
+        this.commandLineTf.setEnabled(enabled);
+        this.workingDirectoryTf.setEnabled(enabled);
+        this.secondsToWaitForProcessStartTf.setEnabled(enabled);
+        this.stdOutTf.setEnabled(enabled);
+        this.stdErrTf.setEnabled(enabled);
+        this.retryOnFailCb.setEnabled(enabled);
+        this.successfulReturnCodes.forEach(successfulReturnCode -> successfulReturnCode.setEnabled(enabled));
+        if(this.successfulReturnCodes.size() == 0) {
+            this.noReturnCodesLabel.setVisible(!enabled);
+        }
+
+        this.addBlackoutCron.setVisible(false);
+        this.blackoutCronExpressions.forEach(blackoutCronExpression -> blackoutCronExpression.setEnabled(enabled));
+        if(this.blackoutCronExpressions.size() == 0) {
+            this.noBlackOutCronExpressionLabel.setVisible(!enabled);
+        }
+        this.addDateTimeRange.setVisible(false);
+        this.dateTimeRanges.forEach(blackoutCronExpression -> {
+            blackoutCronExpression.startDate.setEnabled(enabled);
+            blackoutCronExpression.startTime.setEnabled(enabled);
+            blackoutCronExpression.endDate.setEnabled(enabled);
+            blackoutCronExpression.endTime.setEnabled(enabled);
+        });
+        if(this.dateTimeRanges.size() == 0) {
+            this.noBlackOutDateTimeRangesLabel.setVisible(!enabled);
+        }
+
+        this.saveButton.setVisible(false);
+        this.cancelButton.setVisible(false);
+        this.successfulReturnCodesButton.setVisible(false);
+        this.passThroughPropertiesButton.setVisible(false);
+    }
+
     private class TextFieldNameValuePair {
         public TextField nameTf;
         public TextField valueTf;
@@ -658,5 +754,11 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         public TimePicker startTime;
         public DatePicker endDate;
         public TimePicker endTime;
+    }
+
+    public void setScheduleProcessAggregateConfiguration(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration, boolean editable) {
+        this.scheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
+        this.setEnabled(editable);
+        this.formBinder.readBean(this.scheduleProcessAggregateConfiguration);
     }
 }

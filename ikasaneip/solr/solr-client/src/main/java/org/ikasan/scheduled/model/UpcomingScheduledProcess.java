@@ -1,29 +1,36 @@
 package org.ikasan.scheduled.model;
 
+import org.ikasan.spec.metadata.ConfigurationMetaData;
+import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
+
+import java.util.List;
+
 public class UpcomingScheduledProcess {
     private String agentName;
     private String jobName;
     private String jobGroup;
     private String jobDescription;
-    private String commandLine;
     private long fireTime;
+    private ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfigurationMetaData;
+    private ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfigurationMetaData;
+    private ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfigurationMetaData;
 
-    public UpcomingScheduledProcess(String agentName, String jobName, String jobGroup, String jobDescription, String commandLine, long fireTime) {
+    public UpcomingScheduledProcess(String agentName, String jobName, String jobGroup, String jobDescription, long fireTime
+        , ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfigurationMetaData
+        , ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfigurationMetaData
+        ,ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfigurationMetaData) {
         this.agentName = agentName;
         this.jobName = jobName;
         this.jobGroup = jobGroup;
         this.jobDescription = jobDescription;
-        this.commandLine = commandLine;
         this.fireTime = fireTime;
+        this.scheduledConsumerConfigurationMetaData = scheduledConsumerConfigurationMetaData;
+        this.processExecutionBrokerConfigurationMetaData = processExecutionBrokerConfigurationMetaData;
+        this.blackoutRouterConfigurationMetaData = blackoutRouterConfigurationMetaData;
     }
 
     public String getAgentName() {
         return agentName;
-    }
-
-    
-    public void setAgentName(String agentName) {
-        this.agentName = agentName;
     }
 
     
@@ -32,18 +39,8 @@ public class UpcomingScheduledProcess {
     }
 
     
-    public void setJobName(String jobName) {
-        this.jobName = jobName;
-    }
-
-    
     public String getJobGroup() {
         return jobGroup;
-    }
-
-    
-    public void setJobGroup(String jobGroup) {
-        this.jobGroup = jobGroup;
     }
 
     
@@ -51,29 +48,21 @@ public class UpcomingScheduledProcess {
         return this.jobDescription;
     }
 
-    
-    public void setJobDescription(String jobDescription) {
-        this.jobDescription = jobDescription;
-    }
 
-    
-    public String getCommandLine() {
-        return commandLine;
-    }
-
-    
-    public void setCommandLine(String commandLine) {
-        this.commandLine = commandLine;
-    }
-
-    
     public long getFireTime() {
         return fireTime;
     }
 
-    
-    public void setFireTime(long fireTime) {
-        this.fireTime = fireTime;
+    public ConfigurationMetaData<List<ConfigurationParameterMetaData>> getScheduledConsumerConfigurationMetaData() {
+        return scheduledConsumerConfigurationMetaData;
+    }
+
+    public ConfigurationMetaData<List<ConfigurationParameterMetaData>> getProcessExecutionBrokerConfigurationMetaData() {
+        return processExecutionBrokerConfigurationMetaData;
+    }
+
+    public ConfigurationMetaData<List<ConfigurationParameterMetaData>> getBlackoutRouterConfigurationMetaData() {
+        return blackoutRouterConfigurationMetaData;
     }
 
     @Override
@@ -83,8 +72,10 @@ public class UpcomingScheduledProcess {
         sb.append(", jobName='").append(jobName).append('\'');
         sb.append(", jobGroup='").append(jobGroup).append('\'');
         sb.append(", jobDescription='").append(jobDescription).append('\'');
-        sb.append(", commandLine='").append(commandLine).append('\'');
         sb.append(", fireTime=").append(fireTime);
+        sb.append(", scheduledConsumerConfigurationMetaData=").append(scheduledConsumerConfigurationMetaData);
+        sb.append(", processExecutionBrokerConfigurationMetaData=").append(processExecutionBrokerConfigurationMetaData);
+        sb.append(", blackoutRouterConfigurationMetaData=").append(blackoutRouterConfigurationMetaData);
         sb.append('}');
         return sb.toString();
     }

@@ -17,6 +17,10 @@ import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.service.SolrScheduledProcessServiceImpl;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.module.client.ConfigurationService;
+import org.ikasan.spec.module.client.MetaDataService;
+import org.ikasan.spec.module.client.ModuleControlService;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -37,10 +41,20 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
     private TimePicker startTime;
     private TimePicker endTime;
 
+    private ConfigurationService configurationRestService;
+    private ModuleControlService moduleControlRestService;
+    private MetaDataService metaDataRestService;
+    private ModuleMetaDataService moduleMetaDataService;
+
     public RunningAndRecentlyCompletedJobExecutionsWidget(ScheduledProcessManagementService scheduledProcessManagementService,
-                                                          DateFormatter dateFormatter) {
+                                                          DateFormatter dateFormatter, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                                          MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService) {
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.dateFormatter = dateFormatter;
+        this.configurationRestService = configurationRestService;
+        this.moduleControlRestService = moduleControlRestService;
+        this.metaDataRestService = metaDataRestService;
+        this.moduleMetaDataService = moduleMetaDataService;
         Div div = new Div();
         div.addClassNames("card-counter");
         div.setHeight("380px");
@@ -100,7 +114,7 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
         this.scheduledProcessFilter.setEndTime(epochMilli + (this.endTime.getValue().toSecondOfDay()*1000));
 
         this.runningAndRecentlyCompletedJobExecutionFilteringGrid = new RunningAndRecentlyCompletedJobExecutionFilteringGrid(scheduledProcessManagementService
-            , this.scheduledProcessFilter, this.dateFormatter);
+            , this.scheduledProcessFilter, this.dateFormatter, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetaDataService);
         this.runningAndRecentlyCompletedJobExecutionFilteringGrid.setHeight("300px");
 
         this.runningAndRecentlyCompletedJobExecutionFilteringGrid.addGridFiltering(textField, this.scheduledProcessFilter::setFilter);

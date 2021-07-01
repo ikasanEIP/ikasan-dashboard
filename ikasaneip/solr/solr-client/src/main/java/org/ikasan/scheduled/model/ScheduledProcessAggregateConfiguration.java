@@ -1,20 +1,18 @@
-package org.ikasan.dashboard.ui.scheduler.model;
-
-import org.ikasan.dashboard.ui.util.DateTimeUtil;
+package org.ikasan.scheduled.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ScheduleProcessAggregateConfiguration {
+public class ScheduledProcessAggregateConfiguration {
 
     private String agentName;
     private String jobName;
     private String jobGroup;
     private String jobDescription;
     private String cronExpression;
-    private DateTimeUtil.TimezonePair timezone;
+    private String timezone;
     private String commandLine;
     private String stdOut;
     private String stdErr;
@@ -62,11 +60,11 @@ public class ScheduleProcessAggregateConfiguration {
         this.cronExpression = cronExpression;
     }
 
-    public DateTimeUtil.TimezonePair getTimezone() {
+    public String getTimezone() {
         return timezone;
     }
 
-    public void setTimezone(DateTimeUtil.TimezonePair timezone) {
+    public void setTimezone(String timezone) {
         this.timezone = timezone;
     }
 
@@ -188,6 +186,33 @@ public class ScheduleProcessAggregateConfiguration {
 
     public void setBlackoutDateTimeRanges(Map<Long, Long> blackoutDateTimeRanges) {
         this.blackoutDateTimeRanges = blackoutDateTimeRanges;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("ScheduledProcessAggregateConfiguration{");
+        sb.append("agentName='").append(agentName).append('\'');
+        sb.append(", jobName='").append(jobName).append('\'');
+        sb.append(", jobGroup='").append(jobGroup).append('\'');
+        sb.append(", jobDescription='").append(jobDescription).append('\'');
+        sb.append(", cronExpression='").append(cronExpression).append('\'');
+        sb.append(", timezone='").append(timezone).append('\'');
+        sb.append(", commandLine='").append(commandLine).append('\'');
+        sb.append(", stdOut='").append(stdOut).append('\'');
+        sb.append(", stdErr='").append(stdErr).append('\'');
+        sb.append(", threshold='").append(threshold).append('\'');
+        sb.append(", eager=").append(eager);
+        sb.append(", retryOnFail=").append(retryOnFail);
+        sb.append(", ignoreMisfire=").append(ignoreMisfire);
+        sb.append(", maxEagerCallbacks=").append(maxEagerCallbacks);
+        sb.append(", passthroughProperties=").append(passthroughProperties);
+        sb.append(", workingDirectory='").append(workingDirectory).append('\'');
+        sb.append(", successfulReturnCodes=").append(successfulReturnCodes);
+        sb.append(", secondsToWaitForProcessStart=").append(secondsToWaitForProcessStart);
+        sb.append(", blackoutCronExpressions=").append(blackoutCronExpressions);
+        sb.append(", blackoutDateTimeRanges=").append(blackoutDateTimeRanges);
+        sb.append('}');
+        return sb.toString();
     }
 }
 
