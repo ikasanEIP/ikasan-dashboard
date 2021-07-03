@@ -1,21 +1,23 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
-import com.vaadin.flow.router.RouteConfiguration;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
-import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
-import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
+import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.model.UpcomingScheduledProcess;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
+import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
@@ -65,6 +67,11 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
             .setHeader("Job Name")
             .setKey("jobName")
             .setFlexGrow(1);
+        super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.jobGroup]]</div>")
+            .withProperty("jobGroup", UpcomingScheduledProcess::getJobGroup))
+            .setHeader("Job Group")
+            .setKey("jobGroup")
+            .setFlexGrow(1);
         super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.description]]</div>")
             .withProperty("description", UpcomingScheduledProcess::getJobDescription))
             .setHeader("Job Description")
@@ -91,28 +98,69 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
             .withProperty("nextExecutionTime", upcomingScheduledProcess -> this.dateFormatter.getFormattedDate(upcomingScheduledProcess.getFireTime())) )
             .setHeader("Next Execution Time")
             .setKey("nextExecutionTime")
-            .setFlexGrow(3);
+            .setWidth("130px");
 //        super.addColumn(TemplateRenderer.<JobExecution>of("<div style='white-space:normal'>[[item.schedulerStatus]]</div>")
 //            .withProperty("schedulerStatus", JobExecution::getSchedulerStatus))
 //            .setHeader("Scheduler Status")
 //            .setKey("schedulerStatus")
 //            .setFlexGrow(1);
-        super.addColumn(new ComponentRenderer<>(jobExecution -> {
-            VerticalLayout layout = new VerticalLayout();
+        super.addColumn(new ComponentRenderer<>(scheduledProcessEvent->
+        {
+            HorizontalLayout layout = new HorizontalLayout();
 
-            String route = RouteConfiguration.forSessionScope()
-                .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":blah");
-            Anchor link = new Anchor(route, "view");
-            link.setTarget("_blank");
-            layout.add(link);
-            link.getStyle().set("color", "blue");
+//            Icon jobExecutionDetails = VaadinIcon.RANDOM.create();
+//            jobExecutionDetails.getStyle().set("font-size", "32pt");
+//            jobExecutionDetails.getStyle().set("cursor", "pointer");
+//            jobExecutionDetails.getElement().setAttribute("title", "Job execution details");
+//
+//            jobExecutionDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+//                if(iconClickEvent.getClickCount() == 2) {
+//                    ModuleMetaData agent = this.moduleMetaDataService.findById(scheduledProcessEvent.getAgentName());
+//                    ScheduledProcessExecutionDialog scheduledProcessExecutionDialog = new ScheduledProcessExecutionDialog(scheduledProcessEvent, agent);
+//                    scheduledProcessExecutionDialog.open();
+//                }
+//            });
+//
+//            layout.add(jobExecutionDetails);
 
+            Icon jobDetails = VaadinIcon.CLIPBOARD_TEXT.create();
+            jobDetails.setSize("14pt");
+//            jobDetails.getStyle().set("font-size", "26pt");
+            jobDetails.getStyle().set("cursor", "pointer");
+            jobDetails.getElement().setAttribute("title", "Job configuration");
 
+            layout.add(jobDetails);
+
+            jobDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(iconClickEvent.getClickCount() == 2) {
+                    ScheduledProcessAggregateConfiguration configuration = this.scheduledProcessManagementService.getScheduleProcessAggregateConfiguration(scheduledProcessEvent.getAgentName(),
+                        scheduledProcessEvent.getJobName());
+
+                    ModuleMetaData agent = this.moduleMetaDataService.findById(scheduledProcessEvent.getAgentName());
+
+                    ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
+                        this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+                        this.metaDataRestService);
+
+                    scheduledJobDialog.setScheduleProcessAggregateConfiguration(configuration, EditMode.READONLY);
+                    scheduledJobDialog.open();
+                }
+            });
+
+            Icon chart = VaadinIcon.CHART.create();
+            chart.setSize("14pt");
+//            chart.getStyle().set("font-size", "26pt");
+            chart.getStyle().set("cursor", "pointer");
+            chart.getElement().setAttribute("title", "Job statistics");
+
+            layout.add(chart);
+
+            layout.setSizeFull();
             return layout;
         }))
-            .setHeader("Scheduler Statistics")
-            .setKey("schedulerStatistics")
-            .setFlexGrow(1);
+        .setHeader("Actions")
+        .setKey("actions")
+        .setWidth("40px");
 //        super.addColumn(new ComponentRenderer<>(businessStreamMetaData->
 //        {
 //            Button editButton = new TableButton(VaadinIcon.EDIT.create());
@@ -212,6 +260,7 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
         });
 
     }
+
 
     @Override
     protected ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getResults(ScheduledProcessFilter scheduledProcessFilter, int offset, int limit) {

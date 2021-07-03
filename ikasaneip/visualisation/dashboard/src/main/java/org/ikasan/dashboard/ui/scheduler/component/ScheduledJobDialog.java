@@ -24,6 +24,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.converter.StringToLongConverter;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
+import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
@@ -45,9 +46,9 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
+public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
-    Logger logger = LoggerFactory.getLogger(NewSchedulerJobDialog.class);
+    Logger logger = LoggerFactory.getLogger(ScheduledJobDialog.class);
 
     private ComboBox<String> agentCb;
 
@@ -99,12 +100,14 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
 
     private Binder<ScheduledProcessAggregateConfiguration> formBinder;
 
+    private EditMode editMode;
 
-    public NewSchedulerJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
-                                 ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                 MetaDataService metaDataRestService) {
+
+    public ScheduledJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
+                              ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                              MetaDataService metaDataRestService) {
         super.showResize(false);
-        super.title.setText("New Scheduler Job");
+        super.title.setText("Scheduled Job");
 
         this.agent = agent;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
@@ -146,7 +149,16 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
             if(!this.performFormValidation(scheduleProcessAggregateConfiguration)) {
                 return;
             }
-            createNewScheduledJobFlow(scheduleProcessAggregateConfiguration);
+
+            try {
+                createNewScheduledJobFlow(scheduleProcessAggregateConfiguration);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                NotificationHelper.showErrorNotification("An error has occurred creating a new scheduled job. Please contact Ikasan support.");
+                return;
+            }
+            this.close();
         });
 
         cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
@@ -702,6 +714,7 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         this.eagerCb.setEnabled(enabled);
         this.maxEagerCallbacksTf.setEnabled(enabled);
 
+        this.passThroughPropertiesButton.setVisible(enabled);
         this.passThroughProperties.forEach(passThroughProperty -> {
             passThroughProperty.nameTf.setEnabled(enabled);
             passThroughProperty.valueTf.setEnabled(enabled);
@@ -718,16 +731,17 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         this.stdErrTf.setEnabled(enabled);
         this.retryOnFailCb.setEnabled(enabled);
         this.successfulReturnCodes.forEach(successfulReturnCode -> successfulReturnCode.setEnabled(enabled));
+        this.successfulReturnCodesButton.setVisible(enabled);
         if(this.successfulReturnCodes.size() == 0) {
             this.noReturnCodesLabel.setVisible(!enabled);
         }
 
-        this.addBlackoutCron.setVisible(false);
+        this.addBlackoutCron.setVisible(enabled);
         this.blackoutCronExpressions.forEach(blackoutCronExpression -> blackoutCronExpression.setEnabled(enabled));
         if(this.blackoutCronExpressions.size() == 0) {
             this.noBlackOutCronExpressionLabel.setVisible(!enabled);
         }
-        this.addDateTimeRange.setVisible(false);
+        this.addDateTimeRange.setVisible(enabled);
         this.dateTimeRanges.forEach(blackoutCronExpression -> {
             blackoutCronExpression.startDate.setEnabled(enabled);
             blackoutCronExpression.startTime.setEnabled(enabled);
@@ -738,10 +752,8 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
             this.noBlackOutDateTimeRangesLabel.setVisible(!enabled);
         }
 
-        this.saveButton.setVisible(false);
-        this.cancelButton.setVisible(false);
-        this.successfulReturnCodesButton.setVisible(false);
-        this.passThroughPropertiesButton.setVisible(false);
+        this.saveButton.setVisible(enabled);
+        this.cancelButton.setVisible(enabled);
     }
 
     private class TextFieldNameValuePair {
@@ -756,9 +768,10 @@ public class NewSchedulerJobDialog extends AbstractCloseableResizableDialog {
         public TimePicker endTime;
     }
 
-    public void setScheduleProcessAggregateConfiguration(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration, boolean editable) {
+    public void setScheduleProcessAggregateConfiguration(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration, EditMode editMode) {
         this.scheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
-        this.setEnabled(editable);
+        this.editMode = editMode;
+        this.setEnabled(editMode == EditMode.NEW || editMode == EditMode.EDIT ? true : false);
         this.formBinder.readBean(this.scheduleProcessAggregateConfiguration);
     }
 }

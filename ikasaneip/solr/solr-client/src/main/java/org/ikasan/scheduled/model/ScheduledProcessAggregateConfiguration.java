@@ -141,6 +141,7 @@ public class ScheduledProcessAggregateConfiguration {
     }
 
     public Map<String, String> getPassthroughProperties() {
+        if(this.passthroughProperties == null) return new HashMap<>();
         return passthroughProperties;
     }
 
@@ -157,6 +158,7 @@ public class ScheduledProcessAggregateConfiguration {
     }
 
     public List<Integer> getSuccessfulReturnCodes() {
+        if(this.successfulReturnCodes == null) return new ArrayList<>();
         return successfulReturnCodes;
     }
 
@@ -173,6 +175,7 @@ public class ScheduledProcessAggregateConfiguration {
     }
 
     public List<String> getBlackoutCronExpressions() {
+        if(this.blackoutCronExpressions == null) return new ArrayList<>();
         return blackoutCronExpressions;
     }
 
@@ -181,7 +184,8 @@ public class ScheduledProcessAggregateConfiguration {
     }
 
     public Map<Long, Long> getBlackoutDateTimeRanges() {
-        return blackoutDateTimeRanges;
+        if(this.blackoutDateTimeRanges == null) return new HashMap<>();
+        return this.blackoutDateTimeRanges;
     }
 
     public void setBlackoutDateTimeRanges(Map<Long, Long> blackoutDateTimeRanges) {

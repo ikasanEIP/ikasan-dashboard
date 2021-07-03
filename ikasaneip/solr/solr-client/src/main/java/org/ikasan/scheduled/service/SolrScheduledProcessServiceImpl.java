@@ -82,18 +82,22 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
 
     }
 
+    @Override
     public List<String> getAllAgentNames() {
         return this.scheduledProcessEventDao.getAllAgentNames();
     }
 
+    @Override
     public List<String> getJobGroupsForAgent(String agent) {
         return this.scheduledProcessEventDao.getJobGroupsForAgent(agent);
     }
 
+    @Override
     public List<String> getJobsForAgentAndJobGroup(String agent, String jobGroup) {
         return this.scheduledProcessEventDao.getJobsForAgentAndJobGroup(agent, jobGroup);
     }
 
+    @Override
     public List<String> getScheduledProcessConfigurationsForAgent(String agent) {
         ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agent);
 
@@ -110,6 +114,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         return null;
     }
 
+    @Override
     public List<ConfigurationMetaData<List<ConfigurationParameterMetaData>>> getScheduledConfigurationsForAgent(String agent) {
         ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agent);
 
@@ -127,6 +132,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         return results;
     }
 
+    @Override
     public List<FlowMetaData> getFlowsForAgent(String agent) {
         ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agent);
 
@@ -134,6 +140,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             .collect(Collectors.toList());
     }
 
+    @Override
     public ConfigurationMetaData getConfigurationForAgentFlowComponent(String agent, String flow, String component) {
         ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agent);
 
@@ -148,6 +155,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         return this.solrComponentConfigurationMetadataDao.findById(configurationId);
     }
 
+    @Override
     public List<UpcomingScheduledProcess> getUpComingScheduledProcesses(String agent, String flow, long startTime, long endTime) {
         ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfigurationMetaData
             = this.getConfigurationForAgentFlowComponent(agent, flow, "Scheduled Consumer");
@@ -175,7 +183,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         AtomicReference<String> jobGroup = new AtomicReference<>();
 
         scheduledConsumerConfigurationMetaData.getParameters().stream()
-            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("jobGroup"))
+            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("jobGroupName"))
             .findFirst().ifPresent(value -> jobGroup.set((String)value.getValue()));
 
         AtomicReference<String> jobDescription = new AtomicReference<>();
@@ -215,6 +223,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         return results;
     }
 
+    @Override
     public ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpComingScheduledProcesses(long startTime, long endTime) {
 
         List<UpcomingScheduledProcess> results = new ArrayList<>();
@@ -239,14 +248,31 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         return new ScheduledProcessEventSearchResults(results, results.size(), System.currentTimeMillis() - start);
     }
 
+    @Override
     public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(String agent, long startTime, long endTime) {
         return this.scheduledProcessEventDao.getScheduleProcessEvents(agent, startTime, endTime);
     }
 
-    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(long startTime, long endTime) {
-        return this.scheduledProcessEventDao.getScheduleProcessEvents(startTime, endTime);
+    @Override
+    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(long startTime, long endTime, String filter, boolean errorsOnly) {
+        return this.scheduledProcessEventDao.getScheduleProcessEvents(startTime, endTime, filter, errorsOnly);
     }
 
+    @Override
+    public ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getScheduleProcessAggregateConfigurations(String agent) {
+        long start = System.currentTimeMillis();
+        List<FlowMetaData> flows = this.getFlowsForAgent(agent);
+        List<ScheduledProcessAggregateConfiguration> results = new ArrayList<>();
+
+        flows.forEach(flowMetaData -> results.add(this.getScheduleProcessAggregateConfiguration(agent, flowMetaData.getName())));
+
+        ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> searchResults
+            = new ScheduledProcessEventSearchResults<>(results, results.size(), System.currentTimeMillis() - start);
+
+        return searchResults;
+    }
+
+    @Override
     public ScheduledProcessAggregateConfiguration getScheduleProcessAggregateConfiguration(String agent, String flow) {
         AtomicReference<ScheduledProcessAggregateConfiguration> scheduledProcessAggregateConfiguration = new AtomicReference<>(new ScheduledProcessAggregateConfiguration());
         ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agent);

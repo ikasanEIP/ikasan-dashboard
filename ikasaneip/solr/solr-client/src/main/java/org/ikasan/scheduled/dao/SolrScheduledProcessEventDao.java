@@ -115,12 +115,23 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
         }
     }
 
-    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduleProcessEvents(long startTime, long endTime) {
+    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduleProcessEvents(long startTime, long endTime, String filter, boolean failuresOnly) {
         StringBuffer typeQuery = super.buildFieldPredicate("scheduledProcessEvent", SolrDaoBase.TYPE);
         StringBuffer betweenDates = super.buildDatePredicate(SolrDaoBase.CREATED_DATE_TIME, new Date(startTime), new Date(endTime));
 
         SolrQuery query = new SolrQuery();
-        query.setQuery(typeQuery + " AND " + betweenDates);
+
+        StringBuffer queryBuffer = new StringBuffer(typeQuery + " AND " + betweenDates);
+
+        if(failuresOnly) {
+            queryBuffer.append(" AND payload:\"*\\\"successful\\\":\\\"false\\\"*\"");
+        }
+
+        if(filter != null && !filter.isEmpty()) {
+            queryBuffer.append(" AND payload:\"*"+filter+"*\"");
+        }
+
+        query.setQuery(queryBuffer.toString());
         query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
 
         query.setRows(0);
