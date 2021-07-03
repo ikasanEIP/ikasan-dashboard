@@ -84,7 +84,7 @@ $_documentContainer.innerHTML = `<custom-style>
     <template>
         <style>
             [part~="row"]:hover [part~="body-cell"]{
-                color: red;
+                color: rgba(241, 90, 35, 1.0);;
                 background-color: rgba(241, 90, 35, 0.1);
             }
         </style>
@@ -145,7 +145,7 @@ $_documentContainer.innerHTML = `<custom-style>
     </template>
 </dom-module>
 
-<dom-module id="my-grid-styles" theme-for="vaadin-grid">
+<dom-module id="ikasan-grid-styles" theme-for="vaadin-grid">
     <template>
         <style>
             [part~="header-cell"] {
@@ -155,6 +155,19 @@ $_documentContainer.innerHTML = `<custom-style>
             
             [part~="body-cell"] {
                 font-size: 9pt;
+                height: auto;
+            }
+            
+            [part~="cell"]:not([part~="details-cell"]) {
+                flex-shrink: 0;
+                flex-grow: 1;
+                box-sizing: border-box;
+                display: flex;
+                width: 100%;
+                position: relative;
+                align-items: start;
+                padding: 0;
+                white-space: nowrap;
             }
             
             /* Background needs a stronger selector to not be overridden */

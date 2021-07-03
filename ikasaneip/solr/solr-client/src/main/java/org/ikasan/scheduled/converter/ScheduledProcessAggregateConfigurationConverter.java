@@ -42,8 +42,11 @@ public class ScheduledProcessAggregateConfigurationConverter implements Converte
             (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.WORKING_DIRECTORY));
         scheduledProcessAggregateConfiguration.setSuccessfulReturnCodes((List<Integer>)this.getConfigurationParameterMetaDataValue
             (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.SUCCESSFUL_RETURN_CODES));
-        scheduledProcessAggregateConfiguration.setSecondsToWaitForProcessStart(((Integer)this.getConfigurationParameterMetaDataValue
-            (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.SECONDS_TO_WAIT_FOR_PROCESS_TO_START)).longValue());
+        if(this.getConfigurationParameterMetaDataValue
+            (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.SECONDS_TO_WAIT_FOR_PROCESS_TO_START) != null) {
+            scheduledProcessAggregateConfiguration.setSecondsToWaitForProcessStart(((Integer) this.getConfigurationParameterMetaDataValue
+                (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.SECONDS_TO_WAIT_FOR_PROCESS_TO_START)).longValue());
+        }
         scheduledProcessAggregateConfiguration.setStdErr((String)this.getConfigurationParameterMetaDataValue
             (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.STD_ERR));
         scheduledProcessAggregateConfiguration.setStdOut((String)this.getConfigurationParameterMetaDataValue

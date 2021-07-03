@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -59,6 +60,9 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
     }
 
     private void initGrid() {
+        Checkbox errorCb = new Checkbox("Errors");
+        addGridFiltering(errorCb, super.searchFilter::setErrorsOnly);
+
         super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.schedulerName]]</div>")
             .withProperty("schedulerName", ScheduledProcessEvent::getAgentName))
             .setHeader("Scheduler Name")
@@ -68,6 +72,11 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
             .withProperty("jobName", ScheduledProcessEvent::getJobName))
             .setHeader("Job Name")
             .setKey("jobName")
+            .setFlexGrow(1);
+        super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.jobGroup]]</div>")
+            .withProperty("jobGroup", ScheduledProcessEvent::getJobGroup))
+            .setHeader("Job Group")
+            .setKey("jobGroup")
             .setFlexGrow(1);
         super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.description]]</div>")
             .withProperty("description", ScheduledProcessEvent::getJobDescription))
@@ -95,19 +104,20 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
             .withProperty("executionTime", scheduledProcessEvent -> this.dateFormatter.getFormattedDate(scheduledProcessEvent.getFireTime())))
             .setHeader("Execution Time")
             .setKey("executionTime")
-            .setFlexGrow(3);
+            .setWidth("130px");
         super.addColumn(new ComponentRenderer<>(scheduledProcessEvent->
         {
             HorizontalLayout layout = new HorizontalLayout();
 
             Icon jobExecutionDetails = VaadinIcon.RANDOM.create();
-            jobExecutionDetails.getStyle().set("font-size", "32pt");
+            jobExecutionDetails.setSize("14pt");
             jobExecutionDetails.getStyle().set("cursor", "pointer");
             jobExecutionDetails.getElement().setAttribute("title", "Job execution details");
 
             jobExecutionDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 if(iconClickEvent.getClickCount() == 2) {
-                    ScheduledProcessExecutionDialog scheduledProcessExecutionDialog = new ScheduledProcessExecutionDialog(scheduledProcessEvent);
+                    ModuleMetaData agent = this.moduleMetaDataService.findById(scheduledProcessEvent.getAgentName());
+                    ScheduledProcessExecutionDialog scheduledProcessExecutionDialog = new ScheduledProcessExecutionDialog(scheduledProcessEvent, agent);
                     scheduledProcessExecutionDialog.open();
                 }
             });
@@ -115,9 +125,9 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
             layout.add(jobExecutionDetails);
 
             Icon jobDetails = VaadinIcon.CLIPBOARD_TEXT.create();
-            jobDetails.getStyle().set("font-size", "32pt");
+            jobDetails.setSize("14pt");
             jobDetails.getStyle().set("cursor", "pointer");
-            jobDetails.getElement().setAttribute("title", "Job details");
+            jobDetails.getElement().setAttribute("title", "Job configuration");
 
             layout.add(jobDetails);
 
@@ -128,17 +138,17 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
 
                     ModuleMetaData agent = this.moduleMetaDataService.findById(scheduledProcessEvent.getAgentName());
 
-                    NewSchedulerJobDialog newSchedulerJobDialog = new NewSchedulerJobDialog(agent,
+                    ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
                         this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
                         this.metaDataRestService);
 
-                    newSchedulerJobDialog.setScheduleProcessAggregateConfiguration(configuration, false);
-                    newSchedulerJobDialog.open();
+                    scheduledJobDialog.setScheduleProcessAggregateConfiguration(configuration, EditMode.READONLY);
+                    scheduledJobDialog.open();
                 }
             });
 
             Icon chart = VaadinIcon.CHART.create();
-            chart.getStyle().set("font-size", "32pt");
+            chart.setSize("14pt");
             chart.getStyle().set("cursor", "pointer");
             chart.getElement().setAttribute("title", "Job statistics");
 
@@ -157,6 +167,7 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
                 Icon check = VaadinIcon.CHECK.create();
                 check.getStyle().set("color", "#66bb6a");
                 check.getStyle().set("font-size", "32pt");
+                check.getElement().setAttribute("title", "Successful");
                 layout.add(check);
                 layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, check);
             }
@@ -166,14 +177,15 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
                 exclamation.getStyle().set("font-size", "32pt");
                 layout.add(exclamation);
                 layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, exclamation);
+                exclamation.getElement().setAttribute("title", "Job failed!");
             }
 
             layout.setSizeFull();
             return layout;
         }))
-        .setHeader("Status")
+        .setHeader(errorCb)
         .setKey("executionStatus")
-        .setWidth("30px");
+        .setWidth("40px");
 
         super.init();
     }
@@ -214,9 +226,18 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
 
     }
 
+    public void addGridFiltering(Checkbox errors, Consumer<Boolean> errorFilter)
+    {
+        errors.addValueChangeListener(ev-> {
+            errorFilter.accept(ev.getValue());
+            filteredDataProvider.refreshAll();
+        });
+    }
+
     @Override
     protected ScheduledProcessEventSearchResults<ScheduledProcessEvent> getResults(ScheduledProcessFilter scheduledProcessFilter, int offset, int limit) {
-        ScheduledProcessEventSearchResults<ScheduledProcessEvent> results =  this.scheduledProcessManagementService.getScheduledProcessEvents(scheduledProcessFilter.getStartTime(), scheduledProcessFilter.getEndTime());
+        ScheduledProcessEventSearchResults<ScheduledProcessEvent> results =  this.scheduledProcessManagementService.getScheduledProcessEvents(scheduledProcessFilter.getStartTime()
+            , scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter(), scheduledProcessFilter.isErrorsOnly());
 
         return new ScheduledProcessEventSearchResults(offset+limit > results.getResultList().size() ?results.getResultList().subList(offset, results.getResultList().size()):results.getResultList().subList(offset, offset+limit)
             , results.getTotalNumberOfResults(), results.getQueryResponseTime());

@@ -163,9 +163,9 @@ public class SchedulerCalendarView extends VerticalLayout implements BeforeEnter
         addButton.getStyle().set("right", "30px");
 
         addButton.addClickListener(buttonClickEvent -> {
-            NewSchedulerJobDialog newSchedulerJobDialog = new NewSchedulerJobDialog(null, this.scheduledProcessManagementService,
+            ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(null, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService);
-            newSchedulerJobDialog.open();
+            scheduledJobDialog.open();
         });
 
         IronIcon addIcon = IronIcons.ADD.create();

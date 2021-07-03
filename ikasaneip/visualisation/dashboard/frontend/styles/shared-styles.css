@@ -4,6 +4,7 @@ html {
     --material-primary-color: rgba(241, 90, 35, 1.0);
     --material-primary-contrast-color: #FFF;
     --material-font-family: "Arial Bold", sans-serif;
+    --material-disabled-text-color: rgba(0, 0, 0, 0.65);
 
     --lumo-primary-color-10pct: rgba(241, 90, 35, 0.1);
     --lumo-primary-color-50pct: rgba(241, 90, 35, 0.5);

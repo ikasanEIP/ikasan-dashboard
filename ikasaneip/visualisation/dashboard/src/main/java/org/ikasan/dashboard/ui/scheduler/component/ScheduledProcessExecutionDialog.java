@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -11,14 +12,17 @@ import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.converter.StringToLongConverter;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterListener;
+import org.aspectj.weaver.loadtime.Agent;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 
 public class ScheduledProcessExecutionDialog extends AbstractCloseableResizableDialog implements BeforeEnterListener {
 
     private TextField agentNameTf;
+    private TextField agentUrlLf;
     private TextField jobNameTf;
     private TextField jobGroupTf;
     private TextArea jobDescriptionTa;
@@ -35,9 +39,9 @@ public class ScheduledProcessExecutionDialog extends AbstractCloseableResizableD
     private Binder<ScheduledProcessEvent> formBinder;
 
 
-    public ScheduledProcessExecutionDialog(ScheduledProcessEvent scheduledProcessEvent) {
+    public ScheduledProcessExecutionDialog(ScheduledProcessEvent scheduledProcessEvent, ModuleMetaData agent) {
         super.showResize(false);
-        super.title.setText("Scheduler Job Execution Details");
+        super.title.setText("Scheduled Job Execution Details");
 
         formBinder = new Binder<>();
 
@@ -47,6 +51,10 @@ public class ScheduledProcessExecutionDialog extends AbstractCloseableResizableD
         formBinder.forField(this.agentNameTf)
             .bind(ScheduledProcessEvent::getAgentName, ScheduledProcessEvent::setAgentName);
         formLayout.add(agentNameTf);
+
+        Anchor link = new Anchor(agent.getUrl(), agent.getUrl());
+        link.setTarget("_blank");
+        link.getStyle().set("color", "blue");
 
         if(scheduledProcessEvent.isSuccessful()) {
             Icon check = VaadinIcon.CHECK.create();
@@ -72,6 +80,11 @@ public class ScheduledProcessExecutionDialog extends AbstractCloseableResizableD
             status.setSuffixComponent(exclamation);
             formLayout.add(status);
         }
+
+        this.agentUrlLf = new TextField("Agent URL");
+        this.agentUrlLf.setPrefixComponent(link);
+        this.agentUrlLf.setValue(" ");
+        formLayout.add(this.agentUrlLf, 2);
 
         this.jobNameTf = new TextField("Job name");
         this.jobNameTf.setEnabled(false);
@@ -139,7 +152,12 @@ public class ScheduledProcessExecutionDialog extends AbstractCloseableResizableD
 
         this.executionDurationTf = new TextField("Job duration");
         this.executionDurationTf.setEnabled(false);
-        this.executionDurationTf.setValue((scheduledProcessEvent.getCompletionTime() - scheduledProcessEvent.getFireTime()) + " milliseconds");
+        if(scheduledProcessEvent.isSuccessful()) {
+            this.executionDurationTf.setValue((scheduledProcessEvent.getCompletionTime() - scheduledProcessEvent.getFireTime()) + " milliseconds");
+        }
+        else{
+            this.executionDurationTf.setValue("Not applicable   ");
+        }
         formLayout.add(executionDurationTf);
 
         this.returnCodeTf = new TextField("Return code");

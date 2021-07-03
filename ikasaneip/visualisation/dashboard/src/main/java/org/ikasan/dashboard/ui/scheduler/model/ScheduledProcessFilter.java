@@ -8,6 +8,8 @@ public class ScheduledProcessFilter {
 
     private String filter;
 
+    private boolean errorsOnly = false;
+
     public long getStartTime() {
         return startTime;
     }
@@ -30,5 +32,13 @@ public class ScheduledProcessFilter {
 
     public void setFilter(String filter) {
         this.filter = filter;
+    }
+
+    public boolean isErrorsOnly() {
+        return errorsOnly;
+    }
+
+    public void setErrorsOnly(boolean errorsOnly) {
+        this.errorsOnly = errorsOnly;
     }
 }

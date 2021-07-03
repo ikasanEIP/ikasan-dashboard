@@ -126,21 +126,6 @@ public class UpcomingJobExecutionsWidget extends Div {
         this.upcomingJobExecutionFilteringGrid.addGridFiltering(textField, this.scheduledProcessFilter::setFilter);
         this.upcomingJobExecutionFilteringGrid.addGridFiltering(date, startTime, endTime,
             this.scheduledProcessFilter::setStartTime, this.scheduledProcessFilter::setEndTime);
-
-        this.upcomingJobExecutionFilteringGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<UpcomingScheduledProcess>>)
-            upcomingScheduledProcessItemDoubleClickEvent -> {
-                ScheduledProcessAggregateConfiguration configuration = this.scheduledProcessManagementService.getScheduleProcessAggregateConfiguration(upcomingScheduledProcessItemDoubleClickEvent.getItem().getAgentName(),
-                upcomingScheduledProcessItemDoubleClickEvent.getItem().getJobName());
-
-                ModuleMetaData agent = this.moduleMetaDataService.findById(upcomingScheduledProcessItemDoubleClickEvent.getItem().getAgentName());
-
-                NewSchedulerJobDialog newSchedulerJobDialog = new NewSchedulerJobDialog(agent,
-                    this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                    this.metaDataRestService);
-
-                newSchedulerJobDialog.setScheduleProcessAggregateConfiguration(configuration, false);
-                newSchedulerJobDialog.open();
-        });
     }
 
 }

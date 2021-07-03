@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
@@ -16,7 +17,6 @@ import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
-import org.ikasan.scheduled.service.SolrScheduledProcessServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
@@ -78,6 +78,7 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
         this.endTime = new TimePicker("To");
         this.endTime.setStep(Duration.ofMinutes(15));
         this.endTime.setValue(LocalTime.now());
+
 
 
         Button refreshButton = new Button();

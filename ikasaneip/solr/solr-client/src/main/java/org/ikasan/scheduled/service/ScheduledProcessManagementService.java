@@ -32,7 +32,9 @@ public interface ScheduledProcessManagementService {
 
     public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(String agent, long startTime, long endTime);
 
-    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(long startTime, long endTime);
+    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(long startTime, long endTime, String filter, boolean errorsOnly);
+
+    public ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getScheduleProcessAggregateConfigurations(String agent);
 
     public ScheduledProcessAggregateConfiguration getScheduleProcessAggregateConfiguration(String agent, String flow);
 

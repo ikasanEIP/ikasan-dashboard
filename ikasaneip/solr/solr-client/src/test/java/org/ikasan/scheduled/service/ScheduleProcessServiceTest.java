@@ -110,6 +110,6 @@ public class ScheduleProcessServiceTest {
     @Test
     public void get_processed_jobs() {
         this.solrScheduledProcessService.getScheduledProcessEvents(System.currentTimeMillis() - 100000L,
-                System.currentTimeMillis()).getResultList().forEach(upcomingScheduledProcess -> System.out.println(upcomingScheduledProcess));
+                System.currentTimeMillis(), "filter", false).getResultList().forEach(upcomingScheduledProcess -> System.out.println(upcomingScheduledProcess));
     }
 }
