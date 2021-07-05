@@ -224,7 +224,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
     }
 
     @Override
-    public ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpComingScheduledProcesses(long startTime, long endTime) {
+    public ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpComingScheduledProcesses(long startTime, long endTime, String filter) {
 
         List<UpcomingScheduledProcess> results = new ArrayList<>();
 
@@ -238,14 +238,25 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             });
         });
 
-        results.sort((o1, o2) -> {
+        List<UpcomingScheduledProcess> finalResults = results.stream().filter(upcomingScheduledProcess -> {
+            if(filter != null) {
+                return  upcomingScheduledProcess.getAgentName().toLowerCase().contains(filter.toLowerCase()) ||
+                    upcomingScheduledProcess.getJobName().toLowerCase().contains(filter.toLowerCase()) ||
+                    upcomingScheduledProcess.getJobDescription().toLowerCase().contains(filter.toLowerCase()) ||
+                    upcomingScheduledProcess.getJobGroup().toLowerCase().contains(filter.toLowerCase());
+            }
+
+            return true;
+        }).collect(Collectors.toList());
+
+        finalResults.sort((o1, o2) -> {
             if(o1.getFireTime() > o2.getFireTime()) return 1;
             else if(o1.getFireTime() < o2.getFireTime()) return -1;
             else return 0;
         });
 
 
-        return new ScheduledProcessEventSearchResults(results, results.size(), System.currentTimeMillis() - start);
+        return new ScheduledProcessEventSearchResults(finalResults, finalResults.size(), System.currentTimeMillis() - start);
     }
 
     @Override
@@ -259,15 +270,27 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
     }
 
     @Override
-    public ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getScheduleProcessAggregateConfigurations(String agent) {
+    public ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getScheduleProcessAggregateConfigurations(String agent, String filter) {
         long start = System.currentTimeMillis();
         List<FlowMetaData> flows = this.getFlowsForAgent(agent);
         List<ScheduledProcessAggregateConfiguration> results = new ArrayList<>();
 
         flows.forEach(flowMetaData -> results.add(this.getScheduleProcessAggregateConfiguration(agent, flowMetaData.getName())));
 
+        List<ScheduledProcessAggregateConfiguration> filteredResults = results.stream().filter(scheduledProcessAggregateConfiguration -> {
+                if(filter == null || filter.isEmpty()) {
+                    return true;
+                }
+                else {
+                    return (scheduledProcessAggregateConfiguration.getJobName().toLowerCase().contains(filter.toLowerCase()) ||
+                        scheduledProcessAggregateConfiguration.getJobGroup().toLowerCase().contains(filter.toLowerCase()) ||
+                        scheduledProcessAggregateConfiguration.getJobDescription().toLowerCase().contains(filter.toLowerCase()));
+                }
+            })
+            .collect(Collectors.toList());
+
         ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> searchResults
-            = new ScheduledProcessEventSearchResults<>(results, results.size(), System.currentTimeMillis() - start);
+            = new ScheduledProcessEventSearchResults<>(filteredResults, filteredResults.size(), System.currentTimeMillis() - start);
 
         return searchResults;
     }
@@ -316,6 +339,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
 
                 scheduledProcessAggregateConfiguration.set(this.scheduledProcessAggregateConfigurationConverter.convert(bucket));
                 scheduledProcessAggregateConfiguration.get().setAgentName(agent);
+                scheduledProcessAggregateConfiguration.get().setStartAutomatically(flowMetaData.getFlowStartupType().equals("AUTOMATIC"));
             });
 
 

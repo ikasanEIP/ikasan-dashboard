@@ -163,6 +163,10 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
         super.addColumn(new ComponentRenderer<>(scheduledProcessEvent->
         {
             VerticalLayout layout = new VerticalLayout();
+            layout.setSpacing(false);
+            layout.setMargin(false);
+            layout.setPadding(false);
+
             if(scheduledProcessEvent.isSuccessful()) {
                 Icon check = VaadinIcon.CHECK.create();
                 check.getStyle().set("color", "#66bb6a");

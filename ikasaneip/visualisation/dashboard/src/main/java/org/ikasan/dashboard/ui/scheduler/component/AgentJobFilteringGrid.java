@@ -20,6 +20,7 @@ import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.scheduler.model.AgentJobFilter;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
 import org.ikasan.dashboard.ui.util.DateFormatter;
@@ -41,7 +42,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 
-public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggregateConfiguration, ScheduledProcessFilter, ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration>> {
+public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggregateConfiguration, AgentJobFilter, ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration>> {
 
     private ScheduledProcessManagementService scheduledProcessManagementService;
 
@@ -64,7 +65,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
      * @param scheduledProcessManagementService
      * @param searchFilter
      */
-    public AgentJobFilteringGrid(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService, ScheduledProcessFilter searchFilter,
+    public AgentJobFilteringGrid(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService, AgentJobFilter searchFilter,
                                  DateFormatter dateFormatter, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService) {
         super(searchFilter);
@@ -202,7 +203,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
 
                 Icon pause = VaadinIcon.PAUSE.create();
                 pause.setSize("14pt");
-//                pause.getStyle().set("color", "rgba(133,181,225,1.0)");
+                pause.getStyle().set("color", "rgba(133,181,225,1.0)");
                 pause.getElement().setAttribute("title", "Pause scheduled job");
                 pause.getStyle().set("cursor", "pointer");
                 layout.add(pause);
@@ -231,7 +232,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                     || flowState.getState() == State.STOPPED_STATE) {
                 Icon start = VaadinIcon.PLAY.create();
                 start.setSize("14pt");
-//                start.getStyle().set("color", "rgba(133,181,225,1.0)");
+                start.getStyle().set("color", "#66bb6a");
                 start.getElement().setAttribute("title", "Start scheduled job");
                 start.getStyle().set("cursor", "pointer");
                 layout.add(start);
@@ -245,7 +246,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 Icon pause = VaadinIcon.PAUSE.create();
                 pause.setSize("14pt");
                 pause.getStyle().set("cursor", "pointer");
-//                pause.getStyle().set("color", "rgba(133,181,225,1.0)");
+                pause.getStyle().set("color", "rgba(133,181,225,1.0)");
                 pause.getElement().setAttribute("title", "Pause scheduled job");
                 layout.add(pause);
 
@@ -259,7 +260,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 Icon start = VaadinIcon.PLAY.create();
                 start.getStyle().set("cursor", "pointer");
                 start.setSize("14pt");
-//                start.getStyle().set("color", "rgba(133,181,225,1.0)");
+                start.getStyle().set("color", "#66bb6a");
                 start.getElement().setAttribute("title", "Start scheduled job");
                 layout.add(start);
 
@@ -364,8 +365,8 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
     }
 
     @Override
-    protected ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getResults(ScheduledProcessFilter scheduledProcessFilter, int offset, int limit) {
-        return this.scheduledProcessManagementService.getScheduleProcessAggregateConfigurations(this.agent.getName());
+    protected ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getResults(AgentJobFilter agentJobFilter, int offset, int limit) {
+        return this.scheduledProcessManagementService.getScheduleProcessAggregateConfigurations(this.agent.getName(), agentJobFilter.getFilter());
     }
 
 

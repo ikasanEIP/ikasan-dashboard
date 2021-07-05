@@ -8,6 +8,7 @@ import java.util.Map;
 public class ScheduledProcessAggregateConfiguration {
 
     private String agentName;
+    private Boolean startAutomatically = false;
     private String jobName;
     private String jobGroup;
     private String jobDescription;
@@ -17,16 +18,16 @@ public class ScheduledProcessAggregateConfiguration {
     private String stdOut;
     private String stdErr;
     private String threshold;
-    private Boolean eager;
-    private Boolean retryOnFail;
+    private Boolean eager = false;
+    private Boolean retryOnFail = false;
     private Boolean ignoreMisfire = true;
     private Integer maxEagerCallbacks;
     private Map<String,String> passthroughProperties = new HashMap<>();
     private String workingDirectory;
-    private List<Integer> successfulReturnCodes = new ArrayList<>();
+    private List<String> successfulReturnCodes = new ArrayList<>();
     private Long secondsToWaitForProcessStart = 10L;
     private List<String> blackoutCronExpressions = new ArrayList<>();
-    private Map<Long,Long> blackoutDateTimeRanges = new HashMap<>();
+    private Map<String, String> blackoutDateTimeRanges = new HashMap<>();
 
     public String getJobName() {
         return jobName;
@@ -34,6 +35,14 @@ public class ScheduledProcessAggregateConfiguration {
 
     public void setJobName(String jobName) {
         this.jobName = jobName;
+    }
+
+    public Boolean isStartAutomatically() {
+        return startAutomatically;
+    }
+
+    public void setStartAutomatically(Boolean startAutomatically) {
+        this.startAutomatically = startAutomatically;
     }
 
     public String getJobGroup() {
@@ -141,7 +150,7 @@ public class ScheduledProcessAggregateConfiguration {
     }
 
     public Map<String, String> getPassthroughProperties() {
-        if(this.passthroughProperties == null) return new HashMap<>();
+        if(this.passthroughProperties == null) passthroughProperties = new HashMap<>();
         return passthroughProperties;
     }
 
@@ -157,12 +166,12 @@ public class ScheduledProcessAggregateConfiguration {
         this.workingDirectory = workingDirectory;
     }
 
-    public List<Integer> getSuccessfulReturnCodes() {
-        if(this.successfulReturnCodes == null) return new ArrayList<>();
+    public List<String> getSuccessfulReturnCodes() {
+        if(this.successfulReturnCodes == null) successfulReturnCodes = new ArrayList<>();
         return successfulReturnCodes;
     }
 
-    public void setSuccessfulReturnCodes(List<Integer> successfulReturnCodes) {
+    public void setSuccessfulReturnCodes(List<String> successfulReturnCodes) {
         this.successfulReturnCodes = successfulReturnCodes;
     }
 
@@ -175,7 +184,7 @@ public class ScheduledProcessAggregateConfiguration {
     }
 
     public List<String> getBlackoutCronExpressions() {
-        if(this.blackoutCronExpressions == null) return new ArrayList<>();
+        if(this.blackoutCronExpressions == null) blackoutCronExpressions = new ArrayList<>();
         return blackoutCronExpressions;
     }
 
@@ -183,12 +192,12 @@ public class ScheduledProcessAggregateConfiguration {
         this.blackoutCronExpressions = blackoutCronExpressions;
     }
 
-    public Map<Long, Long> getBlackoutDateTimeRanges() {
-        if(this.blackoutDateTimeRanges == null) return new HashMap<>();
+    public Map<String, String> getBlackoutDateTimeRanges() {
+        if(this.blackoutDateTimeRanges == null) this.blackoutDateTimeRanges =  new HashMap<>();
         return this.blackoutDateTimeRanges;
     }
 
-    public void setBlackoutDateTimeRanges(Map<Long, Long> blackoutDateTimeRanges) {
+    public void setBlackoutDateTimeRanges(Map<String, String> blackoutDateTimeRanges) {
         this.blackoutDateTimeRanges = blackoutDateTimeRanges;
     }
 

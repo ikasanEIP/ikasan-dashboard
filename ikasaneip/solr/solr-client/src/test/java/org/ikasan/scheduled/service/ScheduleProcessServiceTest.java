@@ -94,7 +94,7 @@ public class ScheduleProcessServiceTest {
     @Test
     public void get_all_upcoming_jobs() {
             this.solrScheduledProcessService.getUpComingScheduledProcesses(System.currentTimeMillis(),
-                System.currentTimeMillis() + 100000L).getResultList().forEach(upcomingScheduledProcess -> System.out.println(upcomingScheduledProcess));
+                System.currentTimeMillis() + 100000L, "").getResultList().forEach(upcomingScheduledProcess -> System.out.println(upcomingScheduledProcess));
     }
 
     @Test
