@@ -27,6 +27,8 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.vaadin.miki.shared.dates.DatePatterns;
+import org.vaadin.miki.superfields.dates.SuperDatePicker;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -44,7 +46,7 @@ public class UpcomingJobExecutionsWidget extends Div {
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private DateFormatter dateFormatter;
     private TextField textField = new TextField("Search");
-    private DatePicker date;
+    private SuperDatePicker date;
     private TimePicker startTime;
     private TimePicker endTime;
     private ConfigurationService configurationRestService;
@@ -75,7 +77,8 @@ public class UpcomingJobExecutionsWidget extends Div {
         HorizontalLayout layout = new HorizontalLayout();
         H4 modules = new H4("Upcoming Job Executions");
 
-        this.date = new DatePicker("Execution date");
+        this.date = new SuperDatePicker("Execution date");
+        this.date.setDatePattern(DatePatterns.D_MMMM_YYYY);
         this.date.setValue(LocalDate.now());
 
         this.startTime = new TimePicker("From");

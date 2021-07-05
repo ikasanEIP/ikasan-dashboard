@@ -28,6 +28,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
+import org.ikasan.scheduled.model.ScheduledProcessConfigurationConstants;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
@@ -38,7 +39,12 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.vaadin.miki.shared.dates.DatePattern;
+import org.vaadin.miki.shared.dates.DatePatterns;
+import org.vaadin.miki.superfields.dates.SuperDatePicker;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +57,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
     Logger logger = LoggerFactory.getLogger(ScheduledJobDialog.class);
 
     private ComboBox<String> agentCb;
+    private Checkbox startAutomaticCb;
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
@@ -89,6 +96,13 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
     private Label noPassThoughPropertiesLabel;
     private Label noReturnCodesLabel;
 
+    private Label passThroughPropertiesLabel;
+    private Label successfulReturnCodesLabel;
+    private Label blackOutCronExpressionLabel;
+    private Div passThroughPropertiesDiv;
+    private Label blackOutCronExpressionDiv;
+    private Div returnCodesDiv;
+
 
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
@@ -100,7 +114,11 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
     private Binder<ScheduledProcessAggregateConfiguration> formBinder;
 
-    private EditMode editMode;
+    private EditMode editMode = EditMode.NEW;
+
+    private FormLayout formLayout;
+
+    private boolean enabled = true;
 
 
     public ScheduledJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
@@ -141,17 +159,19 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
 
         this.setHeight("900px");
-        this.setWidth("1000px");
+        this.setWidth("1200px");
 
         saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->  {
 
-            if(!this.performFormValidation(scheduleProcessAggregateConfiguration)) {
+            if(!this.performFormValidation(this.scheduleProcessAggregateConfiguration)) {
+                NotificationHelper.showErrorNotification("There are errors in the scheduled job configuration! " +
+                    "Please rectify these before saving the form.");
                 return;
             }
 
             try {
-                createNewScheduledJobFlow(scheduleProcessAggregateConfiguration);
+                createNewScheduledJobFlow(this.scheduleProcessAggregateConfiguration);
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -178,8 +198,13 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         super.content.add(layout);
     }
 
+    /**
+     * Initialise the form.
+     *
+     * @return
+     */
     private FormLayout createConfigurationForm() {
-        FormLayout formLayout = new FormLayout();
+        formLayout = new FormLayout();
         this.agentCb = new ComboBox<>("Agent");
         this.agentCb.setRequired(true);
         this.agentCb.setClearButtonVisible(true);
@@ -192,6 +217,11 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
             .withValidator(agentValue -> !agentValue.isEmpty(), "Agent is required!")
             .bind(ScheduledProcessAggregateConfiguration::getAgentName, ScheduledProcessAggregateConfiguration::setAgentName);
         formLayout.add(agentCb, 2);
+
+        this.startAutomaticCb = new Checkbox("Start automatically");
+        formBinder.forField(this.startAutomaticCb)
+            .bind(ScheduledProcessAggregateConfiguration::isStartAutomatically, ScheduledProcessAggregateConfiguration::setStartAutomatically);
+        formLayout.add(this.startAutomaticCb);
 
         // Fields to capture schedule job properties.
         H3 scheduleDetailsLabel = new H3("Schedule Details");
@@ -225,8 +255,8 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.cronExpressionTf = new TextField("Cron expression");
         this.cronExpressionTf.setRequired(true);
         formBinder.forField(this.cronExpressionTf)
-            // todo some cron validation
             .withValidator(value -> !value.isEmpty(), "Cron expression is required!")
+            .withValidator(value -> CronExpression.isValidExpression(value), "Must be a valid cron expression!")
             .bind(ScheduledProcessAggregateConfiguration::getCronExpression, ScheduledProcessAggregateConfiguration::setCronExpression);
         formLayout.add(cronExpressionTf);
 
@@ -239,9 +269,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.timezoneCb.setItemLabelGenerator((ItemLabelGenerator<DateTimeUtil.TimezonePair>) s -> String.format("%35s (UTC%s) %n", s.zoneId, s.offset).trim());
         this.timezoneCb.setClearButtonVisible(true);
         this.timezoneCb.setPlaceholder("Choose a timezone");
-//        formBinder.forField(this.timezoneCb)
-//            .withValidator(value -> !value.zoneId.isEmpty(), "Timezone is required!");
-//            .bind(ScheduledProcessAggregateConfiguration::getTimezone, ScheduledProcessAggregateConfiguration::setTimezone);
+        this.timezoneCb.setErrorMessage("Timezone is required!");
         formLayout.add(timezoneCb);
 
         this.eagerCb = new Checkbox();
@@ -267,37 +295,14 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
             .bind(ScheduledProcessAggregateConfiguration::getMaxEagerCallbacks, ScheduledProcessAggregateConfiguration::setMaxEagerCallbacks);
         formLayout.add(maxEagerCallbacksTf, new Div());
 
-        Label passThroughPropertiesLabel = new Label("Pass through properties");
+        passThroughPropertiesLabel = new Label("Pass through properties");
         passThroughPropertiesButton = new Button(VaadinIcon.PLUS.create(), e -> {
-            TextFieldNameValuePair nvp = new TextFieldNameValuePair();
-
-            nvp.nameTf = new TextField("Property name");
-            nvp.nameTf.setWidth("95%");
-            nvp.nameTf.setErrorMessage("Property name is required!");
-            HorizontalLayout startLayout = new HorizontalLayout();
-            startLayout.add(nvp.nameTf);
-
-            nvp.valueTf = new TextField("Property value");
-            nvp.valueTf.setWidth("95%");
-            nvp.valueTf.setErrorMessage("Property name is required!");
-            HorizontalLayout endLayout = new HorizontalLayout();
-
-            this.passThroughProperties.add(nvp);
-
-            Button minusButton = new Button(VaadinIcon.MINUS.create(), ev -> {
-                formLayout.remove(startLayout);
-                formLayout.remove(endLayout);
-
-                this.passThroughProperties.remove(nvp);
-            });
-
-            endLayout.add(nvp.valueTf, minusButton);
-            formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(passThroughPropertiesLabel.getElement()) + 2, startLayout);
-            formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(passThroughPropertiesLabel.getElement()) + 3, endLayout);
-
+            this.addPassThroughProperties(null,  null);
         });
 
-        formLayout.add(passThroughPropertiesLabel, passThroughPropertiesButton, noPassThoughPropertiesLabel);
+        this.passThroughPropertiesDiv = new Div();
+        this.passThroughPropertiesDiv.setVisible(false);
+        formLayout.add(passThroughPropertiesLabel, passThroughPropertiesButton, noPassThoughPropertiesLabel, passThroughPropertiesDiv);
 
         // Fields to capture job execution properties.
         H3 jobExecutionLabel = new H3("Job Execution Details");
@@ -312,15 +317,15 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         commandLineTf.getStyle().set("minHeight", "100px");
 
         this.workingDirectoryTf = new TextField("Working Directory");
+        this.workingDirectoryTf.setRequired(true);
         formBinder.forField(this.workingDirectoryTf)
             .withNullRepresentation("")
-//            .withValidator(value -> !value.isEmpty(), "Working directory is required!")
+            .withValidator(value -> !value.isEmpty(), "Working directory is required!")
             .bind(ScheduledProcessAggregateConfiguration::getWorkingDirectory, ScheduledProcessAggregateConfiguration::setWorkingDirectory);
         formLayout.add(workingDirectoryTf);
 
         this.secondsToWaitForProcessStartTf = new TextField("Seconds to wait for process start");
         formBinder.forField(this.secondsToWaitForProcessStartTf)
-//            .withValidator(value -> !value.isEmpty(), "Seconds to wait for process start is required!")
             .withNullRepresentation("")
             .withConverter(new StringToLongConverter("Must be a number!"))
             .bind(ScheduledProcessAggregateConfiguration::getSecondsToWaitForProcessStart, ScheduledProcessAggregateConfiguration::setSecondsToWaitForProcessStart);
@@ -335,7 +340,6 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
         this.stdErrTf = new TextField("Std err");
         formBinder.forField(this.stdErrTf)
-//            .withValidator(value -> !value.isEmpty(), "Standard err is required!")
             .withNullRepresentation("")
             .bind(ScheduledProcessAggregateConfiguration::getStdErr, ScheduledProcessAggregateConfiguration::setStdErr);
         formLayout.add(this.stdErrTf);
@@ -347,76 +351,32 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.retryOnFailCb.getStyle().set("padding-top", "15px");
         formLayout.add(this.retryOnFailCb, new Div());
 
-        Label successfulReturnCodesLabel = new Label("Successful return codes");
+        successfulReturnCodesLabel = new Label("Successful return codes");
         successfulReturnCodesButton = new Button(VaadinIcon.PLUS.create(), e -> {
-            TextField successfulReturnCodeTf = new TextField("Successful return code");
-            this.successfulReturnCodes.add(successfulReturnCodeTf);
-            successfulReturnCodeTf.setErrorMessage("Return code is required!");
-
-            Button minusButton = new Button(VaadinIcon.MINUS.create(), ev -> {
-                formLayout.remove(successfulReturnCodeTf);
-                formLayout.remove(ev.getSource());
-                this.successfulReturnCodes.remove(successfulReturnCodeTf);
-            });
-            formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(successfulReturnCodesLabel.getElement()) + 2, successfulReturnCodeTf);
-            formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(successfulReturnCodesLabel.getElement()) + 3, minusButton);
+            this.addSuccessfulReturnCodes(null);
         });
 
-        formLayout.add(successfulReturnCodesLabel, successfulReturnCodesButton, this.noReturnCodesLabel);
+        this.returnCodesDiv = new Div();
+        this.returnCodesDiv.setVisible(false);
+        formLayout.add(successfulReturnCodesLabel, successfulReturnCodesButton, this.noReturnCodesLabel, returnCodesDiv);
 
         H3 blackoutLabel = new H3("Blackout Execution Details");
         formLayout.add(blackoutLabel, 2);
 
 
-        Label blackOutCronExpressionLabel = new Label("Blackout cron expressions");
+        blackOutCronExpressionLabel = new Label("Blackout cron expressions");
         this.addBlackoutCron = new Button(VaadinIcon.PLUS.create(), e -> {
-            TextField blackoutCronExpressionTf = new TextField("Blackout cron expression");
-            this.blackoutCronExpressions.add(blackoutCronExpressionTf);
-            blackoutCronExpressionTf.setErrorMessage("Cron expression required!");
-
-            Button minusButton = new Button(VaadinIcon.MINUS.create(), ev -> {
-                formLayout.remove(blackoutCronExpressionTf);
-                formLayout.remove(ev.getSource());
-                this.blackoutCronExpressions.remove(blackoutCronExpressionTf);
-            });
-            formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(blackOutCronExpressionLabel.getElement()) + 2, blackoutCronExpressionTf);
-            formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(blackOutCronExpressionLabel.getElement()) + 3, minusButton);
+            this.addBlackoutCronExpression(null);
         });
 
-        formLayout.add(blackOutCronExpressionLabel, addBlackoutCron, this.noBlackOutCronExpressionLabel);
+        this.blackOutCronExpressionDiv = new Label("");
+        this.blackOutCronExpressionDiv.setVisible(false);
+        formLayout.add(blackOutCronExpressionLabel, addBlackoutCron, this.noBlackOutCronExpressionLabel, blackOutCronExpressionDiv);
 
         Label blackOutDateTimeRangesLabel = new Label("Blackout date time ranges");
+        blackOutDateTimeRangesLabel.getStyle().set("padding-top", "30px");
         this.addDateTimeRange = new Button(VaadinIcon.PLUS.create(), e -> {
-            DateTimeRange dateTimeRange = new DateTimeRange();
-            dateTimeRange.startDate = new DatePicker("Start date");
-            dateTimeRange.startDate.setErrorMessage("Start date is required!");
-            dateTimeRange.startDate.setLocale(UI.getCurrent().getLocale());
-            dateTimeRange.startTime = new TimePicker("From");
-            dateTimeRange.startTime.setErrorMessage("Start time is required!");
-            dateTimeRange.startTime.setLocale(UI.getCurrent().getLocale());
-            HorizontalLayout startLayout = new HorizontalLayout();
-            startLayout.add(dateTimeRange.startDate, dateTimeRange.startTime);
-
-            dateTimeRange.endDate = new DatePicker("End date");
-            dateTimeRange.endDate.setErrorMessage("End date is required!");
-            dateTimeRange.endDate.setLocale(UI.getCurrent().getLocale());
-            dateTimeRange.endTime = new TimePicker("To");
-            dateTimeRange.endTime.setErrorMessage("End date is required!");
-            dateTimeRange.endTime.setLocale(UI.getCurrent().getLocale());
-            HorizontalLayout endLayout = new HorizontalLayout();
-
-            this.dateTimeRanges.add(dateTimeRange);
-
-            Button minusButton = new Button(VaadinIcon.MINUS.create(), ev -> {
-                formLayout.remove(startLayout);
-                formLayout.remove(endLayout);
-
-                this.dateTimeRanges.remove(dateTimeRange);
-            });
-
-            endLayout.add(dateTimeRange.endDate, dateTimeRange.endTime, minusButton);
-
-            formLayout.add(startLayout, endLayout);
+            this.addDateTimeRange(-1, -1);
         });
 
         formLayout.add(blackOutDateTimeRangesLabel, this.addDateTimeRange, this.noBlackOutDateTimeRangesLabel);
@@ -424,6 +384,12 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         return formLayout;
     }
 
+    /**
+     * Perform validation of the form.
+     *
+     * @param scheduleProcessAggregateConfiguration
+     * @return
+     */
     private boolean performFormValidation(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
 
         try {
@@ -449,10 +415,10 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
                 }
 
                 if(isValid.get()) {
-                    long startMilli = (dateTimeRange.startDate.getValue().atStartOfDay(DateTimeUtil.getZoneId()).toEpochSecond() * 1000) +
-                        (dateTimeRange.startTime.getValue().toSecondOfDay()*1000);
-                    long endMilli = (dateTimeRange.endDate.getValue().atStartOfDay(DateTimeUtil.getZoneId()).toEpochSecond() * 1000) +
-                        (dateTimeRange.endTime.getValue().toSecondOfDay()*1000);
+                    String startMilli = String.valueOf((dateTimeRange.startDate.getValue().atStartOfDay(DateTimeUtil.getZoneId()).toEpochSecond() * 1000) +
+                        (dateTimeRange.startTime.getValue().toSecondOfDay()*1000));
+                    String endMilli = String.valueOf((dateTimeRange.endDate.getValue().atStartOfDay(DateTimeUtil.getZoneId()).toEpochSecond() * 1000) +
+                        (dateTimeRange.endTime.getValue().toSecondOfDay()*1000));
 
                     scheduleProcessAggregateConfiguration.getBlackoutDateTimeRanges().put(startMilli, endMilli);
                 }
@@ -482,7 +448,8 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
                 }
                 else {
                     try {
-                        scheduleProcessAggregateConfiguration.getSuccessfulReturnCodes().add(Integer.parseInt(expression.getValue()));
+                        Integer.parseInt(expression.getValue());
+                        scheduleProcessAggregateConfiguration.getSuccessfulReturnCodes().add(expression.getValue());
                     }
                     catch (NumberFormatException e) {
                         expression.setErrorMessage("Return codes must be a number!");
@@ -508,6 +475,14 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
                     scheduleProcessAggregateConfiguration.getPassthroughProperties().put(expression.nameTf.getValue(), expression.valueTf.getValue());
                 }
             });
+
+            if(this.timezoneCb.getValue() == null) {
+                this.timezoneCb.setInvalid(true);
+                isValid.set(false);
+            }
+            else{
+                scheduleProcessAggregateConfiguration.setTimezone(this.timezoneCb.getValue().zoneId);
+            }
 
             formBinder.writeBean(scheduleProcessAggregateConfiguration);
 
@@ -537,31 +512,29 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
             throw new RuntimeException(String.format("Could not find module configuration for agent[%s]", agent));
         }
 
-        logger.info("Module Configuration: " + moduleConfiguration);
+        logger.debug("Module Configuration: " + moduleConfiguration);
 
-        // Get the flowDefinitions from the configuration metadata.
-        moduleConfiguration.getParameters().stream()
-            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
-            .findFirst().ifPresentOrElse(flowDefinitions -> {
+        if(this.editMode == EditMode.NEW) {
+            // Get the flowDefinitions from the configuration metadata.
+            moduleConfiguration.getParameters().stream()
+                .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
+                .findFirst().ifPresentOrElse(flowDefinitions -> {
                 // Add the new job flow to the map.
-                Map<String, String> configurationMap = (Map<String, String>)flowDefinitions.getValue();
+                Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
                 configurationMap.put(scheduleProcessAggregateConfiguration.getJobName(), "MANUAL");
                 flowDefinitions.setValue(configurationMap);
 
                 logger.info("Module Configuration: " + moduleConfiguration);
                 // update the configuration back onto the module.
                 this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
-            }, () -> {throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));});
+            }, () -> {
+                throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
+            });
 
 
-        // We need to deactivate and activate the module so the new flow is initialised
-        boolean deactivateSuccess = this.moduleControlRestService.changeModuleActivationState(this.agent.getUrl(), this.agent.getName(), "deactivate");
-        if(!deactivateSuccess) {
-            throw new RuntimeException(String.format("Could not deactivate agent[%s]", agent));
-        }
-        boolean activateSuccess = this.moduleControlRestService.changeModuleActivationState(this.agent.getUrl(), this.agent.getName(), "activate");
-        if(!activateSuccess) {
-            throw new RuntimeException(String.format("Could not activate agent[%s]", agent));
+            // We need to deactivate and activate the module so the new flow is initialised
+            this.changeActivation("deactivate");
+            this.changeActivation("activate");
         }
 
         /// Load the required configurations for a scheduled job.
@@ -587,6 +560,39 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         logger.debug(processExecutionBrokerConfiguration.toString());
         this.configurationRestService.storeConfiguration(this.agent.getUrl(), processExecutionBrokerConfiguration);
         this.scheduledProcessManagementService.saveConfiguration(processExecutionBrokerConfiguration);
+
+
+        // Now that all configurations are applied we need to set up the startup type and restart the flow
+        String startupType = this.startAutomaticCb.getValue() ? "AUTOMATIC" : "MANUAL";
+        moduleConfiguration.getParameters().stream()
+            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
+            .findFirst().ifPresentOrElse(flowDefinitions -> {
+            // Add the new job flow to the map.
+            Map<String, String> configurationMap = (Map<String, String>)flowDefinitions.getValue();
+            configurationMap.replace(scheduleProcessAggregateConfiguration.getJobName(), startupType);
+            flowDefinitions.setValue(configurationMap);
+
+            logger.info("Module Configuration: " + moduleConfiguration);
+            // update the configuration back onto the module.
+            this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
+        }, () -> {throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));});
+
+        this.moduleControlRestService.changeFlowStartupType(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName()
+            , startupType, "Scheduler flow requires automatic startup.");
+        this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName(),"stop");
+        this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName(),"start");
+    }
+
+    /**
+     * Helper method to call activation endpoint on the scheduler agent.
+     *
+     * @param action
+     */
+    private void changeActivation(String action) {
+        boolean success = this.moduleControlRestService.changeModuleActivationState(this.agent.getUrl(), this.agent.getName(), action);
+        if (!success) {
+            throw new RuntimeException(String.format("Could not %s agent[%s]", action, agent));
+        }
     }
 
     /**
@@ -597,23 +603,23 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
      */
     private void updateScheduleConsumerConfiguration(ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration
         , ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "jobName",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.JOB_NAME,
             scheduleProcessAggregateConfiguration.getJobName());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "jobGroupName",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.JOB_GROUP_NAME,
             scheduleProcessAggregateConfiguration.getJobGroup());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "description",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.JOB_DESCRIPTION,
             scheduleProcessAggregateConfiguration.getJobDescription());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "cronExpression",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.CRON_EXPRESSION,
             scheduleProcessAggregateConfiguration.getCronExpression());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "timezone",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.TIMEZONE,
             scheduleProcessAggregateConfiguration.getTimezone());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "ignoreMisfire",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.IGNORE_MISFIRE,
             scheduleProcessAggregateConfiguration.isIgnoreMisfire());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "eager",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.EAGER,
             scheduleProcessAggregateConfiguration.isEager());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "maxEagerCallbacks",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.MAX_EAGER_CALLBACKS,
             scheduleProcessAggregateConfiguration.getMaxEagerCallbacks());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "passthroughProperties",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.PASS_THROUGH_PROPERTIES,
             scheduleProcessAggregateConfiguration.getPassthroughProperties());
     }
 
@@ -625,19 +631,19 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
      */
     private void updateProcessExecutionBrokerConfiguration(ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration
         , ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "commandLine",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.COMMAND_LINE,
             scheduleProcessAggregateConfiguration.getCommandLine());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "workingDirectory",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.WORKING_DIRECTORY,
             scheduleProcessAggregateConfiguration.getWorkingDirectory());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "successfulReturnCodes",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.SUCCESSFUL_RETURN_CODES,
             scheduleProcessAggregateConfiguration.getSuccessfulReturnCodes());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "secondsToWaitForProcessStart",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.SECONDS_TO_WAIT_FOR_PROCESS_TO_START,
             scheduleProcessAggregateConfiguration.getSecondsToWaitForProcessStart());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "stdErr",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.STD_ERR,
             scheduleProcessAggregateConfiguration.getStdErr());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "stdOut",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.STD_OUT,
             scheduleProcessAggregateConfiguration.getStdOut());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "retryOnFail",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.RETRY_ON_FAIL,
             scheduleProcessAggregateConfiguration.isRetryOnFail());
     }
 
@@ -649,9 +655,9 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
      */
     private void updateBlackoutRouterConfiguration(ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration
         , ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "cronExpressions",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.CRON_EXPRESSIONS,
             scheduleProcessAggregateConfiguration.getBlackoutCronExpressions());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, "dateTimeRanges",
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.DATE_TIME_RANGES,
             scheduleProcessAggregateConfiguration.getBlackoutDateTimeRanges());
     }
 
@@ -703,6 +709,8 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
     }
 
     public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+
         this.timezoneCb.setEnabled(enabled);
 
         this.jobNameTf.setEnabled(enabled);
@@ -719,8 +727,12 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
             passThroughProperty.nameTf.setEnabled(enabled);
             passThroughProperty.valueTf.setEnabled(enabled);
         });
-        if(this.passThroughProperties.size() == 0) {
-            this.noPassThoughPropertiesLabel.setVisible(!enabled);
+        if(this.passThroughProperties.size() == 0 && !enabled) {
+            this.noPassThoughPropertiesLabel.setVisible(true);
+        }
+        else {
+            this.noPassThoughPropertiesLabel.setVisible(false);
+            this.passThroughPropertiesDiv.setVisible(true);
         }
 
 
@@ -732,14 +744,21 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.retryOnFailCb.setEnabled(enabled);
         this.successfulReturnCodes.forEach(successfulReturnCode -> successfulReturnCode.setEnabled(enabled));
         this.successfulReturnCodesButton.setVisible(enabled);
-        if(this.successfulReturnCodes.size() == 0) {
-            this.noReturnCodesLabel.setVisible(!enabled);
+        if(this.successfulReturnCodes.size() == 0 && !enabled) {
+            this.noReturnCodesLabel.setVisible(true);
+        }
+        else {
+            this.noReturnCodesLabel.setVisible(false);
+            this.returnCodesDiv.setVisible(true);
         }
 
         this.addBlackoutCron.setVisible(enabled);
         this.blackoutCronExpressions.forEach(blackoutCronExpression -> blackoutCronExpression.setEnabled(enabled));
-        if(this.blackoutCronExpressions.size() == 0) {
-            this.noBlackOutCronExpressionLabel.setVisible(!enabled);
+        if(this.blackoutCronExpressions.size() == 0 && !enabled) {
+            this.noBlackOutCronExpressionLabel.setVisible(true);
+        }
+        else {
+            this.noBlackOutCronExpressionLabel.setVisible(false);
         }
         this.addDateTimeRange.setVisible(enabled);
         this.dateTimeRanges.forEach(blackoutCronExpression -> {
@@ -748,12 +767,197 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
             blackoutCronExpression.endDate.setEnabled(enabled);
             blackoutCronExpression.endTime.setEnabled(enabled);
         });
-        if(this.dateTimeRanges.size() == 0) {
-            this.noBlackOutDateTimeRangesLabel.setVisible(!enabled);
+        if(this.dateTimeRanges.size() == 0 && !enabled) {
+            this.noBlackOutDateTimeRangesLabel.setVisible(true);
+        }
+        else {
+            this.noBlackOutDateTimeRangesLabel.setVisible(false);
         }
 
         this.saveButton.setVisible(enabled);
         this.cancelButton.setVisible(enabled);
+    }
+
+    /**
+     * Set the underlying pojo for the form along with the edit mode.
+     *
+     * @param scheduleProcessAggregateConfiguration
+     * @param editMode
+     */
+    public void setScheduleProcessAggregateConfiguration(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration, EditMode editMode) {
+        this.enabled = editMode == EditMode.NEW || editMode == EditMode.EDIT ? true : false;
+        this.scheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
+        this.formBinder.readBean(this.scheduleProcessAggregateConfiguration);
+        this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(scheduleProcessAggregateConfiguration.getTimezone()));
+        this.bindCollections(scheduleProcessAggregateConfiguration);
+        this.editMode = editMode;
+
+        // make sure all value are bound before calling set enabled
+        this.setEnabled(this.enabled);
+    }
+
+    /**
+     * Bind all collection fields to the form
+     *
+     * @param scheduleProcessAggregateConfiguration
+     */
+    private void bindCollections(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
+        scheduleProcessAggregateConfiguration.getPassthroughProperties().forEach((k,v) -> this.addPassThroughProperties(k,v));
+        scheduleProcessAggregateConfiguration.getSuccessfulReturnCodes().forEach(rc -> this.addSuccessfulReturnCodes(rc));
+        scheduleProcessAggregateConfiguration.getBlackoutCronExpressions().forEach(ce -> this.addBlackoutCronExpression(ce));
+        scheduleProcessAggregateConfiguration.getBlackoutDateTimeRanges().forEach((k,v) -> this.addDateTimeRange(Long.parseLong(k),
+            Long.parseLong(v)));
+
+    }
+
+    /**
+     * Helper method to add the controls for a blackout date time ranges
+     *
+     * @param startMilli
+     * @param endMilli
+     */
+    private void addDateTimeRange(long startMilli, long endMilli) {
+        DateTimeRange dateTimeRange = new DateTimeRange();
+        dateTimeRange.startDate = new SuperDatePicker("Start date");
+        dateTimeRange.startDate.setEnabled(this.enabled);
+        dateTimeRange.startDate.setDatePattern(DatePatterns.D_MMMM_YYYY);
+        dateTimeRange.startDate.setErrorMessage("Start date is required!");
+        dateTimeRange.startDate.setLocale(UI.getCurrent().getLocale());
+        if(startMilli > 0) {
+            dateTimeRange.startDate.setValue(Instant.ofEpochMilli(startMilli).atZone(ZoneId.systemDefault()).toLocalDate());
+        }
+        dateTimeRange.startTime = new TimePicker("From");
+        dateTimeRange.startTime.setEnabled(this.enabled);
+        dateTimeRange.startTime.setErrorMessage("Start time is required!");
+        dateTimeRange.startTime.setLocale(UI.getCurrent().getLocale());
+        if(startMilli > 0) {
+            dateTimeRange.startTime.setValue(Instant.ofEpochMilli(startMilli).atZone(ZoneId.systemDefault()).toLocalTime());
+        }
+        HorizontalLayout startLayout = new HorizontalLayout();
+        startLayout.add(dateTimeRange.startDate, dateTimeRange.startTime);
+
+        dateTimeRange.endDate = new SuperDatePicker("End date");
+        dateTimeRange.endDate.setEnabled(this.enabled);
+        dateTimeRange.endDate.setDatePattern(DatePatterns.D_MMMM_YYYY);
+        dateTimeRange.endDate.setErrorMessage("End date is required!");
+        dateTimeRange.endDate.setLocale(UI.getCurrent().getLocale());
+        if(endMilli > 0) {
+            dateTimeRange.endDate.setValue(Instant.ofEpochMilli(endMilli).atZone(ZoneId.systemDefault()).toLocalDate());
+        }
+        dateTimeRange.endTime = new TimePicker("To");
+        dateTimeRange.endTime.setEnabled(this.enabled);
+        dateTimeRange.endTime.setErrorMessage("End date is required!");
+        dateTimeRange.endTime.setLocale(UI.getCurrent().getLocale());
+        if(endMilli > 0) {
+            dateTimeRange.endTime.setValue(Instant.ofEpochMilli(endMilli).atZone(ZoneId.systemDefault()).toLocalTime());
+        }
+        HorizontalLayout endLayout = new HorizontalLayout();
+
+        this.dateTimeRanges.add(dateTimeRange);
+
+        Button minusButton = new Button(VaadinIcon.MINUS.create(), ev -> {
+            formLayout.remove(startLayout);
+            formLayout.remove(endLayout);
+
+            this.dateTimeRanges.remove(dateTimeRange);
+        });
+        minusButton.setVisible(this.enabled);
+
+        endLayout.add(dateTimeRange.endDate, dateTimeRange.endTime, minusButton);
+        formLayout.add(startLayout, endLayout);
+
+        if(!this.enabled){
+            formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(this.noBlackOutDateTimeRangesLabel.getElement()) + 1, new Div());
+        }
+    }
+
+    /**
+     * Helper method to add the controls for pass through properties
+     *
+     * @param name
+     * @param value
+     */
+    private void addPassThroughProperties(String name, String value) {
+        TextFieldNameValuePair nvp = new TextFieldNameValuePair();
+
+        nvp.nameTf = new TextField("Property name");
+        nvp.nameTf.setWidth("95%");
+        nvp.nameTf.setEnabled(this.enabled);
+        nvp.nameTf.setErrorMessage("Property name is required!");
+        if(name!=null)nvp.nameTf.setValue(name);
+        HorizontalLayout startLayout = new HorizontalLayout();
+        startLayout.add(nvp.nameTf);
+
+        nvp.valueTf = new TextField("Property value");
+        nvp.valueTf.setEnabled(this.enabled);
+        nvp.valueTf.setWidth("95%");
+        nvp.valueTf.setErrorMessage("Property name is required!");
+        if(value!=null)nvp.valueTf.setValue(value);
+        HorizontalLayout endLayout = new HorizontalLayout();
+
+        this.passThroughProperties.add(nvp);
+
+        Button minusButton = new Button(VaadinIcon.MINUS.create(), ev -> {
+            formLayout.remove(startLayout);
+            formLayout.remove(endLayout);
+
+            this.passThroughProperties.remove(nvp);
+        });
+        minusButton.setVisible(this.enabled);
+
+        endLayout.add(nvp.valueTf, minusButton);
+        formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(passThroughPropertiesLabel.getElement()) + (!this.enabled ? 4 : 3), startLayout);
+        formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(passThroughPropertiesLabel.getElement()) + (!this.enabled ? 5 : 4), endLayout);
+    }
+
+    /**
+     * Helper method to add the controls for the return codes
+     *
+     * @param returnCode
+     */
+    private void addSuccessfulReturnCodes(String returnCode) {
+        TextField successfulReturnCodeTf = new TextField("Successful return code");
+        successfulReturnCodeTf.setEnabled(this.enabled);
+        this.successfulReturnCodes.add(successfulReturnCodeTf);
+        successfulReturnCodeTf.setErrorMessage("Return code is required!");
+        if(returnCode!=null)successfulReturnCodeTf.setValue(returnCode);
+
+        Button minusButton = new Button(VaadinIcon.MINUS.create(), ev -> {
+            formLayout.remove(successfulReturnCodeTf);
+            formLayout.remove(ev.getSource());
+            this.successfulReturnCodes.remove(successfulReturnCodeTf);
+        });
+        minusButton.setVisible(this.enabled);
+        formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(successfulReturnCodesLabel.getElement()) + (!this.enabled ? 4 : 3), successfulReturnCodeTf);
+        formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(successfulReturnCodesLabel.getElement()) + (!this.enabled ? 5 : 4), minusButton);
+    }
+
+    /**
+     * Helper method to add the controls for a blackout cron expression
+     *
+     * @param cron
+     */
+    private void addBlackoutCronExpression(String cron) {
+        TextField blackoutCronExpressionTf = new TextField("Blackout cron expression");
+        blackoutCronExpressionTf.setEnabled(this.enabled);
+        this.blackoutCronExpressions.add(blackoutCronExpressionTf);
+        blackoutCronExpressionTf.setErrorMessage("Cron expression required!");
+        if(cron!=null)blackoutCronExpressionTf.setValue(cron);
+
+        Button minusButton = new Button(VaadinIcon.MINUS.create(), ev -> {
+            formLayout.remove(blackoutCronExpressionTf);
+            formLayout.remove(ev.getSource());
+            this.blackoutCronExpressions.remove(blackoutCronExpressionTf);
+        });
+        minusButton.setVisible(this.enabled);
+        this.blackOutCronExpressionDiv.setVisible(!this.enabled);
+        formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(blackOutCronExpressionLabel.getElement()) + (!this.enabled ? 2 : 3), blackoutCronExpressionTf);
+        formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(blackOutCronExpressionLabel.getElement()) + (!this.enabled ? 5 : 4), minusButton);
+        formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(blackOutCronExpressionLabel.getElement()) + (!this.enabled ? 1 : 4), blackOutCronExpressionDiv);
+        if(!this.enabled){
+            formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(blackoutCronExpressionTf.getElement()) + 1, new Div());
+        }
+
     }
 
     private class TextFieldNameValuePair {
@@ -762,16 +966,9 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
     }
 
     private class DateTimeRange {
-        public DatePicker startDate;
+        public SuperDatePicker startDate;
         public TimePicker startTime;
-        public DatePicker endDate;
+        public SuperDatePicker endDate;
         public TimePicker endTime;
-    }
-
-    public void setScheduleProcessAggregateConfiguration(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration, EditMode editMode) {
-        this.scheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
-        this.editMode = editMode;
-        this.setEnabled(editMode == EditMode.NEW || editMode == EditMode.EDIT ? true : false);
-        this.formBinder.readBean(this.scheduleProcessAggregateConfiguration);
     }
 }

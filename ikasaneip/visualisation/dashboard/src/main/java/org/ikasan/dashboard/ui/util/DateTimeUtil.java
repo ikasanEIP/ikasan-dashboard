@@ -4,9 +4,12 @@ import com.vaadin.flow.component.UI;
 
 import java.time.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DateTimeUtil
 {
+    private static ArrayList<TimezonePair> TIMEZONE_PAIRS;
+
     /**
      * Helper method to get the hour and minute milliseconds from a local time.
      * @param localTime
@@ -57,25 +60,15 @@ public class DateTimeUtil
             .getAttribute(SessionAttributeConstants.TIMEZONE_ID)).getRules().getOffset(Instant.now());
     }
 
-    public static final List<String> getOrderedZoneIdsWithOffset() {
-        Map<String, String> sortedMap = new LinkedHashMap<>();
-
-        List<TimezonePair> allZoneIdsAndItsOffSet = getAllZoneIdsAndItsOffSet();
-
-        allZoneIdsAndItsOffSet.sort((o1, o2) -> o1.zoneId.compareTo(o2.zoneId));
-
-        List<String> results = new ArrayList();
-
-        // print map
-        allZoneIdsAndItsOffSet.forEach(timezonePair ->
-            results.add(String.format("%35s (UTC%s) %n", timezonePair.zoneId, timezonePair.offset).trim()));
-
-        return results;
-    }
 
     public static final  List<TimezonePair> getAllZoneIdsAndItsOffSet() {
 
-        List<TimezonePair> result = new ArrayList<>();
+        if(TIMEZONE_PAIRS == null) {
+            TIMEZONE_PAIRS = new ArrayList<>();
+        }
+        else {
+            return TIMEZONE_PAIRS;
+        }
 
         LocalDateTime localDateTime = LocalDateTime.now();
 
@@ -92,11 +85,20 @@ public class DateTimeUtil
             //replace Z to +00:00
             String offset = zoneOffset.getId().replaceAll("Z", "+00:00");
 
-            result.add(new TimezonePair(id.getId(), offset));
+            TIMEZONE_PAIRS.add(new TimezonePair(id.getId(), offset));
 
         }
 
-        return result;
+        return TIMEZONE_PAIRS;
+    }
+
+    public static final TimezonePair getTimezonePairForZoneId(String zoneId) {
+        AtomicReference<TimezonePair> timezonePairAtomicReference = new AtomicReference<>();
+        TIMEZONE_PAIRS.stream()
+            .filter(timezonePair -> timezonePair.zoneId.equals(zoneId))
+            .findFirst().ifPresent(timezonePair -> timezonePairAtomicReference.set(timezonePair));
+
+        return timezonePairAtomicReference.get();
     }
 
     public static class TimezonePair {

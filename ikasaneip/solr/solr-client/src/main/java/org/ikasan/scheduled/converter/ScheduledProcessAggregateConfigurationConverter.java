@@ -40,24 +40,23 @@ public class ScheduledProcessAggregateConfigurationConverter implements Converte
             (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.COMMAND_LINE));
         scheduledProcessAggregateConfiguration.setWorkingDirectory((String)this.getConfigurationParameterMetaDataValue
             (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.WORKING_DIRECTORY));
-        scheduledProcessAggregateConfiguration.setSuccessfulReturnCodes((List<Integer>)this.getConfigurationParameterMetaDataValue
+        scheduledProcessAggregateConfiguration.setSuccessfulReturnCodes((List<String>)this.getConfigurationParameterMetaDataValue
             (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.SUCCESSFUL_RETURN_CODES));
-        if(this.getConfigurationParameterMetaDataValue
-            (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.SECONDS_TO_WAIT_FOR_PROCESS_TO_START) != null) {
+        if(this.getConfigurationParameterMetaDataValue(scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.SECONDS_TO_WAIT_FOR_PROCESS_TO_START) != null) {
             scheduledProcessAggregateConfiguration.setSecondsToWaitForProcessStart(((Integer) this.getConfigurationParameterMetaDataValue
                 (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.SECONDS_TO_WAIT_FOR_PROCESS_TO_START)).longValue());
         }
         scheduledProcessAggregateConfiguration.setStdErr((String)this.getConfigurationParameterMetaDataValue
             (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.STD_ERR));
         scheduledProcessAggregateConfiguration.setStdOut((String)this.getConfigurationParameterMetaDataValue
-            (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.STD_ERR));
+            (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.STD_OUT));
         scheduledProcessAggregateConfiguration.setRetryOnFail((Boolean)this.getConfigurationParameterMetaDataValue
             (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.RETRY_ON_FAIL));
 
         scheduledProcessAggregateConfiguration.setBlackoutCronExpressions((List<String>) this.getConfigurationParameterMetaDataValue
-            (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.CRON_EXPRESSIONS));
-        scheduledProcessAggregateConfiguration.setBlackoutDateTimeRanges((Map<Long, Long>) this.getConfigurationParameterMetaDataValue
-            (scheduleProcessConfigurationBucket.getProcessExecutionBrokerConfiguration(), ScheduledProcessConfigurationConstants.DATE_TIME_RANGES));
+            (scheduleProcessConfigurationBucket.getBlackoutRouterConfiguration(), ScheduledProcessConfigurationConstants.CRON_EXPRESSIONS));
+        scheduledProcessAggregateConfiguration.setBlackoutDateTimeRanges((Map<String, String>) this.getConfigurationParameterMetaDataValue
+            (scheduleProcessConfigurationBucket.getBlackoutRouterConfiguration(), ScheduledProcessConfigurationConstants.DATE_TIME_RANGES));
 
 
         return scheduledProcessAggregateConfiguration;

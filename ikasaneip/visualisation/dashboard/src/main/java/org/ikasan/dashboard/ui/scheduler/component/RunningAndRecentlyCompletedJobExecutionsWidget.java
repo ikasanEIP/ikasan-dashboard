@@ -2,8 +2,6 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
@@ -21,6 +19,8 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.vaadin.miki.shared.dates.DatePatterns;
+import org.vaadin.miki.superfields.dates.SuperDatePicker;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -37,7 +37,7 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
     private DateFormatter dateFormatter;
     private TextField textField = new TextField("Search");
 
-    private DatePicker date;
+    private SuperDatePicker date;
     private TimePicker startTime;
     private TimePicker endTime;
 
@@ -68,7 +68,8 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
         HorizontalLayout layout = new HorizontalLayout();
         H4 modules = new H4("Running & Recently Completed Job Executions");
 
-        this.date = new DatePicker("Execution date");
+        this.date = new SuperDatePicker("Execution date");
+        this.date.setDatePattern(DatePatterns.D_MMMM_YYYY);
         this.date.setValue(LocalDate.now());
 
         this.startTime = new TimePicker("From");

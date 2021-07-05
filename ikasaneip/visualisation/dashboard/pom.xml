@@ -175,6 +175,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.vaadin.miki</groupId>
+            <artifactId>superfields</artifactId>
+            <version>0.10.2</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.flipkart.zjsonpatch</groupId>
             <artifactId>zjsonpatch</artifactId>
             <version>0.4.11</version>

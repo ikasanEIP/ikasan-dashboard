@@ -265,7 +265,7 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
     @Override
     protected ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getResults(ScheduledProcessFilter scheduledProcessFilter, int offset, int limit) {
         ScheduledProcessEventSearchResults<UpcomingScheduledProcess> results =  this.scheduledProcessManagementService.getUpComingScheduledProcesses(scheduledProcessFilter.getStartTime()
-            , scheduledProcessFilter.getEndTime());
+            , scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter());
 
         return new ScheduledProcessEventSearchResults(offset+limit > results.getResultList().size() ?results.getResultList().subList(offset, results.getResultList().size()):results.getResultList().subList(offset, offset+limit)
             , results.getTotalNumberOfResults(), results.getQueryResponseTime());
