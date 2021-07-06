@@ -169,7 +169,13 @@ public class DashboardComponentFactory
         solrComponentConfigurationMetadataDao.setSolrUsername(solrUsername);
         solrComponentConfigurationMetadataDao.setSolrPassword(solrPassword);
 
-        SolrScheduledProcessServiceImpl service = new SolrScheduledProcessServiceImpl(dao, solrModuleMetadataDao, solrComponentConfigurationMetadataDao);
+        SolrBusinessStreamMetadataDao solrBusinessStreamMetadataDao = new SolrBusinessStreamMetadataDao();
+        solrBusinessStreamMetadataDao.initStandalone(solrUrl, 30);
+        solrBusinessStreamMetadataDao.setSolrUsername(solrUsername);
+        solrBusinessStreamMetadataDao.setSolrPassword(solrPassword);
+
+        SolrScheduledProcessServiceImpl service = new SolrScheduledProcessServiceImpl(dao, solrModuleMetadataDao
+            , solrComponentConfigurationMetadataDao, solrBusinessStreamMetadataDao);
         service.setSolrUsername(solrUsername);
         service.setSolrPassword(solrPassword);
 

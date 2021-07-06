@@ -1,5 +1,7 @@
 package org.ikasan.scheduled.model;
 
+import org.ikasan.spec.metadata.BusinessStreamMetaData;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +11,7 @@ public class ScheduledProcessAggregateConfiguration {
 
     private String agentName;
     private Boolean startAutomatically = false;
+    private List<BusinessStreamMetaData> businessStreamMetaData;
     private String jobName;
     private String jobGroup;
     private String jobDescription;
@@ -43,6 +46,14 @@ public class ScheduledProcessAggregateConfiguration {
 
     public void setStartAutomatically(Boolean startAutomatically) {
         this.startAutomatically = startAutomatically;
+    }
+
+    public List<BusinessStreamMetaData> getBusinessStreamMetaData() {
+        return businessStreamMetaData;
+    }
+
+    public void setBusinessStreamMetaData(List<BusinessStreamMetaData> businessStreamMetaData) {
+        this.businessStreamMetaData = businessStreamMetaData;
     }
 
     public String getJobGroup() {

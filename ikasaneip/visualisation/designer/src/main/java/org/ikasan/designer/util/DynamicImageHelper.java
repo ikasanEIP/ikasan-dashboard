@@ -22,8 +22,12 @@ public class DynamicImageHelper {
     public static ArrayList<Image> loadDynamicImages(String imagePath) throws IOException {
         ArrayList<Image> images = new ArrayList<>();
 
-        Files.list(Paths.get(imagePath)).forEach(
-            file -> images.add(getImage(file)));
+        Files.list(Paths.get(imagePath)).forEach(file -> {
+            Image image = getImage(file);
+            if(image != null) {
+                images.add(image);
+            }
+        });
 
         return images;
     }

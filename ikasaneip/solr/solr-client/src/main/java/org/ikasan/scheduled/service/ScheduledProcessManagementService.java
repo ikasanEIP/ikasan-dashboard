@@ -3,6 +3,7 @@ package org.ikasan.scheduled.service;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.model.UpcomingScheduledProcess;
+import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
 import org.ikasan.spec.metadata.FlowMetaData;
@@ -32,11 +33,13 @@ public interface ScheduledProcessManagementService {
 
     public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(String agent, long startTime, long endTime);
 
-    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(long startTime, long endTime, String filter, boolean errorsOnly);
+    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(long startTime, long endTime, String filter, boolean errorsOnly, int start, int limit);
 
     public ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getScheduleProcessAggregateConfigurations(String agent, String filter);
 
     public ScheduledProcessAggregateConfiguration getScheduleProcessAggregateConfiguration(String agent, String flow);
+
+    public List<BusinessStreamMetaData> getBusinessStreams(String agent, String flow);
 
     public void saveConfiguration(ConfigurationMetaData configurationMetaData);
 }

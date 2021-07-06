@@ -126,6 +126,22 @@ public class SolrBusinessStreamMetadataDao extends SolrDaoBase<SolrBusinessStrea
        return results;
     }
 
+    public List<BusinessStreamMetaData> findBusinessStreamsContainingFlow(String moduleName, String flowName) {
+        StringBuffer queryString = new StringBuffer("type:\"" + BUSINESS_STREAM_METADATA + "\"");
+        queryString.append(" AND payload:\"*").append(moduleName).append(".").append(flowName).append("*\"");
+
+        SolrQuery query = new SolrQuery();
+        query.setQuery(queryString.toString());
+        query.setStart(0);
+        query.setRows(100000);
+
+        List<SolrBusinessStream> beans = this.findByQuery(query);
+
+        return beans.stream()
+            .map(solrBusinessStream -> convert(solrBusinessStream))
+            .collect(Collectors.toList());
+    }
+
     public List<BusinessStreamMetaData> findAll(Integer startOffset, Integer resultSize)
     {
         String queryString = "type:\"" + BUSINESS_STREAM_METADATA + "\"";

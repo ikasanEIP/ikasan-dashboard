@@ -1,11 +1,12 @@
 package org.ikasan.scheduled.dao;
 
-import org.ikasan.scheduled.dao.SolrScheduledProcessEventDao;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
 
+@Ignore
 public class ScheduleProcessEventDaoTest {
 
     private SolrScheduledProcessEventDao dao;

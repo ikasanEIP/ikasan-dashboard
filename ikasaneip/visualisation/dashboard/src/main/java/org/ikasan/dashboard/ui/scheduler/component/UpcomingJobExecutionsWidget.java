@@ -1,11 +1,8 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.flowingcode.vaadin.addons.ironicons.IronIcons;
-import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
@@ -17,10 +14,7 @@ import com.vaadin.flow.component.timepicker.TimePicker;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
-import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
-import org.ikasan.scheduled.model.UpcomingScheduledProcess;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
-import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
