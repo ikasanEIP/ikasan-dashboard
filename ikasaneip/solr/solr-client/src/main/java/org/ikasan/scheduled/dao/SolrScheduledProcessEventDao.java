@@ -115,7 +115,7 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
         }
     }
 
-    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduleProcessEvents(long startTime, long endTime, String filter, boolean failuresOnly) {
+    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduleProcessEvents(long startTime, long endTime, String filter, boolean failuresOnly, int start, int limit) {
         StringBuffer typeQuery = super.buildFieldPredicate("scheduledProcessEvent", SolrDaoBase.TYPE);
         StringBuffer betweenDates = super.buildDatePredicate(SolrDaoBase.CREATED_DATE_TIME, new Date(startTime), new Date(endTime));
 
@@ -133,19 +133,15 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
 
         query.setQuery(queryBuffer.toString());
         query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
+        query.setStart(start);
+        query.setRows(limit);
 
-        query.setRows(0);
         try
         {
             QueryRequest req = new QueryRequest(query);
             req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
             QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
-            query.setRows((int)rsp.getResults().getNumFound());
-
-            req = new QueryRequest(query);
-            req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
-            rsp = req.process(this.solrClient, SolrConstants.CORE);
 
             return new ScheduledProcessEventSearchResults(this.convert(rsp.getBeans(SolrScheduledProcessEventRecord.class)),
                 rsp.getResults().getNumFound(), rsp.getElapsedTime());

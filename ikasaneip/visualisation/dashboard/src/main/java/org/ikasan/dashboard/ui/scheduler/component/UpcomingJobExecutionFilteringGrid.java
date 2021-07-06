@@ -1,33 +1,48 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.shared.Registration;
+import org.ikasan.dashboard.broadcast.FlowState;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
+import org.ikasan.dashboard.broadcast.State;
+import org.ikasan.dashboard.cache.CacheStateBroadcaster;
+import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
+import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.model.UpcomingScheduledProcess;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
+import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.function.Consumer;
 
 
 public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingScheduledProcess, ScheduledProcessFilter, ScheduledProcessEventSearchResults<UpcomingScheduledProcess>> {
 
+    private Registration flowStateBroadcasterRegistration;
+    private Registration cacheStateBroadcasterRegistration;
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private DateFormatter dateFormatter;
 
@@ -35,6 +50,11 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
     private ModuleMetaDataService moduleMetaDataService;
+
+    private HashMap<String, List<BusinessStreamMetaData>> agentJobBusinessStreams;
+    private HashMap<String, ModuleMetaData> agents;
+
+    private UI ui;
 
     /**
      * Constructors
@@ -52,6 +72,8 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
         this.moduleMetaDataService = moduleMetaDataService;
+
+        this.ui = UI.getCurrent();
 
         this.initGrid();
     }
@@ -80,14 +102,22 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
         super.addColumn(new ComponentRenderer<>(jobExecution -> {
             HorizontalLayout layout = new HorizontalLayout();
 
-//            jobExecution.getRelatedBusinessStreams().forEach(businessStreamMetaData -> {
-//                String route = RouteConfiguration.forSessionScope()
-//                    .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":" + businessStreamMetaData.getName());
-//                Anchor link = new Anchor(route, businessStreamMetaData.getName());
-//                link.setTarget("_blank");
-//                layout.add(link);
-//                link.getStyle().set("color", "blue");
-//            });
+            if(!this.agentJobBusinessStreams.containsKey(jobExecution.getAgentName()+"."+jobExecution.getJobName())) {
+                this.agentJobBusinessStreams.put(jobExecution.getAgentName()+"."+jobExecution.getJobName(), this.scheduledProcessManagementService.getBusinessStreams(
+                    jobExecution.getAgentName(), jobExecution.getJobName()));
+            }
+
+            List<BusinessStreamMetaData> businessStreamMetaDataList
+                = this.agentJobBusinessStreams.get(jobExecution.getAgentName()+"."+jobExecution.getJobName());
+
+            businessStreamMetaDataList.forEach(businessStreamMetaData -> {
+                String route = RouteConfiguration.forSessionScope()
+                    .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":" + businessStreamMetaData.getName());
+                Anchor link = new Anchor(route, businessStreamMetaData.getName());
+                link.setTarget("_blank");
+                layout.add(link);
+                link.getStyle().set("color", "blue");
+            });
 
             return layout;
         }))
@@ -99,33 +129,12 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
             .setHeader("Next Execution Time")
             .setKey("nextExecutionTime")
             .setWidth("130px");
-//        super.addColumn(TemplateRenderer.<JobExecution>of("<div style='white-space:normal'>[[item.schedulerStatus]]</div>")
-//            .withProperty("schedulerStatus", JobExecution::getSchedulerStatus))
-//            .setHeader("Scheduler Status")
-//            .setKey("schedulerStatus")
-//            .setFlexGrow(1);
         super.addColumn(new ComponentRenderer<>(scheduledProcessEvent->
         {
             HorizontalLayout layout = new HorizontalLayout();
 
-//            Icon jobExecutionDetails = VaadinIcon.RANDOM.create();
-//            jobExecutionDetails.getStyle().set("font-size", "32pt");
-//            jobExecutionDetails.getStyle().set("cursor", "pointer");
-//            jobExecutionDetails.getElement().setAttribute("title", "Job execution details");
-//
-//            jobExecutionDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-//                if(iconClickEvent.getClickCount() == 2) {
-//                    ModuleMetaData agent = this.moduleMetaDataService.findById(scheduledProcessEvent.getAgentName());
-//                    ScheduledProcessExecutionDialog scheduledProcessExecutionDialog = new ScheduledProcessExecutionDialog(scheduledProcessEvent, agent);
-//                    scheduledProcessExecutionDialog.open();
-//                }
-//            });
-//
-//            layout.add(jobExecutionDetails);
-
             Icon jobDetails = VaadinIcon.CLIPBOARD_TEXT.create();
             jobDetails.setSize("14pt");
-//            jobDetails.getStyle().set("font-size", "26pt");
             jobDetails.getStyle().set("cursor", "pointer");
             jobDetails.getElement().setAttribute("title", "Job configuration");
 
@@ -149,7 +158,6 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
 
             Icon chart = VaadinIcon.CHART.create();
             chart.setSize("14pt");
-//            chart.getStyle().set("font-size", "26pt");
             chart.getStyle().set("cursor", "pointer");
             chart.getElement().setAttribute("title", "Job statistics");
 
@@ -161,58 +169,74 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
         .setHeader("Actions")
         .setKey("actions")
         .setWidth("40px");
-//        super.addColumn(new ComponentRenderer<>(businessStreamMetaData->
-//        {
-//            Button editButton = new TableButton(VaadinIcon.EDIT.create());
-//            editButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
-//            {
-//                SchedulerConfigurationDialog schedulerConfigurationDialog = new SchedulerConfigurationDialog();
-//                schedulerConfigurationDialog.open();
-//            });
-////
-////            ComponentSecurityVisibility.applySecurity(editButton, SecurityConstants.PLATORM_CONFIGURATON_ADMIN,
-////                SecurityConstants.PLATORM_CONFIGURATON_WRITE, SecurityConstants.ALL_AUTHORITY);
-//
-//            VerticalLayout layout = new VerticalLayout();
-//            layout.setSizeFull();
-//            layout.add(editButton);
-//            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, editButton);
-//            return layout;
-//        })).setWidth("30px");
-//        super.addColumn(new ComponentRenderer<>(businessStreamMetaData->
-//        {
-//            Button downloadButton = new TableButton(VaadinIcon.DOWNLOAD.create());
-////            StreamResource streamResource = new StreamResource(businessStreamMetaData.getName().concat(".json")
-////                , () -> new ByteArrayInputStream(businessStreamMetaData.getJson().getBytes()));
-////
-////            FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
-////            buttonWrapper.wrapComponent(downloadButton);
-//
-//            VerticalLayout layout = new VerticalLayout();
-//            layout.setSizeFull();
-//            layout.add(downloadButton);
-//            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, downloadButton);
-//            return layout;
-//        })).setWidth("30px");
-//        super.addColumn(new ComponentRenderer<>(businessStreamMetaData->
-//        {
-//            Button deleteButton = new TableButton(VaadinIcon.TRASH.create());
-////            deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
-////            {
-////                this.businessStreamMetaDataService.delete(businessStreamMetaData.getId());
-////                this.populateBusinessStreamGrid();
-////            });
-////
-////            ComponentSecurityVisibility.applySecurity(deleteButton, SecurityConstants.PLATORM_CONFIGURATON_ADMIN,
-////                SecurityConstants.PLATORM_CONFIGURATON_WRITE, SecurityConstants.ALL_AUTHORITY);
-//
-//            VerticalLayout layout = new VerticalLayout();
-//            layout.setSizeFull();
-//            layout.add(deleteButton);
-//            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, deleteButton);
-//            return layout;
-//        })).setWidth("30px");
+        super.addColumn(new ComponentRenderer<>(scheduledProcessEvent-> {
+            VerticalLayout layout = new VerticalLayout();
+            layout.setMargin(false);
+            layout.setPadding(false);
+            layout.setSpacing(false);
 
+            if(!this.agents.containsKey(scheduledProcessEvent.getAgentName())) {
+                this.agents.put(scheduledProcessEvent.getAgentName(), moduleMetaDataService.findById(scheduledProcessEvent.getAgentName()));
+            }
+
+            FlowState flowState = FlowStateCache.instance().get(this.agents.get(scheduledProcessEvent.getAgentName())
+                , scheduledProcessEvent.getJobName());
+
+            if(flowState == null || flowState.getState() == State.UNKNOWN_STATE) {
+                Icon unknown = VaadinIcon.QUESTION.create();
+                unknown.setSize("14pt");
+                unknown.getStyle().set("color", "rgba(210, 215, 211, 1)");
+                unknown.getElement().setAttribute("title", "Unknown");
+                layout.add(unknown);
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, unknown);
+            }
+            else if(flowState.getState() == State.RUNNING_STATE) {
+                Icon running = VaadinIcon.CHECK.create();
+                running.setSize("14pt");
+                running.getStyle().set("color", "#66bb6a");
+                running.getElement().setAttribute("title", "Running");
+                layout.add(running);
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, running);
+            }
+            else if(flowState.getState() == State.STOPPED_STATE) {
+                Icon stopped = VaadinIcon.STOP.create();
+                stopped.setSize("14pt");
+                stopped.getStyle().set("color", "#000000");
+                stopped.getElement().setAttribute("title", "Stopped");
+                layout.add(stopped);
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, stopped);
+            }
+            else if(flowState.getState() == State.RECOVERING_STATE) {
+                Icon recovering = VaadinIcon.RECYCLE.create();
+                recovering.setSize("14pt");
+                recovering.getStyle().set("color", "rgba(241, 90, 35, 1.0)");
+                recovering.getElement().setAttribute("title", "Recovering");
+                layout.add(recovering);
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, recovering);
+            }
+            else if(flowState.getState() == State.STOPPED_IN_ERROR_STATE) {
+                Icon stoppedInError = VaadinIcon.EXCLAMATION.create();
+                stoppedInError.setSize("14pt");
+                stoppedInError.getStyle().set("color", "#ef5350");
+                stoppedInError.getElement().setAttribute("title", "Stopped in error");
+                layout.add(stoppedInError);
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, stoppedInError);
+            }
+            else if(flowState.getState() == State.PAUSED_STATE) {
+                Icon paused = VaadinIcon.PAUSE.create();
+                paused.setSize("14pt");
+                paused.getStyle().set("color", "rgba(133,181,225,1.0)");
+                paused.getElement().setAttribute("title", "Paused");
+                layout.add(paused);
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, paused);
+            }
+
+            layout.setSizeFull();
+            return layout;
+        }))
+        .setHeader("Status")
+        .setKey("status")
+        .setWidth("30px");
         super.init();
     }
 
@@ -264,10 +288,44 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
 
     @Override
     protected ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getResults(ScheduledProcessFilter scheduledProcessFilter, int offset, int limit) {
+        this.agentJobBusinessStreams = new HashMap<>();
+        this.agents = new HashMap<>();
+
         ScheduledProcessEventSearchResults<UpcomingScheduledProcess> results =  this.scheduledProcessManagementService.getUpComingScheduledProcesses(scheduledProcessFilter.getStartTime()
             , scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter());
 
         return new ScheduledProcessEventSearchResults(offset+limit > results.getResultList().size() ?results.getResultList().subList(offset, results.getResultList().size()):results.getResultList().subList(offset, offset+limit)
             , results.getTotalNumberOfResults(), results.getQueryResponseTime());
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+
+        this.flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState -> {
+            ui.access(() -> {
+                this.dataProvider.refreshAll();
+                this.filteredDataProvider.refreshAll();
+            });
+        });
+
+        this.cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState -> {
+            ui.access(() -> {
+                this.dataProvider.refreshAll();
+                this.filteredDataProvider.refreshAll();
+            });
+        });
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        if(this.flowStateBroadcasterRegistration != null) {
+            this.flowStateBroadcasterRegistration.remove();
+            this.flowStateBroadcasterRegistration = null;
+        }
+
+        if(this.cacheStateBroadcasterRegistration != null) {
+            this.cacheStateBroadcasterRegistration.remove();
+            this.cacheStateBroadcasterRegistration = null;
+        }
     }
 }

@@ -558,7 +558,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         }
         catch (Exception e)
         {
-            throw new RuntimeException("An exception has occurred attempting to write an exclusion to Solr", e);
+            throw new RuntimeException("An exception has occurred attempting to write a document to Solr", e);
         }
 
     }

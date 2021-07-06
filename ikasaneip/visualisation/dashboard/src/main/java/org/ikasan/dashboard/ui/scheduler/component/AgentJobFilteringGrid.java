@@ -5,6 +5,7 @@ import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -13,6 +14,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
@@ -24,6 +26,8 @@ import org.ikasan.dashboard.ui.scheduler.model.AgentJobFilter;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
 import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
+import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
@@ -104,14 +108,14 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
         super.addColumn(new ComponentRenderer<>(jobExecution -> {
             HorizontalLayout layout = new HorizontalLayout();
 
-//            jobExecution.getRelatedBusinessStreams().forEach(businessStreamMetaData -> {
-//                String route = RouteConfiguration.forSessionScope()
-//                    .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":" + businessStreamMetaData.getName());
-//                Anchor link = new Anchor(route, businessStreamMetaData.getName());
-//                link.setTarget("_blank");
-//                layout.add(link);
-//                link.getStyle().set("color", "blue");
-//            });
+            jobExecution.getBusinessStreamMetaData().forEach(businessStreamMetaData -> {
+                String route = RouteConfiguration.forSessionScope()
+                    .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":" + businessStreamMetaData.getName());
+                Anchor link = new Anchor(route, businessStreamMetaData.getName());
+                link.setTarget("_blank");
+                layout.add(link);
+                link.getStyle().set("color", "blue");
+            });
 
             return layout;
         }))

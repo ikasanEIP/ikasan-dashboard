@@ -1,9 +1,9 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -12,12 +12,19 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.shared.Registration;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
+import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
+import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
+import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -25,6 +32,8 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.function.Consumer;
 
 
@@ -38,6 +47,8 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
     private ModuleMetaDataService moduleMetaDataService;
+
+    private HashMap<String, List<BusinessStreamMetaData>> agentJobBusinessStreams;
 
     /**
      * Constructor
@@ -86,14 +97,22 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
         super.addColumn(new ComponentRenderer<>(jobExecution -> {
             HorizontalLayout layout = new HorizontalLayout();
 
-//            jobExecution.getRelatedBusinessStreams().forEach(businessStreamMetaData -> {
-//                String route = RouteConfiguration.forSessionScope()
-//                    .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":" + businessStreamMetaData.getName());
-//                Anchor link = new Anchor(route, businessStreamMetaData.getName());
-//                link.setTarget("_blank");
-//                layout.add(link);
-//                link.getStyle().set("color", "blue");
-//            });
+            if(!this.agentJobBusinessStreams.containsKey(jobExecution.getAgentName()+"."+jobExecution.getJobName())) {
+                this.agentJobBusinessStreams.put(jobExecution.getAgentName()+"."+jobExecution.getJobName(), this.scheduledProcessManagementService.getBusinessStreams(
+                    jobExecution.getAgentName(), jobExecution.getJobName()));
+            }
+
+            List<BusinessStreamMetaData> businessStreamMetaDataList
+                = this.agentJobBusinessStreams.get(jobExecution.getAgentName()+"."+jobExecution.getJobName());
+
+            businessStreamMetaDataList.forEach(businessStreamMetaData -> {
+                String route = RouteConfiguration.forSessionScope()
+                    .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":" + businessStreamMetaData.getName());
+                Anchor link = new Anchor(route, businessStreamMetaData.getName());
+                link.setTarget("_blank");
+                layout.add(link);
+                link.getStyle().set("color", "blue");
+            });
 
             return layout;
         }))
@@ -240,10 +259,8 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
 
     @Override
     protected ScheduledProcessEventSearchResults<ScheduledProcessEvent> getResults(ScheduledProcessFilter scheduledProcessFilter, int offset, int limit) {
-        ScheduledProcessEventSearchResults<ScheduledProcessEvent> results =  this.scheduledProcessManagementService.getScheduledProcessEvents(scheduledProcessFilter.getStartTime()
-            , scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter(), scheduledProcessFilter.isErrorsOnly());
-
-        return new ScheduledProcessEventSearchResults(offset+limit > results.getResultList().size() ?results.getResultList().subList(offset, results.getResultList().size()):results.getResultList().subList(offset, offset+limit)
-            , results.getTotalNumberOfResults(), results.getQueryResponseTime());
+        agentJobBusinessStreams = new HashMap<>();
+        return this.scheduledProcessManagementService.getScheduledProcessEvents(scheduledProcessFilter.getStartTime()
+            , scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter(), scheduledProcessFilter.isErrorsOnly(), offset, limit);
     }
 }

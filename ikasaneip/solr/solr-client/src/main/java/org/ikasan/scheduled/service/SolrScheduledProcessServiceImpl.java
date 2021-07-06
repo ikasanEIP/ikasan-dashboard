@@ -1,5 +1,6 @@
 package org.ikasan.scheduled.service;
 
+import org.ikasan.business.stream.metadata.dao.SolrBusinessStreamMetadataDao;
 import org.ikasan.configuration.metadata.dao.SolrComponentConfigurationMetadataDao;
 import org.ikasan.module.metadata.dao.SolrModuleMetadataDao;
 import org.ikasan.scheduled.converter.ScheduledProcessAggregateConfigurationConverter;
@@ -8,10 +9,7 @@ import org.ikasan.scheduled.model.ScheduleProcessConfigurationBucket;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.model.UpcomingScheduledProcess;
-import org.ikasan.spec.metadata.ConfigurationMetaData;
-import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
-import org.ikasan.spec.metadata.FlowMetaData;
-import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.*;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.ScheduledProcessService;
@@ -35,10 +33,12 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
     private SolrModuleMetadataDao solrModuleMetadataDao;
     private SolrComponentConfigurationMetadataDao solrComponentConfigurationMetadataDao;
     private ScheduledProcessAggregateConfigurationConverter scheduledProcessAggregateConfigurationConverter;
+    private SolrBusinessStreamMetadataDao solrBusinessStreamMetadataDao;
 
 
     public SolrScheduledProcessServiceImpl(SolrScheduledProcessEventDao solrScheduledProcessEventDao
-        , SolrModuleMetadataDao solrModuleMetadataDao, SolrComponentConfigurationMetadataDao solrComponentConfigurationMetadataDao)
+        , SolrModuleMetadataDao solrModuleMetadataDao, SolrComponentConfigurationMetadataDao solrComponentConfigurationMetadataDao
+        , SolrBusinessStreamMetadataDao solrBusinessStreamMetadataDao)
     {
         this.scheduledProcessEventDao = solrScheduledProcessEventDao;
         if(this.scheduledProcessEventDao == null)
@@ -54,6 +54,11 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         if(this.solrComponentConfigurationMetadataDao == null)
         {
             throw new IllegalArgumentException("systemEventDao cannot be null!");
+        }
+        this.solrBusinessStreamMetadataDao = solrBusinessStreamMetadataDao;
+        if(this.solrBusinessStreamMetadataDao == null)
+        {
+            throw new IllegalArgumentException("solrBusinessStreamMetadataDao cannot be null!");
         }
 
         this.scheduledProcessAggregateConfigurationConverter = new ScheduledProcessAggregateConfigurationConverter();
@@ -172,8 +177,6 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("cronExpression"))
             .findFirst().get().getValue();
 
-
-
         AtomicReference<String> jobName = new AtomicReference<>();
 
         scheduledConsumerConfigurationMetaData.getParameters().stream()
@@ -265,8 +268,8 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
     }
 
     @Override
-    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(long startTime, long endTime, String filter, boolean errorsOnly) {
-        return this.scheduledProcessEventDao.getScheduleProcessEvents(startTime, endTime, filter, errorsOnly);
+    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(long startTime, long endTime, String filter, boolean errorsOnly, int start, int limit) {
+        return this.scheduledProcessEventDao.getScheduleProcessEvents(startTime, endTime, filter, errorsOnly, start, limit);
     }
 
     @Override
@@ -339,11 +342,19 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
 
                 scheduledProcessAggregateConfiguration.set(this.scheduledProcessAggregateConfigurationConverter.convert(bucket));
                 scheduledProcessAggregateConfiguration.get().setAgentName(agent);
+                scheduledProcessAggregateConfiguration.get().setJobName(flow);
                 scheduledProcessAggregateConfiguration.get().setStartAutomatically(flowMetaData.getFlowStartupType().equals("AUTOMATIC"));
+                scheduledProcessAggregateConfiguration.get().setBusinessStreamMetaData(this.solrBusinessStreamMetadataDao
+                    .findBusinessStreamsContainingFlow(moduleMetaData.getName(), flowMetaData.getName()));
             });
 
 
         return scheduledProcessAggregateConfiguration.get();
+    }
+
+    @Override
+    public List<BusinessStreamMetaData> getBusinessStreams(String agent, String flow) {
+        return this.solrBusinessStreamMetadataDao.findBusinessStreamsContainingFlow(agent, flow);
     }
 
     public void saveConfiguration(ConfigurationMetaData configurationMetaData) {

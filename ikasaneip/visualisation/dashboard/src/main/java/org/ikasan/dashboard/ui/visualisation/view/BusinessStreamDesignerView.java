@@ -354,7 +354,12 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         ArrayList<Image> images = new ArrayList<>();
 
         Files.list(Paths.get(this.integratedSystemsImagePath)).forEach(
-            file -> images.add(getImageItem(file, BusinessStreamItemTypes.INTEGRATED_SYSTEM.name())));
+            file -> {
+                DesignerPalletImageItem item = getImageItem(file, BusinessStreamItemTypes.INTEGRATED_SYSTEM.name());
+                if(item != null) {
+                    images.add(item);
+                }
+            });
 
         return images;
     }
@@ -366,6 +371,9 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         try {
             FileInputStream fileInputStream = new FileInputStream(file.toFile());
             BufferedImage bimg = ImageIO.read(fileInputStream);
+            if(bimg == null) {
+                return null;
+            }
             width = bimg.getWidth();
             height = bimg.getHeight();
 

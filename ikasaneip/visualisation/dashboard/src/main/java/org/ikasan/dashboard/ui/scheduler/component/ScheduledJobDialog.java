@@ -508,20 +508,105 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         ConfigurationMetaData<List<ConfigurationParameterMetaData>> moduleConfiguration
             = this.configurationRestService.getModuleConfiguration(this.agent.getUrl());
 
-        if(moduleConfiguration == null) {
-            throw new RuntimeException(String.format("Could not find module configuration for agent[%s]", agent));
+        try {
+
+            if (moduleConfiguration == null) {
+                throw new RuntimeException(String.format("Could not find module configuration for agent[%s]", agent));
+            }
+
+            logger.debug("Module Configuration: " + moduleConfiguration);
+
+            if (this.editMode == EditMode.NEW) {
+                // Get the flowDefinitions from the configuration metadata.
+                moduleConfiguration.getParameters().stream()
+                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
+                    .findFirst().ifPresentOrElse(flowDefinitions -> {
+                    // Add the new job flow to the map.
+                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
+                    configurationMap.put(scheduleProcessAggregateConfiguration.getJobName(), "MANUAL");
+                    flowDefinitions.setValue(configurationMap);
+
+                    logger.info("Module Configuration: " + moduleConfiguration);
+                    // update the configuration back onto the module.
+                    this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
+                }, () -> {
+                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
+                });
+
+
+                // We need to deactivate and activate the module so the new flow is initialised
+                this.changeActivation("deactivate");
+                this.changeActivation("activate");
+            }
+
+            /// Load the required configurations for a scheduled job.
+            ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration = this.getConfigurationForAgentFlowComponent(this.agent,
+                this.jobNameTf.getValue(), ScheduledProcessConstants.SCHEDULED_CONSUMER);
+            ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfiguration = this.getConfigurationForAgentFlowComponent(this.agent,
+                this.jobNameTf.getValue(), ScheduledProcessConstants.BLACKOUT_ROUTER);
+            ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfiguration = this.getConfigurationForAgentFlowComponent(this.agent,
+                this.jobNameTf.getValue(), ScheduledProcessConstants.PROCESS_EXECUTION_BROKER);
+
+            // Update all the configurations with the configurations provided in the form.
+            this.updateScheduleConsumerConfiguration(scheduledConsumerConfiguration, scheduleProcessAggregateConfiguration);
+            this.updateBlackoutRouterConfiguration(blackoutRouterConfiguration, scheduleProcessAggregateConfiguration);
+            this.updateProcessExecutionBrokerConfiguration(processExecutionBrokerConfiguration, scheduleProcessAggregateConfiguration);
+
+            // Save all the configurations back to the agent.
+            logger.debug(scheduledConsumerConfiguration.toString());
+            if(!this.configurationRestService.storeConfiguration(this.agent.getUrl(), scheduledConsumerConfiguration)) {
+                throw new RuntimeException(String.format("Could not store scheduled consumer configuration [%s]", scheduledConsumerConfiguration));
+            }
+            this.scheduledProcessManagementService.saveConfiguration(scheduledConsumerConfiguration);
+
+            logger.debug(blackoutRouterConfiguration.toString());
+            if(!this.configurationRestService.storeConfiguration(this.agent.getUrl(), blackoutRouterConfiguration)) {
+                throw new RuntimeException(String.format("Could not store blackout router configuration [%s]", blackoutRouterConfiguration));
+            }
+            this.scheduledProcessManagementService.saveConfiguration(blackoutRouterConfiguration);
+
+            logger.debug(processExecutionBrokerConfiguration.toString());
+            if(!this.configurationRestService.storeConfiguration(this.agent.getUrl(), processExecutionBrokerConfiguration)) {
+                throw new RuntimeException(String.format("Could not store process execution configuration [%s]", blackoutRouterConfiguration));
+            }
+            this.scheduledProcessManagementService.saveConfiguration(processExecutionBrokerConfiguration);
+
+
+            if(this.startAutomaticCb.getValue()) {
+                // Now that all configurations are applied we need to set up the startup type and restart the flow
+                String startupType = this.startAutomaticCb.getValue() ? "AUTOMATIC" : "MANUAL";
+                moduleConfiguration.getParameters().stream()
+                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
+                    .findFirst().ifPresentOrElse(flowDefinitions -> {
+                    // Add the new job flow to the map.
+                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
+                    configurationMap.replace(scheduleProcessAggregateConfiguration.getJobName(), startupType);
+                    flowDefinitions.setValue(configurationMap);
+
+                    logger.info("Module Configuration: " + moduleConfiguration);
+                    // update the configuration back onto the module.
+                    this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
+                }, () -> {
+                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s] " +
+                        "when attempting to update start up control.", agent));
+                });
+
+                this.moduleControlRestService.changeFlowStartupType(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName()
+                    , startupType, "Scheduler flow requires automatic startup.");
+            }
+
+            // In order for the configuration to be applied the flow must be stopped and started.
+            this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName(), "stop");
+            this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName(), "start");
         }
-
-        logger.debug("Module Configuration: " + moduleConfiguration);
-
-        if(this.editMode == EditMode.NEW) {
-            // Get the flowDefinitions from the configuration metadata.
+        catch (Exception e) {
+            // If any exceptions occur we are going to remove the job that we attempted to create.
             moduleConfiguration.getParameters().stream()
                 .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
                 .findFirst().ifPresentOrElse(flowDefinitions -> {
                 // Add the new job flow to the map.
                 Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
-                configurationMap.put(scheduleProcessAggregateConfiguration.getJobName(), "MANUAL");
+                configurationMap.remove(scheduleProcessAggregateConfiguration.getJobName());
                 flowDefinitions.setValue(configurationMap);
 
                 logger.info("Module Configuration: " + moduleConfiguration);
@@ -532,56 +617,13 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
             });
 
 
-            // We need to deactivate and activate the module so the new flow is initialised
+            // We need to deactivate and activate the module so the new flow is removed when initialisation occurs.
             this.changeActivation("deactivate");
             this.changeActivation("activate");
+
+            throw e;
         }
-
-        /// Load the required configurations for a scheduled job.
-        ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration = this.getConfigurationForAgentFlowComponent(this.agent,
-            this.jobNameTf.getValue(), ScheduledProcessConstants.SCHEDULED_CONSUMER);
-        ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfiguration = this.getConfigurationForAgentFlowComponent(this.agent,
-            this.jobNameTf.getValue(), ScheduledProcessConstants.BLACKOUT_ROUTER);
-        ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfiguration = this.getConfigurationForAgentFlowComponent(this.agent,
-            this.jobNameTf.getValue(), ScheduledProcessConstants.PROCESS_EXECUTION_BROKER);
-
-        // Update all the configurations with the configurations provided in the form.
-        this.updateScheduleConsumerConfiguration(scheduledConsumerConfiguration, scheduleProcessAggregateConfiguration);
-        this.updateBlackoutRouterConfiguration(blackoutRouterConfiguration, scheduleProcessAggregateConfiguration);
-        this.updateProcessExecutionBrokerConfiguration(processExecutionBrokerConfiguration, scheduleProcessAggregateConfiguration);
-
-        // Save all the configurations back to the agent.
-        logger.debug(scheduledConsumerConfiguration.toString());
-        this.configurationRestService.storeConfiguration(this.agent.getUrl(), scheduledConsumerConfiguration);
-        this.scheduledProcessManagementService.saveConfiguration(scheduledConsumerConfiguration);
-        logger.debug(blackoutRouterConfiguration.toString());
-        this.configurationRestService.storeConfiguration(this.agent.getUrl(), blackoutRouterConfiguration);
-        this.scheduledProcessManagementService.saveConfiguration(blackoutRouterConfiguration);
-        logger.debug(processExecutionBrokerConfiguration.toString());
-        this.configurationRestService.storeConfiguration(this.agent.getUrl(), processExecutionBrokerConfiguration);
-        this.scheduledProcessManagementService.saveConfiguration(processExecutionBrokerConfiguration);
-
-
-        // Now that all configurations are applied we need to set up the startup type and restart the flow
-        String startupType = this.startAutomaticCb.getValue() ? "AUTOMATIC" : "MANUAL";
-        moduleConfiguration.getParameters().stream()
-            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
-            .findFirst().ifPresentOrElse(flowDefinitions -> {
-            // Add the new job flow to the map.
-            Map<String, String> configurationMap = (Map<String, String>)flowDefinitions.getValue();
-            configurationMap.replace(scheduleProcessAggregateConfiguration.getJobName(), startupType);
-            flowDefinitions.setValue(configurationMap);
-
-            logger.info("Module Configuration: " + moduleConfiguration);
-            // update the configuration back onto the module.
-            this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
-        }, () -> {throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));});
-
-        this.moduleControlRestService.changeFlowStartupType(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName()
-            , startupType, "Scheduler flow requires automatic startup.");
-        this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName(),"stop");
-        this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName(),"start");
-    }
+     }
 
     /**
      * Helper method to call activation endpoint on the scheduler agent.
