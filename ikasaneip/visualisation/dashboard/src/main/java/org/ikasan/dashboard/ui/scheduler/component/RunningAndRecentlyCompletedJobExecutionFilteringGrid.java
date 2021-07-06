@@ -14,8 +14,11 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.shared.Registration;
+import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
+import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
+import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
@@ -34,6 +37,7 @@ import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 
@@ -209,6 +213,12 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
         .setHeader(errorCb)
         .setKey("executionStatus")
         .setWidth("40px");
+
+        this.getColumns().forEach(column -> column.setClassNameGenerator(item -> {
+            if(item.isSuccessful()) return "running";
+
+            return "stoppedInError";
+        }));
 
         super.init();
     }
