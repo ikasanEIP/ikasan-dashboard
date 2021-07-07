@@ -1,8 +1,10 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.flowingcode.vaadin.addons.ironicons.IronIcons;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
@@ -11,9 +13,13 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouterLink;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
+import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -48,7 +54,7 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
 
     public RunningAndRecentlyCompletedJobExecutionsWidget(ScheduledProcessManagementService scheduledProcessManagementService,
                                                           DateFormatter dateFormatter, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                                          MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService) {
+                                                          MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService, boolean isDeeplink) {
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.dateFormatter = dateFormatter;
         this.configurationRestService = configurationRestService;
@@ -57,7 +63,12 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
         this.moduleMetaDataService = moduleMetaDataService;
         Div div = new Div();
         div.addClassNames("card-counter");
-        div.setHeight("380px");
+        if(isDeeplink) {
+            div.setHeight("100%");
+        }
+        else {
+            div.setHeight("380px");
+        }
 
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
@@ -86,10 +97,20 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
         refreshButton.addClickListener(buttonClickEvent -> {
             this.runningAndRecentlyCompletedJobExecutionFilteringGrid.refresh();
         });
-        refreshButton.getElement().appendChild(IronIcons.REFRESH.create().getElement());
+        refreshButton.getElement().appendChild(VaadinIcon.REFRESH.create().getElement());
+
+        Button newWindowButton = new Button();
+        newWindowButton.addClickListener(buttonClickEvent -> {
+            RouterLink link = new RouterLink(null, RunningAndRecentlyCompletedJobExecutionDeepLinkView.class);
+            getUI().ifPresent(ui -> ui.getPage().open(link.getHref()));
+        });
+        newWindowButton.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
+        newWindowButton.setVisible(!isDeeplink);
+
+
 
         HorizontalLayout timeComponents = new HorizontalLayout();
-        timeComponents.add(date, startTime, endTime, textField, refreshButton);
+        timeComponents.add(date, startTime, endTime, textField, refreshButton, newWindowButton);
         timeComponents.getElement().getStyle().set("margin-left", "auto");
 
         layout.add(modules, timeComponents);
@@ -101,6 +122,14 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
         div.add(layout);
         div.add(this.runningAndRecentlyCompletedJobExecutionFilteringGrid);
 
+        if(isDeeplink) {
+            this.runningAndRecentlyCompletedJobExecutionFilteringGrid.setHeight("87vh");
+        }
+        else {
+            this.runningAndRecentlyCompletedJobExecutionFilteringGrid.setHeight("300px");
+        }
+
+        this.setSizeFull();
         this.add(div);
     }
 
@@ -117,7 +146,6 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
 
         this.runningAndRecentlyCompletedJobExecutionFilteringGrid = new RunningAndRecentlyCompletedJobExecutionFilteringGrid(scheduledProcessManagementService
             , this.scheduledProcessFilter, this.dateFormatter, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetaDataService);
-        this.runningAndRecentlyCompletedJobExecutionFilteringGrid.setHeight("300px");
 
         this.runningAndRecentlyCompletedJobExecutionFilteringGrid.addGridFiltering(textField, this.scheduledProcessFilter::setFilter);
         this.runningAndRecentlyCompletedJobExecutionFilteringGrid.addGridFiltering(date, startTime, endTime,

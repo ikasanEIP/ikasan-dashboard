@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
@@ -11,6 +10,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
+import com.vaadin.flow.router.RouterLink;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
@@ -50,7 +50,7 @@ public class UpcomingJobExecutionsWidget extends Div {
 
     public UpcomingJobExecutionsWidget(ScheduledProcessManagementService scheduledProcessManagementService, DateFormatter dateFormatter
         , ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService
-        , ModuleMetaDataService moduleMetaDataService) {
+        , ModuleMetaDataService moduleMetaDataService, boolean isDeeplink) {
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.dateFormatter = dateFormatter;
         this.configurationRestService = configurationRestService;
@@ -61,7 +61,12 @@ public class UpcomingJobExecutionsWidget extends Div {
         this.scheduledProcessFilter = new ScheduledProcessFilter();
         Div div = new Div();
         div.addClassNames("card-counter");
-        div.setHeight("380px");
+        if(isDeeplink) {
+            div.setHeight("100%");
+        }
+        else {
+            div.setHeight("380px");
+        }
 
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
@@ -87,10 +92,18 @@ public class UpcomingJobExecutionsWidget extends Div {
         refreshButton.addClickListener(buttonClickEvent -> {
            this.upcomingJobExecutionFilteringGrid.refresh();
         });
-        refreshButton.getElement().appendChild(IronIcons.REFRESH.create().getElement());
+        refreshButton.getElement().appendChild(VaadinIcon.REFRESH.create().getElement());
+
+        Button newWindowButton = new Button();
+        newWindowButton.addClickListener(buttonClickEvent -> {
+            RouterLink link = new RouterLink(null, UpcomingJobExecutionDeepLinkView.class);
+            getUI().ifPresent(ui -> ui.getPage().open(link.getHref()));
+        });
+        newWindowButton.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
+        newWindowButton.setVisible(!isDeeplink);
 
         HorizontalLayout timeComponents = new HorizontalLayout();
-        timeComponents.add(date, startTime, endTime, textField, refreshButton);
+        timeComponents.add(date, startTime, endTime, textField, refreshButton, newWindowButton);
         timeComponents.getElement().getStyle().set("margin-left", "auto");
 
         layout.add(modules, timeComponents);
@@ -101,6 +114,14 @@ public class UpcomingJobExecutionsWidget extends Div {
         div.add(layout);
         div.add(this.upcomingJobExecutionFilteringGrid);
 
+        if(isDeeplink) {
+            this.upcomingJobExecutionFilteringGrid.setHeight("87vh");
+        }
+        else {
+            this.upcomingJobExecutionFilteringGrid.setHeight("300px");
+        }
+
+        this.setSizeFull();
         this.add(div);
     }
 
@@ -118,7 +139,6 @@ public class UpcomingJobExecutionsWidget extends Div {
         this.upcomingJobExecutionFilteringGrid = new UpcomingJobExecutionFilteringGrid(this.scheduledProcessManagementService
             , this.scheduledProcessFilter, this.dateFormatter, this.configurationRestService, this.moduleControlRestService,
             this.metaDataRestService, this.moduleMetaDataService);
-        this.upcomingJobExecutionFilteringGrid.setHeight("300px");
 
         this.upcomingJobExecutionFilteringGrid.addGridFiltering(textField, this.scheduledProcessFilter::setFilter);
         this.upcomingJobExecutionFilteringGrid.addGridFiltering(date, startTime, endTime,
