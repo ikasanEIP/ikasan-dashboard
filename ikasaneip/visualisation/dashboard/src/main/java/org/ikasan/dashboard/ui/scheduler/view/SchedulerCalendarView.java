@@ -141,7 +141,7 @@ public class SchedulerCalendarView extends VerticalLayout implements BeforeEnter
         Tab schedulerDashboardTab = new Tab("Scheduler Dashboard");
         Tab schedulerJobTab = new Tab("Scheduled Jobs");
 //        Tab schedulerStatusTab = new Tab("Scheduler Statistics");
-        Tab calendarTab = new Tab("Scheduled Jobs Calendar");
+        Tab calendarTab = new Tab("Scheduled Jobs Calendar - BETA");
 //        Tab schedulerJobManagementTab = new Tab("Scheduler Status");
         Tabs tabs = new Tabs(schedulerDashboardTab, schedulerJobTab, calendarTab);
 
@@ -373,9 +373,9 @@ public class SchedulerCalendarView extends VerticalLayout implements BeforeEnter
             this.init();
             this.schedulerAgentDashboardView.beforeEnter(beforeEnterEvent);
             scheduleJobsTab.addRow(new UpcomingJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter, this.configurationRestService,
-                this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService));
+                this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false));
             scheduleJobsTab.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
-                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService));
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false));
 
             this.scheduleJStatsTab.addRow(new DurationWidget());
             this.scheduleJStatsTab.addRow(new StartAndEndTimeWidget());
