@@ -86,7 +86,7 @@ public class UpcomingJobExecutionsWidget extends Div {
 
         this.endTime = new TimePicker("To");
         this.endTime.setStep(Duration.ofMinutes(15));
-        this.endTime.setValue(LocalTime.now().plusHours(1));
+        this.endTime.setValue(LocalTime.of(23, 59, 59));
 
         Button refreshButton = new Button();
         refreshButton.addClickListener(buttonClickEvent -> {
