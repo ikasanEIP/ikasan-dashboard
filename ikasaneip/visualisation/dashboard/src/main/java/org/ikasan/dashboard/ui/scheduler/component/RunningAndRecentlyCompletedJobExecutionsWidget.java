@@ -85,11 +85,11 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
 
         this.startTime = new TimePicker("From");
         this.startTime.setStep(Duration.ofMinutes(15));
-        this.startTime.setValue(LocalTime.now().minusHours(1));
+        this.startTime.setValue(LocalTime.of(0, 0, 0));
 
         this.endTime = new TimePicker("To");
         this.endTime.setStep(Duration.ofMinutes(15));
-        this.endTime.setValue(LocalTime.now());
+        this.endTime.setValue(LocalTime.of(23, 59, 59));
 
 
 

@@ -99,16 +99,16 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
             .setHeader("Job Description")
             .setKey("description")
             .setFlexGrow(5);
-        super.addColumn(new ComponentRenderer<>(jobExecution -> {
+        super.addColumn(new ComponentRenderer<>(upcomingScheduledProcess -> {
             HorizontalLayout layout = new HorizontalLayout();
 
-            if(!this.agentJobBusinessStreams.containsKey(jobExecution.getAgentName()+"."+jobExecution.getJobName())) {
-                this.agentJobBusinessStreams.put(jobExecution.getAgentName()+"."+jobExecution.getJobName(), this.scheduledProcessManagementService.getBusinessStreams(
-                    jobExecution.getAgentName(), jobExecution.getJobName()));
+            if(!this.agentJobBusinessStreams.containsKey(upcomingScheduledProcess.getAgentName()+"."+upcomingScheduledProcess.getJobName())) {
+                this.agentJobBusinessStreams.put(upcomingScheduledProcess.getAgentName()+"."+upcomingScheduledProcess.getJobName(), this.scheduledProcessManagementService.getBusinessStreams(
+                    upcomingScheduledProcess.getAgentName(), upcomingScheduledProcess.getJobName()));
             }
 
             List<BusinessStreamMetaData> businessStreamMetaDataList
-                = this.agentJobBusinessStreams.get(jobExecution.getAgentName()+"."+jobExecution.getJobName());
+                = this.agentJobBusinessStreams.get(upcomingScheduledProcess.getAgentName()+"."+upcomingScheduledProcess.getJobName());
 
             businessStreamMetaDataList.forEach(businessStreamMetaData -> {
                 String route = RouteConfiguration.forSessionScope()
@@ -129,9 +129,24 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
             .setHeader("Next Execution Time")
             .setKey("nextExecutionTime")
             .setWidth("130px");
-        super.addColumn(new ComponentRenderer<>(scheduledProcessEvent->
+        super.addColumn(new ComponentRenderer<>(upcomingScheduledProcess->
         {
             HorizontalLayout layout = new HorizontalLayout();
+
+            Icon jobExecutionDetails = VaadinIcon.RANDOM.create();
+            jobExecutionDetails.setSize("14pt");
+            jobExecutionDetails.getStyle().set("cursor", "pointer");
+            jobExecutionDetails.getElement().setAttribute("title", "Job execution details");
+
+            jobExecutionDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(iconClickEvent.getClickCount() == 2) {
+                    ModuleMetaData agent = this.moduleMetaDataService.findById(upcomingScheduledProcess.getAgentName());
+                    UpcomingJobExecutionDialog upcomingJobExecutionDialog = new UpcomingJobExecutionDialog(upcomingScheduledProcess, agent);
+                    upcomingJobExecutionDialog.open();
+                }
+            });
+
+            layout.add(jobExecutionDetails);
 
             Icon jobDetails = VaadinIcon.CLIPBOARD_TEXT.create();
             jobDetails.setSize("14pt");
@@ -142,10 +157,10 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
 
             jobDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 if(iconClickEvent.getClickCount() == 2) {
-                    ScheduledProcessAggregateConfiguration configuration = this.scheduledProcessManagementService.getScheduleProcessAggregateConfiguration(scheduledProcessEvent.getAgentName(),
-                        scheduledProcessEvent.getJobName());
+                    ScheduledProcessAggregateConfiguration configuration = this.scheduledProcessManagementService.getScheduleProcessAggregateConfiguration(upcomingScheduledProcess.getAgentName(),
+                        upcomingScheduledProcess.getJobName());
 
-                    ModuleMetaData agent = this.moduleMetaDataService.findById(scheduledProcessEvent.getAgentName());
+                    ModuleMetaData agent = this.moduleMetaDataService.findById(upcomingScheduledProcess.getAgentName());
 
                     ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
                         this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
@@ -168,19 +183,19 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
         }))
         .setHeader("Actions")
         .setKey("actions")
-        .setWidth("40px");
-        super.addColumn(new ComponentRenderer<>(scheduledProcessEvent-> {
+        .setWidth("70px");
+        super.addColumn(new ComponentRenderer<>(upcomingScheduledProcess-> {
             VerticalLayout layout = new VerticalLayout();
             layout.setMargin(false);
             layout.setPadding(false);
             layout.setSpacing(false);
 
-            if(!this.agents.containsKey(scheduledProcessEvent.getAgentName())) {
-                this.agents.put(scheduledProcessEvent.getAgentName(), moduleMetaDataService.findById(scheduledProcessEvent.getAgentName()));
+            if(!this.agents.containsKey(upcomingScheduledProcess.getAgentName())) {
+                this.agents.put(upcomingScheduledProcess.getAgentName(), moduleMetaDataService.findById(upcomingScheduledProcess.getAgentName()));
             }
 
-            FlowState flowState = FlowStateCache.instance().get(this.agents.get(scheduledProcessEvent.getAgentName())
-                , scheduledProcessEvent.getJobName());
+            FlowState flowState = FlowStateCache.instance().get(this.agents.get(upcomingScheduledProcess.getAgentName())
+                , upcomingScheduledProcess.getJobName());
 
             if(flowState == null || flowState.getState() == State.UNKNOWN_STATE) {
                 Icon unknown = VaadinIcon.QUESTION.create();

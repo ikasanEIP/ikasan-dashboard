@@ -65,6 +65,38 @@ public class UpcomingScheduledProcess {
         return blackoutRouterConfigurationMetaData;
     }
 
+    public void setAgentName(String agentName) {
+        this.agentName = agentName;
+    }
+
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
+    }
+
+    public void setJobGroup(String jobGroup) {
+        this.jobGroup = jobGroup;
+    }
+
+    public void setJobDescription(String jobDescription) {
+        this.jobDescription = jobDescription;
+    }
+
+    public void setFireTime(long fireTime) {
+        this.fireTime = fireTime;
+    }
+
+    public void setScheduledConsumerConfigurationMetaData(ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfigurationMetaData) {
+        this.scheduledConsumerConfigurationMetaData = scheduledConsumerConfigurationMetaData;
+    }
+
+    public void setProcessExecutionBrokerConfigurationMetaData(ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfigurationMetaData) {
+        this.processExecutionBrokerConfigurationMetaData = processExecutionBrokerConfigurationMetaData;
+    }
+
+    public void setBlackoutRouterConfigurationMetaData(ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfigurationMetaData) {
+        this.blackoutRouterConfigurationMetaData = blackoutRouterConfigurationMetaData;
+    }
+
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("UpcomingScheduledProcess{");
