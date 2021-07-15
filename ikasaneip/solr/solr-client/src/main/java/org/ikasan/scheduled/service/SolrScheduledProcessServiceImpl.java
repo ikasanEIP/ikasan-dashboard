@@ -13,14 +13,14 @@ import org.ikasan.spec.metadata.*;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.ScheduledProcessService;
+import org.ikasan.spec.solr.BatchInsertEvent;
+import org.ikasan.spec.solr.BatchInsertListener;
 import org.ikasan.spec.solr.SolrService;
 import org.ikasan.spec.solr.SolrServiceBase;
 import org.quartz.CronExpression;
 
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -34,6 +34,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
     private SolrComponentConfigurationMetadataDao solrComponentConfigurationMetadataDao;
     private ScheduledProcessAggregateConfigurationConverter scheduledProcessAggregateConfigurationConverter;
     private SolrBusinessStreamMetadataDao solrBusinessStreamMetadataDao;
+    private List<BatchInsertListener<ScheduledProcessEvent>> batchInsertListeners;
 
 
     public SolrScheduledProcessServiceImpl(SolrScheduledProcessEventDao solrScheduledProcessEventDao
@@ -62,12 +63,15 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         }
 
         this.scheduledProcessAggregateConfigurationConverter = new ScheduledProcessAggregateConfigurationConverter();
+        this.batchInsertListeners = new ArrayList<>();
     }
 
     @Override
-    public void insert(List<ScheduledProcessEvent> scheduledProcessEvents)
-    {
+    public void insert(List<ScheduledProcessEvent> scheduledProcessEvents) {
         this.save(scheduledProcessEvents);
+
+        this.batchInsertListeners.forEach(batchInsertListeners
+            -> batchInsertListeners.onBatchInsert(new BatchInsertEvent<>(scheduledProcessEvents)));
     }
 
     @Override
@@ -173,9 +177,15 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
 
         List<UpcomingScheduledProcess> results = new ArrayList<>();
 
-        String cronExpressionString  = (String)scheduledConsumerConfigurationMetaData.getParameters().stream()
+        AtomicReference<String> cronExpressionString = new AtomicReference<>();
+
+        scheduledConsumerConfigurationMetaData.getParameters().stream()
             .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("cronExpression"))
-            .findFirst().get().getValue();
+            .findFirst().ifPresent(value -> cronExpressionString.set((String)value.getValue()));
+
+        Optional<ConfigurationParameterMetaData> timezone  = scheduledConsumerConfigurationMetaData.getParameters().stream()
+            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("timezone"))
+            .findFirst();
 
         AtomicReference<String> jobName = new AtomicReference<>();
 
@@ -206,7 +216,13 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         }
 
         try {
-            CronExpression cronExpression = new CronExpression(cronExpressionString);
+            CronExpression cronExpression = new CronExpression(cronExpressionString.get());
+
+            timezone.ifPresent(configurationParameterMetaData -> {
+                if(configurationParameterMetaData.getValue() != null) {
+                    cronExpression.setTimeZone(TimeZone.getTimeZone((String)configurationParameterMetaData.getValue()));
+                }
+            });
 
             Date next = cronExpression.getNextValidTimeAfter(new Date(startTime));
 
@@ -214,7 +230,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             while (next.before(new Date(endTime))) {
                 results.add(new UpcomingScheduledProcess(agent, jobName.get(),
                     jobGroup.get(), jobDescription.get(), next.getTime(), scheduledConsumerConfigurationMetaData,
-                    processExecutionBrokerConfigurationMetaData, blackoutRouterConfigurationMetaData));
+                    processExecutionBrokerConfigurationMetaData, blackoutRouterConfigurationMetaData, cronExpression.getTimeZone().getID()));
 
                 next = cronExpression.getNextValidTimeAfter(next);
             }
@@ -359,5 +375,13 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
 
     public void saveConfiguration(ConfigurationMetaData configurationMetaData) {
         this.solrComponentConfigurationMetadataDao.save(configurationMetaData);
+    }
+
+    public void addBatchInsertListener(BatchInsertListener<ScheduledProcessEvent> batchInsertListener) {
+        this.batchInsertListeners.add(batchInsertListener);
+    }
+
+    public void removeBatchInsertListener(BatchInsertListener<ScheduledProcessEvent> batchInsertListener) {
+        this.batchInsertListeners.remove(batchInsertListener);
     }
 }

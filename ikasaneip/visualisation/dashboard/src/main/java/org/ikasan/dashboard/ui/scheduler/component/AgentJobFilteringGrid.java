@@ -46,7 +46,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 
-public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggregateConfiguration, AgentJobFilter, ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration>> {
+public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggregateConfiguration, AgentJobFilter
+    , ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration>> {
 
     private ScheduledProcessManagementService scheduledProcessManagementService;
 
@@ -122,7 +123,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             .setHeader("Related Business Streams")
             .setKey("businessStreams")
             .setFlexGrow(5);
-        super.addColumn(new ComponentRenderer<>(scheduledProcessEvent->
+        super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration->
         {
             HorizontalLayout layout = new HorizontalLayout();
 
@@ -137,7 +138,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                         this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
                         this.metaDataRestService);
 
-                    scheduledJobDialog.setScheduleProcessAggregateConfiguration(scheduledProcessEvent, EditMode.EDIT);
+                    scheduledJobDialog.setScheduleProcessAggregateConfiguration(scheduledProcessAggregateConfiguration, EditMode.EDIT);
                     scheduledJobDialog.open();
 
                     scheduledJobDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
@@ -163,7 +164,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             delete.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 if(iconClickEvent.getClickCount() == 2) {
                     try {
-                        this.deleteScheduledJobFlow(scheduledProcessEvent);
+                        this.deleteScheduledJobFlow(scheduledProcessAggregateConfiguration);
                     }
                     catch(Exception e) {
                         e.printStackTrace();
@@ -178,11 +179,17 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             chart.setSize("14pt");
             chart.getStyle().set("cursor", "pointer");
             chart.getElement().setAttribute("title", "Job statistics");
+            chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                ScheduledJobStatisticsDialog scheduledJobStatisticsDialog = new ScheduledJobStatisticsDialog(this.scheduledProcessManagementService,
+                    this.moduleMetaDataService.findById(scheduledProcessAggregateConfiguration.getAgentName()), scheduledProcessAggregateConfiguration.getJobName());
+
+                scheduledJobStatisticsDialog.open();
+            });
 
             layout.add(chart);
 
             FlowState flowState = FlowStateCache.instance().get(this.agent
-                , scheduledProcessEvent.getJobName());
+                , scheduledProcessAggregateConfiguration.getJobName());
 
             if(flowState == null || flowState.getState() == State.UNKNOWN_STATE) {
                 Icon unknown = VaadinIcon.QUESTION.create();
@@ -194,14 +201,13 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             else if(flowState.getState() == State.RUNNING_STATE) {
                 Icon stop = VaadinIcon.STOP.create();
                 stop.setSize("14pt");
-//                stop.getStyle().set("color", "rgba(133,181,225,1.0)");
                 stop.getElement().setAttribute("title", "Stop scheduled job");
                 stop.getStyle().set("cursor", "pointer");
                 layout.add(stop);
 
                 stop.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                     if (iconClickEvent.getClickCount() == 2) {
-                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessEvent.getJobName(), "stop");
+                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "stop");
                     }
                 });
 
@@ -214,21 +220,20 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
 
                 pause.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                     if (iconClickEvent.getClickCount() == 2) {
-                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessEvent.getJobName(), "pause");
+                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "pause");
                     }
                 });
             }
             else if(flowState.getState() == State.RECOVERING_STATE) {
                 Icon stop = VaadinIcon.STOP.create();
                 stop.setSize("14pt");
-//                stop.getStyle().set("color", "rgba(133,181,225,1.0)");
                 stop.getElement().setAttribute("title", "Stop scheduled job");
                 stop.getStyle().set("cursor", "pointer");
                 layout.add(stop);
 
                 stop.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                     if (iconClickEvent.getClickCount() == 2) {
-                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessEvent.getJobName(), "stop");
+                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "stop");
                     }
                 });
             }
@@ -243,7 +248,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
 
                 start.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                     if (iconClickEvent.getClickCount() == 2) {
-                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessEvent.getJobName(), "start");
+                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "start");
                     }
                 });
 
@@ -256,7 +261,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
 
                 pause.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                     if (iconClickEvent.getClickCount() == 2) {
-                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessEvent.getJobName(), "pause");
+                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "pause");
                     }
                 });
             }
@@ -270,20 +275,19 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
 
                 start.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                     if (iconClickEvent.getClickCount() == 2) {
-                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessEvent.getJobName(), "start");
+                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "start");
                     }
                 });
 
                 Icon stop = VaadinIcon.STOP.create();
                 stop.setSize("14pt");
                 stop.getStyle().set("cursor", "pointer");
-//                stop.getStyle().set("color", "rgba(133,181,225,1.0)");
                 stop.getElement().setAttribute("title", "Stop scheduled job");
                 layout.add(stop);
 
                 stop.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                     if (iconClickEvent.getClickCount() == 2) {
-                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessEvent.getJobName(), "stop");
+                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "stop");
                     }
                 });
             }
@@ -294,14 +298,14 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
         .setHeader("Actions")
         .setKey("actions")
         .setFlexGrow(2);
-        super.addColumn(new ComponentRenderer<>(scheduledProcessEvent-> {
+        super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration-> {
             VerticalLayout layout = new VerticalLayout();
             layout.setMargin(false);
             layout.setPadding(false);
             layout.setSpacing(false);
 
             FlowState flowState = FlowStateCache.instance().get(this.agent
-                , scheduledProcessEvent.getJobName());
+                , scheduledProcessAggregateConfiguration.getJobName());
 
             if(flowState == null || flowState.getState() == State.UNKNOWN_STATE) {
                 Icon unknown = VaadinIcon.QUESTION.create();

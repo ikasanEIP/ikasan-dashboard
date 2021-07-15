@@ -48,7 +48,7 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
         div.setHeight("325px");
 
         chart = new Chart();
-        chart.setClassName("hospital-events");
+        chart.setClassName("ikasan-charts");
 
         Configuration configuration = chart.getConfiguration();
 

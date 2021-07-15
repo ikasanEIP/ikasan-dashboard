@@ -13,12 +13,6 @@ import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.shared.Registration;
-import org.ikasan.dashboard.broadcast.FlowState;
-import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
-import org.ikasan.dashboard.broadcast.State;
-import org.ikasan.dashboard.cache.CacheStateBroadcaster;
-import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
@@ -34,14 +28,15 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
+import org.ikasan.spec.solr.BatchInsertEvent;
+import org.ikasan.spec.solr.BatchInsertListener;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 
-public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends FilteringGrid<ScheduledProcessEvent, ScheduledProcessFilter, ScheduledProcessEventSearchResults<ScheduledProcessEvent>> {
+public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends FilteringGrid<ScheduledProcessEvent, ScheduledProcessFilter, ScheduledProcessEventSearchResults<ScheduledProcessEvent>> implements BatchInsertListener<ScheduledProcessEvent> {
 
     private ScheduledProcessManagementService scheduledProcessManagementService;
 
@@ -53,6 +48,8 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
     private ModuleMetaDataService moduleMetaDataService;
 
     private HashMap<String, List<BusinessStreamMetaData>> agentJobBusinessStreams;
+
+    private UI ui;
 
     /**
      * Constructor
@@ -70,6 +67,7 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
         this.moduleMetaDataService = moduleMetaDataService;
+        this.ui = UI.getCurrent();
 
         this.initGrid();
     }
@@ -174,6 +172,12 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
             chart.setSize("14pt");
             chart.getStyle().set("cursor", "pointer");
             chart.getElement().setAttribute("title", "Job statistics");
+            chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                ScheduledJobStatisticsDialog scheduledJobStatisticsDialog = new ScheduledJobStatisticsDialog(this.scheduledProcessManagementService,
+                    this.moduleMetaDataService.findById(scheduledProcessEvent.getAgentName()), scheduledProcessEvent.getJobName());
+
+                scheduledJobStatisticsDialog.open();
+            });
 
             layout.add(chart);
 
@@ -272,5 +276,22 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
         agentJobBusinessStreams = new HashMap<>();
         return this.scheduledProcessManagementService.getScheduledProcessEvents(scheduledProcessFilter.getStartTime()
             , scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter(), scheduledProcessFilter.isErrorsOnly(), offset, limit);
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        this.scheduledProcessManagementService.addBatchInsertListener(this);
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
+        this.scheduledProcessManagementService.removeBatchInsertListener(this);
+    }
+
+    @Override
+    public void onBatchInsert(BatchInsertEvent<ScheduledProcessEvent> batchInsertEvent) {
+        ui.access(() -> super.refresh());
     }
 }

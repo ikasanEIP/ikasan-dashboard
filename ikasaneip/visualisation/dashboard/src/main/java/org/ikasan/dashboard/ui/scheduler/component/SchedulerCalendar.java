@@ -1,12 +1,10 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -23,29 +21,33 @@ import org.ikasan.scheduled.model.UpcomingScheduledProcess;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
+import org.ikasan.spec.solr.BatchInsertEvent;
+import org.ikasan.spec.solr.BatchInsertListener;
 import org.vaadin.stefan.fullcalendar.*;
+import org.vaadin.stefan.fullcalendar.model.Header;
+import org.vaadin.stefan.fullcalendar.model.HeaderFooterItem;
+import org.vaadin.stefan.fullcalendar.model.HeaderFooterPart;
 
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
-public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObserver {
-
-    private static DateTimeFormatter MONTH_DATE_FORMATTER =  DateTimeFormatter.ofPattern("MMM YYYY");
-    private static DateTimeFormatter YEAR_DATE_FORMATTER =  DateTimeFormatter.ofPattern("YYYY");
-    private static DateTimeFormatter DAY_DATE_FORMATTER =  DateTimeFormatter.ofPattern("MMMM dd, YYYY");
-
+public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObserver, BatchInsertListener<ScheduledProcessEvent> {
 
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ModuleMetaDataService moduleMetaDataService;
 
     private FullCalendar calendar;
-    private LocalDate localDate = LocalDate.now();
-    private Span dateString;
     private ComboBox<CalendarView> comboBoxView;
     private DateFormatter dateTimeFormatter;
+    private TextField filterField = new TextField("");
+
+    private LocalDate firstDay = null;
+    private LocalDate lastDate = null;
+
+    private UI ui;
 
     public SchedulerCalendar(ScheduledProcessManagementService scheduledProcessManagementService,
                              ModuleMetaDataService moduleMetaDataService) {
@@ -56,8 +58,13 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
     }
 
     public void init() {
-        calendar = new FullCalendarWithTooltip(12);//FullCalendarBuilder.create().withEntryLimit(12).build();
+        Header testHeader = new Header();
+        HeaderFooterPart headerCenter = testHeader.getCenter();
+        headerCenter.addItem(HeaderFooterItem.TITLE);
+        calendar = new FullCalendarWithTooltip(30);
         calendar.setWeekNumbersVisible(false);
+
+        calendar.setHeaderToolbar(testHeader);
 
         calendar.setFirstDay(DayOfWeek.MONDAY);
         calendar.setNowIndicatorShown(true);
@@ -78,51 +85,14 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
             }
         });
 
-//        calendar.setOption("rerenderDelay", 3);
-//        calendar.setOption("eventRenderWait", 3);
-//        Header header = new Header();
-//        header.
-//        calendar.setHeader(new Header());
-//        calendar.setEntryRenderCallback("" +
-//            "function(info) {" +
-//            "   console.log(info.event.title + 'X');" +
-//            "   info.el.style.color = 'red';" +
-//            "   info.el. = 'red';" +
-//            "   return info.el; " +
-//            "}"
-//        );
-
-//         this following code is an exapmle on how to create a server side dialog showing all entries of the day
-//        calendar.setMoreLinkClickAction(FullCalendar.MoreLinkClickAction.);
-//          calendar.addMoreLinkClickedListener(event -> {
-//            Collection<Entry> entries = event.getEntries();
-//            if (!entries.isEmpty()) {
-//                Dialog dialog = new Dialog();
-//                VerticalLayout dialogLayout = new VerticalLayout();
-//                dialogLayout.setSpacing(false);
-//                dialogLayout.setPadding(false);
-//                dialogLayout.setMargin(false);
-//                dialogLayout.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.STRETCH);
-//
-//                dialogLayout.add(new Span("Entries of " + event.getClickedDate()));
-//                entries.stream()
-//                        .sorted(Comparator.comparing(Entry::getTitle))
-//                        .map(entry -> {
-//                            NativeButton button = new NativeButton(entry.getTitle(), clickEvent -> {});
-//                            Style style = button.getStyle();
-//                            style.set("background-color", Optional.ofNullable(entry.getColor()).orElse("rgb(58, 135, 173)"));
-//                            style.set("color", "white");
-//                            style.set("border", "0 none black");
-//                            style.set("border-radius", "3px");
-//                            style.set("text-align", "left");
-//                            style.set("margin", "1px");
-//                            return button;
-//                        }).forEach(dialogLayout::add);
-//
-//                dialog.add(dialogLayout);
-//                dialog.open();
-//            }
-//        });
+        calendar.addDatesRenderedListener(event -> {
+            System.out.println("dates rendered: " + event.getStart() + " " + event.getEnd());
+            this.firstDay = event.getStart();
+            this.lastDate = event.getEnd();
+            this.calendar.removeAllEntries();
+            this.updateCalendarContents(event.getStart(), event.getEnd()
+                , filterField.getValue() != null ? filterField.getValue():null);
+        });
 
         this.add(this.createBasicToolbar(), calendar);
         this.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.STRETCH);
@@ -131,66 +101,21 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
         this.setFlexGrow(1, calendar);
 
         this.calendar.setHeightAuto();
-//        this.calendar.setHeight(2000);
-
-//        this.setSizeFull();
-//        calendar.setSizeFull();
+        this.ui = UI.getCurrent();
     }
 
     private HorizontalLayout createBasicToolbar() {
         Button buttonToday = new Button("Today", VaadinIcon.HOME.create(), e -> {
+            this.calendar.removeAllEntries();
             calendar.today();
-            if(this.comboBoxView.getValue().equals(CalendarViewImpl.LIST_DAY) || this.comboBoxView.getValue().equals(CalendarViewImpl.DAY_GRID_DAY)) {
-                this.localDate = LocalDate.now();
-                dateString.setText(DAY_DATE_FORMATTER.format(localDate));
-            }
-            else if(this.comboBoxView.getValue().equals(CalendarViewImpl.DAY_GRID_MONTH) || this.comboBoxView.getValue().equals(CalendarViewImpl.LIST_MONTH) ||
-                this.comboBoxView.getValue().equals(CalendarViewImpl.DAY_GRID_WEEK) || this.comboBoxView.getValue().equals(CalendarViewImpl.LIST_WEEK)) {
-                this.localDate = LocalDate.now();
-                dateString.setText(MONTH_DATE_FORMATTER.format(localDate));
-            }
-            else if(this.comboBoxView.getValue().equals(CalendarViewImpl.LIST_YEAR)) {
-                this.localDate = LocalDate.now();
-                dateString.setText(YEAR_DATE_FORMATTER.format(localDate));
-            }
         });
         Button buttonPrevious = new Button("Previous", VaadinIcon.ANGLE_LEFT.create(),  e -> {
+            this.calendar.removeAllEntries();
             calendar.previous();
-            if(this.comboBoxView.getValue().equals(CalendarViewImpl.LIST_DAY) || this.comboBoxView.getValue().equals(CalendarViewImpl.DAY_GRID_DAY)) {
-                this.localDate = this.localDate.minusDays(1);
-                dateString.setText(DAY_DATE_FORMATTER.format(localDate));
-            }
-            else if(this.comboBoxView.getValue().equals(CalendarViewImpl.DAY_GRID_WEEK) || this.comboBoxView.getValue().equals(CalendarViewImpl.LIST_WEEK)) {
-                this.localDate = this.localDate.minusWeeks(1);
-                dateString.setText(MONTH_DATE_FORMATTER.format(localDate));
-            }
-            else if(this.comboBoxView.getValue().equals(CalendarViewImpl.DAY_GRID_MONTH) || this.comboBoxView.getValue().equals(CalendarViewImpl.LIST_MONTH)) {
-                this.localDate = this.localDate.minusMonths(1);
-                dateString.setText(MONTH_DATE_FORMATTER.format(localDate));
-            }
-            else if(this.comboBoxView.getValue().equals(CalendarViewImpl.LIST_YEAR)) {
-                this.localDate = this.localDate.minusYears(1);
-                dateString.setText(YEAR_DATE_FORMATTER.format(localDate));
-            }
         });
         Button buttonNext = new Button("Next", VaadinIcon.ANGLE_RIGHT.create(), e -> {
+            this.calendar.removeAllEntries();
             calendar.next();
-            if(this.comboBoxView.getValue().equals(CalendarViewImpl.LIST_DAY) || this.comboBoxView.getValue().equals(CalendarViewImpl.DAY_GRID_DAY)) {
-                this.localDate = this.localDate.plusDays(1);
-                dateString.setText(DAY_DATE_FORMATTER.format(localDate));
-            }
-            else if(this.comboBoxView.getValue().equals(CalendarViewImpl.DAY_GRID_WEEK) || this.comboBoxView.getValue().equals(CalendarViewImpl.LIST_WEEK)) {
-                this.localDate = this.localDate.plusWeeks(1);
-                dateString.setText(MONTH_DATE_FORMATTER.format(localDate));
-            }
-            else if(this.comboBoxView.getValue().equals(CalendarViewImpl.DAY_GRID_MONTH) || this.comboBoxView.getValue().equals(CalendarViewImpl.LIST_MONTH)) {
-                this.localDate = this.localDate.plusMonths(1);
-                dateString.setText(MONTH_DATE_FORMATTER.format(localDate));
-            }
-            else if(this.comboBoxView.getValue().equals(CalendarViewImpl.LIST_YEAR)) {
-                this.localDate = this.localDate.plusYears(1);
-                dateString.setText(YEAR_DATE_FORMATTER.format(localDate));
-            }
         });
         buttonNext.setIconAfterText(true);
 
@@ -206,13 +131,9 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
         buttonDatePicker.getElement().appendChild(gotoDate.getElement());
         buttonDatePicker.addClickListener(event -> gotoDate.open());
 
-        dateString = new Span(MONTH_DATE_FORMATTER.format(this.localDate));
-        dateString.getStyle().set("font-size", "20pt");
-
-
         comboBoxView = new ComboBox<>("", List.of(CalendarViewImpl.DAY_GRID_DAY,
-            CalendarViewImpl.DAY_GRID_WEEK, CalendarViewImpl.DAY_GRID_MONTH, CalendarViewImpl.LIST_DAY,
-            CalendarViewImpl.LIST_WEEK, CalendarViewImpl.LIST_MONTH, CalendarViewImpl.LIST_YEAR));
+            CalendarViewImpl.DAY_GRID_WEEK, CalendarViewImpl.LIST_DAY,
+            CalendarViewImpl.LIST_WEEK));
         comboBoxView.setRenderer(new ComponentRenderer<>(item -> {
             Div text = new Div();
             text.setText(item.getName());
@@ -223,20 +144,11 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
             else if(item.getName().equals(CalendarViewImpl.DAY_GRID_WEEK.getName())){
                 text.setText("Grid Week");
             }
-            else if(item.getName().equals(CalendarViewImpl.DAY_GRID_MONTH.getName())){
-                text.setText("Grid Month");
-            }
             else if(item.getName().equals(CalendarViewImpl.LIST_DAY.getName())){
                 text.setText("List Day");
             }
             else if(item.getName().equals(CalendarViewImpl.LIST_WEEK.getName())){
                 text.setText("List Week");
-            }
-            else if(item.getName().equals(CalendarViewImpl.LIST_MONTH.getName())){
-                text.setText("List Month");
-            }
-            else if(item.getName().equals(CalendarViewImpl.LIST_YEAR.getName())){
-                text.setText("List Year");
             }
 
             return text;
@@ -248,122 +160,86 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
             else if(item.getName().equals(CalendarViewImpl.DAY_GRID_WEEK.getName())){
                 return "Grid Week";
             }
-            else if(item.getName().equals(CalendarViewImpl.DAY_GRID_MONTH.getName())){
-                return "Grid Month";
-            }
             else if(item.getName().equals(CalendarViewImpl.LIST_DAY.getName())){
                 return "List Day";
             }
             else if(item.getName().equals(CalendarViewImpl.LIST_WEEK.getName())){
                 return "List Week";
             }
-            else if(item.getName().equals(CalendarViewImpl.LIST_MONTH.getName())){
-                return "List Month";
-            }
-            else if(item.getName().equals(CalendarViewImpl.LIST_YEAR.getName())){
-                return "List Year";
-            }
 
             return "";
         });
 
-        comboBoxView.setValue(CalendarViewImpl.DAY_GRID_MONTH);
+        comboBoxView.setValue(CalendarViewImpl.DAY_GRID_WEEK);
+        calendar.changeView(CalendarViewImpl.DAY_GRID_WEEK);
         comboBoxView.addValueChangeListener(e -> {
-            if(e.getValue().equals(CalendarViewImpl.LIST_DAY) || e.getValue().equals(CalendarViewImpl.DAY_GRID_DAY)) {
-                dateString.setText(DAY_DATE_FORMATTER.format(localDate));
-            }
-            else if(e.getValue().equals(CalendarViewImpl.DAY_GRID_MONTH) || e.getValue().equals(CalendarViewImpl.LIST_MONTH) ||
-                e.getValue().equals(CalendarViewImpl.DAY_GRID_WEEK) || e.getValue().equals(CalendarViewImpl.LIST_WEEK)) {
-                dateString.setText(MONTH_DATE_FORMATTER.format(localDate));
-            }
-            else if(e.getValue().equals(CalendarViewImpl.LIST_YEAR)) {
-                dateString.setText(YEAR_DATE_FORMATTER.format(localDate));
-            }
             CalendarView value = e.getValue();
-            calendar.changeView(value == null ? CalendarViewImpl.DAY_GRID_MONTH : value);
-            calendar.render();
+            calendar.removeAllEntries();
+            calendar.changeView(value == null ? CalendarViewImpl.DAY_GRID_WEEK : value);
         });
 
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
 
-        TextField textField = new TextField("");
+        filterField.setSuffixComponent(icon);
+        filterField.setWidth("300px");
+        filterField.getElement().getStyle().set("margin-left", "auto");
 
-        textField.setSuffixComponent(icon);
-        textField.setWidth("300px");
+        filterField.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<TextField, String>>)
+            textFieldStringComponentValueChangeEvent -> {
+                this.calendar.removeAllEntries();
+                this.updateCalendarContents(this.firstDay, this.lastDate, filterField.getValue());
+            });
 
         HorizontalLayout layout = new HorizontalLayout(buttonToday, buttonPrevious, buttonNext, buttonDatePicker
-            , gotoDate, dateString, comboBoxView, textField);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, dateString);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.START, textField);
+            , gotoDate, comboBoxView, filterField);
+        layout.setWidthFull();
+
+        layout.setVerticalComponentAlignment(Alignment.END, filterField);
         return layout;
     }
 
 
-
-    private void createRecurringEvents(FullCalendar calendar) {
-        LocalDate now = LocalDate.now();
-
-        Entry recurring = new Entry();
-        recurring.setRecurring(true);
-        recurring.setTitle("Agent[Agent 1]\n Job Group[Job Group 1]\n Job[Job 1]");
-        recurring.setColor("lightgray");
-        recurring.setRecurringDaysOfWeeks(Collections.singleton(DayOfWeek.SUNDAY));
-
-        recurring.setRecurringStartDate(now.with(TemporalAdjusters.firstDayOfYear()), calendar.getTimezone());
-        recurring.setRecurringEndDate(now.with(TemporalAdjusters.lastDayOfYear()), calendar.getTimezone());
-        recurring.setRecurringStartTime(LocalTime.of(14, 0));
-        recurring.setRecurringEndTime(LocalTime.of(14, 0));
-
-        calendar.addEntry(recurring);
-    }
-
-    private void createDayEntry(FullCalendar calendar, String title, String description, LocalDate start, int days, String color) {
+    private Entry createTimedEntry(String title, String description, LocalDateTime start, int minutes, String color, HashMap<String, Object> extendedProps) {
         Entry entry = new Entry();
-        setValues(calendar, entry, title, description, start.atStartOfDay(), days, ChronoUnit.DAYS, color);
-
-        calendar.addEntry(entry);
-    }
-
-    private Entry createTimedEntry(FullCalendar calendar, String title, String description, LocalDateTime start, int minutes, String color, HashMap<String, Object> extendedProps) {
-        Entry entry = new Entry();
-        setValues(calendar, entry, title, description, start, minutes, ChronoUnit.MINUTES, color, extendedProps);
-
+        setValues(entry, title, description, start, minutes, ChronoUnit.MINUTES, color, extendedProps);
 
         return entry;
     }
 
 
-
-    private void setValues(FullCalendar calendar, Entry entry, String title, String description, LocalDateTime start, int amountToAdd, ChronoUnit unit, String color) {
+    private void setValues(Entry entry, String title, String description, LocalDateTime start, int amountToAdd, ChronoUnit unit, String color, HashMap<String, Object> extendedProps) {
         entry.setTitle(title);
         entry.setDescription(description);
-        entry.setStart(start, calendar.getTimezone());
-        entry.setEnd(entry.getStartUTC().plus(amountToAdd, unit));
-        entry.setAllDay(unit == ChronoUnit.DAYS);
-        entry.setColor(color);
-    }
-
-    private void setValues(FullCalendar calendar, Entry entry, String title, String description, LocalDateTime start, int amountToAdd, ChronoUnit unit, String color, HashMap<String, Object> extendedProps) {
-        entry.setTitle(title);
-        entry.setDescription(description);
-        entry.setStart(start, calendar.getTimezone());
+        entry.setStart(start);
         entry.setEnd(entry.getStartUTC().plus(amountToAdd, unit));
         entry.setAllDay(unit == ChronoUnit.DAYS);
         entry.setColor(color);
         entry.setExtendedProps(extendedProps);
     }
 
+    public void renderCalendar() {
+        this.calendar.render();
+    }
+
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-        this.calendar.removeAllEntries();
-        LocalDate firstDay = this.localDate.withDayOfMonth(1);
-        LocalDate lastDate = this.localDate.withDayOfMonth(this.localDate.lengthOfMonth());
-        lastDate.plusDays(1);
-        LocalDate oneMonthPrevious = this.localDate.minusMonths(1).withDayOfMonth(30);
-        LocalDate yesterday = LocalDate.now().minusDays(1);
+        this.calendar.setHeightAuto();
+    }
 
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        this.scheduledProcessManagementService.addBatchInsertListener(this);
+    }
 
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        super.onDetach(detachEvent);
+        this.scheduledProcessManagementService.removeBatchInsertListener(this);
+    }
+
+    private void updateCalendarContents(LocalDate firstDay, LocalDate lastDate, String filter) {
         Instant startDateInstant = firstDay.atStartOfDay(ZoneId.of((String)UI.getCurrent().getSession()
             .getAttribute(SessionAttributeConstants.TIMEZONE_ID))).toInstant();
         long firstDayStartMillis = startDateInstant.toEpochMilli();
@@ -372,16 +248,8 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
             .getAttribute(SessionAttributeConstants.TIMEZONE_ID))).toInstant();
         long lastDayStartMillis = endDateInstant.toEpochMilli();
 
-        Instant oneMonthPreviousInstant = oneMonthPrevious.atStartOfDay(ZoneId.of((String)UI.getCurrent().getSession()
-            .getAttribute(SessionAttributeConstants.TIMEZONE_ID))).toInstant();
-        long oneMonthPreviousMillis = oneMonthPreviousInstant.toEpochMilli();
-
-        Instant yesterdayInstant = yesterday.atStartOfDay(ZoneId.of((String)UI.getCurrent().getSession()
-            .getAttribute(SessionAttributeConstants.TIMEZONE_ID))).toInstant();
-        long yesterdayMillis = yesterdayInstant.toEpochMilli();
-
         ScheduledProcessEventSearchResults<UpcomingScheduledProcess> upComingScheduledProcesses
-            = scheduledProcessManagementService.getUpComingScheduledProcesses(firstDayStartMillis, lastDayStartMillis, null);
+            = scheduledProcessManagementService.getUpComingScheduledProcesses(firstDayStartMillis, lastDayStartMillis, filter);
 
         ArrayList<Entry> entries = new ArrayList<>();
 
@@ -391,14 +259,14 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
                     .getAttribute(SessionAttributeConstants.TIMEZONE_ID)));
             HashMap<String, Object> extendedProps = new HashMap<>();
             extendedProps.put("event", upcomingScheduledProcess);
-            entries.add(createTimedEntry(calendar,  String.format("Job[%s]", upcomingScheduledProcess.getJobName()), String.format("<b>Agent</b> - %s<br/><b>Job Group<b/> - %s<br/><b>Job Name<b/> - %s<br/><b>Description<b/> - %s<br/><b>Execution Time<b/> - %s", upcomingScheduledProcess.getAgentName()
-                , upcomingScheduledProcess.getJobGroup(), upcomingScheduledProcess.getJobName(), upcomingScheduledProcess.getJobDescription(), this.dateTimeFormatter.getFormattedDate(upcomingScheduledProcess.getFireTime())),dateTime, 0, this.intToARGB((upcomingScheduledProcess.getAgentName()+
+            entries.add(createTimedEntry(String.format("Job[%s]", upcomingScheduledProcess.getJobName()), String.format("<b>Agent</b> - %s<br/><b>Job Group<b/> - %s<br/><b>Job Name<b/> - %s<br/><b>Description<b/> - %s<br/><b>Execution Time<b/> - %s %s %s", upcomingScheduledProcess.getAgentName()
+                , upcomingScheduledProcess.getJobGroup(), upcomingScheduledProcess.getJobName(), upcomingScheduledProcess.getJobDescription(), this.dateTimeFormatter.getFormattedDate(upcomingScheduledProcess.getFireTime()), dateTime, upcomingScheduledProcess.toString().substring(upcomingScheduledProcess.toString().lastIndexOf("."))), dateTime, 1, this.intToARGB((upcomingScheduledProcess.getAgentName()+
                 upcomingScheduledProcess.getJobName()+upcomingScheduledProcess.getJobGroup()).hashCode()), extendedProps));
         });
 
         ScheduledProcessEventSearchResults<ScheduledProcessEvent>  scheduledProcessEventSearchResults
-            = this.scheduledProcessManagementService.getScheduledProcessEvents(oneMonthPreviousMillis, yesterdayMillis
-            , null, false, 0, 100);
+            = this.scheduledProcessManagementService.getScheduledProcessEvents(firstDayStartMillis, System.currentTimeMillis()
+            , filter, false, 0, 100);
 
         scheduledProcessEventSearchResults.getResultList().forEach(scheduledProcessEvent -> {
             LocalDateTime dateTime =
@@ -406,22 +274,28 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
                     .getAttribute(SessionAttributeConstants.TIMEZONE_ID)));
             HashMap<String, Object> extendedProps = new HashMap<>();
             extendedProps.put("event", scheduledProcessEvent);
-            entries.add(createTimedEntry(calendar, String.format("Job[%s]", scheduledProcessEvent.getJobName())
+            entries.add(createTimedEntry(String.format("Job[%s]", scheduledProcessEvent.getJobName())
                 , String.format("<b>Agent</b> - %s<br/><b>Job Group<b/> - %s<br/><b>Job Name<b/> - %s<br/><b>Description<b/> - %s<br/><b>Execution Time<b/> - %s", scheduledProcessEvent.getAgentName()
                     , scheduledProcessEvent.getJobGroup(), scheduledProcessEvent.getJobName(), scheduledProcessEvent.getJobDescription(), this.dateTimeFormatter.getFormattedDate(scheduledProcessEvent.getFireTime()))
-                ,dateTime, 0, scheduledProcessEvent.isSuccessful() ? "green":"red", extendedProps));
+                ,dateTime, 1, scheduledProcessEvent.isSuccessful() ? "#66bb6a":"#ef5350", extendedProps));
 
         });
 
         calendar.addEntries(entries);
-        this.calendar.setHeightAuto();
     }
 
     private String intToARGB(int i){
-        return "#"+
-            Integer.toHexString(((i>>24)&0xFF))+
-            Integer.toHexString((i&0xFF))+
-            Integer.toHexString(((i>>16)&0xFF))+
-            Integer.toHexString(((i>>8)&0xFF));
+        return "#default";
+    }
+
+    @Override
+    public void onBatchInsert(BatchInsertEvent<ScheduledProcessEvent> batchInsertEvent) {
+        ui.access(() ->{
+            if(this.firstDay != null && this.lastDate != null && filterField.getValue() != null) {
+                this.calendar.removeAllEntries();
+                this.updateCalendarContents(this.firstDay, this.lastDate, filterField.getValue());
+                this.calendar.render();
+            }
+        });
     }
 }

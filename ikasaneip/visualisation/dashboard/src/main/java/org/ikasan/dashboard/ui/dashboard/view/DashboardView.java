@@ -25,7 +25,7 @@ import javax.annotation.Resource;
 @UIScope
 @Component
 @CssImport("./styles/dashboard-view.css")
-@CssImport(value="./styles/hospital-events.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
+@CssImport(value="./styles/chart-styling.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 @CssImport(value="./styles/live-errors.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 public class DashboardView extends HorizontalLayout implements BeforeEnterObserver
 {

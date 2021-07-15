@@ -34,9 +34,6 @@ public class ScheduleProcessServiceTest {
         solrComponentConfigurationMetadataDao.initStandalone("http://localhost:8983/solr", 30);
         solrComponentConfigurationMetadataDao.setSolrUsername("ikasan");
         solrComponentConfigurationMetadataDao.setSolrPassword("1ka5an");
-
-//        this.solrScheduledProcessService = new SolrScheduledProcessServiceImpl(dao
-//            , solrModuleMetadataDao, solrComponentConfigurationMetadataDao);
     }
 
     @Test
