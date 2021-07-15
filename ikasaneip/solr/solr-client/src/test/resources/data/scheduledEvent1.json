@@ -1,0 +1,17 @@
+{
+  "agentName": "scheduler-agent",
+  "jobName": "5 minute job",
+  "jobGroup": "group",
+  "jobDescription": "description",
+  "commandLine": "ls -la",
+  "resultOutput": "/opt/platform/runtime/scheduler-agent-1.0.0-SNAPSHOT/out1",
+  "resultError": "/opt/platform/runtime/scheduler-agent-1.0.0-SNAPSHOT/err1",
+  "pid": 6140,
+  "user": null,
+  "fireTime": 1626345300003,
+  "nextFireTime": 1626345600000,
+  "successful": true,
+  "completionTime": 1626345300052,
+  "returnCode": 0,
+  "outcome": "EXECUTION_INVOKED"
+}

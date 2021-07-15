@@ -23,6 +23,7 @@ export class FullCalendarWithTooltip extends FullCalendar {
     _initCalendar() {
         super._initCalendar();
         this.getCalendar().setOption("eventDidMount", this.callTooltip);
+        this.getCalendar().setOption("rerenderDelay", 1);
     }
 
     callTooltip(info) {
@@ -34,6 +35,12 @@ export class FullCalendarWithTooltip extends FullCalendar {
                 content: info.event.extendedProps.description
             });
         }
+    }
+
+    removeAllEvents() {
+        //this.getCalendar().getEvents().forEach(e => e.remove());
+        let calendar = this.getCalendar();
+        calendar.removeAllEvents();
     }
 }
 

@@ -8,6 +8,7 @@ import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
 import org.ikasan.spec.metadata.FlowMetaData;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
+import org.ikasan.spec.solr.BatchInsertListener;
 
 import java.util.List;
 
@@ -42,4 +43,8 @@ public interface ScheduledProcessManagementService {
     public List<BusinessStreamMetaData> getBusinessStreams(String agent, String flow);
 
     public void saveConfiguration(ConfigurationMetaData configurationMetaData);
+
+    public void addBatchInsertListener(BatchInsertListener<ScheduledProcessEvent> batchInsertListener);
+
+    public void removeBatchInsertListener(BatchInsertListener<ScheduledProcessEvent> batchInsertListener);
 }

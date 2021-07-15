@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 @CssImport("./styles/dashboard-view.css")
-@CssImport(value="./styles/hospital-events.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
+@CssImport(value="./styles/chart-styling.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 @CssImport(value="./styles/live-errors.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 public class SchedulerAgentDashboardView extends HorizontalLayout implements BeforeEnterObserver
 {

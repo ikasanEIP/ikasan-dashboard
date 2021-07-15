@@ -47,7 +47,7 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
 
         if(scheduledProcessEvent.getAgentName() != null) {
             document.addField(ID, scheduledProcessEvent.getAgentName()
-                + "-" + SCHEDULED_PROCESS_EVENT + "-" + UUID.randomUUID());
+                + "-" + SCHEDULED_PROCESS_EVENT + "-" + scheduledProcessEvent.hashCode());
             document.addField(MODULE_NAME, scheduledProcessEvent.getAgentName());
         }
         else {

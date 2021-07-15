@@ -110,10 +110,4 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         layout.add(agentDetails, addButton, formLayout, scheduledJobsLabel,     filterLayout, filteringGrid);
         super.content.add(layout);
     }
-
-
-
-    public void save() {
-
-    }
 }

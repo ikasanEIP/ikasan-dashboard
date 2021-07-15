@@ -54,7 +54,7 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
 
     public RunningAndRecentlyCompletedJobExecutionsWidget(ScheduledProcessManagementService scheduledProcessManagementService,
                                                           DateFormatter dateFormatter, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                                          MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService, boolean isDeeplink) {
+                                                          MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService, boolean isDeepLink) {
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.dateFormatter = dateFormatter;
         this.configurationRestService = configurationRestService;
@@ -63,7 +63,7 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
         this.moduleMetaDataService = moduleMetaDataService;
         Div div = new Div();
         div.addClassNames("card-counter");
-        if(isDeeplink) {
+        if(isDeepLink) {
             div.setHeight("100%");
         }
         else {
@@ -105,7 +105,7 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
             getUI().ifPresent(ui -> ui.getPage().open(link.getHref()));
         });
         newWindowButton.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
-        newWindowButton.setVisible(!isDeeplink);
+        newWindowButton.setVisible(!isDeepLink);
 
 
 
@@ -122,7 +122,7 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
         div.add(layout);
         div.add(this.runningAndRecentlyCompletedJobExecutionFilteringGrid);
 
-        if(isDeeplink) {
+        if(isDeepLink) {
             this.runningAndRecentlyCompletedJobExecutionFilteringGrid.setHeight("87vh");
         }
         else {

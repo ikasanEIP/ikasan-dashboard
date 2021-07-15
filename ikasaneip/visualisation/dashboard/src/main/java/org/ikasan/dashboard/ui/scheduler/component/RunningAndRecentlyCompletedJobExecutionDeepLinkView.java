@@ -5,9 +5,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.material.Material;
@@ -27,7 +25,7 @@ import org.springframework.stereotype.Component;
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
 @Theme(Material.class)
-@Route(value = "runningAndRecentlyCompletedJobsDeepLink")
+@Route(value = "runningAndRecentlyCompletedJobsDeepLink/:startTime?/:endTime?/:agentName?/:jobName?/:errorsOnly?")
 @UIScope
 @Component
 public class RunningAndRecentlyCompletedJobExecutionDeepLinkView extends VerticalLayout implements BeforeEnterObserver
@@ -69,6 +67,6 @@ public class RunningAndRecentlyCompletedJobExecutionDeepLinkView extends Vertica
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-
+        System.out.println(beforeEnterEvent.getRouteParameters());
     }
 }

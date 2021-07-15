@@ -1,9 +1,17 @@
 package org.ikasan.scheduled.dao;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
+import org.ikasan.scheduled.model.Outcome;
+import org.ikasan.scheduled.model.SolrScheduledProcessEvent;
+import org.ikasan.spec.scheduled.ScheduledProcessEvent;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @Ignore
@@ -30,5 +38,29 @@ public class ScheduleProcessEventDaoTest {
                 dao.getJobsForAgentAndJobGroup(agent, jobGroup).forEach(job -> System.out.println(job));
             });
         });
+    }
+
+    @Test
+    public void testHashcode() throws IOException {
+        String event1 = loadDataFile("/data/scheduledEvent1.json");
+        String event2 = loadDataFile("/data/scheduledEvent2.json");
+        ObjectMapper mapper = new ObjectMapper();
+
+        ScheduledProcessEvent<Outcome> scheduledProcessEvent1 = mapper.readValue(event1, SolrScheduledProcessEvent.class);
+        ScheduledProcessEvent<Outcome> scheduledProcessEvent2 = mapper.readValue(event2, SolrScheduledProcessEvent.class);
+
+        Assert.assertEquals(scheduledProcessEvent1.hashCode(), scheduledProcessEvent2.hashCode());
+    }
+
+    protected String loadDataFile(String fileName) throws IOException
+    {
+        String contentToSend = IOUtils.toString(loadDataFileStream(fileName), "UTF-8");
+
+        return contentToSend;
+    }
+
+    protected InputStream loadDataFileStream(String fileName) throws IOException
+    {
+        return getClass().getResourceAsStream(fileName);
     }
 }

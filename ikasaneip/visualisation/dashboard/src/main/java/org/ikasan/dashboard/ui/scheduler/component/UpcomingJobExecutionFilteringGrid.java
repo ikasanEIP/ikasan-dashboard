@@ -33,13 +33,16 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.ScheduledProcessEvent;
+import org.ikasan.spec.solr.BatchInsertEvent;
+import org.ikasan.spec.solr.BatchInsertListener;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
 
-public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingScheduledProcess, ScheduledProcessFilter, ScheduledProcessEventSearchResults<UpcomingScheduledProcess>> {
+public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingScheduledProcess, ScheduledProcessFilter, ScheduledProcessEventSearchResults<UpcomingScheduledProcess>> implements BatchInsertListener<ScheduledProcessEvent> {
 
     private Registration flowStateBroadcasterRegistration;
     private Registration cacheStateBroadcasterRegistration;
@@ -176,6 +179,13 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
             chart.getStyle().set("cursor", "pointer");
             chart.getElement().setAttribute("title", "Job statistics");
 
+            chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                ScheduledJobStatisticsDialog scheduledJobStatisticsDialog = new ScheduledJobStatisticsDialog(this.scheduledProcessManagementService,
+                    this.moduleMetaDataService.findById(upcomingScheduledProcess.getAgentName()), upcomingScheduledProcess.getJobName());
+
+                scheduledJobStatisticsDialog.open();
+            });
+
             layout.add(chart);
 
             layout.setSizeFull();
@@ -300,7 +310,6 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
 
     }
 
-
     @Override
     protected ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getResults(ScheduledProcessFilter scheduledProcessFilter, int offset, int limit) {
         this.agentJobBusinessStreams = new HashMap<>();
@@ -329,6 +338,8 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
                 this.filteredDataProvider.refreshAll();
             });
         });
+
+        this.scheduledProcessManagementService.addBatchInsertListener(this);
     }
 
     @Override
@@ -342,5 +353,11 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
             this.cacheStateBroadcasterRegistration.remove();
             this.cacheStateBroadcasterRegistration = null;
         }
+        this.scheduledProcessManagementService.removeBatchInsertListener(this);
+    }
+
+    @Override
+    public void onBatchInsert(BatchInsertEvent<ScheduledProcessEvent> batchInsertEvent) {
+        ui.access(() -> super.refresh());
     }
 }
