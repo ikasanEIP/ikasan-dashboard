@@ -150,6 +150,14 @@ public class SecurityConstants
     public static String MODULE_CONTROL_WRITE = "module-control-write";
     public static String MODULE_CONTROL_ADMIN = "module-control-admin";
 
+    public static String SCHEDULER_READ = "scheduler-read";
+    public static String SCHEDULER_WRITE = "scheduler-write";
+    public static String SCHEDULER_ADMIN = "scheduler-admin";
+
+    public static String BUSINESS_STREAM_READ = "business-stream-read";
+    public static String BUSINESS_STREAM_WRITE = "business-stream-write";
+    public static String BUSINESS_STREAM_ADMIN = "business-stream-admin";
+
 	public static List<String> SERVICE_VIEW_PERMISSIONS;
 
 	public static List<String> TOPOLOGY_VIEW_PERMISSIONS;

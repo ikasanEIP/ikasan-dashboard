@@ -11,10 +11,14 @@ html {
     --lumo-primary-color: rgba(241, 90, 35, 1.0);
     --lumo-primary-contrast-color: #FFF;
     --lumo-font-family: "Arial Bold", sans-serif;
-
 }
 
 :host,[theme~="dark"] {
     --material-primary-color: rgba(241, 90, 35, 1.0);
 }
+
+:host([theme~="spacing-s"]) ::slotted(*) {
+    margin-top: 0px !important;
+}
+
 

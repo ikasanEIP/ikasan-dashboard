@@ -18,7 +18,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.ikasan.dashboard.ui.administration.filter.RoleFilter;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.general.component.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.general.component.TableButton;
 import org.ikasan.dashboard.ui.util.SecurityConstants;

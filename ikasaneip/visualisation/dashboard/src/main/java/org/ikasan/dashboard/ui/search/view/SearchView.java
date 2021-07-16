@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.search.view;
 
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -12,7 +13,9 @@ import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.search.component.ChangePasswordDialog;
 import org.ikasan.dashboard.ui.search.component.SearchForm;
 import org.ikasan.dashboard.ui.search.listener.SearchListener;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -99,6 +102,11 @@ public class SearchView extends VerticalLayout implements BeforeEnterObserver, S
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
+        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.SEARCH_ADMIN, SecurityConstants.SEARCH_READ,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.ALL_AUTHORITY)) {
+            UI.getCurrent().navigate("");
+        }
+
         if(!initialised)
         {
             this.createSearchForm();
@@ -118,7 +126,6 @@ public class SearchView extends VerticalLayout implements BeforeEnterObserver, S
                     ChangePasswordDialog dialog = new ChangePasswordDialog(user, this.userService);
                     dialog.setCloseOnOutsideClick(false);
                     dialog.setCloseOnEsc(false);
-                    dialog.setSizeFull();
 
                     dialog.open();
                 }

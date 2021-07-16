@@ -21,7 +21,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.administration.component.NewRoleDialog;
 import org.ikasan.dashboard.ui.administration.component.RoleManagementDialog;
 import org.ikasan.dashboard.ui.administration.filter.RoleFilter;
-import org.ikasan.dashboard.ui.general.component.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.general.component.TableButton;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
@@ -171,6 +171,11 @@ public class RoleManagementView extends VerticalLayout implements BeforeEnterObs
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
+        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ROLE_ADMINISTRATION_ADMIN, SecurityConstants.ROLE_ADMINISTRATION_WRITE,
+            SecurityConstants.ALL_AUTHORITY)) {
+            UI.getCurrent().navigate("");
+            return;
+        }
         this.updateRoles();
     }
 }
