@@ -24,6 +24,8 @@ import org.ikasan.dashboard.ui.administration.filter.PolicyFilter;
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.general.component.TableButton;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.security.model.IkasanPrincipalLite;
 import org.ikasan.security.model.Policy;
@@ -107,6 +109,12 @@ public class PolicyManagementView extends VerticalLayout implements BeforeEnterO
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
+        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.POLICY_ADMINISTRATION_ADMIN, SecurityConstants.POLICY_ADMINISTRATION_WRITE,
+            SecurityConstants.ALL_AUTHORITY)) {
+            UI.getCurrent().navigate("");
+            return;
+        }
+
         List<Policy> policies = this.securityService.getAllPolicies();
         this.policyGrid.setItems(policies);
     }

@@ -43,7 +43,7 @@ public class ChangePasswordDialog extends Dialog
 
     private void init()
     {
-        H3 newRoleLabel = new H3(getTranslation("label.change-password", UI.getCurrent().getLocale()));
+        H3 changePassowrdLabel = new H3(getTranslation("label.change-password", UI.getCurrent().getLocale()));
 
         FormLayout formLayout = new FormLayout();
 
@@ -65,10 +65,6 @@ public class ChangePasswordDialog extends Dialog
 
         User userPasswordChange = new User();
         binder.readBean(userPasswordChange);
-
-        Div result = new Div();
-        result.add(formLayout);
-        result.setSizeFull();
 
         formLayout.setSizeFull();
 
@@ -117,10 +113,11 @@ public class ChangePasswordDialog extends Dialog
 
         VerticalLayout layout = new VerticalLayout();
         layout.setWidthFull();
-        layout.add(newRoleLabel, formLayout, buttonLayout);
+        layout.add(changePassowrdLabel, formLayout, buttonLayout);
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
         this.add(layout);
-        this.setWidth("400px");
+        this.setWidth("500px");
+        this.setHeight("350px");
     }
 
     private boolean containsLowerCase(String value) {

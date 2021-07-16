@@ -64,7 +64,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.administration.component.UserDirectoryDialog;
 import org.ikasan.dashboard.security.schedule.LdapDirectorySynchronisationSchedulerService;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.general.component.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
@@ -465,7 +465,11 @@ public class UserDirectoriesView extends VerticalLayout implements BeforeEnterOb
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
-        logger.info("before enter");
+        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.USER_DIRECTORY_ADMIN, SecurityConstants.USER_DIRECTORY_WRITE,
+            SecurityConstants.ALL_AUTHORITY)) {
+            UI.getCurrent().navigate("");
+            return;
+        }
         this.authentication = (IkasanAuthentication)SecurityContextHolder.getContext().getAuthentication();
         populateAll();
     }

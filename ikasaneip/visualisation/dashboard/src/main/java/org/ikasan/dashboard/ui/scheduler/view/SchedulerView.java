@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.view;
 
 import com.flowingcode.vaadin.addons.ironicons.IronIcons;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.icon.IronIcon;
@@ -13,7 +14,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.*;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -125,6 +128,12 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+
+        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_READ,
+            SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.ALL_AUTHORITY)) {
+            UI.getCurrent().navigate("");
+        }
+
         if(!initialised) {
             this.init();
             this.schedulerAgentDashboardView.beforeEnter(beforeEnterEvent);

@@ -19,15 +19,24 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.security.model.IkasanPrincipal;
 import org.ikasan.security.model.User;
+import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class NewUserDialog extends AbstractCloseableResizableDialog
 {
+    private Logger logger = LoggerFactory.getLogger(NewUserDialog.class);
+
     private UserService userService;
     private SystemEventLogger systemEventLogger;
+    private SecurityService securityService;
 
-    public NewUserDialog(UserService userService, SystemEventLogger systemEventLogger)
+    public NewUserDialog(UserService userService, SystemEventLogger systemEventLogger,
+                         SecurityService securityService)
     {
         this.userService = userService;
         if(this.userService == null)
@@ -38,6 +47,11 @@ public class NewUserDialog extends AbstractCloseableResizableDialog
         if(this.systemEventLogger == null)
         {
             throw new IllegalArgumentException("systemEventLogger cannot be null!");
+        }
+        this.securityService = securityService;
+        if(this.securityService == null)
+        {
+            throw new IllegalArgumentException("securityService cannot be null!");
         }
         init();
     }
@@ -104,6 +118,16 @@ public class NewUserDialog extends AbstractCloseableResizableDialog
 
                 user.setRequiresPasswordChange(true);
                 this.userService.createUser(user);
+
+                // Give a new user the default User role!
+                this.securityService.getAllRoles().stream()
+                    .filter(role -> role.getName().equals("User"))
+                    .findFirst()
+                    .ifPresentOrElse(role -> {
+                        IkasanPrincipal ikasanPrincipal = this.securityService.findPrincipalByName(user.getName());
+                        ikasanPrincipal.getRoles().add(role);
+                        securityService.savePrincipal(ikasanPrincipal);
+                        }, () -> logger.warn(String.format("Could not add User role to new user[%s]", user.getName())));
 
                 this.systemEventLogger.logEvent(SystemEventConstants.NEW_USER_CREATED
                     , "New user " + user.getUsername() + " added.", null);

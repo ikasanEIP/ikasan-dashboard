@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.administration.view;
 
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.function.SerializableSupplier;
@@ -10,7 +11,9 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +59,6 @@ public class AdministrationSearchView extends VerticalLayout implements BeforeEn
         this.systemEventSearchView.getThemeList().remove("padding");
 
         tabs.add((SerializableSupplier<com.vaadin.flow.component.Component>) () -> this.systemEventSearchView, "System Events");
-//        tabs.add((SerializableSupplier<com.vaadin.flow.component.Component>) () -> modulesLayout, "Modules");
 
         this.add(tabs);
         this.setSizeFull();
@@ -66,6 +68,12 @@ public class AdministrationSearchView extends VerticalLayout implements BeforeEn
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
+        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.SYSTEM_EVENT_ADMIN, SecurityConstants.SYSTEM_EVENT_WRITE,
+            SecurityConstants.ALL_AUTHORITY)) {
+            UI.getCurrent().navigate("");
+            return;
+        }
+
         if(this.tabs == null) {
             init();
         }

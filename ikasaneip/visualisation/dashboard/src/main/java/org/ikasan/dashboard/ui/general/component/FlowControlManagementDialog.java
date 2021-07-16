@@ -12,6 +12,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.component.ModuleVisualisation;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
@@ -19,9 +20,7 @@ import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
 import org.ikasan.spec.module.StartupType;
 import org.ikasan.spec.module.client.ModuleControlService;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class FlowControlManagementDialog extends Dialog

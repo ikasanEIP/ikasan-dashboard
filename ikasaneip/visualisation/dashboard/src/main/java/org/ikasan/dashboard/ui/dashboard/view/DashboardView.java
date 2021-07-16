@@ -10,6 +10,10 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.dashboard.component.*;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
+import org.ikasan.dashboard.ui.search.component.ChangePasswordDialog;
+import org.ikasan.security.model.User;
+import org.ikasan.security.service.UserService;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
@@ -17,6 +21,7 @@ import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -37,6 +42,9 @@ public class DashboardView extends HorizontalLayout implements BeforeEnterObserv
 
     @Resource
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+
+    @Resource
+    private UserService userService;
 
     private Board board;
 
@@ -59,6 +67,22 @@ public class DashboardView extends HorizontalLayout implements BeforeEnterObserv
             board.addRow(new HospitalEventsWidget(solrGeneralService), new ErrorEventWidget(solrGeneralService));
 
             initialised = true;
+
+            IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+
+            if(authentication != null)
+            {
+                User user = this.userService.loadUserByUsername(authentication.getName());
+
+                if (user.isRequiresPasswordChange())
+                {
+                    ChangePasswordDialog dialog = new ChangePasswordDialog(user, this.userService);
+                    dialog.setCloseOnOutsideClick(false);
+                    dialog.setCloseOnEsc(false);
+
+                    dialog.open();
+                }
+            }
         }
     }
 }

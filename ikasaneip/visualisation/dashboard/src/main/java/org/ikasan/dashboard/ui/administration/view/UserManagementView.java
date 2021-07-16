@@ -22,10 +22,9 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
-import org.ikasan.dashboard.ui.administration.component.NewRoleDialog;
 import org.ikasan.dashboard.ui.administration.component.NewUserDialog;
 import org.ikasan.dashboard.ui.administration.component.UserManagementDialog;
-import org.ikasan.dashboard.ui.general.component.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.general.component.TooltipHelper;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.DateFormatter;
@@ -42,7 +41,6 @@ import org.ikasan.dashboard.ui.general.component.FilteringGrid;
 import org.ikasan.dashboard.ui.administration.filter.UserFilter;
 
 import javax.annotation.Resource;
-import java.util.Comparator;
 import java.util.List;
 
 @Route(value = "userManagement", layout = IkasanAppLayout.class)
@@ -104,7 +102,7 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
 
         this.addNewUserButton = new Button(VaadinIcon.PLUS.create());
         this.addNewUserButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-            NewUserDialog newUserDialog = new NewUserDialog(this.userService,  this.systemEventLogger);
+            NewUserDialog newUserDialog = new NewUserDialog(this.userService,  this.systemEventLogger, this.securityService);
             newUserDialog.open();
             newUserDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent ->
             {
@@ -177,6 +175,12 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
+        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.USER_ADMINISTRATION_ADMIN, SecurityConstants.USER_ADMINISTRATION_WRITE,
+            SecurityConstants.ALL_AUTHORITY)) {
+            UI.getCurrent().navigate("");
+            return;
+        }
+
         updateUsers();
     }
 
