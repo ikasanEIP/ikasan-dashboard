@@ -6,6 +6,7 @@ import org.ikasan.spec.module.ModuleType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SolrModuleMetaDataImpl implements ModuleMetaData
 {
@@ -100,5 +101,24 @@ public class SolrModuleMetaDataImpl implements ModuleMetaData
     @Override
     public void setConfiguredResourceId(String id) {
         this.configuredResourceId = id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SolrModuleMetaDataImpl that = (SolrModuleMetaDataImpl) o;
+        return moduleType == that.moduleType &&
+            Objects.equals(url, that.url) &&
+            Objects.equals(name, that.name) &&
+            Objects.equals(description, that.description) &&
+            Objects.equals(version, that.version) &&
+            Objects.equals(flows, that.flows) &&
+            Objects.equals(configuredResourceId, that.configuredResourceId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(moduleType, url, name, description, version, flows, configuredResourceId);
     }
 }

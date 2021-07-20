@@ -5,6 +5,8 @@ import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
+import org.ikasan.dashboard.security.SecurityUtils;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.component.filter.FlowSearchFilter;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.FlowMetaData;
@@ -12,10 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class FlowListFilteringGrid extends Grid<FlowMetaData>
 {
@@ -130,53 +131,17 @@ public class FlowListFilteringGrid extends Grid<FlowMetaData>
 
     private List<FlowMetaData> getResults(FlowSearchFilter filter, int offset, int limit)
     {
-        return this.flows.subList(offset, limit+offset<flows.size() ? limit+offset : flows.size());
-//        IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
-//
-//        final List<String> moduleNames = new ArrayList<>();
-//        Set<String> accessibleModules = new HashSet<>();
-//
-//        if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)) {
-//            accessibleModules = SecurityUtils.getAccessibleModules(authentication);
-//            moduleNames.addAll(accessibleModules);
-//        }
-//
-//        if(filter.getModuleNameFilter() != null && !filter.getModuleNameFilter().isEmpty()) {
-//            moduleNames.clear();
-//            if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)) {
-//                accessibleModules.stream().forEach(accessibleModule -> {
-//                    if(accessibleModule.toLowerCase().contains(filter.getModuleNameFilter().toLowerCase())) {
-//                        moduleNames.add(accessibleModule);
-//                    }
-//                });
-//            }
-//            else {
-//                moduleNames.add("*" + ClientUtils.escapeQueryChars(filter.getModuleNameFilter()) + "*");
-//            }
-//        }
-//
-//        if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) && moduleNames.isEmpty()){
-//            moduleNames.add(SearchConstants.NONSENSE_STRING);
-//        }
-//
-//        ModuleMetadataSearchResults results;
-//
-//        try {
-//            results =  this.solrSearchService.find(moduleNames, offset, limit);
-//        }
-//        catch (Exception e) {
-//            final UI current = UI.getCurrent();
-//            final I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator().getI18NProvider();
-//            NotificationHelper.showErrorNotification(i18NProvider.getTranslation("error.solr-unavailable"
-//                , current.getLocale()));
-//
-//            results = new ModuleMetadataSearchResults(new ArrayList<>(), 0, 0);
-//        }
-//
-//        return results.getResultList()
-//            .stream()
-//            .flatMap(metaData -> metaData.getFlows().stream().map(flowMetaData -> new Flow(metaData.getName(), flowMetaData.getName())))
-//            .collect(Collectors.toList());
+        List<FlowMetaData> filteredFlows = this.flows;
+
+        IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) && !authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
+            filteredFlows = this.flows.stream()
+                .filter(flowMetaData -> SecurityUtils.getAccessibleModules(authentication)
+                    .contains(flowMetaData.getName().substring(0, flowMetaData.getName().indexOf("."))))
+                .collect(Collectors.toList());
+        }
+
+        return filteredFlows.subList(offset, limit+offset<filteredFlows.size() ? limit+offset : filteredFlows.size());
     }
 
     public long getResultSize()

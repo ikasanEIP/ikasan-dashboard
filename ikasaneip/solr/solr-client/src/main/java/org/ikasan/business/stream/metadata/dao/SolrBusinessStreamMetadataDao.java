@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.business.stream.metadata.model.BusinessStreamMetaDataImpl;
 import org.ikasan.spec.metadata.BusinessStreamMetadataSearchResults;
@@ -126,20 +127,71 @@ public class SolrBusinessStreamMetadataDao extends SolrDaoBase<SolrBusinessStrea
        return results;
     }
 
-    public List<BusinessStreamMetaData> findBusinessStreamsContainingFlow(String moduleName, String flowName) {
+    public List<BusinessStreamMetaData> findBusinessStreamsContainingFlow(String moduleName, String flowName, int offset, int limit) {
         StringBuffer queryString = new StringBuffer("type:\"" + BUSINESS_STREAM_METADATA + "\"");
         queryString.append(" AND payload:\"*").append(moduleName).append(".").append(flowName).append("*\"");
 
         SolrQuery query = new SolrQuery();
         query.setQuery(queryString.toString());
-        query.setStart(0);
-        query.setRows(100000);
+        query.setStart(offset);
+        query.setRows(limit);
 
         List<SolrBusinessStream> beans = this.findByQuery(query);
 
         return beans.stream()
             .map(solrBusinessStream -> convert(solrBusinessStream))
             .collect(Collectors.toList());
+    }
+
+    public BusinessStreamMetadataSearchResults findBusinessStreamsForModules(String filter, List<String> moduleNames, int offset, int limit) {
+        if(moduleNames == null || moduleNames.size() == 0) {
+            return new BusinessStreamMetadataSearchResults(List.of(), 0, 0);
+        }
+
+        StringBuffer queryString = new StringBuffer("type:\"" + BUSINESS_STREAM_METADATA + "\"");
+        if(filter!= null && !filter.isEmpty()) {
+            queryString.append(" AND moduleName:*"+ ClientUtils.escapeQueryChars(filter)+"*");
+        }
+        queryString.append(" AND (");
+
+        String moduleQuery = moduleNames.stream()
+            .map(moduleName -> {
+                StringBuffer queryPart = new StringBuffer();
+                queryPart.append("payload:\"*").append(moduleName).append(".").append("*\"");
+                return queryPart;
+            })
+            .collect(Collectors.joining(" OR "));
+
+        queryString.append(moduleQuery).append(")");
+
+        SolrQuery query = new SolrQuery();
+        query.setQuery(queryString.toString());
+        query.setStart(offset);
+        query.setRows(limit);
+
+        BusinessStreamMetadataSearchResults results = null;
+
+        try
+        {
+            QueryRequest req = new QueryRequest(query);
+            req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+
+            QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
+
+            List<SolrBusinessStream> beans = rsp.getBeans(SolrBusinessStream.class);
+
+            List<BusinessStreamMetaData> businessStreamMetaData =  beans.stream()
+                .map(solrBusinessStream -> convert(solrBusinessStream))
+                .collect(Collectors.toList());
+
+            results = new BusinessStreamMetadataSearchResults(businessStreamMetaData, rsp.getResults().getNumFound(), rsp.getQTime());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Error resolving solr module meta data by query [" + query + "] from the ikasan solr index!", e);
+        }
+
+        return results;
     }
 
     public List<BusinessStreamMetaData> findAll(Integer startOffset, Integer resultSize)

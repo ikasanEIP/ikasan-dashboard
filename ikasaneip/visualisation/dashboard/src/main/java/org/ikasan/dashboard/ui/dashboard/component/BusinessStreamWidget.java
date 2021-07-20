@@ -19,18 +19,23 @@ import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
 
 
 @CssImport("./styles/dashboard-view.css")
+@CssImport("./styles/empty-grid-message.css")
 public class BusinessStreamWidget extends Div {
 
     private BusinessStreamFilteringGrid businessStreamGrid;
 
     private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
+    private ModuleMetaDataService moduleMetaDataService;
     private TextField textField = new TextField();
 
-    public BusinessStreamWidget(BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService) {
+    public BusinessStreamWidget(BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService,
+                                ModuleMetaDataService moduleMetaDataService) {
         this.businessStreamMetaDataService = businessStreamMetaDataService;
+        this.moduleMetaDataService = moduleMetaDataService;
         createGrid();
         Div div = new Div();
         div.addClassNames("card-counter");
@@ -59,7 +64,7 @@ public class BusinessStreamWidget extends Div {
     private void createGrid() {
         BusinessStreamSearchFilter businessStreamSearchFilter = new BusinessStreamSearchFilter();
         this.businessStreamGrid = new BusinessStreamFilteringGrid(businessStreamMetaDataService,
-            businessStreamSearchFilter);
+            businessStreamSearchFilter, moduleMetaDataService);
 
         businessStreamGrid.removeAllColumns();
         businessStreamGrid.setVisible(true);

@@ -14,12 +14,9 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
-import org.ikasan.dashboard.ui.visualisation.component.ModuleFilteringGrid;
-import org.ikasan.dashboard.ui.visualisation.component.ScheduledAgentsFilteringGrid;
 import org.ikasan.dashboard.ui.visualisation.component.filter.ModuleSearchFilter;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
-import org.ikasan.rest.client.ModuleRestService;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -29,7 +26,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 
 public class AgentWidget extends Div {
 
-    private ScheduledAgentsFilteringGrid modulesGrid;
+    private ScheduledAgentsFilteringGrid scheduledAgentsFilteringGrid;
     private ModuleMetaDataService moduleMetadataService;
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private TextField textField;
@@ -65,9 +62,9 @@ public class AgentWidget extends Div {
         textField.getElement().getStyle().set("margin-left", "auto");
 
         div.add(layout);
-        div.add(this.modulesGrid);
+        div.add(this.scheduledAgentsFilteringGrid);
 
-        this.modulesGrid.init();
+        this.scheduledAgentsFilteringGrid.init();
 
         this.add(div);
     }
@@ -75,21 +72,21 @@ public class AgentWidget extends Div {
     private void createGrid() {
         // Create a modulesGrid bound to the list
         ModuleSearchFilter moduleSearchFilter = new ModuleSearchFilter();
-        modulesGrid = new ScheduledAgentsFilteringGrid(this.moduleMetadataService, moduleSearchFilter);
-        modulesGrid.removeAllColumns();
-        modulesGrid.setVisible(true);
-        modulesGrid.setWidthFull();
-        modulesGrid.setHeight("80%");
+        scheduledAgentsFilteringGrid = new ScheduledAgentsFilteringGrid(this.moduleMetadataService, moduleSearchFilter);
+        scheduledAgentsFilteringGrid.removeAllColumns();
+        scheduledAgentsFilteringGrid.setVisible(true);
+        scheduledAgentsFilteringGrid.setWidthFull();
+        scheduledAgentsFilteringGrid.setHeight("80%");
 
-        modulesGrid.addColumn(ModuleMetaData::getName)
+        scheduledAgentsFilteringGrid.addColumn(ModuleMetaData::getName)
             .setHeader(getTranslation("table-header.module-name", UI.getCurrent().getLocale())).setKey("name")
             .setFlexGrow(16);
-        modulesGrid.addColumn(TemplateRenderer.<ModuleMetaData>of("<div style='white-space:normal'>[[item.description]]</div>")
+        scheduledAgentsFilteringGrid.addColumn(TemplateRenderer.<ModuleMetaData>of("<div style='white-space:normal'>[[item.description]]</div>")
             .withProperty("description", ModuleMetaData::getDescription))
             .setHeader(getTranslation("table-header.module-description", UI.getCurrent().getLocale()))
             .setKey("description")
             .setFlexGrow(32);
-        modulesGrid.addColumn(new ComponentRenderer<>(moduleMetaData -> {
+        scheduledAgentsFilteringGrid.addColumn(new ComponentRenderer<>(moduleMetaData -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
             String route = RouteConfiguration.forSessionScope()
@@ -103,9 +100,9 @@ public class AgentWidget extends Div {
             return horizontalLayout;
         })).setWidth("60px");
 
-        this.modulesGrid.addGridFiltering(textField, moduleSearchFilter::setModuleNameFilter);
+        this.scheduledAgentsFilteringGrid.addGridFiltering(textField, moduleSearchFilter::setModuleNameFilter);
 
-        this.modulesGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<ModuleMetaData>>) moduleMetaDataItemDoubleClickEvent -> {
+        this.scheduledAgentsFilteringGrid.addItemDoubleClickListener((ComponentEventListener<ItemDoubleClickEvent<ModuleMetaData>>) moduleMetaDataItemDoubleClickEvent -> {
             SchedulerAgentManagementDialog schedulerAgentManagementDialog
                 = new SchedulerAgentManagementDialog(moduleMetaDataItemDoubleClickEvent.getItem()
                     , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService

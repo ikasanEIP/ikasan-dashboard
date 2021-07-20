@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.ui.visualisation.component;
+package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
@@ -47,15 +47,15 @@ public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData>
                                         ModuleSearchFilter searchFilter)
     {
         this.solrSearchService = solrSearchService;
-//        if(this.solrSearchService ==  null)
-//        {
-//            throw new IllegalArgumentException("solrSearchService cannot be null!");
-//        }
+        if(this.solrSearchService ==  null)
+        {
+            throw new IllegalArgumentException("solrSearchService cannot be null!");
+        }
         this.searchFilter = searchFilter;
-//        if(this.searchFilter ==  null)
-//        {
-//            throw new IllegalArgumentException("SearchFilter cannot be null!");
-//        }
+        if(this.searchFilter ==  null)
+        {
+            throw new IllegalArgumentException("SearchFilter cannot be null!");
+        }
     }
 
     /**
@@ -167,7 +167,8 @@ public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData>
             }
         }
 
-        if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) && moduleNames.isEmpty()){
+        if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)
+            && !authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN) && moduleNames.isEmpty()){
             moduleNames.add(SearchConstants.NONSENSE_STRING);
         }
 

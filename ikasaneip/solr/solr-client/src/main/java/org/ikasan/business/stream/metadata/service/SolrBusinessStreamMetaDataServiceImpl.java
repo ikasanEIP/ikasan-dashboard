@@ -63,4 +63,18 @@ public class SolrBusinessStreamMetaDataServiceImpl extends SolrServiceBase imple
         dao.setSolrPassword(super.solrPassword);
         this.dao.delete(id);
     }
+
+    @Override
+    public List<BusinessStreamMetaData> findBusinessStreamsContainingFlow(String moduleName, String flowName, int offset, int limit) {
+        dao.setSolrUsername(super.solrUsername);
+        dao.setSolrPassword(super.solrPassword);
+        return this.dao.findBusinessStreamsContainingFlow(moduleName, flowName, offset, limit);
+    }
+
+    @Override
+    public BusinessStreamMetadataSearchResults findBusinessStreamsForModules(String filter, List<String> moduleNames, int offset, int limit) {
+        dao.setSolrUsername(super.solrUsername);
+        dao.setSolrPassword(super.solrPassword);
+        return this.dao.findBusinessStreamsForModules(filter, moduleNames, offset, limit);
+    }
 }

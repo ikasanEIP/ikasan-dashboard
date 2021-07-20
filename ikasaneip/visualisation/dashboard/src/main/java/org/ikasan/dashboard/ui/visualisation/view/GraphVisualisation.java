@@ -250,7 +250,7 @@ public class GraphVisualisation extends VerticalLayout implements BeforeEnterObs
         // Create a modulesGrid bound to the list
         BusinessStreamSearchFilter businessStreamSearchFilter = new BusinessStreamSearchFilter();
         this.businessStreamGrid = new BusinessStreamFilteringGrid(businessStreamMetaDataService,
-            businessStreamSearchFilter);
+            businessStreamSearchFilter, this.moduleMetadataService);
         businessStreamGrid.removeAllColumns();
         businessStreamGrid.setVisible(true);
         businessStreamGrid.setHeight("80vh");

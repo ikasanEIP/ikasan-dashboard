@@ -92,7 +92,7 @@ public class ScheduleProcessServiceTest {
 
     @Test
     public void get_all_upcoming_jobs() {
-            this.solrScheduledProcessService.getUpComingScheduledProcesses(System.currentTimeMillis(),
+            this.solrScheduledProcessService.getUpComingScheduledProcesses(null, System.currentTimeMillis(),
                 System.currentTimeMillis() + 100000L, "").getResultList().forEach(upcomingScheduledProcess -> System.out.println(upcomingScheduledProcess));
     }
 
@@ -108,7 +108,7 @@ public class ScheduleProcessServiceTest {
 
     @Test
     public void get_processed_jobs() {
-        this.solrScheduledProcessService.getScheduledProcessEvents(System.currentTimeMillis() - 100000L,
-                System.currentTimeMillis(), "filter", false, 0, 1000).getResultList().forEach(upcomingScheduledProcess -> System.out.println(upcomingScheduledProcess));
+        this.solrScheduledProcessService.getScheduledProcessEvents(null, System.currentTimeMillis() - 100000L,
+                System.currentTimeMillis(), "filter", false, 0, 1000, "desc").getResultList().forEach(upcomingScheduledProcess -> System.out.println(upcomingScheduledProcess));
     }
 }

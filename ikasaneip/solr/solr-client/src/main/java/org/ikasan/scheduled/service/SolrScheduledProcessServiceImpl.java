@@ -243,18 +243,20 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
     }
 
     @Override
-    public ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpComingScheduledProcesses(long startTime, long endTime, String filter) {
+    public ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpComingScheduledProcesses(List<String> accessibleModules, long startTime, long endTime, String filter) {
 
         List<UpcomingScheduledProcess> results = new ArrayList<>();
 
         long start = System.currentTimeMillis();
 
         this.scheduledProcessEventDao.getAllAgentNames().forEach(agentName -> {
-            ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agentName);
+            if(accessibleModules == null || accessibleModules.contains(agentName)) {
+                ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agentName);
 
-            moduleMetaData.getFlows().forEach(flowMetaData -> {
-                results.addAll(this.getUpComingScheduledProcesses(agentName, flowMetaData.getName(), startTime, endTime));
-            });
+                moduleMetaData.getFlows().forEach(flowMetaData -> {
+                    results.addAll(this.getUpComingScheduledProcesses(agentName, flowMetaData.getName(), startTime, endTime));
+                });
+            }
         });
 
         List<UpcomingScheduledProcess> finalResults = results.stream().filter(upcomingScheduledProcess -> {
@@ -284,8 +286,8 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
     }
 
     @Override
-    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(long startTime, long endTime, String filter, boolean errorsOnly, int start, int limit) {
-        return this.scheduledProcessEventDao.getScheduleProcessEvents(startTime, endTime, filter, errorsOnly, start, limit);
+    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(List<String> accessibleModules, long startTime, long endTime, String filter, boolean errorsOnly, int start, int limit, String sortOrder) {
+        return this.scheduledProcessEventDao.getScheduleProcessEvents(accessibleModules, startTime, endTime, filter, errorsOnly, start, limit, sortOrder);
     }
 
     @Override
@@ -361,7 +363,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
                 scheduledProcessAggregateConfiguration.get().setJobName(flow);
                 scheduledProcessAggregateConfiguration.get().setStartAutomatically(flowMetaData.getFlowStartupType().equals("AUTOMATIC"));
                 scheduledProcessAggregateConfiguration.get().setBusinessStreamMetaData(this.solrBusinessStreamMetadataDao
-                    .findBusinessStreamsContainingFlow(moduleMetaData.getName(), flowMetaData.getName()));
+                    .findBusinessStreamsContainingFlow(moduleMetaData.getName(), flowMetaData.getName(), 0, 1000));
             });
 
 
@@ -370,7 +372,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
 
     @Override
     public List<BusinessStreamMetaData> getBusinessStreams(String agent, String flow) {
-        return this.solrBusinessStreamMetadataDao.findBusinessStreamsContainingFlow(agent, flow);
+        return this.solrBusinessStreamMetadataDao.findBusinessStreamsContainingFlow(agent, flow, 0, 1000);
     }
 
     public void saveConfiguration(ConfigurationMetaData configurationMetaData) {

@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
@@ -25,12 +26,15 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.model.AgentJobFilter;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -38,6 +42,7 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Map;
@@ -64,6 +69,8 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
     private ModuleMetaData agent;
     private UI ui;
 
+    private IkasanAuthentication authentication;
+
     /**
      * Constructor
      *
@@ -83,6 +90,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
         this.moduleMetaDataService = moduleMetaDataService;
 
         this.ui = UI.getCurrent();
+        this.authentication = authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.initGrid();
     }
@@ -106,10 +114,10 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             .setHeader("Job Description")
             .setKey("description")
             .setFlexGrow(5);
-        super.addColumn(new ComponentRenderer<>(jobExecution -> {
+        super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration -> {
             HorizontalLayout layout = new HorizontalLayout();
 
-            jobExecution.getBusinessStreamMetaData().forEach(businessStreamMetaData -> {
+            scheduledProcessAggregateConfiguration.getBusinessStreamMetaData().forEach(businessStreamMetaData -> {
                 String route = RouteConfiguration.forSessionScope()
                     .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":" + businessStreamMetaData.getName());
                 Anchor link = new Anchor(route, businessStreamMetaData.getName());
@@ -122,47 +130,63 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
         }))
             .setHeader("Related Business Streams")
             .setKey("businessStreams")
-            .setFlexGrow(5);
-        super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration->
-        {
+            .setFlexGrow(3);
+        super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration -> {
             HorizontalLayout layout = new HorizontalLayout();
 
             Icon edit = VaadinIcon.EDIT.create();
             edit.setSize("14pt");
             edit.getStyle().set("cursor", "pointer");
             edit.getElement().setAttribute("title", "Edit job");
+            ComponentSecurityVisibility.applySecurity(this.authentication,  edit, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
             edit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(iconClickEvent.getClickCount() == 2) {
-                    ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
-                        this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                        this.metaDataRestService);
+                ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
+                    this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+                    this.metaDataRestService);
 
-                    scheduledJobDialog.setScheduleProcessAggregateConfiguration(scheduledProcessAggregateConfiguration, EditMode.EDIT);
-                    scheduledJobDialog.open();
+                scheduledJobDialog.setScheduleProcessAggregateConfiguration(scheduledProcessAggregateConfiguration, EditMode.EDIT);
+                scheduledJobDialog.open();
 
-                    scheduledJobDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
-                        dialogOpenedChangeEvent -> {
-                        if(!dialogOpenedChangeEvent.isOpened()) {
-                            this.dataProvider.refreshAll();
-                            this.filteredDataProvider.refreshAll();
-                        }
-                    });
-                }
-
+                scheduledJobDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
+                    dialogOpenedChangeEvent -> {
+                    if(!dialogOpenedChangeEvent.isOpened()) {
+                        this.dataProvider.refreshAll();
+                        this.filteredDataProvider.refreshAll();
+                    }
+                });
             });
 
             layout.add(edit);
+
+            Icon view = VaadinIcon.EYE.create();
+            view.setSize("14pt");
+            view.getStyle().set("cursor", "pointer");
+            view.getElement().setAttribute("title", "View job");
+            ComponentSecurityVisibility.applySecurity(this.authentication, view, SecurityConstants.SCHEDULER_READ);
+
+            view.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
+                    this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+                    this.metaDataRestService);
+
+                scheduledJobDialog.setScheduleProcessAggregateConfiguration(scheduledProcessAggregateConfiguration, EditMode.READONLY);
+                scheduledJobDialog.open();
+            });
+
+            layout.add(view);
 
             Icon delete = VaadinIcon.TRASH.create();
             delete.setSize("14pt");
             delete.getStyle().set("cursor", "pointer");
             delete.getElement().setAttribute("title", "Delete job");
+            ComponentSecurityVisibility.applySecurity(this.authentication, delete, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
             layout.add(delete);
 
             delete.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(iconClickEvent.getClickCount() == 2) {
+                ConfirmDialog dialog = new ConfirmDialog("Confirm delete",
+                    "Are you sure you want to delete this job? This operation cannot be reversed.", "Delete", (ComponentEventListener<ConfirmDialog.ConfirmEvent>) confirmEvent -> {
                     try {
                         this.deleteScheduledJobFlow(scheduledProcessAggregateConfiguration);
                     }
@@ -172,7 +196,9 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                     }
                     this.dataProvider.refreshAll();
                     this.filteredDataProvider.refreshAll();
-                }
+                    }, "Cancel", (ComponentEventListener<ConfirmDialog.CancelEvent>) cancelEvent -> {});
+
+                dialog.open();
             });
 
             Icon chart = VaadinIcon.CHART.create();
@@ -191,24 +217,17 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             FlowState flowState = FlowStateCache.instance().get(this.agent
                 , scheduledProcessAggregateConfiguration.getJobName());
 
-            if(flowState == null || flowState.getState() == State.UNKNOWN_STATE) {
-                Icon unknown = VaadinIcon.QUESTION.create();
-                unknown.setSize("14pt");
-                unknown.getStyle().set("color", "rgba(210, 215, 211, 1)");
-                unknown.getElement().setAttribute("title", "Unknown");
-                layout.add(unknown);
-            }
-            else if(flowState.getState() == State.RUNNING_STATE) {
+            if(flowState.getState() == State.RUNNING_STATE) {
                 Icon stop = VaadinIcon.STOP.create();
                 stop.setSize("14pt");
                 stop.getElement().setAttribute("title", "Stop scheduled job");
                 stop.getStyle().set("cursor", "pointer");
                 layout.add(stop);
 
+                ComponentSecurityVisibility.applySecurity(this.authentication, stop, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
+
                 stop.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    if (iconClickEvent.getClickCount() == 2) {
-                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "stop");
-                    }
+                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "stop");
                 });
 
                 Icon pause = VaadinIcon.PAUSE.create();
@@ -218,10 +237,10 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 pause.getStyle().set("cursor", "pointer");
                 layout.add(pause);
 
+                ComponentSecurityVisibility.applySecurity(this.authentication, pause, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
+
                 pause.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    if (iconClickEvent.getClickCount() == 2) {
-                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "pause");
-                    }
+                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "pause");
                 });
             }
             else if(flowState.getState() == State.RECOVERING_STATE) {
@@ -231,10 +250,10 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 stop.getStyle().set("cursor", "pointer");
                 layout.add(stop);
 
+                ComponentSecurityVisibility.applySecurity(this.authentication, stop, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
+
                 stop.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    if (iconClickEvent.getClickCount() == 2) {
-                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "stop");
-                    }
+                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "stop");
                 });
             }
             else if(flowState.getState() == State.STOPPED_IN_ERROR_STATE
@@ -246,10 +265,10 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 start.getStyle().set("cursor", "pointer");
                 layout.add(start);
 
+                ComponentSecurityVisibility.applySecurity(this.authentication, start, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
+
                 start.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    if (iconClickEvent.getClickCount() == 2) {
-                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "start");
-                    }
+                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "start");
                 });
 
                 Icon pause = VaadinIcon.PAUSE.create();
@@ -259,10 +278,10 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 pause.getElement().setAttribute("title", "Pause scheduled job");
                 layout.add(pause);
 
+                ComponentSecurityVisibility.applySecurity(this.authentication, pause, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
+
                 pause.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    if (iconClickEvent.getClickCount() == 2) {
-                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "pause");
-                    }
+                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "pause");
                 });
             }
             else if(flowState.getState() == State.PAUSED_STATE) {
@@ -273,10 +292,10 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 start.getElement().setAttribute("title", "Start scheduled job");
                 layout.add(start);
 
+                ComponentSecurityVisibility.applySecurity(this.authentication, start, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
+
                 start.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    if (iconClickEvent.getClickCount() == 2) {
-                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "start");
-                    }
+                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "start");
                 });
 
                 Icon stop = VaadinIcon.STOP.create();
@@ -285,10 +304,10 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 stop.getElement().setAttribute("title", "Stop scheduled job");
                 layout.add(stop);
 
+                ComponentSecurityVisibility.applySecurity(this.authentication, stop, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
+
                 stop.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    if (iconClickEvent.getClickCount() == 2) {
-                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "stop");
-                    }
+                    this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "stop");
                 });
             }
 
@@ -298,7 +317,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
         .setHeader("Actions")
         .setKey("actions")
         .setFlexGrow(2);
-        super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration-> {
+        super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration -> {
             VerticalLayout layout = new VerticalLayout();
             layout.setMargin(false);
             layout.setPadding(false);

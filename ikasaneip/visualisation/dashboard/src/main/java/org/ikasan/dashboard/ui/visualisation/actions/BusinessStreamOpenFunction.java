@@ -10,6 +10,7 @@ import org.ikasan.designer.function.OpenFunction;
 import org.ikasan.designer.json.DesignerDynamicImageManager;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,10 +19,12 @@ public class BusinessStreamOpenFunction implements OpenFunction {
     private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
     private BusinessStreamMetaData businessStreamMetaData;
     private DesignerDynamicImageManager designerDynamicImageManager;
+    private ModuleMetaDataService moduleMetaDataService;
 
-    public BusinessStreamOpenFunction(BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService,
+    public BusinessStreamOpenFunction(BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService, ModuleMetaDataService moduleMetaDataService,
                                       ArrayList<Image> images) {
         this.businessStreamMetaDataService = businessStreamMetaDataService;
+        this.moduleMetaDataService = moduleMetaDataService;
 
         this.designerDynamicImageManager = new DesignerDynamicImageManager(images);
     }
@@ -49,7 +52,7 @@ public class BusinessStreamOpenFunction implements OpenFunction {
     @Override
     public void open(DesignerCanvas designerCanvas) {
         BusinessStreamOpenDialog businessStreamOpenDialog
-            = new BusinessStreamOpenDialog(this.businessStreamMetaDataService);
+            = new BusinessStreamOpenDialog(this.businessStreamMetaDataService, moduleMetaDataService);
         businessStreamOpenDialog.open();
 
         businessStreamOpenDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent -> {

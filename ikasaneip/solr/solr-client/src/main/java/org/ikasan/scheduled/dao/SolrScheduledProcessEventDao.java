@@ -115,13 +115,22 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
         }
     }
 
-    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduleProcessEvents(long startTime, long endTime, String filter, boolean failuresOnly, int start, int limit) {
+    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduleProcessEvents(List<String> accessibleModules, long startTime, long endTime, String filter, boolean failuresOnly, int start, int limit,
+                                                                                              String sortOrder) {
         StringBuffer typeQuery = super.buildFieldPredicate("scheduledProcessEvent", SolrDaoBase.TYPE);
         StringBuffer betweenDates = super.buildDatePredicate(SolrDaoBase.CREATED_DATE_TIME, new Date(startTime), new Date(endTime));
 
         SolrQuery query = new SolrQuery();
 
         StringBuffer queryBuffer = new StringBuffer(typeQuery + " AND " + betweenDates);
+
+        if(accessibleModules != null && accessibleModules.size() > 0) {
+            queryBuffer.append(" AND ").append(this.buildPredicate(MODULE_NAME, accessibleModules));
+        }
+        else if(accessibleModules != null && accessibleModules.size() == 0) {
+            accessibleModules.add("NOTAVALIDMODULENAME");
+            queryBuffer.append(" AND ").append(this.buildPredicate(MODULE_NAME, accessibleModules));
+        }
 
         if(failuresOnly) {
             queryBuffer.append(" AND payload:\"*\\\"successful\\\":\\\"false\\\"*\"");
@@ -132,7 +141,24 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
         }
 
         query.setQuery(queryBuffer.toString());
-        query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
+
+        if(sortOrder != null && !sortOrder.isEmpty())
+        {
+            if(sortOrder.equals("desc"))
+            {
+                query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
+            }
+            else
+            {
+                query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.asc);
+            }
+        }
+        else
+        {
+            // Default
+            query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
+        }
+
         query.setStart(start);
         query.setRows(limit);
 

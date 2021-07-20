@@ -22,6 +22,7 @@ import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.component.filter.BusinessStreamSearchFilter;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
@@ -34,9 +35,12 @@ public class BusinessStreamManageDialog extends AbstractCloseableResizableDialog
     private TextField textField = new TextField();
 
     private BusinessStreamMetaData businessStreamMetaData;
+    private ModuleMetaDataService moduleMetaDataService;
 
-    public BusinessStreamManageDialog(BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService) {
+    public BusinessStreamManageDialog(BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService,
+                                      ModuleMetaDataService moduleMetaDataService) {
         this.businessStreamMetaDataService = businessStreamMetaDataService;
+        this.moduleMetaDataService = moduleMetaDataService;
         createGrid();
 
         Icon icon = VaadinIcon.SEARCH.create();
@@ -64,7 +68,7 @@ public class BusinessStreamManageDialog extends AbstractCloseableResizableDialog
     private void createGrid() {
         BusinessStreamSearchFilter businessStreamSearchFilter = new BusinessStreamSearchFilter();
         this.businessStreamGrid = new BusinessStreamFilteringGrid(businessStreamMetaDataService,
-            businessStreamSearchFilter);
+            businessStreamSearchFilter, moduleMetaDataService);
 
         businessStreamGrid.removeAllColumns();
         businessStreamGrid.setVisible(true);

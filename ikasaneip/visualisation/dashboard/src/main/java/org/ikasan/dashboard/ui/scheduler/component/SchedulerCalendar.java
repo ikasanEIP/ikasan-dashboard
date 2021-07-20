@@ -14,15 +14,20 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import org.ikasan.dashboard.security.SecurityUtils;
+import org.ikasan.dashboard.ui.scheduler.model.CalendarConfiguration;
 import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SessionAttributeConstants;
 import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.model.UpcomingScheduledProcess;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 import org.ikasan.spec.solr.BatchInsertEvent;
 import org.ikasan.spec.solr.BatchInsertListener;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.stefan.fullcalendar.*;
 import org.vaadin.stefan.fullcalendar.model.Header;
 import org.vaadin.stefan.fullcalendar.model.HeaderFooterItem;
@@ -47,12 +52,17 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
     private LocalDate firstDay = null;
     private LocalDate lastDate = null;
 
+    private CalendarConfiguration calendarConfiguration;
+
     private UI ui;
+    private IkasanAuthentication authentication;
+
 
     public SchedulerCalendar(ScheduledProcessManagementService scheduledProcessManagementService,
-                             ModuleMetaDataService moduleMetaDataService) {
+                             ModuleMetaDataService moduleMetaDataService, CalendarConfiguration calendarConfiguration) {
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.moduleMetaDataService = moduleMetaDataService;
+        this.calendarConfiguration = calendarConfiguration;
         this.dateTimeFormatter = new DateFormatter();
         this.init();
     }
@@ -61,7 +71,7 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
         Header testHeader = new Header();
         HeaderFooterPart headerCenter = testHeader.getCenter();
         headerCenter.addItem(HeaderFooterItem.TITLE);
-        calendar = new FullCalendarWithTooltip(30);
+        calendar = new FullCalendarWithTooltip(this.calendarConfiguration.getNumberOfEventsPerDay());
         calendar.setWeekNumbersVisible(false);
 
         calendar.setHeaderToolbar(testHeader);
@@ -131,9 +141,7 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
         buttonDatePicker.getElement().appendChild(gotoDate.getElement());
         buttonDatePicker.addClickListener(event -> gotoDate.open());
 
-        comboBoxView = new ComboBox<>("", List.of(CalendarViewImpl.DAY_GRID_DAY,
-            CalendarViewImpl.DAY_GRID_WEEK, CalendarViewImpl.LIST_DAY,
-            CalendarViewImpl.LIST_WEEK));
+        comboBoxView = new ComboBox<>("", getCalendarViews());
         comboBoxView.setRenderer(new ComponentRenderer<>(item -> {
             Div text = new Div();
             text.setText(item.getName());
@@ -144,11 +152,20 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
             else if(item.getName().equals(CalendarViewImpl.DAY_GRID_WEEK.getName())){
                 text.setText("Grid Week");
             }
+            else if(item.getName().equals(CalendarViewImpl.DAY_GRID_MONTH.getName())){
+                text.setText("Grid Month");
+            }
             else if(item.getName().equals(CalendarViewImpl.LIST_DAY.getName())){
                 text.setText("List Day");
             }
             else if(item.getName().equals(CalendarViewImpl.LIST_WEEK.getName())){
                 text.setText("List Week");
+            }
+            else if(item.getName().equals(CalendarViewImpl.LIST_MONTH.getName())){
+                text.setText("List Month");
+            }
+            else if(item.getName().equals(CalendarViewImpl.LIST_YEAR.getName())){
+                text.setText("List Year");
             }
 
             return text;
@@ -160,11 +177,20 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
             else if(item.getName().equals(CalendarViewImpl.DAY_GRID_WEEK.getName())){
                 return "Grid Week";
             }
+            else if(item.getName().equals(CalendarViewImpl.DAY_GRID_MONTH.getName())){
+                return "Grid Month";
+            }
             else if(item.getName().equals(CalendarViewImpl.LIST_DAY.getName())){
                 return "List Day";
             }
             else if(item.getName().equals(CalendarViewImpl.LIST_WEEK.getName())){
                 return "List Week";
+            }
+            else if(item.getName().equals(CalendarViewImpl.LIST_MONTH.getName())){
+                return "List Month";
+            }
+            else if(item.getName().equals(CalendarViewImpl.LIST_YEAR.getName())){
+                return "List Year";
             }
 
             return "";
@@ -224,6 +250,7 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.calendar.setHeightAuto();
     }
 
@@ -248,8 +275,16 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
             .getAttribute(SessionAttributeConstants.TIMEZONE_ID))).toInstant();
         long lastDayStartMillis = endDateInstant.toEpochMilli();
 
-        ScheduledProcessEventSearchResults<UpcomingScheduledProcess> upComingScheduledProcesses
-            = scheduledProcessManagementService.getUpComingScheduledProcesses(firstDayStartMillis, lastDayStartMillis, filter);
+
+        ScheduledProcessEventSearchResults<UpcomingScheduledProcess> upComingScheduledProcesses = null;
+        if(authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) || this.authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
+            upComingScheduledProcesses =  this.scheduledProcessManagementService.getUpComingScheduledProcesses(null, firstDayStartMillis
+                , lastDayStartMillis, filter);
+        }
+        else {
+            upComingScheduledProcesses =  this.scheduledProcessManagementService.getUpComingScheduledProcesses(new ArrayList<>(SecurityUtils.getAccessibleModules(authentication)), firstDayStartMillis
+                , lastDayStartMillis, filter);
+        }
 
         ArrayList<Entry> entries = new ArrayList<>();
 
@@ -264,9 +299,16 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
                 upcomingScheduledProcess.getJobName()+upcomingScheduledProcess.getJobGroup()).hashCode()), extendedProps));
         });
 
-        ScheduledProcessEventSearchResults<ScheduledProcessEvent>  scheduledProcessEventSearchResults
-            = this.scheduledProcessManagementService.getScheduledProcessEvents(firstDayStartMillis, System.currentTimeMillis()
-            , filter, false, 0, 100);
+        ScheduledProcessEventSearchResults<ScheduledProcessEvent>  scheduledProcessEventSearchResults;
+
+        if(authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) || this.authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
+            scheduledProcessEventSearchResults =  this.scheduledProcessManagementService.getScheduledProcessEvents(null,
+                firstDayStartMillis, System.currentTimeMillis(), filter, false, 0, 1000, "desc");
+        }
+        else {
+            scheduledProcessEventSearchResults =  this.scheduledProcessManagementService.getScheduledProcessEvents(new ArrayList<>(SecurityUtils.getAccessibleModules(authentication)),
+                firstDayStartMillis, System.currentTimeMillis(), filter, false, 0, 1000, "desc");
+        }
 
         scheduledProcessEventSearchResults.getResultList().forEach(scheduledProcessEvent -> {
             LocalDateTime dateTime =
@@ -286,6 +328,37 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
 
     private String intToARGB(int i){
         return "#default";
+    }
+
+    private List<CalendarView> getCalendarViews() {
+        ArrayList<CalendarView> calenderViews = new ArrayList<>();
+
+        calenderViews.add(CalendarViewImpl.DAY_GRID_WEEK);
+
+        if(this.calendarConfiguration.isShowDayGrid()) {
+            calenderViews.add(CalendarViewImpl.DAY_GRID_DAY);
+        }
+
+        if(this.calendarConfiguration.isShowMonthGrid()) {
+            calenderViews.add(CalendarViewImpl.DAY_GRID_MONTH);
+        }
+
+        if(this.calendarConfiguration.isShowDayList()) {
+            calenderViews.add(CalendarViewImpl.LIST_DAY);
+        }
+        if(this.calendarConfiguration.isShowWeekList()) {
+            calenderViews.add(CalendarViewImpl.LIST_WEEK);
+        }
+
+        if(this.calendarConfiguration.isShowMonthList()) {
+            calenderViews.add(CalendarViewImpl.LIST_MONTH);
+        }
+
+        if(this.calendarConfiguration.isShowYearList()) {
+            calenderViews.add(CalendarViewImpl.LIST_YEAR);
+        }
+
+        return calenderViews;
     }
 
     @Override

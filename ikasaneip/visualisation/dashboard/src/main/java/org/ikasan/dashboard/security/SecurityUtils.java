@@ -60,9 +60,13 @@ public final class SecurityUtils {
      */
     public static Set<String> getAccessibleModules(IkasanAuthentication authentication)
     {
-        User user = (User)authentication.getPrincipal();
-
         Set<String> results = new HashSet<>();
+
+        if(authentication == null) {
+            return results;
+        }
+
+        User user = (User)authentication.getPrincipal();
 
         if(authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)){
             return results;
