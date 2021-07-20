@@ -12,7 +12,7 @@ import org.ikasan.spec.solr.BatchInsertListener;
 
 import java.util.List;
 
-public interface ScheduledProcessManagementService {
+public interface    ScheduledProcessManagementService {
 
     public List<String> getAllAgentNames() ;
 
@@ -30,11 +30,11 @@ public interface ScheduledProcessManagementService {
 
     public List<UpcomingScheduledProcess> getUpComingScheduledProcesses(String agent, String flow, long startTime, long endTime);
 
-    public ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpComingScheduledProcesses(long startTime, long endTime, String filter);
+    public ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpComingScheduledProcesses(List<String> accessibleModules, long startTime, long endTime, String filter);
 
     public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(String agent, long startTime, long endTime);
 
-    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(long startTime, long endTime, String filter, boolean errorsOnly, int start, int limit);
+    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(List<String> accessibleModules,long startTime, long endTime, String filter, boolean errorsOnly, int start, int limit, String sortOrder);
 
     public ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getScheduleProcessAggregateConfigurations(String agent, String filter);
 

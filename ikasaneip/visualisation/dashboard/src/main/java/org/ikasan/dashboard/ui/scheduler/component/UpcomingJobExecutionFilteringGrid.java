@@ -18,15 +18,18 @@ import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
+import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.model.UpcomingScheduledProcess;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -36,7 +39,9 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 import org.ikasan.spec.solr.BatchInsertEvent;
 import org.ikasan.spec.solr.BatchInsertListener;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
@@ -58,6 +63,7 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
     private HashMap<String, ModuleMetaData> agents;
 
     private UI ui;
+    private IkasanAuthentication authentication;
 
     /**
      * Constructors
@@ -77,6 +83,7 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
         this.moduleMetaDataService = moduleMetaDataService;
 
         this.ui = UI.getCurrent();
+        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.initGrid();
     }
@@ -315,8 +322,16 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
         this.agentJobBusinessStreams = new HashMap<>();
         this.agents = new HashMap<>();
 
-        ScheduledProcessEventSearchResults<UpcomingScheduledProcess> results =  this.scheduledProcessManagementService.getUpComingScheduledProcesses(scheduledProcessFilter.getStartTime()
-            , scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter());
+        ScheduledProcessEventSearchResults<UpcomingScheduledProcess> results;
+        if(this.authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) || this.authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
+            results =  this.scheduledProcessManagementService.getUpComingScheduledProcesses(null, scheduledProcessFilter.getStartTime()
+                , scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter());
+        }
+        else {
+            results =  this.scheduledProcessManagementService.getUpComingScheduledProcesses(new ArrayList<>(SecurityUtils.getAccessibleModules(this.authentication))
+                , scheduledProcessFilter.getStartTime(), scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter());
+        }
+
 
         return new ScheduledProcessEventSearchResults(offset+limit > results.getResultList().size() ?results.getResultList().subList(offset, results.getResultList().size()):results.getResultList().subList(offset, offset+limit)
             , results.getTotalNumberOfResults(), results.getQueryResponseTime());

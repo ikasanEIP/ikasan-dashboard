@@ -13,14 +13,17 @@ import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
+import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -30,7 +33,9 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 import org.ikasan.spec.solr.BatchInsertEvent;
 import org.ikasan.spec.solr.BatchInsertListener;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
@@ -50,6 +55,7 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
     private HashMap<String, List<BusinessStreamMetaData>> agentJobBusinessStreams;
 
     private UI ui;
+    private IkasanAuthentication authentication;
 
     /**
      * Constructor
@@ -68,6 +74,7 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
         this.metaDataRestService = metaDataRestService;
         this.moduleMetaDataService = moduleMetaDataService;
         this.ui = UI.getCurrent();
+        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.initGrid();
     }
@@ -274,8 +281,17 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
     @Override
     protected ScheduledProcessEventSearchResults<ScheduledProcessEvent> getResults(ScheduledProcessFilter scheduledProcessFilter, int offset, int limit) {
         agentJobBusinessStreams = new HashMap<>();
-        return this.scheduledProcessManagementService.getScheduledProcessEvents(scheduledProcessFilter.getStartTime()
-            , scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter(), scheduledProcessFilter.isErrorsOnly(), offset, limit);
+
+        if(this.authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) || this.authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
+            return this.scheduledProcessManagementService.getScheduledProcessEvents(null,
+                scheduledProcessFilter.getStartTime(), scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter(),
+                scheduledProcessFilter.isErrorsOnly(), offset, limit, "desc");
+        }
+        else {
+            return this.scheduledProcessManagementService.getScheduledProcessEvents(new ArrayList<>(SecurityUtils.getAccessibleModules(this.authentication)),
+                scheduledProcessFilter.getStartTime(), scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter(),
+                scheduledProcessFilter.isErrorsOnly(), offset, limit, "desc");
+        }
     }
 
     @Override

@@ -105,9 +105,9 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
     {
         this.integratedSystemPalette = this.createIntegratedSystemsPalette();
 
-        businessStreamDesigner = new Designer(new BusinessStreamOpenFunction(this.businessStreamMetaDataService, this.integratedSystems)
+        businessStreamDesigner = new Designer(new BusinessStreamOpenFunction(this.businessStreamMetaDataService, this.moduleMetadataService, this.integratedSystems)
             ,new BusinessStreamSaveFunction(this.businessStreamMetaDataService), new BusinessStreamSaveAsFunction(this.businessStreamMetaDataService),
-            new BusinessStreamManageFunction(this.businessStreamMetaDataService), this.integratedSystemsImagePath);
+            new BusinessStreamManageFunction(this.businessStreamMetaDataService, this.moduleMetadataService), this.integratedSystemsImagePath);
 
         businessStreamDesigner.addCanvasItemRightClickEventListener(this);
         businessStreamDesigner.addCanvasItemDoubleClickEventListener(this);

@@ -25,6 +25,7 @@ import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.TimeZone;
+import java.util.stream.IntStream;
 
 public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDialog {
 
@@ -160,8 +161,8 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
         int limit = 1000;
 
         ScheduledProcessEventSearchResults<ScheduledProcessEvent> scheduledProcessEventSearchResults
-            = this.scheduledProcessManagementService.getScheduledProcessEvents(0, System.currentTimeMillis(), this.agent.getName()
-            , false, 0, limit);
+            = this.scheduledProcessManagementService.getScheduledProcessEvents(null, 0, System.currentTimeMillis(), this.agent.getName()
+            , false, 0, limit, "asc");
         DataSeries dataSeries = new DataSeries();
         dataSeries.setName(this.jobName);
 
@@ -171,8 +172,8 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
             limit += 1000;
 
             scheduledProcessEventSearchResults
-                = this.scheduledProcessManagementService.getScheduledProcessEvents(0, System.currentTimeMillis(), this.agent.getName()
-                , false, limit - 1000, limit);
+                = this.scheduledProcessManagementService.getScheduledProcessEvents(null, 0, System.currentTimeMillis(), this.agent.getName()
+                , false, limit - 1000, limit, "asc");
 
             this.populateDataSeries(scheduledProcessEventSearchResults, dataSeries);
         }

@@ -16,8 +16,10 @@ import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.component.filter.FlowSearchFilter;
 import org.ikasan.dashboard.ui.visualisation.model.designer.business.stream.Flow;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
+import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
+import org.ikasan.spec.module.ModuleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -171,6 +173,17 @@ public class FlowFilteringGrid extends Grid<Flow>
 
         try {
             results =  this.solrSearchService.find(moduleNames, offset, limit);
+
+            if(authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
+                ModuleMetadataSearchResults schedulerResults = this.solrSearchService.find(List.of(), ModuleType.SCHEDULER_AGENT, offset, limit);
+                for (ModuleMetaData moduleMetaData : schedulerResults.getResultList()) {
+                    if (schedulerResults.getResultList().contains(moduleMetaData))
+                        results.getResultList().add(moduleMetaData);
+                }
+
+                results = new ModuleMetadataSearchResults(results.getResultList(), schedulerResults.getTotalNumberOfResults()
+                    + results.getTotalNumberOfResults(), schedulerResults.getQueryResponseTime());
+            }
         }
         catch (Exception e) {
             final UI current = UI.getCurrent();

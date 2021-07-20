@@ -9,6 +9,8 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowState;
@@ -16,19 +18,25 @@ import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
+import org.ikasan.dashboard.security.SecurityUtils;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.component.FlowListFilteringGrid;
 import org.ikasan.dashboard.ui.visualisation.component.filter.FlowSearchFilter;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.FlowMetaData;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.module.ModuleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 public class StatusWidget extends Div {
     Logger logger = LoggerFactory.getLogger(StatusWidget.class);
@@ -62,10 +70,12 @@ public class StatusWidget extends Div {
     private FlowSearchFilter flowSearchFilter;
 
     private UI ui;
+    private IkasanAuthentication authentication;
 
     public StatusWidget(ModuleMetaDataService moduleMetadataService, UI ui) {
         this.moduleMetadataService = moduleMetadataService;
         this.ui = ui;
+        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.createStatusView();
     }
@@ -236,6 +246,8 @@ public class StatusWidget extends Div {
         this.flowsGrid.init();
 
         this.add(div);
+
+        this.recalculate();
     }
 
     public void recalculate() {
@@ -243,8 +255,21 @@ public class StatusWidget extends Div {
 
         List<ModuleMetaData> moduleMetaData = this.moduleMetadataService.findAll();
 
-        moduleMetaData.forEach(module -> {
-            module.getFlows().forEach(flow -> {
+        final Set<String> accessibleModules = SecurityUtils.getAccessibleModules(authentication);
+
+        moduleMetaData.stream()
+            .filter(module ->  {
+                if(authentication == null || authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)) {
+                    return true;
+                }
+                else if(authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN) && module.getType() == ModuleType.SCHEDULER_AGENT) {
+                    return true;
+                }
+                else {
+                    return accessibleModules.contains(module.getName());
+                }
+            })
+            .forEach(module -> module.getFlows().forEach(flow -> {
                 FlowState flowState = FlowStateCache.instance().get(module,flow.getName());
 
                 flow.setName(module.getName() + "." + flow.getName());
@@ -255,8 +280,7 @@ public class StatusWidget extends Div {
                 else {
                     stateMap.get(flowState.getState()).add(flow);
                 }
-            });
-        });
+            }));
 
         ui.access(() -> {
             this.runningDiv.removeAll();
@@ -310,7 +334,6 @@ public class StatusWidget extends Div {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        this.recalculate();
 
         this.flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState -> {
             this.recalculate();
@@ -335,5 +358,4 @@ public class StatusWidget extends Div {
             this.cacheStateBroadcasterRegistration = null;
         }
     }
-
 }

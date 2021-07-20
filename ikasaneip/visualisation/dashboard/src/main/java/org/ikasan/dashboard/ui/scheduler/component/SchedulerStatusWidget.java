@@ -16,20 +16,25 @@ import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
 import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
+import org.ikasan.dashboard.security.SecurityUtils;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.component.FlowListFilteringGrid;
 import org.ikasan.dashboard.ui.visualisation.component.filter.FlowSearchFilter;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.FlowMetaData;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.ModuleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SchedulerStatusWidget extends Div {
@@ -249,8 +254,19 @@ public class SchedulerStatusWidget extends Div {
             .filter(metadata -> metadata.getType() == ModuleType.SCHEDULER_AGENT)
             .collect(Collectors.toList());
 
-        moduleMetaData.forEach(module -> {
-            module.getFlows().forEach(flow -> {
+        IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        final Set<String> accessibleModules = SecurityUtils.getAccessibleModules(authentication);
+
+        moduleMetaData.stream()
+            .filter(module ->  {
+                if(authentication == null || authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)) {
+                    return true;
+                }
+                else {
+                    return accessibleModules.contains(module.getName());
+                }
+            })
+            .forEach(module -> module.getFlows().forEach(flow -> {
                 FlowState flowState = FlowStateCache.instance().get(module,flow.getName());
 
                 flow.setName(module.getName() + "." + flow.getName());
@@ -261,8 +277,7 @@ public class SchedulerStatusWidget extends Div {
                 else {
                     stateMap.get(flowState.getState()).add(flow);
                 }
-            });
-        });
+            }));
 
         ui.access(() -> {
             this.runningDiv.removeAll();

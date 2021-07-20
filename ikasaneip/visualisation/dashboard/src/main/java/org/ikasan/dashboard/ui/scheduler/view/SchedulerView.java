@@ -14,6 +14,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.*;
+import org.ikasan.dashboard.ui.scheduler.model.CalendarConfiguration;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
@@ -85,7 +86,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.schedulerAgentDashboardView.setSizeFull();
         this.schedulerAgentDashboardView.setVisible(true);
 
-        this.schedulerCalendar = new SchedulerCalendar(this.scheduledProcessManagementService, this.moduleMetadataService);
+        this.schedulerCalendar = new SchedulerCalendar(this.scheduledProcessManagementService, this.moduleMetadataService, new CalendarConfiguration());
         this.schedulerCalendar.setVisible(false);
 
         scheduleJobsTab = new Board();

@@ -14,18 +14,22 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.visualisation.component.filter.BusinessStreamSearchFilter;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
 
 public class BusinessStreamOpenDialog extends AbstractCloseableResizableDialog {
 
     private BusinessStreamFilteringGrid businessStreamGrid;
 
     private BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService;
+    private ModuleMetaDataService moduleMetaDataService;
     private TextField textField = new TextField();
 
     private BusinessStreamMetaData businessStreamMetaData;
 
-    public BusinessStreamOpenDialog(BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService) {
+    public BusinessStreamOpenDialog(BusinessStreamMetaDataService<BusinessStreamMetaData> businessStreamMetaDataService,
+                                    ModuleMetaDataService moduleMetaDataService) {
         this.businessStreamMetaDataService = businessStreamMetaDataService;
+        this.moduleMetaDataService = moduleMetaDataService;
         createGrid();
 
         Icon icon = VaadinIcon.SEARCH.create();
@@ -53,7 +57,7 @@ public class BusinessStreamOpenDialog extends AbstractCloseableResizableDialog {
     private void createGrid() {
         BusinessStreamSearchFilter businessStreamSearchFilter = new BusinessStreamSearchFilter();
         this.businessStreamGrid = new BusinessStreamFilteringGrid(businessStreamMetaDataService,
-            businessStreamSearchFilter);
+            businessStreamSearchFilter, this.moduleMetaDataService);
 
         businessStreamGrid.removeAllColumns();
         businessStreamGrid.setVisible(true);

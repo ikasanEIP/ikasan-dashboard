@@ -5,6 +5,7 @@ import org.ikasan.business.stream.metadata.service.SolrBusinessStreamMetaDataSer
 import org.ikasan.configuration.metadata.dao.SolrComponentConfigurationMetadataDao;
 import org.ikasan.configuration.metadata.service.SolrComponentConfigurationMetadataServiceImpl;
 import org.ikasan.dashboard.cache.FlowStateCache;
+import org.ikasan.dashboard.ui.scheduler.model.CalendarConfiguration;
 import org.ikasan.dashboard.ui.util.DashboardCacheAdapter;
 import org.ikasan.error.reporting.dao.SolrErrorReportingServiceDao;
 import org.ikasan.error.reporting.service.SolrErrorReportingServiceImpl;
@@ -43,6 +44,7 @@ import org.ikasan.topology.metadata.JsonModuleMetaDataProvider;
 import org.ikasan.wiretap.dao.SolrWiretapDao;
 import org.ikasan.wiretap.service.SolrWiretapServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -62,6 +64,12 @@ public class DashboardComponentFactory
 
     @Resource
     private ModuleControlRestServiceImpl moduleControlRestService;
+
+    @Bean
+    @ConfigurationProperties(prefix = "scheduler.calendar")
+    public CalendarConfiguration calendarConfiguration() {
+        return new CalendarConfiguration();
+    }
 
 
     @Bean
