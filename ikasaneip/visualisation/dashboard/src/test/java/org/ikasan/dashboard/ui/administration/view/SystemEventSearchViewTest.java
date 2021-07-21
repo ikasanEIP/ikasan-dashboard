@@ -97,6 +97,8 @@ public class SystemEventSearchViewTest extends UITest {
     {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.SYSTEM_EVENT_READ))
+            .thenReturn(true);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
         Mockito.when(super.user.getPrincipals())
@@ -135,6 +137,8 @@ public class SystemEventSearchViewTest extends UITest {
     {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.SYSTEM_EVENT_READ))
+            .thenReturn(true);
         Mockito.when(super.ikasanAuthentication.getPrincipal())
             .thenReturn(super.user);
         Mockito.when(super.user.getPrincipals())

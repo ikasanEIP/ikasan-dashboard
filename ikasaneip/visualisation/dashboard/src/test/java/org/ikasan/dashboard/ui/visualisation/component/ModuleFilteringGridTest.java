@@ -16,6 +16,7 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.topology.metadata.model.ModuleMetaDataImpl;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
@@ -207,74 +208,6 @@ public class ModuleFilteringGridTest extends UITest {
         ModuleMetadataSearchResults results = mock(ModuleMetadataSearchResults.class);
 
         Mockito.when(this.moduleMetadataService.find(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*module*"))
-            , Mockito.anyInt(), Mockito.anyInt()))
-            .thenReturn(results);
-
-        Mockito.when(results.getResultList())
-            .thenReturn(this.getModuleMetaData(1));
-        Mockito.when(results.getTotalNumberOfResults())
-            .thenReturn(1L);
-        Mockito.when(results.getQueryResponseTime())
-            .thenReturn(100L);
-
-        UI.getCurrent().navigate("visualisation");
-
-        GraphView graphView = _get(GraphView.class);
-        Assertions.assertNotNull(graphView);
-
-        GraphVisualisation graphVisualisation = (GraphVisualisation)ReflectionTestUtils.getField(graphView, "graphVisualisation");
-        ModuleFilteringGrid moduleFilteringGrid = (ModuleFilteringGrid)ReflectionTestUtils.getField(graphVisualisation, "modulesGrid");
-
-        Assertions.assertNotNull(moduleFilteringGrid);
-
-        Assert.assertEquals(25, GridKt._size(moduleFilteringGrid));
-
-        ModuleSearchFilter searchFilter = (ModuleSearchFilter)ReflectionTestUtils.getField(moduleFilteringGrid, "searchFilter");
-        searchFilter.setModuleNameFilter("module");
-
-        Assert.assertEquals(1, GridKt._size(moduleFilteringGrid));
-
-        ModuleMetaData moduleMetaData = GridKt._get(moduleFilteringGrid, 0);
-        Assert.assertEquals("moduleName0", moduleMetaData.getName());
-        Assert.assertEquals("url0", moduleMetaData.getUrl());
-        Assert.assertEquals("description0", moduleMetaData.getDescription());
-        Assert.assertEquals("version0", moduleMetaData.getVersion());
-    }
-
-    @Test
-    public void test_search_non_admin_user_search_and_filter()
-    {
-        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
-            .thenReturn(false);
-
-        Mockito.when(super.ikasanAuthentication.getPrincipal())
-            .thenReturn(super.user);
-        Mockito.when(super.user.getPrincipals())
-            .thenReturn(this.principals);
-        Mockito.doCallRealMethod().when(this.principals).forEach((any(Consumer.class)));
-        Mockito.when(this.principals.iterator()).thenReturn(Set.of(principal).iterator(), Set.of(principal).iterator(), Set.of(principal).iterator(), Set.of(principal).iterator());
-        Mockito.when(principal.getRoles()).thenReturn(this.roles);
-        Mockito.doCallRealMethod().when(this.roles).forEach((any(Consumer.class)));
-        Mockito.when(this.roles.iterator()).thenReturn(Set.of(role).iterator(), Set.of(role).iterator(), Set.of(role).iterator(), Set.of(role).iterator());
-        Mockito.when(role.getRoleModules()).thenReturn(this.roleModules);
-        Mockito.doCallRealMethod().when(this.roleModules).forEach((any(Consumer.class)));
-        Mockito.when(this.roleModules.iterator()).thenReturn(Set.of(roleModule).iterator(), Set.of(roleModule).iterator(), Set.of(roleModule).iterator(), Set.of(roleModule).iterator());
-        Mockito.when(this.roleModule.getModuleName()).thenReturn("someModule", "moduleName0");
-
-        Mockito.when(this.moduleMetadataService.find(argThat(strings -> strings != null && strings.size() == 1 && strings.stream().findFirst().get().equals("someModule"))
-            , Mockito.anyInt(), Mockito.anyInt()))
-            .thenReturn(this.moduleMetadataSearchResults);
-
-        Mockito.when(this.moduleMetadataSearchResults.getResultList())
-            .thenReturn(this.getModuleMetaData(25));
-        Mockito.when(this.moduleMetadataSearchResults.getTotalNumberOfResults())
-            .thenReturn(25L);
-        Mockito.when(this.moduleMetadataSearchResults.getQueryResponseTime())
-            .thenReturn(100L);
-
-        ModuleMetadataSearchResults results = mock(ModuleMetadataSearchResults.class);
-
-        Mockito.when(this.moduleMetadataService.find(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("moduleName0"))
             , Mockito.anyInt(), Mockito.anyInt()))
             .thenReturn(results);
 
