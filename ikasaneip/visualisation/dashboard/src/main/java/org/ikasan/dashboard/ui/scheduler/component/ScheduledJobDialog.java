@@ -69,9 +69,6 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
     private TextArea jobDescriptionTa;
     private TextField cronExpressionTf;
     private ComboBox<DateTimeUtil.TimezonePair> timezoneCb;
-    private Checkbox ignoreMisfireCb;
-    private Checkbox eagerCb;
-    private TextField maxEagerCallbacksTf;
     private List<TextFieldNameValuePair> passThroughProperties;
 
 
@@ -283,7 +280,6 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
 
         this.timezoneCb = new ComboBox<>("Timezone");
-        this.timezoneCb.setRequired(true);
         ComboBox.ItemFilter<DateTimeUtil.TimezonePair> filter = (element, filterString) ->
             element.zoneId.toLowerCase().contains(filterString.toLowerCase());
         this.timezoneCb.setItems(filter, DateTimeUtil.getAllZoneIdsAndItsOffSet());
@@ -292,29 +288,6 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.timezoneCb.setPlaceholder("Choose a timezone");
         this.timezoneCb.setErrorMessage("Timezone is required!");
         formLayout.add(timezoneCb);
-
-        this.eagerCb = new Checkbox();
-        this.eagerCb.setLabel("Eager");
-        this.eagerCb.getStyle().set("padding-top", "15px");
-        formBinder.forField(this.eagerCb)
-            .withNullRepresentation(false)
-            .bind(ScheduledProcessAggregateConfiguration::isEager, ScheduledProcessAggregateConfiguration::setEager);
-        formLayout.add(this.eagerCb);
-
-        this.ignoreMisfireCb = new Checkbox();
-        this.ignoreMisfireCb.setLabel("Ignore misfire");
-        this.ignoreMisfireCb.getStyle().set("padding-top", "15px");
-        formBinder.forField(this.ignoreMisfireCb)
-            .withNullRepresentation(false)
-            .bind(ScheduledProcessAggregateConfiguration::isIgnoreMisfire, ScheduledProcessAggregateConfiguration::setIgnoreMisfire);
-        formLayout.add(this.ignoreMisfireCb);
-
-        this.maxEagerCallbacksTf = new TextField("Max eager callbacks");
-        formBinder.forField(this.maxEagerCallbacksTf)
-            .withConverter(new StringToIntegerConverter("Must be a number!"))
-            .withNullRepresentation(0)
-            .bind(ScheduledProcessAggregateConfiguration::getMaxEagerCallbacks, ScheduledProcessAggregateConfiguration::setMaxEagerCallbacks);
-        formLayout.add(maxEagerCallbacksTf, new Div());
 
         passThroughPropertiesLabel = new Label("Pass through properties");
         passThroughPropertiesButton = new Button(VaadinIcon.PLUS.create(), e -> {
@@ -338,10 +311,8 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         commandLineTf.getStyle().set("minHeight", "100px");
 
         this.workingDirectoryTf = new TextField("Working Directory");
-        this.workingDirectoryTf.setRequired(true);
         formBinder.forField(this.workingDirectoryTf)
             .withNullRepresentation("")
-            .withValidator(value -> !value.isEmpty(), "Working directory is required!")
             .bind(ScheduledProcessAggregateConfiguration::getWorkingDirectory, ScheduledProcessAggregateConfiguration::setWorkingDirectory);
         formLayout.add(workingDirectoryTf);
 
@@ -353,6 +324,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         formLayout.add(secondsToWaitForProcessStartTf);
 
         this.stdOutTf = new TextField("Std out");
+        this.stdOutTf.setRequired(true);
         formBinder.forField(this.stdOutTf)
             .withNullRepresentation("")
             .withValidator(value -> !value.isEmpty(), "Standard out is required!")
@@ -360,6 +332,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         formLayout.add(stdOutTf);
 
         this.stdErrTf = new TextField("Std err");
+        this.stdOutTf.setRequired(true);
         formBinder.forField(this.stdErrTf)
             .withNullRepresentation("")
             .bind(ScheduledProcessAggregateConfiguration::getStdErr, ScheduledProcessAggregateConfiguration::setStdErr);
@@ -497,11 +470,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
                 }
             });
 
-            if(this.timezoneCb.getValue() == null) {
-                this.timezoneCb.setInvalid(true);
-                isValid.set(false);
-            }
-            else{
+            if(this.timezoneCb.getValue() != null) {
                 scheduleProcessAggregateConfiguration.setTimezone(this.timezoneCb.getValue().zoneId);
             }
 
@@ -674,14 +643,10 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
             scheduleProcessAggregateConfiguration.getJobDescription());
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.CRON_EXPRESSION,
             scheduleProcessAggregateConfiguration.getCronExpression());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.TIMEZONE,
-            scheduleProcessAggregateConfiguration.getTimezone());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.IGNORE_MISFIRE,
-            scheduleProcessAggregateConfiguration.isIgnoreMisfire());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.EAGER,
-            scheduleProcessAggregateConfiguration.isEager());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.MAX_EAGER_CALLBACKS,
-            scheduleProcessAggregateConfiguration.getMaxEagerCallbacks());
+        if(scheduleProcessAggregateConfiguration.getTimezone() != null) {
+            this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.TIMEZONE,
+                scheduleProcessAggregateConfiguration.getTimezone());
+        }
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.PASS_THROUGH_PROPERTIES,
             scheduleProcessAggregateConfiguration.getPassthroughProperties());
     }
@@ -781,9 +746,6 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.jobDescriptionTa.setEnabled(enabled);
         this.cronExpressionTf.setEnabled(enabled);
         this.timezoneCb.setEnabled(enabled);
-        this.ignoreMisfireCb.setEnabled(enabled);
-        this.eagerCb.setEnabled(enabled);
-        this.maxEagerCallbacksTf.setEnabled(enabled);
 
         this.passThroughPropertiesButton.setVisible(enabled);
         this.passThroughProperties.forEach(passThroughProperty -> {
