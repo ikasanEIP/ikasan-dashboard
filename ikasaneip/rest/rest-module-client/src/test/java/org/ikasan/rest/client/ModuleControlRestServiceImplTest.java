@@ -184,7 +184,7 @@ public class ModuleControlRestServiceImplTest
     @Test
     public void activationStatusForbidden()
     {
-        stubFor(put(urlEqualTo("/rest/moduleControl/isActivated/test%20Module%20Name"))
+        stubFor(get(urlEqualTo("/rest/moduleControl/isActivated/test%20Module%20Name"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
