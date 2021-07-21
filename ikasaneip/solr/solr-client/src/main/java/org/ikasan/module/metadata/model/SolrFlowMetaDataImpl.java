@@ -6,6 +6,7 @@ import org.ikasan.spec.metadata.Transition;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SolrFlowMetaDataImpl implements FlowMetaData
 {
@@ -109,5 +110,24 @@ public class SolrFlowMetaDataImpl implements FlowMetaData
         sb.append(", flowStartupComment='").append(flowStartupComment).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SolrFlowMetaDataImpl that = (SolrFlowMetaDataImpl) o;
+        return Objects.equals(name, that.name) &&
+            Objects.equals(consumer, that.consumer) &&
+            Objects.equals(transitions, that.transitions) &&
+            Objects.equals(flowElements, that.flowElements) &&
+            Objects.equals(configurationId, that.configurationId) &&
+            Objects.equals(flowStartupType, that.flowStartupType) &&
+            Objects.equals(flowStartupComment, that.flowStartupComment);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, consumer, transitions, flowElements, configurationId, flowStartupType, flowStartupComment);
     }
 }
