@@ -109,7 +109,7 @@ public class PolicyManagementView extends VerticalLayout implements BeforeEnterO
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
-        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.POLICY_ADMINISTRATION_ADMIN, SecurityConstants.POLICY_ADMINISTRATION_WRITE,
+        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.POLICY_ADMINISTRATION_ADMIN, SecurityConstants.POLICY_ADMINISTRATION_WRITE, SecurityConstants.POLICY_ADMINISTRATION_READ,
             SecurityConstants.ALL_AUTHORITY)) {
             UI.getCurrent().navigate("");
             return;

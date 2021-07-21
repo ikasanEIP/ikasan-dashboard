@@ -175,7 +175,7 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
-        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.USER_ADMINISTRATION_ADMIN, SecurityConstants.USER_ADMINISTRATION_WRITE,
+        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.USER_ADMINISTRATION_ADMIN, SecurityConstants.USER_ADMINISTRATION_WRITE,  SecurityConstants.USER_ADMINISTRATION_READ,
             SecurityConstants.ALL_AUTHORITY)) {
             UI.getCurrent().navigate("");
             return;

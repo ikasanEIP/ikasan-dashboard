@@ -171,7 +171,7 @@ public class RoleManagementView extends VerticalLayout implements BeforeEnterObs
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
-        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ROLE_ADMINISTRATION_ADMIN, SecurityConstants.ROLE_ADMINISTRATION_WRITE,
+        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ROLE_ADMINISTRATION_ADMIN, SecurityConstants.ROLE_ADMINISTRATION_WRITE, SecurityConstants.ROLE_ADMINISTRATION_READ,
             SecurityConstants.ALL_AUTHORITY)) {
             UI.getCurrent().navigate("");
             return;

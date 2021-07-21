@@ -74,7 +74,7 @@ public class IkasanSecurityConfiguration
     }
 
     @Bean
-    SystemEventLogger systemEventLogger()
+    public SystemEventLogger systemEventLogger()
     {
         return new SystemEventLogger(systemEventService());
     }

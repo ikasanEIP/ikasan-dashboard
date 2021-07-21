@@ -68,7 +68,7 @@ public class AdministrationSearchView extends VerticalLayout implements BeforeEn
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
-        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.SYSTEM_EVENT_ADMIN, SecurityConstants.SYSTEM_EVENT_WRITE,
+        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.SYSTEM_EVENT_ADMIN, SecurityConstants.SYSTEM_EVENT_WRITE, SecurityConstants.SYSTEM_EVENT_READ,
             SecurityConstants.ALL_AUTHORITY)) {
             UI.getCurrent().navigate("");
             return;

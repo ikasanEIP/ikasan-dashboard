@@ -465,7 +465,7 @@ public class UserDirectoriesView extends VerticalLayout implements BeforeEnterOb
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent)
     {
-        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.USER_DIRECTORY_ADMIN, SecurityConstants.USER_DIRECTORY_WRITE,
+        if(!ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.USER_DIRECTORY_ADMIN, SecurityConstants.USER_DIRECTORY_WRITE, SecurityConstants.USER_DIRECTORY_READ,
             SecurityConstants.ALL_AUTHORITY)) {
             UI.getCurrent().navigate("");
             return;
