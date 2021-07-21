@@ -112,7 +112,7 @@ public class ModuleControlRestServiceImplTest
     @Test
     public void activateModule()
     {
-        stubFor(put(urlEqualTo("/rest/moduleControl/activator/test%20Module%20Name/activate"))
+        stubFor(put(urlEqualTo("/rest/moduleControl/activator"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -126,7 +126,7 @@ public class ModuleControlRestServiceImplTest
     @Test
     public void deactivateModule()
     {
-        stubFor(put(urlEqualTo("/rest/moduleControl/activator/test%20Module%20Name/deactivate"))
+        stubFor(put(urlEqualTo("/rest/moduleControl/activator"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -140,7 +140,7 @@ public class ModuleControlRestServiceImplTest
     @Test
     public void activationForbidden()
     {
-        stubFor(put(urlEqualTo("/rest/moduleControl/activator/test%20Module%20Name/deactivate"))
+        stubFor(put(urlEqualTo("/rest/moduleControl/activator"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
