@@ -160,7 +160,7 @@ public class BusinessStreamFilteringGrid extends Grid<BusinessStreamMetaData>
         try {
             IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-            if(authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)) {
+            if(authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) || authentication.hasGrantedAuthority(SecurityConstants.BUSINESS_STREAM_ADMIN)) {
                 return this.solrSearchService.find(businessStreamNames, offset, limit);
             }
             else {

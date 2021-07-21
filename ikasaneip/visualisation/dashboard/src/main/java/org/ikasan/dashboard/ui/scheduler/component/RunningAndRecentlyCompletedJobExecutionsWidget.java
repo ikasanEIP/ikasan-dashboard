@@ -18,6 +18,7 @@ import com.vaadin.flow.router.RouterLink;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
@@ -52,15 +53,19 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
     private MetaDataService metaDataRestService;
     private ModuleMetaDataService moduleMetaDataService;
 
+    private SystemEventLogger systemEventLogger;
+
     public RunningAndRecentlyCompletedJobExecutionsWidget(ScheduledProcessManagementService scheduledProcessManagementService,
                                                           DateFormatter dateFormatter, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                                          MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService, boolean isDeepLink) {
+                                                          MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService, boolean isDeepLink, SystemEventLogger systemEventLogger) {
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.dateFormatter = dateFormatter;
         this.configurationRestService = configurationRestService;
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
         this.moduleMetaDataService = moduleMetaDataService;
+        this.systemEventLogger = systemEventLogger;
+
         Div div = new Div();
         div.addClassNames("card-counter");
         if(isDeepLink) {
@@ -145,7 +150,8 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
         this.scheduledProcessFilter.setEndTime(epochMilli + (this.endTime.getValue().toSecondOfDay()*1000));
 
         this.runningAndRecentlyCompletedJobExecutionFilteringGrid = new RunningAndRecentlyCompletedJobExecutionFilteringGrid(scheduledProcessManagementService
-            , this.scheduledProcessFilter, this.dateFormatter, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetaDataService);
+            , this.scheduledProcessFilter, this.dateFormatter, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetaDataService
+            , this.systemEventLogger);
 
         this.runningAndRecentlyCompletedJobExecutionFilteringGrid.addGridFiltering(textField, this.scheduledProcessFilter::setFilter);
         this.runningAndRecentlyCompletedJobExecutionFilteringGrid.addGridFiltering(date, startTime, endTime,

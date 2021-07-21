@@ -26,9 +26,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.model.AgentJobFilter;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
@@ -71,6 +69,8 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
 
     private IkasanAuthentication authentication;
 
+    private SystemEventLogger systemEventLogger;
+
     /**
      * Constructor
      *
@@ -79,7 +79,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
      */
     public AgentJobFilteringGrid(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService, AgentJobFilter searchFilter,
                                  DateFormatter dateFormatter, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                 MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService) {
+                                 MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService, SystemEventLogger systemEventLogger) {
         super(searchFilter);
         this.agent = agent;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
@@ -88,6 +88,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
         this.moduleMetaDataService = moduleMetaDataService;
+        this.systemEventLogger = systemEventLogger;
 
         this.ui = UI.getCurrent();
         this.authentication = authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -143,7 +144,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             edit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
                     this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                    this.metaDataRestService);
+                    this.metaDataRestService, this.systemEventLogger);
 
                 scheduledJobDialog.setScheduleProcessAggregateConfiguration(scheduledProcessAggregateConfiguration, EditMode.EDIT);
                 scheduledJobDialog.open();
@@ -168,7 +169,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             view.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
                     this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                    this.metaDataRestService);
+                    this.metaDataRestService, systemEventLogger);
 
                 scheduledJobDialog.setScheduleProcessAggregateConfiguration(scheduledProcessAggregateConfiguration, EditMode.READONLY);
                 scheduledJobDialog.open();
@@ -189,6 +190,11 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                     "Are you sure you want to delete this job? This operation cannot be reversed.", "Delete", (ComponentEventListener<ConfirmDialog.ConfirmEvent>) confirmEvent -> {
                     try {
                         this.deleteScheduledJobFlow(scheduledProcessAggregateConfiguration);
+
+                        String action = String.format("Deleted scheduled job [%s].", scheduledProcessAggregateConfiguration);
+                        IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+
+                        this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_DELETED, action, authentication.getName());
                     }
                     catch(Exception e) {
                         e.printStackTrace();
@@ -197,6 +203,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                     this.dataProvider.refreshAll();
                     this.filteredDataProvider.refreshAll();
                     }, "Cancel", (ComponentEventListener<ConfirmDialog.CancelEvent>) cancelEvent -> {});
+                dialog.setConfirmButtonTheme("error primary");
 
                 dialog.open();
             });

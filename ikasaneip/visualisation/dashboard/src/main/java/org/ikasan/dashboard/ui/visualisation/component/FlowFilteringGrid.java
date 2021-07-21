@@ -165,7 +165,8 @@ public class FlowFilteringGrid extends Grid<Flow>
             }
         }
 
-        if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) && moduleNames.isEmpty()){
+        if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)
+            && !authentication.hasGrantedAuthority(SecurityConstants.BUSINESS_STREAM_ADMIN) && moduleNames.isEmpty()){
             moduleNames.add(SearchConstants.NONSENSE_STRING);
         }
 

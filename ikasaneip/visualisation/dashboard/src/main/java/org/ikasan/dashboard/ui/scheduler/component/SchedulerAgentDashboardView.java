@@ -10,6 +10,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.dashboard.component.*;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.rest.client.ModuleRestService;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
 import org.ikasan.solr.model.IkasanSolrDocument;
@@ -39,19 +40,22 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
 
-    private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
+    private SystemEventLogger systemEventLogger;
 
     private Board board;
 
     private boolean initialised = false;
 
     public SchedulerAgentDashboardView(ModuleMetaDataService moduleMetadataService, ScheduledProcessManagementService scheduledProcessManagementService,
-                                       ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService) {
+                                       ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
+                                       SystemEventLogger systemEventLogger) {
         this.moduleMetadataService = moduleMetadataService;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
+        this.systemEventLogger = systemEventLogger;
+
         board = new Board();
         board.addClassName("styled");
         board.setSizeFull();
@@ -63,7 +67,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         if(!initialised) {
             board.addRow(new AgentWidget(this.moduleMetadataService, this.scheduledProcessManagementService
-                , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService)
+                , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger)
                 , new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
 
             initialised = true;

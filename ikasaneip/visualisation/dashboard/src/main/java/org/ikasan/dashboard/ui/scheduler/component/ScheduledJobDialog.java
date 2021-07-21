@@ -27,9 +27,12 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.dashboard.ui.util.SystemEventConstants;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.model.ScheduledProcessConfigurationConstants;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -39,6 +42,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.miki.shared.dates.DatePattern;
 import org.vaadin.miki.shared.dates.DatePatterns;
 import org.vaadin.miki.superfields.dates.SuperDatePicker;
@@ -111,6 +115,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
     private MetaDataService metaDataRestService;
 
     private ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration = new ScheduledProcessAggregateConfiguration();
+    private ScheduledProcessAggregateConfiguration oldScheduleProcessAggregateConfiguration;
 
     private Binder<ScheduledProcessAggregateConfiguration> formBinder;
 
@@ -120,10 +125,12 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
     private boolean enabled = true;
 
+    private SystemEventLogger systemEventLogger;
+
 
     public ScheduledJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                              MetaDataService metaDataRestService) {
+                              MetaDataService metaDataRestService, SystemEventLogger systemEventLogger) {
         super.showResize(false);
         super.title.setText("Scheduled Job");
 
@@ -132,6 +139,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.configurationRestService = configurationRestService;
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
+        this.systemEventLogger = systemEventLogger;
 
         this.noBlackOutCronExpressionLabel = new Label("no blackout cron expressions");
         this.noBlackOutCronExpressionLabel.setVisible(false);
@@ -178,6 +186,19 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
                 NotificationHelper.showErrorNotification("An error has occurred creating a new scheduled job. Please contact Ikasan support.");
                 return;
             }
+
+            IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+
+            if (this.editMode == EditMode.NEW) {
+                String action = String.format("New scheduled job created [%s].", this.scheduleProcessAggregateConfiguration);
+                this.systemEventLogger.logEvent(SystemEventConstants.NEW_SCHEDULED_JOB_CREATED, action, authentication.getName());
+            }
+            else if (this.editMode == EditMode.EDIT) {
+                String action = String.format("Scheduled job edited. \nBefore [%s]\nAfter [%s].", this.oldScheduleProcessAggregateConfiguration,
+                    this.scheduleProcessAggregateConfiguration);
+                this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_EDIT, action, authentication.getName());
+            }
+
             this.close();
         });
 
@@ -829,6 +850,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
     public void setScheduleProcessAggregateConfiguration(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration, EditMode editMode) {
         this.enabled = editMode == EditMode.NEW || editMode == EditMode.EDIT ? true : false;
         this.scheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
+        this.oldScheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
         this.formBinder.readBean(this.scheduleProcessAggregateConfiguration);
         this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(scheduleProcessAggregateConfiguration.getTimezone()));
         this.bindCollections(scheduleProcessAggregateConfiguration);

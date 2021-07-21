@@ -15,6 +15,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.scheduler.model.AgentJobFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -33,15 +34,19 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
     private ModuleMetaDataService moduleMetaDataService;
     private TextField filterTf;
 
+    private SystemEventLogger systemEventLogger;
+
     public SchedulerAgentManagementDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                          MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService) {
+                                          MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService,
+                                          SystemEventLogger systemEventLogger) {
         this.agent = agent;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
         this.moduleMetaDataService = moduleMetaDataService;
+        this.systemEventLogger = systemEventLogger;
         super.showResize(false);
         super.title.setText("Scheduler Agent Management");
 
@@ -56,7 +61,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         addButton.addClickListener(buttonClickEvent -> {
             ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(this.agent,
                 this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                this.metaDataRestService);
+                this.metaDataRestService, this.systemEventLogger);
 
             scheduledJobDialog.open();
         });
@@ -101,7 +106,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         AgentJobFilter agentJobFiler = new AgentJobFilter();
         AgentJobFilteringGrid filteringGrid = new AgentJobFilteringGrid(this.agent, this.scheduledProcessManagementService
             , agentJobFiler, new DateFormatter(), this.configurationRestService, this.moduleControlRestService,
-            this.metaDataRestService, this.moduleMetaDataService);
+            this.metaDataRestService, this.moduleMetaDataService, this.systemEventLogger);
         filteringGrid.setSizeFull();
         filteringGrid.addGridFiltering(this.filterTf, agentJobFiler::setFilter);
 

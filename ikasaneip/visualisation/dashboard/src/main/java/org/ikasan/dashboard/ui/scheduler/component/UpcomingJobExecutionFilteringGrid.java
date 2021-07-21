@@ -23,6 +23,7 @@ import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
@@ -65,6 +66,8 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
     private UI ui;
     private IkasanAuthentication authentication;
 
+    private SystemEventLogger systemEventLogger;
+
     /**
      * Constructors
      *
@@ -73,7 +76,7 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
      */
     public UpcomingJobExecutionFilteringGrid(ScheduledProcessManagementService scheduledProcessManagementService, ScheduledProcessFilter searchFilter,
                                              DateFormatter dateFormatter, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                             MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService) {
+                                             MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService, SystemEventLogger systemEventLogger) {
         super(searchFilter);
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.dateFormatter = dateFormatter;
@@ -81,6 +84,7 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
         this.moduleMetaDataService = moduleMetaDataService;
+        this.systemEventLogger = systemEventLogger;
 
         this.ui = UI.getCurrent();
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -174,7 +178,7 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
 
                     ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
                         this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                        this.metaDataRestService);
+                        this.metaDataRestService, this.systemEventLogger);
 
                     scheduledJobDialog.setScheduleProcessAggregateConfiguration(configuration, EditMode.READONLY);
                     scheduledJobDialog.open();
