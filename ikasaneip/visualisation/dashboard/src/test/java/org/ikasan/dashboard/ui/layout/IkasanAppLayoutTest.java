@@ -352,7 +352,7 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertNotNull(ikasanAppLayout);
 
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "searchMenuItem")).isVisible());
-        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "systemEventMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "groupManagementMenuItem")).isVisible());
@@ -370,7 +370,7 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertNotNull(ikasanAppLayout);
 
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "searchMenuItem")).isVisible());
-        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "systemEventMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "groupManagementMenuItem")).isVisible());
@@ -388,7 +388,7 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertNotNull(ikasanAppLayout);
 
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "searchMenuItem")).isVisible());
-        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "systemEventMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "groupManagementMenuItem")).isVisible());
@@ -406,7 +406,7 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertNotNull(ikasanAppLayout);
 
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "searchMenuItem")).isVisible());
-        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "systemEventMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "groupManagementMenuItem")).isVisible());
@@ -424,7 +424,7 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertNotNull(ikasanAppLayout);
 
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "searchMenuItem")).isVisible());
-        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "systemEventMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "groupManagementMenuItem")).isVisible());
@@ -442,7 +442,7 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertNotNull(ikasanAppLayout);
 
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "searchMenuItem")).isVisible());
-        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "systemEventMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "groupManagementMenuItem")).isVisible());
@@ -460,7 +460,7 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertNotNull(ikasanAppLayout);
 
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "searchMenuItem")).isVisible());
-        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "systemEventMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "groupManagementMenuItem")).isVisible());
@@ -478,7 +478,7 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertNotNull(ikasanAppLayout);
 
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "searchMenuItem")).isVisible());
-        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "systemEventMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "groupManagementMenuItem")).isVisible());
@@ -496,7 +496,7 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertNotNull(ikasanAppLayout);
 
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "searchMenuItem")).isVisible());
-        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "systemEventMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "groupManagementMenuItem")).isVisible());
@@ -514,7 +514,7 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertNotNull(ikasanAppLayout);
 
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "searchMenuItem")).isVisible());
-        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "systemEventMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "groupManagementMenuItem")).isVisible());
@@ -532,7 +532,7 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertNotNull(ikasanAppLayout);
 
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "searchMenuItem")).isVisible());
-        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "systemEventMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "groupManagementMenuItem")).isVisible());
@@ -550,7 +550,7 @@ public class IkasanAppLayoutTest extends UITest {
         Assertions.assertNotNull(ikasanAppLayout);
 
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "searchMenuItem")).isVisible());
-        Assertions.assertEquals(true, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
+        Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "visualisationMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "systemEventMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "userManagementMenuItem")).isVisible());
         Assertions.assertEquals(false, ((Component)ReflectionTestUtils.getField(ikasanAppLayout, "groupManagementMenuItem")).isVisible());
