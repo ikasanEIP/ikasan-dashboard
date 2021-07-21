@@ -20,7 +20,7 @@ public class ModuleControlRestServiceImpl extends ModuleRestService implements M
 {
     Logger logger = LoggerFactory.getLogger(ModuleControlRestServiceImpl.class);
 
-    protected final static String MODULE_ACTIVATION_STATE_CONTROL_URL= "/rest/moduleControl/activator/{moduleName}/{action}";
+    protected final static String MODULE_ACTIVATION_STATE_CONTROL_URL= "/rest/moduleControl/activator";
     protected final static String MODULE_ACTIVATION_STATE_URL= "/rest/moduleControl/isActivated/{moduleName}";
     protected final static String CHANGE_FLOW_STATE_URL= "/rest/moduleControl";
     protected final static String CHANGE_FLOW_STARTUP_MODE_URL= "/rest/moduleControl/startupMode";
@@ -79,14 +79,14 @@ public class ModuleControlRestServiceImpl extends ModuleRestService implements M
     @Override
     public boolean changeModuleActivationState(String contextUrl, String moduleName, String action)
     {
+        ModuleActivationDto activationDto = new ModuleActivationDto();
+        activationDto.setAction(action);
         HttpHeaders headers = createHttpHeaders();
-        HttpEntity entity = new HttpEntity(headers);
-        Map<String, String> parameters = new HashMap<String, String>()
-        {{put("moduleName",moduleName);put("action",action);}};
+        HttpEntity entity = new HttpEntity(activationDto, headers);
         String url = contextUrl+MODULE_ACTIVATION_STATE_CONTROL_URL;
         try
         {
-            restTemplate.exchange(url, HttpMethod.PUT, entity, String.class, parameters);
+            restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
 
             return true;
         }
@@ -108,7 +108,7 @@ public class ModuleControlRestServiceImpl extends ModuleRestService implements M
         String url = contextUrl+MODULE_ACTIVATION_STATE_URL;
         try
         {
-            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, entity, String.class, parameters);
+            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class, parameters);
 
             return Optional.of(responseEntity.getBody());
         }
