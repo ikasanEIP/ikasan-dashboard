@@ -19,8 +19,10 @@ import org.ikasan.dashboard.security.ContextCache;
 import org.ikasan.dashboard.ui.util.SessionAttributeConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.security.model.User;
 import org.ikasan.security.service.AuthenticationService;
 import org.ikasan.security.service.AuthenticationServiceException;
+import org.ikasan.security.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -42,6 +44,9 @@ public class LoginView extends VerticalLayout implements PageConfigurator//, Has
 
     @Resource
     private AuthenticationService authenticationService;
+
+    @Resource
+    private UserService userService;
 
     @Resource
     private SystemEventLogger systemEventLogger;
@@ -74,6 +79,10 @@ public class LoginView extends VerticalLayout implements PageConfigurator//, Has
             {
                 Authentication authentication = this.authenticationService.login(loginEvent.getUsername(),
                     loginEvent.getPassword());
+
+                User user = this.userService.loadUserByUsername(authentication.getName());
+                user.setPreviousAccessTimestamp(System.currentTimeMillis());
+                this.userService.updateUser(user);
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -127,9 +136,4 @@ public class LoginView extends VerticalLayout implements PageConfigurator//, Has
         attributes.put("type", "image/png");
         settings.addLink("icons/icon.png", attributes);
     }
-
-//    @Override
-//    public void setParameter(BeforeEvent beforeEvent, String parameter) {
-////        this.route = parameter;
-//    }
 }

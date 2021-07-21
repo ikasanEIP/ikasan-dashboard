@@ -85,8 +85,6 @@ public abstract class FilteringGrid<DATA, FILTER, RESULTS extends SearchResults>
 
     public void init()
     {
-        IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
-
         dataProvider = DataProvider.fromFilteringCallbacks(query ->
         {
             Optional<FILTER> filter = query.getFilter();

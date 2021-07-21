@@ -136,16 +136,36 @@ public class UserManagementView extends VerticalLayout implements BeforeEnterObs
         this.userGrid.setSizeFull();
         this.userGrid.setClassName("my-grid");
 
-        this.userGrid.addColumn(User::getUsername).setKey("username").setHeader(getTranslation("table-header.username", UI.getCurrent().getLocale(), null)).setSortable(true);
-        this.userGrid.addColumn(User::getFirstName).setKey("firstname").setHeader(getTranslation("table-header.firstname", UI.getCurrent().getLocale(), null)).setSortable(true);
-        this.userGrid.addColumn(User::getSurname).setKey("surname").setHeader(getTranslation("table-header.surname", UI.getCurrent().getLocale(), null)).setSortable(true);
-        this.userGrid.addColumn(User::getEmail).setKey("email").setHeader(getTranslation("table-header.email", UI.getCurrent().getLocale(), null)).setSortable(true);
-        this.userGrid.addColumn(User::getDepartment).setKey("department").setHeader(getTranslation("table-header.department", UI.getCurrent().getLocale(), null)).setSortable(true);
+        this.userGrid.addColumn(User::getUsername)
+            .setKey("username")
+            .setHeader(getTranslation("table-header.username", UI.getCurrent().getLocale(), null))
+            .setSortable(true)
+            .setFlexGrow(1);
+        this.userGrid.addColumn(User::getFirstName)
+            .setKey("firstname")
+            .setHeader(getTranslation("table-header.firstname", UI.getCurrent().getLocale(), null))
+            .setSortable(true)
+            .setFlexGrow(1);
+        this.userGrid.addColumn(User::getSurname)
+            .setKey("surname")
+            .setHeader(getTranslation("table-header.surname", UI.getCurrent().getLocale(), null))
+            .setSortable(true)
+            .setFlexGrow(1);
+        this.userGrid.addColumn(User::getEmail).setKey("email")
+            .setHeader(getTranslation("table-header.email", UI.getCurrent().getLocale(), null))
+            .setFlexGrow(2)
+            .setSortable(true);
+        this.userGrid.addColumn(User::getDepartment)
+            .setKey("department").setHeader(getTranslation("table-header.department", UI.getCurrent().getLocale(), null))
+            .setSortable(true)
+            .setFlexGrow(1);
         this.userGrid.addColumn(TemplateRenderer.<User>of(
-            "<div>[[item.date]]</div>")
+            "<div style='white-space:normal'>[[item.date]]</div>")
             .withProperty("date",
                 user -> this.dateFormatter.getFormattedDate(user.getPreviousAccessTimestamp())))
-            .setKey("lastaccess").setHeader(getTranslation("table-header.last-access", UI.getCurrent().getLocale(), null)).setSortable(true);
+            .setKey("lastaccess").setHeader(getTranslation("table-header.last-access", UI.getCurrent().getLocale(), null))
+            .setSortable(true)
+            .setWidth("90px");
 
         HeaderRow hr = userGrid.appendHeaderRow();
         this.userGrid.addGridFiltering(hr, userFilter::setUsernameFilter, "username");
