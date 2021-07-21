@@ -56,4 +56,8 @@ public class SystemEventConstants
     public static final String DASHBOARD_ROLE_ADDED = "Role added";
     public static final String DASHBOARD_ROLE_DELETED = "Role added";
     public static final String NEW_USER_CREATED = "New user created";
+
+    public static final String NEW_SCHEDULED_JOB_CREATED = "New scheduled job created";
+    public static final String SCHEDULED_JOB_DELETED = "Scheduled job deleted";
+    public static final String SCHEDULED_JOB_EDIT = "Scheduled job edited";
 }

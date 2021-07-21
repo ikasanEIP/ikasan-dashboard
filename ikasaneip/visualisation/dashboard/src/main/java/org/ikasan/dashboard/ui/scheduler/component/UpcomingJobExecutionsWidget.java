@@ -14,6 +14,7 @@ import com.vaadin.flow.router.RouterLink;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -47,16 +48,18 @@ public class UpcomingJobExecutionsWidget extends Div {
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
     private ModuleMetaDataService moduleMetaDataService;
+    private SystemEventLogger systemEventLogger;
 
     public UpcomingJobExecutionsWidget(ScheduledProcessManagementService scheduledProcessManagementService, DateFormatter dateFormatter
         , ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService
-        , ModuleMetaDataService moduleMetaDataService, boolean isDeeplink) {
+        , ModuleMetaDataService moduleMetaDataService, boolean isDeeplink, SystemEventLogger systemEventLogger) {
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.dateFormatter = dateFormatter;
         this.configurationRestService = configurationRestService;
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
         this.moduleMetaDataService = moduleMetaDataService;
+        this.systemEventLogger = systemEventLogger;
 
         this.scheduledProcessFilter = new ScheduledProcessFilter();
         Div div = new Div();
@@ -138,7 +141,7 @@ public class UpcomingJobExecutionsWidget extends Div {
 
         this.upcomingJobExecutionFilteringGrid = new UpcomingJobExecutionFilteringGrid(this.scheduledProcessManagementService
             , this.scheduledProcessFilter, this.dateFormatter, this.configurationRestService, this.moduleControlRestService,
-            this.metaDataRestService, this.moduleMetaDataService);
+            this.metaDataRestService, this.moduleMetaDataService, this.systemEventLogger);
 
         this.upcomingJobExecutionFilteringGrid.addGridFiltering(textField, this.scheduledProcessFilter::setFilter);
         this.upcomingJobExecutionFilteringGrid.addGridFiltering(date, startTime, endTime,

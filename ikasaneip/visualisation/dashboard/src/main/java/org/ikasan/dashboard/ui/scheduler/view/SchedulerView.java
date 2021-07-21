@@ -18,6 +18,7 @@ import org.ikasan.dashboard.ui.scheduler.model.CalendarConfiguration;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -63,6 +64,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private MetaDataService metaDataRestService;
 
+    @Resource
+    private SystemEventLogger systemEventLogger;
+
     private SchedulerCalendar schedulerCalendar;
 
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
@@ -81,7 +85,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     private void init() {
         this.schedulerAgentDashboardView = new SchedulerAgentDashboardView(this.moduleMetadataService
-            , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService);
+            , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger);
         this.schedulerAgentDashboardView.addClassName("styled");
         this.schedulerAgentDashboardView.setSizeFull();
         this.schedulerAgentDashboardView.setVisible(true);
@@ -139,9 +143,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.init();
             this.schedulerAgentDashboardView.beforeEnter(beforeEnterEvent);
             scheduleJobsTab.addRow(new UpcomingJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter, this.configurationRestService,
-                this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false));
+                this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
             scheduleJobsTab.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
-                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false));
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
 
             this.scheduleJStatsTab.addRow(new StartAndEndTimeWidget());
             initialised = true;

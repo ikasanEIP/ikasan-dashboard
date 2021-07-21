@@ -12,6 +12,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.material.Material;
 import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -44,9 +45,11 @@ public class UpcomingJobExecutionDeepLinkView extends VerticalLayout implements 
 
     private UpcomingJobExecutionsWidget upcomingJobExecutionsWidget;
 
+    private SystemEventLogger systemEventLogger;
+
     public UpcomingJobExecutionDeepLinkView(ScheduledProcessManagementService scheduledProcessManagementService, DateFormatter dateFormatter
         , ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService
-        , @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetaDataService)
+        , @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetaDataService, SystemEventLogger systemEventLogger)
     {
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.moduleControlRestService = moduleControlRestService;
@@ -54,13 +57,14 @@ public class UpcomingJobExecutionDeepLinkView extends VerticalLayout implements 
         this.configurationRestService = configurationRestService;
         this.moduleMetaDataService = moduleMetaDataService;
         this.dateFormatter = dateFormatter;
+        this.systemEventLogger = systemEventLogger;
 
         init();
     }
 
     private void init() {
         this.upcomingJobExecutionsWidget = new UpcomingJobExecutionsWidget(scheduledProcessManagementService
-            , dateFormatter, configurationRestService, moduleControlRestService, metaDataRestService, moduleMetaDataService, true);
+            , dateFormatter, configurationRestService, moduleControlRestService, metaDataRestService, moduleMetaDataService, true, this.systemEventLogger);
 
         this.add(this.upcomingJobExecutionsWidget);
         this.upcomingJobExecutionsWidget.setSizeFull();

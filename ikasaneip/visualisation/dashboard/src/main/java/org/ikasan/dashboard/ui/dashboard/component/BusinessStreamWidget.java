@@ -23,7 +23,6 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 
 
 @CssImport("./styles/dashboard-view.css")
-@CssImport("./styles/empty-grid-message.css")
 public class BusinessStreamWidget extends Div {
 
     private BusinessStreamFilteringGrid businessStreamGrid;
