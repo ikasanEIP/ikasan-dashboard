@@ -334,9 +334,9 @@ public class SchedulerStatusWidget extends Div {
         this.recalculate();
 
         this.flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState -> {
-                 this.recalculate();
-                logger.info("Flow state update received!" + flowState);
-            });
+            this.recalculate();
+            logger.info("Flow state update received!" + flowState);
+        });
 
         this.cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState -> {
             this.recalculate();

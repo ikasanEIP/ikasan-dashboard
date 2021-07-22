@@ -123,6 +123,7 @@ public class FlowStateCache implements Consumer<FlowState>
     private FlowState refreshFromSource(String moduleName, String flowName, String contextUrl)
     {
         Optional<FlowDto> flowDto;
+        FlowState state = null;
 
         try
         {
@@ -131,10 +132,11 @@ public class FlowStateCache implements Consumer<FlowState>
         catch (Exception e)
         {
             logger.warn(String.format("Could not load flow state for module[%s], flow[%s] using URL[%s].", moduleName, flowName, contextUrl));
-            return null;
+            state = new FlowState(moduleName, flowName, State.getState(State.UNKNOWN));
+            FlowStateCache.instance().put(state);
+            return state;
         }
 
-        FlowState state = null;
         if(flowDto.isPresent())
         {
             state = new FlowState(moduleName, flowName, State.getState(flowDto.get().getState()));
