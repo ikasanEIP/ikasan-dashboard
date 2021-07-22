@@ -22,6 +22,7 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.SchedulerService;
 
 public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDialog {
 
@@ -33,13 +34,14 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
     private MetaDataService metaDataRestService;
     private ModuleMetaDataService moduleMetaDataService;
     private TextField filterTf;
+    private SchedulerService schedulerService;
 
     private SystemEventLogger systemEventLogger;
 
     public SchedulerAgentManagementDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService,
-                                          SystemEventLogger systemEventLogger) {
+                                          SystemEventLogger systemEventLogger, SchedulerService schedulerService) {
         this.agent = agent;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
@@ -47,6 +49,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         this.metaDataRestService = metaDataRestService;
         this.moduleMetaDataService = moduleMetaDataService;
         this.systemEventLogger = systemEventLogger;
+        this.schedulerService = schedulerService;
         super.showResize(false);
         super.title.setText("Scheduler Agent Management");
 
@@ -106,7 +109,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         AgentJobFilter agentJobFiler = new AgentJobFilter();
         AgentJobFilteringGrid filteringGrid = new AgentJobFilteringGrid(this.agent, this.scheduledProcessManagementService
             , agentJobFiler, new DateFormatter(), this.configurationRestService, this.moduleControlRestService,
-            this.metaDataRestService, this.moduleMetaDataService, this.systemEventLogger);
+            this.metaDataRestService, this.moduleMetaDataService, this.systemEventLogger, this.schedulerService);
         filteringGrid.setSizeFull();
         filteringGrid.addGridFiltering(this.filterTf, agentJobFiler::setFilter);
 

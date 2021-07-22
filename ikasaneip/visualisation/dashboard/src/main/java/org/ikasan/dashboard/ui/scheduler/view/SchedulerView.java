@@ -25,6 +25,7 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.solr.BatchInsertEvent;
 import org.ikasan.spec.solr.BatchInsertListener;
 import org.slf4j.Logger;
@@ -67,6 +68,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private SystemEventLogger systemEventLogger;
 
+    @Resource
+    private SchedulerService schedulerService;
+
     private SchedulerCalendar schedulerCalendar;
 
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
@@ -85,7 +89,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     private void init() {
         this.schedulerAgentDashboardView = new SchedulerAgentDashboardView(this.moduleMetadataService
-            , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger);
+            , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
+            , this.systemEventLogger, this.schedulerService);
+
         this.schedulerAgentDashboardView.addClassName("styled");
         this.schedulerAgentDashboardView.setSizeFull();
         this.schedulerAgentDashboardView.setVisible(true);

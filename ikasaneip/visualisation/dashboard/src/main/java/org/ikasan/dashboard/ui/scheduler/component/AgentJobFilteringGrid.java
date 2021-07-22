@@ -40,6 +40,7 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.SchedulerService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
@@ -71,6 +72,8 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
 
     private SystemEventLogger systemEventLogger;
 
+    private SchedulerService schedulerService;
+
     /**
      * Constructor
      *
@@ -79,7 +82,8 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
      */
     public AgentJobFilteringGrid(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService, AgentJobFilter searchFilter,
                                  DateFormatter dateFormatter, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                 MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService, SystemEventLogger systemEventLogger) {
+                                 MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService, SystemEventLogger systemEventLogger,
+                                 SchedulerService schedulerService) {
         super(searchFilter);
         this.agent = agent;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
@@ -89,9 +93,10 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
         this.metaDataRestService = metaDataRestService;
         this.moduleMetaDataService = moduleMetaDataService;
         this.systemEventLogger = systemEventLogger;
+        this.schedulerService = schedulerService;
 
         this.ui = UI.getCurrent();
-        this.authentication = authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.initGrid();
     }
@@ -224,6 +229,10 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             FlowState flowState = FlowStateCache.instance().get(this.agent
                 , scheduledProcessAggregateConfiguration.getJobName());
 
+            if(flowState == null) {
+                return layout;
+            }
+
             if(flowState.getState() == State.RUNNING_STATE) {
                 Icon stop = VaadinIcon.STOP.create();
                 stop.setSize("14pt");
@@ -315,6 +324,25 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
 
                 stop.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                     this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName(), "stop");
+                });
+            }
+
+            if(flowState.getState() == State.RUNNING_STATE) {
+                Icon fireJob = VaadinIcon.ROCKET.create();
+                fireJob.setSize("14pt");
+                fireJob.getElement().setAttribute("title", "Fire job immediately");
+                fireJob.getStyle().set("cursor", "pointer");
+                layout.add(fireJob);
+
+                ComponentSecurityVisibility.applySecurity(this.authentication, fireJob, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
+
+                fireJob.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                    if(this.schedulerService.triggerFlowNow(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName())) {
+                        NotificationHelper.showUserNotification("Job triggered successfully.");
+                    }
+                    else {
+                        NotificationHelper.showUserNotification("An error occurred triggering job. Please contact Ikasan support.");
+                    }
                 });
             }
 
