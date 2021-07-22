@@ -53,9 +53,13 @@ public class FlowStateCache implements Consumer<FlowState>
     public void put(FlowState flowState)
     {
         String key = flowState.getModuleName() + flowState.getFlowName();
-        this.cache.put(key, flowState);
 
-        CacheStateBroadcaster.broadcast(flowState);
+        // Only update and broadcast state if state is new
+        // or has changed.
+        if(!this.cache.contains(key) || this.cache.get(key).getState() != flowState.getState()) {
+            this.cache.put(key, flowState);
+            CacheStateBroadcaster.broadcast(flowState);
+        }
     }
 
 
