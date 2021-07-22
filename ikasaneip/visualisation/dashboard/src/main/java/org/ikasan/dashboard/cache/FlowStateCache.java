@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public class FlowStateCache implements Consumer<FlowState>
@@ -127,27 +128,21 @@ public class FlowStateCache implements Consumer<FlowState>
     private FlowState refreshFromSource(String moduleName, String flowName, String contextUrl)
     {
         Optional<FlowDto> flowDto;
-        FlowState state = null;
+        AtomicReference<FlowState> state = new AtomicReference<>();
 
-        try
-        {
-            flowDto = this.moduleControlRestService.getFlowState(contextUrl, moduleName, flowName);
-        }
-        catch (Exception e)
-        {
+        flowDto = this.moduleControlRestService.getFlowState(contextUrl, moduleName, flowName);
+
+        flowDto.ifPresentOrElse(dto -> {
+            state.set(new FlowState(moduleName, flowName, State.getState(flowDto.get().getState())));
+            FlowStateCache.instance().put(state.get());
+        }, () -> {
             logger.warn(String.format("Could not load flow state for module[%s], flow[%s] using URL[%s].", moduleName, flowName, contextUrl));
-            state = new FlowState(moduleName, flowName, State.getState(State.UNKNOWN));
-            FlowStateCache.instance().put(state);
-            return state;
-        }
+            state.set(new FlowState(moduleName, flowName, State.getState(State.UNKNOWN)));
+            FlowStateCache.instance().put(state.get());
+        });
 
-        if(flowDto.isPresent())
-        {
-            state = new FlowState(moduleName, flowName, State.getState(flowDto.get().getState()));
-            FlowStateCache.instance().put(state);
-        }
 
-        return state;
+        return state.get();
     }
 
     public void teardown() {
