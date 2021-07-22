@@ -20,6 +20,7 @@ import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.SearchResultsDialog;
 import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.component.util.SearchFoundStatus;
 import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
 import org.ikasan.dashboard.ui.visualisation.util.BusinessStreamItemTypes;
@@ -552,7 +553,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
                 dialog.open();
             }
-            else if(accessibleModules.contains(moduleMetaData.getName())) {
+            else if(accessibleModules.contains(moduleMetaData.getName()) || authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)) {
                 FlowVisualisationDialog flowVisualisationDialog
                     = new FlowVisualisationDialog(this.moduleControlRestService, this.configurationRestService,
                     this.triggerRestService, this.configurationMetadataService, moduleMetaData

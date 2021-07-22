@@ -332,7 +332,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         formLayout.add(stdOutTf);
 
         this.stdErrTf = new TextField("Std err");
-        this.stdOutTf.setRequired(true);
+        this.stdErrTf.setRequired(true);
         formBinder.forField(this.stdErrTf)
             .withNullRepresentation("")
             .bind(ScheduledProcessAggregateConfiguration::getStdErr, ScheduledProcessAggregateConfiguration::setStdErr);
