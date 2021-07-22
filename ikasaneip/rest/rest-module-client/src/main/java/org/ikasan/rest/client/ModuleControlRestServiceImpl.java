@@ -37,7 +37,6 @@ public class ModuleControlRestServiceImpl extends ModuleRestService implements M
     @Override
     public Optional<ModuleDto> getFlowStates(String contextUrl, String moduleName)
     {
-
         HttpHeaders headers = createHttpHeaders();
         HttpEntity entity = new HttpEntity(headers);
         String url = contextUrl+FLOWS_STATUS_URL;

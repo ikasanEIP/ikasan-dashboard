@@ -2,6 +2,7 @@ package org.ikasan.rest.client;
 
 import org.ikasan.configurationService.metadata.JsonConfigurationMetaDataProvider;
 import org.ikasan.spec.module.client.*;
+import org.ikasan.spec.scheduled.SchedulerService;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
@@ -66,6 +67,12 @@ public class ModuleRestClientAutoConfiguration
     public MetaDataService metaDataApplicationRestService(Environment environment
         , HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory){
         return new MetaDataRestServiceImpl(environment, httpComponentsClientHttpRequestFactory);
+    }
+
+    @Bean
+    public SchedulerService schedulerRestService(Environment environment
+        , HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory){
+        return new SchedulerRestServiceImpl(environment, httpComponentsClientHttpRequestFactory);
     }
 
 }

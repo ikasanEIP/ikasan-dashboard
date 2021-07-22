@@ -21,6 +21,7 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,6 +40,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
+    private SchedulerService schedulerService;
 
     private SystemEventLogger systemEventLogger;
 
@@ -48,13 +50,14 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
 
     public SchedulerAgentDashboardView(ModuleMetaDataService moduleMetadataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                        ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
-                                       SystemEventLogger systemEventLogger) {
+                                       SystemEventLogger systemEventLogger, SchedulerService schedulerService) {
         this.moduleMetadataService = moduleMetadataService;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
         this.systemEventLogger = systemEventLogger;
+        this.schedulerService = schedulerService;
 
         board = new Board();
         board.addClassName("styled");
@@ -67,8 +70,8 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         if(!initialised) {
             board.addRow(new AgentWidget(this.moduleMetadataService, this.scheduledProcessManagementService
-                , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger)
-                , new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
+                , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
+                , this.schedulerService), new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
 
             initialised = true;
         }
