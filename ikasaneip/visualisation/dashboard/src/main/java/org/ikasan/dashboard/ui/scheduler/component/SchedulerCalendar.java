@@ -250,6 +250,7 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        this.calendar.changeView(this.comboBoxView.getValue() == null ? CalendarViewImpl.DAY_GRID_WEEK : this.comboBoxView.getValue());
         this.calendar.setHeightAuto();
     }
 
@@ -321,9 +322,8 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
                 ,dateTime, 1, scheduledProcessEvent.isSuccessful() ? "#66bb6a":"#ef5350", extendedProps));
 
         });
-
         calendar.addEntries(entries);
-        calendar.changeView(this.comboBoxView.getValue() == null ? CalendarViewImpl.DAY_GRID_WEEK : this.comboBoxView.getValue());
+
     }
 
     private String intToARGB(int i){
