@@ -314,7 +314,6 @@ public class DashboardComponentFactory
         FlowStateCache flowStateCache = FlowStateCache.instance();
         flowStateCache.setModuleControlRestService(this.moduleControlRestService);
         flowStateCache.setModuleMetaDataService(moduleMetadataService);
-        flowStateCache.init();
         return flowStateCache;
     }
 
