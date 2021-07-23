@@ -52,9 +52,18 @@ public class FlowStateCache implements Consumer<FlowState>
     {
         String key = flowState.getModuleName() + flowState.getFlowName();
 
+        logger.info(String.format("%s attempting to put key[%s]", this, key));
+
         // Only update and broadcast state if state is new
         // or has changed.
         if(!this.cache.contains(key) || this.cache.get(key).getState() != flowState.getState()) {
+            logger.info(String.format("%s does not contain key[%s]", this, key));
+
+            if(this.cache.contains(key)) {
+                logger.info(String.format("%s old state[%s] - new state [%s]",this
+                    ,this.cache.get(key).getState(), flowState.getState()));
+            }
+
             this.cache.put(key, flowState);
             CacheStateBroadcaster.broadcast(flowState);
         }
@@ -63,8 +72,10 @@ public class FlowStateCache implements Consumer<FlowState>
 
     public FlowState get(Module module, Flow flow)
     {
-        if(!this.contains(module, flow))
-        {
+        logger.info(String.format("%s attempting to get module[%s] - flow[%s] - cache value[%s]"
+            , this, module, flow.getName(), this.cache.get(module.getName()+flow.getName())));
+        if(!this.contains(module, flow)) {
+            this.put(new FlowState(module.getName(), flow.getName(), State.getState(State.UNKNOWN)));
             Runnable updateFromSourceRunnable = () -> refreshFromSource
                 (module.getName(), flow.getName(), module.getUrl());
             this.executor.execute(updateFromSourceRunnable);
@@ -78,7 +89,10 @@ public class FlowStateCache implements Consumer<FlowState>
             return null;
         }
 
+        logger.info(String.format("%s attempting to get module[%s] - flow[%s] - cache value[%s]"
+            , this, module.getName(), flowName, this.cache.get(module.getName()+flowName)));
         if(!this.contains(module, flowName)) {
+            this.put(new FlowState(module.getName(), flowName, State.getState(State.UNKNOWN)));
             Runnable updateFromSourceRunnable = () -> refreshFromSource
                 (module.getName(), flowName, module.getUrl());
             this.executor.execute(updateFromSourceRunnable);
@@ -89,29 +103,33 @@ public class FlowStateCache implements Consumer<FlowState>
 
     public boolean contains(Module module, Flow flow)
     {
-        logger.debug("Check contains: " + module + flow);
+        logger.info(String.format("%s check contains[%s] - result [%s]",this
+            , module.getName()+flow.getName(), this.cache.containsKey(module.getName()+flow.getName())));
         return this.cache.containsKey(module.getName()+flow.getName());
     }
 
     public boolean contains(ModuleMetaData module, String flowName)
     {
-        logger.debug("Check contains: " + module + flowName);
         if(module == null) {
             return false;
         }
+        logger.info(String.format("%s check contains[%s] - result [%s]",this
+            , module.getName()+flowName, this.cache.containsKey(module.getName()+flowName)));
         return this.cache.containsKey(module.getName()+flowName);
     }
 
     public boolean contains(String moduleName, String flowName)
     {
-        logger.debug("Check contains: " + moduleName + flowName);
+        logger.info(String.format("%s check contains[%s] - result [%s]",this
+            , moduleName+flowName, this.cache.containsKey(moduleName+flowName)));
         return this.cache.containsKey(moduleName+flowName);
     }
 
     @Override
     public void accept(FlowState flowState)
     {
-        logger.debug("Received state change: " + flowState);
+        logger.info(String.format("%s Received state change[%s]",this
+            , flowState));
         this.put(flowState);
     }
 
@@ -120,24 +138,27 @@ public class FlowStateCache implements Consumer<FlowState>
         this.moduleControlRestService = moduleControlRestService;
     }
 
-    private FlowState refreshFromSource(String moduleName, String flowName, String contextUrl)
+    private void refreshFromSource(String moduleName, String flowName, String contextUrl)
     {
         Optional<FlowDto> flowDto;
-        AtomicReference<FlowState> state = new AtomicReference<>();
+
+        logger.info(String.format("%s Refresh from source[%s]-[%s]-[%s]",this
+            , contextUrl, moduleName, flowName));
 
         flowDto = this.moduleControlRestService.getFlowState(contextUrl, moduleName, flowName);
 
         flowDto.ifPresentOrElse(dto -> {
-            state.set(new FlowState(moduleName, flowName, State.getState(flowDto.get().getState())));
-            FlowStateCache.instance().put(state.get());
+            FlowState state = new FlowState(moduleName, flowName, State.getState(flowDto.get().getState()));
+            logger.info(String.format("%s Putting state-[%s]",FlowStateCache.instance()
+                , state));
+            FlowStateCache.instance().put(state);
         }, () -> {
             logger.warn(String.format("Could not load flow state for module[%s], flow[%s] using URL[%s].", moduleName, flowName, contextUrl));
-            state.set(new FlowState(moduleName, flowName, State.getState(State.UNKNOWN)));
-            FlowStateCache.instance().put(state.get());
+            FlowState state = new FlowState(moduleName, flowName, State.getState(State.UNKNOWN));
+            logger.info(String.format("%s Putting state-[%s]",FlowStateCache.instance()
+                , state));
+            FlowStateCache.instance().put(state);
         });
-
-
-        return state.get();
     }
 
     public void teardown() {
