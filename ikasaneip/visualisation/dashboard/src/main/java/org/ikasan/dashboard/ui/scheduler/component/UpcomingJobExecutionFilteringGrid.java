@@ -153,11 +153,9 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
             jobExecutionDetails.getElement().setAttribute("title", "Job execution details");
 
             jobExecutionDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(iconClickEvent.getClickCount() == 2) {
                     ModuleMetaData agent = this.moduleMetaDataService.findById(upcomingScheduledProcess.getAgentName());
                     UpcomingJobExecutionDialog upcomingJobExecutionDialog = new UpcomingJobExecutionDialog(upcomingScheduledProcess, agent);
                     upcomingJobExecutionDialog.open();
-                }
             });
 
             layout.add(jobExecutionDetails);
@@ -170,7 +168,6 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
             layout.add(jobDetails);
 
             jobDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(iconClickEvent.getClickCount() == 2) {
                     ScheduledProcessAggregateConfiguration configuration = this.scheduledProcessManagementService.getScheduleProcessAggregateConfiguration(upcomingScheduledProcess.getAgentName(),
                         upcomingScheduledProcess.getJobName());
 
@@ -182,7 +179,6 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
 
                     scheduledJobDialog.setScheduleProcessAggregateConfiguration(configuration, EditMode.READONLY);
                     scheduledJobDialog.open();
-                }
             });
 
             Icon chart = VaadinIcon.CHART.create();

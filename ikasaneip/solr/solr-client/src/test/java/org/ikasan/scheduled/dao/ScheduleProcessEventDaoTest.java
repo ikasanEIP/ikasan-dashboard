@@ -30,7 +30,6 @@ public class ScheduleProcessEventDaoTest {
     @Test
     public void test() {
         List<String> agents = this.dao.getAllAgentNames();
-        System.out.println(agents);
 
         agents.forEach(agent -> {
             dao.getJobGroupsForAgent(agent).forEach(jobGroup -> {

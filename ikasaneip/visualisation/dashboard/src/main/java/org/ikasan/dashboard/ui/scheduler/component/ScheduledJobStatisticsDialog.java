@@ -106,18 +106,20 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
         Anchor successLink = new Anchor(this.buildSuccessRoute(false).getHref(),String.valueOf(this.numSuccess));
         successLink.setTarget("_blank");
         successLink.getStyle().set("color", "blue");
-        this.numSucceessTf.setPrefixComponent(successLink);
+        // todo sort out click through
+//        this.numSucceessTf.setPrefixComponent(successLink);
         this.numSucceessTf.setEnabled(true);
-        this.numSucceessTf.setValue(" ");
+        this.numSucceessTf.setValue(Integer.toString(this.numSuccess));
         this.numFailureTf = new TextField("Number of failed executions");
         this.numFailureTf.setWidth("30vw");
         this.numFailureTf.setValue(Integer.toString(this.numFail));
         Anchor failureLink = new Anchor(this.buildSuccessRoute(true).getHref(),String.valueOf(this.numFail));
         failureLink.setTarget("_blank");
         failureLink.getStyle().set("color", "blue");
-        this.numFailureTf.setPrefixComponent(failureLink);
-        this.numFailureTf.setEnabled(true);
-        this.numFailureTf.setValue(" ");
+        // todo sort out click through
+//        this.numFailureTf.setPrefixComponent(failureLink);
+        this.numFailureTf.setEnabled(false);
+        this.numFailureTf.setValue(String.valueOf(this.numFail));
         this.averageExecutionTimeTf = new TextField("Average execution time milliseconds");
         this.averageExecutionTimeTf.setWidth("30vw");
         this.averageExecutionTimeTf.setValue(Long.toString(this.averageExecutionTime));

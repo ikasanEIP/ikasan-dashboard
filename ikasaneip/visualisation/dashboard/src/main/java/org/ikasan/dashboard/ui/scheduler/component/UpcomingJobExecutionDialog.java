@@ -98,7 +98,7 @@ public class UpcomingJobExecutionDialog extends AbstractCloseableResizableDialog
 
         this.formBinder.readBean(upcomingScheduledProcess);
 
-        this.setHeight("750px");
+        this.setHeight("600px");
         this.setWidth("1200px");
 
         VerticalLayout layout = new VerticalLayout();

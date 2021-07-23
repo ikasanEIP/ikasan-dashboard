@@ -147,11 +147,9 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
             jobExecutionDetails.getElement().setAttribute("title", "Job execution details");
 
             jobExecutionDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(iconClickEvent.getClickCount() == 2) {
-                    ModuleMetaData agent = this.moduleMetaDataService.findById(scheduledProcessEvent.getAgentName());
-                    ScheduledProcessExecutionDialog scheduledProcessExecutionDialog = new ScheduledProcessExecutionDialog(scheduledProcessEvent, agent);
-                    scheduledProcessExecutionDialog.open();
-                }
+                ModuleMetaData agent = this.moduleMetaDataService.findById(scheduledProcessEvent.getAgentName());
+                ScheduledProcessExecutionDialog scheduledProcessExecutionDialog = new ScheduledProcessExecutionDialog(scheduledProcessEvent, agent);
+                scheduledProcessExecutionDialog.open();
             });
 
             layout.add(jobExecutionDetails);
@@ -164,19 +162,17 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
             layout.add(jobDetails);
 
             jobDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(iconClickEvent.getClickCount() == 2) {
-                    ScheduledProcessAggregateConfiguration configuration = this.scheduledProcessManagementService.getScheduleProcessAggregateConfiguration(scheduledProcessEvent.getAgentName(),
-                        scheduledProcessEvent.getJobName());
+                ScheduledProcessAggregateConfiguration configuration = this.scheduledProcessManagementService.getScheduleProcessAggregateConfiguration(scheduledProcessEvent.getAgentName(),
+                    scheduledProcessEvent.getJobName());
 
-                    ModuleMetaData agent = this.moduleMetaDataService.findById(scheduledProcessEvent.getAgentName());
+                ModuleMetaData agent = this.moduleMetaDataService.findById(scheduledProcessEvent.getAgentName());
 
-                    ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
-                        this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                        this.metaDataRestService, this.systemEventLogger);
+                ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
+                    this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+                    this.metaDataRestService, this.systemEventLogger);
 
-                    scheduledJobDialog.setScheduleProcessAggregateConfiguration(configuration, EditMode.READONLY);
-                    scheduledJobDialog.open();
-                }
+                scheduledJobDialog.setScheduleProcessAggregateConfiguration(configuration, EditMode.READONLY);
+                scheduledJobDialog.open();
             });
 
             Icon chart = VaadinIcon.CHART.create();
