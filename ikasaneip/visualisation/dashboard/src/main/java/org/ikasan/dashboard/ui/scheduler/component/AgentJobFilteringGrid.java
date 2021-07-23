@@ -337,12 +337,18 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 ComponentSecurityVisibility.applySecurity(this.authentication, fireJob, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
                 fireJob.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    if(this.schedulerService.triggerFlowNow(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName())) {
-                        NotificationHelper.showUserNotification("Job triggered successfully.");
-                    }
-                    else {
-                        NotificationHelper.showUserNotification("An error occurred triggering job. Please contact Ikasan support.");
-                    }
+                    ConfirmDialog confirmDialog = new ConfirmDialog("Schedule now?",
+                        "This job will fire immediately. Are you sure you would like to proceed?", "Schedule now",
+                        (ComponentEventListener<ConfirmDialog.ConfirmEvent>) confirmEvent -> {
+                            if(this.schedulerService.triggerFlowNow(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName())) {
+                                NotificationHelper.showUserNotification("Job triggered successfully.");
+                            }
+                            else {
+                                NotificationHelper.showUserNotification("An error occurred triggering job. Please contact Ikasan support.");
+                            }
+                        }, "Cancel", (ComponentEventListener<ConfirmDialog.CancelEvent>) cancelEvent -> {});
+
+                    confirmDialog.open();
                 });
             }
 

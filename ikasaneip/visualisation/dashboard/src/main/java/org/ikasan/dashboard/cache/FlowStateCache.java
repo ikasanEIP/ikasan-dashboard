@@ -29,12 +29,9 @@ public class FlowStateCache implements Consumer<FlowState>
 
     public static FlowStateCache instance()
     {
-        if(INSTANCE == null)
-        {
-            synchronized (FlowStateCache.class)
-            {
-                if(INSTANCE == null)
-                {
+        if(INSTANCE == null) {
+            synchronized (FlowStateCache.class) {
+                if(INSTANCE == null) {
                     INSTANCE = new FlowStateCache();
                 }
             }
@@ -76,14 +73,12 @@ public class FlowStateCache implements Consumer<FlowState>
         return this.cache.get(module.getName()+flow.getName());
     }
 
-    public FlowState get(ModuleMetaData module, String flowName)
-    {
+    public FlowState get(ModuleMetaData module, String flowName) {
         if(module == null) {
             return null;
         }
 
-        if(!this.contains(module, flowName))
-        {
+        if(!this.contains(module, flowName)) {
             Runnable updateFromSourceRunnable = () -> refreshFromSource
                 (module.getName(), flowName, module.getUrl());
             this.executor.execute(updateFromSourceRunnable);

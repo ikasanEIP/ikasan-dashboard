@@ -40,7 +40,7 @@ public class ModuleWidget extends Div {
 
         textField.setPrefixComponent(icon);
         HorizontalLayout layout = new HorizontalLayout();
-        H4 modules = new H4("Modules");
+        H4 modules = new H4("Modules and Agents");
         layout.add(modules, textField);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.START, modules);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, textField);

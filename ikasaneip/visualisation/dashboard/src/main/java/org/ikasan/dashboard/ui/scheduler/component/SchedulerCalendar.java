@@ -96,7 +96,6 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
         });
 
         calendar.addDatesRenderedListener(event -> {
-            System.out.println("dates rendered: " + event.getStart() + " " + event.getEnd());
             this.firstDay = event.getStart();
             this.lastDate = event.getEnd();
             this.calendar.removeAllEntries();
@@ -324,6 +323,7 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
         });
 
         calendar.addEntries(entries);
+        calendar.changeView(this.comboBoxView.getValue() == null ? CalendarViewImpl.DAY_GRID_WEEK : this.comboBoxView.getValue());
     }
 
     private String intToARGB(int i){

@@ -71,6 +71,6 @@ public class RunningAndRecentlyCompletedJobExecutionDeepLinkView extends Vertica
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-        System.out.println(beforeEnterEvent.getRouteParameters());
+
     }
 }
