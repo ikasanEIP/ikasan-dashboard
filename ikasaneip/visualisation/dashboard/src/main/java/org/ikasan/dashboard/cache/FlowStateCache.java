@@ -8,6 +8,7 @@ import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
 import org.ikasan.rest.client.ModuleControlRestServiceImpl;
 import org.ikasan.rest.client.dto.FlowDto;
 import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,11 +42,20 @@ public class FlowStateCache implements Consumer<FlowState>
 
     private ConcurrentHashMap<String, FlowState> cache;
     private ModuleControlRestServiceImpl moduleControlRestService;
+    private ModuleMetaDataService moduleMetaDataService;
 
     private FlowStateCache()
     {
         cache = new ConcurrentHashMap<>();
         FlowStateBroadcaster.register(this);
+    }
+
+    public void init() {
+        if(this.moduleMetaDataService != null && this.moduleControlRestService != null) {
+            this.moduleMetaDataService.findAll().forEach((moduleMetaData
+                -> moduleMetaData.getFlows().forEach(flowMetaData
+                    -> this.get(moduleMetaData, flowMetaData.getName()))));
+        }
     }
 
     public void put(FlowState flowState)
@@ -56,10 +66,10 @@ public class FlowStateCache implements Consumer<FlowState>
 
         // Only update and broadcast state if state is new
         // or has changed.
-        if(!this.cache.contains(key) || this.cache.get(key).getState() != flowState.getState()) {
+        if(!this.cache.containsKey(key) || this.cache.get(key).getState() != flowState.getState()) {
             logger.info(String.format("%s does not contain key[%s]", this, key));
 
-            if(this.cache.contains(key)) {
+            if(this.cache.containsKey(key)) {
                 logger.info(String.format("%s old state[%s] - new state [%s]",this
                     ,this.cache.get(key).getState(), flowState.getState()));
             }
@@ -136,6 +146,10 @@ public class FlowStateCache implements Consumer<FlowState>
     public void setModuleControlRestService(ModuleControlRestServiceImpl moduleControlRestService)
     {
         this.moduleControlRestService = moduleControlRestService;
+    }
+
+    public void setModuleMetaDataService(ModuleMetaDataService moduleMetaDataService) {
+        this.moduleMetaDataService = moduleMetaDataService;
     }
 
     private void refreshFromSource(String moduleName, String flowName, String contextUrl)

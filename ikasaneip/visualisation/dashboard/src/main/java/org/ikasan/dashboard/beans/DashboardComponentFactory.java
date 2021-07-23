@@ -43,6 +43,7 @@ import org.ikasan.topology.metadata.JsonFlowMetaDataProvider;
 import org.ikasan.topology.metadata.JsonModuleMetaDataProvider;
 import org.ikasan.wiretap.dao.SolrWiretapDao;
 import org.ikasan.wiretap.service.SolrWiretapServiceImpl;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -308,10 +309,12 @@ public class DashboardComponentFactory
     }
 
     @Bean
-    public FlowStateCache flowStateCache()
+    public FlowStateCache flowStateCache(SolrModuleMetadataServiceImpl moduleMetadataService)
     {
         FlowStateCache flowStateCache = FlowStateCache.instance();
         flowStateCache.setModuleControlRestService(this.moduleControlRestService);
+        flowStateCache.setModuleMetaDataService(moduleMetadataService);
+        flowStateCache.init();
         return flowStateCache;
     }
 
@@ -319,4 +322,5 @@ public class DashboardComponentFactory
     public ModuleMetaDataProvider<String> moduleMetaDataProvider() {
         return new JsonModuleMetaDataProvider(new JsonFlowMetaDataProvider());
     }
+
 }
