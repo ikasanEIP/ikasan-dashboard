@@ -26,8 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.*;
 import java.util.function.Consumer;
 
-public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData>
-{
+public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData> {
     private Logger logger = LoggerFactory.getLogger(ScheduledAgentsFilteringGrid.class);
 
     private ModuleMetaDataService solrSearchService;
@@ -38,22 +37,21 @@ public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData>
     private ModuleSearchFilter searchFilter;
 
     private long resultSize = 0;
-    private long queryTime = 0;
 
     /**
      * Constructor
+     *
+     * @param solrSearchService
+     * @param searchFilter
      */
     public ScheduledAgentsFilteringGrid(ModuleMetaDataService solrSearchService,
-                                        ModuleSearchFilter searchFilter)
-    {
+                                        ModuleSearchFilter searchFilter) {
         this.solrSearchService = solrSearchService;
-        if(this.solrSearchService ==  null)
-        {
+        if(this.solrSearchService ==  null) {
             throw new IllegalArgumentException("solrSearchService cannot be null!");
         }
         this.searchFilter = searchFilter;
-        if(this.searchFilter ==  null)
-        {
+        if(this.searchFilter ==  null) {
             throw new IllegalArgumentException("SearchFilter cannot be null!");
         }
     }
@@ -65,8 +63,7 @@ public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData>
      * @param setFilter
      * @param columnKey
      */
-    public void addGridFiltering(HeaderRow hr, Consumer<String> setFilter, String columnKey)
-    {
+    public void addGridFiltering(HeaderRow hr, Consumer<String> setFilter, String columnKey) {
         TextField textField = new TextField();
         textField.setWidthFull();
 
@@ -86,8 +83,7 @@ public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData>
      * @param textField
      * @param setFilter
      */
-    public void addGridFiltering(TextField textField, Consumer<String> setFilter)
-    {
+    public void addGridFiltering(TextField textField, Consumer<String> setFilter) {
         textField.addValueChangeListener(ev->{
 
             setFilter.accept(ev.getValue());
@@ -96,12 +92,13 @@ public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData>
         });
     }
 
-    public void init()
-    {
+    /**
+     * Initialise the grid.
+     */
+    public void init() {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-        dataProvider = DataProvider.fromFilteringCallbacks(query ->
-        {
+        dataProvider = DataProvider.fromFilteringCallbacks(query -> {
             Optional<ModuleSearchFilter> filter = query.getFilter();
 
             // The index of the first item to load
@@ -115,8 +112,7 @@ public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData>
             results = this.getResults(filter.get(), offset, limit);
 
             return results.getResultList().stream();
-        }, query ->
-        {
+        }, query -> {
             Optional<ModuleSearchFilter> filter = query.getFilter();
 
             ModuleMetadataSearchResults results;
@@ -130,7 +126,6 @@ public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData>
             results = this.getResults(filter.get(), offset, limit);
 
             this.resultSize = results.getTotalNumberOfResults();
-            this.queryTime = results.getQueryResponseTime();
 
             return (int) this.resultSize;
         });
@@ -141,8 +136,7 @@ public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData>
         this.setDataProvider(filteredDataProvider);
     }
 
-    private ModuleMetadataSearchResults getResults(ModuleSearchFilter filter, int offset, int limit)
-    {
+    private ModuleMetadataSearchResults getResults(ModuleSearchFilter filter, int offset, int limit) {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         final List<String> moduleNames = new ArrayList<>();

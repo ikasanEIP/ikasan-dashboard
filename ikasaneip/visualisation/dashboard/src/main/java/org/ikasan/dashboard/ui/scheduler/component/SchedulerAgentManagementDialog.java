@@ -38,6 +38,18 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
 
     private SystemEventLogger systemEventLogger;
 
+    /**
+     * Constructor
+     *
+     * @param agent
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param moduleMetaDataService
+     * @param systemEventLogger
+     * @param schedulerService
+     */
     public SchedulerAgentManagementDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService,

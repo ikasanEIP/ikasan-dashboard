@@ -38,6 +38,17 @@ public class AgentWidget extends Div {
     private SystemEventLogger systemEventLogger;
     private SchedulerService schedulerService;
 
+    /**
+     * Constructor
+     *
+     * @param moduleMetadataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param schedulerService
+     */
     public AgentWidget(ModuleMetaDataService moduleMetadataService, ScheduledProcessManagementService scheduledProcessManagementService,
                        ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                        SystemEventLogger systemEventLogger, SchedulerService schedulerService) {

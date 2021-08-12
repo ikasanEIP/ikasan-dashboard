@@ -69,7 +69,7 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
     private SystemEventLogger systemEventLogger;
 
     /**
-     * Constructors
+     * Constructor
      *
      * @param scheduledProcessManagementService
      * @param searchFilter
@@ -92,6 +92,9 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
         this.initGrid();
     }
 
+    /**
+     * Create the upcoming jobs grid
+     */
     private void initGrid() {
         super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.schedulerName]]</div>")
             .withProperty("schedulerName", UpcomingScheduledProcess::getAgentName))
@@ -272,6 +275,15 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
         super.init();
     }
 
+    /**
+     * Add filtering to the grid.
+     *
+     * @param date
+     * @param startTime
+     * @param endTime
+     * @param startTimeFilter
+     * @param endTimeFilter
+     */
     public void addGridFiltering(DatePicker date, TimePicker startTime, TimePicker endTime, Consumer<Long> startTimeFilter, Consumer<Long> endTimeFilter)
     {
         date.addValueChangeListener(ev->{

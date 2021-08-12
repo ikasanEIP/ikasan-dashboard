@@ -7,12 +7,9 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
-import org.ikasan.dashboard.ui.util.DateTimeUtil;
-import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.solr.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -62,6 +59,12 @@ public abstract class FilteringGrid<DATA, FILTER, RESULTS extends SearchResults>
         hr.getCell(getColumnByKey(columnKey)).setComponent(textField);
     }
 
+    /**
+     * Add general filtering.
+     *
+     * @param textField
+     * @param setFilter
+     */
     public void addGridFiltering(TextField textField, Consumer<String> setFilter)
     {
         textField.addValueChangeListener(ev->{
@@ -73,7 +76,7 @@ public abstract class FilteringGrid<DATA, FILTER, RESULTS extends SearchResults>
     }
 
     /**
-     * Add grid filtering
+     * Add date and time based grid filtering.
      *
      * @param date
      * @param startTime
@@ -134,6 +137,9 @@ public abstract class FilteringGrid<DATA, FILTER, RESULTS extends SearchResults>
         this.setDataProvider(filteredDataProvider);
     }
 
+    /**
+     * Refresh the data presented to the grid.
+     */
     public void refresh() {
         this.dataProvider.refreshAll();
         this.filteredDataProvider.refreshAll();

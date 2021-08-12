@@ -26,18 +26,16 @@ public class UpcomingJobExecutionDialog extends AbstractCloseableResizableDialog
     private TextField jobGroupTf;
     private TextArea jobDescriptionTa;
     private TextArea commandLineTf;
-    private TextField resultOutputTf;
-    private TextField resultErrorTf;
-    private TextField pidTf;
-    private TextField userTf;
     private TextField fireTimeTf;
-    private TextField nextFireTimeTf;
-    private TextField executionDurationTf;
-    private TextField returnCodeTf;
 
     private Binder<UpcomingScheduledProcess> formBinder;
 
-
+    /**
+     * Constructor
+     *
+     * @param upcomingScheduledProcess
+     * @param agent
+     */
     public UpcomingJobExecutionDialog(UpcomingScheduledProcess upcomingScheduledProcess, ModuleMetaData agent) {
         super.showResize(false);
         super.title.setText("Scheduled Job Execution Details");
@@ -94,7 +92,6 @@ public class UpcomingJobExecutionDialog extends AbstractCloseableResizableDialog
         this.fireTimeTf.setEnabled(false);
         this.fireTimeTf.setValue(dateFormatter.getFormattedDate(upcomingScheduledProcess.getFireTime()));
         formLayout.add(fireTimeTf);
-
 
         this.formBinder.readBean(upcomingScheduledProcess);
 

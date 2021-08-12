@@ -1,10 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.flowingcode.vaadin.addons.ironicons.IronIcons;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
@@ -13,14 +10,11 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
-import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouterLink;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
-import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -55,6 +49,18 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
 
     private SystemEventLogger systemEventLogger;
 
+    /**
+     * Constructor
+     *
+     * @param scheduledProcessManagementService
+     * @param dateFormatter
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param moduleMetaDataService
+     * @param isDeepLink
+     * @param systemEventLogger
+     */
     public RunningAndRecentlyCompletedJobExecutionsWidget(ScheduledProcessManagementService scheduledProcessManagementService,
                                                           DateFormatter dateFormatter, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                                           MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService, boolean isDeepLink, SystemEventLogger systemEventLogger) {
@@ -138,6 +144,9 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
         this.add(div);
     }
 
+    /**
+     * Helper method to create the grid.
+     */
     private void createGrid() {
         this.scheduledProcessFilter = new ScheduledProcessFilter();
         long epochMilli = this.date.getValue().atStartOfDay(DateTimeUtil.getZoneId()).toEpochSecond() * 1000;

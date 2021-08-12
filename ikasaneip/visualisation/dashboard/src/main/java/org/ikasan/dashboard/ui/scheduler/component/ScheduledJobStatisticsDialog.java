@@ -48,6 +48,13 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
     private int numFail = 0;
     private long averageExecutionTime = 0;
 
+    /**
+     * Constructor
+     *
+     * @param scheduledProcessManagementService
+     * @param agent
+     * @param jobName
+     */
     public ScheduledJobStatisticsDialog(ScheduledProcessManagementService scheduledProcessManagementService,
                                         ModuleMetaData agent, String jobName) {
 
@@ -103,21 +110,13 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
 
         this.numSucceessTf = new TextField("Number of successful executions");
         this.numSucceessTf.setWidth("30vw");
-        Anchor successLink = new Anchor(this.buildSuccessRoute(false).getHref(),String.valueOf(this.numSuccess));
-        successLink.setTarget("_blank");
-        successLink.getStyle().set("color", "blue");
-        // todo sort out click through
-//        this.numSucceessTf.setPrefixComponent(successLink);
         this.numSucceessTf.setEnabled(true);
         this.numSucceessTf.setValue(Integer.toString(this.numSuccess));
+        this.numSucceessTf.setEnabled(false);
+
         this.numFailureTf = new TextField("Number of failed executions");
         this.numFailureTf.setWidth("30vw");
         this.numFailureTf.setValue(Integer.toString(this.numFail));
-        Anchor failureLink = new Anchor(this.buildSuccessRoute(true).getHref(),String.valueOf(this.numFail));
-        failureLink.setTarget("_blank");
-        failureLink.getStyle().set("color", "blue");
-        // todo sort out click through
-//        this.numFailureTf.setPrefixComponent(failureLink);
         this.numFailureTf.setEnabled(false);
         this.numFailureTf.setValue(String.valueOf(this.numFail));
         this.averageExecutionTimeTf = new TextField("Average execution time milliseconds");
@@ -136,6 +135,11 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
         super.content.add(layout);
     }
 
+    /**
+     * Helper method to create the scheduled job duration chart.
+     *
+     * @return
+     */
     private Chart generateDurationChart(){
         final Chart chart = new Chart();
         chart.setClassName("ikasan-charts");
@@ -200,6 +204,12 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
         return chart;
     }
 
+    /**
+     * Populate the chart data series.
+     *
+     * @param scheduledProcessEventSearchResults
+     * @param dataSeries
+     */
     private void populateDataSeries(ScheduledProcessEventSearchResults<ScheduledProcessEvent> scheduledProcessEventSearchResults, DataSeries dataSeries) {
         scheduledProcessEventSearchResults.getResultList().stream()
             .filter(scheduledProcessEvent -> this.jobName.equals(scheduledProcessEvent.getJobName()))
@@ -218,16 +228,5 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
 
                 this.averageExecutionTime += (scheduledProcessEvent.getCompletionTime() - scheduledProcessEvent.getFireTime());
             });
-    }
-
-    private RouterLink buildSuccessRoute(boolean errors){
-
-        RouteParameters routeParameters  = new RouteParameters(new RouteParam("startTime", "0"),
-            new RouteParam("endTime", String.valueOf(System.currentTimeMillis())),
-            new RouteParam("agentName", this.agent.getName()),
-            new RouteParam("jobName", this.jobName),
-            new RouteParam("errorsOnly", String.valueOf(errors)));
-
-        return new RouterLink(null, RunningAndRecentlyCompletedJobExecutionDeepLinkView.class, routeParameters);
     }
 }

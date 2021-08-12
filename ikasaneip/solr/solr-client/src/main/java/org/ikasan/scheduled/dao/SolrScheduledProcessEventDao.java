@@ -45,14 +45,9 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
             throw new RuntimeException(String.format("Cannot convert scheduled process event to string! [%s]", scheduledProcessEvent));
         }
 
-        if(scheduledProcessEvent.getAgentName() != null) {
-            document.addField(ID, scheduledProcessEvent.getAgentName()
-                + "-" + SCHEDULED_PROCESS_EVENT + "-" + scheduledProcessEvent.hashCode());
-            document.addField(MODULE_NAME, scheduledProcessEvent.getAgentName());
-        }
-        else {
-            document.addField(ID, SCHEDULED_PROCESS_EVENT + "-" + UUID.randomUUID());
-        }
+        document.addField(ID, scheduledProcessEvent.getAgentName()
+            + "-" + SCHEDULED_PROCESS_EVENT + "-" + scheduledProcessEvent.hashCode());
+        document.addField(MODULE_NAME, scheduledProcessEvent.getAgentName());
 
         document.addField(FLOW_NAME, scheduledProcessEvent.getJobGroup());
         document.addField(COMPONENT_NAME, scheduledProcessEvent.getJobName());
@@ -72,15 +67,6 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
 
     public List<String> getAllAgentNames() {
         return super.fieldFacetQuery("type:\"moduleMetaData\" AND payload:\"*\\\"type\\\":\\\"SCHEDULER_AGENT\\\"*\"", "id");
-    }
-
-    public List<String> getJobGroupsForAgent(String agent) {
-        return super.fieldFacetQuery("type:scheduledProcessEvent AND moduleName:" + addParenthesisToString(agent), "flowName");
-    }
-
-    public List<String> getJobsForAgentAndJobGroup(String agent, String jobGroup) {
-        return super.fieldFacetQuery("type:scheduledProcessEvent AND moduleName:"
-            + addParenthesisToString(agent) + " AND flowName:" + addParenthesisToString(jobGroup), "componentName");
     }
 
     public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduleProcessEvents(String agent, long startTime, long endTime) {
@@ -137,20 +123,20 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
         }
 
         if(filter != null && !filter.isEmpty()) {
-            queryBuffer.append(" AND payload:\"*"+filter+"*\"");
+            queryBuffer.append(" AND payload:*"+filter+"*");
         }
 
         query.setQuery(queryBuffer.toString());
 
         if(sortOrder != null && !sortOrder.isEmpty())
         {
-            if(sortOrder.equals("desc"))
+            if(sortOrder.equals("asc"))
             {
-                query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
+                query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.asc);
             }
             else
             {
-                query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.asc);
+                query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
             }
         }
         else
@@ -179,23 +165,14 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
         }
     }
 
-    private List<ScheduledProcessEvent> convert(List<SolrScheduledProcessEventRecord> records) {
+    private List<ScheduledProcessEvent> convert(List<SolrScheduledProcessEventRecord> records) throws JsonProcessingException {
         List<ScheduledProcessEvent> converted = new ArrayList<>();
 
-        records.forEach(record -> {
-            try {
-                converted.add(this.objectMapper.readValue(record.getScheduledProcessEvent(), SolrScheduledProcessEvent.class));
-            }
-            catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-        });
+        for (SolrScheduledProcessEventRecord record : records) {
+            converted.add(this.objectMapper.readValue(record.getScheduledProcessEvent(), SolrScheduledProcessEvent.class));
+        }
 
         return converted;
-    }
-
-    public List<String> getConfigurationsForAgent(String agent) {
-        return null;
     }
 
     private String addParenthesisToString(String value){

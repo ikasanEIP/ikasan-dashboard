@@ -70,6 +70,12 @@ public class SchedulerStatusWidget extends Div {
 
     private UI ui;
 
+    /**
+     * Constructor
+     *
+     * @param moduleMetadataService
+     * @param ui
+     */
     public SchedulerStatusWidget(ModuleMetaDataService moduleMetadataService, UI ui) {
         this.moduleMetadataService = moduleMetadataService;
         this.ui = ui;
@@ -77,6 +83,9 @@ public class SchedulerStatusWidget extends Div {
         this.createStatusView();
     }
 
+    /**
+     * Create the view containing all the status icons.
+     */
     private void createStatusView() {
         this.removeAll();
 
@@ -181,6 +190,11 @@ public class SchedulerStatusWidget extends Div {
         this.recalculate();
     }
 
+    /**
+     * Create the grid that allows the status drill down.
+     *
+     * @param flowsList
+     */
     private void createGrid(List<FlowMetaData> flowsList) {
         this.removeAll();
         Div div = new Div();
@@ -245,6 +259,9 @@ public class SchedulerStatusWidget extends Div {
         this.add(div);
     }
 
+    /**
+     * Helper method to recalculate the flow states and update the UI.
+     */
     public void recalculate() {
         this.initialiseStateMap();
 
@@ -318,6 +335,9 @@ public class SchedulerStatusWidget extends Div {
         });
     }
 
+    /**
+     * Initialise the internal state map.
+     */
     private void initialiseStateMap() {
         this.stateMap = new HashMap<>();
 
