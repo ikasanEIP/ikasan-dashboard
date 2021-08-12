@@ -47,6 +47,17 @@ public class UpcomingJobExecutionDeepLinkView extends VerticalLayout implements 
 
     private SystemEventLogger systemEventLogger;
 
+    /**
+     * Constructor
+     *
+     * @param scheduledProcessManagementService
+     * @param dateFormatter
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param moduleMetaDataService
+     * @param systemEventLogger
+     */
     public UpcomingJobExecutionDeepLinkView(ScheduledProcessManagementService scheduledProcessManagementService, DateFormatter dateFormatter
         , ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService
         , @Qualifier("moduleMetadataService") ModuleMetaDataService moduleMetaDataService, SystemEventLogger systemEventLogger)
@@ -62,6 +73,9 @@ public class UpcomingJobExecutionDeepLinkView extends VerticalLayout implements 
         init();
     }
 
+    /**
+     * Initialise the internals of the class.
+     */
     private void init() {
         this.upcomingJobExecutionsWidget = new UpcomingJobExecutionsWidget(scheduledProcessManagementService
             , dateFormatter, configurationRestService, moduleControlRestService, metaDataRestService, moduleMetaDataService, true, this.systemEventLogger);

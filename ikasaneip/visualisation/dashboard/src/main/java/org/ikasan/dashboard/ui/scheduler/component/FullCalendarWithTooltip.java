@@ -16,6 +16,11 @@ import java.io.Serializable;
 public class FullCalendarWithTooltip extends FullCalendar {
 	private static final long serialVersionUID = 1L;
 
+    /**
+     * Constructor
+     *
+     * @param entryLimit
+     */
     public FullCalendarWithTooltip(int entryLimit) {
         super(entryLimit);
     }

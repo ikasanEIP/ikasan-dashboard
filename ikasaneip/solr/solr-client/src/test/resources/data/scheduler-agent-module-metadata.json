@@ -1,0 +1,130 @@
+{
+  "url": "http://localhost:8080/scheduler-agent",
+  "name": "scheduler-agent",
+  "description": "Scheduler Agent Integration Module.",
+  "version": null,
+  "flows": [
+    {
+      "name": "5 minute job",
+      "consumer": {
+        "componentName": "Scheduled Consumer",
+        "description": null,
+        "componentType": "org.ikasan.spec.component.endpoint.Consumer",
+        "implementingClass": "org.ikasan.component.endpoint.quartz.consumer.ScheduledConsumer",
+        "configurationId": "scheduler-agent_5 minute job_Scheduled Consumer_-946268323_C",
+        "invokerConfigurationId": "scheduler-agent_5 minute job_Scheduled Consumer_1165847135_I",
+        "decorators": null,
+        "configurable": true
+      },
+      "transitions": [
+        {
+          "from": "Process Execution Broker",
+          "to": "Scheduled Status Producer",
+          "name": "default"
+        },
+        {
+          "from": "Blackout Router",
+          "to": "Process Execution Broker",
+          "name": "Outside Blackout Period"
+        },
+        {
+          "from": "Publish Scheduled Status",
+          "to": "Blackout Scheduled Status Producer",
+          "name": "default"
+        },
+        {
+          "from": "Blackout Router",
+          "to": "Publish Scheduled Status",
+          "name": "default"
+        },
+        {
+          "from": "JobExecution to ScheduledStatusEvent",
+          "to": "Blackout Router",
+          "name": "default"
+        },
+        {
+          "from": "Scheduled Consumer",
+          "to": "JobExecution to ScheduledStatusEvent",
+          "name": "default"
+        }
+      ],
+      "flowElements": [
+        {
+          "componentName": "Scheduled Status Producer",
+          "description": null,
+          "componentType": "org.ikasan.spec.component.endpoint.Producer",
+          "implementingClass": "org.ikasan.ootb.scheduler.agent.module.component.ScheduledProcessEventProducer",
+          "configurationId": null,
+          "invokerConfigurationId": "scheduler-agent_5 minute job_Scheduled Status Producer_1165847135_I",
+          "decorators": null,
+          "configurable": false
+        },
+        {
+          "componentName": "Process Execution Broker",
+          "description": null,
+          "componentType": "org.ikasan.spec.component.endpoint.Broker",
+          "implementingClass": "org.ikasan.ootb.scheduler.agent.module.component.ProcessExecutionBroker",
+          "configurationId": "scheduler-agent_5 minute job_Process Execution Broker_1959287546_C",
+          "invokerConfigurationId": "scheduler-agent_5 minute job_Process Execution Broker_1165847135_I",
+          "decorators": null,
+          "configurable": true
+        },
+        {
+          "componentName": "Blackout Scheduled Status Producer",
+          "description": null,
+          "componentType": "org.ikasan.spec.component.endpoint.Producer",
+          "implementingClass": "org.ikasan.ootb.scheduler.agent.module.component.ScheduledProcessEventProducer",
+          "configurationId": null,
+          "invokerConfigurationId": "scheduler-agent_5 minute job_Blackout Scheduled Status Producer_1165847135_I",
+          "decorators": null,
+          "configurable": false
+        },
+        {
+          "componentName": "Publish Scheduled Status",
+          "description": null,
+          "componentType": "org.ikasan.spec.component.filter.Filter",
+          "implementingClass": "org.ikasan.ootb.scheduler.agent.module.component.ScheduledProcessEventFilter",
+          "configurationId": "scheduler-agent5 minute jobPublish Scheduled Status",
+          "invokerConfigurationId": "scheduler-agent_5 minute job_Publish Scheduled Status_1096089527_I",
+          "decorators": null,
+          "configurable": true
+        },
+        {
+          "componentName": "Blackout Router",
+          "description": null,
+          "componentType": "org.ikasan.spec.component.routing.SingleRecipientRouter",
+          "implementingClass": "org.ikasan.ootb.scheduler.agent.module.component.BlackoutRouter",
+          "configurationId": "scheduler-agent_5 minute job_Blackout Router_-176915388_C",
+          "invokerConfigurationId": "scheduler-agent_5 minute job_Blackout Router_1165847135_I",
+          "decorators": null,
+          "configurable": true
+        },
+        {
+          "componentName": "JobExecution to ScheduledStatusEvent",
+          "description": null,
+          "componentType": "org.ikasan.spec.component.transformation.Converter",
+          "implementingClass": "org.ikasan.ootb.scheduler.agent.module.component.JobExecutionConverter",
+          "configurationId": null,
+          "invokerConfigurationId": "scheduler-agent_5 minute job_JobExecution to ScheduledStatusEvent_1165847135_I",
+          "decorators": null,
+          "configurable": false
+        },
+        {
+          "componentName": "Scheduled Consumer",
+          "description": null,
+          "componentType": "org.ikasan.spec.component.endpoint.Consumer",
+          "implementingClass": "org.ikasan.component.endpoint.quartz.consumer.ScheduledConsumer",
+          "configurationId": "scheduler-agent_5 minute job_Scheduled Consumer_-946268323_C",
+          "invokerConfigurationId": "scheduler-agent_5 minute job_Scheduled Consumer_1165847135_I",
+          "decorators": null,
+          "configurable": true
+        }
+      ],
+      "configurationId": "scheduler-agent-5 minute job",
+      "flowStartupType": "AUTOMATIC",
+      "flowStartupComment": "Scheduler flow requires automatic startup."
+    }
+  ],
+  "configuredResourceId": "scheduler-agent",
+  "type": "SCHEDULER_AGENT"
+}

@@ -76,17 +76,20 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
     private Board scheduleJobsTab;
-    private Board scheduleJStatsTab;
-
 
     private boolean initialised = false;
 
-    public SchedulerView()
-    {
+    /**
+     * Constructor
+     */
+    public SchedulerView() {
         this.setSpacing(false);
         this.setMargin(false);
     }
 
+    /**
+     * Initialise the internals of the object.
+     */
     private void init() {
         this.schedulerAgentDashboardView = new SchedulerAgentDashboardView(this.moduleMetadataService
             , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
@@ -103,11 +106,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         scheduleJobsTab.addClassName("styled");
         scheduleJobsTab.setSizeFull();
         scheduleJobsTab.setVisible(false);
-
-        scheduleJStatsTab = new Board();
-        scheduleJStatsTab.addClassName("styled");
-        scheduleJStatsTab.setSizeFull();
-        scheduleJStatsTab.setVisible(false);
 
 
         Tab schedulerDashboardTab = new Tab("Scheduler Dashboard");
@@ -134,7 +132,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         IronIcon addIcon = IronIcons.ADD.create();
         addIcon.setSize("16pt");
 
-        this.add(tabs, this.schedulerAgentDashboardView, scheduleJobsTab, scheduleJStatsTab, this.schedulerCalendar);
+        this.add(tabs, this.schedulerAgentDashboardView, scheduleJobsTab, this.schedulerCalendar);
     }
 
     @Override
@@ -153,7 +151,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             scheduleJobsTab.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
 
-            this.scheduleJStatsTab.addRow(new StartAndEndTimeWidget());
             initialised = true;
         }
 

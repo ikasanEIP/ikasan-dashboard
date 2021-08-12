@@ -50,6 +50,18 @@ public class UpcomingJobExecutionsWidget extends Div {
     private ModuleMetaDataService moduleMetaDataService;
     private SystemEventLogger systemEventLogger;
 
+    /**
+     * Constructor
+     *
+     * @param scheduledProcessManagementService
+     * @param dateFormatter
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param moduleMetaDataService
+     * @param isDeeplink
+     * @param systemEventLogger
+     */
     public UpcomingJobExecutionsWidget(ScheduledProcessManagementService scheduledProcessManagementService, DateFormatter dateFormatter
         , ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService
         , ModuleMetaDataService moduleMetaDataService, boolean isDeeplink, SystemEventLogger systemEventLogger) {
@@ -128,6 +140,9 @@ public class UpcomingJobExecutionsWidget extends Div {
         this.add(div);
     }
 
+    /**
+     * Initialise the grid.
+     */
     private void createGrid() {
         this.scheduledProcessFilter = new ScheduledProcessFilter();
         long epochMilli = this.date.getValue().atStartOfDay(DateTimeUtil.getZoneId()).toEpochSecond() * 1000;

@@ -38,7 +38,12 @@ public class ScheduledProcessExecutionDialog extends AbstractCloseableResizableD
 
     private Binder<ScheduledProcessEvent> formBinder;
 
-
+    /**
+     * Constructor
+     *
+     * @param scheduledProcessEvent
+     * @param agent
+     */
     public ScheduledProcessExecutionDialog(ScheduledProcessEvent scheduledProcessEvent, ModuleMetaData agent) {
         super.showResize(false);
         super.title.setText("Scheduled Job Execution Details");

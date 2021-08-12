@@ -125,6 +125,16 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
     private SystemEventLogger systemEventLogger;
 
 
+    /**
+     * Constructor
+     *
+     * @param agent
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     */
     public ScheduledJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger) {
@@ -736,6 +746,12 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         return configurationMetaData.get();
     }
 
+    /**
+     * Helper method to set controls on the form elements if the form is read only
+     * or editable.
+     *
+     * @param enabled
+     */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
 
@@ -986,6 +1002,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
     }
 
+    /** Private helper classes */
     private class TextFieldNameValuePair {
         public TextField nameTf;
         public TextField valueTf;

@@ -48,6 +48,17 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
 
     private boolean initialised = false;
 
+    /**
+     * Constructor
+     *
+     * @param moduleMetadataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param schedulerService
+     */
     public SchedulerAgentDashboardView(ModuleMetaDataService moduleMetadataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                        ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                                        SystemEventLogger systemEventLogger, SchedulerService schedulerService) {

@@ -83,6 +83,9 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
         this.initGrid();
     }
 
+    /**
+     * Helper method to initialise the grid.
+     */
     private void initGrid() {
         Checkbox errorCb = new Checkbox("Errors");
         addGridFiltering(errorCb, super.searchFilter::setErrorsOnly);
@@ -234,6 +237,15 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
         super.init();
     }
 
+    /**
+     * Add time and date filtering to the grid.
+     *
+     * @param date
+     * @param startTime
+     * @param endTime
+     * @param startTimeFilter
+     * @param endTimeFilter
+     */
     public void addGridFiltering(DatePicker date, TimePicker startTime, TimePicker endTime, Consumer<Long> startTimeFilter, Consumer<Long> endTimeFilter)
     {
         date.addValueChangeListener(ev->{
@@ -270,6 +282,12 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
 
     }
 
+    /**
+     * Add ability to filter on errors.
+     *
+     * @param errors
+     * @param errorFilter
+     */
     public void addGridFiltering(Checkbox errors, Consumer<Boolean> errorFilter)
     {
         errors.addValueChangeListener(ev-> {

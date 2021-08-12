@@ -336,7 +336,7 @@ public class ModuleVisjsAdapter
      */
     protected AbstractWiretapNode manageMultiTransition(FlowElementMetaData flowElement, List<Transition> transitions,
                                                     Map<String, FlowElementMetaData> flowElements, Map<String, ConfigurationMetaData> configurationMetaDataMap)
-    {
+        {
         List<FlowElementMetaData> flowElementMetaDataTransitions
             = this.getTransitions(flowElement, transitions, flowElements);
 

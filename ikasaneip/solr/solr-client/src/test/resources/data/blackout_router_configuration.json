@@ -1,0 +1,21 @@
+{
+  "configurationId": "scheduler-agent_20 minute_Blackout Router_-176915388_C",
+  "description": null,
+  "implementingClass": "org.ikasan.ootb.scheduler.agent.module.component.BlackoutRouterConfiguration",
+  "parameters": [
+    {
+      "id": 47,
+      "name": "cronExpressions",
+      "value": [],
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterListImpl"
+    },
+    {
+      "id": 48,
+      "name": "dateTimeRanges",
+      "value": {},
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterMapImpl"
+    }
+  ]
+}

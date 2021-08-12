@@ -77,8 +77,16 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
     /**
      * Constructor
      *
+     * @param agent
      * @param scheduledProcessManagementService
      * @param searchFilter
+     * @param dateFormatter
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param moduleMetaDataService
+     * @param systemEventLogger
+     * @param schedulerService
      */
     public AgentJobFilteringGrid(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService, AgentJobFilter searchFilter,
                                  DateFormatter dateFormatter, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -101,6 +109,9 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
         this.initGrid();
     }
 
+    /**
+     * Helper method to initialise the grid.
+     */
     private void initGrid() {
 
         super.addColumn(TemplateRenderer.<ScheduledProcessAggregateConfiguration>of("<div style='white-space:normal; text-align:top;'>[[item.jobName]]</div>")
@@ -437,8 +448,12 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
         return this.scheduledProcessManagementService.getScheduleProcessAggregateConfigurations(this.agent.getName(), agentJobFilter.getFilter());
     }
 
-
-    public void deleteScheduledJobFlow(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
+    /**
+     * Functionality to delete a scheduled job from an agent module.
+     *
+     * @param scheduleProcessAggregateConfiguration
+     */
+    private void deleteScheduledJobFlow(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
         // Get the module configuration from the module.
         ConfigurationMetaData<List<ConfigurationParameterMetaData>> moduleConfiguration
             = this.configurationRestService.getModuleConfiguration(this.agent.getUrl());
@@ -479,6 +494,14 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
         }
     }
 
+    /**
+     * Helper method to get the configuration id from a component.
+     *
+     * @param agent
+     * @param flow
+     * @param component
+     * @return
+     */
     private String getConfigurationIdFlowComponent(ModuleMetaData agent, String flow, String component) {
         Optional<ModuleMetaData> moduleMetaData = this.metaDataRestService.getModuleMetadata(agent.getUrl(), agent.getName());
 

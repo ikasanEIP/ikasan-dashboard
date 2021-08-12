@@ -97,51 +97,6 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
     }
 
     @Override
-    public List<String> getJobGroupsForAgent(String agent) {
-        return this.scheduledProcessEventDao.getJobGroupsForAgent(agent);
-    }
-
-    @Override
-    public List<String> getJobsForAgentAndJobGroup(String agent, String jobGroup) {
-        return this.scheduledProcessEventDao.getJobsForAgentAndJobGroup(agent, jobGroup);
-    }
-
-    @Override
-    public List<String> getScheduledProcessConfigurationsForAgent(String agent) {
-        ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agent);
-
-        String configurationId = moduleMetaData.getFlows().stream()
-            .filter(flow -> flow.getName().equals("sheduler-flow-name"))
-            .findFirst().get()
-            .getFlowElements().stream()
-            .filter(flowElementMetaData -> flowElementMetaData.getComponentName().equals("scheduler-configurable-component"))
-            .findFirst().get()
-            .getConfigurationId();
-
-        ConfigurationMetaData configurationMetaData = this.solrComponentConfigurationMetadataDao.findById(configurationId);
-
-        return null;
-    }
-
-    @Override
-    public List<ConfigurationMetaData<List<ConfigurationParameterMetaData>>> getScheduledConfigurationsForAgent(String agent) {
-        ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agent);
-
-        List<String> configurationIds = moduleMetaData.getFlows().stream()
-            .flatMap(flowMetaData -> flowMetaData.getFlowElements().stream())
-            .filter(flowElementMetaData -> flowElementMetaData.getComponentName().equals("Scheduled Consumer"))
-            .map(flowElementMetaData -> flowElementMetaData.getConfigurationId())
-            .collect(Collectors.toList());
-
-        List<ConfigurationMetaData<List<ConfigurationParameterMetaData>>> results = new ArrayList<>();
-
-        configurationIds.forEach(configurationId ->
-            results.add(this.solrComponentConfigurationMetadataDao.findById(configurationId)));
-
-        return results;
-    }
-
-    @Override
     public List<FlowMetaData> getFlowsForAgent(String agent) {
         ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agent);
 
@@ -169,11 +124,23 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfigurationMetaData
             = this.getConfigurationForAgentFlowComponent(agent, flow, "Scheduled Consumer");
 
+        if(scheduledConsumerConfigurationMetaData == null) {
+            throw new RuntimeException(String.format("Could not load scheduled consumer configuration for agent[%s], job[%s]", agent, flow));
+        }
+
         ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfigurationMetaData
             = this.getConfigurationForAgentFlowComponent(agent, flow, "Process Execution Broker");
 
+        if(processExecutionBrokerConfigurationMetaData == null) {
+            throw new RuntimeException(String.format("Could not load process execution broker configuration for agent[%s], job[%s]", agent, flow));
+        }
+
         ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfigurationMetaData
             = this.getConfigurationForAgentFlowComponent(agent, flow, "Blackout Router");
+
+        if(blackoutRouterConfigurationMetaData == null) {
+            throw new RuntimeException(String.format("Could not load blackout router configuration for agent[%s], job[%s]", agent, flow));
+        }
 
         List<UpcomingScheduledProcess> results = new ArrayList<>();
 
@@ -236,7 +203,8 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             }
         }
         catch (ParseException e) {
-            e.printStackTrace();
+            throw new RuntimeException(String.format("Could not parse cron expression[%s] when determining upcoming jobs for agent[%s], job[%s]"
+                , cronExpressionString.get(), agent, flow), e);
         }
 
         return results;

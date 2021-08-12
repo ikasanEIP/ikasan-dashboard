@@ -58,6 +58,13 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
     private IkasanAuthentication authentication;
 
 
+    /**
+     * Constructor
+     *
+     * @param scheduledProcessManagementService
+     * @param moduleMetaDataService
+     * @param calendarConfiguration
+     */
     public SchedulerCalendar(ScheduledProcessManagementService scheduledProcessManagementService,
                              ModuleMetaDataService moduleMetaDataService, CalendarConfiguration calendarConfiguration) {
         this.scheduledProcessManagementService = scheduledProcessManagementService;
@@ -67,6 +74,9 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
         this.init();
     }
 
+    /**
+     * Initialise the internals of the class.
+     */
     public void init() {
         Header testHeader = new Header();
         HeaderFooterPart headerCenter = testHeader.getCenter();
@@ -113,6 +123,11 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
         this.ui = UI.getCurrent();
     }
 
+    /**
+     * Create the controls toolbar.
+     *
+     * @return
+     */
     private HorizontalLayout createBasicToolbar() {
         Button buttonToday = new Button("Today", VaadinIcon.HOME.create(), e -> {
             this.calendar.removeAllEntries();
@@ -225,24 +240,35 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
     }
 
 
-    private Entry createTimedEntry(String title, String description, LocalDateTime start, int minutes, String color, HashMap<String, Object> extendedProps) {
+    /**
+     * Create a timed entry to add to the calendar.
+     *
+     * @param title
+     * @param description
+     * @param start
+     * @param minutes
+     * @param color
+     * @param extendedProps
+     * @return
+     */
+    private Entry createTimedEntry(String title, String description, LocalDateTime start, int minutes
+        , String color, HashMap<String, Object> extendedProps) {
         Entry entry = new Entry();
-        setValues(entry, title, description, start, minutes, ChronoUnit.MINUTES, color, extendedProps);
+
+        entry.setTitle(title);
+        entry.setDescription(description);
+        entry.setStart(start);
+        entry.setEnd(entry.getStartUTC().plus(minutes, ChronoUnit.MINUTES));
+        entry.setAllDay(ChronoUnit.MINUTES == ChronoUnit.DAYS);
+        if(color != null) entry.setColor(color);
+        entry.setExtendedProps(extendedProps);
 
         return entry;
     }
 
-
-    private void setValues(Entry entry, String title, String description, LocalDateTime start, int amountToAdd, ChronoUnit unit, String color, HashMap<String, Object> extendedProps) {
-        entry.setTitle(title);
-        entry.setDescription(description);
-        entry.setStart(start);
-        entry.setEnd(entry.getStartUTC().plus(amountToAdd, unit));
-        entry.setAllDay(unit == ChronoUnit.DAYS);
-        entry.setColor(color);
-        entry.setExtendedProps(extendedProps);
-    }
-
+    /**
+     * Force calendar to re-render.
+     */
     public void renderCalendar() {
         this.calendar.render();
     }
@@ -266,6 +292,14 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
         this.scheduledProcessManagementService.removeBatchInsertListener(this);
     }
 
+    /**
+     * This method assists with pagination within the calendar so that only
+     * data of interest is loaded.
+     *
+     * @param firstDay
+     * @param lastDate
+     * @param filter
+     */
     private void updateCalendarContents(LocalDate firstDay, LocalDate lastDate, String filter) {
         Instant startDateInstant = firstDay.atStartOfDay(ZoneId.of((String)UI.getCurrent().getSession()
             .getAttribute(SessionAttributeConstants.TIMEZONE_ID))).toInstant();
@@ -295,8 +329,8 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
             HashMap<String, Object> extendedProps = new HashMap<>();
             extendedProps.put("event", upcomingScheduledProcess);
             entries.add(createTimedEntry(String.format("Job[%s]", upcomingScheduledProcess.getJobName()), String.format("<b>Agent</b> - %s<br/><b>Job Group<b/> - %s<br/><b>Job Name<b/> - %s<br/><b>Description<b/> - %s<br/><b>Execution Time<b/> - %s %s %s", upcomingScheduledProcess.getAgentName()
-                , upcomingScheduledProcess.getJobGroup(), upcomingScheduledProcess.getJobName(), upcomingScheduledProcess.getJobDescription(), this.dateTimeFormatter.getFormattedDate(upcomingScheduledProcess.getFireTime()), dateTime, upcomingScheduledProcess.toString().substring(upcomingScheduledProcess.toString().lastIndexOf("."))), dateTime, 1, this.intToARGB((upcomingScheduledProcess.getAgentName()+
-                upcomingScheduledProcess.getJobName()+upcomingScheduledProcess.getJobGroup()).hashCode()), extendedProps));
+                , upcomingScheduledProcess.getJobGroup(), upcomingScheduledProcess.getJobName(), upcomingScheduledProcess.getJobDescription(), this.dateTimeFormatter.getFormattedDate(upcomingScheduledProcess.getFireTime()), dateTime, upcomingScheduledProcess.toString().substring(upcomingScheduledProcess.toString().lastIndexOf(".")))
+                , dateTime, 1, null, extendedProps));
         });
 
         ScheduledProcessEventSearchResults<ScheduledProcessEvent>  scheduledProcessEventSearchResults;
@@ -326,10 +360,11 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
 
     }
 
-    private String intToARGB(int i){
-        return "#default";
-    }
-
+    /**
+     * Get a list of possible calendar views.
+     *
+     * @return
+     */
     private List<CalendarView> getCalendarViews() {
         ArrayList<CalendarView> calenderViews = new ArrayList<>();
 
