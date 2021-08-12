@@ -92,22 +92,22 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
 
         super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.schedulerName]]</div>")
             .withProperty("schedulerName", ScheduledProcessEvent::getAgentName))
-            .setHeader("Scheduler Name")
+            .setHeader(getTranslation("table-header.scheduled-agent-name", UI.getCurrent().getLocale()))
             .setKey("schedulerName")
             .setFlexGrow(1);
         super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.jobName]]</div>")
             .withProperty("jobName", ScheduledProcessEvent::getJobName))
-            .setHeader("Job Name")
+            .setHeader(getTranslation("table-header.job-name", UI.getCurrent().getLocale()))
             .setKey("jobName")
             .setFlexGrow(1);
         super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.jobGroup]]</div>")
             .withProperty("jobGroup", ScheduledProcessEvent::getJobGroup))
-            .setHeader("Job Group")
+            .setHeader(getTranslation("table-header.job-group", UI.getCurrent().getLocale()))
             .setKey("jobGroup")
             .setFlexGrow(1);
         super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.description]]</div>")
             .withProperty("description", ScheduledProcessEvent::getJobDescription))
-            .setHeader("Job Description")
+            .setHeader(getTranslation("table-header.job-description", UI.getCurrent().getLocale()))
             .setKey("description")
             .setFlexGrow(5);
         super.addColumn(new ComponentRenderer<>(jobExecution -> {
@@ -132,7 +132,7 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
 
             return layout;
         }))
-            .setHeader("Related Business Streams")
+            .setHeader(getTranslation("table-header.related-business-stream", UI.getCurrent().getLocale()))
             .setKey("businessStreams")
             .setFlexGrow(5);
         super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.executionTime]]</div>")
@@ -147,7 +147,7 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
             Icon jobExecutionDetails = VaadinIcon.RANDOM.create();
             jobExecutionDetails.setSize("14pt");
             jobExecutionDetails.getStyle().set("cursor", "pointer");
-            jobExecutionDetails.getElement().setAttribute("title", "Job execution details");
+            jobExecutionDetails.getElement().setAttribute("title", getTranslation("tooltip.job-execution-details", UI.getCurrent().getLocale()));
 
             jobExecutionDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 ModuleMetaData agent = this.moduleMetaDataService.findById(scheduledProcessEvent.getAgentName());
@@ -160,7 +160,7 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
             Icon jobDetails = VaadinIcon.CLIPBOARD_TEXT.create();
             jobDetails.setSize("14pt");
             jobDetails.getStyle().set("cursor", "pointer");
-            jobDetails.getElement().setAttribute("title", "Job configuration");
+            jobDetails.getElement().setAttribute("title", getTranslation("tooltip.job-configuration", UI.getCurrent().getLocale()));
 
             layout.add(jobDetails);
 
@@ -181,7 +181,7 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
             Icon chart = VaadinIcon.CHART.create();
             chart.setSize("14pt");
             chart.getStyle().set("cursor", "pointer");
-            chart.getElement().setAttribute("title", "Job statistics");
+            chart.getElement().setAttribute("title", getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()));
             chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 ScheduledJobStatisticsDialog scheduledJobStatisticsDialog = new ScheduledJobStatisticsDialog(this.scheduledProcessManagementService,
                     this.moduleMetaDataService.findById(scheduledProcessEvent.getAgentName()), scheduledProcessEvent.getJobName());
@@ -194,7 +194,7 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
             layout.setSizeFull();
             return layout;
         }))
-        .setHeader("Actions")
+        .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
         .setKey("actions")
         .setWidth("70px");
         super.addColumn(new ComponentRenderer<>(scheduledProcessEvent->
@@ -208,7 +208,7 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
                 Icon check = VaadinIcon.CHECK.create();
                 check.getStyle().set("color", "#66bb6a");
                 check.getStyle().set("font-size", "32pt");
-                check.getElement().setAttribute("title", "Successful");
+                check.getElement().setAttribute("title", getTranslation("tooltip.job-successful", UI.getCurrent().getLocale()));
                 layout.add(check);
                 layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, check);
             }
@@ -218,7 +218,7 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
                 exclamation.getStyle().set("font-size", "32pt");
                 layout.add(exclamation);
                 layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, exclamation);
-                exclamation.getElement().setAttribute("title", "Job failed!");
+                exclamation.getElement().setAttribute("title", getTranslation("tooltip.job-failed", UI.getCurrent().getLocale()));
             }
 
             layout.setSizeFull();
