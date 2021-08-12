@@ -116,19 +116,19 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
 
         super.addColumn(TemplateRenderer.<ScheduledProcessAggregateConfiguration>of("<div style='white-space:normal; text-align:top;'>[[item.jobName]]</div>")
             .withProperty("jobName", ScheduledProcessAggregateConfiguration::getJobName))
-            .setHeader("Job Name")
+            .setHeader(getTranslation("table-header.job-name", UI.getCurrent().getLocale()))
             .setKey("jobName")
             .setTextAlign(ColumnTextAlign.START)
             .setFlexGrow(1);
 
         super.addColumn(TemplateRenderer.<ScheduledProcessAggregateConfiguration>of("<div style='white-space:normal'>[[item.jobGroup]]</div>")
             .withProperty("jobGroup", ScheduledProcessAggregateConfiguration::getJobGroup))
-            .setHeader("Job Group")
+            .setHeader(getTranslation("table-header.job-group", UI.getCurrent().getLocale()))
             .setKey("jobGroup")
             .setFlexGrow(1);
         super.addColumn(TemplateRenderer.<ScheduledProcessAggregateConfiguration>of("<div style='white-space:normal'>[[item.description]]</div>")
             .withProperty("description", ScheduledProcessAggregateConfiguration::getJobDescription))
-            .setHeader("Job Description")
+            .setHeader(getTranslation("table-header.job-description", UI.getCurrent().getLocale()))
             .setKey("description")
             .setFlexGrow(5);
         super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration -> {
@@ -145,7 +145,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
 
             return layout;
         }))
-            .setHeader("Related Business Streams")
+            .setHeader(getTranslation("table-header.related-business-stream", UI.getCurrent().getLocale()))
             .setKey("businessStreams")
             .setFlexGrow(3);
         super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration -> {
@@ -154,7 +154,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             Icon edit = VaadinIcon.EDIT.create();
             edit.setSize("14pt");
             edit.getStyle().set("cursor", "pointer");
-            edit.getElement().setAttribute("title", "Edit job");
+            edit.getElement().setAttribute("title", getTranslation("tooltip.edit-job", UI.getCurrent().getLocale()));
             ComponentSecurityVisibility.applySecurity(this.authentication,  edit, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
             edit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -179,7 +179,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             Icon view = VaadinIcon.EYE.create();
             view.setSize("14pt");
             view.getStyle().set("cursor", "pointer");
-            view.getElement().setAttribute("title", "View job");
+            view.getElement().setAttribute("title", getTranslation("tooltip.view-job", UI.getCurrent().getLocale()));
             ComponentSecurityVisibility.applySecurity(this.authentication, view, SecurityConstants.SCHEDULER_READ);
 
             view.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -196,14 +196,15 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             Icon delete = VaadinIcon.TRASH.create();
             delete.setSize("14pt");
             delete.getStyle().set("cursor", "pointer");
-            delete.getElement().setAttribute("title", "Delete job");
+            delete.getElement().setAttribute("title", getTranslation("tooltip.delete-job", UI.getCurrent().getLocale()));
             ComponentSecurityVisibility.applySecurity(this.authentication, delete, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
             layout.add(delete);
 
             delete.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                ConfirmDialog dialog = new ConfirmDialog("Confirm delete",
-                    "Are you sure you want to delete this job? This operation cannot be reversed.", "Delete", (ComponentEventListener<ConfirmDialog.ConfirmEvent>) confirmEvent -> {
+                ConfirmDialog dialog = new ConfirmDialog(getTranslation("confirm-dialog.delete-job-header", UI.getCurrent().getLocale()),
+                    getTranslation("confirm-dialog.delete-job-body", UI.getCurrent().getLocale()), getTranslation("confirm-dialog.delete-job-text", UI.getCurrent().getLocale())
+                    , (ComponentEventListener<ConfirmDialog.ConfirmEvent>) confirmEvent -> {
                     try {
                         this.deleteScheduledJobFlow(scheduledProcessAggregateConfiguration);
 
@@ -214,11 +215,11 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                     }
                     catch(Exception e) {
                         e.printStackTrace();
-                        NotificationHelper.showErrorNotification("An error has occurred deleting a scheduled job. Please contact Ikasan support.");
+                        NotificationHelper.showErrorNotification(getTranslation("error.delete-scheduled-job", UI.getCurrent().getLocale()));
                     }
                     this.dataProvider.refreshAll();
                     this.filteredDataProvider.refreshAll();
-                    }, "Cancel", (ComponentEventListener<ConfirmDialog.CancelEvent>) cancelEvent -> {});
+                    }, getTranslation("button.cancel", UI.getCurrent().getLocale()), (ComponentEventListener<ConfirmDialog.CancelEvent>) cancelEvent -> {});
                 dialog.setConfirmButtonTheme("error primary");
 
                 dialog.open();
@@ -227,7 +228,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             Icon chart = VaadinIcon.CHART.create();
             chart.setSize("14pt");
             chart.getStyle().set("cursor", "pointer");
-            chart.getElement().setAttribute("title", "Job statistics");
+            chart.getElement().setAttribute("title", getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()));
             chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 ScheduledJobStatisticsDialog scheduledJobStatisticsDialog = new ScheduledJobStatisticsDialog(this.scheduledProcessManagementService,
                     this.moduleMetaDataService.findById(scheduledProcessAggregateConfiguration.getAgentName()), scheduledProcessAggregateConfiguration.getJobName());
@@ -247,7 +248,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             if(flowState.getState() == State.RUNNING_STATE) {
                 Icon stop = VaadinIcon.STOP.create();
                 stop.setSize("14pt");
-                stop.getElement().setAttribute("title", "Stop scheduled job");
+                stop.getElement().setAttribute("title", getTranslation("tooltip.stop-scheduled-job", UI.getCurrent().getLocale()));
                 stop.getStyle().set("cursor", "pointer");
                 layout.add(stop);
 
@@ -260,7 +261,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 Icon pause = VaadinIcon.PAUSE.create();
                 pause.setSize("14pt");
                 pause.getStyle().set("color", "rgba(133,181,225,1.0)");
-                pause.getElement().setAttribute("title", "Pause scheduled job");
+                pause.getElement().setAttribute("title", getTranslation("tooltip.pause-scheduled-job", UI.getCurrent().getLocale()));
                 pause.getStyle().set("cursor", "pointer");
                 layout.add(pause);
 
@@ -273,7 +274,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             else if(flowState.getState() == State.RECOVERING_STATE) {
                 Icon stop = VaadinIcon.STOP.create();
                 stop.setSize("14pt");
-                stop.getElement().setAttribute("title", "Stop scheduled job");
+                stop.getElement().setAttribute("title", getTranslation("tooltip.stop-scheduled-job", UI.getCurrent().getLocale()));
                 stop.getStyle().set("cursor", "pointer");
                 layout.add(stop);
 
@@ -288,7 +289,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 Icon start = VaadinIcon.PLAY.create();
                 start.setSize("14pt");
                 start.getStyle().set("color", "#66bb6a");
-                start.getElement().setAttribute("title", "Start scheduled job");
+                start.getElement().setAttribute("title", getTranslation("tooltip.start-scheduled-job", UI.getCurrent().getLocale()));
                 start.getStyle().set("cursor", "pointer");
                 layout.add(start);
 
@@ -302,7 +303,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 pause.setSize("14pt");
                 pause.getStyle().set("cursor", "pointer");
                 pause.getStyle().set("color", "rgba(133,181,225,1.0)");
-                pause.getElement().setAttribute("title", "Pause scheduled job");
+                pause.getElement().setAttribute("title", getTranslation("tooltip.pause-scheduled-job", UI.getCurrent().getLocale()));
                 layout.add(pause);
 
                 ComponentSecurityVisibility.applySecurity(this.authentication, pause, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
@@ -316,7 +317,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 start.getStyle().set("cursor", "pointer");
                 start.setSize("14pt");
                 start.getStyle().set("color", "#66bb6a");
-                start.getElement().setAttribute("title", "Start scheduled job");
+                start.getElement().setAttribute("title", getTranslation("tooltip.start-scheduled-job", UI.getCurrent().getLocale()));
                 layout.add(start);
 
                 ComponentSecurityVisibility.applySecurity(this.authentication, start, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
@@ -328,7 +329,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 Icon stop = VaadinIcon.STOP.create();
                 stop.setSize("14pt");
                 stop.getStyle().set("cursor", "pointer");
-                stop.getElement().setAttribute("title", "Stop scheduled job");
+                stop.getElement().setAttribute("title", getTranslation("tooltip.stop-scheduled-job", UI.getCurrent().getLocale()));
                 layout.add(stop);
 
                 ComponentSecurityVisibility.applySecurity(this.authentication, stop, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
@@ -341,23 +342,23 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             if(flowState.getState() == State.RUNNING_STATE) {
                 Icon fireJob = VaadinIcon.ROCKET.create();
                 fireJob.setSize("14pt");
-                fireJob.getElement().setAttribute("title", "Fire job immediately");
+                fireJob.getElement().setAttribute("title", getTranslation("tooltip.fire-job-immediately", UI.getCurrent().getLocale()));
                 fireJob.getStyle().set("cursor", "pointer");
                 layout.add(fireJob);
 
                 ComponentSecurityVisibility.applySecurity(this.authentication, fireJob, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
                 fireJob.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                    ConfirmDialog confirmDialog = new ConfirmDialog("Schedule now?",
-                        "This job will fire immediately. Are you sure you would like to proceed?", "Schedule now",
+                    ConfirmDialog confirmDialog = new ConfirmDialog(getTranslation("confirm-dialog.confirm-fire-now-header", UI.getCurrent().getLocale()),
+                        getTranslation("confirm-dialog.confirm-fire-now-body", UI.getCurrent().getLocale()), getTranslation("confirm-dialog.confirm-fire-now-text", UI.getCurrent().getLocale()),
                         (ComponentEventListener<ConfirmDialog.ConfirmEvent>) confirmEvent -> {
                             if(this.schedulerService.triggerFlowNow(agent.getUrl(), agent.getName(), scheduledProcessAggregateConfiguration.getJobName())) {
-                                NotificationHelper.showUserNotification("Job triggered successfully.");
+                                NotificationHelper.showUserNotification(getTranslation("notification.job-triggered-successfully", UI.getCurrent().getLocale()));
                             }
                             else {
-                                NotificationHelper.showUserNotification("An error occurred triggering job. Please contact Ikasan support.");
+                                NotificationHelper.showUserNotification(getTranslation("error.job-triggered-failure", UI.getCurrent().getLocale()));
                             }
-                        }, "Cancel", (ComponentEventListener<ConfirmDialog.CancelEvent>) cancelEvent -> {});
+                        }, getTranslation("button.cancel", UI.getCurrent().getLocale()), (ComponentEventListener<ConfirmDialog.CancelEvent>) cancelEvent -> {});
 
                     confirmDialog.open();
                 });
@@ -366,7 +367,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             layout.setSizeFull();
             return layout;
         }))
-        .setHeader("Actions")
+        .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
         .setKey("actions")
         .setFlexGrow(2);
         super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration -> {
@@ -382,7 +383,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 Icon unknown = VaadinIcon.QUESTION.create();
                 unknown.setSize("14pt");
                 unknown.getStyle().set("color", "rgba(210, 215, 211, 1)");
-                unknown.getElement().setAttribute("title", "Unknown");
+                unknown.getElement().setAttribute("title", getTranslation("label.status-unknown", UI.getCurrent().getLocale()));
                 layout.add(unknown);
                 layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, unknown);
             }
@@ -390,7 +391,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 Icon running = VaadinIcon.CHECK.create();
                 running.setSize("14pt");
                 running.getStyle().set("color", "#66bb6a");
-                running.getElement().setAttribute("title", "Running");
+                running.getElement().setAttribute("title", getTranslation("label.status-running", UI.getCurrent().getLocale()));
                 layout.add(running);
                 layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, running);
             }
@@ -398,7 +399,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 Icon stopped = VaadinIcon.STOP.create();
                 stopped.setSize("14pt");
                 stopped.getStyle().set("color", "#000000");
-                stopped.getElement().setAttribute("title", "Stopped");
+                stopped.getElement().setAttribute("title", getTranslation("label.status-stopped", UI.getCurrent().getLocale()));
                 layout.add(stopped);
                 layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, stopped);
             }
@@ -406,7 +407,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 Icon recovering = VaadinIcon.RECYCLE.create();
                 recovering.setSize("14pt");
                 recovering.getStyle().set("color", "rgba(241, 90, 35, 1.0)");
-                recovering.getElement().setAttribute("title", "Recovering");
+                recovering.getElement().setAttribute("title", getTranslation("label.status-recovering", UI.getCurrent().getLocale()));
                 layout.add(recovering);
                 layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, recovering);
             }
@@ -414,7 +415,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 Icon stoppedInError = VaadinIcon.EXCLAMATION.create();
                 stoppedInError.setSize("14pt");
                 stoppedInError.getStyle().set("color", "#ef5350");
-                stoppedInError.getElement().setAttribute("title", "Stopped in error");
+                stoppedInError.getElement().setAttribute("title", getTranslation("label.status-stoppedInError", UI.getCurrent().getLocale()));
                 layout.add(stoppedInError);
                 layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, stoppedInError);
             }
@@ -422,7 +423,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 Icon paused = VaadinIcon.PAUSE.create();
                 paused.setSize("14pt");
                 paused.getStyle().set("color", "rgba(133,181,225,1.0)");
-                paused.getElement().setAttribute("title", "Paused");
+                paused.getElement().setAttribute("title", getTranslation("label.status-paused", UI.getCurrent().getLocale()));
                 layout.add(paused);
                 layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, paused);
             }
@@ -430,7 +431,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             layout.setSizeFull();
             return layout;
         }))
-        .setHeader("Status")
+        .setHeader(getTranslation("table-header.status", UI.getCurrent().getLocale()))
         .setKey("status")
         .setWidth("20px");
 
