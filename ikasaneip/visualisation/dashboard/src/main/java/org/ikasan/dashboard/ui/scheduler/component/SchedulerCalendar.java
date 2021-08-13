@@ -129,15 +129,15 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
      * @return
      */
     private HorizontalLayout createBasicToolbar() {
-        Button buttonToday = new Button("Today", VaadinIcon.HOME.create(), e -> {
+        Button buttonToday = new Button(getTranslation("label.today", UI.getCurrent().getLocale()), VaadinIcon.HOME.create(), e -> {
             this.calendar.removeAllEntries();
             calendar.today();
         });
-        Button buttonPrevious = new Button("Previous", VaadinIcon.ANGLE_LEFT.create(),  e -> {
+        Button buttonPrevious = new Button(getTranslation("label.previous", UI.getCurrent().getLocale()), VaadinIcon.ANGLE_LEFT.create(),  e -> {
             this.calendar.removeAllEntries();
             calendar.previous();
         });
-        Button buttonNext = new Button("Next", VaadinIcon.ANGLE_RIGHT.create(), e -> {
+        Button buttonNext = new Button(getTranslation("label.next", UI.getCurrent().getLocale()), VaadinIcon.ANGLE_RIGHT.create(), e -> {
             this.calendar.removeAllEntries();
             calendar.next();
         });
@@ -161,50 +161,50 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
             text.setText(item.getName());
 
             if(item.getName().equals(CalendarViewImpl.DAY_GRID_DAY.getName())){
-                text.setText("Grid Day");
+                text.setText(getTranslation("label.grid-day", UI.getCurrent().getLocale()));
             }
             else if(item.getName().equals(CalendarViewImpl.DAY_GRID_WEEK.getName())){
-                text.setText("Grid Week");
+                text.setText(getTranslation("label.grid-week", UI.getCurrent().getLocale()));
             }
             else if(item.getName().equals(CalendarViewImpl.DAY_GRID_MONTH.getName())){
-                text.setText("Grid Month");
+                text.setText(getTranslation("label.grid-month", UI.getCurrent().getLocale()));
             }
             else if(item.getName().equals(CalendarViewImpl.LIST_DAY.getName())){
-                text.setText("List Day");
+                text.setText(getTranslation("label.list-day", UI.getCurrent().getLocale()));
             }
             else if(item.getName().equals(CalendarViewImpl.LIST_WEEK.getName())){
-                text.setText("List Week");
+                text.setText(getTranslation("label.list-week", UI.getCurrent().getLocale()));
             }
             else if(item.getName().equals(CalendarViewImpl.LIST_MONTH.getName())){
-                text.setText("List Month");
+                text.setText(getTranslation("label.list-month", UI.getCurrent().getLocale()));
             }
             else if(item.getName().equals(CalendarViewImpl.LIST_YEAR.getName())){
-                text.setText("List Year");
+                text.setText(getTranslation("label.list-year", UI.getCurrent().getLocale()));
             }
 
             return text;
         }));
         comboBoxView.setItemLabelGenerator(item -> {
             if(item.getName().equals(CalendarViewImpl.DAY_GRID_DAY.getName())){
-                return "Grid Day";
+                return getTranslation("label.grid-day", UI.getCurrent().getLocale());
             }
             else if(item.getName().equals(CalendarViewImpl.DAY_GRID_WEEK.getName())){
-                return "Grid Week";
+                return getTranslation("label.grid-week", UI.getCurrent().getLocale());
             }
             else if(item.getName().equals(CalendarViewImpl.DAY_GRID_MONTH.getName())){
-                return "Grid Month";
+                return getTranslation("label.grid-month", UI.getCurrent().getLocale());
             }
             else if(item.getName().equals(CalendarViewImpl.LIST_DAY.getName())){
-                return "List Day";
+                return getTranslation("label.list-day", UI.getCurrent().getLocale());
             }
             else if(item.getName().equals(CalendarViewImpl.LIST_WEEK.getName())){
-                return "List Week";
+                return getTranslation("label.list-week", UI.getCurrent().getLocale());
             }
             else if(item.getName().equals(CalendarViewImpl.LIST_MONTH.getName())){
-                return "List Month";
+                return getTranslation("label.list-month", UI.getCurrent().getLocale());
             }
             else if(item.getName().equals(CalendarViewImpl.LIST_YEAR.getName())){
-                return "List Year";
+                return getTranslation("label.list-year", UI.getCurrent().getLocale());
             }
 
             return "";
@@ -328,8 +328,9 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
                     .getAttribute(SessionAttributeConstants.TIMEZONE_ID)));
             HashMap<String, Object> extendedProps = new HashMap<>();
             extendedProps.put("event", upcomingScheduledProcess);
-            entries.add(createTimedEntry(String.format("Job[%s]", upcomingScheduledProcess.getJobName()), String.format("<b>Agent</b> - %s<br/><b>Job Group<b/> - %s<br/><b>Job Name<b/> - %s<br/><b>Description<b/> - %s<br/><b>Execution Time<b/> - %s %s %s", upcomingScheduledProcess.getAgentName()
-                , upcomingScheduledProcess.getJobGroup(), upcomingScheduledProcess.getJobName(), upcomingScheduledProcess.getJobDescription(), this.dateTimeFormatter.getFormattedDate(upcomingScheduledProcess.getFireTime()), dateTime, upcomingScheduledProcess.toString().substring(upcomingScheduledProcess.toString().lastIndexOf(".")))
+            entries.add(createTimedEntry(String.format(getTranslation("calendar.job-name", UI.getCurrent().getLocale()), upcomingScheduledProcess.getJobName())
+                , String.format(getTranslation("calendar.job-details", UI.getCurrent().getLocale()), upcomingScheduledProcess.getAgentName()
+                , upcomingScheduledProcess.getJobGroup(), upcomingScheduledProcess.getJobName(), upcomingScheduledProcess.getJobDescription(), this.dateTimeFormatter.getFormattedDate(upcomingScheduledProcess.getFireTime()))
                 , dateTime, 1, null, extendedProps));
         });
 
@@ -351,13 +352,14 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
             HashMap<String, Object> extendedProps = new HashMap<>();
             extendedProps.put("event", scheduledProcessEvent);
             entries.add(createTimedEntry(String.format("Job[%s]", scheduledProcessEvent.getJobName())
-                , String.format("<b>Agent</b> - %s<br/><b>Job Group<b/> - %s<br/><b>Job Name<b/> - %s<br/><b>Description<b/> - %s<br/><b>Execution Time<b/> - %s", scheduledProcessEvent.getAgentName()
-                    , scheduledProcessEvent.getJobGroup(), scheduledProcessEvent.getJobName(), scheduledProcessEvent.getJobDescription(), this.dateTimeFormatter.getFormattedDate(scheduledProcessEvent.getFireTime()))
+                , String.format(getTranslation("calendar.job-details", UI.getCurrent().getLocale()), scheduledProcessEvent.getAgentName()
+                    , scheduledProcessEvent.getJobGroup(), scheduledProcessEvent.getJobName(), scheduledProcessEvent.getJobDescription()
+                    , this.dateTimeFormatter.getFormattedDate(scheduledProcessEvent.getFireTime()))
                 ,dateTime, 1, scheduledProcessEvent.isSuccessful() ? "#66bb6a":"#ef5350", extendedProps));
 
         });
-        calendar.addEntries(entries);
 
+        calendar.addEntries(entries);
     }
 
     /**
