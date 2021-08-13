@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -62,13 +63,13 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
         this.agent = agent;
         this.jobName = jobName;
         super.showResize(false);
-        super.title.setText("Scheduled Job Statistics");
+        super.title.setText(getTranslation("header.scheduled-job-statistics", UI.getCurrent().getLocale()));
 
         this.setHeight("850px");
         this.setWidth("95%");
 
         FormLayout jobLayout = new FormLayout();
-        this.agentNameTf = new TextField("Agent name");
+        this.agentNameTf = new TextField(getTranslation("label.agent", UI.getCurrent().getLocale()));
         this.agentNameTf.setValue(this.agent.getName());
         this.agentNameTf.setEnabled(false);
 
@@ -76,7 +77,7 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
         link.setTarget("_blank");
         link.getStyle().set("color", "blue");
 
-        this.agentUrlLf = new TextField("Agent URL");
+        this.agentUrlLf = new TextField(getTranslation("label.agent-url", UI.getCurrent().getLocale()));
         this.agentUrlLf.setPrefixComponent(link);
         this.agentUrlLf.setValue(" ");
 
@@ -85,17 +86,17 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
         ScheduledProcessAggregateConfiguration aggregateConfiguration
             = this.scheduledProcessManagementService.getScheduleProcessAggregateConfiguration(this.agent.getName(), jobName);
 
-        this.jobNameTf = new TextField("Job name");
+        this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setValue(this.jobName);
         this.jobNameTf.setEnabled(false);
 
-        this.jobGroupTf = new TextField("Job Group");
+        this.jobGroupTf = new TextField(getTranslation("label.job-group", UI.getCurrent().getLocale()));
         this.jobGroupTf.setValue(aggregateConfiguration.getJobName());
         this.jobGroupTf.setEnabled(false);
 
         jobLayout.add(this.jobNameTf, this.jobGroupTf);
 
-        this.jobDescriptionTa = new TextArea("Job description");
+        this.jobDescriptionTa = new TextArea(getTranslation("label.job-description", UI.getCurrent().getLocale()));
         this.jobDescriptionTa.setHeight("100px");
         this.jobDescriptionTa.setValue(aggregateConfiguration.getJobDescription());
         this.jobDescriptionTa.setEnabled(false);
@@ -108,18 +109,18 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
 
         HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-        this.numSucceessTf = new TextField("Number of successful executions");
+        this.numSucceessTf = new TextField(getTranslation("label.number-of-successful-executions", UI.getCurrent().getLocale()));
         this.numSucceessTf.setWidth("30vw");
         this.numSucceessTf.setEnabled(true);
         this.numSucceessTf.setValue(Integer.toString(this.numSuccess));
         this.numSucceessTf.setEnabled(false);
 
-        this.numFailureTf = new TextField("Number of failed executions");
+        this.numFailureTf = new TextField(getTranslation("label.number-of-failed-executions", UI.getCurrent().getLocale()));
         this.numFailureTf.setWidth("30vw");
         this.numFailureTf.setValue(Integer.toString(this.numFail));
         this.numFailureTf.setEnabled(false);
         this.numFailureTf.setValue(String.valueOf(this.numFail));
-        this.averageExecutionTimeTf = new TextField("Average execution time milliseconds");
+        this.averageExecutionTimeTf = new TextField(getTranslation("label.average-execution-time-millis", UI.getCurrent().getLocale()));
         this.averageExecutionTimeTf.setWidth("30vw");
         this.averageExecutionTimeTf.setValue(Long.toString(this.averageExecutionTime));
         this.averageExecutionTimeTf.setEnabled(false);
@@ -146,11 +147,11 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
         chart.setTimeline(true);
 
         Configuration configuration = chart.getConfiguration();
-        configuration.getTitle().setText("Execution Duration Trend");
+        configuration.getTitle().setText(getTranslation("label.execution-duration-trend", UI.getCurrent().getLocale()));
 
         YAxis yAxis = new YAxis();
         Labels label = new Labels();
-        label.setFormatter("function() { return this.value + ' milliseconds'; }");
+        label.setFormatter("function() { return this.value + ' " + getTranslation("label.milliseconds", UI.getCurrent().getLocale()) + "'; }");
         label.setAlign(HorizontalAlign.RIGHT);
         yAxis.setLabels(label);
 
@@ -160,7 +161,8 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
         configuration.addyAxis(yAxis);
 
         Tooltip tooltip = new Tooltip();
-        tooltip.setPointFormat("<span>{series.name}</span>: Execution duration <b>{point.y}</b> milliseconds<br/>");
+        tooltip.setPointFormat("<span>{series.name}</span>: Execution duration <b>{point.y}</b> "
+            + getTranslation("label.milliseconds", UI.getCurrent().getLocale()) + "<br/>");
         tooltip.setValueDecimals(2);
         configuration.setTooltip(tooltip);
 
@@ -193,7 +195,7 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
         configuration.setSeries(dataSeries);
 
         XAxis xaxis = new XAxis();
-        xaxis.setTitle("Execution date/time");
+        xaxis.setTitle(getTranslation("label.execution-date-time", UI.getCurrent().getLocale()));
         xaxis.setType(AxisType.DATETIME);
         configuration.addxAxis(xaxis);
 
