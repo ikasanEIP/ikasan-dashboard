@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.flowingcode.vaadin.addons.ironicons.IronIcons;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Anchor;
@@ -63,7 +64,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         this.systemEventLogger = systemEventLogger;
         this.schedulerService = schedulerService;
         super.showResize(false);
-        super.title.setText("Scheduler Agent Management");
+        super.title.setText(getTranslation("header.scheduler-agent-management", UI.getCurrent().getLocale()));
 
         this.setHeight("850px");
         this.setWidth("95%");
@@ -81,14 +82,14 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
             scheduledJobDialog.open();
         });
 
-        H4 agentDetails = new H4("Agent Details");
+        H4 agentDetails = new H4(getTranslation("header.agent-details", UI.getCurrent().getLocale()));
 
         IronIcon addIcon = IronIcons.ADD.create();
         addIcon.setSize("16pt");
 
         FormLayout formLayout = new FormLayout();
 
-        TextField agentName = new TextField("Agent name");
+        TextField agentName = new TextField(getTranslation("label.agent", UI.getCurrent().getLocale()));
         agentName.setValue(agent.getName());
         agentName.setEnabled(false);
         formLayout.add(agentName);
@@ -97,14 +98,14 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         link.setTarget("_blank");
         link.getStyle().set("color", "blue");
 
-        TextField agentUrlLf = new TextField("Agent URL");
+        TextField agentUrlLf = new TextField(getTranslation("label.agent-url", UI.getCurrent().getLocale()));
         agentUrlLf.setPrefixComponent(link);
         agentUrlLf.setValue(" ");
         formLayout.add(agentUrlLf);
 
         addButton.getElement().appendChild(addIcon.getElement());
 
-        H4 scheduledJobsLabel = new H4("Scheduled Jobs");
+        H4 scheduledJobsLabel = new H4(getTranslation("header.scheduled-jobs", UI.getCurrent().getLocale()));
 
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
