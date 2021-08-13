@@ -78,7 +78,7 @@ public class ScheduledProcessExecutionDialog extends AbstractCloseableResizableD
             exclamation.getStyle().set("font-size", "32pt");
             exclamation.getElement().setAttribute("title", getTranslation("tooltip.job-execution-fail", UI.getCurrent().getLocale()));
 
-            TextField status = new TextField("Execution Status");
+            TextField status = new TextField(getTranslation("label.execution-status", UI.getCurrent().getLocale()));
             status.setValue("job failed");
             status.setEnabled(false);
             status.setSuffixComponent(exclamation);
