@@ -37,7 +37,7 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
 
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private DateFormatter dateFormatter;
-    private TextField textField = new TextField("Search");
+    private TextField textField = new TextField(getTranslation("label.search", UI.getCurrent().getLocale()));
 
     private SuperDatePicker date;
     private TimePicker startTime;
