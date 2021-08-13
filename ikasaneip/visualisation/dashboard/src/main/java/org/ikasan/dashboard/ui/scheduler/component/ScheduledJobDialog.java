@@ -148,17 +148,17 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.metaDataRestService = metaDataRestService;
         this.systemEventLogger = systemEventLogger;
 
-        this.noBlackOutCronExpressionLabel = new Label("no blackout cron expressions");
+        this.noBlackOutCronExpressionLabel = new Label(getTranslation("label.no-blackout-cron-expressions", UI.getCurrent().getLocale()));
         this.noBlackOutCronExpressionLabel.setVisible(false);
         this.noBlackOutCronExpressionLabel.getStyle().set("color", "rgba(0, 0, 0, 0.38)");
-        this.noBlackOutDateTimeRangesLabel = new Label("no blackout date time ranges");
+        this.noBlackOutDateTimeRangesLabel = new Label(getTranslation("label.no-blackout-date-time-ranges", UI.getCurrent().getLocale()));
         this.noBlackOutDateTimeRangesLabel.setVisible(false);
         this.noBlackOutDateTimeRangesLabel.getStyle().set("color", "rgba(0, 0, 0, 0.38)");
         this.noBlackOutDateTimeRangesLabel.getStyle().set("padding-bottom", "20px");
-        this.noPassThoughPropertiesLabel = new Label("no pass through properties");
+        this.noPassThoughPropertiesLabel = new Label(getTranslation("label.no-pass-through-properties", UI.getCurrent().getLocale()));
         this.noPassThoughPropertiesLabel.setVisible(false);
         this.noPassThoughPropertiesLabel.getStyle().set("color", "rgba(0, 0, 0, 0.38)");
-        this.noReturnCodesLabel = new Label("no return codes");
+        this.noReturnCodesLabel = new Label(getTranslation("label.no-return-codes", UI.getCurrent().getLocale()));
         this.noReturnCodesLabel.setVisible(false);
         this.noReturnCodesLabel.getStyle().set("color", "rgba(0, 0, 0, 0.38)");
 
@@ -180,8 +180,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->  {
 
             if(!this.performFormValidation(this.scheduleProcessAggregateConfiguration)) {
-                NotificationHelper.showErrorNotification("There are errors in the scheduled job configuration! " +
-                    "Please rectify these before saving the form.");
+                NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-configuration", UI.getCurrent().getLocale()));
                 return;
             }
 
@@ -190,7 +189,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
             }
             catch (Exception e) {
                 e.printStackTrace();
-                NotificationHelper.showErrorNotification("An error has occurred creating a new scheduled job. Please contact Ikasan support.");
+                NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-creation", UI.getCurrent().getLocale()));
                 return;
             }
 
@@ -233,7 +232,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
      */
     private FormLayout createConfigurationForm() {
         formLayout = new FormLayout();
-        this.agentCb = new ComboBox<>("Agent");
+        this.agentCb = new ComboBox<>(getTranslation("label.agent", UI.getCurrent().getLocale()));
         this.agentCb.setRequired(true);
         this.agentCb.setClearButtonVisible(true);
         this.agentCb.setItems(this.scheduledProcessManagementService.getAllAgentNames());
@@ -242,64 +241,64 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
             this.agentCb.setEnabled(false);
         }
         formBinder.forField(this.agentCb)
-            .withValidator(agentValue -> !agentValue.isEmpty(), "Agent is required!")
+            .withValidator(agentValue -> !agentValue.isEmpty(), getTranslation("error.missing-agent", UI.getCurrent().getLocale()))
             .bind(ScheduledProcessAggregateConfiguration::getAgentName, ScheduledProcessAggregateConfiguration::setAgentName);
         formLayout.add(agentCb, 2);
 
-        this.startAutomaticCb = new Checkbox("Start automatically");
+        this.startAutomaticCb = new Checkbox(getTranslation("label.start-automatically", UI.getCurrent().getLocale()));
         formBinder.forField(this.startAutomaticCb)
             .bind(ScheduledProcessAggregateConfiguration::isStartAutomatically, ScheduledProcessAggregateConfiguration::setStartAutomatically);
         formLayout.add(this.startAutomaticCb);
 
         // Fields to capture schedule job properties.
-        H3 scheduleDetailsLabel = new H3("Schedule Details");
+        H3 scheduleDetailsLabel = new H3(getTranslation("header.schedule-details", UI.getCurrent().getLocale()));
         formLayout.add(scheduleDetailsLabel, 2);
 
-        this.jobNameTf = new TextField("Job name");
+        this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setRequired(true);
         formBinder.forField(this.jobNameTf)
-            .withValidator(jobName -> !jobName.isEmpty(), "Job name is required!")
+            .withValidator(jobName -> !jobName.isEmpty(), getTranslation("error.missing-job-name", UI.getCurrent().getLocale()))
             .bind(ScheduledProcessAggregateConfiguration::getJobName, ScheduledProcessAggregateConfiguration::setJobName);
         formLayout.add(jobNameTf);
 
 
-        this.jobGroupTf = new TextField("Job group");
+        this.jobGroupTf = new TextField(getTranslation("label.job-group", UI.getCurrent().getLocale()));
         this.jobGroupTf.setRequired(true);
         formBinder.forField(this.jobGroupTf)
-            .withValidator(jobGroup -> !jobGroup.isEmpty(), "Job group is required!")
+            .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-group", UI.getCurrent().getLocale()))
             .bind(ScheduledProcessAggregateConfiguration::getJobGroup, ScheduledProcessAggregateConfiguration::setJobGroup);
         formLayout.add(jobGroupTf);
 
 
-        this.jobDescriptionTa = new TextArea("Job description");
+        this.jobDescriptionTa = new TextArea(getTranslation("label.job-description", UI.getCurrent().getLocale()));
         this.jobDescriptionTa.setRequired(true);
         jobDescriptionTa.getStyle().set("minHeight", "100px");
         formBinder.forField(this.jobDescriptionTa)
-            .withValidator(jobGroup -> !jobGroup.isEmpty(), "Job description is required!")
+            .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
             .bind(ScheduledProcessAggregateConfiguration::getJobDescription, ScheduledProcessAggregateConfiguration::setJobDescription);
         formLayout.add(jobDescriptionTa, 2);
 
 
-        this.cronExpressionTf = new TextField("Cron expression");
+        this.cronExpressionTf = new TextField(getTranslation("label.cron-expression", UI.getCurrent().getLocale()));
         this.cronExpressionTf.setRequired(true);
         formBinder.forField(this.cronExpressionTf)
-            .withValidator(value -> !value.isEmpty(), "Cron expression is required!")
-            .withValidator(value -> CronExpression.isValidExpression(value), "Must be a valid cron expression!")
+            .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
+            .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
             .bind(ScheduledProcessAggregateConfiguration::getCronExpression, ScheduledProcessAggregateConfiguration::setCronExpression);
         formLayout.add(cronExpressionTf);
 
 
-        this.timezoneCb = new ComboBox<>("Timezone");
+        this.timezoneCb = new ComboBox<>(getTranslation("label.timezone", UI.getCurrent().getLocale()));
         ComboBox.ItemFilter<DateTimeUtil.TimezonePair> filter = (element, filterString) ->
             element.zoneId.toLowerCase().contains(filterString.toLowerCase());
         this.timezoneCb.setItems(filter, DateTimeUtil.getAllZoneIdsAndItsOffSet());
         this.timezoneCb.setItemLabelGenerator((ItemLabelGenerator<DateTimeUtil.TimezonePair>) s -> String.format("%35s (UTC%s) %n", s.zoneId, s.offset).trim());
         this.timezoneCb.setClearButtonVisible(true);
-        this.timezoneCb.setPlaceholder("Choose a timezone");
-        this.timezoneCb.setErrorMessage("Timezone is required!");
+        this.timezoneCb.setPlaceholder(getTranslation("label.choose-a-timezone", UI.getCurrent().getLocale()));
+        this.timezoneCb.setErrorMessage(getTranslation("error.timezone-required", UI.getCurrent().getLocale()));
         formLayout.add(timezoneCb);
 
-        passThroughPropertiesLabel = new Label("Pass through properties");
+        passThroughPropertiesLabel = new Label(getTranslation("label.pass-through-properties", UI.getCurrent().getLocale()));
         passThroughPropertiesButton = new Button(VaadinIcon.PLUS.create(), e -> {
             this.addPassThroughProperties(null,  null);
         });
@@ -309,53 +308,54 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         formLayout.add(passThroughPropertiesLabel, passThroughPropertiesButton, noPassThoughPropertiesLabel, passThroughPropertiesDiv);
 
         // Fields to capture job execution properties.
-        H3 jobExecutionLabel = new H3("Job Execution Details");
+        H3 jobExecutionLabel = new H3(getTranslation("header.job-execution-details", UI.getCurrent().getLocale()));
         formLayout.add(jobExecutionLabel, 2);
 
-        this.commandLineTf = new TextArea("Command line");
+        this.commandLineTf = new TextArea(getTranslation("label.command-line", UI.getCurrent().getLocale()));
         this.commandLineTf.setRequired(true);
         formBinder.forField(this.commandLineTf)
-            .withValidator(value -> !value.isEmpty(), "Command line is required!")
+            .withValidator(value -> !value.isEmpty(), getTranslation("error.command-line-missing", UI.getCurrent().getLocale()))
             .bind(ScheduledProcessAggregateConfiguration::getCommandLine, ScheduledProcessAggregateConfiguration::setCommandLine);
         formLayout.add(commandLineTf, 2);
         commandLineTf.getStyle().set("minHeight", "100px");
 
-        this.workingDirectoryTf = new TextField("Working Directory");
+        this.workingDirectoryTf = new TextField(getTranslation("label.working-directory", UI.getCurrent().getLocale()));
         formBinder.forField(this.workingDirectoryTf)
             .withNullRepresentation("")
             .bind(ScheduledProcessAggregateConfiguration::getWorkingDirectory, ScheduledProcessAggregateConfiguration::setWorkingDirectory);
         formLayout.add(workingDirectoryTf);
 
-        this.secondsToWaitForProcessStartTf = new TextField("Seconds to wait for process start");
+        this.secondsToWaitForProcessStartTf = new TextField(getTranslation("label.seconds-to-wait", UI.getCurrent().getLocale()));
         formBinder.forField(this.secondsToWaitForProcessStartTf)
             .withNullRepresentation("")
-            .withConverter(new StringToLongConverter("Must be a number!"))
+            .withConverter(new StringToLongConverter(getTranslation("error.must-be-a-number", UI.getCurrent().getLocale())))
             .bind(ScheduledProcessAggregateConfiguration::getSecondsToWaitForProcessStart, ScheduledProcessAggregateConfiguration::setSecondsToWaitForProcessStart);
         formLayout.add(secondsToWaitForProcessStartTf);
 
-        this.stdOutTf = new TextField("Std out");
+        this.stdOutTf = new TextField(getTranslation("label.std-out", UI.getCurrent().getLocale()));
         this.stdOutTf.setRequired(true);
         formBinder.forField(this.stdOutTf)
             .withNullRepresentation("")
-            .withValidator(value -> !value.isEmpty(), "Standard out is required!")
+            .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-std-out", UI.getCurrent().getLocale()))
             .bind(ScheduledProcessAggregateConfiguration::getStdOut, ScheduledProcessAggregateConfiguration::setStdOut);
         formLayout.add(stdOutTf);
 
-        this.stdErrTf = new TextField("Std err");
+        this.stdErrTf = new TextField(getTranslation("label.std-err", UI.getCurrent().getLocale()));
         this.stdErrTf.setRequired(true);
         formBinder.forField(this.stdErrTf)
             .withNullRepresentation("")
+            .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-std-err", UI.getCurrent().getLocale()))
             .bind(ScheduledProcessAggregateConfiguration::getStdErr, ScheduledProcessAggregateConfiguration::setStdErr);
         formLayout.add(this.stdErrTf);
 
-        this.retryOnFailCb = new Checkbox("Retry on fail");
+        this.retryOnFailCb = new Checkbox(getTranslation("label.retry-on-fail", UI.getCurrent().getLocale()));
         formBinder.forField(this.retryOnFailCb)
             .withNullRepresentation(false)
             .bind(ScheduledProcessAggregateConfiguration::isRetryOnFail, ScheduledProcessAggregateConfiguration::setRetryOnFail);
         this.retryOnFailCb.getStyle().set("padding-top", "15px");
         formLayout.add(this.retryOnFailCb, new Div());
 
-        successfulReturnCodesLabel = new Label("Successful return codes");
+        successfulReturnCodesLabel = new Label(getTranslation("label.successful-return-codes", UI.getCurrent().getLocale()));
         successfulReturnCodesButton = new Button(VaadinIcon.PLUS.create(), e -> {
             this.addSuccessfulReturnCodes(null);
         });
@@ -364,11 +364,11 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.returnCodesDiv.setVisible(false);
         formLayout.add(successfulReturnCodesLabel, successfulReturnCodesButton, this.noReturnCodesLabel, returnCodesDiv);
 
-        H3 blackoutLabel = new H3("Blackout Execution Details");
+        H3 blackoutLabel = new H3(getTranslation("header.blackout-execution-details", UI.getCurrent().getLocale()));
         formLayout.add(blackoutLabel, 2);
 
 
-        blackOutCronExpressionLabel = new Label("Blackout cron expressions");
+        blackOutCronExpressionLabel = new Label(getTranslation("label.blackout-cron-expressions", UI.getCurrent().getLocale()));
         this.addBlackoutCron = new Button(VaadinIcon.PLUS.create(), e -> {
             this.addBlackoutCronExpression(null);
         });
@@ -377,7 +377,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.blackOutCronExpressionDiv.setVisible(false);
         formLayout.add(blackOutCronExpressionLabel, addBlackoutCron, this.noBlackOutCronExpressionLabel, blackOutCronExpressionDiv);
 
-        Label blackOutDateTimeRangesLabel = new Label("Blackout date time ranges");
+        Label blackOutDateTimeRangesLabel = new Label(getTranslation("label.blackout-date-time-ranges", UI.getCurrent().getLocale()));
         blackOutDateTimeRangesLabel.getStyle().set("padding-top", "30px");
         this.addDateTimeRange = new Button(VaadinIcon.PLUS.create(), e -> {
             this.addDateTimeRange(-1, -1);
@@ -434,7 +434,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
                     expression.setInvalid(true);
                     isValid.set(false);
                 } else if(!CronExpression.isValidExpression(expression.getValue())){
-                    expression.setErrorMessage("Must be a valid cron expression!");
+                    expression.setErrorMessage(getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()));
                     expression.setInvalid(true);
                     isValid.set(false);
                 }
@@ -456,7 +456,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
                         scheduleProcessAggregateConfiguration.getSuccessfulReturnCodes().add(expression.getValue());
                     }
                     catch (NumberFormatException e) {
-                        expression.setErrorMessage("Return codes must be a number!");
+                        expression.setErrorMessage(getTranslation("error.must-be-a-number", UI.getCurrent().getLocale()));
                         expression.setInvalid(true);
                         isValid.set(false);
                     }
@@ -860,17 +860,17 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
      */
     private void addDateTimeRange(long startMilli, long endMilli) {
         DateTimeRange dateTimeRange = new DateTimeRange();
-        dateTimeRange.startDate = new SuperDatePicker("Start date");
+        dateTimeRange.startDate = new SuperDatePicker(getTranslation("label.start-date", UI.getCurrent().getLocale()));
         dateTimeRange.startDate.setEnabled(this.enabled);
         dateTimeRange.startDate.setDatePattern(DatePatterns.D_MMMM_YYYY);
-        dateTimeRange.startDate.setErrorMessage("Start date is required!");
+        dateTimeRange.startDate.setErrorMessage(getTranslation("error.missing-start-date", UI.getCurrent().getLocale()));
         dateTimeRange.startDate.setLocale(UI.getCurrent().getLocale());
         if(startMilli > 0) {
             dateTimeRange.startDate.setValue(Instant.ofEpochMilli(startMilli).atZone(ZoneId.systemDefault()).toLocalDate());
         }
-        dateTimeRange.startTime = new TimePicker("From");
+        dateTimeRange.startTime = new TimePicker(getTranslation("label.from", UI.getCurrent().getLocale()));
         dateTimeRange.startTime.setEnabled(this.enabled);
-        dateTimeRange.startTime.setErrorMessage("Start time is required!");
+        dateTimeRange.startTime.setErrorMessage(getTranslation("error.missing-start-time", UI.getCurrent().getLocale()));
         dateTimeRange.startTime.setLocale(UI.getCurrent().getLocale());
         if(startMilli > 0) {
             dateTimeRange.startTime.setValue(Instant.ofEpochMilli(startMilli).atZone(ZoneId.systemDefault()).toLocalTime());
@@ -878,17 +878,17 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         HorizontalLayout startLayout = new HorizontalLayout();
         startLayout.add(dateTimeRange.startDate, dateTimeRange.startTime);
 
-        dateTimeRange.endDate = new SuperDatePicker("End date");
+        dateTimeRange.endDate = new SuperDatePicker(getTranslation("label.end-date", UI.getCurrent().getLocale()));
         dateTimeRange.endDate.setEnabled(this.enabled);
         dateTimeRange.endDate.setDatePattern(DatePatterns.D_MMMM_YYYY);
-        dateTimeRange.endDate.setErrorMessage("End date is required!");
+        dateTimeRange.endDate.setErrorMessage(getTranslation("error.missing-end-date", UI.getCurrent().getLocale()));
         dateTimeRange.endDate.setLocale(UI.getCurrent().getLocale());
         if(endMilli > 0) {
             dateTimeRange.endDate.setValue(Instant.ofEpochMilli(endMilli).atZone(ZoneId.systemDefault()).toLocalDate());
         }
-        dateTimeRange.endTime = new TimePicker("To");
+        dateTimeRange.endTime = new TimePicker(getTranslation("label.to", UI.getCurrent().getLocale()));
         dateTimeRange.endTime.setEnabled(this.enabled);
-        dateTimeRange.endTime.setErrorMessage("End date is required!");
+        dateTimeRange.endTime.setErrorMessage(getTranslation("error.missing-end-time", UI.getCurrent().getLocale()));
         dateTimeRange.endTime.setLocale(UI.getCurrent().getLocale());
         if(endMilli > 0) {
             dateTimeRange.endTime.setValue(Instant.ofEpochMilli(endMilli).atZone(ZoneId.systemDefault()).toLocalTime());
@@ -922,18 +922,18 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
     private void addPassThroughProperties(String name, String value) {
         TextFieldNameValuePair nvp = new TextFieldNameValuePair();
 
-        nvp.nameTf = new TextField("Property name");
+        nvp.nameTf = new TextField(getTranslation("label.property-name", UI.getCurrent().getLocale()));
         nvp.nameTf.setWidth("95%");
         nvp.nameTf.setEnabled(this.enabled);
-        nvp.nameTf.setErrorMessage("Property name is required!");
+        nvp.nameTf.setErrorMessage(getTranslation("error.missing-property-name", UI.getCurrent().getLocale()));
         if(name!=null)nvp.nameTf.setValue(name);
         HorizontalLayout startLayout = new HorizontalLayout();
         startLayout.add(nvp.nameTf);
 
-        nvp.valueTf = new TextField("Property value");
+        nvp.valueTf = new TextField(getTranslation("label.property-value", UI.getCurrent().getLocale()));
         nvp.valueTf.setEnabled(this.enabled);
         nvp.valueTf.setWidth("95%");
-        nvp.valueTf.setErrorMessage("Property name is required!");
+        nvp.valueTf.setErrorMessage(getTranslation("error.missing-property-value", UI.getCurrent().getLocale()));
         if(value!=null)nvp.valueTf.setValue(value);
         HorizontalLayout endLayout = new HorizontalLayout();
 
@@ -958,10 +958,10 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
      * @param returnCode
      */
     private void addSuccessfulReturnCodes(String returnCode) {
-        TextField successfulReturnCodeTf = new TextField("Successful return code");
+        TextField successfulReturnCodeTf = new TextField(getTranslation("label.successful-return-code", UI.getCurrent().getLocale()));
         successfulReturnCodeTf.setEnabled(this.enabled);
         this.successfulReturnCodes.add(successfulReturnCodeTf);
-        successfulReturnCodeTf.setErrorMessage("Return code is required!");
+        successfulReturnCodeTf.setErrorMessage(getTranslation("error.missing-return-code", UI.getCurrent().getLocale()) );
         if(returnCode!=null)successfulReturnCodeTf.setValue(returnCode);
 
         Button minusButton = new Button(VaadinIcon.MINUS.create(), ev -> {
@@ -980,10 +980,10 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
      * @param cron
      */
     private void addBlackoutCronExpression(String cron) {
-        TextField blackoutCronExpressionTf = new TextField("Blackout cron expression");
+        TextField blackoutCronExpressionTf = new TextField(getTranslation("label.blackout-cron-expression", UI.getCurrent().getLocale()));
         blackoutCronExpressionTf.setEnabled(this.enabled);
         this.blackoutCronExpressions.add(blackoutCronExpressionTf);
-        blackoutCronExpressionTf.setErrorMessage("Cron expression required!");
+        blackoutCronExpressionTf.setErrorMessage(getTranslation("error.missing-blackout-cron-expression", UI.getCurrent().getLocale()));
         if(cron!=null)blackoutCronExpressionTf.setValue(cron);
 
         Button minusButton = new Button(VaadinIcon.MINUS.create(), ev -> {

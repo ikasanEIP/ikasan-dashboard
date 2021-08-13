@@ -96,8 +96,6 @@ public class ScheduledAgentsFilteringGrid extends Grid<ModuleMetaData> {
      * Initialise the grid.
      */
     public void init() {
-        IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
-
         dataProvider = DataProvider.fromFilteringCallbacks(query -> {
             Optional<ModuleSearchFilter> filter = query.getFilter();
 
