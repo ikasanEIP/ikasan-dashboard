@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.dashboard.component;
 
 import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.events.PointClickEvent;
@@ -52,10 +53,10 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
 
         Configuration configuration = chart.getConfiguration();
 
-        configuration.setTitle("Hospital Events vs Actioned Hospital Events");
+        configuration.setTitle(getTranslation("label.hospital-v-actioned-hospital-events", UI.getCurrent().getLocale()));
 
         YAxis yAxis = configuration.getyAxis();
-        yAxis.setTitle("Number of Hospital Events");
+        yAxis.setTitle(getTranslation("label.number-hospital-events", UI.getCurrent().getLocale()));
 
         XAxis xAxis = configuration.getxAxis();
         xAxis.setType(AxisType.DATETIME);
@@ -71,7 +72,7 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
         List<DayExclusion> dayExclusions = this.loadAllData(this.getMidnightTodayMillisecondsUTC());
 
         exclusionSeries = new DataSeries();
-        exclusionSeries.setName("Exclusions");
+        exclusionSeries.setName(getTranslation("label.exclusions", UI.getCurrent().getLocale()));
         exclusionSeries.add(new DataSeriesItem(midnightToday - (8*MILLI_IN_DAY), dayExclusions.get(8).exclusions));
         exclusionSeries.add(new DataSeriesItem(midnightToday - (7*MILLI_IN_DAY), dayExclusions.get(7).exclusions));
         exclusionSeries.add(new DataSeriesItem(midnightToday - (6*MILLI_IN_DAY), dayExclusions.get(6).exclusions));
@@ -83,7 +84,7 @@ public class HospitalEventsWidget extends Div implements BeforeEnterObserver {
         exclusionSeries.add(new DataSeriesItem(midnightToday - (0*MILLI_IN_DAY), dayExclusions.get(0).exclusions));
 
         actionedSeries = new DataSeries();
-        actionedSeries.setName("Actioned Exclusions");
+        actionedSeries.setName(getTranslation("label.actioned-exclusions", UI.getCurrent().getLocale()));
         actionedSeries.add(new DataSeriesItem(midnightToday - (8*MILLI_IN_DAY), dayExclusions.get(8).actionedExclusions));
         actionedSeries.add(new DataSeriesItem(midnightToday - (7*MILLI_IN_DAY), dayExclusions.get(7).actionedExclusions));
         actionedSeries.add(new DataSeriesItem(midnightToday - (6*MILLI_IN_DAY), dayExclusions.get(6).actionedExclusions));
