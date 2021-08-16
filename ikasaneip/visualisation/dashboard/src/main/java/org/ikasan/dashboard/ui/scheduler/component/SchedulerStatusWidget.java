@@ -103,7 +103,7 @@ public class SchedulerStatusWidget extends Div {
         layout.getElement().getStyle().set("margin-top", "20px");
         layout.getElement().getStyle().set("margin-left", "10px");
         layout.setHeight("50px");
-        Label flows = new Label("Scheduler Agent Status");
+        Label flows = new Label(getTranslation("label.scheduler-agent-status", UI.getCurrent().getLocale()));
         flows.getElement().getStyle().set("font-size", "16pt");
 
 
@@ -126,7 +126,6 @@ public class SchedulerStatusWidget extends Div {
         this.stoppedDiv = new Div();
         this.stoppedDiv.addClassNames("card-counter", "stopped");
         this.stoppedDiv.setHeight("45px");
-        this.stoppedDiv.setText("3 Stopped");
         this.stoppedIcon = VaadinIcon.ARROW_CIRCLE_RIGHT.create();
         this.stoppedIcon.getElement().getStyle().set("margin-left", "5px");
         this.stoppedIcon.getElement().getStyle().set( "cursor", "pointer");
@@ -138,7 +137,6 @@ public class SchedulerStatusWidget extends Div {
         this.errorDiv = new Div();
         this.errorDiv.addClassNames("card-counter", "stoppedInError");
         this.errorDiv.setHeight("45px");
-        this.errorDiv.setText("2 Stopped in Error ");
         this.errorIcon = VaadinIcon.ARROW_CIRCLE_RIGHT.create();
         this.errorIcon.getElement().getStyle().set("margin-left", "5px");
         this.errorIcon.getElement().getStyle().set( "cursor", "pointer");
@@ -150,7 +148,6 @@ public class SchedulerStatusWidget extends Div {
         this.recoveringDiv = new Div();
         this.recoveringDiv.addClassNames("card-counter", "recovering");
         this.recoveringDiv.setHeight("45px");
-        this.recoveringDiv.setText("1 Recovering ");
         this.recoveringIcon = VaadinIcon.ARROW_CIRCLE_RIGHT.create();
         this.recoveringIcon.getElement().getStyle().set("margin-left", "5px");
         this.recoveringIcon.getElement().getStyle().set( "cursor", "pointer");
@@ -162,7 +159,6 @@ public class SchedulerStatusWidget extends Div {
         this.pausedDiv = new Div();
         this.pausedDiv.addClassNames("card-counter", "paused");
         this.pausedDiv.setHeight("45px");
-        this.pausedDiv.setText("1 Paused ");
         this.pausedDivIcon = VaadinIcon.ARROW_CIRCLE_RIGHT.create();
         this.pausedDivIcon.getElement().getStyle().set("margin-left", "5px");
         this.pausedDivIcon.getElement().getStyle().set( "cursor", "pointer");
@@ -174,7 +170,6 @@ public class SchedulerStatusWidget extends Div {
         this.unknownDiv = new Div();
         this.unknownDiv.addClassNames("card-counter", "unknown");
         this.unknownDiv.setHeight("45px");
-        this.unknownDiv.setText("1 Unknown ");
         this.unknownDivIcon = VaadinIcon.ARROW_CIRCLE_RIGHT.create();
         this.unknownDivIcon.getElement().getStyle().set("margin-left", "5px");
         this.unknownDivIcon.getElement().getStyle().set( "cursor", "pointer");
@@ -210,7 +205,7 @@ public class SchedulerStatusWidget extends Div {
         layout.getElement().getStyle().set("margin-top", "20px");
         layout.getElement().getStyle().set("margin-left", "10px");
         layout.setHeight("50px");
-        Label flows = new Label("Scheduler Agent Status");
+        Label flows = new Label(getTranslation("label.scheduler-agent-status", UI.getCurrent().getLocale()));
         flows.getElement().getStyle().set("font-size", "16pt");
 
 
@@ -236,7 +231,7 @@ public class SchedulerStatusWidget extends Div {
         this.flowsGrid.setHeight("80%");
 
         this.flowsGrid.addColumn(FlowMetaData::getName)
-            .setHeader("Flow Name").setKey("flowName")
+            .setHeader(getTranslation("table-header.flow-name", UI.getCurrent().getLocale())).setKey("flowName")
             .setFlexGrow(16);
 
         this.flowsGrid.addColumn(new ComponentRenderer<>(moduleMetaData -> {
@@ -244,7 +239,7 @@ public class SchedulerStatusWidget extends Div {
 
             String route = RouteConfiguration.forSessionScope()
                 .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.FLOW.name() + ":" + moduleMetaData.getName());
-            Anchor link = new Anchor(route, "view");
+            Anchor link = new Anchor(route, getTranslation("label.view", UI.getCurrent().getLocale()));
             link.setTarget("_blank");
             add(link);
             horizontalLayout.add(link);
@@ -298,37 +293,42 @@ public class SchedulerStatusWidget extends Div {
 
         ui.access(() -> {
             this.runningDiv.removeAll();
-            this.runningDiv.setText(stateMap.get(State.RUNNING_STATE).size() + " Running");
+            this.runningDiv.setText(stateMap.get(State.RUNNING_STATE).size() + " "
+                + getTranslation("status-label.running", UI.getCurrent().getLocale()));
             if(stateMap.get(State.RUNNING_STATE).size() > 0){
                 this.runningDiv.add(this.runningIcon);
             }
 
             this.stoppedDiv.removeAll();
-            this.stoppedDiv.setText(stateMap.get(State.STOPPED_STATE).size() + " Stopped");
+            this.stoppedDiv.setText(stateMap.get(State.STOPPED_STATE).size() + " "
+                + getTranslation("status-label.stopped", UI.getCurrent().getLocale()));
             if(stateMap.get(State.STOPPED_STATE).size() > 0){
                 this.stoppedDiv.add(this.stoppedIcon);
             }
 
             this.errorDiv.removeAll();
-            this.errorDiv.setText(stateMap.get(State.STOPPED_IN_ERROR_STATE).size() + " Stopped In Error");
+            this.errorDiv.setText(stateMap.get(State.STOPPED_IN_ERROR_STATE).size() + " "
+                + getTranslation("status-label.stopped-in-error", UI.getCurrent().getLocale()));
             if(stateMap.get(State.STOPPED_IN_ERROR_STATE).size() > 0){
                 this.errorDiv.add(this.errorIcon);
             }
 
             this.recoveringDiv.removeAll();
-            this.recoveringDiv.setText(stateMap.get(State.RECOVERING_STATE).size() + " Recovering");
+            this.recoveringDiv.setText(stateMap.get(State.RECOVERING_STATE).size() + " "
+                + getTranslation("status-label.recovering", UI.getCurrent().getLocale()));
             if(stateMap.get(State.RECOVERING_STATE).size() > 0){
                 this.recoveringDiv.add(this.recoveringIcon);
             }
 
             this.pausedDiv.removeAll();
-            this.pausedDiv.setText(stateMap.get(State.PAUSED_STATE).size() + " Paused");
+            this.pausedDiv.setText(stateMap.get(State.PAUSED_STATE).size() + " "
+                + getTranslation("status-label.paused", UI.getCurrent().getLocale()));
             if(stateMap.get(State.PAUSED_STATE).size() > 0){
                 this.pausedDiv.add(this.pausedDivIcon);
             }
 
             this.unknownDiv.removeAll();
-            this.unknownDiv.setText(stateMap.get(State.UNKNOWN_STATE).size() + " Unknown");
+            this.unknownDiv.setText(stateMap.get(State.UNKNOWN_STATE).size() + " " + getTranslation("status-label.unknown", UI.getCurrent().getLocale()));
             if(stateMap.get(State.UNKNOWN_STATE).size() > 0){
                 this.unknownDiv.add(this.unknownDivIcon);
             }
@@ -355,12 +355,12 @@ public class SchedulerStatusWidget extends Div {
 
         this.flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState -> {
             this.recalculate();
-            logger.info("Flow state update received!" + flowState);
+            logger.debug("Flow state update received!" + flowState);
         });
 
         this.cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState -> {
             this.recalculate();
-            logger.info("Flow state update received!" + flowState);
+            logger.debug("Flow state update received!" + flowState);
         });
     }
 
