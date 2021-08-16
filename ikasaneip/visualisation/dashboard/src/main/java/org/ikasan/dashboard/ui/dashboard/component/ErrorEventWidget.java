@@ -1,26 +1,19 @@
 package org.ikasan.dashboard.ui.dashboard.component;
 
-
 import com.flowingcode.vaadin.addons.ironicons.IronIcons;
-import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.server.Command;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.solr.SolrGeneralService;
 
-import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class ErrorEventWidget extends Div {
 
@@ -42,14 +35,14 @@ public class ErrorEventWidget extends Div {
 
         final Configuration configuration = chart.getConfiguration();
         configuration.getChart().setType(ChartType.SPLINE);
-        configuration.getTitle().setText("Error Occurrences");
+        configuration.getTitle().setText(getTranslation("label.error-occurrences", UI.getCurrent().getLocale()));
 
         XAxis xAxis = configuration.getxAxis();
         xAxis.setType(AxisType.DATETIME);
         xAxis.setTickPixelInterval(50);
 
         YAxis yAxis = configuration.getyAxis();
-        yAxis.setTitle(new AxisTitle("Count"));
+        yAxis.setTitle(new AxisTitle(getTranslation("label.count", UI.getCurrent().getLocale())));
 
         configuration.getTooltip().setEnabled(true);
         configuration.getLegend().setEnabled(false);
@@ -62,7 +55,7 @@ public class ErrorEventWidget extends Div {
 
         series = new DataSeries();
         series.setPlotOptions(new PlotOptionsSpline());
-        series.setName("Error Occurrences");
+        series.setName(getTranslation("label.error-occurrences", UI.getCurrent().getLocale()));
         for (int i = -19; i <= 0; i++) {
             long x = System.currentTimeMillis() + TimeZone.getTimeZone(DateTimeUtil.getZoneOffset()).getRawOffset() + i * REPORTING_INTERVAL;
             series.add(new DataSeriesItem(x, this.loadData("error", x-REPORTING_INTERVAL, x)
@@ -107,35 +100,4 @@ public class ErrorEventWidget extends Div {
         return this.solrGeneralService.search(new HashSet<String>(), new HashSet<String>(), null,
             startTime, endTime, 0, List.of(type),false, null, null);
     }
-
-    /**
-     * Runs given task repeatedly until the reference component is attached
-     *
-     * @param component
-     * @param task
-     * @param interval
-     * @param initialPause
-     *            a timeout after tas is started
-     */
-    public static void runWhileAttached(Component component, Command task,
-                                        final int interval, final int initialPause) {
-        component.addAttachListener(event -> {
-            ScheduledExecutorService executor = Executors
-                .newScheduledThreadPool(1);
-
-            component.getUI().ifPresent(ui -> ui.setPollInterval(interval));
-
-            final ScheduledFuture<?> scheduledFuture = executor
-                .scheduleAtFixedRate(() -> {
-                    component.getUI().ifPresent(ui -> ui.access(task));
-                }, initialPause, interval, TimeUnit.MILLISECONDS);
-
-            component.addDetachListener(detach -> {
-                scheduledFuture.cancel(true);
-                detach.getUI().setPollInterval(-1);
-            });
-        });
-    }
-
-
 }
