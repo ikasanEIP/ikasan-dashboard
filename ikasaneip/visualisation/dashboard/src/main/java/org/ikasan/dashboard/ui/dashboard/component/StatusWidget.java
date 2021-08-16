@@ -97,7 +97,7 @@ public class StatusWidget extends Div {
         layout.getElement().getStyle().set("margin-top", "20px");
         layout.getElement().getStyle().set("margin-left", "10px");
         layout.setHeight("50px");
-        Label flows = new Label("Flows");
+        Label flows = new Label(getTranslation("label.flow-status", UI.getCurrent().getLocale()));
         flows.getElement().getStyle().set("font-size", "16pt");
 
 
@@ -199,7 +199,7 @@ public class StatusWidget extends Div {
         layout.getElement().getStyle().set("margin-top", "20px");
         layout.getElement().getStyle().set("margin-left", "10px");
         layout.setHeight("50px");
-        Label flows = new Label("Flows");
+        Label flows = new Label(getTranslation("label.flow-status", UI.getCurrent().getLocale()));
         flows.getElement().getStyle().set("font-size", "16pt");
 
 
@@ -225,7 +225,7 @@ public class StatusWidget extends Div {
         this.flowsGrid.setHeight("80%");
 
         this.flowsGrid.addColumn(FlowMetaData::getName)
-            .setHeader("Flow Name").setKey("flowName")
+            .setHeader(getTranslation("table-header.flow-name", UI.getCurrent().getLocale())).setKey("flowName")
             .setFlexGrow(16);
 
         this.flowsGrid.addColumn(new ComponentRenderer<>(moduleMetaData -> {
@@ -233,7 +233,7 @@ public class StatusWidget extends Div {
 
             String route = RouteConfiguration.forSessionScope()
                 .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.FLOW.name() + ":" + moduleMetaData.getName());
-            Anchor link = new Anchor(route, "view");
+            Anchor link = new Anchor(route, getTranslation("label.view", UI.getCurrent().getLocale()));
             link.setTarget("_blank");
             add(link);
             horizontalLayout.add(link);
@@ -284,37 +284,43 @@ public class StatusWidget extends Div {
 
         ui.access(() -> {
             this.runningDiv.removeAll();
-            this.runningDiv.setText(stateMap.get(State.RUNNING_STATE).size() + " Running");
+            this.runningDiv.setText(stateMap.get(State.RUNNING_STATE).size()
+                + " " + getTranslation("status-label.running", UI.getCurrent().getLocale()));
             if(stateMap.get(State.RUNNING_STATE).size() > 0){
                 this.runningDiv.add(this.runningIcon);
             }
 
             this.stoppedDiv.removeAll();
-            this.stoppedDiv.setText(stateMap.get(State.STOPPED_STATE).size() + " Stopped");
+            this.stoppedDiv.setText(stateMap.get(State.STOPPED_STATE).size()
+                + " " + getTranslation("status-label.stopped", UI.getCurrent().getLocale()));
             if(stateMap.get(State.STOPPED_STATE).size() > 0){
                 this.stoppedDiv.add(this.stoppedIcon);
             }
 
             this.errorDiv.removeAll();
-            this.errorDiv.setText(stateMap.get(State.STOPPED_IN_ERROR_STATE).size() + " Stopped In Error");
+            this.errorDiv.setText(stateMap.get(State.STOPPED_IN_ERROR_STATE).size()
+                + " " + getTranslation("status-label.stopped-in-error", UI.getCurrent().getLocale()));
             if(stateMap.get(State.STOPPED_IN_ERROR_STATE).size() > 0){
                 this.errorDiv.add(this.errorIcon);
             }
 
             this.recoveringDiv.removeAll();
-            this.recoveringDiv.setText(stateMap.get(State.RECOVERING_STATE).size() + " Recovering");
+            this.recoveringDiv.setText(stateMap.get(State.RECOVERING_STATE).size()
+                + " " + getTranslation("status-label.recoveering", UI.getCurrent().getLocale()));
             if(stateMap.get(State.RECOVERING_STATE).size() > 0){
                 this.recoveringDiv.add(this.recoveringIcon);
             }
 
             this.pausedDiv.removeAll();
-            this.pausedDiv.setText(stateMap.get(State.PAUSED_STATE).size() + " Paused");
+            this.pausedDiv.setText(stateMap.get(State.PAUSED_STATE).size()
+                + " " + getTranslation("status-label.paused", UI.getCurrent().getLocale()));
             if(stateMap.get(State.PAUSED_STATE).size() > 0){
                 this.pausedDiv.add(this.pausedDivIcon);
             }
 
             this.unknownDiv.removeAll();
-            this.unknownDiv.setText(stateMap.get(State.UNKNOWN_STATE).size() + " Unknown");
+            this.unknownDiv.setText(stateMap.get(State.UNKNOWN_STATE).size()
+                + " " + getTranslation("status-label.unknown", UI.getCurrent().getLocale()));
             if(stateMap.get(State.UNKNOWN_STATE).size() > 0){
                 this.unknownDiv.add(this.unknownDivIcon);
             }
@@ -337,12 +343,12 @@ public class StatusWidget extends Div {
 
         this.flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState -> {
             this.recalculate();
-            logger.info("Flow state update received!" + flowState);
+            logger.debug("Flow state update received!" + flowState);
         });
 
         this.cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState -> {
             this.recalculate();
-            logger.info("Flow state update received!" + flowState);
+            logger.debug("Flow state update received!" + flowState);
         });
     }
 
