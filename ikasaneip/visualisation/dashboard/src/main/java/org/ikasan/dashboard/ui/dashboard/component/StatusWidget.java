@@ -306,7 +306,7 @@ public class StatusWidget extends Div {
 
             this.recoveringDiv.removeAll();
             this.recoveringDiv.setText(stateMap.get(State.RECOVERING_STATE).size()
-                + " " + getTranslation("status-label.recoveering", UI.getCurrent().getLocale()));
+                + " " + getTranslation("status-label.recovering", UI.getCurrent().getLocale()));
             if(stateMap.get(State.RECOVERING_STATE).size() > 0){
                 this.recoveringDiv.add(this.recoveringIcon);
             }
