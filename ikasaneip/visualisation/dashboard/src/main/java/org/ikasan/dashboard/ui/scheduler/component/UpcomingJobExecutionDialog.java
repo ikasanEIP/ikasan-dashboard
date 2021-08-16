@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.icon.Icon;
@@ -38,12 +39,14 @@ public class UpcomingJobExecutionDialog extends AbstractCloseableResizableDialog
      */
     public UpcomingJobExecutionDialog(UpcomingScheduledProcess upcomingScheduledProcess, ModuleMetaData agent) {
         super.showResize(false);
-        super.title.setText("Scheduled Job Execution Details");
+        super.title.setText(getTranslation("header.scheduled-job-execution-details", UI.getCurrent().getLocale()));
+
+
 
         formBinder = new Binder<>();
 
         FormLayout formLayout = new FormLayout();
-        this.agentNameTf = new TextField("Agent name");
+        this.agentNameTf = new TextField(getTranslation("label.agent", UI.getCurrent().getLocale()));
         this.agentNameTf.setEnabled(false);
         formBinder.forField(this.agentNameTf)
             .bind(UpcomingScheduledProcess::getAgentName, UpcomingScheduledProcess::setAgentName);
@@ -53,32 +56,32 @@ public class UpcomingJobExecutionDialog extends AbstractCloseableResizableDialog
         link.setTarget("_blank");
         link.getStyle().set("color", "blue");
 
-        this.agentUrlLf = new TextField("Agent URL");
+        this.agentUrlLf = new TextField(getTranslation("label.agent-url", UI.getCurrent().getLocale()));
         this.agentUrlLf.setPrefixComponent(link);
         this.agentUrlLf.setValue(" ");
         formLayout.add(this.agentUrlLf);
 
-        this.jobNameTf = new TextField("Job name");
+        this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setEnabled(false);
         formBinder.forField(this.jobNameTf)
             .bind(UpcomingScheduledProcess::getJobName, UpcomingScheduledProcess::setJobName);
         formLayout.add(jobNameTf);
 
 
-        this.jobGroupTf = new TextField("Job group");
+        this.jobGroupTf = new TextField(getTranslation("label.job-group", UI.getCurrent().getLocale()));
         this.jobGroupTf.setEnabled(false);
         formBinder.forField(this.jobGroupTf)
             .bind(UpcomingScheduledProcess::getJobGroup, UpcomingScheduledProcess::setJobGroup);
         formLayout.add(jobGroupTf);
 
-        this.jobDescriptionTa = new TextArea("Job description");
+        this.jobDescriptionTa = new TextArea(getTranslation("label.job-description", UI.getCurrent().getLocale()));
         this.jobDescriptionTa.setEnabled(false);
         jobDescriptionTa.getStyle().set("minHeight", "100px");
         formBinder.forField(this.jobDescriptionTa)
             .bind(UpcomingScheduledProcess::getJobDescription, UpcomingScheduledProcess::setJobDescription);
         formLayout.add(jobDescriptionTa, 2);
 
-        this.commandLineTf = new TextArea("Command line");
+        this.commandLineTf = new TextArea(getTranslation("label.command-line", UI.getCurrent().getLocale()));
         this.commandLineTf.setEnabled(false);
         commandLineTf.getStyle().set("minHeight", "100px");
         upcomingScheduledProcess.getProcessExecutionBrokerConfigurationMetaData().getParameters().stream()
@@ -88,7 +91,7 @@ public class UpcomingJobExecutionDialog extends AbstractCloseableResizableDialog
 
         DateFormatter dateFormatter = new DateFormatter();
 
-        this.fireTimeTf = new TextField("Job execution time");
+        this.fireTimeTf = new TextField(getTranslation("label.job-execution-time", UI.getCurrent().getLocale()));
         this.fireTimeTf.setEnabled(false);
         this.fireTimeTf.setValue(dateFormatter.getFormattedDate(upcomingScheduledProcess.getFireTime()));
         formLayout.add(fireTimeTf);
