@@ -40,7 +40,7 @@ public class ModuleWidget extends Div {
 
         textField.setPrefixComponent(icon);
         HorizontalLayout layout = new HorizontalLayout();
-        H4 modules = new H4("Modules and Agents");
+        H4 modules = new H4(getTranslation("header.modules-and-agents", UI.getCurrent().getLocale()));
         layout.add(modules, textField);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.START, modules);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, textField);
@@ -77,7 +77,7 @@ public class ModuleWidget extends Div {
 
             String route = RouteConfiguration.forSessionScope()
                 .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.MODULE.name() + ":" + moduleMetaData.getName());
-            Anchor link = new Anchor(route, "view");
+            Anchor link = new Anchor(route, getTranslation("label.view", UI.getCurrent().getLocale()));
             link.setTarget("_blank");
             add(link);
             horizontalLayout.add(link);
