@@ -474,10 +474,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
 
     @Override
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
-//        Dialog dialog = new Dialog();
-//
-//        dialog.add(new H1("Double click!"), new Text(canvasItemDoubleClickEvent.getFigure().toString()));
-//        dialog.open();
+
     }
 }
 

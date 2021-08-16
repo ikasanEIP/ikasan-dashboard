@@ -121,14 +121,12 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
 
     protected Div buildMenuBar() {
         MenuBar menuBar = new MenuBar();
-        Text selected = new Text("");
 
-        MenuItem file = menuBar.addItem("File");
-        MenuItem edit = menuBar.addItem("Edit");
-        menuBar.addItem("Help", e -> selected.setText("Sign Out"));
+        MenuItem file = menuBar.addItem(getTranslation("menu.file", UI.getCurrent().getLocale()));
+        MenuItem edit = menuBar.addItem(getTranslation("menu.edit", UI.getCurrent().getLocale()));
 
         SubMenu fileSubMenu = file.getSubMenu();
-        MenuItem newDiagram = fileSubMenu.addItem("New");
+        MenuItem newDiagram = fileSubMenu.addItem(getTranslation("menu.new", UI.getCurrent().getLocale()));
         newDiagram.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> {
             if(!this.designerCanvas.isSaved()) {
                 SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndNewAction(this.designerCanvas));
@@ -139,7 +137,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
             }
         });
 
-        MenuItem open = fileSubMenu.addItem("Open");
+        MenuItem open = fileSubMenu.addItem(getTranslation("menu.open", UI.getCurrent().getLocale()));
         open.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> {
             if(!this.designerCanvas.isSaved()) {
                 SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndOpenAction(this.openFunction
@@ -153,7 +151,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
 
         fileSubMenu.add(new Hr());
 
-        MenuItem save = fileSubMenu.addItem("Save");
+        MenuItem save = fileSubMenu.addItem(getTranslation("menu.save", UI.getCurrent().getLocale()));
         save.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent
             -> {
             if(this.openFunction.getId() != null) {
@@ -166,35 +164,14 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
             }
         });
 
-        MenuItem saveAs = fileSubMenu.addItem("Save as");
+        MenuItem saveAs = fileSubMenu.addItem(getTranslation("menu.save-as", UI.getCurrent().getLocale()));
         saveAs.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> this.designerCanvas.saveAs());
 
         fileSubMenu.add(new Hr());
 
-        MenuItem publish = fileSubMenu.addItem("Publish");
-        publish.setCheckable(true);
-        publish.setChecked(false);
-
-        MenuItem suppress = fileSubMenu.addItem("Suppress");
-        suppress.setCheckable(true);
-        suppress.setChecked(false);
-
         fileSubMenu.add(new Hr());
 
-        MenuItem exportAs = fileSubMenu.addItem("Export as");
-
-        exportAs.getSubMenu().addItem("png",
-            e -> selected.setText("Edit Profile"));
-        exportAs.getSubMenu().addItem("jpg",
-            e -> selected.setText("Privacy Settings"));
-        exportAs.getSubMenu().addItem("json",
-            e -> selected.setText("Privacy Settings"));
-        exportAs.getSubMenu().addItem("svg",
-            e -> selected.setText("Privacy Settings"));
-
-        fileSubMenu.add(new Hr());
-
-        MenuItem manage = fileSubMenu.addItem("Manage");
+        MenuItem manage = fileSubMenu.addItem(getTranslation("menu.manage", UI.getCurrent().getLocale()));
         manage.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> {
            this.manageFunction.open();
         });
@@ -215,11 +192,9 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
             this.designerCanvas.group();
         });
         groupButton.getElement().appendChild(FontAwesome.Regular.OBJECT_GROUP.create().getElement());
-        Tooltip groupButtonTooltip = getTooltip(groupButton,"Group elements"
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        groupButton.getElement().setAttribute("title", getTranslation("tooltip.group-elements", UI.getCurrent().getLocale()));
 
-        actions.add(groupButton, groupButtonTooltip);
-
+        actions.add(groupButton);
 
         // Ungroup canvas items
         Button ungroupButton = new Button();
@@ -227,11 +202,9 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
             this.designerCanvas.ungroup();
         });
         ungroupButton.getElement().appendChild(FontAwesome.Regular.OBJECT_UNGROUP.create().getElement());
-        Tooltip ungroupButtonTooltip = getTooltip(ungroupButton,"Ungroup elements"
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        ungroupButton.getElement().setAttribute("title", getTranslation("tooltip.ungroup-elements", UI.getCurrent().getLocale()));
 
-        actions.add(ungroupButton, ungroupButtonTooltip);
-
+        actions.add(ungroupButton);
 
         // Bring selected items to front
         Button toFrontButton = new Button();
@@ -239,9 +212,8 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
             this.designerCanvas.bringToFront();
         });
         toFrontButton.getElement().appendChild(IronIcons.FLIP_TO_FRONT.create().getElement());
-        Tooltip toFrontButtontip = getTooltip(toFrontButton,"Bring to front"
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(toFrontButton, toFrontButtontip);
+        toFrontButton.getElement().setAttribute("title", getTranslation("tooltip.bring-to-front", UI.getCurrent().getLocale()));
+        actions.add(toFrontButton);
 
         // Send selected items to back
         Button toBackButton = new Button();
@@ -249,73 +221,64 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
             this.designerCanvas.sendToBack();
         });
         toBackButton.getElement().appendChild(IronIcons.FLIP_TO_BACK.create().getElement());
-        Tooltip toBackButtontip = getTooltip(toBackButton,"Send to back"
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(toBackButton, getDivider(), toBackButtontip);
+        toBackButton.getElement().setAttribute("title", getTranslation("tooltip.send-to-back", UI.getCurrent().getLocale()));
+        actions.add(toBackButton, getDivider());
 
         // Undo
         Button undoButton = new Button();
         undoButton.getElement().appendChild(IronIcons.UNDO.create().getElement());
         undoButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.undo());
-        Tooltip undoButtonTooltip = getTooltip(undoButton,"Undo"
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(undoButton, undoButtonTooltip);
+        undoButton.getElement().setAttribute("title", getTranslation("tooltip.undo", UI.getCurrent().getLocale()));
+        actions.add(undoButton);
 
         // Redo
         Button redoButton = new Button();
         redoButton.getElement().appendChild(IronIcons.REDO.create().getElement());
         redoButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.redo());
-        Tooltip redoButtonTooltip = getTooltip(redoButton,"Redo"
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(redoButton, getDivider(), redoButtonTooltip);
+        redoButton.getElement().setAttribute("title", getTranslation("tooltip.redo", UI.getCurrent().getLocale()));
+        actions.add(redoButton, getDivider());
 
         // Zoom in
         Button zoomInButton = new Button();
         zoomInButton.getElement().appendChild(IronIcons.ZOOM_IN.create().getElement());
         zoomInButton.setId("canvas_zoom_in");
-        Tooltip zoomInButtonTooltip = getTooltip(zoomInButton,"Zoom in"
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(zoomInButton, zoomInButtonTooltip);
+        zoomInButton.getElement().setAttribute("title", getTranslation("tooltip.zoom-in", UI.getCurrent().getLocale()));
+        actions.add(zoomInButton);
 
         // Zoom out
         Button zoomOutButton = new Button();
         zoomOutButton.getElement().appendChild(IronIcons.ZOOM_OUT.create().getElement());
         zoomOutButton.setId("canvas_zoom_out");
-        Tooltip zoomOutButtonTooltip = getTooltip(zoomOutButton,"Zoom out"
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(zoomOutButton, getDivider(), zoomOutButtonTooltip);
+        zoomOutButton.getElement().setAttribute("title", getTranslation("tooltip.zoom-out", UI.getCurrent().getLocale()));
+        actions.add(zoomOutButton, getDivider());
 
         // Copy
         Button copyButton = new Button();
         copyButton.getElement().appendChild(IronIcons.CONTENT_COPY.create().getElement());
         copyButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.designerCanvas.copy());
-        Tooltip copyButtonTooltip = getTooltip(copyButton,"Copy"
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(copyButton, copyButtonTooltip);
+        copyButton.getElement().setAttribute("title", getTranslation("tooltip.copy", UI.getCurrent().getLocale()));
+        actions.add(copyButton);
 
         // Paste
         Button pasteButton = new Button();
         pasteButton.getElement().appendChild(IronIcons.CONTENT_PASTE.create().getElement());
         pasteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.designerCanvas.paste());
-        Tooltip pasteButtonTooltip = getTooltip(pasteButton,"Paste"
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(pasteButton, pasteButtonTooltip);
+        pasteButton.getElement().setAttribute("title", getTranslation("tooltip.paste", UI.getCurrent().getLocale()));
+        actions.add(pasteButton);
 
         // Delete
         Button deleteButton = new Button();
         deleteButton.getElement().appendChild(IronIcons.DELETE.create().getElement());
         deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.designerCanvas.delete());
-        Tooltip deleteButtonTooltip = getTooltip(deleteButton,"Delete"
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(deleteButton, getDivider(), deleteButtonTooltip);
+        deleteButton.getElement().setAttribute("title", getTranslation("tooltip.delete", UI.getCurrent().getLocale()));
+        actions.add(deleteButton, getDivider());
 
 
         // Export as selected format
         Button download = new Button();
         download.getElement().appendChild(IronIcons.FILE_DOWNLOAD.create().getElement());
-        Tooltip downloadTooltip = getTooltip(download,"Export PNG Image"
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(download, downloadTooltip);
+        download.getElement().setAttribute("title", getTranslation("tooltip.export-png", UI.getCurrent().getLocale()));
+        actions.add(download);
         download.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             this.exportPng();
         });
@@ -323,38 +286,42 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         // Open another design
         Button open = new Button();
         open.getElement().appendChild(IronIcons.FOLDER_OPEN.create().getElement());
-        Tooltip openTooltip = getTooltip(open,"Open diagram"
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(open, openTooltip);
+        open.getElement().setAttribute("title", getTranslation("tooltip.open-diagram", UI.getCurrent().getLocale()));
+        actions.add(open);
         open.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-            this.exportJson();
+            if(!this.designerCanvas.isSaved()) {
+                SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndOpenAction(this.openFunction
+                    , this.designerCanvas));
+                savePromptDialog.open();
+            }
+            else {
+                this.openFunction.open(this.designerCanvas);
+            }
         });
 
         // Save current design
         Button save = new Button();
         save.getElement().appendChild(IronIcons.SAVE.create().getElement());
-        Tooltip saveTooltip = getTooltip(save,"Save current diagram"
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(save, getDivider(), saveTooltip);
+        save.getElement().setAttribute("title", getTranslation("tooltip.save-diagram", UI.getCurrent().getLocale()));
+        actions.add(save, getDivider());
         save.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-            this.exportJson();
+            if(this.openFunction.getId() != null) {
+                this.diagramId = this.openFunction.getId();
+                this.diagramName = this.openFunction.getName();
+                this.diagramDescription = this.openFunction.getDescription();
+                this.designerCanvas.save(this.diagramId, this.diagramName, this.diagramDescription);
+            } else {
+                this.designerCanvas.saveAs();
+            }
         });
-
-//        Button eyeDropper = new Button();
-//        eyeDropper.getElement().appendChild(IronImageIcons.COLORIZE.create().getElement());
-//        actions.add(eyeDropper);
-//        eyeDropper.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-//
-//        });
 
         paintButton = new ColorPicker();
         paintButton.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<TextField, String>>)
             textFieldStringComponentValueChangeEvent -> {
                 this.designerCanvas.setBackgroundColor(textFieldStringComponentValueChangeEvent.getValue());
             });
-        Tooltip paintButtonTooltip = getTooltip(paintButton,"Choose colour"
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(paintButton, getDivider(), paintButtonTooltip);
+        paintButton.getElement().setAttribute("title", getTranslation("tooltip.choose-colour", UI.getCurrent().getLocale()));
+        actions.add(paintButton, getDivider());
 
         return actions;
     }
@@ -398,7 +365,7 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
                 designerCanvas.addCircle(item.getItemHeight());
                 break;
             case LABEL:
-                designerCanvas.addLabel("Double click me to edit!");
+                designerCanvas.addLabel(getTranslation("label.double-click-to-edit", UI.getCurrent().getLocale()));
                 break;
         }
     }
@@ -445,26 +412,12 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
     }
 
     @Override
-    protected void onAttach(AttachEvent attachEvent)
-    {
-        UI ui = attachEvent.getUI();
-
-//        broadcasterRegistration = FlowStateBroadcaster.register(flowState ->
-//        {
-//            ui.access(() ->
-//            {
-//                // do something interesting here.
-//                logger.debug("Received flow state: " + flowState);
-//            });
-//        });
+    protected void onAttach(AttachEvent attachEvent) {
 
     }
 
     @Override
-    protected void onDetach(DetachEvent detachEvent)
-    {
-//        broadcasterRegistration.remove();
-//        broadcasterRegistration = null;
+    protected void onDetach(DetachEvent detachEvent) {
     }
 
     public void setFont(String font) {
