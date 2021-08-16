@@ -45,7 +45,7 @@ public class BusinessStreamWidget extends Div {
 
         textField.setPrefixComponent(icon);
         HorizontalLayout layout = new HorizontalLayout();
-        H4 modules = new H4("Business Streams");
+        H4 modules = new H4(getTranslation("header.business-streams", UI.getCurrent().getLocale()));
         layout.add(modules, textField);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.START, modules);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, textField);
@@ -84,7 +84,7 @@ public class BusinessStreamWidget extends Div {
 
             String route = RouteConfiguration.forSessionScope()
                 .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":" + businessStreamMetaData.getName());
-            Anchor link = new Anchor(route, "view");
+            Anchor link = new Anchor(route, getTranslation("label.view", UI.getCurrent().getLocale()));
             link.setTarget("_blank");
             add(link);
             horizontalLayout.add(link);
