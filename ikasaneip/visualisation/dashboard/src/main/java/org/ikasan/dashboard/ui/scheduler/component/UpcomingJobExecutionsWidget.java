@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
@@ -40,7 +41,7 @@ public class UpcomingJobExecutionsWidget extends Div {
 
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private DateFormatter dateFormatter;
-    private TextField textField = new TextField("Search");
+    private TextField textField = new TextField(getTranslation("label.search", UI.getCurrent().getLocale()));
     private SuperDatePicker date;
     private TimePicker startTime;
     private TimePicker endTime;
@@ -89,17 +90,17 @@ public class UpcomingJobExecutionsWidget extends Div {
         this.textField.setSuffixComponent(icon);
         this.textField.setWidth("300px");
         HorizontalLayout layout = new HorizontalLayout();
-        H4 modules = new H4("Upcoming Job Executions");
+        H4 modules = new H4(getTranslation("header.upcoming-job-executions", UI.getCurrent().getLocale()));
 
-        this.date = new SuperDatePicker("Execution date");
+        this.date = new SuperDatePicker(getTranslation("label.execution-date", UI.getCurrent().getLocale()));
         this.date.setDatePattern(DatePatterns.D_MMMM_YYYY);
         this.date.setValue(LocalDate.now());
 
-        this.startTime = new TimePicker("From");
+        this.startTime = new TimePicker(getTranslation("label.from", UI.getCurrent().getLocale()));
         this.startTime.setStep(Duration.ofMinutes(15));
         this.startTime.setValue(LocalTime.now());
 
-        this.endTime = new TimePicker("To");
+        this.endTime = new TimePicker(getTranslation("label.to", UI.getCurrent().getLocale()));
         this.endTime.setStep(Duration.ofMinutes(15));
         this.endTime.setValue(LocalTime.of(23, 59, 59));
 
