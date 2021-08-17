@@ -145,7 +145,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
 
             return layout;
         }))
-            .setHeader(getTranslation("table-header.related-business-stream", UI.getCurrent().getLocale()))
+            .setHeader(getTranslation("table-header.related-business-streams", UI.getCurrent().getLocale()))
             .setKey("businessStreams")
             .setFlexGrow(3);
         super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration -> {

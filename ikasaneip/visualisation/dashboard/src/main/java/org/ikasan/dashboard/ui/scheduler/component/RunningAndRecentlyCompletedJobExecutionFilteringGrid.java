@@ -132,7 +132,7 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
 
             return layout;
         }))
-            .setHeader(getTranslation("table-header.related-business-stream", UI.getCurrent().getLocale()))
+            .setHeader(getTranslation("table-header.related-business-streams", UI.getCurrent().getLocale()))
             .setKey("businessStreams")
             .setFlexGrow(5);
         super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.executionTime]]</div>")
