@@ -98,7 +98,7 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
     private void initGrid() {
         super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.schedulerName]]</div>")
             .withProperty("schedulerName", UpcomingScheduledProcess::getAgentName))
-            .setHeader(getTranslation("table-header.agent", UI.getCurrent().getLocale()))
+            .setHeader(getTranslation("table-header.scheduled-agent-name", UI.getCurrent().getLocale()))
             .setKey("schedulerName")
             .setFlexGrow(1);
         super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.jobName]]</div>")
@@ -138,7 +138,7 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
 
             return layout;
         }))
-            .setHeader(getTranslation("table-header.related-business-stream", UI.getCurrent().getLocale()))
+            .setHeader(getTranslation("table-header.related-business-streams", UI.getCurrent().getLocale()))
             .setKey("businessStreams")
             .setFlexGrow(5);
         super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.nextExecutionTime]]</div>")

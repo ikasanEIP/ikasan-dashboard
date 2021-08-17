@@ -871,57 +871,57 @@ public class ScheduleProcessServiceTest extends SolrTestCaseJ4 {
             assertEquals(5, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = this.solrScheduledProcessService.getScheduledProcessEvents(null, 0L, System.currentTimeMillis() + 2000000L, "myAge", false, 0, 100, "desc");
+                = this.solrScheduledProcessService.getScheduledProcessEvents(null, 0L, System.currentTimeMillis() + 2000000L, "myAgent", false, 0, 100, "desc");
 
             assertEquals(15, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = this.solrScheduledProcessService.getScheduledProcessEvents(new ArrayList<>(), 0L, System.currentTimeMillis() + 2000000L, "myAge", false, 0, 100, "desc");
+                = this.solrScheduledProcessService.getScheduledProcessEvents(new ArrayList<>(), 0L, System.currentTimeMillis() + 2000000L, "myAgent", false, 0, 100, "desc");
 
             assertEquals(0, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = this.solrScheduledProcessService.getScheduledProcessEvents(null, 0L, System.currentTimeMillis() + 2000000L, "Age", false, 0, 100, "desc");
+                = this.solrScheduledProcessService.getScheduledProcessEvents(null, 0L, System.currentTimeMillis() + 2000000L, "myAgent", false, 0, 100, "desc");
 
             assertEquals(15, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = this.solrScheduledProcessService.getScheduledProcessEvents(new ArrayList<>(), 0L, System.currentTimeMillis() + 2000000L, "Age", false, 0, 100, "desc");
+                = this.solrScheduledProcessService.getScheduledProcessEvents(new ArrayList<>(), 0L, System.currentTimeMillis() + 2000000L, "myAgent", false, 0, 100, "desc");
 
             assertEquals(0, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = this.solrScheduledProcessService.getScheduledProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "myAge", false, 0, 100, "desc");
+                = this.solrScheduledProcessService.getScheduledProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "myAgent", false, 0, 100, "desc");
 
             assertEquals(15, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = this.solrScheduledProcessService.getScheduledProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "Age", false, 0, 100, "desc");
+                = this.solrScheduledProcessService.getScheduledProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "myAgent", false, 0, 100, "desc");
 
             assertEquals(15, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = this.solrScheduledProcessService.getScheduledProcessEvents(null, 0L, System.currentTimeMillis() + 2000000L, "Age", true, 0, 100, "desc");
+                = this.solrScheduledProcessService.getScheduledProcessEvents(null, 0L, System.currentTimeMillis() + 2000000L, "myAgent", true, 0, 100, "desc");
 
             assertEquals(5, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = this.solrScheduledProcessService.getScheduledProcessEvents(new ArrayList<>(), 0L, System.currentTimeMillis() + 2000000L, "Age", true, 0, 100, "desc");
+                = this.solrScheduledProcessService.getScheduledProcessEvents(new ArrayList<>(), 0L, System.currentTimeMillis() + 2000000L, "myAgent", true, 0, 100, "desc");
 
             assertEquals(0, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = this.solrScheduledProcessService.getScheduledProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "myAge", true, 0, 100, "desc");
+                = this.solrScheduledProcessService.getScheduledProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "myAgent", true, 0, 100, "desc");
 
             assertEquals(5, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = this.solrScheduledProcessService.getScheduledProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "Age", true, 0, 100, "desc");
+                = this.solrScheduledProcessService.getScheduledProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "myAgent", true, 0, 100, "desc");
 
             assertEquals(5, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = this.solrScheduledProcessService.getScheduledProcessEvents(List.of("bad agent name"), 0L, System.currentTimeMillis() + 2000000L, "Age", false, 0, 100, "desc");
+                = this.solrScheduledProcessService.getScheduledProcessEvents(List.of("bad agent name"), 0L, System.currentTimeMillis() + 2000000L, "myAgent", false, 0, 100, "desc");
 
             assertEquals(0, scheduledProcessEventSearchResults.getResultList().size());
 

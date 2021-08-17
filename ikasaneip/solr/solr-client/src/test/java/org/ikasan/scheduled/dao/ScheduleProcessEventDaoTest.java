@@ -185,57 +185,57 @@ public class ScheduleProcessEventDaoTest extends SolrTestCaseJ4 {
             assertEquals(5, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = dao.getScheduleProcessEvents(null, 0L, System.currentTimeMillis() + 2000000L, "myAge", false, 0, 100, "desc");
+                = dao.getScheduleProcessEvents(null, 0L, System.currentTimeMillis() + 2000000L, "myAgent", false, 0, 100, "desc");
 
             assertEquals(15, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = dao.getScheduleProcessEvents(new ArrayList<>(), 0L, System.currentTimeMillis() + 2000000L, "myAge", false, 0, 100, "desc");
+                = dao.getScheduleProcessEvents(new ArrayList<>(), 0L, System.currentTimeMillis() + 2000000L, "myAgent", false, 0, 100, "desc");
 
             assertEquals(0, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = dao.getScheduleProcessEvents(null, 0L, System.currentTimeMillis() + 2000000L, "Age", false, 0, 100, "desc");
+                = dao.getScheduleProcessEvents(null, 0L, System.currentTimeMillis() + 2000000L, "myAgent", false, 0, 100, "desc");
 
             assertEquals(15, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = dao.getScheduleProcessEvents(new ArrayList<>(), 0L, System.currentTimeMillis() + 2000000L, "Age", false, 0, 100, "desc");
+                = dao.getScheduleProcessEvents(new ArrayList<>(), 0L, System.currentTimeMillis() + 2000000L, "myAgent", false, 0, 100, "desc");
 
             assertEquals(0, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = dao.getScheduleProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "myAge", false, 0, 100, "desc");
+                = dao.getScheduleProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "myAgent", false, 0, 100, "desc");
 
             assertEquals(15, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = dao.getScheduleProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "Age", false, 0, 100, "desc");
+                = dao.getScheduleProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "myAgent", false, 0, 100, "desc");
 
             assertEquals(15, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = dao.getScheduleProcessEvents(null, 0L, System.currentTimeMillis() + 2000000L, "Age", true, 0, 100, "desc");
+                = dao.getScheduleProcessEvents(null, 0L, System.currentTimeMillis() + 2000000L, "myAgent", true, 0, 100, "desc");
 
             assertEquals(5, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = dao.getScheduleProcessEvents(new ArrayList<>(), 0L, System.currentTimeMillis() + 2000000L, "Age", true, 0, 100, "desc");
+                = dao.getScheduleProcessEvents(new ArrayList<>(), 0L, System.currentTimeMillis() + 2000000L, "myAgent", true, 0, 100, "desc");
 
             assertEquals(0, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = dao.getScheduleProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "myAge", true, 0, 100, "desc");
+                = dao.getScheduleProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "myAgent", true, 0, 100, "desc");
 
             assertEquals(5, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = dao.getScheduleProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "Age", true, 0, 100, "desc");
+                = dao.getScheduleProcessEvents(List.of("myAgent"), 0L, System.currentTimeMillis() + 2000000L, "myAgent", true, 0, 100, "desc");
 
             assertEquals(5, scheduledProcessEventSearchResults.getResultList().size());
 
             scheduledProcessEventSearchResults
-                = dao.getScheduleProcessEvents(List.of("bad agent name"), 0L, System.currentTimeMillis() + 2000000L, "Age", false, 0, 100, "desc");
+                = dao.getScheduleProcessEvents(List.of("bad agent name"), 0L, System.currentTimeMillis() + 2000000L, "myAgent", false, 0, 100, "desc");
 
             assertEquals(0, scheduledProcessEventSearchResults.getResultList().size());
 
