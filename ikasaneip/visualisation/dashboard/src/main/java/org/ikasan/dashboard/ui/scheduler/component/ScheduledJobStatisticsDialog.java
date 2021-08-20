@@ -91,7 +91,7 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
         this.jobNameTf.setEnabled(false);
 
         this.jobGroupTf = new TextField(getTranslation("label.job-group", UI.getCurrent().getLocale()));
-        this.jobGroupTf.setValue(aggregateConfiguration.getJobName());
+        this.jobGroupTf.setValue(aggregateConfiguration.getJobGroup());
         this.jobGroupTf.setEnabled(false);
 
         jobLayout.add(this.jobNameTf, this.jobGroupTf);
