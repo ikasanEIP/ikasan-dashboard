@@ -43,6 +43,7 @@ import org.ikasan.designer.pallet.*;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.module.ModuleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -122,7 +123,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
 
     private com.vaadin.flow.component.Component createGeneralPalette(){
         DesignerPalletImageItem flowImage = new DesignerPalletIconImageItem("frontend/images/flow.png", designerPalletItem -> {
-            FlowSelectDialog dialog = new FlowSelectDialog(this.moduleMetadataService);
+            FlowSelectDialog dialog = new FlowSelectDialog(this.moduleMetadataService, ModuleType.INTEGRATION_MODULE);
 
             dialog.open();
 
@@ -149,6 +150,36 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         DragSource.create(flowImage);
 
         Tooltip tooltip = TooltipHelper.getTooltip(flowImage,"Ikasan flow"
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+
+        DesignerPalletImageItem scheduledAgentImage = new DesignerPalletIconImageItem("frontend/images/scheduler-agent.png", designerPalletItem -> {
+            FlowSelectDialog dialog = new FlowSelectDialog(this.moduleMetadataService, ModuleType.SCHEDULER_AGENT);
+
+            dialog.open();
+
+            dialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>) dialogOpenedChangeEvent -> {
+                if(!dialogOpenedChangeEvent.isOpened() && dialog.getFlow() != null) {
+                    designerPalletItem.setIdentifier(new DesignerItemIdentifier(BusinessStreamItemTypes.FLOW.name(),
+                        dialog.getFlow().getModuleName() + "." + dialog.getFlow().getFlowName(), UUID.randomUUID().toString()));
+
+                    this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
+
+                    businessStreamDesigner.addLabelToItem(designerPalletItem
+                        , dialog.getFlow().getModuleName() + "." + dialog.getFlow().getFlowName());
+
+                }
+            });
+
+        }, 95, 63);
+        scheduledAgentImage.setWidth("30px");
+        scheduledAgentImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
+            if(imageClickEvent.getClickCount() == 2) {
+                scheduledAgentImage.executeCanvasAddAction();
+            }
+        });
+        DragSource.create(scheduledAgentImage);
+
+        Tooltip scheduledAgentTooltip = TooltipHelper.getTooltip(flowImage,"Scheduler agent"
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
 
         DesignerPalletImageItem channelImage = new DesignerPalletIconImageItem("frontend/images/message-channel.png", designerPalletItem -> {
@@ -197,9 +228,9 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
 
         HorizontalLayout layout = new HorizontalLayout();
-        layout.add(flowImage, channelImage, labelImage);
+        layout.add(flowImage, scheduledAgentImage, channelImage, labelImage);
 
-        layout.add(tooltip, channelImageTooltip, labelImageTooltip);
+        layout.add(tooltip, scheduledAgentTooltip, channelImageTooltip, labelImageTooltip);
 
         return layout;
     }

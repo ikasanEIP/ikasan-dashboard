@@ -15,6 +15,7 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.visualisation.component.filter.FlowSearchFilter;
 import org.ikasan.dashboard.ui.visualisation.model.designer.business.stream.Flow;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.module.ModuleType;
 
 public class FlowSelectDialog extends AbstractCloseableResizableDialog {
 
@@ -23,11 +24,11 @@ public class FlowSelectDialog extends AbstractCloseableResizableDialog {
     private TextField textField;
     private Flow flow = null;
 
-    public FlowSelectDialog(ModuleMetaDataService moduleMetadataService) {
+    public FlowSelectDialog(ModuleMetaDataService moduleMetadataService, ModuleType moduleType) {
         super.title.setText("Please select a flow");
         this.moduleMetadataService = moduleMetadataService;
         this.textField = new TextField();
-        this.createGrid();
+        this.createGrid(moduleType);
 
         Div div = new Div();
         div.getElement().getStyle().set("margin-top", "0px");
@@ -60,10 +61,10 @@ public class FlowSelectDialog extends AbstractCloseableResizableDialog {
         this.setWidth("700px");
     }
 
-    private void createGrid() {
+    private void createGrid(ModuleType moduleType) {
         // Create a modulesGrid bound to the list
         FlowSearchFilter flowSearchFilter = new FlowSearchFilter();
-        flowsGrid = new FlowFilteringGrid(this.moduleMetadataService, flowSearchFilter);
+        flowsGrid = new FlowFilteringGrid(this.moduleMetadataService, flowSearchFilter, moduleType);
         flowsGrid.removeAllColumns();
         flowsGrid.setVisible(true);
         flowsGrid.setWidthFull();

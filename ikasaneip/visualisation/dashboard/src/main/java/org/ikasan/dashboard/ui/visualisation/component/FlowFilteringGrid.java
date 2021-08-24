@@ -40,12 +40,13 @@ public class FlowFilteringGrid extends Grid<Flow>
     private FlowSearchFilter searchFilter;
 
     private long resultSize = 0;
+    private ModuleType moduleType;
 
     /**
      * Constructor
      */
     public FlowFilteringGrid(ModuleMetaDataService solrSearchService,
-                             FlowSearchFilter searchFilter)
+                             FlowSearchFilter searchFilter, ModuleType moduleType)
     {
         this.solrSearchService = solrSearchService;
         if(this.solrSearchService ==  null)
@@ -56,6 +57,11 @@ public class FlowFilteringGrid extends Grid<Flow>
         if(this.searchFilter ==  null)
         {
             throw new IllegalArgumentException("SearchFilter cannot be null!");
+        }
+        this.moduleType = moduleType;
+        if(this.moduleType ==  null)
+        {
+            throw new IllegalArgumentException("moduleType cannot be null!");
         }
     }
 
@@ -173,17 +179,18 @@ public class FlowFilteringGrid extends Grid<Flow>
         ModuleMetadataSearchResults results;
 
         try {
-            results =  this.solrSearchService.find(moduleNames, offset, limit);
+            if(moduleType == ModuleType.SCHEDULER_AGENT) {
+                results = this.solrSearchService.find(moduleNames, this.moduleType, offset, limit);
+            }
+            else {
+                results =  this.solrSearchService.find(moduleNames, offset, limit);
 
-            if(authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
-                ModuleMetadataSearchResults schedulerResults = this.solrSearchService.find(List.of(), ModuleType.SCHEDULER_AGENT, offset, limit);
-                for (ModuleMetaData moduleMetaData : schedulerResults.getResultList()) {
-                    if (schedulerResults.getResultList().contains(moduleMetaData))
-                        results.getResultList().add(moduleMetaData);
-                }
+                List<ModuleMetaData> moduleMetaData = results.getResultList().stream().filter(module ->
+                    module.getType() == null || module.getType() != ModuleType.SCHEDULER_AGENT)
+                    .collect(Collectors.toList());
 
-                results = new ModuleMetadataSearchResults(results.getResultList(), schedulerResults.getTotalNumberOfResults()
-                    + results.getTotalNumberOfResults(), schedulerResults.getQueryResponseTime());
+                results = new ModuleMetadataSearchResults(moduleMetaData, moduleMetaData.size()
+                    , results.getQueryResponseTime());
             }
         }
         catch (Exception e) {
