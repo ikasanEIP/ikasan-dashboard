@@ -11,6 +11,7 @@ import org.ikasan.dashboard.ui.general.component.HospitalViewTest;
 import org.ikasan.dashboard.ui.general.component.SearchResultTest;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayoutTest;
 import org.ikasan.dashboard.ui.org.ikasan.dashboard.broadcast.FlowStateBroadcasterTest;
+import org.ikasan.dashboard.ui.scheduler.view.SchedulerViewTest;
 import org.ikasan.dashboard.ui.search.component.SearchFormTest;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGridTest;
 import org.ikasan.dashboard.ui.search.view.SearchViewTest;
@@ -61,7 +62,8 @@ import org.junit.runners.Suite;
     ModuleVisualisationViewTest.class,
     SystemEventSearchViewTest.class,
     AdministrationSearchViewTest.class,
-    IkasanAppLayoutTest.class
+    IkasanAppLayoutTest.class,
+    SchedulerViewTest.class
 })
 public class TestSuite {
 }

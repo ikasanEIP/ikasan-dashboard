@@ -21,7 +21,6 @@ import org.ikasan.replay.dao.SolrReplayAuditDao;
 import org.ikasan.replay.dao.SolrReplayDao;
 import org.ikasan.replay.service.SolrReplayAuditServiceImpl;
 import org.ikasan.replay.service.SolrReplayServiceImpl;
-import org.ikasan.rest.client.ModuleControlRestServiceImpl;
 import org.ikasan.scheduled.dao.SolrScheduledProcessEventDao;
 import org.ikasan.scheduled.service.SolrScheduledProcessServiceImpl;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
@@ -33,9 +32,9 @@ import org.ikasan.spec.hospital.service.HospitalAuditService;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetaDataProvider;
 import org.ikasan.spec.metrics.MetricsService;
+import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayEvent;
-import org.ikasan.spec.scheduled.ScheduledProcessService;
 import org.ikasan.spec.wiretap.WiretapEvent;
 import org.ikasan.systemevent.dao.SolrSystemEventDao;
 import org.ikasan.systemevent.service.SolrSystemEventServiceImpl;
@@ -43,7 +42,6 @@ import org.ikasan.topology.metadata.JsonFlowMetaDataProvider;
 import org.ikasan.topology.metadata.JsonModuleMetaDataProvider;
 import org.ikasan.wiretap.dao.SolrWiretapDao;
 import org.ikasan.wiretap.service.SolrWiretapServiceImpl;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -64,7 +62,7 @@ public class DashboardComponentFactory
     private String solrPassword;
 
     @Resource
-    private ModuleControlRestServiceImpl moduleControlRestService;
+    private ModuleControlService moduleControlRestService;
 
     @Bean
     @ConfigurationProperties(prefix = "scheduler.calendar")
@@ -161,7 +159,7 @@ public class DashboardComponentFactory
     }
 
     @Bean("scheduledProcessEventBatchInsert")
-    public ScheduledProcessService solrScheduledProcessEventService()
+    public SolrScheduledProcessServiceImpl solrScheduledProcessEventService()
     {
         SolrScheduledProcessEventDao dao = new SolrScheduledProcessEventDao();
         dao.initStandalone(solrUrl, 30);

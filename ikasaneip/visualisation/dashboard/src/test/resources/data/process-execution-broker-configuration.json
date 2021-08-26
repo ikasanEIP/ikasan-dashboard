@@ -1,0 +1,56 @@
+{
+  "configurationId": "demo-scheduler-agent_30 minutees_Process Execution Broker_1959287546_C",
+  "description": null,
+  "implementingClass": "org.ikasan.ootb.scheduler.agent.module.component.ProcessExecutionBrokerConfiguration",
+  "parameters": [
+    {
+      "id": 13,
+      "name": "commandLine",
+      "value": "pwd",
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterStringImpl"
+    },
+    {
+      "id": 14,
+      "name": "retryOnFail",
+      "value": false,
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterBooleanImpl"
+    },
+    {
+      "id": 15,
+      "name": "secondsToWaitForProcessStart",
+      "value": 10,
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterLongImpl"
+    },
+    {
+      "id": 16,
+      "name": "stdErr",
+      "value": "errrr",
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterStringImpl"
+    },
+    {
+      "id": 17,
+      "name": "stdOut",
+      "value": "outttt",
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterStringImpl"
+    },
+    {
+      "id": 18,
+      "name": "successfulReturnCodes",
+      "value": [],
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterListImpl"
+    },
+    {
+      "id": 19,
+      "name": "workingDirectory",
+      "value": "/opt",
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterStringImpl"
+    }
+  ]
+}

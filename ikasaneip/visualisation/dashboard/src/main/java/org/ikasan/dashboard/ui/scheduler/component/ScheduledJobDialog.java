@@ -70,7 +70,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
 
     // Fields to capture job execution properties.
-    private TextArea commandLineTf;
+    private TextArea commandLineTa;
     private TextField workingDirectoryTf;
     private TextField secondsToWaitForProcessStartTf;
     private TextField stdOutTf;
@@ -174,6 +174,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.setWidth("1200px");
 
         saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
+        saveButton.setId("scheduledJobSaveButton");
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->  {
 
             if(!this.performFormValidation(this.scheduleProcessAggregateConfiguration)) {
@@ -182,7 +183,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
             }
 
             try {
-                createNewScheduledJobFlow(this.scheduleProcessAggregateConfiguration);
+                createOrUpdateScheduledJob(this.scheduleProcessAggregateConfiguration);
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -230,6 +231,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
     private FormLayout createConfigurationForm() {
         formLayout = new FormLayout();
         this.agentCb = new ComboBox<>(getTranslation("label.agent", UI.getCurrent().getLocale()));
+        this.agentCb.setId("agentCb");
         this.agentCb.setRequired(true);
         this.agentCb.setClearButtonVisible(true);
         this.agentCb.setItems(this.scheduledProcessManagementService.getAllAgentNames());
@@ -243,6 +245,8 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         formLayout.add(agentCb, 2);
 
         this.startAutomaticCb = new Checkbox(getTranslation("label.start-automatically", UI.getCurrent().getLocale()));
+        this.startAutomaticCb.setId("startAutomaticCb");
+        this.startAutomaticCb.setValue(true);
         formBinder.forField(this.startAutomaticCb)
             .bind(ScheduledProcessAggregateConfiguration::isStartAutomatically, ScheduledProcessAggregateConfiguration::setStartAutomatically);
         formLayout.add(this.startAutomaticCb);
@@ -252,6 +256,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         formLayout.add(scheduleDetailsLabel, 2);
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
+        this.jobNameTf.setId("jobNameTf");
         this.jobNameTf.setRequired(true);
         this.jobNameTf.setEnabled(this.editMode == EditMode.NEW);
         formBinder.forField(this.jobNameTf)
@@ -262,6 +267,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
         this.jobGroupTf = new TextField(getTranslation("label.job-group", UI.getCurrent().getLocale()));
         this.jobGroupTf.setRequired(true);
+        this.jobGroupTf.setId("jobGroupTf");
         formBinder.forField(this.jobGroupTf)
             .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-group", UI.getCurrent().getLocale()))
             .bind(ScheduledProcessAggregateConfiguration::getJobGroup, ScheduledProcessAggregateConfiguration::setJobGroup);
@@ -270,6 +276,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
         this.jobDescriptionTa = new TextArea(getTranslation("label.job-description", UI.getCurrent().getLocale()));
         this.jobDescriptionTa.setRequired(true);
+        this.jobDescriptionTa.setId("jobDescriptionTa");
         jobDescriptionTa.getStyle().set("minHeight", "100px");
         formBinder.forField(this.jobDescriptionTa)
             .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
@@ -279,6 +286,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
         this.cronExpressionTf = new TextField(getTranslation("label.cron-expression", UI.getCurrent().getLocale()));
         this.cronExpressionTf.setRequired(true);
+        this.cronExpressionTf.setId("cronExpressionTf");
         formBinder.forField(this.cronExpressionTf)
             .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
             .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
@@ -289,6 +297,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.timezoneCb = new ComboBox<>(getTranslation("label.timezone", UI.getCurrent().getLocale()));
         ComboBox.ItemFilter<DateTimeUtil.TimezonePair> filter = (element, filterString) ->
             element.zoneId.toLowerCase().contains(filterString.toLowerCase());
+        this.timezoneCb.setId("timezoneCb");
         this.timezoneCb.setItems(filter, DateTimeUtil.getAllZoneIdsAndItsOffSet());
         this.timezoneCb.setItemLabelGenerator((ItemLabelGenerator<DateTimeUtil.TimezonePair>) s -> String.format("%35s (UTC%s) %n", s.zoneId, s.offset).trim());
         this.timezoneCb.setClearButtonVisible(true);
@@ -296,10 +305,11 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.timezoneCb.setErrorMessage(getTranslation("error.timezone-required", UI.getCurrent().getLocale()));
         formLayout.add(timezoneCb);
 
-        passThroughPropertiesLabel = new Label(getTranslation("label.pass-through-properties", UI.getCurrent().getLocale()));
-        passThroughPropertiesButton = new Button(VaadinIcon.PLUS.create(), e -> {
+        this.passThroughPropertiesLabel = new Label(getTranslation("label.pass-through-properties", UI.getCurrent().getLocale()));
+        this.passThroughPropertiesButton = new Button(VaadinIcon.PLUS.create(), e -> {
             this.addPassThroughProperties(null,  null);
         });
+        this.passThroughPropertiesButton.setId("passThroughPropertiesButton");
 
         this.passThroughPropertiesDiv = new Div();
         this.passThroughPropertiesDiv.setVisible(false);
@@ -309,13 +319,14 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         H3 jobExecutionLabel = new H3(getTranslation("header.job-execution-details", UI.getCurrent().getLocale()));
         formLayout.add(jobExecutionLabel, 2);
 
-        this.commandLineTf = new TextArea(getTranslation("label.command-line", UI.getCurrent().getLocale()));
-        this.commandLineTf.setRequired(true);
-        formBinder.forField(this.commandLineTf)
+        this.commandLineTa = new TextArea(getTranslation("label.command-line", UI.getCurrent().getLocale()));
+        this.commandLineTa.setId("commandLineTa");
+        this.commandLineTa.setRequired(true);
+        formBinder.forField(this.commandLineTa)
             .withValidator(value -> !value.isEmpty(), getTranslation("error.command-line-missing", UI.getCurrent().getLocale()))
             .bind(ScheduledProcessAggregateConfiguration::getCommandLine, ScheduledProcessAggregateConfiguration::setCommandLine);
-        formLayout.add(commandLineTf, 2);
-        commandLineTf.getStyle().set("minHeight", "100px");
+        formLayout.add(commandLineTa, 2);
+        commandLineTa.getStyle().set("minHeight", "100px");
 
         this.workingDirectoryTf = new TextField(getTranslation("label.working-directory", UI.getCurrent().getLocale()));
         formBinder.forField(this.workingDirectoryTf)
@@ -332,6 +343,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
         this.stdOutTf = new TextField(getTranslation("label.std-out", UI.getCurrent().getLocale()));
         this.stdOutTf.setRequired(true);
+        this.stdOutTf.setId("stdOutTf");
         formBinder.forField(this.stdOutTf)
             .withNullRepresentation("")
             .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-std-out", UI.getCurrent().getLocale()))
@@ -340,6 +352,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
         this.stdErrTf = new TextField(getTranslation("label.std-err", UI.getCurrent().getLocale()));
         this.stdErrTf.setRequired(true);
+        this.stdErrTf.setId("stdErrTf");
         formBinder.forField(this.stdErrTf)
             .withNullRepresentation("")
             .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-std-err", UI.getCurrent().getLocale()))
@@ -353,10 +366,11 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.retryOnFailCb.getStyle().set("padding-top", "15px");
         formLayout.add(this.retryOnFailCb, new Div());
 
-        successfulReturnCodesLabel = new Label(getTranslation("label.successful-return-codes", UI.getCurrent().getLocale()));
-        successfulReturnCodesButton = new Button(VaadinIcon.PLUS.create(), e -> {
+        this.successfulReturnCodesLabel = new Label(getTranslation("label.successful-return-codes", UI.getCurrent().getLocale()));
+        this.successfulReturnCodesButton = new Button(VaadinIcon.PLUS.create(), e -> {
             this.addSuccessfulReturnCodes(null);
         });
+        this.successfulReturnCodesButton.setId("successfulReturnCodesButton");
 
         this.returnCodesDiv = new Div();
         this.returnCodesDiv.setVisible(false);
@@ -370,6 +384,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.addBlackoutCron = new Button(VaadinIcon.PLUS.create(), e -> {
             this.addBlackoutCronExpression(null);
         });
+        this.addBlackoutCron.setId("addBlackoutCron");
 
         this.blackOutCronExpressionDiv = new Label("");
         this.blackOutCronExpressionDiv.setVisible(false);
@@ -380,6 +395,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.addDateTimeRange = new Button(VaadinIcon.PLUS.create(), e -> {
             this.addDateTimeRange(-1, -1);
         });
+        this.addDateTimeRange.setId("addDateTimeRange");
 
         formLayout.add(blackOutDateTimeRangesLabel, this.addDateTimeRange, this.noBlackOutDateTimeRangesLabel);
 
@@ -497,11 +513,11 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
     
 
     /**
-     * This method interacts with with agent in order to create a new scheduler agent flow and associated job.
+     * This method interacts with with agent in order to create a new scheduler agent flow or update an existing flow and associated job.
      *
      * @param scheduleProcessAggregateConfiguration
      */
-    public void createNewScheduledJobFlow(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
+    public void createOrUpdateScheduledJob(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
         // Get the module configuration from the module.
         ConfigurationMetaData<List<ConfigurationParameterMetaData>> moduleConfiguration
             = this.configurationRestService.getModuleConfiguration(this.agent.getUrl());
@@ -538,11 +554,13 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
             }
 
             /// Load the required configurations for a scheduled job.
-            ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration = this.getConfigurationForAgentFlowComponent(this.agent,
+            Optional<ModuleMetaData> moduleMetaData = this.metaDataRestService.getModuleMetadata(agent.getUrl(), agent.getName());
+
+            ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration = this.getConfigurationForAgentFlowComponent(moduleMetaData,
                 this.jobNameTf.getValue(), ScheduledProcessConstants.SCHEDULED_CONSUMER);
-            ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfiguration = this.getConfigurationForAgentFlowComponent(this.agent,
+            ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfiguration = this.getConfigurationForAgentFlowComponent(moduleMetaData,
                 this.jobNameTf.getValue(), ScheduledProcessConstants.BLACKOUT_ROUTER);
-            ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfiguration = this.getConfigurationForAgentFlowComponent(this.agent,
+            ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfiguration = this.getConfigurationForAgentFlowComponent(moduleMetaData,
                 this.jobNameTf.getValue(), ScheduledProcessConstants.PROCESS_EXECUTION_BROKER);
 
             // Update all the configurations with the configurations provided in the form.
@@ -599,25 +617,27 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         }
         catch (Exception e) {
             // If any exceptions occur we are going to remove the job that we attempted to create.
-            moduleConfiguration.getParameters().stream()
-                .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
-                .findFirst().ifPresentOrElse(flowDefinitions -> {
-                // Add the new job flow to the map.
-                Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
-                configurationMap.remove(scheduleProcessAggregateConfiguration.getJobName());
-                flowDefinitions.setValue(configurationMap);
+            if(moduleConfiguration != null) {
+                moduleConfiguration.getParameters().stream()
+                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
+                    .findFirst().ifPresentOrElse(flowDefinitions -> {
+                    // Add the new job flow to the map.
+                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
+                    configurationMap.remove(scheduleProcessAggregateConfiguration.getJobName());
+                    flowDefinitions.setValue(configurationMap);
 
-                logger.info("Module Configuration: " + moduleConfiguration);
-                // update the configuration back onto the module.
-                this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
-            }, () -> {
-                throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
-            });
+                    logger.info("Module Configuration: " + moduleConfiguration);
+                    // update the configuration back onto the module.
+                    this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
+                }, () -> {
+                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
+                });
 
 
-            // We need to deactivate and activate the module so the new flow is removed when initialisation occurs.
-            this.changeActivation("deactivate");
-            this.changeActivation("activate");
+                // We need to deactivate and activate the module so the new flow is removed when initialisation occurs.
+                this.changeActivation("deactivate");
+                this.changeActivation("activate");
+            }
 
             throw e;
         }
@@ -716,27 +736,32 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
     /**
      * Helper method to get a specific component configuration from the module.
      *
-     * @param agent
+     * @param moduleMetaData
      * @param flow
      * @param component
      * @return
      */
-    private ConfigurationMetaData getConfigurationForAgentFlowComponent(ModuleMetaData agent, String flow, String component) {
-        Optional<ModuleMetaData> moduleMetaData = this.metaDataRestService.getModuleMetadata(agent.getUrl(), agent.getName());
-
+    private ConfigurationMetaData getConfigurationForAgentFlowComponent(Optional<ModuleMetaData> moduleMetaData, String flow, String component) {
         AtomicReference<ConfigurationMetaData> configurationMetaData = new AtomicReference<>();
 
         moduleMetaData.ifPresentOrElse(metaData -> {
             metaData.getFlows().stream()
                 .filter(flowMetaData -> flowMetaData.getName().equals(flow))
-                .findFirst().get()
-                .getFlowElements().stream()
-                .filter(flowElementMetaData -> flowElementMetaData.getComponentName().equals(component))
-                .findFirst().ifPresentOrElse(id -> configurationMetaData.set(configurationRestService
-                    .getConfiguredResourceConfiguration(agent.getUrl(), agent.getName(), flow, component))
-                        , () -> {throw new RuntimeException(String.format("Could not load configuration metadata for agent[%s], flow[%s], component[%s] at url[%s]!"
-                            , agent.getName(), flow, component, agent.getUrl()));});
-        },() -> {
+                .findFirst().ifPresentOrElse(flowMetaData -> {
+                flowMetaData.getFlowElements().stream()
+                    .filter(flowElementMetaData -> flowElementMetaData.getComponentName().equals(component))
+                    .findFirst().ifPresentOrElse(id -> configurationMetaData.set(configurationRestService
+                        .getConfiguredResourceConfiguration(agent.getUrl(), agent.getName(), flow, component))
+                    , () -> {
+                        throw new RuntimeException(String.format("Could not load configuration metadata for agent[%s], flow[%s], component[%s] at url[%s]!"
+                            , agent.getName(), flow, component, agent.getUrl()));
+                    });
+            }, () -> {
+                throw new RuntimeException(String.format("Could not load flow for agent[%s], flow[%s], component[%s] at url[%s]!"
+                    , agent.getName(), flow, component, agent.getUrl()));
+            });
+
+        }, () -> {
             throw new RuntimeException(String.format("Could not load module metadata for agent[%s] at url[%s]!", agent.getName(), agent.getUrl()));
         });
 
@@ -775,7 +800,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         }
 
 
-        this.commandLineTf.setEnabled(enabled);
+        this.commandLineTa.setEnabled(enabled);
         this.workingDirectoryTf.setEnabled(enabled);
         this.secondsToWaitForProcessStartTf.setEnabled(enabled);
         this.stdOutTf.setEnabled(enabled);
@@ -859,6 +884,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
     private void addDateTimeRange(long startMilli, long endMilli) {
         DateTimeRange dateTimeRange = new DateTimeRange();
         dateTimeRange.startDate = new SuperDatePicker(getTranslation("label.start-date", UI.getCurrent().getLocale()));
+        dateTimeRange.startDate.setId("dateTimeRange.startDate"+this.dateTimeRanges.size());
         dateTimeRange.startDate.setEnabled(this.enabled);
         dateTimeRange.startDate.setDatePattern(DatePatterns.D_MMMM_YYYY);
         dateTimeRange.startDate.setErrorMessage(getTranslation("error.missing-start-date", UI.getCurrent().getLocale()));
@@ -867,6 +893,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
             dateTimeRange.startDate.setValue(Instant.ofEpochMilli(startMilli).atZone(ZoneId.systemDefault()).toLocalDate());
         }
         dateTimeRange.startTime = new TimePicker(getTranslation("label.from", UI.getCurrent().getLocale()));
+        dateTimeRange.startTime.setId("dateTimeRange.startTime"+this.dateTimeRanges.size());
         dateTimeRange.startTime.setEnabled(this.enabled);
         dateTimeRange.startTime.setErrorMessage(getTranslation("error.missing-start-time", UI.getCurrent().getLocale()));
         dateTimeRange.startTime.setLocale(UI.getCurrent().getLocale());
@@ -877,6 +904,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         startLayout.add(dateTimeRange.startDate, dateTimeRange.startTime);
 
         dateTimeRange.endDate = new SuperDatePicker(getTranslation("label.end-date", UI.getCurrent().getLocale()));
+        dateTimeRange.endDate.setId("dateTimeRange.endDate"+this.dateTimeRanges.size());
         dateTimeRange.endDate.setEnabled(this.enabled);
         dateTimeRange.endDate.setDatePattern(DatePatterns.D_MMMM_YYYY);
         dateTimeRange.endDate.setErrorMessage(getTranslation("error.missing-end-date", UI.getCurrent().getLocale()));
@@ -885,6 +913,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
             dateTimeRange.endDate.setValue(Instant.ofEpochMilli(endMilli).atZone(ZoneId.systemDefault()).toLocalDate());
         }
         dateTimeRange.endTime = new TimePicker(getTranslation("label.to", UI.getCurrent().getLocale()));
+        dateTimeRange.endTime.setId("dateTimeRange.endTime"+this.dateTimeRanges.size());
         dateTimeRange.endTime.setEnabled(this.enabled);
         dateTimeRange.endTime.setErrorMessage(getTranslation("error.missing-end-time", UI.getCurrent().getLocale()));
         dateTimeRange.endTime.setLocale(UI.getCurrent().getLocale());
@@ -921,6 +950,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         TextFieldNameValuePair nvp = new TextFieldNameValuePair();
 
         nvp.nameTf = new TextField(getTranslation("label.property-name", UI.getCurrent().getLocale()));
+        nvp.nameTf.setId("passThroughProperty.nameTf"+this.passThroughProperties.size());
         nvp.nameTf.setWidth("95%");
         nvp.nameTf.setEnabled(this.enabled);
         nvp.nameTf.setErrorMessage(getTranslation("error.missing-property-name", UI.getCurrent().getLocale()));
@@ -929,6 +959,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         startLayout.add(nvp.nameTf);
 
         nvp.valueTf = new TextField(getTranslation("label.property-value", UI.getCurrent().getLocale()));
+        nvp.valueTf.setId("passThroughProperty.valueTf"+this.passThroughProperties.size());
         nvp.valueTf.setEnabled(this.enabled);
         nvp.valueTf.setWidth("95%");
         nvp.valueTf.setErrorMessage(getTranslation("error.missing-property-value", UI.getCurrent().getLocale()));
@@ -957,6 +988,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
      */
     private void addSuccessfulReturnCodes(String returnCode) {
         TextField successfulReturnCodeTf = new TextField(getTranslation("label.successful-return-code", UI.getCurrent().getLocale()));
+        successfulReturnCodeTf.setId("successfulReturnCodeTf"+this.successfulReturnCodes.size());
         successfulReturnCodeTf.setEnabled(this.enabled);
         this.successfulReturnCodes.add(successfulReturnCodeTf);
         successfulReturnCodeTf.setErrorMessage(getTranslation("error.missing-return-code", UI.getCurrent().getLocale()) );
@@ -979,6 +1011,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
      */
     private void addBlackoutCronExpression(String cron) {
         TextField blackoutCronExpressionTf = new TextField(getTranslation("label.blackout-cron-expression", UI.getCurrent().getLocale()));
+        blackoutCronExpressionTf.setId("blackoutCronExpressionTf"+this.blackoutCronExpressions.size());
         blackoutCronExpressionTf.setEnabled(this.enabled);
         this.blackoutCronExpressions.add(blackoutCronExpressionTf);
         blackoutCronExpressionTf.setErrorMessage(getTranslation("error.missing-blackout-cron-expression", UI.getCurrent().getLocale()));

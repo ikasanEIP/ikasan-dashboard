@@ -70,6 +70,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         this.setWidth("95%");
 
         Button addButton = new Button();
+        addButton.setId("newScheduledJobButton");
         addButton.getStyle().set("position", "absolute");
         addButton.getStyle().set("top", "70px");
         addButton.getStyle().set("right", "30px");
@@ -82,6 +83,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
             scheduledJobDialog.open();
         });
 
+        // todo translation for header.agent-details not in bundle.
         H4 agentDetails = new H4(getTranslation("header.agent-details", UI.getCurrent().getLocale()));
 
         IronIcon addIcon = IronIcons.ADD.create();
