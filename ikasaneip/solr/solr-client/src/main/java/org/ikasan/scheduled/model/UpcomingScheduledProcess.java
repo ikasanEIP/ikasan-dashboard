@@ -87,18 +87,18 @@ public class UpcomingScheduledProcess {
         return timezone;
     }
 
-//    @Override
-//    public String toString() {
-//        final StringBuffer sb = new StringBuffer("UpcomingScheduledProcess{");
-//        sb.append("agentName='").append(agentName).append('\'');
-//        sb.append(", jobName='").append(jobName).append('\'');
-//        sb.append(", jobGroup='").append(jobGroup).append('\'');
-//        sb.append(", jobDescription='").append(jobDescription).append('\'');
-//        sb.append(", fireTime=").append(fireTime);
-//        sb.append(", scheduledConsumerConfigurationMetaData=").append(scheduledConsumerConfigurationMetaData);
-//        sb.append(", processExecutionBrokerConfigurationMetaData=").append(processExecutionBrokerConfigurationMetaData);
-//        sb.append(", blackoutRouterConfigurationMetaData=").append(blackoutRouterConfigurationMetaData);
-//        sb.append('}');
-//        return sb.toString();
-//    }
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("UpcomingScheduledProcess{");
+        sb.append("agentName='").append(agentName).append('\'');
+        sb.append(", jobName='").append(jobName).append('\'');
+        sb.append(", jobGroup='").append(jobGroup).append('\'');
+        sb.append(", jobDescription='").append(jobDescription).append('\'');
+        sb.append(", fireTime=").append(fireTime);
+        sb.append(", scheduledConsumerConfigurationMetaData=").append(scheduledConsumerConfigurationMetaData);
+        sb.append(", processExecutionBrokerConfigurationMetaData=").append(processExecutionBrokerConfigurationMetaData);
+        sb.append(", blackoutRouterConfigurationMetaData=").append(blackoutRouterConfigurationMetaData);
+        sb.append('}');
+        return sb.toString();
+    }
 }

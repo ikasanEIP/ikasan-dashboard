@@ -11,7 +11,7 @@ public class ScheduledProcessAggregateConfiguration {
 
     private String agentName;
     private Boolean startAutomatically = false;
-    private List<BusinessStreamMetaData> businessStreamMetaData;
+    private List<BusinessStreamMetaData> businessStreamMetaData = new ArrayList<>();
     private String jobName;
     private String jobGroup;
     private String jobDescription;
