@@ -152,6 +152,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             HorizontalLayout layout = new HorizontalLayout();
 
             Icon edit = VaadinIcon.EDIT.create();
+            edit.setId("editScheduledJob");
             edit.setSize("14pt");
             edit.getStyle().set("cursor", "pointer");
             edit.getElement().setAttribute("title", getTranslation("tooltip.edit-job", UI.getCurrent().getLocale()));

@@ -9,6 +9,7 @@ import org.ikasan.rest.client.ModuleControlRestServiceImpl;
 import org.ikasan.rest.client.dto.FlowDto;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.module.client.ModuleControlService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,7 @@ public class FlowStateCache implements Consumer<FlowState>
     }
 
     private ConcurrentHashMap<String, FlowState> cache;
-    private ModuleControlRestServiceImpl moduleControlRestService;
+    private ModuleControlService moduleControlRestService;
     private ModuleMetaDataService moduleMetaDataService;
 
     private FlowStateCache()
@@ -143,7 +144,7 @@ public class FlowStateCache implements Consumer<FlowState>
         this.put(flowState);
     }
 
-    public void setModuleControlRestService(ModuleControlRestServiceImpl moduleControlRestService)
+    public void setModuleControlRestService(ModuleControlService moduleControlRestService)
     {
         this.moduleControlRestService = moduleControlRestService;
     }

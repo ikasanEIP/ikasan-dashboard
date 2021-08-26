@@ -75,9 +75,14 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
-    private Board scheduleJobsTab;
+    private Board scheduledJobsBoard;
 
     private boolean initialised = false;
+
+    private Tab schedulerDashboardTab;
+    private Tab schedulerJobTab;
+    private Tab calendarTab;
+    private Tabs tabs;
 
     /**
      * Constructor
@@ -102,21 +107,24 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.schedulerCalendar = new SchedulerCalendar(this.scheduledProcessManagementService, this.moduleMetadataService, new CalendarConfiguration());
         this.schedulerCalendar.setVisible(false);
 
-        scheduleJobsTab = new Board();
-        scheduleJobsTab.addClassName("styled");
-        scheduleJobsTab.setSizeFull();
-        scheduleJobsTab.setVisible(false);
+        this.scheduledJobsBoard = new Board();
+        this.scheduledJobsBoard.addClassName("styled");
+        this.scheduledJobsBoard.setSizeFull();
+        this.scheduledJobsBoard.setVisible(false);
+        this.scheduledJobsBoard.setId("scheduledJobsBoard");
 
 
-        Tab schedulerDashboardTab = new Tab("Scheduler Dashboard");
-        Tab schedulerJobTab = new Tab("Scheduled Jobs");
-        Tab calendarTab = new Tab("Scheduled Jobs Calendar");
-        Tabs tabs = new Tabs(schedulerDashboardTab, schedulerJobTab, calendarTab);
+        // todo missed translation
+        this.schedulerDashboardTab = new Tab("Scheduler Dashboard");
+        this.schedulerJobTab = new Tab("Scheduled Jobs");
+        this.schedulerJobTab.setId("scheduledJobsTab");
+        this.calendarTab = new Tab("Scheduled Jobs Calendar");
+        this.tabs = new Tabs(schedulerDashboardTab, schedulerJobTab, calendarTab);
 
         Map<Tab, com.vaadin.flow.component.Component> tabsToPages = new HashMap<>();
-        tabsToPages.put(schedulerDashboardTab, this.schedulerAgentDashboardView);
-        tabsToPages.put(schedulerJobTab, scheduleJobsTab);
-        tabsToPages.put(calendarTab, this.schedulerCalendar);
+        tabsToPages.put(this.schedulerDashboardTab, this.schedulerAgentDashboardView);
+        tabsToPages.put(this.schedulerJobTab, this.scheduledJobsBoard);
+        tabsToPages.put(this.calendarTab, this.schedulerCalendar);
 
         tabs.addSelectedChangeListener(event -> {
             tabsToPages.values().forEach(page -> page.setVisible(false));
@@ -132,7 +140,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         IronIcon addIcon = IronIcons.ADD.create();
         addIcon.setSize("16pt");
 
-        this.add(tabs, this.schedulerAgentDashboardView, scheduleJobsTab, this.schedulerCalendar);
+        this.add(tabs, this.schedulerAgentDashboardView, scheduledJobsBoard, this.schedulerCalendar);
     }
 
     @Override
@@ -146,9 +154,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         if(!initialised) {
             this.init();
             this.schedulerAgentDashboardView.beforeEnter(beforeEnterEvent);
-            scheduleJobsTab.addRow(new UpcomingJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter, this.configurationRestService,
+            scheduledJobsBoard.addRow(new UpcomingJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter, this.configurationRestService,
                 this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
-            scheduleJobsTab.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
+            scheduledJobsBoard.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
 
             initialised = true;

@@ -33,6 +33,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
 
@@ -60,7 +61,7 @@ public abstract class UITest
     @MockBean
     protected ModuleMetaDataService moduleMetadataService;
 
-    public abstract void setup_expectations();
+    public abstract void setup_expectations() throws IOException;
 
     protected void setup_general_expectations() {
         // Setup the mock authentication.
@@ -98,7 +99,7 @@ public abstract class UITest
 
 
     @Before
-    public void setup() {
+    public void setup() throws IOException {
         Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         rootLogger.setLevel(Level.WARN);
 
