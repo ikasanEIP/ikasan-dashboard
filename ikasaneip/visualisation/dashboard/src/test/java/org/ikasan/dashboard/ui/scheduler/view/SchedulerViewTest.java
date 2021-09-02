@@ -46,6 +46,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.vaadin.miki.superfields.dates.SuperDatePicker;
+import org.vaadin.stefan.fullcalendar.FullCalendar;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -95,7 +96,7 @@ public class SchedulerViewTest extends UITest {
     }
 
     @Test
-    public void test_scheduler_view() throws IOException
+    public void test_scheduler_view_scheduler_dashboard_tab() throws IOException
     {
         UI.getCurrent().navigate("scheduler");
 
@@ -115,7 +116,6 @@ public class SchedulerViewTest extends UITest {
         _get(Tabs.class).setSelectedTab(_get(Tab.class, spec -> spec.withId("scheduledJobsTab")));
 
         UpcomingJobExecutionFilteringGrid upcomingJobExecutionFilteringGrid = _get(UpcomingJobExecutionFilteringGrid.class);
-
         Assertions.assertNotNull(upcomingJobExecutionFilteringGrid);
 
         Assertions.assertEquals(25, upcomingJobExecutionFilteringGrid.getDataProvider().size(new Query<>()));
@@ -124,382 +124,53 @@ public class SchedulerViewTest extends UITest {
             = _get(RunningAndRecentlyCompletedJobExecutionFilteringGrid.class);
 
         Assertions.assertNotNull(runningAndRecentlyCompletedGrid);
-
         Assertions.assertEquals(50, runningAndRecentlyCompletedGrid.getDataProvider().size(new Query<>()));
     }
 
     @Test
-    public void test_create_new_scheduled_job_failed_form_validation() throws IOException
+    public void test_scheduler_view_scheduled_jobs_tab() throws IOException
     {
-        // Navigate to the scheduler view.
         UI.getCurrent().navigate("scheduler");
 
-        // Get a handle to the agents grid and make sure there is some data in it.
-        ScheduledAgentsFilteringGrid agentsFilteringGrid = _get(ScheduledAgentsFilteringGrid.class);
-        Assertions.assertEquals(1, GridKt._size(agentsFilteringGrid));
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
 
-        // Double click on the agent in the grid.
-        GridKt._doubleClickItem(agentsFilteringGrid, 0);
+        Tabs tabs = _get(Tabs.class);
 
-        // We expect the agent management grid to open. Make sure that it has.
-        SchedulerAgentManagementDialog schedulerAgentManagementDialog = _get(SchedulerAgentManagementDialog.class);
-        Assertions.assertNotNull(schedulerAgentManagementDialog);
+        Assertions.assertNotNull(tabs);
 
-        // The purpose of the test is to make sure that form validation fails
-        // when creating a new job. So we need to click the new job button.
-        _click(_get(Button.class, spec -> spec.withId("newScheduledJobButton")));
+        _get(Tabs.class).setSelectedTab(_get(Tab.class, spec -> spec.withId("scheduledJobsTab")));
 
-        // Make sure the dialog for creating the new job has opened.
-        ScheduledJobDialog scheduledJobDialog = _get(ScheduledJobDialog.class);
-        Assertions.assertNotNull(scheduledJobDialog);
+        UpcomingJobExecutionFilteringGrid upcomingJobExecutionFilteringGrid = _get(UpcomingJobExecutionFilteringGrid.class);
+        Assertions.assertNotNull(upcomingJobExecutionFilteringGrid);
 
-        // Make sure the agent combo box is populated as expected.
-        Assertions.assertEquals("scheduler-agent", _get(ComboBox.class, spec -> spec.withId("agentCb")).getValue());
+        Assertions.assertEquals(25, upcomingJobExecutionFilteringGrid.getDataProvider().size(new Query<>()));
 
-        // We want to add a pass through properties so we can check it fails validation
-        _click(_get(Button.class, spec -> spec.withId("passThroughPropertiesButton")));
+        RunningAndRecentlyCompletedJobExecutionFilteringGrid runningAndRecentlyCompletedGrid
+            = _get(RunningAndRecentlyCompletedJobExecutionFilteringGrid.class);
 
-        // We want to add a couple return codes so we can check they fail validation
-        _click(_get(Button.class, spec -> spec.withId("successfulReturnCodesButton")));
-        _click(_get(Button.class, spec -> spec.withId("successfulReturnCodesButton")));
-
-        // We want to add a blackout cron so we can check it fails validation
-        _click(_get(Button.class, spec -> spec.withId("addBlackoutCron")));
-
-        // We want to add a blackout date time range so we can check it fails validation
-        _click(_get(Button.class, spec -> spec.withId("addDateTimeRange")));
-
-        // Click the new job save button. This initiates the form validation.
-        _click(_get(Button.class, spec -> spec.withId("scheduledJobSaveButton")));
-
-        // Assert that are required fields have failed validation!
-        Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("jobNameTf")).isInvalid());
-        Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("jobGroupTf")).isInvalid());
-        Assertions.assertTrue(_get(TextArea.class, spec -> spec.withId("jobDescriptionTa")).isInvalid());
-        Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("cronExpressionTf")).isInvalid());
-        Assertions.assertTrue(_get(TextArea.class, spec -> spec.withId("commandLineTa")).isInvalid());
-        Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("stdOutTf")).isInvalid());
-        Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("stdErrTf")).isInvalid());
-        Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("successfulReturnCodeTf0")).isInvalid());
-        Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("successfulReturnCodeTf1")).isInvalid());
-        Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("blackoutCronExpressionTf0")).isInvalid());
-        Assertions.assertTrue(_get(SuperDatePicker.class, spec -> spec.withId("dateTimeRange.startDate0")).isInvalid());
-        Assertions.assertTrue(_get(TimePicker.class, spec -> spec.withId("dateTimeRange.startTime0")).isInvalid());
-        Assertions.assertTrue(_get(SuperDatePicker.class, spec -> spec.withId("dateTimeRange.endDate0")).isInvalid());
-        Assertions.assertTrue(_get(TimePicker.class, spec -> spec.withId("dateTimeRange.endTime0")).isInvalid());
-        Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("passThroughProperty.nameTf0")).isInvalid());
-        Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("passThroughProperty.valueTf0")).isInvalid());
-
-        // Assert that there is a notification displayed!
-        Assertions.assertNotNull(_get(Notification.class));
+        Assertions.assertNotNull(runningAndRecentlyCompletedGrid);
+        Assertions.assertEquals(50, runningAndRecentlyCompletedGrid.getDataProvider().size(new Query<>()));
     }
 
     @Test
-    public void test_create_new_scheduled_job_success() throws IOException
+    public void test_scheduler_view_scheduled_jobs_calendar_tab() throws IOException
     {
-        Mockito.when(this.configurationRestService.getModuleConfiguration(Mockito.anyString()))
-            .thenReturn(this.getModuleConfiguration());
-
-        Mockito.when(this.moduleControlRestService.changeModuleActivationState(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
-            .thenReturn(true);
-
-        Mockito.when(this.metaDataApplicationRestService.getModuleMetadata(Mockito.anyString(), Mockito.anyString()))
-            .thenReturn(Optional.of(this.getModuleMetadata()));
-
-        Mockito.when(this.configurationRestService.getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.SCHEDULED_CONSUMER)))
-            .thenReturn(this.getModuleConfiguration("/data/scheduled-consumer-configuration.json"));
-
-        Mockito.when(this.configurationRestService.getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.BLACKOUT_ROUTER)))
-            .thenReturn(this.getModuleConfiguration("/data/blackout-router-configuration.json"));
-
-        Mockito.when(this.configurationRestService.getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.PROCESS_EXECUTION_BROKER)))
-            .thenReturn(this.getModuleConfiguration("/data/process-execution-broker-configuration.json"));
-
-        Mockito.when(this.configurationRestService.storeConfiguration(Mockito.anyString(), Mockito.any(ConfigurationMetaData.class)))
-           .thenReturn(true);
-
-
-        // Navigate to the scheduler view.
         UI.getCurrent().navigate("scheduler");
 
-        // Get a handle to the agents grid and make sure there is some data in it.
-        ScheduledAgentsFilteringGrid agentsFilteringGrid = _get(ScheduledAgentsFilteringGrid.class);
-        Assertions.assertEquals(1, GridKt._size(agentsFilteringGrid));
+        SchedulerView schedulerView = _get(SchedulerView.class);
+        Assertions.assertNotNull(schedulerView);
 
-        // Double click on the agent in the grid.
-        GridKt._doubleClickItem(agentsFilteringGrid, 0);
+        Tabs tabs = _get(Tabs.class);
 
-        // We expect the agent management grid to open. Make sure that it has.
-        SchedulerAgentManagementDialog schedulerAgentManagementDialog = _get(SchedulerAgentManagementDialog.class);
-        Assertions.assertNotNull(schedulerAgentManagementDialog);
+        Assertions.assertNotNull(tabs);
 
-        // The purpose of the test is to make sure that form validation fails
-        // when creating a new job. So we need to click the new job button.
-        _click(_get(Button.class, spec -> spec.withId("newScheduledJobButton")));
+        _get(Tabs.class).setSelectedTab(_get(Tab.class, spec -> spec.withId("calendarTab")));
 
-        // Make sure the dialog for creating the new job has opened.
-        ScheduledJobDialog scheduledJobDialog = _get(ScheduledJobDialog.class);
-        Assertions.assertNotNull(scheduledJobDialog);
-
-        // Make sure the agent combo box is populated as expected.
-        Assertions.assertEquals("scheduler-agent", _get(ComboBox.class, spec -> spec.withId("agentCb")).getValue());
-
-        // We want to add a pass through properties so we can check it fails validation
-        _click(_get(Button.class, spec -> spec.withId("passThroughPropertiesButton")));
-
-        // We want to add a couple return codes so we can check they fail validation
-        _click(_get(Button.class, spec -> spec.withId("successfulReturnCodesButton")));
-        _click(_get(Button.class, spec -> spec.withId("successfulReturnCodesButton")));
-
-        // We want to add a blackout cron so we can check it fails validation
-        _click(_get(Button.class, spec -> spec.withId("addBlackoutCron")));
-
-        // We want to add a blackout date time range so we can check it fails validation
-        _click(_get(Button.class, spec -> spec.withId("addDateTimeRange")));
-
-        // Set values on all required fields
-        _get(Checkbox.class, spec -> spec.withId("startAutomaticCb")).setValue(false);
-        _get(TextField.class, spec -> spec.withId("jobNameTf")).setValue("20 minute");
-        _get(TextField.class, spec -> spec.withId("jobGroupTf")).setValue("Job group");
-        _get(TextArea.class, spec -> spec.withId("jobDescriptionTa")).setValue("Job description");
-        _get(TextField.class, spec -> spec.withId("cronExpressionTf")).setValue("0 0/30 * * * ?");
-        _get(TextArea.class, spec -> spec.withId("commandLineTa")).setValue("ls -la");
-        _get(TextField.class, spec -> spec.withId("stdOutTf")).setValue("out");
-        _get(TextField.class, spec -> spec.withId("stdErrTf")).setValue("err");
-        _get(TextField.class, spec -> spec.withId("successfulReturnCodeTf0")).setValue("0");
-        _get(TextField.class, spec -> spec.withId("successfulReturnCodeTf1")).setValue("00");
-        _get(TextField.class, spec -> spec.withId("blackoutCronExpressionTf0")).setValue("0 0/30 * * * ?");
-        _get(SuperDatePicker.class, spec -> spec.withId("dateTimeRange.startDate0")).setValue(LocalDate.now());
-        _get(TimePicker.class, spec -> spec.withId("dateTimeRange.startTime0")).setValue(LocalTime.now());
-        _get(SuperDatePicker.class, spec -> spec.withId("dateTimeRange.endDate0")).setValue(LocalDate.now());
-        _get(TimePicker.class, spec -> spec.withId("dateTimeRange.endTime0")).setValue(LocalTime.now());
-        _get(TextField.class, spec -> spec.withId("passThroughProperty.nameTf0")).setValue("name");
-        _get(TextField.class, spec -> spec.withId("passThroughProperty.valueTf0")).setValue("value");
-
-        // Click the new job save button. This initiates the form validation.
-        _click(_get(Button.class, spec -> spec.withId("scheduledJobSaveButton")));
-
-        Mockito.verify(this.configurationRestService, Mockito.times(1))
-            .getModuleConfiguration(Mockito.anyString());
-        Mockito.verify(this.moduleControlRestService, Mockito.times(2))
-            .changeModuleActivationState(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-        Mockito.verify(this.metaDataApplicationRestService, Mockito.times(1))
-            .getModuleMetadata(Mockito.anyString(), Mockito.anyString());
-        Mockito.verify(this.configurationRestService, Mockito.times(1))
-            .getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.SCHEDULED_CONSUMER));
-        Mockito.verify(this.configurationRestService, Mockito.times(1))
-            .getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.BLACKOUT_ROUTER));
-        Mockito.verify(this.configurationRestService, Mockito.times(1))
-            .getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.PROCESS_EXECUTION_BROKER));
-        Mockito.verify(this.configurationRestService, Mockito.times(4))
-            .storeConfiguration(Mockito.anyString(), Mockito.any(ConfigurationMetaData.class));
-        Mockito.verify(this.scheduledProcessEventBatchInsert, Mockito.times(3))
-            .saveConfiguration(Mockito.any(ConfigurationMetaData.class));
-        Mockito.verify(this.moduleControlRestService, Mockito.times(0))
-            .changeFlowStartupType(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-        Mockito.verify(this.moduleControlRestService, Mockito.times(2))
-            .changeFlowState(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        FullCalendar fullCalendar = _get(FullCalendar.class);
+        Assertions.assertNotNull(fullCalendar);
     }
 
-    @Test
-    public void test_create_new_scheduled_job_success_start_automatically() throws IOException
-    {
-        Mockito.when(this.configurationRestService.getModuleConfiguration(Mockito.anyString()))
-            .thenReturn(this.getModuleConfiguration());
-
-        Mockito.when(this.moduleControlRestService.changeModuleActivationState(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
-            .thenReturn(true);
-
-        Mockito.when(this.metaDataApplicationRestService.getModuleMetadata(Mockito.anyString(), Mockito.anyString()))
-            .thenReturn(Optional.of(this.getModuleMetadata()));
-
-        Mockito.when(this.configurationRestService.getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.SCHEDULED_CONSUMER)))
-            .thenReturn(this.getModuleConfiguration("/data/scheduled-consumer-configuration.json"));
-
-        Mockito.when(this.configurationRestService.getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.BLACKOUT_ROUTER)))
-            .thenReturn(this.getModuleConfiguration("/data/blackout-router-configuration.json"));
-
-        Mockito.when(this.configurationRestService.getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.PROCESS_EXECUTION_BROKER)))
-            .thenReturn(this.getModuleConfiguration("/data/process-execution-broker-configuration.json"));
-
-        Mockito.when(this.configurationRestService.storeConfiguration(Mockito.anyString(), Mockito.any(ConfigurationMetaData.class)))
-            .thenReturn(true);
-
-
-        // Navigate to the scheduler view.
-        UI.getCurrent().navigate("scheduler");
-
-        // Get a handle to the agents grid and make sure there is some data in it.
-        ScheduledAgentsFilteringGrid agentsFilteringGrid = _get(ScheduledAgentsFilteringGrid.class);
-        Assertions.assertEquals(1, GridKt._size(agentsFilteringGrid));
-
-        // Double click on the agent in the grid.
-        GridKt._doubleClickItem(agentsFilteringGrid, 0);
-
-        // We expect the agent management grid to open. Make sure that it has.
-        SchedulerAgentManagementDialog schedulerAgentManagementDialog = _get(SchedulerAgentManagementDialog.class);
-        Assertions.assertNotNull(schedulerAgentManagementDialog);
-
-        // The purpose of the test is to make sure that form validation fails
-        // when creating a new job. So we need to click the new job button.
-        _click(_get(Button.class, spec -> spec.withId("newScheduledJobButton")));
-
-        // Make sure the dialog for creating the new job has opened.
-        ScheduledJobDialog scheduledJobDialog = _get(ScheduledJobDialog.class);
-        Assertions.assertNotNull(scheduledJobDialog);
-
-        // Make sure the agent combo box is populated as expected.
-        Assertions.assertEquals("scheduler-agent", _get(ComboBox.class, spec -> spec.withId("agentCb")).getValue());
-
-        // We want to add a pass through properties so we can check it fails validation
-        _click(_get(Button.class, spec -> spec.withId("passThroughPropertiesButton")));
-
-        // We want to add a couple return codes so we can check they fail validation
-        _click(_get(Button.class, spec -> spec.withId("successfulReturnCodesButton")));
-        _click(_get(Button.class, spec -> spec.withId("successfulReturnCodesButton")));
-
-        // We want to add a blackout cron so we can check it fails validation
-        _click(_get(Button.class, spec -> spec.withId("addBlackoutCron")));
-
-        // We want to add a blackout date time range so we can check it fails validation
-        _click(_get(Button.class, spec -> spec.withId("addDateTimeRange")));
-
-        // Set values on all required fields
-        _get(Checkbox.class, spec -> spec.withId("startAutomaticCb")).setValue(true);
-        _get(TextField.class, spec -> spec.withId("jobNameTf")).setValue("20 minute");
-        _get(TextField.class, spec -> spec.withId("jobGroupTf")).setValue("Job group");
-        _get(TextArea.class, spec -> spec.withId("jobDescriptionTa")).setValue("Job description");
-        _get(TextField.class, spec -> spec.withId("cronExpressionTf")).setValue("0 0/30 * * * ?");
-        _get(TextArea.class, spec -> spec.withId("commandLineTa")).setValue("ls -la");
-        _get(TextField.class, spec -> spec.withId("stdOutTf")).setValue("out");
-        _get(TextField.class, spec -> spec.withId("stdErrTf")).setValue("err");
-        _get(TextField.class, spec -> spec.withId("successfulReturnCodeTf0")).setValue("0");
-        _get(TextField.class, spec -> spec.withId("successfulReturnCodeTf1")).setValue("00");
-        _get(TextField.class, spec -> spec.withId("blackoutCronExpressionTf0")).setValue("0 0/30 * * * ?");
-        _get(SuperDatePicker.class, spec -> spec.withId("dateTimeRange.startDate0")).setValue(LocalDate.now());
-        _get(TimePicker.class, spec -> spec.withId("dateTimeRange.startTime0")).setValue(LocalTime.now());
-        _get(SuperDatePicker.class, spec -> spec.withId("dateTimeRange.endDate0")).setValue(LocalDate.now());
-        _get(TimePicker.class, spec -> spec.withId("dateTimeRange.endTime0")).setValue(LocalTime.now());
-        _get(TextField.class, spec -> spec.withId("passThroughProperty.nameTf0")).setValue("name");
-        _get(TextField.class, spec -> spec.withId("passThroughProperty.valueTf0")).setValue("value");
-
-        // Click the new job save button. This initiates the form validation.
-        _click(_get(Button.class, spec -> spec.withId("scheduledJobSaveButton")));
-
-        Mockito.verify(this.configurationRestService, Mockito.times(1))
-            .getModuleConfiguration(Mockito.anyString());
-        Mockito.verify(this.moduleControlRestService, Mockito.times(2))
-            .changeModuleActivationState(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-        Mockito.verify(this.metaDataApplicationRestService, Mockito.times(1))
-            .getModuleMetadata(Mockito.anyString(), Mockito.anyString());
-        Mockito.verify(this.configurationRestService, Mockito.times(1))
-            .getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.SCHEDULED_CONSUMER));
-        Mockito.verify(this.configurationRestService, Mockito.times(1))
-            .getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.BLACKOUT_ROUTER));
-        Mockito.verify(this.configurationRestService, Mockito.times(1))
-            .getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.PROCESS_EXECUTION_BROKER));
-        Mockito.verify(this.configurationRestService, Mockito.times(5))
-            .storeConfiguration(Mockito.anyString(), Mockito.any(ConfigurationMetaData.class));
-        Mockito.verify(this.scheduledProcessEventBatchInsert, Mockito.times(3))
-            .saveConfiguration(Mockito.any(ConfigurationMetaData.class));
-        Mockito.verify(this.moduleControlRestService, Mockito.times(1))
-            .changeFlowStartupType(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-        Mockito.verify(this.moduleControlRestService, Mockito.times(2))
-            .changeFlowState(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-    }
-
-    @Test
-    public void test_edit_existing_scheduled_job() throws IOException
-    {
-        Mockito.when(this.configurationRestService.getModuleConfiguration(Mockito.anyString()))
-            .thenReturn(this.getModuleConfiguration());
-
-        Mockito.when(this.moduleControlRestService.changeModuleActivationState(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
-            .thenReturn(true);
-
-        Mockito.when(this.metaDataApplicationRestService.getModuleMetadata(Mockito.anyString(), Mockito.anyString()))
-            .thenReturn(Optional.of(this.getModuleMetadata()));
-
-        Mockito.when(this.configurationRestService.getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.SCHEDULED_CONSUMER)))
-            .thenReturn(this.getModuleConfiguration("/data/scheduled-consumer-configuration.json"));
-
-        Mockito.when(this.configurationRestService.getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.BLACKOUT_ROUTER)))
-            .thenReturn(this.getModuleConfiguration("/data/blackout-router-configuration.json"));
-
-        Mockito.when(this.configurationRestService.getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.PROCESS_EXECUTION_BROKER)))
-            .thenReturn(this.getModuleConfiguration("/data/process-execution-broker-configuration.json"));
-
-        Mockito.when(this.configurationRestService.storeConfiguration(Mockito.anyString(), Mockito.any(ConfigurationMetaData.class)))
-            .thenReturn(true);
-
-        Mockito.when(this.scheduledProcessEventBatchInsert.getScheduleProcessAggregateConfigurations(Mockito.anyString(), Mockito.isNull()))
-            .thenReturn(this.getScheduledProcessAggregateConfiguration());
-
-
-        // Navigate to the scheduler view.
-        UI.getCurrent().navigate("scheduler");
-
-        // Get a handle to the agents grid and make sure there is some data in it.
-        ScheduledAgentsFilteringGrid agentsFilteringGrid = _get(ScheduledAgentsFilteringGrid.class);
-        Assertions.assertEquals(1, GridKt._size(agentsFilteringGrid));
-
-        // Double click on the agent in the grid.
-        GridKt._doubleClickItem(agentsFilteringGrid, 0);
-
-        // We expect the agent management grid to open. Make sure that it has.
-        SchedulerAgentManagementDialog schedulerAgentManagementDialog = _get(SchedulerAgentManagementDialog.class);
-        Assertions.assertNotNull(schedulerAgentManagementDialog);
-
-        // Get a handle to the agents grid and make sure there is some data in it.
-        AgentJobFilteringGrid agentJobFilteringGrid = _get(AgentJobFilteringGrid.class);
-        Assertions.assertEquals(1, GridKt._size(agentJobFilteringGrid));
-
-        // Do some funky stuff to get a handle to the edit icon in the grid row and fire the click event.
-        HorizontalLayout actions = ((HorizontalLayout) GridKt._getCellComponent(agentJobFilteringGrid, 0, "actions"));
-        Icon edit = (Icon)actions.getChildren()
-            .filter(component ->  {
-                if(component.getId().isPresent()) {
-                    return component.getId().get().equals("editScheduledJob");
-                }
-
-                return false;
-            })
-            .findFirst()
-            .get();
-        ComponentUtil.fireEvent(edit, new ClickEvent<>(edit));
-
-        // Make sure the dialog for creating the new job has opened.
-        ScheduledJobDialog scheduledJobDialog = _get(ScheduledJobDialog.class);
-        Assertions.assertNotNull(scheduledJobDialog);
-
-        // Make sure the fields are populated as expected.
-        Assertions.assertEquals("scheduler-agent", _get(ComboBox.class, spec -> spec.withId("agentCb")).getValue());
-        Assertions.assertEquals("20 minute", _get(TextField.class, spec -> spec.withId("jobNameTf")).getValue());
-
-        // Click the new job save button. This initiates the form validation.
-        _click(_get(Button.class, spec -> spec.withId("scheduledJobSaveButton")));
-
-        Mockito.verify(this.configurationRestService, Mockito.times(1))
-            .getModuleConfiguration(Mockito.anyString());
-        Mockito.verify(this.moduleControlRestService, Mockito.times(0))
-            .changeModuleActivationState(Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-        Mockito.verify(this.metaDataApplicationRestService, Mockito.times(1))
-            .getModuleMetadata(Mockito.anyString(), Mockito.anyString());
-        Mockito.verify(this.configurationRestService, Mockito.times(1))
-            .getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.SCHEDULED_CONSUMER));
-        Mockito.verify(this.configurationRestService, Mockito.times(1))
-            .getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.BLACKOUT_ROUTER));
-        Mockito.verify(this.configurationRestService, Mockito.times(1))
-            .getConfiguredResourceConfiguration(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), eq(ScheduledProcessConstants.PROCESS_EXECUTION_BROKER));
-        Mockito.verify(this.configurationRestService, Mockito.times(4))
-            .storeConfiguration(Mockito.anyString(), Mockito.any(ConfigurationMetaData.class));
-        Mockito.verify(this.scheduledProcessEventBatchInsert, Mockito.times(3))
-            .saveConfiguration(Mockito.any(ConfigurationMetaData.class));
-        Mockito.verify(this.moduleControlRestService, Mockito.times(1))
-            .changeFlowStartupType(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-        Mockito.verify(this.moduleControlRestService, Mockito.times(2))
-            .changeFlowState(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
-    }
 
     protected ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledEventsResults(int size) {
 
@@ -554,65 +225,6 @@ public class SchedulerViewTest extends UITest {
 
         return new ModuleMetadataSearchResults(ikasanSolrDocuments
             , ikasanSolrDocuments.size(), 1);
-    }
-
-    private ModuleMetaData getModuleMetadata() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        SimpleModule m = new SimpleModule();
-        m.addAbstractTypeMapping(ModuleMetaData.class, SolrModuleMetaDataImpl.class);
-        m.addAbstractTypeMapping(FlowMetaData.class, SolrFlowMetaDataImpl.class);
-        m.addAbstractTypeMapping(FlowElementMetaData.class, SolrFlowElementMetaDataImpl.class);
-        m.addAbstractTypeMapping(Transition.class, SolrTransitionImpl.class);
-
-        objectMapper.registerModule(m);
-        return objectMapper.readValue(this.loadDataFile("/data/scheduler-module-metadata.json"), SolrModuleMetaDataImpl.class);
-    }
-
-    private SolrConfigurationMetaData getModuleConfiguration() {
-        SolrConfigurationParameterMetaData configurationParameterMetaData = new SolrConfigurationParameterMetaData();
-        configurationParameterMetaData.setDescription("description");
-        configurationParameterMetaData.setImplementingClass(Map.class.getName());
-        configurationParameterMetaData.setName("flowDefinitions");
-        configurationParameterMetaData.setValue(new HashMap<>());
-
-        ArrayList<SolrConfigurationParameterMetaData> params = new ArrayList<>();
-        params.add(configurationParameterMetaData);
-
-        SolrConfigurationMetaData configurationMetaData = new SolrConfigurationMetaData();
-        configurationMetaData.setParameters(params);
-
-        return configurationMetaData;
-    }
-
-    private SolrConfigurationMetaData getModuleConfiguration(String filename) throws IOException {
-        String configuration = this.loadDataFile(filename);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        SolrConfigurationMetaData configurationMetaData
-            = objectMapper.readValue(configuration, SolrConfigurationMetaData.class);
-
-        return configurationMetaData;
-    }
-
-    private ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getScheduledProcessAggregateConfiguration() {
-
-        ScheduledProcessAggregateConfiguration scheduledProcessAggregateConfiguration = new ScheduledProcessAggregateConfiguration();
-        scheduledProcessAggregateConfiguration.setAgentName("scheduler-agent");
-        scheduledProcessAggregateConfiguration.setJobName("20 minute");
-        scheduledProcessAggregateConfiguration.setCommandLine("commandLine");
-        scheduledProcessAggregateConfiguration.setCronExpression("0 0/30 * * * ?");
-        scheduledProcessAggregateConfiguration.setJobGroup("jobGroup");
-        scheduledProcessAggregateConfiguration.setJobDescription("jobDescription");
-        scheduledProcessAggregateConfiguration.setStartAutomatically(true);
-        scheduledProcessAggregateConfiguration.setStdOut("out");
-        scheduledProcessAggregateConfiguration.setStdErr("err");
-
-        ArrayList<ScheduledProcessAggregateConfiguration> results = new ArrayList<>();
-        results.add(scheduledProcessAggregateConfiguration);
-
-        return new ScheduledProcessEventSearchResults(results, 1, 1);
     }
 
 
