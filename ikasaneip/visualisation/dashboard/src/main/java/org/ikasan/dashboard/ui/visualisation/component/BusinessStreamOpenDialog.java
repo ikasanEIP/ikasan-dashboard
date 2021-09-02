@@ -38,7 +38,7 @@ public class BusinessStreamOpenDialog extends AbstractCloseableResizableDialog {
         textField.setPrefixComponent(icon);
         HorizontalLayout layout = new HorizontalLayout();
         layout.setWidthFull();
-        H4 modules = new H4("Business Streams");
+        H4 modules = new H4(getTranslation("label.business-streams", UI.getCurrent().getLocale()));
         layout.add(modules, textField);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.START, modules);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, textField);

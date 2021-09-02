@@ -3,21 +3,16 @@ package org.ikasan.dashboard.ui.scheduler.component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.converter.StringToIntegerConverter;
-import com.vaadin.flow.data.converter.StringToLongConverter;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterListener;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.scheduled.model.UpcomingScheduledProcess;
 import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 
 public class UpcomingJobExecutionDialog extends AbstractCloseableResizableDialog implements BeforeEnterListener {
 

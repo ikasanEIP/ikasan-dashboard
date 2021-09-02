@@ -16,8 +16,8 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.server.StreamResource;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.general.component.TableButton;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.component.filter.BusinessStreamSearchFilter;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
@@ -49,7 +49,7 @@ public class BusinessStreamManageDialog extends AbstractCloseableResizableDialog
         textField.setPrefixComponent(icon);
         HorizontalLayout layout = new HorizontalLayout();
         layout.setWidthFull();
-        H4 modules = new H4("Business Streams");
+        H4 modules = new H4(getTranslation("label.business-streams", UI.getCurrent().getLocale()));
         layout.add(modules, textField);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.START, modules);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, textField);

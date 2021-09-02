@@ -1,7 +1,6 @@
 package org.ikasan.dashboard.ui.visualisation.component.filter;
 
 import com.vaadin.flow.data.provider.QuerySortOrder;
-import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.ModuleMetaData;
 
 import java.util.Comparator;

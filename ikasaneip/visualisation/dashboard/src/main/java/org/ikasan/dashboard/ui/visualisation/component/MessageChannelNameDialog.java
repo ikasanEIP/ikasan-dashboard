@@ -17,8 +17,8 @@ public class MessageChannelNameDialog extends AbstractCloseableResizableDialog {
     boolean okPressed = false;
 
     public MessageChannelNameDialog() {
-        super.title.setText("Provide message channel name");
-        this.textField = new TextField("Message channel name");
+        super.title.setText(getTranslation("header.message-channel-name", UI.getCurrent().getLocale()));
+        this.textField = new TextField(getTranslation("label.message-channel-name", UI.getCurrent().getLocale()));
         textField.setWidthFull();
         super.setResizable(false);
 
@@ -27,8 +27,8 @@ public class MessageChannelNameDialog extends AbstractCloseableResizableDialog {
         layout.setWidthFull();
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.START, textField);
 
-        Button ok = new Button("OK");
-        Button cancel = new Button("Cancel");
+        Button ok = new Button(getTranslation("button.ok", UI.getCurrent().getLocale()));
+        Button cancel = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.add(ok, cancel);
@@ -37,7 +37,7 @@ public class MessageChannelNameDialog extends AbstractCloseableResizableDialog {
             boolean isValid = true;
             if(this.textField.getValue() == null || this.textField.getValue().isEmpty())
             {
-                this.textField.setErrorMessage("The message channel name cannot be empty!");
+                this.textField.setErrorMessage(getTranslation("error.empty-message-channel-name", UI.getCurrent().getLocale()));
                 this.textField.setInvalid(true);
                 isValid = false;
             }
