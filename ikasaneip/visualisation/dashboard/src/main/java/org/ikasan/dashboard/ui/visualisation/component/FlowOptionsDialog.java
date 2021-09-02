@@ -63,7 +63,10 @@ public class FlowOptionsDialog extends AbstractCloseableResizableDialog
 
         verticalLayout.add(invokerConfigurationButton);
 
-        this.add(verticalLayout);
+        this.setHeight("300px");
+        this.setWidth("400px");
+
+        this.content.add(verticalLayout);
     }
 
     private void openFlowConfigurationDialog()

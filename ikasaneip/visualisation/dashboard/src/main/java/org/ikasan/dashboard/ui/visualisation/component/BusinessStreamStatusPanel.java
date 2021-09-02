@@ -5,8 +5,6 @@ import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.shared.Registration;
@@ -82,13 +80,6 @@ public class BusinessStreamStatusPanel extends HorizontalLayout implements Graph
         this.runningDiv.setHeight("45px");
         this.runningDiv.setWidth("60px");
         this.add(runningDiv);
-//        this.runningIcon = VaadinIcon.ARROW_CIRCLE_RIGHT.create();
-//        this.runningIcon.getElement().getStyle().set("margin-left", "5px");
-//        this.runningIcon.getElement().getStyle().set( "cursor", "pointer");
-//        this.runningIcon.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-//            this.createGrid(this.stateMap.get(State.RUNNING_STATE));
-//        });
-//        this.runningDiv.add(runningIcon);
 
         runningButton = this.createStatusButton();
         runningButton.setText("0");

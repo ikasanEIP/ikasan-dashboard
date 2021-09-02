@@ -25,7 +25,12 @@ public class FlowSelectDialog extends AbstractCloseableResizableDialog {
     private Flow flow = null;
 
     public FlowSelectDialog(ModuleMetaDataService moduleMetadataService, ModuleType moduleType) {
-        super.title.setText("Please select a flow");
+        if(moduleType == ModuleType.SCHEDULER_AGENT) {
+            super.title.setText(getTranslation("label.select-scheduled-job", UI.getCurrent().getLocale()));
+        }
+        else {
+            super.title.setText(getTranslation("label.select-flow", UI.getCurrent().getLocale()));
+        }
         this.moduleMetadataService = moduleMetadataService;
         this.textField = new TextField();
         this.createGrid(moduleType);
@@ -42,7 +47,12 @@ public class FlowSelectDialog extends AbstractCloseableResizableDialog {
 
         textField.setPrefixComponent(icon);
         HorizontalLayout layout = new HorizontalLayout();
+
         H4 modules = new H4("Flows");
+        if(moduleType == ModuleType.SCHEDULER_AGENT) {
+            modules = new H4("Scheduled jobs");
+        }
+
         layout.add(modules, textField);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.START, modules);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, textField);
@@ -71,11 +81,13 @@ public class FlowSelectDialog extends AbstractCloseableResizableDialog {
         flowsGrid.setHeight("80%");
 
         flowsGrid.addColumn(Flow::getModuleName)
-            .setHeader(getTranslation("table-header.module-name", UI.getCurrent().getLocale())).setKey("name")
+            .setHeader(moduleType == ModuleType.SCHEDULER_AGENT ?
+                getTranslation("table-header.agent", UI.getCurrent().getLocale()) : getTranslation("table-header.module-name", UI.getCurrent().getLocale())).setKey("name")
             .setFlexGrow(16);
         flowsGrid.addColumn(TemplateRenderer.<Flow>of("<div style='white-space:normal'>[[item.description]]</div>")
             .withProperty("description", Flow::getFlowName))
-            .setHeader(getTranslation("table-header.flow-name", UI.getCurrent().getLocale()))
+            .setHeader(moduleType == ModuleType.SCHEDULER_AGENT ?
+                getTranslation("table-header.job-name", UI.getCurrent().getLocale()) : getTranslation("table-header.flow-name", UI.getCurrent().getLocale()))
             .setKey("description")
             .setFlexGrow(32);
 

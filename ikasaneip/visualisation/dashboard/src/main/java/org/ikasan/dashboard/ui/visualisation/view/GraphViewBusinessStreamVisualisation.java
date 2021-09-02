@@ -3,10 +3,8 @@ package org.ikasan.dashboard.ui.visualisation.view;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
@@ -188,12 +186,6 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
 
         this.headerLayout = new VerticalLayout();
         this.headerLayout.setWidth("100%");
-//        this.headerLayout.getStyle().set("height", "100px");
-//        this.headerLayout.getStyle().set("padding", "0px");
-//        this.headerLayout.getStyle().set("margin", "0px");
-
-//        this.businessStreamStatusPanel = new BusinessStreamStatusPanel(this.moduleControlRestService, this.moduleMetadataService);
-//        this.businessStreamStatusPanel.setBusinessStreamVisualisation(businessStreamVisualisation);
 
         this.headerLayout.add(this.businessStreamLabel, this.businessStreamDescription);
 

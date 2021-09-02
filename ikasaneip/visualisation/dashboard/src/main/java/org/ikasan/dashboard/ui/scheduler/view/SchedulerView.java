@@ -108,9 +108,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         scheduleJobsTab.setVisible(false);
 
 
-        Tab schedulerDashboardTab = new Tab("Scheduler Dashboard");
-        Tab schedulerJobTab = new Tab("Scheduled Jobs");
-        Tab calendarTab = new Tab("Scheduled Jobs Calendar");
+        Tab schedulerDashboardTab = new Tab(getTranslation("tab.label.scheduler-dashboard", UI.getCurrent().getLocale()));
+        Tab schedulerJobTab = new Tab(getTranslation("tab.label.scheduled-jobs", UI.getCurrent().getLocale()));
+        Tab calendarTab = new Tab(getTranslation("tab.label.scheduled-jobs-calendar", UI.getCurrent().getLocale()));
         Tabs tabs = new Tabs(schedulerDashboardTab, schedulerJobTab, calendarTab);
 
         Map<Tab, com.vaadin.flow.component.Component> tabsToPages = new HashMap<>();

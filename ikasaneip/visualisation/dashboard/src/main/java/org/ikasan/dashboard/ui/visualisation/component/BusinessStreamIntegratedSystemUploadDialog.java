@@ -10,21 +10,13 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
-import org.ikasan.business.stream.metadata.model.BusinessStreamMetaDataImpl;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.spec.metadata.BusinessStreamMetaData;
-import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -55,7 +47,7 @@ public class BusinessStreamIntegratedSystemUploadDialog extends AbstractCloseabl
         Image mrSquidImage = new Image("/frontend/images/mr-squid-head.png", "");
         mrSquidImage.setHeight("35px");
 
-        Label businessStreamHeader = new Label(String.format("Add Integrated System"));
+        Label businessStreamHeader = new Label(getTranslation("label.add-integrated-system", UI.getCurrent().getLocale()));
 
         HorizontalLayout header = new HorizontalLayout();
         header.setWidthFull();
