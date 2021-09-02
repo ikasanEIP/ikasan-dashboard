@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import org.vaadin.stefan.fullcalendar.CalendarViewImpl;
 import org.vaadin.stefan.fullcalendar.FullCalendar;
 
 import java.io.Serializable;
@@ -23,5 +24,7 @@ public class FullCalendarWithTooltip extends FullCalendar {
      */
     public FullCalendarWithTooltip(int entryLimit) {
         super(entryLimit);
+
+        super.changeView(CalendarViewImpl.DAY_GRID_WEEK);
     }
 }
