@@ -212,7 +212,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         Button zoomInButton = new Button();
         zoomInButton.getElement().appendChild(IronIcons.ZOOM_IN.create().getElement());
         zoomInButton.setId("canvas_zoom_in");
-        Tooltip zoomInButtonTooltip = getTooltip(zoomInButton,"Zoom in"
+        Tooltip zoomInButtonTooltip = getTooltip(zoomInButton, getTranslation("tooltip.zoom-in", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         actions.add(zoomInButton, zoomInButtonTooltip);
 
@@ -220,14 +220,14 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         Button zoomOutButton = new Button();
         zoomOutButton.getElement().appendChild(IronIcons.ZOOM_OUT.create().getElement());
         zoomOutButton.setId("canvas_zoom_out");
-        Tooltip zoomOutButtonTooltip = getTooltip(zoomOutButton,"Zoom out"
+        Tooltip zoomOutButtonTooltip = getTooltip(zoomOutButton, getTranslation("tooltip.zoom-out", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         actions.add(zoomOutButton, zoomOutButtonTooltip);
 
         // Export as selected format
         Button download = new Button();
         download.getElement().appendChild(IronIcons.FILE_DOWNLOAD.create().getElement());
-        Tooltip downloadTooltip = getTooltip(download,"Export as image"
+        Tooltip downloadTooltip = getTooltip(download, getTranslation("tooltip.export-png", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         actions.add(download, downloadTooltip);
         download.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
@@ -547,8 +547,8 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
                 .filter(flow -> this.flowMap.get(nodeId).getFlowName().equals(flow.getName()))
                 .findFirst()
                 .isEmpty()) {
-                ConfirmDialog dialog = new ConfirmDialog("Flow not found!",
-                    "This flow may have been deleted from the originating module.", "OK",
+                ConfirmDialog dialog = new ConfirmDialog(getTranslation("confirm.header.flow-not-found", UI.getCurrent().getLocale()),
+                    getTranslation("confirm.body.flow-not-found", UI.getCurrent().getLocale()), getTranslation("button.ok", UI.getCurrent().getLocale()),
                     (ComponentEventListener<ConfirmDialog.ConfirmEvent>) confirmEvent -> {});
 
                 dialog.open();
@@ -565,8 +565,8 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
                 flowVisualisationDialog.open();
             }
             else {
-                ConfirmDialog dialog = new ConfirmDialog("No flow access",
-                    "You do not have permission to access the module containing this flow.", "OK",
+                ConfirmDialog dialog = new ConfirmDialog(getTranslation("confirm.header.no-flow-access", UI.getCurrent().getLocale()),
+                    getTranslation("confirm.body.no-flow-access", UI.getCurrent().getLocale()), getTranslation("button.ok", UI.getCurrent().getLocale()),
                     (ComponentEventListener<ConfirmDialog.ConfirmEvent>) confirmEvent -> {});
 
                 dialog.open();

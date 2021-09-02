@@ -9,7 +9,6 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
@@ -113,9 +112,9 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         businessStreamDesigner.addCanvasItemRightClickEventListener(this);
         businessStreamDesigner.addCanvasItemDoubleClickEventListener(this);
         businessStreamDesigner.setSizeFull();
-        businessStreamDesigner.addItemPallet(new ItemPallet("General", this.createGeneralPalette()));
-        businessStreamDesigner.addItemPallet(new ItemPallet("Integrated Systems", this.integratedSystemPalette));
-        businessStreamDesigner.addItemPallet(new ItemPallet("Shapes", this.createShapesPalette()));
+        businessStreamDesigner.addItemPallet(new ItemPallet(getTranslation("label.general", UI.getCurrent().getLocale()), this.createGeneralPalette()));
+        businessStreamDesigner.addItemPallet(new ItemPallet(getTranslation("label.integrated-systems", UI.getCurrent().getLocale()), this.integratedSystemPalette));
+        businessStreamDesigner.addItemPallet(new ItemPallet(getTranslation("label.shapes", UI.getCurrent().getLocale()), this.createShapesPalette()));
 
 
         this.add(businessStreamDesigner);
@@ -149,7 +148,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         });
         DragSource.create(flowImage);
 
-        Tooltip tooltip = TooltipHelper.getTooltip(flowImage,"Ikasan flow"
+        Tooltip tooltip = TooltipHelper.getTooltip(flowImage,getTranslation("tooltip.ikasan-flow", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
 
         DesignerPalletImageItem scheduledAgentImage = new DesignerPalletIconImageItem("frontend/images/scheduler-agent.png", designerPalletItem -> {
@@ -166,7 +165,6 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
 
                     businessStreamDesigner.addLabelToItem(designerPalletItem
                         , dialog.getFlow().getModuleName() + "." + dialog.getFlow().getFlowName());
-
                 }
             });
 
@@ -179,7 +177,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         });
         DragSource.create(scheduledAgentImage);
 
-        Tooltip scheduledAgentTooltip = TooltipHelper.getTooltip(flowImage,"Scheduler agent"
+        Tooltip scheduledAgentTooltip = TooltipHelper.getTooltip(scheduledAgentImage, getTranslation("tooltip.scheduler-agent", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
 
         DesignerPalletImageItem channelImage = new DesignerPalletIconImageItem("frontend/images/message-channel.png", designerPalletItem -> {
@@ -194,7 +192,6 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
                     this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
 
                     businessStreamDesigner.addLabelToItem(designerPalletItem, messageChannelNameDialog.getMessageChannelName());
-
                 }
             });
 
@@ -207,7 +204,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
         });
         DragSource.create(channelImage);
 
-        Tooltip channelImageTooltip = TooltipHelper.getTooltip(channelImage,"Message channel"
+        Tooltip channelImageTooltip = TooltipHelper.getTooltip(channelImage, getTranslation("tooltip.message-channel", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
 
 
@@ -224,7 +221,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             }
         });
 
-        Tooltip labelImageTooltip = TooltipHelper.getTooltip(labelImage,"Text"
+        Tooltip labelImageTooltip = TooltipHelper.getTooltip(labelImage, getTranslation("tooltip.text", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
 
         HorizontalLayout layout = new HorizontalLayout();
@@ -320,7 +317,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
         }, 100, 100);
         rectangleImage.setWidth("30px");
-        Tooltip rectangleImageTooltip = TooltipHelper.getTooltip(rectangleImage,"Rectangle"
+        Tooltip rectangleImageTooltip = TooltipHelper.getTooltip(rectangleImage, getTranslation("tooltip.rectangle", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         DragSource.create(rectangleImage);
         rectangleImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
@@ -335,7 +332,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
         }, 100, 100);
         triangleImage.setWidth("30px");
-        Tooltip triangleImageTooltip = TooltipHelper.getTooltip(triangleImage,"Triangle"
+        Tooltip triangleImageTooltip = TooltipHelper.getTooltip(triangleImage, getTranslation("tooltip.triangle", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         DragSource.create(triangleImage);
         triangleImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
@@ -350,7 +347,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
         }, 200, 100);
         ovalImage.setWidth("30px");
-        Tooltip ovalImageTooltip = TooltipHelper.getTooltip(ovalImage,"Oval"
+        Tooltip ovalImageTooltip = TooltipHelper.getTooltip(ovalImage, getTranslation("tooltip.oval", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         DragSource.create(ovalImage);
         ovalImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
@@ -365,7 +362,7 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
         }, 200, 200);
         circleImage.setWidth("30px");
-        Tooltip circleImageTooltip = TooltipHelper.getTooltip(circleImage,"Circle"
+        Tooltip circleImageTooltip = TooltipHelper.getTooltip(circleImage, getTranslation("tooltip.circle", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         DragSource.create(circleImage);
         circleImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {

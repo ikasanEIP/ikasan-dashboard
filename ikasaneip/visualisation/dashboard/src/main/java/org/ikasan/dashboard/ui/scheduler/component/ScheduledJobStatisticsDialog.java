@@ -3,18 +3,13 @@ package org.ikasan.dashboard.ui.scheduler.component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.*;
-import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.RouteParam;
-import com.vaadin.flow.router.RouteParameters;
-import com.vaadin.flow.router.RouterLink;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
@@ -24,9 +19,7 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 
 import java.time.Instant;
-import java.time.ZoneId;
 import java.util.TimeZone;
-import java.util.stream.IntStream;
 
 public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDialog {
 

@@ -1,8 +1,8 @@
 package org.ikasan.dashboard.ui.visualisation.component;
 
+import com.vaadin.flow.component.UI;
 import org.ikasan.dashboard.ui.general.component.AbstractConfigurationDialog;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
-import org.ikasan.rest.client.ConfigurationRestServiceImpl;
 import org.ikasan.spec.module.client.ConfigurationService;
 
 public class InvokerConfigurationDialog extends AbstractConfigurationDialog
@@ -19,9 +19,9 @@ public class InvokerConfigurationDialog extends AbstractConfigurationDialog
         , ConfigurationService configurationRestService)
     {
         super(module, flowName, componentName, configurationRestService);
-        super.title.setText("Invoker Configuration");
-        super.setWidth("60vw");
-        super.setHeight("40vh");
+        super.title.setText(getTranslation("header.invoker-configuration", UI.getCurrent().getLocale()));
+        super.setWidth("800px");
+        super.setHeight("520px");
     }
 
     @Override

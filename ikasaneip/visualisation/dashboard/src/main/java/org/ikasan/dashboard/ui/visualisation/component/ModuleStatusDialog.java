@@ -19,8 +19,8 @@ import org.ikasan.dashboard.broadcast.State;
 import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.general.component.FlowControlManagementDialog;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.visualisation.event.GraphViewChangeEvent;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
@@ -77,7 +77,7 @@ public class ModuleStatusDialog extends AbstractCloseableResizableDialog {
         flowGrid.setMinHeight("50vh");
         flowGrid.setSelectionMode(Grid.SelectionMode.MULTI);
 
-        flowGrid.addColumn(Flow::getName).setHeader("Name").setFlexGrow(10);
+        flowGrid.addColumn(Flow::getName).setHeader(getTranslation("table-header.flow-name", UI.getCurrent().getLocale())).setFlexGrow(10);
         flowGrid.addColumn(new ComponentRenderer<>((Flow node) ->
         {
             FlowState flowState = FlowStateCache.instance().get(this.currentModule, node);
@@ -91,7 +91,7 @@ public class ModuleStatusDialog extends AbstractCloseableResizableDialog {
             HorizontalLayout layout = this.getStatusLabelLayout(state);
 
             return layout;
-        })).setHeader("Status").setKey("status").setFlexGrow(4);
+        })).setHeader(getTranslation("table-header.status", UI.getCurrent().getLocale())).setKey("status").setFlexGrow(4);
         flowGrid.addColumn(new ComponentRenderer<>((Flow node) ->
         {
             VerticalLayout wrapper = new VerticalLayout();
@@ -152,7 +152,7 @@ public class ModuleStatusDialog extends AbstractCloseableResizableDialog {
             wrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, layout);
 
             return wrapper;
-        })).setHeader("Flow Startup Type").setKey("flowStartupType").setWidth("150px");
+        })).setHeader(getTranslation("table-header.flow-start-type", UI.getCurrent().getLocale())).setKey("flowStartupType").setWidth("150px");
         flowGrid.addColumn(new ComponentRenderer<>((Flow node) ->
         {
             MultiFlowControlPanel controlPanel = new MultiFlowControlPanel(this.moduleControlRestService);
@@ -201,7 +201,7 @@ public class ModuleStatusDialog extends AbstractCloseableResizableDialog {
                 , SecurityConstants.MODULE_CONTROL_ADMIN));
 
             return controlPanel;
-        })).setHeader("Flow Control").setKey("flowControl").setWidth("300px");
+        })).setHeader(getTranslation("table-header.flow-control", UI.getCurrent().getLocale())).setKey("flowControl").setWidth("300px");
 
         flowGrid.getColumnByKey("status").setClassNameGenerator(item -> {
             FlowState flowState = FlowStateCache.instance().get(this.currentModule, item);

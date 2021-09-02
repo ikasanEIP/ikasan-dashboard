@@ -14,7 +14,6 @@ import org.ikasan.dashboard.ui.org.ikasan.dashboard.broadcast.FlowStateBroadcast
 import org.ikasan.dashboard.ui.search.component.SearchFormTest;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGridTest;
 import org.ikasan.dashboard.ui.search.view.SearchViewTest;
-import org.ikasan.dashboard.ui.visualisation.adapter.service.BusinessStreamVisjsAdapterTest;
 import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleVisjsAdapterTest;
 import org.ikasan.dashboard.ui.visualisation.component.ComponentConfigurationDialogTest;
 import org.ikasan.dashboard.ui.visualisation.component.ModuleFilteringGridTest;
@@ -48,7 +47,6 @@ import org.junit.runners.Suite;
     SearchViewTest.class,
     SolrSearchFilteringGridTest.class,
     SearchFormTest.class,
-    BusinessStreamVisjsAdapterTest.class,
     ModuleVisjsAdapterTest.class,
     ModuleMetaDataDaoImplTest.class,
     IkasanFlowLayoutManagerTest.class,

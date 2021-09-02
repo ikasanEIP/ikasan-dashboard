@@ -3,7 +3,6 @@ package org.ikasan.dashboard.ui.visualisation.component;
 import org.ikasan.dashboard.ui.general.component.AbstractConfigurationDialog;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Flow;
 import org.ikasan.dashboard.ui.visualisation.model.flow.Module;
-import org.ikasan.rest.client.ConfigurationRestServiceImpl;
 import org.ikasan.spec.module.client.ConfigurationService;
 
 public class FlowConfigurationDialog extends AbstractConfigurationDialog
