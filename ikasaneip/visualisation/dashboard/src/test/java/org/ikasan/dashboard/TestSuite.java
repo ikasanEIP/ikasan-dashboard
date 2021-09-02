@@ -4,6 +4,7 @@ import org.ikasan.dashboard.notification.BusinessStreamNotificationJobTest;
 import org.ikasan.dashboard.notification.service.BusinessStreamNotificationServiceTest;
 import org.ikasan.dashboard.security.schedule.LdapDirectorySynchronisationJobTest;
 import org.ikasan.dashboard.ui.administration.filter.*;
+import org.ikasan.dashboard.ui.administration.util.ConfigurationChangedSystemEventFormatterTest;
 import org.ikasan.dashboard.ui.administration.view.*;
 import org.ikasan.dashboard.ui.general.component.EventLifeIdDeepLinkViewTest;
 import org.ikasan.dashboard.ui.general.component.FilteringGridTest;
@@ -11,6 +12,7 @@ import org.ikasan.dashboard.ui.general.component.HospitalViewTest;
 import org.ikasan.dashboard.ui.general.component.SearchResultTest;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayoutTest;
 import org.ikasan.dashboard.ui.org.ikasan.dashboard.broadcast.FlowStateBroadcasterTest;
+import org.ikasan.dashboard.ui.scheduler.component.ScheduledJobDialogTest;
 import org.ikasan.dashboard.ui.scheduler.view.SchedulerViewTest;
 import org.ikasan.dashboard.ui.search.component.SearchFormTest;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGridTest;
@@ -63,7 +65,9 @@ import org.junit.runners.Suite;
     SystemEventSearchViewTest.class,
     AdministrationSearchViewTest.class,
     IkasanAppLayoutTest.class,
-    SchedulerViewTest.class
+    SchedulerViewTest.class,
+    ConfigurationChangedSystemEventFormatterTest.class,
+    ScheduledJobDialogTest.class
 })
 public class TestSuite {
 }
