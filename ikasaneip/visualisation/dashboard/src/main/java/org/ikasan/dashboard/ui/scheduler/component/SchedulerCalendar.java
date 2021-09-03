@@ -39,6 +39,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObserver, BatchInsertListener<ScheduledProcessEvent> {
 
     private ScheduledProcessManagementService scheduledProcessManagementService;
@@ -106,11 +108,18 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
         });
 
         calendar.addDatesRenderedListener(event -> {
+            if(this.firstDay != null && this.firstDay.equals(event.getStart())
+                && this.lastDate != null && this.lastDate.equals(event.getEnd())) {
+                // no need to update if no date changes.
+                return;
+            }
             this.firstDay = event.getStart();
             this.lastDate = event.getEnd();
             this.calendar.removeAllEntries();
-            this.updateCalendarContents(event.getStart(), event.getEnd()
-                , filterField.getValue() != null ? filterField.getValue():null);
+            if(DAYS.between(event.getStart(), event.getEnd()) < 8) {
+                this.updateCalendarContents(event.getStart(), event.getEnd()
+                    , filterField.getValue() != null ? filterField.getValue() : null);
+            }
         });
 
         this.add(this.createBasicToolbar(), calendar);
@@ -259,7 +268,7 @@ public class SchedulerCalendar extends VerticalLayout implements BeforeEnterObse
         entry.setDescription(description);
         entry.setStart(start);
         entry.setEnd(entry.getStartUTC().plus(minutes, ChronoUnit.MINUTES));
-        entry.setAllDay(ChronoUnit.MINUTES == ChronoUnit.DAYS);
+        entry.setAllDay(ChronoUnit.MINUTES == DAYS);
         if(color != null) entry.setColor(color);
         entry.setExtendedProps(extendedProps);
 
