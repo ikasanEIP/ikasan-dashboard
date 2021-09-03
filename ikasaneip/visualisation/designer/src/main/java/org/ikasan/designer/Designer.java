@@ -129,7 +129,11 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         MenuItem newDiagram = fileSubMenu.addItem(getTranslation("menu.new", UI.getCurrent().getLocale()));
         newDiagram.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> {
             if(!this.designerCanvas.isSaved()) {
-                SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndNewAction(this.designerCanvas));
+                SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndNewAction(this.designerCanvas),
+                    getTranslation("header.save-requied", UI.getCurrent().getLocale()),
+                    getTranslation("label.unsaved-diagram", UI.getCurrent().getLocale()),
+                    getTranslation("button.continue", UI.getCurrent().getLocale()),
+                    getTranslation("button.cancel", UI.getCurrent().getLocale()));
                 savePromptDialog.open();
             }
             else {
@@ -140,8 +144,11 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         MenuItem open = fileSubMenu.addItem(getTranslation("menu.open", UI.getCurrent().getLocale()));
         open.addClickListener((ComponentEventListener<ClickEvent<MenuItem>>) menuItemClickEvent -> {
             if(!this.designerCanvas.isSaved()) {
-                SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndOpenAction(this.openFunction
-                    , this.designerCanvas));
+                SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndOpenAction(this.openFunction, this.designerCanvas),
+                    getTranslation("header.save-requied", UI.getCurrent().getLocale()),
+                    getTranslation("label.unsaved-diagram", UI.getCurrent().getLocale()),
+                    getTranslation("button.continue", UI.getCurrent().getLocale()),
+                    getTranslation("button.cancel", UI.getCurrent().getLocale()));
                 savePromptDialog.open();
             }
             else {
@@ -290,8 +297,11 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         actions.add(open);
         open.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             if(!this.designerCanvas.isSaved()) {
-                SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndOpenAction(this.openFunction
-                    , this.designerCanvas));
+                SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndOpenAction(this.openFunction, this.designerCanvas),
+                    getTranslation("header.save-requied", UI.getCurrent().getLocale()),
+                    getTranslation("label.unsaved-diagram", UI.getCurrent().getLocale()),
+                    getTranslation("button.continue", UI.getCurrent().getLocale()),
+                    getTranslation("button.cancel", UI.getCurrent().getLocale()));
                 savePromptDialog.open();
             }
             else {
@@ -406,7 +416,11 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
         if(!this.designerCanvas.isSaved()) {
             BeforeLeaveEvent.ContinueNavigationAction action = beforeLeaveEvent.postpone();
 
-            SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndNavigateAction(action));
+            SavePromptDialog savePromptDialog = new SavePromptDialog(new IgnoreSaveAndNavigateAction(action),
+                getTranslation("header.save-requied", UI.getCurrent().getLocale()),
+                getTranslation("label.unsaved-diagram", UI.getCurrent().getLocale()),
+                getTranslation("button.continue", UI.getCurrent().getLocale()),
+                getTranslation("button.cancel", UI.getCurrent().getLocale()));
             savePromptDialog.open();
         }
     }
