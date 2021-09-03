@@ -3,6 +3,7 @@ package org.ikasan.designer.menu;
 
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -35,7 +36,7 @@ public class LabelContextMenu extends Dialog {
         selectFont.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<Select<String>, String>>)
             selectStringComponentValueChangeEvent -> designer.setFont(selectStringComponentValueChangeEvent.getValue()));
 
-        NumberField fontSize = new NumberField("Font Size");
+        NumberField fontSize = new NumberField(getTranslation("label.font-size", UI.getCurrent().getLocale()));
         fontSize.setHasControls(true);
         fontSize.setWidth("90%");
 
