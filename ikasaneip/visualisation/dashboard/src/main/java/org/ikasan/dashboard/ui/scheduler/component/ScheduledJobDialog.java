@@ -256,6 +256,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setRequired(true);
+        this.jobNameTf.setEnabled(this.editMode == EditMode.NEW);
         formBinder.forField(this.jobNameTf)
             .withValidator(jobName -> !jobName.isEmpty(), getTranslation("error.missing-job-name", UI.getCurrent().getLocale()))
             .bind(ScheduledProcessAggregateConfiguration::getJobName, ScheduledProcessAggregateConfiguration::setJobName);
@@ -757,7 +758,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
         this.timezoneCb.setEnabled(enabled);
 
-        this.jobNameTf.setEnabled(enabled);
+        this.jobNameTf.setEnabled(this.editMode == EditMode.NEW);
         this.jobGroupTf.setEnabled(enabled);
         this.jobDescriptionTa.setEnabled(enabled);
         this.cronExpressionTf.setEnabled(enabled);
