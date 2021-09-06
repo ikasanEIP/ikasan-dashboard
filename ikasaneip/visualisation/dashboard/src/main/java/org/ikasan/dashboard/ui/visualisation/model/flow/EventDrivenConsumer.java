@@ -23,7 +23,7 @@ public class EventDrivenConsumer extends Consumer
         super(id, name, transitionLabel, transition, IMAGE, source);
     }
 
-    public static EventDrivenConsumerBuilder sftpConsumerBuilder()
+    public static EventDrivenConsumerBuilder eventDrivenConsumerBuilder()
     {
         return new EventDrivenConsumerBuilder();
     }

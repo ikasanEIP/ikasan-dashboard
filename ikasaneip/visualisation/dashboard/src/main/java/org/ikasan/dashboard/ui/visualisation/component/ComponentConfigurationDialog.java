@@ -34,8 +34,10 @@ public class ComponentConfigurationDialog extends AbstractConfigurationDialog
             this.configurationMetaData = this.configurationRestService
                 .getConfiguredResourceConfiguration(module.getUrl(), module.getName(), flowName, componentName);
 
-            super.title.setText(getTranslation("button.component-configuration", UI.getCurrent().getLocale())
-                + " - " + this.configurationMetaData.getConfigurationId());
+            if(configurationMetaData != null) {
+                super.title.setText(getTranslation("button.component-configuration", UI.getCurrent().getLocale())
+                    + " - " + this.configurationMetaData.getConfigurationId());
+            }
 
             return this.configurationMetaData != null;
         } catch (Exception e) {

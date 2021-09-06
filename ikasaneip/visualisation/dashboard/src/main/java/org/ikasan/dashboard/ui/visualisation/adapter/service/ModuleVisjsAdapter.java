@@ -479,7 +479,7 @@ public class ModuleVisjsAdapter
         String destinationName = this.getConfigurationParameterMetaData("destinationJndiName", configurationMetaData);
 
 
-        return EventDrivenConsumer.sftpConsumerBuilder()
+        return EventDrivenConsumer.eventDrivenConsumerBuilder()
             .withId(nodeId)
             .withName(WordUtils.wrap(flowElement.getComponentName(), 25))
             .withTransitionLabel(this.fromTransitionLabelMap.get(flowElement.getComponentName()))
