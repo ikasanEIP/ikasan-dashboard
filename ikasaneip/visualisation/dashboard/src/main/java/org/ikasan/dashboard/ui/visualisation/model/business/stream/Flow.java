@@ -19,16 +19,19 @@ public class Flow extends Node
 
     private String statusIdentifier = UUID.randomUUID().toString();
     private String errorIdentifier = UUID.randomUUID().toString();
+    private String errorCountLabelIdentifier = UUID.randomUUID().toString();
     private String exclusionIdentifier = UUID.randomUUID().toString();
+    private String exclusionCountLabelIdentifier = UUID.randomUUID().toString();
     private String wiretapIdentifier = UUID.randomUUID().toString();
+    private String wiretapCountLabelIdentifier = UUID.randomUUID().toString();
     private String replayIdentifier = UUID.randomUUID().toString();
+    private String replayCountLabelIdentifier = UUID.randomUUID().toString();
 
     public Flow(String id, String moduleName, String flowName, int x, int y, int width, int height)
     {
         super(DesignerItemIdentifier.getIdentifier(id), x, y);
         this.moduleName = moduleName;
         this.flowName = flowName;
-        super.setWiretapFoundStatus(NodeFoundStatus.EMPTY);
         this.width = width;
         this.height = height;
     }
@@ -87,27 +90,6 @@ public class Flow extends Node
         changeNodeStatusColour();
     }
 
-    @Override
-    public void setWiretapFoundStatus(String found)
-    {
-        super.setWiretapFoundStatus(found);
-    }
-
-    @Override
-    public void setErrorFoundStatus(String errorFoundStatus) {
-        super.setErrorFoundStatus(errorFoundStatus);
-    }
-
-    @Override
-    public void setExclusionFoundStatus(String exclusionFoundStatus) {
-        super.setExclusionFoundStatus(exclusionFoundStatus);
-    }
-
-    @Override
-    public void setReplayFoundStatus(String replayFoundStatus) {
-        super.setReplayFoundStatus(replayFoundStatus);
-    }
-
     public String getWiretapEvent()
     {
         return wiretapEvent;
@@ -159,5 +141,25 @@ public class Flow extends Node
     public DesignerItemIdentifier getReplayIdentifier() {
         return new DesignerItemIdentifier(BusinessStreamItemTypes.REPLAY.name(), this.getId().getName(),
             this.replayIdentifier);
+    }
+
+    public DesignerItemIdentifier getErrorCountLabelIdentifier() {
+        return new DesignerItemIdentifier(BusinessStreamItemTypes.ERROR.name(), this.getId().getName(),
+            this.errorCountLabelIdentifier);
+    }
+
+    public DesignerItemIdentifier getExclusionCountLabelIdentifier() {
+        return new DesignerItemIdentifier(BusinessStreamItemTypes.EXCLUSION.name(), this.getId().getName(),
+            this.exclusionCountLabelIdentifier);
+    }
+
+    public DesignerItemIdentifier getWiretapCountLabelIdentifier() {
+        return new DesignerItemIdentifier(BusinessStreamItemTypes.WIRETAP.name(), this.getId().getName(),
+            this.wiretapCountLabelIdentifier);
+    }
+
+    public DesignerItemIdentifier getReplayCountLabelIdentifier() {
+        return new DesignerItemIdentifier(BusinessStreamItemTypes.REPLAY.name(), this.getId().getName(),
+            this.replayCountLabelIdentifier);
     }
 }
