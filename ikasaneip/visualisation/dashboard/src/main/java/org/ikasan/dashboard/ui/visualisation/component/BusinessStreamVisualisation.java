@@ -255,10 +255,10 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
             searchFoundStatus.setEndTime(endTime);
         });
 
-        HashMap<String, Boolean> errorMap = new HashMap<>();
-        HashMap<String, Boolean> wiretapMap = new HashMap<>();
-        HashMap<String, Boolean> exclusionMap = new HashMap<>();
-        HashMap<String, Boolean> replayMap = new HashMap<>();
+        HashMap<String, Long> errorMap = new HashMap<>();
+        HashMap<String, Long> wiretapMap = new HashMap<>();
+        HashMap<String, Long> exclusionMap = new HashMap<>();
+        HashMap<String, Long> replayMap = new HashMap<>();
 
         this.flowMap.values().forEach(flow -> {
             entityTypes.forEach(entityType -> {
@@ -266,16 +266,16 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
                     , endTime, 0, Arrays.asList(entityType), false, null, null);
 
                 if (entityType.equals("wiretap")) {
-                    wiretapMap.put(flow.getId().getName(), results.getTotalNumberOfResults() > 0);
+                    wiretapMap.put(flow.getId().getName(), results.getTotalNumberOfResults());
                 }
                 else if (entityType.equals("error")) {
-                    errorMap.put(flow.getId().getName(), results.getTotalNumberOfResults() > 0);
+                    errorMap.put(flow.getId().getName(), results.getTotalNumberOfResults());
                 }
                 else if (entityType.equals("exclusion")) {
-                    exclusionMap.put(flow.getId().getName(), results.getTotalNumberOfResults() > 0);
+                    exclusionMap.put(flow.getId().getName(), results.getTotalNumberOfResults());
                 }
                 else if (entityType.equals("replay")) {
-                    replayMap.put(flow.getId().getName(), results.getTotalNumberOfResults() > 0);
+                    replayMap.put(flow.getId().getName(), results.getTotalNumberOfResults());
                 }
             });
         });
@@ -283,8 +283,8 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         this.drawFoundStatus(errorMap, wiretapMap, exclusionMap, replayMap);
     }
 
-    public void drawFoundStatus(HashMap<String, Boolean> errorMap, HashMap<String, Boolean> wiretapMap
-        , HashMap<String, Boolean> exclusionMap, HashMap<String, Boolean> replayMap) {
+    public void drawFoundStatus(HashMap<String, Long> errorMap, HashMap<String, Long> wiretapMap
+        , HashMap<String, Long> exclusionMap, HashMap<String, Long> replayMap) {
 
         stringSearchFoundStatusMap.values().forEach(status -> {
             status.setErrorFound(false);
@@ -294,10 +294,10 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         });
 
         this.flows.forEach(flow -> {
-            flow.setWiretapFoundStatus(NodeFoundStatus.NOT_FOUND);
-            flow.setErrorFoundStatus(NodeFoundStatus.NOT_FOUND);
-            flow.setExclusionFoundStatus(NodeFoundStatus.NOT_FOUND);
-            flow.setReplayFoundStatus(NodeFoundStatus.NOT_FOUND);
+            flow.setWiretapFoundCount(0L);
+            flow.setErrorFoundCount(0L);
+            flow.setExclusionFoundCount(0L);
+            flow.setReplayFoundCount(0L);
         });
 
         this.flows = this.flows.stream().map(flow -> {
@@ -306,26 +306,26 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
             if(searchFoundStatus != null) {
                 int numFound = 0;
 
-                if (wiretapMap.get(flow.getId().getName()) != null && wiretapMap.get(flow.getId().getName())) {
-                    flow.setWiretapFoundStatus(NodeFoundStatus.FOUND);
+                if (wiretapMap.get(flow.getId().getName()) != null && wiretapMap.get(flow.getId().getName()) > 0) {
+                    flow.setWiretapFoundCount(wiretapMap.get(flow.getId().getName()));
                     searchFoundStatus.setWiretapFound(true);
                     numFound++;
                 }
 
-                if (errorMap.get(flow.getId().getName()) != null && errorMap.get(flow.getId().getName())) {
-                    flow.setErrorFoundStatus(NodeFoundStatus.FOUND);
+                if (errorMap.get(flow.getId().getName()) != null && errorMap.get(flow.getId().getName()) > 0) {
+                    flow.setErrorFoundCount(errorMap.get(flow.getId().getName()));
                     searchFoundStatus.setErrorFound(true);
                     numFound++;
                 }
 
-                if (exclusionMap.get(flow.getId().getName()) != null && exclusionMap.get(flow.getId().getName())) {
-                    flow.setExclusionFoundStatus(NodeFoundStatus.FOUND);
+                if (exclusionMap.get(flow.getId().getName()) != null && exclusionMap.get(flow.getId().getName()) > 0) {
+                    flow.setExclusionFoundCount(exclusionMap.get(flow.getId().getName()));
                     searchFoundStatus.setExclusionFound(true);
                     numFound++;
                 }
 
-                if (replayMap.get(flow.getId().getName()) != null && replayMap.get(flow.getId().getName())) {
-                    flow.setReplayFoundStatus(NodeFoundStatus.FOUND);
+                if (replayMap.get(flow.getId().getName()) != null && replayMap.get(flow.getId().getName()) > 0) {
+                    flow.setReplayFoundCount(replayMap.get(flow.getId().getName()));
                     searchFoundStatus.setReplayFound(true);
                     numFound++;
                 }
@@ -347,23 +347,31 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         this.designerCanvas.removeFigure(flow.getWiretapIdentifier().toString());
         this.designerCanvas.removeFigure(flow.getExclusionIdentifier().toString());
         this.designerCanvas.removeFigure(flow.getReplayIdentifier().toString());
+        this.designerCanvas.removeFigure(flow.getErrorCountLabelIdentifier().toString());
+        this.designerCanvas.removeFigure(flow.getWiretapCountLabelIdentifier().toString());
+        this.designerCanvas.removeFigure(flow.getExclusionCountLabelIdentifier().toString());
+        this.designerCanvas.removeFigure(flow.getReplayCountLabelIdentifier().toString());
 
-        if(flow.getErrorFoundStatus().equals(NodeFoundStatus.FOUND)) {
+        if(flow.getErrorFoundCount() > 0) {
+            this.designerCanvas.addLabel(String.valueOf(flow.getErrorFoundCount()), xCoordinates.get(offset), flow.getY() - 70);
             this.designerCanvas.addIcon(flow.getErrorIdentifier().toString(), "frontend/images/error-service.png"
                 , xCoordinates.get(offset++), flow.getY() - 45, 35, 35, false, true);
         }
 
-        if(flow.getWiretapFoundStatus().equals(NodeFoundStatus.FOUND)) {
+        if(flow.getWiretapFoundCount() > 0) {
+            this.designerCanvas.addLabel(String.valueOf(flow.getWiretapFoundCount()), xCoordinates.get(offset) , flow.getY() - 70);
             this.designerCanvas.addIcon(flow.getWiretapIdentifier().toString(),"frontend/images/wiretap-service.png"
                 , xCoordinates.get(offset++), flow.getY()-45, 35, 35, false, true);
         }
 
-        if(flow.getExclusionFoundStatus().equals(NodeFoundStatus.FOUND)) {
+        if(flow.getExclusionFoundCount() > 0) {
+            this.designerCanvas.addLabel(String.valueOf(flow.getErrorFoundCount()), xCoordinates.get(offset) , flow.getY() - 70);
             this.designerCanvas.addIcon(flow.getExclusionIdentifier().toString(),"frontend/images/hospital-service.png"
                 , xCoordinates.get(offset++), flow.getY()-45, 35, 35, false, true);
         }
 
-        if(flow.getReplayFoundStatus().equals(NodeFoundStatus.FOUND)) {
+        if(flow.getReplayFoundCount() > 0) {
+            this.designerCanvas.addLabel(String.valueOf(flow.getReplayFoundCount()), xCoordinates.get(offset) , flow.getY() - 70);
             this.designerCanvas.addIcon(flow.getReplayIdentifier().toString(),"frontend/images/replay-service.png"
                 , xCoordinates.get(offset++), flow.getY()-45, 35, 35, false, true);
         }

@@ -116,7 +116,6 @@
         }
 
         designer.$connector.addIcon = function (identifier, image, x, y, h, w, showPorts, isClickable) {
-            debugger;
             let icon = new draw2d.shape.basic.Image({id: identifier, path: image, width:w, height:h, x:x, y:y, keepAspectRatio: true});
 
             if(showPorts === true) {
@@ -363,6 +362,22 @@
 
                 _this.getCommandStack().execute(new draw2d.command.CommandGroup(_this, figuresToGroup))
             }
+        }
+
+        designer.$connector.addLabelWithCoordinates = function (labelString, x, y) {
+            let label = new draw2d.shape.basic.Label({
+                text: labelString,
+                color: "rgba(255,255,255,0)",
+                fontColor: "#0d0d0d",
+                bgColor: "rgba(255,255,255,0)",
+                outlineColor: "rgba(255,255,255,0)",
+                fontFamily: "Trebuchet MS",
+                fontSize: "12pt",
+                x: x, y: y
+            });
+
+            let command = new draw2d.command.CommandAdd(_this, label, x, y);
+            _this.getCommandStack().execute(command);
         }
 
 

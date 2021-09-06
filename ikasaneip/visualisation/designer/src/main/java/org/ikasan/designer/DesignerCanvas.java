@@ -219,6 +219,12 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.saved = false;
     }
 
+    public void addLabel(String label, double x, double y) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.addLabelWithCoordinates", label, x, y));
+        this.saved = false;
+    }
+
     public void populateContextMenu() {
 
         getElement().callJsFunction("$connector.getSelected").then(String.class, result -> {
