@@ -59,7 +59,7 @@ Each job has a series of controls:
 5. And the rocket ship to fire the job immediately
 
 ### Schedule Job Tab
-The scheduled jobs tab contains details of running and recently completed jobs along with upcoming jobs. Both result tables can be filtered and the date ranges changed in order to provide an appropiate view. The tables can be expanded to provide full screen views. Each line itom provides the opportunity to inspect the job execution details, the job configuration and statistics relating to the job.  
+The scheduled jobs tab contains details of running and recently completed jobs along with upcoming jobs. Both result tables can be filtered and the date ranges changed in order to provide an appropiate view. The tables can be expanded to provide full screen views. Each line item provides the opportunity to inspect the job execution details, the job configuration and statistics relating to the job.  
 ![Wiretap View](../../developer/docs/quickstart-images/scheduled-jobs-tab.png)
 
 ### Scheduld Job Execution Details 
