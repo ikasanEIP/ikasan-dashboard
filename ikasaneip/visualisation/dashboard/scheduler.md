@@ -4,7 +4,7 @@
 Version 3.2.0 of Ikasan has seen the introduction of a new bundled fully fledged Ikasan Module that fulfils the role of an enterprise scheduler. This
 is the first zero code offering of the Ikasan platform. 
 
-All scheduler agents are managed from the Ikasan dashboard as seen below. In a typical deployment a single Scheduler Agent modules is deployed on a 
+All scheduler agents are managed from the Ikasan dashboard as seen below. In a typical deployment a single Scheduler Agent module is deployed on a 
 per host basis. The Scheduler Agent advertises itself to the Ikasan Dashboard when initially started and from this point onwards the agent becomes 
 manageable from the dashboard.
 
@@ -36,14 +36,13 @@ The following configuration values are required to create a new job.
 | Job group | The group of the job registered with scheduler. | "My Job Group" | Y |
 | Job description | A meaninful description of the job. | "This is my first scheduled job. It makes it easier for my collegues if I contain lots of detail." | Y |
 | Cron expression | A valid quartz cron expression. See http://www.quartz-scheduler.org/ for more details. | 0 0/15 * * * ? | Y |
-| Timezone| The timzone within which the schedule should operate. Note this value will default to the timezone of the host that the scheduler agent is running on. | Europe/Paris (UTC+02:00) | N |
+| Timezone| The timezone within which the schedule should operate. Note this value will default to the timezone of the host that the scheduler agent is running on. | Europe/Paris (UTC+02:00) | N |
 | Pass through properties| A list of name/value pairs that are passed to the job being executed. | "key", "value" | N |
 | Command line| This is the command that will be executed by the scheduled job. | ls -la | Y |
 | Working directory| This is the directory from which the job will be executed. This will default to the root directory of the scheduler agent if not set. | /opt/platform/jobs | N |
-| Seconds to wait for process to start | A delay between when the schedule fire and the command line is executed. | 10 | N |
+| Seconds to wait for process to start | A delay between when the schedule fires and the command line is executed. | 10 | N |
 | Std out| The directory where the standard out from the executed command line will be written. | /opt/platfrom/jobs/stdout | Y |
 | Std err| The directory where the standard err from the executed command line will be written. | /opt/platfrom/jobs/stderr | Y |
-| Std out| The directory where the standard out from the executed command line will be written. | /opt/platfrom/jobs/stdout | Y |
 | Successful return codes| A list of return codes that are returned by the process upon sucessful completion. | 5,100,200 | N |
 | Blackout cron expressions| A list of cron expressions that represent windows within which the job will not be executed. | 0 0 17-23 * * ? | N |
 | Blackout date time ranges| A list of date time pairs that represent windows within which the job will not be executed. | N/A | N |
@@ -58,13 +57,13 @@ Each job has a series of controls:
 4. Job running state control
 5. And the rocket ship to fire the job immediately
 
-### Schedule Job Tab
+### Scheduled Job Tab
 The scheduled jobs tab contains details of running and recently completed jobs along with upcoming jobs. Both result tables can be filtered and the date ranges changed in order to provide an appropiate view. The tables can be expanded to provide full screen views. Each line item provides the opportunity to inspect the job execution details, the job configuration and statistics relating to the job.  
 ![Wiretap View](../../developer/docs/quickstart-images/scheduled-jobs-tab.png)
 
-### Scheduld Job Execution Details 
+### Scheduled Job Execution Details 
 ![Wiretap View](../../developer/docs/quickstart-images/scheduled-job-execution-details-dialog.png)
 
-### Scheduld Job Statistics
+### Scheduled Job Statistics
 ![Wiretap View](../../developer/docs/quickstart-images/scheduled-job-statistics-dialog.png)
 
