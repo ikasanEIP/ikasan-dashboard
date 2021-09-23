@@ -15,8 +15,11 @@ Each agent is responsible for managing any number of scheduled jobs as seen belo
 ![Scheduler Agent Conceptual](../../developer/docs/quickstart-images/scheduler-agent-conceptual.png)
 
 ### Creating a New Scheduled Job
-
+Upon navigating to the scheduler view, users are presented with the Scheduler Dashboard. The scheduler dashboard provides a view onto all Scheduler Agents as well as the status of all running jobs. In order to manage Scheduler Agent, the user must double click on the table row for the desired Scheduler Agent.
 ![Search Fields](../../developer/docs/quickstart-images/scheduler-dashboard.png)
+
+The user is presented with the Scheduler Agent Management Dialog. This dialog contains details of the Scheduled Agent along with a list of jobs associated with the agent. The status of the available along with variious controls relating to the job. In the top right corner of the dialog is a plus icon that is clicked in order to create a new job. 
+![Wiretap View](../../developer/docs/quickstart-images/scheduler-agent-management-view.png)
 
 
 ![Wiretap Search](../../developer/docs/quickstart-images/scheduler-agents-widget.png)
@@ -24,8 +27,6 @@ Each agent is responsible for managing any number of scheduled jobs as seen belo
 ### Modules and Agents Widget
 ![Wiretap View](../../developer/docs/quickstart-images/scheduler-agents-status-widget.png)
 
-### Flow Status Widget
-![Wiretap View](../../developer/docs/quickstart-images/scheduler-agent-management-view.png)
 
 ### Hospital Events Widget
 ![Wiretap View](../../developer/docs/quickstart-images/scheduled-job-controls.png)
