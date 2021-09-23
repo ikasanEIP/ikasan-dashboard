@@ -4,8 +4,9 @@
 
 - [Dashboard](./dashboard.md)
 - [Search](./search.md)
-- [Notifications](./notifications.md)
+- [Scheduled Jobs](./scheduler.md)
 - [Security](./security.md)
+- [Notifications](./notifications.md)
 
 Import the project to the IDE of your choosing as a Maven project. 
 
