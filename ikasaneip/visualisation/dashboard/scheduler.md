@@ -31,6 +31,7 @@ The following configuration values are required to create a new job.
 
 | Configuration Field | Description  | Sample Value | Mandatory |
 | ---  | --- | --- | --- |
+| Agent name  | This field is prepopulated based on the agent that the new job will be associated with. | N/A | Y |
 | Start automatically  | Checkbox to indicate if the job short start automatically when created and when agent restarts occur. The job will still obey the configured cron expression. It is recommended to set the job to start automatically. | N/A | N |
 | Job name | The name of the job registered with scheduler. | "My Job" | Y |
 | Job group | The group of the job registered with scheduler. | "My Job Group" | Y |
