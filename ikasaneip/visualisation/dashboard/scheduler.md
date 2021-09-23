@@ -1,9 +1,12 @@
 ![IKASAN](../../developer/docs/quickstart-images/Ikasan-title-transparent.png)
 
 # Ikasan Visualisation Dashboard
-The dashboard is the the initial screen that a user is directed to upon logging into the Ikasan Dashboard. The dashboard provides a view onto the 
-runtime state on all flows within the Ikasan estate. It also provides visibility of errors and hospital events that have occurred as well as details of
-all business streams, modules and agents and the ability to open visualisations of each.
+Version 3.2.0 of Ikasan has seen the introduction of a new bundled fully fledged Ikasan Module that fulfils the role of an enterprise scheduler. This
+is the first zero code offering of the Ikasan platform. 
+
+![Scheduler Conceptual](../../developer/docs/quickstart-images/scheduler.png)
+
+![Scheduler Agent Conceptual](../../developer/docs/quickstart-images/scheduler-agent-conceptual.png)
 
 ![Search Fields](../../developer/docs/quickstart-images/scheduler-dashboard.png)
 
