@@ -7,7 +7,7 @@ SCRIPT_DIR=$(pwd)
 # Ikasan Module settings
 
 MODULE_NAME=`cat config/application.properties|grep "module.name"|head -1|cut -d'=' -f2`
-MODULE_JVM_OPTS="-server -Xms256m -Xmx256m -XX:MaxMetaspaceSize=128m -Dorg.apache.activemq.SERIALIZABLE_PACKAGES=*"
+MODULE_JVM_OPTS="-server -Xms512m -Xmx512m -XX:MaxMetaspaceSize=128m -Dorg.apache.activemq.SERIALIZABLE_PACKAGES=*"
 MODULE_OTHER_OPTS=""
 MODULE_JAVA_OPTS="$MODULE_JVM_OPTS  $MODULE_OTHER_OPTS"
 
