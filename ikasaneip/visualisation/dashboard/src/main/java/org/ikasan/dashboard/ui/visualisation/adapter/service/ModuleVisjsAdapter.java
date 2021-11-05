@@ -437,7 +437,7 @@ public class ModuleVisjsAdapter
         String nodeId = flowElement.getComponentName() + identifier++;
         this.manageModuleMaps(nodeId, configurationMetaDataMap, flowElement);
 
-        if(flowElement.getImplementingClass().equals("org.ikasan.component.endpoint.quartz.consumer.ScheduledConsumer"))
+        if(flowElement.getImplementingClass().startsWith("org.ikasan.component.endpoint.quartz.consumer.ScheduledConsumer"))
         {
             if(configurationMetaData != null && configurationMetaData.getImplementingClass().equals("org.ikasan.endpoint.ftp.consumer.FtpConsumerConfiguration"))
             {
