@@ -374,6 +374,9 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
             case CIRCLE:
                 designerCanvas.addCircle(item.getItemHeight());
                 break;
+            case LINE:
+                designerCanvas.addLine();
+                break;
             case LABEL:
                 designerCanvas.addLabel(getTranslation("label.double-click-to-edit", UI.getCurrent().getLocale()));
                 break;

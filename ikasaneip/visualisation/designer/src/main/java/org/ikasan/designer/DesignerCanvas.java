@@ -213,6 +213,12 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.saved = false;
     }
 
+    public void addLine() {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.addLine"));
+        this.saved = false;
+    }
+
     public void addLabelToFigure(String figureIdentifier, String label) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addLabelToFigure", figureIdentifier, label));

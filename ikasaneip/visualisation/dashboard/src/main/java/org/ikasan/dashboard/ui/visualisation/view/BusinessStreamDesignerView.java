@@ -371,9 +371,26 @@ public class BusinessStreamDesignerView extends VerticalLayout implements Before
             }
         });
 
+        // todo make line image and tooltip
+        DesignerPalletImageItem lineImageItemImage = new DesignerPalletLineImageItem("frontend/images/circle.png", designerPalletItem -> {
+            designerPalletItem.setIdentifier(new DesignerItemIdentifier(DesignerPalletItemType.LINE.name(),
+                DesignerItemIdentifier.NOT_APPLICABLE, UUID.randomUUID().toString()));
+            this.businessStreamDesigner.addItemToCanvas(designerPalletItem);
+        }, 200, 200);
+        lineImageItemImage.setWidth("30px");
+        Tooltip lineImageTooltip = TooltipHelper.getTooltip(circleImage, getTranslation("tooltip.circle", UI.getCurrent().getLocale())
+            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+        DragSource.create(circleImage);
+        lineImageItemImage.addClickListener((ComponentEventListener<ClickEvent<Image>>) imageClickEvent -> {
+            if(imageClickEvent.getClickCount() == 2) {
+                lineImageItemImage.executeCanvasAddAction();
+            }
+        });
+
 
         HorizontalLayout layout = new HorizontalLayout();
-        layout.add(rectangleImage, rectangleImageTooltip, triangleImage, triangleImageTooltip, ovalImage, ovalImageTooltip, circleImage, circleImageTooltip);
+        layout.add(rectangleImage, rectangleImageTooltip, triangleImage, triangleImageTooltip
+            , ovalImage, ovalImageTooltip, circleImage, circleImageTooltip, lineImageItemImage, lineImageTooltip);
 
         return layout;
     }
