@@ -53,6 +53,7 @@
     </parent>
 
     <artifactId>ikasan-housekeeping-dashboard</artifactId>
+  <version>3.2.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Ikasan Housekeeping Dashboard Service</name>
 
