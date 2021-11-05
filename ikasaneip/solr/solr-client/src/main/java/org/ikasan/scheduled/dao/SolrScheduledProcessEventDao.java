@@ -123,7 +123,7 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
         }
 
         if(filter != null && !filter.isEmpty()) {
-            queryBuffer.append(" AND payload:\"*"+filter+"\"*");
+            queryBuffer.append(" AND (payload:*"+filter+"*").append(" OR payload:\""+filter).append("\")");
         }
 
         query.setQuery(queryBuffer.toString());
