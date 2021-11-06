@@ -16,7 +16,9 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.StreamResource;
+import org.ikasan.dashboard.ui.scheduler.component.RunningAndRecentlyCompletedJobExecutionDeepLinkView;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.vaadin.olli.FileDownloadWrapper;
@@ -38,6 +40,8 @@ public class WiretapDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     private Tooltip downloadButtonTooltip;
 
     private DateFormatter dateFormatter;
+
+    private IkasanSolrDocument wiretapEvent;
 
     public WiretapDialog(DateFormatter dateFormatter)
     {
@@ -85,14 +89,22 @@ public class WiretapDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         downloadButtonTooltip = TooltipHelper.getTooltipForComponentTopLeft(downloadButton, getTranslation("tooltip.download-wiretap-event", UI.getCurrent().getLocale()));
 
         this.streamResource = new StreamResource("wiretap.txt"
-            , () -> new ByteArrayInputStream(super.aceEditor.getValue().getBytes() ));
+            , () -> new ByteArrayInputStream(super.aceEditor.getValue().getBytes()));
 
         buttonWrapper = new FileDownloadWrapper(this.streamResource);
         buttonWrapper.wrapComponent(downloadButton);
 
+        Button newWindowButton = new TableButton(VaadinIcon.EXTERNAL_LINK.create());
+        newWindowButton.addClickListener(buttonClickEvent -> {
+            EntityContentsViewDialog entityContentsViewDialog = new EntityContentsViewDialog("Wiretap " + wiretapEvent.getEventId());
+            entityContentsViewDialog.populate(this.wiretapEvent);
+        });
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.add(buttonWrapper, downloadButtonTooltip, newWindowButton);
+
         VerticalLayout layout = new VerticalLayout();
-        layout.add(headerLayout, formLayout, buttonWrapper, downloadButtonTooltip);
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper);
+        layout.add(headerLayout, formLayout, buttonLayout);
+        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
 
         return layout;
     }
@@ -100,6 +112,7 @@ public class WiretapDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     @Override
     public void populate(IkasanSolrDocument wiretapEvent)
     {
+        this.wiretapEvent = wiretapEvent;
         super.title.setText("Wiretap " + wiretapEvent.getEventId());
         this.moduleNameTf.setValue(wiretapEvent.getModuleName());
         this.flowNameTf.setValue(wiretapEvent.getFlowName());
