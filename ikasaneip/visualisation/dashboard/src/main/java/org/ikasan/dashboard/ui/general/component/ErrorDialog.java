@@ -43,6 +43,8 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
 
     private DateFormatter dateFormatter;
 
+    private IkasanSolrDocument ikasanSolrDocument;
+
     public ErrorDialog(DateFormatter dateFormatter)
     {
         moduleNameTf = new TextField(getTranslation("text-field.module-name", UI.getCurrent().getLocale(), null));
@@ -106,10 +108,6 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         buttonWrapper = new FileDownloadWrapper(this.streamResource);
         buttonWrapper.wrapComponent(downloadButton);
 
-        VerticalLayout layout = new VerticalLayout();
-        layout.add(headerLayout, formLayout, buttonWrapper, downloadButtonTooltip);
-
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper);
 
         Tab errorTab = new Tab(getTranslation("tab-label.error", UI.getCurrent().getLocale()));
         Tab errorEventTab = new Tab(getTranslation("tab-label.error-event", UI.getCurrent().getLocale()));
@@ -129,6 +127,24 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             }
         });
 
+        Button newWindowButton = new TableButton(VaadinIcon.EXTERNAL_LINK.create());
+        newWindowButton.addClickListener(buttonClickEvent -> {
+            EntityContentsViewDialog entityContentsViewDialog = new EntityContentsViewDialog("Error " + ikasanSolrDocument.getErrorUri());
+            if(tabs.getSelectedTab().equals(errorTab)) {
+                entityContentsViewDialog.open(this.errorDetails);
+            }
+            else {
+                entityContentsViewDialog.open(this.errorEvent);
+            }
+        });
+        HorizontalLayout iconLayout = new HorizontalLayout();
+        iconLayout.add(buttonWrapper, downloadButtonTooltip, newWindowButton);
+
+        VerticalLayout layout = new VerticalLayout();
+        layout.add(headerLayout, formLayout, iconLayout);
+
+        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, iconLayout);
+
         layout.add(tabs);
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.START, tabs);
 
@@ -138,6 +154,7 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
     @Override
     public void populate(IkasanSolrDocument errorEvent)
     {
+        this.ikasanSolrDocument = errorEvent;
         super.title.setText("Error " + errorEvent.getErrorUri());
         this.moduleNameTf.setValue(Optional.ofNullable(errorEvent.getModuleName()).orElse(""));
         this.flowNameTf.setValue(Optional.ofNullable(errorEvent.getFlowName()).orElse(""));

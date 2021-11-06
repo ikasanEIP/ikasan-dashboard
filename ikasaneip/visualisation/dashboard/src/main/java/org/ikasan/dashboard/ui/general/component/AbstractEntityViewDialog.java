@@ -1,20 +1,11 @@
 package org.ikasan.dashboard.ui.general.component;
 
-
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Header;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.theme.material.Material;
-import io.github.ciesielskis.AceEditor;
-import io.github.ciesielskis.AceMode;
-import io.github.ciesielskis.AceTheme;
+import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceMode;
+import de.f0rce.ace.enums.AceTheme;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -118,7 +109,6 @@ public abstract class AbstractEntityViewDialog<ENTITY> extends AbstractCloseable
         aceEditor.setTheme(AceTheme.dracula);
         aceEditor.setMode(AceMode.text);
         aceEditor.setFontSize(11);
-        aceEditor.setSoftTabs(false);
         aceEditor.setTabSize(4);
         aceEditor.setWidth("auto");
         aceEditor.setHeight("50vh");

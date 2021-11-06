@@ -194,9 +194,17 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             });
         });
 
+        Button newWindowButton = new TableButton(VaadinIcon.EXTERNAL_LINK.create());
+        newWindowButton.addClickListener(buttonClickEvent -> {
+            EntityContentsViewDialog entityContentsViewDialog = new EntityContentsViewDialog("Replay " + replayEvent.getEventId());
+            entityContentsViewDialog.populate(this.replayEvent);
+        });
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.add(buttonWrapper, downloadButtonTooltip, newWindowButton);
+
         VerticalLayout layout = new VerticalLayout();
-        layout.add(headerLayout, formLayout, buttonWrapper, replayButton, downloadButtonTooltip);
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper, downloadButtonTooltip);
+        layout.add(headerLayout, formLayout, buttonLayout, replayButton);
+        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout, downloadButtonTooltip);
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, replayButton);
 
         return layout;

@@ -281,10 +281,6 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         ComponentSecurityVisibility.applySecurity(buttonLayout, SecurityConstants.ACTIONED_EXCLUSION_ADMIN
             , SecurityConstants.EXCLUSION_WRITE, SecurityConstants.ALL_AUTHORITY);
 
-        VerticalLayout layout = new VerticalLayout();
-        layout.add(headerLayout, formLayout, buttonWrapper, buttonLayout, downloadButtonTooltip);
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper);
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
 
         Tab exclusionTab = new Tab(getTranslation("tab-label.exclusion", UI.getCurrent().getLocale(), null));
         Tab errorTab = new Tab(getTranslation("tab-label.error", UI.getCurrent().getLocale(), null));
@@ -303,6 +299,24 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         });
 
         super.aceEditor.setHeight("48vh");
+
+        Button newWindowButton = new TableButton(VaadinIcon.EXTERNAL_LINK.create());
+        newWindowButton.addClickListener(buttonClickEvent -> {
+            EntityContentsViewDialog entityContentsViewDialog = new EntityContentsViewDialog("Exclusion " + ikasanSolrDocument.getEventId());
+            if(tabs.getSelectedTab().equals(exclusionTab)) {
+                entityContentsViewDialog.populate(this.ikasanSolrDocument);
+            }
+            else {
+                entityContentsViewDialog.open(this.errorOccurrence.getErrorDetail());
+            }
+        });
+        HorizontalLayout iconLayout = new HorizontalLayout();
+        iconLayout.add(buttonWrapper, downloadButtonTooltip, newWindowButton);
+
+        VerticalLayout layout = new VerticalLayout();
+        layout.add(headerLayout, formLayout, iconLayout, buttonLayout);
+        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, iconLayout);
+        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
 
         layout.add(tabs);
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.START, tabs);
