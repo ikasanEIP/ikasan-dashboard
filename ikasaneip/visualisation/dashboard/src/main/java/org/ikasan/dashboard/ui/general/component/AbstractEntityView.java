@@ -2,9 +2,9 @@ package org.ikasan.dashboard.ui.general.component;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import io.github.ciesielskis.AceEditor;
-import io.github.ciesielskis.AceMode;
-import io.github.ciesielskis.AceTheme;
+import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceMode;
+import de.f0rce.ace.enums.AceTheme;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -97,7 +97,6 @@ public abstract class AbstractEntityView<ENTITY> extends VerticalLayout
         aceEditor.setTheme(AceTheme.dracula);
         aceEditor.setMode(AceMode.xml);
         aceEditor.setFontSize(11);
-        aceEditor.setSoftTabs(false);
         aceEditor.setTabSize(4);
         aceEditor.setWidth("100%");
         aceEditor.setHeight("500px");
