@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.beans;
 
+import com.vaadin.flow.server.*;
 import org.ikasan.business.stream.metadata.dao.SolrBusinessStreamMetadataDao;
 import org.ikasan.business.stream.metadata.service.SolrBusinessStreamMetaDataServiceImpl;
 import org.ikasan.configuration.metadata.dao.SolrComponentConfigurationMetadataDao;
@@ -46,6 +47,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
@@ -70,6 +73,38 @@ public class DashboardComponentFactory
         return new CalendarConfiguration();
     }
 
+    @Component
+    private static final class IkasanSessionListener implements SessionInitListener, SessionDestroyListener {
+
+        @Override
+        public void sessionInit(SessionInitEvent event)
+            throws ServiceException {
+            // Nothing to do here
+        }
+
+        @Override
+        public void sessionDestroy(SessionDestroyEvent event) {
+            // Remove the authentication from the context holder
+            SecurityContextHolder.getContext().setAuthentication(null);
+        }
+
+    }
+
+    @Component
+    private static class IkasanServiceInitListener implements VaadinServiceInitListener {
+
+        private final IkasanSessionListener sessionListener;
+
+        private IkasanServiceInitListener(IkasanSessionListener sessionListener) {
+            this.sessionListener = sessionListener;
+        }
+
+        @Override
+        public void serviceInit(ServiceInitEvent event) {
+            event.getSource().addSessionInitListener(sessionListener);
+            event.getSource().addSessionDestroyListener(sessionListener);
+        }
+    }
 
     @Bean
     public SolrGeneralServiceImpl solrSearchService()
