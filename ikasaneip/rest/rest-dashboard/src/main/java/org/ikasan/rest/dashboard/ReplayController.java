@@ -94,9 +94,10 @@ public class ReplayController
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new ResponseEntity(
-                new ErrorDto("An error has occurred attempting to perform a batch insert of ReplayEvents!"),
-                HttpStatus.BAD_REQUEST);
+                new ErrorDto("An error has occurred attempting to perform a batch insert of ReplayEevents! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity(HttpStatus.OK);
     }

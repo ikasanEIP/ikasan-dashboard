@@ -98,7 +98,9 @@ public class WiretapController
         }
         catch (Exception e)
         {
-            return new ResponseEntity(new ErrorDto( "An error has occurred attempting to perform a batch insert of WiretapEvents!"), HttpStatus.BAD_REQUEST);
+            e.printStackTrace();
+            return new ResponseEntity(new ErrorDto("An error has occurred attempting to perform a batch insert of WiretapEvents! Error message ["
+                + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
         }
 
         return new ResponseEntity(HttpStatus.OK);
