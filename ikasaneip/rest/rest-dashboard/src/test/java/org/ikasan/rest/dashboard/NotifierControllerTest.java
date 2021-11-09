@@ -38,7 +38,7 @@ import static org.junit.Assert.assertThat;
         "/substitute-components.xml"
     }
 )
-public class NorifierControllerTest extends  AbstractRestMvcTest
+public class NotifierControllerTest extends  AbstractRestMvcTest
 {
     protected MockMvc mvc;
     @Autowired
@@ -91,7 +91,7 @@ public class NorifierControllerTest extends  AbstractRestMvcTest
         int status = mvcResult.getResponse().getStatus();
         assertEquals(HttpStatus.BAD_REQUEST.value(), status);
         String content = mvcResult.getResponse().getContentAsString();
-        assertThat(content,containsString( "An error has occurred attempting to perform a batch insert of WiretapEvents!"));
+        assertThat(content,containsString( "An error has occurred attempting to update dashboard flow state cache!"));
 
     }
 }
