@@ -96,8 +96,10 @@ public class ExclusionController
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new ResponseEntity(
-                new ErrorDto("An error has occurred attempting to perform a batch insert of ExclusionEvents!"),
+                new ErrorDto("An error has occurred attempting to perform a batch insert of ExclusionEvents! Error message ["
+                    + e.getMessage() + "]"),
                 HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity(HttpStatus.OK);

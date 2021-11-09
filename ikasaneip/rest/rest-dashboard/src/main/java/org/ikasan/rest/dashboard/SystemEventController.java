@@ -98,8 +98,10 @@ public class SystemEventController
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new ResponseEntity(
-                new ErrorDto("An error has occurred attempting to perform a batch insert of SystemEvents!"),
+                new ErrorDto("An error has occurred attempting to perform a batch insert of SystemEvent! Error message ["
+                    + e.getMessage() + "]"),
                 HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity(HttpStatus.OK);
