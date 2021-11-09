@@ -98,9 +98,10 @@ public class MetricsController
         }
         catch (IOException e)
         {
+            e.printStackTrace();
             return new ResponseEntity(
-                new ErrorDto("Cannot parse metrics JSON!"),
-                HttpStatus.BAD_REQUEST);
+                new ErrorDto("An error has occurred attempting to perform a batch insert of FlowInvocationMetric! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
         }
 
         return new ResponseEntity( HttpStatus.OK);
