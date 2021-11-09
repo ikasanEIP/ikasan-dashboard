@@ -98,9 +98,10 @@ public class ScheduledProcessEventController
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new ResponseEntity(
-                new ErrorDto("An error has occurred attempting to perform a batch insert of ScheduledProcessEvents!"),
-                HttpStatus.BAD_REQUEST);
+                new ErrorDto("An error has occurred attempting to perform a batch insert of ScheduledProcessEvent! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity(HttpStatus.OK);
     }

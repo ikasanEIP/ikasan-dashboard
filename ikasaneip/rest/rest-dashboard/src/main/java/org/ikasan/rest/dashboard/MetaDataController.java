@@ -85,8 +85,10 @@ public class MetaDataController
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new ResponseEntity(
-                new ErrorDto("An error has occurred attempting to perform a batch insert of ModuleMetaData!"),
+                new ErrorDto("An error has occurred attempting to perform a batch insert of ModuleMetaData! Error message ["
+                    + e.getMessage() + "]"),
                 HttpStatus.BAD_REQUEST);
         }
 
