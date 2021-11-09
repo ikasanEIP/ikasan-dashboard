@@ -77,29 +77,7 @@ public abstract class AbstractEntityViewDialog<ENTITY> extends AbstractCloseable
 
         open();
 
-        String xmlString = formatXml(event);
-        aceEditor.setValue(xmlString);
-    }
-
-    protected String formatXml(String event)
-    {
-        String xmlString;
-        try
-        {
-            Document doc = this.documentBuilder
-                .parse(new InputSource(new StringReader(event)));
-
-            StreamResult result = new StreamResult(new StringWriter());
-            DOMSource source = new DOMSource(doc);
-            transformer.transform(source, result);
-            xmlString = result.getWriter().toString();
-        }
-        catch (Exception e)
-        {
-            xmlString = event;
-        }
-
-        return xmlString;
+        aceEditor.setValue(event);
     }
 
     protected void initialiseEditor()
