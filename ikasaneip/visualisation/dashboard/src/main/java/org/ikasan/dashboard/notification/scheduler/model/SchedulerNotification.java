@@ -1,17 +1,16 @@
-package org.ikasan.dashboard.notification.model;
+package org.ikasan.dashboard.notification.scheduler.model;
 
 import java.util.List;
 
-public class BusinessStreamNotification {
+public class SchedulerNotification {
     private String jobName;
     private String emailBodyTemplate;
     private String emailSubjectTemplate;
-    private String businessStreamName;
+    private String schedulerAgentName;
     private List<String> recipientList;
     private String cronExpression;
     private boolean isHtml;
     private Integer resultSize;
-    private boolean isNewExclusionsOnlyNotification;
     private Long lastRunTimestamp = -1L;
 
     public String getJobName() {
@@ -38,12 +37,12 @@ public class BusinessStreamNotification {
         this.emailSubjectTemplate = emailSubjectTemplate;
     }
 
-    public String getBusinessStreamName() {
-        return businessStreamName;
+    public String getSchedulerAgentName() {
+        return schedulerAgentName;
     }
 
-    public void setBusinessStreamName(String businessStreamName) {
-        this.businessStreamName = businessStreamName;
+    public void setSchedulerAgentName(String schedulerAgentName) {
+        this.schedulerAgentName = schedulerAgentName;
     }
 
     public List<String> getRecipientList() {
@@ -76,14 +75,6 @@ public class BusinessStreamNotification {
 
     public void setResultSize(Integer resultSize) {
         this.resultSize = resultSize;
-    }
-
-    public boolean isNewExclusionsOnlyNotification() {
-        return isNewExclusionsOnlyNotification;
-    }
-
-    public void setIsNewExclusionsOnlyNotification(boolean newExclusionsOnlyNotification) {
-        isNewExclusionsOnlyNotification = newExclusionsOnlyNotification;
     }
 
     public Long getLastRunTimestamp() {
