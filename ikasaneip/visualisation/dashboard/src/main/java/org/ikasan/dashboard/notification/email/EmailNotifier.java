@@ -1,16 +1,14 @@
 package org.ikasan.dashboard.notification.email;
 
-import org.ikasan.dashboard.notification.model.EmailNotification;
+import org.ikasan.dashboard.notification.email.EmailNotification;
 import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.mail.*;
 import javax.mail.internet.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.StringTokenizer;
 
 
 /**
