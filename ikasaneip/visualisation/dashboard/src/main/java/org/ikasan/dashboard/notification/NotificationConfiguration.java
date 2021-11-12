@@ -1,15 +1,19 @@
 package org.ikasan.dashboard.notification;
 
+import org.ikasan.dashboard.notification.business.stream.BusinessStreamNotificationJob;
+import org.ikasan.dashboard.notification.business.stream.model.BusinessStreamNotification;
 import org.ikasan.dashboard.notification.email.EmailNotifier;
-import org.ikasan.dashboard.notification.model.BusinessStreamNotification;
-import org.ikasan.dashboard.notification.service.BusinessStreamNotificationSchedulerService;
-import org.ikasan.dashboard.notification.service.BusinessStreamNotificationService;
+import org.ikasan.dashboard.notification.business.stream.service.BusinessStreamNotificationSchedulerService;
+import org.ikasan.dashboard.notification.business.stream.service.BusinessStreamNotificationService;
 
+import org.ikasan.dashboard.notification.scheduler.SchedulerNotificationJob;
+import org.ikasan.dashboard.notification.scheduler.model.SchedulerNotification;
+import org.ikasan.dashboard.notification.scheduler.service.SchedulerNotificationSchedulerService;
+import org.ikasan.dashboard.notification.scheduler.service.SchedulerNotificationService;
 import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.ikasan.scheduler.CachingScheduledJobFactory;
 import org.ikasan.scheduler.SchedulerFactory;
 import org.ikasan.spec.configuration.PlatformConfigurationService;
-import org.ikasan.spec.error.reporting.ErrorReportingService;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -27,7 +31,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class BusinessStreamNotificationConfiguration {
+public class NotificationConfiguration {
 
 
     @Bean
@@ -55,10 +59,10 @@ public class BusinessStreamNotificationConfiguration {
 
     @Bean
     public List<BusinessStreamNotificationJob> businessStreamNotificationJobs(TemplateEngine emailTemplateEngine,
-                                                      List<BusinessStreamNotification> businessStreamNotifications,
-                                                      BusinessStreamNotificationService businessStreamNotificationService,
-                                                      PlatformConfigurationService platformConfigurationService,
-                                                      EmailNotifier emailNotifier) {
+                                                                              List<BusinessStreamNotification> businessStreamNotifications,
+                                                                              BusinessStreamNotificationService businessStreamNotificationService,
+                                                                              PlatformConfigurationService platformConfigurationService,
+                                                                              EmailNotifier emailNotifier) {
         return businessStreamNotifications.stream()
             .map(businessStreamNotification -> new BusinessStreamNotificationJob(emailTemplateEngine
                 , businessStreamNotification, businessStreamNotificationService, platformConfigurationService, emailNotifier))
@@ -66,8 +70,26 @@ public class BusinessStreamNotificationConfiguration {
     }
 
     @Bean
+    public List<SchedulerNotificationJob> schedulerNotificationJobs(TemplateEngine emailTemplateEngine,
+                                                                              List<SchedulerNotification> schedulerNotifications,
+                                                                              SchedulerNotificationService schedulerNotificationService,
+                                                                              PlatformConfigurationService platformConfigurationService,
+                                                                              EmailNotifier emailNotifier) {
+        return schedulerNotifications.stream()
+            .map(schedulerNotification -> new SchedulerNotificationJob(emailTemplateEngine
+                , schedulerNotification, schedulerNotificationService, platformConfigurationService, emailNotifier))
+            .collect(Collectors.toList());
+    }
+
+    @Bean
     @ConfigurationProperties(prefix = "dashboard.notification")
     public List<BusinessStreamNotification> businessStreamNotifications() {
+        return new ArrayList<>();
+    }
+
+    @Bean
+    @ConfigurationProperties(prefix = "scheduler.notification")
+    public List<SchedulerNotification> schedulerNotifications() {
         return new ArrayList<>();
     }
 
@@ -79,10 +101,22 @@ public class BusinessStreamNotificationConfiguration {
     }
 
     @Bean
+    public SchedulerNotificationService schedulerNotificationService(SolrGeneralService solrGeneralService) {
+        return new SchedulerNotificationService(solrGeneralService);
+    }
+
+    @Bean
     @DependsOn("dashboardSchedulerService")
     public BusinessStreamNotificationSchedulerService businessStreamNotificationSchedulerService(List<BusinessStreamNotificationJob> businessStreamNotificationJobs) {
         return new BusinessStreamNotificationSchedulerService(SchedulerFactory.getInstance().getScheduler()
             , CachingScheduledJobFactory.getInstance(), businessStreamNotificationJobs);
+    }
+
+    @Bean
+    @DependsOn("schedulerNotificationService")
+    public SchedulerNotificationSchedulerService schedulerNotificationSchedulerService(List<SchedulerNotificationJob> schedulerNotificationJobs) {
+        return new SchedulerNotificationSchedulerService(SchedulerFactory.getInstance().getScheduler()
+            , CachingScheduledJobFactory.getInstance(), schedulerNotificationJobs);
     }
 
     private ITemplateResolver textTemplateResolver() {

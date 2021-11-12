@@ -1,9 +1,9 @@
-package org.ikasan.dashboard.notification.service;
+package org.ikasan.dashboard.notification.business.stream.service;
 
 import org.ikasan.business.stream.metadata.model.BusinessStream;
 import org.ikasan.business.stream.metadata.model.Flow;
-import org.ikasan.dashboard.notification.model.BusinessStreamExclusion;
-import org.ikasan.dashboard.notification.model.BusinessStreamExclusions;
+import org.ikasan.dashboard.notification.business.stream.model.BusinessStreamExclusion;
+import org.ikasan.dashboard.notification.business.stream.model.BusinessStreamExclusions;
 import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;

@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.notification;
+package org.ikasan.dashboard.notification.business.stream;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -12,10 +12,10 @@ import org.apache.solr.core.NodeConfig;
 import org.apache.solr.core.SolrResourceLoader;
 import org.ikasan.business.stream.metadata.dao.SolrBusinessStreamMetadataDao;
 import org.ikasan.business.stream.metadata.service.SolrBusinessStreamMetaDataServiceImpl;
+import org.ikasan.dashboard.notification.business.stream.model.BusinessStreamNotification;
+import org.ikasan.dashboard.notification.business.stream.service.BusinessStreamNotificationService;
+import org.ikasan.dashboard.notification.email.EmailNotification;
 import org.ikasan.dashboard.notification.email.EmailNotifier;
-import org.ikasan.dashboard.notification.model.BusinessStreamNotification;
-import org.ikasan.dashboard.notification.model.EmailNotification;
-import org.ikasan.dashboard.notification.service.BusinessStreamNotificationService;
 import org.ikasan.error.reporting.dao.SolrErrorReportingServiceDao;
 import org.ikasan.solr.dao.SolrGeneralDaoImpl;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
