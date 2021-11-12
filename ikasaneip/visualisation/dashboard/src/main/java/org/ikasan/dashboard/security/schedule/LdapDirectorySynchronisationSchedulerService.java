@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.security.schedule;
 
-import org.ikasan.dashboard.notification.BusinessStreamNotificationJob;
 import org.ikasan.dashboard.schedule.AbstractDashboardSchedulerService;
 import org.ikasan.scheduler.ScheduledJobFactory;
 import org.ikasan.security.model.AuthenticationMethod;

@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.notification.model;
+package org.ikasan.dashboard.notification.email;
 
 import java.util.List;
 

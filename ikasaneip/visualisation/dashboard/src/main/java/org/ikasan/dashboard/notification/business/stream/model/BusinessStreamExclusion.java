@@ -1,8 +1,6 @@
-package org.ikasan.dashboard.notification.model;
+package org.ikasan.dashboard.notification.business.stream.model;
 
 import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.spec.error.reporting.ErrorOccurrence;
-import org.ikasan.spec.exclusion.ExclusionEvent;
 
 public class BusinessStreamExclusion {
     private IkasanSolrDocument exclusionEvent;

@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.notification.model;
+package org.ikasan.dashboard.notification.business.stream.model;
 
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 
