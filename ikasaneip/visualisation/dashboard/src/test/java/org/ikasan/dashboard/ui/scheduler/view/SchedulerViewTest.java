@@ -153,24 +153,6 @@ public class SchedulerViewTest extends UITest {
         Assertions.assertEquals(50, runningAndRecentlyCompletedGrid.getDataProvider().size(new Query<>()));
     }
 
-    @Test
-    public void test_scheduler_view_scheduled_jobs_calendar_tab() throws IOException
-    {
-        UI.getCurrent().navigate("scheduler");
-
-        SchedulerView schedulerView = _get(SchedulerView.class);
-        Assertions.assertNotNull(schedulerView);
-
-        Tabs tabs = _get(Tabs.class);
-
-        Assertions.assertNotNull(tabs);
-
-        _get(Tabs.class).setSelectedTab(_get(Tab.class, spec -> spec.withId("calendarTab")));
-
-        FullCalendar fullCalendar = _get(FullCalendar.class);
-        Assertions.assertNotNull(fullCalendar);
-    }
-
 
     protected ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledEventsResults(int size) {
 
