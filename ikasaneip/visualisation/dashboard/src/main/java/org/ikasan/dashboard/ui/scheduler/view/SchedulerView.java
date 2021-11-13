@@ -15,9 +15,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.RunningAndRecentlyCompletedJobExecutionsWidget;
 import org.ikasan.dashboard.ui.scheduler.component.SchedulerAgentDashboardView;
-import org.ikasan.dashboard.ui.scheduler.component.SchedulerCalendar;
 import org.ikasan.dashboard.ui.scheduler.component.UpcomingJobExecutionsWidget;
-import org.ikasan.dashboard.ui.scheduler.model.CalendarConfiguration;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
@@ -71,8 +69,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private SchedulerService schedulerService;
 
-    private SchedulerCalendar schedulerCalendar;
-
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
     private Board scheduledJobsBoard;
@@ -81,7 +77,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     private Tab schedulerDashboardTab;
     private Tab schedulerJobTab;
-    private Tab calendarTab;
     private Tabs tabs;
 
     /**
@@ -104,9 +99,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.schedulerAgentDashboardView.setSizeFull();
         this.schedulerAgentDashboardView.setVisible(true);
 
-        this.schedulerCalendar = new SchedulerCalendar(this.scheduledProcessManagementService, this.moduleMetadataService, new CalendarConfiguration());
-        this.schedulerCalendar.setVisible(false);
-
         this.scheduledJobsBoard = new Board();
         this.scheduledJobsBoard.addClassName("styled");
         this.scheduledJobsBoard.setSizeFull();
@@ -118,30 +110,23 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.schedulerDashboardTab.setId("schedulerDashboardTab");
         this.schedulerJobTab = new Tab(getTranslation("tab.label.scheduled-jobs", UI.getCurrent().getLocale()));
         this.schedulerJobTab.setId("scheduledJobsTab");
-        this.calendarTab = new Tab(getTranslation("tab.label.scheduled-jobs-calendar", UI.getCurrent().getLocale()));
-        this.calendarTab.setId("calendarTab");
-        this.tabs = new Tabs(schedulerDashboardTab, schedulerJobTab, calendarTab);
+        this.tabs = new Tabs(schedulerDashboardTab, schedulerJobTab);
 
         Map<Tab, com.vaadin.flow.component.Component> tabsToPages = new HashMap<>();
         tabsToPages.put(this.schedulerDashboardTab, this.schedulerAgentDashboardView);
         tabsToPages.put(this.schedulerJobTab, this.scheduledJobsBoard);
-        tabsToPages.put(this.calendarTab, this.schedulerCalendar);
 
         tabs.addSelectedChangeListener(event -> {
             tabsToPages.values().forEach(page -> page.setVisible(false));
             com.vaadin.flow.component.Component selectedPage = tabsToPages.get(tabs.getSelectedTab());
             selectedPage.setVisible(true);
-
-            if(selectedPage.equals(this.schedulerCalendar)) {
-                this.schedulerCalendar.renderCalendar();
-            }
         });
 
 
         IronIcon addIcon = IronIcons.ADD.create();
         addIcon.setSize("16pt");
 
-        this.add(tabs, this.schedulerAgentDashboardView, scheduledJobsBoard, this.schedulerCalendar);
+        this.add(tabs, this.schedulerAgentDashboardView, scheduledJobsBoard);
     }
 
     @Override
@@ -162,8 +147,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
             initialised = true;
         }
-
-        this.schedulerCalendar.beforeEnter(beforeEnterEvent);
     }
 
 }
