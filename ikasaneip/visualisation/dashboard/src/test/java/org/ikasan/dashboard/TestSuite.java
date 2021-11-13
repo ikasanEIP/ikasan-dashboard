@@ -2,9 +2,7 @@ package org.ikasan.dashboard;
 
 import org.ikasan.dashboard.notification.business.stream.BusinessStreamNotificationJobTest;
 import org.ikasan.dashboard.notification.business.stream.service.BusinessStreamNotificationServiceTest;
-import org.ikasan.dashboard.notification.scheduler.SchedulerNotificationJob;
 import org.ikasan.dashboard.notification.scheduler.SchedulerNotificationJobTest;
-import org.ikasan.dashboard.notification.scheduler.service.SchedulerNotificationService;
 import org.ikasan.dashboard.notification.scheduler.service.SchedulerNotificationServiceTest;
 import org.ikasan.dashboard.security.schedule.LdapDirectorySynchronisationJobTest;
 import org.ikasan.dashboard.ui.administration.filter.*;

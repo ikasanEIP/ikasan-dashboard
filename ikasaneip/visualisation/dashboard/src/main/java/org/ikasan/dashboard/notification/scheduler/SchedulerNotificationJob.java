@@ -92,6 +92,8 @@ public class SchedulerNotificationJob implements DashboardJob {
                 EmailNotification emailNotification = new EmailNotification(this.schedulerNotification.getRecipientList(),
                     subject, content, this.schedulerNotification.isHtml());
 
+                logger.info(String.format("Detected failed scheduled job. Sending email [%s].", emailNotification.getBody()));
+
                 this.emailNotifier.sendNotification(emailNotification);
 
             }
