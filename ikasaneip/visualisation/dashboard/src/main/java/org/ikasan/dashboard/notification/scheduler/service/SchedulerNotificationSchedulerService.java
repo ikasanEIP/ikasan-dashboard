@@ -45,6 +45,11 @@ public class SchedulerNotificationSchedulerService extends AbstractDashboardSche
             JobDetail jobDetail = this.scheduledJobFactory.createJobDetail
                 (job, SchedulerNotificationJob.class, job.getJobName(), "notify");
 
+        for(SchedulerNotificationJob job: this.schedulerNotificationJobs)
+        {
+            JobDetail jobDetail = this.scheduledJobFactory.createJobDetail
+                (job, BusinessStreamNotificationJob.class, job.getJobName(), "notify");
+
             super.dashboardJobDetailsMap.put(job.getJobName(), jobDetail);
             super.dashboardJobsMap.put(jobDetail.getKey().toString(), job);
         }
