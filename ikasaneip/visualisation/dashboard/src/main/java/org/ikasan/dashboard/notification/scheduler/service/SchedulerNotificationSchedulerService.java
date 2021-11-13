@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.notification.scheduler.service;
 
-import org.ikasan.dashboard.notification.business.stream.BusinessStreamNotificationJob;
 import org.ikasan.dashboard.notification.scheduler.SchedulerNotificationJob;
 import org.ikasan.dashboard.schedule.AbstractDashboardSchedulerService;
 import org.ikasan.scheduler.ScheduledJobFactory;
@@ -37,10 +36,14 @@ public class SchedulerNotificationSchedulerService extends AbstractDashboardSche
     @PostConstruct
     public void registerJobs()
     {
+        if(this.schedulerNotificationJobs.isEmpty()) {
+            logger.info("There are no scheduled job notification configured!");
+        }
+
         for(SchedulerNotificationJob job: this.schedulerNotificationJobs)
         {
             JobDetail jobDetail = this.scheduledJobFactory.createJobDetail
-                (job, BusinessStreamNotificationJob.class, job.getJobName(), "notify");
+                (job, SchedulerNotificationJob.class, job.getJobName(), "notify");
 
             super.dashboardJobDetailsMap.put(job.getJobName(), jobDetail);
             super.dashboardJobsMap.put(jobDetail.getKey().toString(), job);
