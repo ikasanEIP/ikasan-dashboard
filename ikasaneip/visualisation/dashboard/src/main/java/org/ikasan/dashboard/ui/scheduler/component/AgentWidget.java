@@ -103,20 +103,7 @@ public class AgentWidget extends Div {
             .withProperty("description", ModuleMetaData::getDescription))
             .setHeader(getTranslation("table-header.module-description", UI.getCurrent().getLocale()))
             .setKey("description")
-            .setFlexGrow(32);
-        scheduledAgentsFilteringGrid.addColumn(new ComponentRenderer<>(moduleMetaData -> {
-            HorizontalLayout horizontalLayout = new HorizontalLayout();
-
-            String route = RouteConfiguration.forSessionScope()
-                .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.MODULE.name() + ":" + moduleMetaData.getName());
-            Anchor link = new Anchor(route, "view");
-            link.setTarget("_blank");
-            add(link);
-            horizontalLayout.add(link);
-            link.getStyle().set("color", "blue");
-
-            return horizontalLayout;
-        })).setWidth("60px");
+            .setFlexGrow(32);;
 
         this.scheduledAgentsFilteringGrid.addGridFiltering(textField, moduleSearchFilter::setModuleNameFilter);
 
