@@ -191,23 +191,43 @@ public class SolrComponentConfigurationMetadataDaoTest extends SolrTestCaseJ4
             List<SolrConfigurationParameterMetaData> solrConfigurationParameterMetaDataList = new ArrayList<>();
             solrConfigurationParameterMetaDataList.add(solrConfigurationParameterMetaData);
 
-            SolrConfigurationMetaData event = new SolrConfigurationMetaData("configurationId", solrConfigurationParameterMetaDataList,
+            SolrConfigurationMetaData event = new SolrConfigurationMetaData("configurationId1", solrConfigurationParameterMetaDataList,
+                "description", "implementingClass");
+
+            SolrConfigurationMetaData event2 = new SolrConfigurationMetaData("configurationId2", solrConfigurationParameterMetaDataList,
+                "description", "implementingClass");
+
+            SolrConfigurationMetaData event3 = new SolrConfigurationMetaData("configurationId3", solrConfigurationParameterMetaDataList,
                 "description", "implementingClass");
 
             List<ConfigurationMetaData> solrConfigurationMetaData = new ArrayList<>();
             solrConfigurationMetaData.add(event);
+            solrConfigurationMetaData.add(event2);
+            solrConfigurationMetaData.add(event3);
 
             dao.save(solrConfigurationMetaData);
 
             List<String> ids = new ArrayList<>();
-            ids.add("configurationId");
+            ids.add("configurationId1");
+            ids.add("configurationId2");
 
             List<ConfigurationMetaData> configurationMetaData = dao.findInIdList(ids);
 
-            Assert.assertEquals("id equals","configurationId", configurationMetaData.get(0).getConfigurationId());
+            Assert.assertEquals(2, configurationMetaData.size());
+
+            Assert.assertEquals("id equals","configurationId1", configurationMetaData.get(0).getConfigurationId());
             Assert.assertEquals("description equals","description", configurationMetaData.get(0).getDescription());
             Assert.assertEquals("implementingClass equals","implementingClass", configurationMetaData.get(0).getImplementingClass());
             Assert.assertEquals("1 configuration parameter", 1, ((List<ConfigurationParameterMetaData>)configurationMetaData.get(0).getParameters()).size());
+
+            ids = new ArrayList<>();
+            ids.add("configurationId1");
+            ids.add("configurationId2");
+            ids.add("configurationId3");
+
+            configurationMetaData = dao.findInIdList(ids);
+
+            Assert.assertEquals(3, configurationMetaData.size());
         }
     }
 
