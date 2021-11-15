@@ -2,6 +2,8 @@ sudo: false
 language: java
 jdk:
    - openjdk11
+node_js:
+  - 10.21.0 
 cache:
   directories:
   - $HOME/.m2
