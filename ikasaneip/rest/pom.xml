@@ -52,8 +52,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>ikasan-rest</artifactId>
-    <name>Ikasan Rest</name>
+    <artifactId>ikasan-dashboard-rest-parent</artifactId>
+    <name>Ikasan Dashboard Rest</name>
     <description>The rest parent pom for the Ikasan Enterprise Integration Platform</description>
     <packaging>pom</packaging>
 
