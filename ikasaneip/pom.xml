@@ -369,7 +369,7 @@
         <repository>
             <id>ikasaneip-releases</id>
             <name>Ikasan EIP Releases Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <url>http://oss.sonatype.org/content/repositories/releases/</url>
         </repository>
         <snapshotRepository>
             <id>ikasaneip-snapshots</id>
