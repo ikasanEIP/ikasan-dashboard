@@ -190,12 +190,55 @@
                 radius: 10,
             });
 
+            let inputLocator  = new draw2d.layout.locator.InputPortLocator();
+            let outputLocator = new draw2d.layout.locator.OutputPortLocator();
+            let topLocator = new draw2d.layout.locator.TopLocator();
+            let bottomLocator = new draw2d.layout.locator.BottomLocator();
+
+            boundary.createPort("hybrid", inputLocator);
+            boundary.createPort("hybrid", inputLocator);
+            boundary.createPort("hybrid", inputLocator);
+
+            boundary.createPort("hybrid", outputLocator);
+            boundary.createPort("hybrid", outputLocator);
+            boundary.createPort("hybrid", outputLocator);
+
+            boundary.createPort("hybrid", topLocator);
+            boundary.createPort("hybrid", topLocator);
+            boundary.createPort("hybrid", topLocator);
+
+            boundary.createPort("hybrid", bottomLocator);
+            boundary.createPort("hybrid", bottomLocator);
+            boundary.createPort("hybrid", bottomLocator);
+
+            let ports = boundary.getPorts();
+
+            ports.each((i, port) => {
+                port.setDiameter(5);
+            });
+
             boundary.uninstallEditPolicy(new draw2d.policy.figure.RectangleSelectionFeedbackPolicy());
             boundary.installEditPolicy(new RotateRectangleSelectionFeedbackPolicy());
 
             let command = new draw2d.command.CommandAdd(_this, boundary, x, y);
             _this.getCommandStack().execute(command);
         }
+
+        designer.$connector.addLine = function () {
+            let line =  new draw2d.shape.basic.Line({
+                startX: x,
+                startY: y,
+                endX: x + 200,
+                endY: y,
+                stroke: 3,
+                color: "rgba(188,188,188,1)"
+            });
+
+
+            let command = new draw2d.command.CommandAdd(_this, line, x, y);
+            _this.getCommandStack().execute(command);
+        }
+
 
         designer.$connector.addBoundaryToShape = function (identifier, shapeIdentifier, x, y, h, w, colour) {
             let boundary =  new draw2d.shape.basic.Rectangle({

@@ -288,6 +288,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.sshtools</groupId>
+            <artifactId>maverick-synergy</artifactId>
+            <version>3.0.4-FINAL</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.ikasan</groupId>
             <artifactId>ikasan-rest-module-client</artifactId>
         </dependency>
