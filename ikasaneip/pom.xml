@@ -710,6 +710,7 @@
                 <module>visualisation</module>
                 <module>rest</module>
                 <module>housekeeping</module>
+                <module>job-orchestration</module>
             </modules>
         </profile>
         <profile>
