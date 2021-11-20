@@ -300,6 +300,283 @@ public class JobLogicMachineTest extends AbstractTest {
         Assert.assertEquals(0, events.size());
     }
 
+    @Test
+    public void test_simple_context_two_nested_and_with_outer_or_dependency_and_statement_fulfilled() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
+
+        ScheduledProcessEventInstance eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName2", "agentName2", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName5", events.get(0).getAgentName());
+        Assert.assertEquals("jobName5", events.get(0).getJobName());
+    }
+
+    @Test
+    public void test_simple_context_two_nested_and_with_outer_or_dependency_and_statement_fulfilled_other_side_of_or_fulfilled() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
+
+        ScheduledProcessEventInstance eventInstance
+            = scheduledProcessEventInstance("jobName3", "agentName3", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName4", "agentName4", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName5", events.get(0).getAgentName());
+        Assert.assertEquals("jobName5", events.get(0).getJobName());
+    }
+
+    @Test
+    public void test_simple_context_two_nested_and_with_outer_or_dependency_and_statement_fulfilled_all_jobs_assert_only_one_event_created() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
+
+        ScheduledProcessEventInstance eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName4", "agentName4", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName2", "agentName2", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName5", events.get(0).getAgentName());
+        Assert.assertEquals("jobName5", events.get(0).getJobName());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName3", "agentName3", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+    }
+
+    @Test
+    public void test_simple_context_two_nested_and_or_with_outer_and_dependency_and_statement_fulfilled() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-outer-and-dependency.json");
+
+        ScheduledProcessEventInstance eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName2", "agentName2", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName3", "agentName3", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName5", events.get(0).getAgentName());
+        Assert.assertEquals("jobName5", events.get(0).getJobName());
+    }
+
+    @Test
+    public void test_simple_context_two_nested_and_or_with_outer_and_dependency_and_statement_fulfilled_assert_event_not_sent_twice() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-outer-and-dependency.json");
+
+        ScheduledProcessEventInstance eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName2", "agentName2", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName3", "agentName3", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName5", events.get(0).getAgentName());
+        Assert.assertEquals("jobName5", events.get(0).getJobName());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName4", "agentName4", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+    }
+
+    @Test
+    public void test_simple_context_single_job_creates_multiple_events() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-single-job-produces-multiple-events.json");
+
+        ScheduledProcessEventInstance eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(4, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName2", "agentName2", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName3", "agentName3", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName4", "agentName4", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName5", "agentName5", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+    }
+
+    @Test
+    public void test_simple_context_chained_jobs() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-chained-jobs.json");
+
+        ScheduledProcessEventInstance eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName2", "agentName2", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName5", events.get(0).getAgentName());
+        Assert.assertEquals("jobName5", events.get(0).getJobName());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName3", "agentName3", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName4", "agentName4", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName5", "agentName5", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName6", events.get(0).getAgentName());
+        Assert.assertEquals("jobName6", events.get(0).getJobName());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName6", "agentName6", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName7", "agentName7", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName8", events.get(0).getAgentName());
+        Assert.assertEquals("jobName8", events.get(0).getJobName());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName8", "agentName8", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        Assert.assertEquals(0, events.size());
+
+
+    }
+
     private ScheduledProcessEventInstance scheduledProcessEventInstance(String jobName, String agentName
         , boolean isSuccessful) {
         ScheduledProcessEventInstance eventInstance = new ScheduledProcessEventInstance();
