@@ -4,27 +4,41 @@
     {
       "jobIdentifier": "agentName5-jobName5",
       "logicalGrouping": {
-        "logicalGrouping": {
-          "logicalGrouping": null,
-          "and": [
-            {
-              "identifier": "agentName1-jobName1",
-              "identifier": "agentName2-jobName2"
-            }
-          ],
-          "or": [
-            {
-              "identifier": "agentName3-jobName3"
-            }
-          ],
-          "not": null
-        },
+        "logicalGrouping": null,
+        "or": [
+        ],
         "and": [
           {
-            "identifier": "agentName4-jobName4"
+            "logicalGrouping": {
+              "logicalGrouping": null,
+              "and": [
+                {
+                  "identifier": "agentName1-jobName1"
+                },
+                {
+                  "identifier": "agentName2-jobName2"
+                }
+              ],
+              "or": [],
+              "not": null
+            }
+          },
+          {
+            "logicalGrouping": {
+              "logicalGrouping": null,
+              "or": [
+                {
+                  "identifier": "agentName3-jobName3"
+                },
+                {
+                  "identifier": "agentName4-jobName4"
+                }
+              ],
+              "and": [],
+              "not": null
+            }
           }
         ],
-        "or": null,
         "not": null
       }
     }

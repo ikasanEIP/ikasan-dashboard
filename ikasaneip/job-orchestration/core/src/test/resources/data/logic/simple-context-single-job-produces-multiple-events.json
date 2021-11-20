@@ -2,30 +2,46 @@
   "name": "Context1",
   "jobDependencies": [
     {
-      "jobIdentifier": "agentName5-jobName5",
+      "jobIdentifier": "agentName1-jobName1"
+    },
+    {
+      "jobIdentifier": "agentName2-jobName2",
       "logicalGrouping": {
-        "logicalGrouping": {
-          "logicalGrouping": null,
-          "and": [
-            {
-              "identifier": "agentName1-jobName1",
-              "identifier": "agentName2-jobName2"
-            }
-          ],
-          "or": [
-            {
-              "identifier": "agentName3-jobName3"
-            }
-          ],
-          "not": null
-        },
         "and": [
           {
-            "identifier": "agentName4-jobName4"
+            "identifier": "agentName1-jobName1"
           }
-        ],
-        "or": null,
-        "not": null
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "agentName3-jobName3",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "agentName1-jobName1"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "agentName4-jobName4",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "agentName1-jobName1"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "agentName5-jobName5",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "agentName1-jobName1"
+          }
+        ]
       }
     }
   ],
