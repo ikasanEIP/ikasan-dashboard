@@ -10,6 +10,10 @@ public class ContextInstance extends Context<ContextInstance, ContextParameterIn
     private String timezone;
     private InstanceStatus status;
 
+    public ContextInstance() {
+        status = InstanceStatus.WAITING;
+    }
+
     public long getCreatedDateTime() {
         return createdDateTime;
     }
