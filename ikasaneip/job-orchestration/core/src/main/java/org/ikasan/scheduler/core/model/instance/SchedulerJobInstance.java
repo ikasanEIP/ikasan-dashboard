@@ -6,10 +6,13 @@ import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 public class SchedulerJobInstance extends SchedulerJob {
     private boolean held = false;
     private boolean skip = false;
-    private boolean completedSuccessfully = false;
     private boolean initiationEventRaised = false;
+    private InstanceStatus status;
     private ScheduledProcessEvent scheduledProcessEvent;
 
+    public SchedulerJobInstance() {
+        status = InstanceStatus.WAITING;
+    }
 
     public boolean isHeld() {
         return held;
@@ -27,20 +30,20 @@ public class SchedulerJobInstance extends SchedulerJob {
         this.skip = skip;
     }
 
-    public boolean isCompletedSuccessfully() {
-        return completedSuccessfully;
-    }
-
-    public void setCompletedSuccessfully(boolean completedSuccessfully) {
-        this.completedSuccessfully = completedSuccessfully;
-    }
-
     public boolean isInitiationEventRaised() {
         return initiationEventRaised;
     }
 
     public void setInitiationEventRaised(boolean initiationEventRaised) {
         this.initiationEventRaised = initiationEventRaised;
+    }
+
+    public InstanceStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(InstanceStatus status) {
+        this.status = status;
     }
 
     public ScheduledProcessEvent getScheduledProcessEvent() {

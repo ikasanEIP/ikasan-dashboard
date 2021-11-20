@@ -104,20 +104,19 @@
             {
               "jobIdentifier": "agentName5-jobName5",
               "logicalGrouping": {
-                "logicalGrouping": {
-                  "and": [
-                    {
-                      "identifier" : "agentName1-jobName1"
-                    }, {
-                      "identifier" : "agentName2-jobName2"
-                    }
-                  ],
-                  "or": [
-                    {
-                      "identifier" : "agentName3-jobName3"
-                    }
-                  ]
-                }
+                "and": [
+                  {
+                    "identifier": "agentName1-jobName1"
+                  },
+                  {
+                    "identifier": "agentName2-jobName2"
+                  }
+                ],
+                "or": [
+                  {
+                    "identifier": "agentName3-jobName3"
+                  }
+                ]
               }
             },
             {
@@ -125,9 +124,10 @@
               "logicalGrouping": {
                 "and": [
                   {
-                    "identifier" : "agentName4-jobName4"
-                  }, {
-                    "identifier" : "agentName5-jobName5"
+                    "identifier": "agentName4-jobName4"
+                  },
+                  {
+                    "identifier": "agentName5-jobName5"
                   }
                 ]
               }
@@ -193,9 +193,10 @@
               "logicalGrouping": {
                 "or": [
                   {
-                    "identifier" : "agentName8-jobName8"
-                  }, {
-                    "identifier" : "agentName7-jobName7"
+                    "identifier": "agentName8-jobName8"
+                  },
+                  {
+                    "identifier": "agentName7-jobName7"
                   }
                 ]
               }
@@ -205,7 +206,7 @@
               "logicalGrouping": {
                 "and": [
                   {
-                    "identifier" : "agentName7-jobName7"
+                    "identifier": "agentName7-jobName7"
                   }
                 ]
               }
@@ -215,9 +216,10 @@
               "logicalGrouping": {
                 "and": [
                   {
-                    "identifier" : "agentName9-jobName9"
-                  }, {
-                    "identifier" : "agentName10-jobName10"
+                    "identifier": "agentName9-jobName9"
+                  },
+                  {
+                    "identifier": "agentName10-jobName10"
                   }
                 ]
               }
@@ -235,7 +237,7 @@
           "logicalGrouping": {
             "and": [
               {
-                "identifier" : "Context3"
+                "identifier": "Context3"
               }
             ]
           }
@@ -297,9 +299,10 @@
           "logicalGrouping": {
             "and": [
               {
-                "identifier" : "agentName13-jobName13"
-              }, {
-                "identifier" : "agentName12-jobName12"
+                "identifier": "agentName13-jobName13"
+              },
+              {
+                "identifier": "agentName12-jobName12"
               }
             ]
           }
@@ -312,9 +315,10 @@
           "logicalGrouping": {
             "and": [
               {
-                "identifier" : "agentName15-jobName15"
-              }, {
-                "identifier" : "agentName16-jobName16"
+                "identifier": "agentName15-jobName15"
+              },
+              {
+                "identifier": "agentName16-jobName16"
               }
             ]
           }
@@ -332,7 +336,7 @@
       "logicalGrouping": {
         "and": [
           {
-            "identifier" : "Context2"
+            "identifier": "Context2"
           }
         ]
       }

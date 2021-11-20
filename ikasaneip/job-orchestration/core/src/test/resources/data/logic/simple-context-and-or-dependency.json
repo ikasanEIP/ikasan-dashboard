@@ -35,7 +35,6 @@
     "jobName" : "jobName1",
     "held" : false,
     "skip" : false,
-    "completedSuccessfully" : false,
     "scheduledProcessEvent" : null
   }, {
     "identifier" : "agentName2-jobName2",
@@ -43,7 +42,6 @@
     "jobName" : "jobName2",
     "held" : false,
     "skip" : false,
-    "completedSuccessfully" : false,
     "scheduledProcessEvent" : null
   }, {
     "identifier" : "agentName3-jobName3",
@@ -51,7 +49,6 @@
     "jobName" : "jobName3",
     "held" : false,
     "skip" : false,
-    "completedSuccessfully" : false,
     "scheduledProcessEvent" : null
   }, {
     "identifier" : "agentName4-jobName4",
@@ -59,7 +56,6 @@
     "jobName" : "jobName4",
     "held" : false,
     "skip" : false,
-    "completedSuccessfully" : false,
     "scheduledProcessEvent" : null
   }],
   "createdDateTime" : 0,
