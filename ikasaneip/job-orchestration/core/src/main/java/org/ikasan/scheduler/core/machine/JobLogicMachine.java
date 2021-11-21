@@ -10,9 +10,8 @@ import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public class JobLogicMachine {
+public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> {
 
     /**
      *
@@ -78,124 +77,5 @@ public class JobLogicMachine {
         }
 
         return result && this.assessBaseLogic(logicalGrouping, schedulerJobInstancesMap);
-    }
-
-    /**
-     * Assess the outcome of the And grouping within the LogicalGrouping.
-     *
-     * @param logicalGrouping
-     * @param schedulerJobInstancesMap
-     * @return
-     */
-    private boolean assessAnd(LogicalGrouping logicalGrouping, Map<String, SchedulerJobInstance> schedulerJobInstancesMap) {
-        AtomicBoolean and = new AtomicBoolean(false);
-
-        if(logicalGrouping.getAnd() != null && !logicalGrouping.getAnd().isEmpty()) {
-            and.set(true);
-            logicalGrouping.getAnd().forEach(operator -> {
-                if(operator.getLogicalGrouping() != null) {
-                    if(!this.assessBaseLogic(operator.getLogicalGrouping(), schedulerJobInstancesMap)) {
-                        and.set(false);
-                    }
-                }
-                else {
-                    SchedulerJobInstance job = schedulerJobInstancesMap.get(operator.getIdentifier());
-                    if (job == null) {
-                        throw new RuntimeException(String.format("Could not locate job[%s] when trying to assess logical group and[%s]",
-                            operator.getIdentifier(), logicalGrouping));
-                    }
-
-                    if (!job.getStatus().equals(InstanceStatus.COMPLETE)) {
-                        and.set(false);
-                    }
-                }
-            });
-        }
-
-        return and.get();
-    }
-
-    /**
-     * Assess the outcome of the Or grouping within the LogicalGrouping.
-     *
-     * @param logicalGrouping
-     * @param schedulerJobInstancesMap
-     * @return
-     */
-    private boolean assessOr(LogicalGrouping logicalGrouping, Map<String, SchedulerJobInstance> schedulerJobInstancesMap) {
-        AtomicBoolean or = new AtomicBoolean(false);
-        if(logicalGrouping.getOr() != null && !logicalGrouping.getOr().isEmpty()) {
-            logicalGrouping.getOr().forEach(operator -> {
-                if(operator.getLogicalGrouping() != null) {
-                    if(this.assessBaseLogic(operator.getLogicalGrouping(), schedulerJobInstancesMap)) {
-                        or.set(true);
-                    }
-                }
-                else {
-                    SchedulerJobInstance job = schedulerJobInstancesMap.get(operator.getIdentifier());
-                    if (job == null) {
-                        throw new RuntimeException(String.format("Could not locate job[%s] when trying to assess logical group or[%s]",
-                            operator.getIdentifier(), logicalGrouping));
-                    }
-
-                    if (job.getStatus().equals(InstanceStatus.COMPLETE)) {
-                        or.set(true);
-                    }
-                }
-            });
-        }
-
-        return or.get();
-    }
-
-    /**
-     * Assess the outcome of the Not grouping within the LogicalGrouping.
-     *
-     * @param logicalGrouping
-     * @param schedulerJobInstancesMap
-     * @return
-     */
-    private boolean assessNot(LogicalGrouping logicalGrouping, Map<String, SchedulerJobInstance> schedulerJobInstancesMap) {
-        AtomicBoolean not = new AtomicBoolean(false);
-        if(logicalGrouping.getNot() != null && !logicalGrouping.getNot().isEmpty()) {
-            logicalGrouping.getNot().forEach(operator -> {
-                if(operator.getLogicalGrouping() != null) {
-                    if(this.assessBaseLogic(operator.getLogicalGrouping(), schedulerJobInstancesMap)) {
-                        not.set(true);
-                    }
-                }
-                else {
-                    SchedulerJobInstance job = schedulerJobInstancesMap.get(operator.getIdentifier());
-                    if (job == null) {
-                        throw new RuntimeException(String.format("Could not locate job[%s] when trying to assess logical group or[%s]",
-                            operator.getIdentifier(), logicalGrouping));
-                    }
-
-                    if (job.getStatus().equals(InstanceStatus.COMPLETE)) {
-                        not.set(true);
-                    }
-                }
-            });
-        }
-
-        return not.get();
-    }
-
-    /**
-     * This method allows us to have an infinite depth of logical groupings and facilitate the recursion that supports that.
-     *
-     * @param logicalGrouping
-     * @param schedulerJobInstancesMap
-     * @return
-     */
-    private boolean assessBaseLogic(LogicalGrouping logicalGrouping, Map<String, SchedulerJobInstance> schedulerJobInstancesMap) {
-        // Here we assess the logic at the current level of the recursion.
-        boolean andAssessment = this.assessAnd(logicalGrouping, schedulerJobInstancesMap);
-        boolean orAssessment = this.assessOr(logicalGrouping, schedulerJobInstancesMap);
-        boolean notAssessment = this.assessNot(logicalGrouping, schedulerJobInstancesMap);
-
-        // Now apply a very simple logical statement to feed back to either the
-        // originator or the recursive level above.
-        return ((andAssessment || orAssessment) && !notAssessment);
     }
 }
