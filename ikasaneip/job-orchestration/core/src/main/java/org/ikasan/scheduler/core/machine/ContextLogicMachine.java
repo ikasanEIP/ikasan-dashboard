@@ -2,7 +2,7 @@ package org.ikasan.scheduler.core.machine;
 
 import org.ikasan.scheduler.core.model.context.ContextDependency;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
-import org.ikasan.scheduler.core.model.instance.InstanceStatus;
+import org.ikasan.scheduler.core.spec.InstanceStatus;
 
 import java.util.List;
 import java.util.Map;
@@ -24,16 +24,13 @@ public class ContextLogicMachine extends AbstractLogicMachine<ContextInstance> {
 
 
     /**
-     * This method assesses the logic defined in a LogicalGrouping to determine if an event should be raised. The LogicalGrouping
-     * data structure allows for nested logical groupings that are analogous to brackets used defining complex nested logic.
-     * Therefore this method employs recursion in order to assess the nested nature of logical statements.
      *
-     * @param logicalGrouping
+     * @param contextDependency
      * @param contextInstanceMap
      * @return
      */
     private boolean isContextDependencySatisfied(ContextDependency contextDependency, Map<String, ContextInstance> contextInstanceMap) {
-        boolean result = true;
+        boolean result;
 
         // todo need to work out what we want to do when a job dependency has a null logical grouping
         if(contextDependency.getLogicalGrouping() == null) {

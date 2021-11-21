@@ -3,7 +3,7 @@ package org.ikasan.scheduler.core.machine;
 import org.ikasan.scheduler.core.event.SchedulerJobInitiationEvent;
 import org.ikasan.scheduler.core.model.context.JobDependency;
 import org.ikasan.scheduler.core.model.context.LogicalGrouping;
-import org.ikasan.scheduler.core.model.instance.InstanceStatus;
+import org.ikasan.scheduler.core.spec.InstanceStatus;
 import org.ikasan.scheduler.core.model.instance.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 
