@@ -17,7 +17,7 @@ public class ContextMachineTest extends AbstractTest {
     private ContextService contextService = new ContextService();
 
     @Test
-    public void test_context_machine() throws IOException {
+        public void test_context_machine() throws IOException {
         ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         ContextMachine contextMachine  = new ContextMachine(context);
@@ -30,6 +30,10 @@ public class ContextMachineTest extends AbstractTest {
 
         eventInstance = scheduledProcessEventInstance("jobName1",
             "agentName1", true);
+        InstanceStatus status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
 
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(0, events.size());
@@ -79,6 +83,11 @@ public class ContextMachineTest extends AbstractTest {
         eventInstance = scheduledProcessEventInstance("jobName10",
             "agentName10", true);
 
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
 
@@ -87,6 +96,11 @@ public class ContextMachineTest extends AbstractTest {
 
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(0, events.size());
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
     }
 
     @Test

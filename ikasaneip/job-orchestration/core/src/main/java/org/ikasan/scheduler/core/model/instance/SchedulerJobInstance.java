@@ -1,9 +1,10 @@
 package org.ikasan.scheduler.core.model.instance;
 
 import org.ikasan.scheduler.core.model.context.SchedulerJob;
+import org.ikasan.scheduler.core.spec.StatefulEntity;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 
-public class SchedulerJobInstance extends SchedulerJob {
+public class SchedulerJobInstance extends SchedulerJob implements StatefulEntity {
     private boolean held = false;
     private boolean skip = false;
     private boolean initiationEventRaised = false;
