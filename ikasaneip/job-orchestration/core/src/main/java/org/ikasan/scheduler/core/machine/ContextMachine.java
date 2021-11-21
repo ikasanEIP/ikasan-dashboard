@@ -1,8 +1,10 @@
 package org.ikasan.scheduler.core.machine;
 
+import org.ikasan.scheduler.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.scheduler.core.event.SchedulerJobInitiationEvent;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
-import org.ikasan.scheduler.core.model.instance.InstanceStatus;
+import org.ikasan.scheduler.core.model.status.ContextInstanceStatus;
+import org.ikasan.scheduler.core.spec.InstanceStatus;
 import org.ikasan.scheduler.core.spec.Context;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 
@@ -13,6 +15,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ContextMachine {
     private ContextInstance contextInstance;
     private JobLogicMachine jobLogicMachine = new JobLogicMachine();
+    private ContextInstanceToContextInstanceStatusConverter statusConverter
+        = new ContextInstanceToContextInstanceStatusConverter();
 
     /**
      * Constructor
@@ -46,6 +50,10 @@ public class ContextMachine {
         }
 
         return null;
+    }
+
+    public ContextInstanceStatus getContextInstanceStatus() {
+        return this.statusConverter.convert(this.contextInstance);
     }
 
     /**

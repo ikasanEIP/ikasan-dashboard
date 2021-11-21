@@ -1,6 +1,7 @@
 package org.ikasan.scheduler.core.model.instance;
 
 import org.ikasan.scheduler.core.spec.Context;
+import org.ikasan.scheduler.core.spec.InstanceStatus;
 import org.ikasan.scheduler.core.spec.StatefulEntity;
 
 public class ContextInstance extends Context<ContextInstance, ContextParameterInstance, SchedulerJobInstance> implements StatefulEntity {
