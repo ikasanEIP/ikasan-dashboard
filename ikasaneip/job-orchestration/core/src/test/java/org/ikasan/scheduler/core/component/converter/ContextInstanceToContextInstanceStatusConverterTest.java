@@ -2,12 +2,9 @@ package org.ikasan.scheduler.core.component.converter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.scheduler.core.AbstractTest;
-import org.ikasan.scheduler.core.machine.ContextMachine;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
 import org.ikasan.scheduler.core.model.status.ContextInstanceStatus;
 import org.ikasan.scheduler.core.service.ContextService;
-import org.ikasan.scheduler.core.spec.InstanceStatus;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -25,7 +22,7 @@ public class ContextInstanceToContextInstanceStatusConverterTest extends Abstrac
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextInstanceStatus));
-
+        // todo some assertions
+//        System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextInstanceStatus));
     }
 }

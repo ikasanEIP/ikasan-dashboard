@@ -577,16 +577,6 @@ public class JobLogicMachineTest extends AbstractTest {
 
     }
 
-    private ScheduledProcessEventInstance scheduledProcessEventInstance(String jobName, String agentName
-        , boolean isSuccessful) {
-        ScheduledProcessEventInstance eventInstance = new ScheduledProcessEventInstance();
-        eventInstance.setJobName(jobName);
-        eventInstance.setAgentName(agentName);
-        eventInstance.setSuccessful(isSuccessful);
-
-        return eventInstance;
-    }
-
     private ContextInstance context(String filename) throws IOException {
         return this.contextService.getContextInstance(loadDataFile(filename));
     }
