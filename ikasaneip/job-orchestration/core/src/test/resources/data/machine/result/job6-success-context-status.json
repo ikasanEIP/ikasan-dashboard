@@ -1,9 +1,9 @@
 {
   "contextName" : "Context1",
-  "instanceStatus" : "WAITING",
+  "instanceStatus" : "RUNNING",
   "contextInstanceStatuses" : [ {
     "contextName" : "Context2",
-    "instanceStatus" : "WAITING",
+    "instanceStatus" : "RUNNING",
     "contextInstanceStatuses" : [ {
       "contextName" : "Context3",
       "instanceStatus" : "COMPLETE",

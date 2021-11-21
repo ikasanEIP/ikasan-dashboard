@@ -1,11 +1,11 @@
 package org.ikasan.scheduler.core.event;
 
-import org.ikasan.scheduler.core.model.job.SchedulerJob;
+import org.ikasan.scheduler.core.model.job.InternalEventDrivenJob;
 
 public class SchedulerJobInitiationEvent {
     private String agentName;
     private String jobName;
-    private SchedulerJob schedulerJob;
+    private InternalEventDrivenJob internalEventDrivenJob;
 
     public SchedulerJobInitiationEvent(String agentName, String jobName) {
         this.agentName = agentName;
@@ -20,7 +20,7 @@ public class SchedulerJobInitiationEvent {
         return jobName;
     }
 
-    public SchedulerJob getSchedulerJob() {
-        return schedulerJob;
+    public InternalEventDrivenJob getSchedulerJob() {
+        return internalEventDrivenJob;
     }
 }
