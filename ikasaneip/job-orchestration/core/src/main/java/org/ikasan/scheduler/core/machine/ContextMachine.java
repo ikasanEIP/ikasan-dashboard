@@ -2,6 +2,7 @@ package org.ikasan.scheduler.core.machine;
 
 import org.ikasan.scheduler.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.scheduler.core.event.SchedulerJobInitiationEvent;
+import org.ikasan.scheduler.core.listener.SchedulerJobStateChangeEventListener;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
 import org.ikasan.scheduler.core.model.status.ContextInstanceStatus;
 import org.ikasan.scheduler.core.spec.InstanceStatus;
@@ -66,6 +67,10 @@ public class ContextMachine {
         return this.getContextInstanceByName(contextName, this.contextInstance);
     }
 
+    public void addSchedulerJobStateChangeEventListener(SchedulerJobStateChangeEventListener listener) {
+        this.jobLogicMachine.addSchedulerJobStateChangeEventListener(listener);
+    }
+
     /**
      * Helper method to determine if there are any SchedulerJobInitiationEvent to be raised. This method employs recursion to determine
      * which context, if any, that the job associated with the scheduled process event is associated with. It then delegates to the
@@ -98,6 +103,7 @@ public class ContextMachine {
             for(Context instance: contextInstance.getContexts()) {
                 // Recursively work our way through all nested contexts to determine if and job initiation events need to be raised.
                 results.addAll(this.getInitiationEvents((ContextInstance) instance, scheduledProcessEvent));
+                this.setContextStatus(contextInstance);
             }
         }
 
@@ -135,30 +141,53 @@ public class ContextMachine {
      * @param contextInstance
      */
     private void setContextStatus(ContextInstance contextInstance) {
-        AtomicBoolean allJobsComplete = new AtomicBoolean(true);
-        AtomicBoolean anyErrorJobs = new AtomicBoolean(false);
-        contextInstance.getScheduledJobs().forEach(job -> {
-            if(!job.getStatus().equals(InstanceStatus.COMPLETE)) {
-                allJobsComplete.set(false);
-                contextInstance.setUpdatedDateTime(System.currentTimeMillis());
-            }
-            if(job.getStatus().equals(InstanceStatus.ERROR)) {
-                anyErrorJobs.set(true);
-                contextInstance.setUpdatedDateTime(System.currentTimeMillis());
-            }
-        });
+        if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
+            AtomicBoolean allJobsComplete = new AtomicBoolean(true);
+            AtomicBoolean anyErrorJobs = new AtomicBoolean(false);
 
-        if(anyErrorJobs.get()){
-            contextInstance.setStatus(InstanceStatus.ERROR);
-            contextInstance.setUpdatedDateTime(System.currentTimeMillis());
+            contextInstance.getScheduledJobs().forEach(job -> {
+                if (!job.getStatus().equals(InstanceStatus.COMPLETE)) {
+                    allJobsComplete.set(false);
+                }
+                if (job.getStatus().equals(InstanceStatus.ERROR)) {
+                    anyErrorJobs.set(true);
+                }
+            });
+
+            if (anyErrorJobs.get()) {
+                contextInstance.setStatus(InstanceStatus.ERROR);
+                contextInstance.setUpdatedDateTime(System.currentTimeMillis());
+            } else if (allJobsComplete.get()) {
+                contextInstance.setStatus(InstanceStatus.COMPLETE);
+                contextInstance.setUpdatedDateTime(System.currentTimeMillis());
+            } else {
+                contextInstance.setStatus(InstanceStatus.RUNNING);
+                contextInstance.setUpdatedDateTime(System.currentTimeMillis());
+            }
         }
-        else if(allJobsComplete.get()) {
-            contextInstance.setStatus(InstanceStatus.COMPLETE);
-            contextInstance.setUpdatedDateTime(System.currentTimeMillis());
-        }
-        else {
-            contextInstance.setStatus(InstanceStatus.RUNNING);
-            contextInstance.setUpdatedDateTime(System.currentTimeMillis());
+        else if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
+            AtomicBoolean allContextsComplete = new AtomicBoolean(true);
+            AtomicBoolean anyErrorContexts = new AtomicBoolean(false);
+
+            contextInstance.getContexts().forEach(context -> {
+                if (!context.getStatus().equals(InstanceStatus.COMPLETE)) {
+                    allContextsComplete.set(false);
+                }
+                if (context.getStatus().equals(InstanceStatus.ERROR)) {
+                    anyErrorContexts.set(true);
+                }
+            });
+
+            if (anyErrorContexts.get()) {
+                contextInstance.setStatus(InstanceStatus.ERROR);
+                contextInstance.setUpdatedDateTime(System.currentTimeMillis());
+            } else if (allContextsComplete.get()) {
+                contextInstance.setStatus(InstanceStatus.COMPLETE);
+                contextInstance.setUpdatedDateTime(System.currentTimeMillis());
+            } else {
+                contextInstance.setStatus(InstanceStatus.RUNNING);
+                contextInstance.setUpdatedDateTime(System.currentTimeMillis());
+            }
         }
     }
 }
