@@ -1,4 +1,4 @@
-package org.ikasan.scheduler.core.model.instance;
+package org.ikasan.scheduler.core.spec;
 
 public enum InstanceStatus {
     RUNNING,
