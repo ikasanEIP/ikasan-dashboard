@@ -1,6 +1,8 @@
 package org.ikasan.scheduler.core.machine;
 
 import org.ikasan.scheduler.core.event.SchedulerJobInitiationEvent;
+import org.ikasan.scheduler.core.event.SchedulerJobStateChangeEvent;
+import org.ikasan.scheduler.core.listener.SchedulerJobStateChangeEventListener;
 import org.ikasan.scheduler.core.model.context.JobDependency;
 import org.ikasan.scheduler.core.model.context.LogicalGrouping;
 import org.ikasan.scheduler.core.spec.InstanceStatus;
@@ -10,8 +12,18 @@ import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> {
+
+    private List<SchedulerJobStateChangeEventListener> schedulerJobStateChangeEventListeners;
+    private ExecutorService executor;
+
+    public JobLogicMachine() {
+        this.schedulerJobStateChangeEventListeners = new ArrayList<>();
+        executor = Executors.newSingleThreadExecutor();
+    }
 
     /**
      *
@@ -27,6 +39,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
         if(schedulerJobInstance != null) {
             // we update the job result with the event if it is relevant in this context.
+            InstanceStatus currentJobState = schedulerJobInstance.getStatus();
+
             if(scheduledProcessEvent.isSuccessful()) {
                 schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
             }
@@ -35,6 +49,9 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             }
 
             schedulerJobInstance.setScheduledProcessEvent(scheduledProcessEvent);
+
+            this.issueSchedulerJobStateChangeEvent(new SchedulerJobStateChangeEvent(schedulerJobInstance, currentJobState,
+                schedulerJobInstance.getStatus()));
         }
 
         List<SchedulerJobInitiationEvent> results = new ArrayList<>();
@@ -52,6 +69,15 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         }
 
         return results;
+    }
+
+    public void addSchedulerJobStateChangeEventListener(SchedulerJobStateChangeEventListener listener) {
+        this.schedulerJobStateChangeEventListeners.add(listener);
+    }
+
+    private void issueSchedulerJobStateChangeEvent(SchedulerJobStateChangeEvent event) {
+        this.executor.submit(() -> this.schedulerJobStateChangeEventListeners
+            .forEach(listener -> listener.onSchedulerJobStateChangeEvent(event)));
     }
 
     /**
