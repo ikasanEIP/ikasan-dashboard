@@ -3,19 +3,19 @@
   "instanceStatus" : "RUNNING",
   "contextInstanceStatuses" : [ {
     "contextName" : "Context2",
-    "instanceStatus" : "RUNNING",
+    "instanceStatus" : "COMPLETE",
     "contextInstanceStatuses" : [ {
       "contextName" : "Context3",
-      "instanceStatus" : "RUNNING",
+      "instanceStatus" : "COMPLETE",
       "contextInstanceStatuses" : [ ],
       "schedulerJobInstanceStatuses" : [ {
         "jobName" : "jobName1",
         "agentName" : "agentName1",
-        "instanceStatus" : "WAITING"
+        "instanceStatus" : "COMPLETE"
       }, {
         "jobName" : "jobName2",
         "agentName" : "agentName2",
-        "instanceStatus" : "WAITING"
+        "instanceStatus" : "COMPLETE"
       }, {
         "jobName" : "jobName3",
         "agentName" : "agentName3",
@@ -23,59 +23,59 @@
       }, {
         "jobName" : "jobName4",
         "agentName" : "agentName4",
-        "instanceStatus" : "WAITING"
+        "instanceStatus" : "COMPLETE"
       }, {
         "jobName" : "jobName5",
         "agentName" : "agentName5",
-        "instanceStatus" : "WAITING"
+        "instanceStatus" : "COMPLETE"
       }, {
         "jobName" : "jobName6",
         "agentName" : "agentName6",
-        "instanceStatus" : "WAITING"
+        "instanceStatus" : "COMPLETE"
       } ]
     }, {
       "contextName" : "Context4",
-      "instanceStatus" : "WAITING",
+      "instanceStatus" : "COMPLETE",
       "contextInstanceStatuses" : [ ],
       "schedulerJobInstanceStatuses" : [ {
         "jobName" : "jobName7",
         "agentName" : "agentName7",
-        "instanceStatus" : "WAITING"
+        "instanceStatus" : "COMPLETE"
       }, {
         "jobName" : "jobName8",
         "agentName" : "agentName8",
-        "instanceStatus" : "WAITING"
+        "instanceStatus" : "COMPLETE"
       }, {
         "jobName" : "jobName9",
         "agentName" : "agentName9",
-        "instanceStatus" : "WAITING"
+        "instanceStatus" : "COMPLETE"
       }, {
         "jobName" : "jobName10",
         "agentName" : "agentName10",
-        "instanceStatus" : "WAITING"
+        "instanceStatus" : "COMPLETE"
       }, {
         "jobName" : "jobName11",
         "agentName" : "agentName11",
-        "instanceStatus" : "WAITING"
+        "instanceStatus" : "COMPLETE"
       } ]
     } ],
     "schedulerJobInstanceStatuses" : [ ]
   }, {
     "contextName" : "Context5",
-    "instanceStatus" : "WAITING",
+    "instanceStatus" : "RUNNING",
     "contextInstanceStatuses" : [ ],
     "schedulerJobInstanceStatuses" : [ {
       "jobName" : "jobName12",
       "agentName" : "agentName12",
-      "instanceStatus" : "WAITING"
+      "instanceStatus" : "COMPLETE"
     }, {
       "jobName" : "jobName13",
       "agentName" : "agentName13",
-      "instanceStatus" : "WAITING"
+      "instanceStatus" : "COMPLETE"
     }, {
       "jobName" : "jobName14",
       "agentName" : "agentName14",
-      "instanceStatus" : "WAITING"
+      "instanceStatus" : "COMPLETE"
     }, {
       "jobName" : "jobName15",
       "agentName" : "agentName15",

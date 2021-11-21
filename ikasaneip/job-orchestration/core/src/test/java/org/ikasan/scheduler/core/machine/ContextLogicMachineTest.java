@@ -58,17 +58,4 @@ public class ContextLogicMachineTest extends AbstractTest {
         // Context1 is now complete as Context5 is complete.
         Assert.assertTrue(contextLogicMachine.contextLogicSatisfied(context1.getContextsMap(), context1.getContextDependencies()));
     }
-
-
-
-    private ScheduledProcessEventInstance scheduledProcessEventInstance(String jobName, String agentName
-        , boolean isSuccessful) {
-        ScheduledProcessEventInstance eventInstance = new ScheduledProcessEventInstance();
-        eventInstance.setJobName(jobName);
-        eventInstance.setAgentName(agentName);
-        eventInstance.setSuccessful(isSuccessful);
-
-        return eventInstance;
-    }
-
 }
