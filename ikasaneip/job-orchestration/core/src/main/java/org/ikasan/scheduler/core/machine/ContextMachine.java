@@ -1,16 +1,20 @@
 package org.ikasan.scheduler.core.machine;
 
 import org.ikasan.scheduler.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
+import org.ikasan.scheduler.core.event.ContextInstanceStateChangeEvent;
 import org.ikasan.scheduler.core.event.SchedulerJobInitiationEvent;
-import org.ikasan.scheduler.core.listener.SchedulerJobStateChangeEventListener;
+import org.ikasan.scheduler.core.listener.ContextInstanceStateChangeEventListener;
+import org.ikasan.scheduler.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
 import org.ikasan.scheduler.core.model.status.ContextInstanceStatus;
-import org.ikasan.scheduler.core.spec.InstanceStatus;
 import org.ikasan.scheduler.core.spec.Context;
+import org.ikasan.scheduler.core.spec.InstanceStatus;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ContextMachine {
@@ -18,6 +22,8 @@ public class ContextMachine {
     private JobLogicMachine jobLogicMachine = new JobLogicMachine();
     private ContextInstanceToContextInstanceStatusConverter statusConverter
         = new ContextInstanceToContextInstanceStatusConverter();
+    private List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners;
+    private ExecutorService executor;
 
     /**
      * Constructor
@@ -26,6 +32,10 @@ public class ContextMachine {
      */
     public ContextMachine(ContextInstance contextInstance) {
         this.contextInstance = contextInstance;
+        jobLogicMachine = new JobLogicMachine();
+        statusConverter = new ContextInstanceToContextInstanceStatusConverter();
+        contextInstanceStateChangeEventListeners = new ArrayList<>();
+        executor = Executors.newSingleThreadExecutor();
     }
 
     /**
@@ -67,8 +77,12 @@ public class ContextMachine {
         return this.getContextInstanceByName(contextName, this.contextInstance);
     }
 
-    public void addSchedulerJobStateChangeEventListener(SchedulerJobStateChangeEventListener listener) {
+    public void addSchedulerJobStateChangeEventListener(SchedulerJobInstanceStateChangeEventListener listener) {
         this.jobLogicMachine.addSchedulerJobStateChangeEventListener(listener);
+    }
+
+    public void addContextInstanceStateChangeEventListener(ContextInstanceStateChangeEventListener listener) {
+        this.contextInstanceStateChangeEventListeners.add(listener);
     }
 
     /**
@@ -154,6 +168,8 @@ public class ContextMachine {
                 }
             });
 
+            InstanceStatus previousStatus = contextInstance.getStatus();
+
             if (anyErrorJobs.get()) {
                 contextInstance.setStatus(InstanceStatus.ERROR);
                 contextInstance.setUpdatedDateTime(System.currentTimeMillis());
@@ -163,6 +179,12 @@ public class ContextMachine {
             } else {
                 contextInstance.setStatus(InstanceStatus.RUNNING);
                 contextInstance.setUpdatedDateTime(System.currentTimeMillis());
+            }
+
+            InstanceStatus newStatus = contextInstance.getStatus();
+
+            if(!previousStatus.equals(newStatus)) {
+                this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEvent(contextInstance, previousStatus, newStatus));
             }
         }
         else if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
@@ -189,5 +211,10 @@ public class ContextMachine {
                 contextInstance.setUpdatedDateTime(System.currentTimeMillis());
             }
         }
+    }
+
+    private void issueContextInstanceStateChangeEvent(ContextInstanceStateChangeEvent event) {
+        this.executor.submit(() -> this.contextInstanceStateChangeEventListeners
+            .forEach(listener -> listener.onContextInstanceStateChangeEvent(event)));
     }
 }
