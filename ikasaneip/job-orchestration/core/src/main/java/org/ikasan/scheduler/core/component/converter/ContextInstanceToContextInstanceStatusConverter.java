@@ -24,6 +24,13 @@ public class ContextInstanceToContextInstanceStatusConverter implements Converte
         }
     }
 
+    /**
+     * Recursively work our way through a ContextInstance to produce the abbreviated ContextInstanceStatus.
+     *
+     * @param contextInstanceStatus
+     * @param contextInstance
+     * @return
+     */
     private ContextInstanceStatus populateStatus(ContextInstanceStatus contextInstanceStatus, ContextInstance contextInstance){
         contextInstanceStatus.setContextName(contextInstance.getName());
         contextInstanceStatus.setInstanceStatus(contextInstance.getStatus());
@@ -46,6 +53,7 @@ public class ContextInstanceToContextInstanceStatusConverter implements Converte
         if(contextInstance.getContexts() != null) {
             List<ContextInstanceStatus> contextInstanceStatuses = new ArrayList<>();
             for(ContextInstance instance: contextInstance.getContexts()) {
+                // Recursive call here to dig into any children ContextInstances.
                 contextInstanceStatuses.add(this.populateStatus(new ContextInstanceStatus(), instance));
             }
 
