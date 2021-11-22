@@ -1,35 +1,36 @@
 package org.ikasan.scheduler.core.listener;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.scheduler.core.AbstractTest;
-import org.ikasan.scheduler.core.event.SchedulerJobInitiationEvent;
 import org.ikasan.scheduler.core.machine.ContextMachine;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
 import org.ikasan.scheduler.core.model.instance.ScheduledProcessEventInstance;
 import org.ikasan.scheduler.core.service.ContextService;
-import org.json.JSONException;
+import org.ikasan.scheduler.core.spec.InstanceStatus;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.List;
 
-public class SchedulerJobStateChangeEventListenerTest extends AbstractTest {
+public class ContextInstanceStateChangeEventListenerTest extends AbstractTest {
 
     private ContextService contextService = new ContextService();
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    public void test_context_machine_full_nested_context_success() throws IOException, JSONException {
+    public void test_context_instance_event_listener_success() throws IOException {
         ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         ContextMachine contextMachine  = new ContextMachine(context);
-        contextMachine.addSchedulerJobStateChangeEventListener(event -> {
+        contextMachine.addContextInstanceStateChangeEventListener(event -> {
             Assert.assertNotNull(event);
-
+            Assert.assertEquals("Context3", event.getContextInstance().getName());
+            Assert.assertEquals(InstanceStatus.WAITING, event.getPreviousStatus());
+            Assert.assertEquals(InstanceStatus.RUNNING, event.getPreviousStatus());
         });
-        contextMachine.addSchedulerJobStateChangeEventListener(event -> {
+        contextMachine.addContextInstanceStateChangeEventListener(event -> {
             Assert.assertNotNull(event);
+            Assert.assertEquals("Context3", event.getContextInstance().getName());
+            Assert.assertEquals(InstanceStatus.WAITING, event.getPreviousStatus());
+            Assert.assertEquals(InstanceStatus.RUNNING, event.getPreviousStatus());
         });
 
         ScheduledProcessEventInstance eventInstance = scheduledProcessEventInstance("jobName3",
