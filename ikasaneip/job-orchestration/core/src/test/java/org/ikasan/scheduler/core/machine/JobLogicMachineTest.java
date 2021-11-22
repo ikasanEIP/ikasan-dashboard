@@ -187,19 +187,18 @@ public class JobLogicMachineTest extends AbstractTest {
      *      agentName2-jobName2 -----
      *
      * "jobDependencies" : [ {
-     *     "jobIdentifier" : "agentName4-jobName4",
+     *     "jobIdentifier" : "agentName3-jobName3",
      *     "logicalGrouping" : {
      *       "logicalGrouping" : null,
-     *       "and" : [ {
-     *         "identifier" : "agentName1-jobName1",
+     *       "or" : [ {
+     *         "identifier" : "agentName1-jobName1"
+     *       }, {
      *         "identifier" : "agentName2-jobName2"
      *       }],
-     *       "or" :[ {
-     *         "identifier" : "agentName3-jobName3"
-     *       }],
+     *       "and" : null,
      *       "not" : null
      *     }
-     *   }]
+     *   } ]
      *
      * @throws IOException
      */
@@ -229,19 +228,18 @@ public class JobLogicMachineTest extends AbstractTest {
      * This test asserts that the same event is not raised twice when the second or event is received.
      *
      * "jobDependencies" : [ {
-     *     "jobIdentifier" : "agentName4-jobName4",
+     *     "jobIdentifier" : "agentName3-jobName3",
      *     "logicalGrouping" : {
      *       "logicalGrouping" : null,
-     *       "and" : [ {
-     *         "identifier" : "agentName1-jobName1",
+     *       "or" : [ {
+     *         "identifier" : "agentName1-jobName1"
+     *       }, {
      *         "identifier" : "agentName2-jobName2"
      *       }],
-     *       "or" :[ {
-     *         "identifier" : "agentName3-jobName3"
-     *       }],
+     *       "and" : null,
      *       "not" : null
      *     }
-     *   }]
+     *   } ]
      *
      * @throws IOException
      */
@@ -1260,11 +1258,11 @@ public class JobLogicMachineTest extends AbstractTest {
      *
      *      agentName1-jobName1 ----------------> agentName5-jobName5 ----------> agentName6-jobName6 ---------> agentName8-jobName8
      *                               |     |                              |                               |
-     *                               and   |                             and                             and
+     *                              and    |                             and                             and
      *      agentName2-jobName2 -----      |      agentName4-jobName4 ----        agentName7-jobName7 ----
      *                                     |
      *                                    or
-     *      agentName3-jobName3------------*
+     *      agentName3-jobName3-------------
      *
      *
      *  This test asserts that all expected events are raised and that no events are raised twice.
