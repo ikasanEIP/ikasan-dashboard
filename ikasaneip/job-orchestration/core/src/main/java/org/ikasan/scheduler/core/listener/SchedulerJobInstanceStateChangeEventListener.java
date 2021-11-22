@@ -6,6 +6,7 @@ import org.ikasan.scheduler.core.event.SchedulerJobInstanceStateChangeEvent;
 public interface SchedulerJobInstanceStateChangeEventListener {
 
     /**
+     * Listener interface for SchedulerJobInstance state changes.
      *
      * @param event
      */
