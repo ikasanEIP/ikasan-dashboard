@@ -6,6 +6,7 @@ import org.ikasan.scheduler.core.event.ContextInstanceStateChangeEvent;
 public interface ContextInstanceStateChangeEventListener {
 
     /**
+     * Listener interface for ContextInstance state changes.
      *
      * @param event
      */
