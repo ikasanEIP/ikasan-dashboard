@@ -1,8 +1,8 @@
 package org.ikasan.scheduler.core.machine;
 
 import org.ikasan.scheduler.core.event.SchedulerJobInitiationEvent;
-import org.ikasan.scheduler.core.event.SchedulerJobStateChangeEvent;
-import org.ikasan.scheduler.core.listener.SchedulerJobStateChangeEventListener;
+import org.ikasan.scheduler.core.event.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.scheduler.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.scheduler.core.model.context.JobDependency;
 import org.ikasan.scheduler.core.model.context.LogicalGrouping;
 import org.ikasan.scheduler.core.spec.InstanceStatus;
@@ -17,11 +17,11 @@ import java.util.concurrent.Executors;
 
 public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> {
 
-    private List<SchedulerJobStateChangeEventListener> schedulerJobStateChangeEventListeners;
+    private List<SchedulerJobInstanceStateChangeEventListener> schedulerJobInstanceStateChangeEventListeners;
     private ExecutorService executor;
 
     public JobLogicMachine() {
-        this.schedulerJobStateChangeEventListeners = new ArrayList<>();
+        this.schedulerJobInstanceStateChangeEventListeners = new ArrayList<>();
         executor = Executors.newSingleThreadExecutor();
     }
 
@@ -50,7 +50,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
             schedulerJobInstance.setScheduledProcessEvent(scheduledProcessEvent);
 
-            this.issueSchedulerJobStateChangeEvent(new SchedulerJobStateChangeEvent(schedulerJobInstance, currentJobState,
+            this.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEvent(schedulerJobInstance, currentJobState,
                 schedulerJobInstance.getStatus()));
         }
 
@@ -71,13 +71,13 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         return results;
     }
 
-    public void addSchedulerJobStateChangeEventListener(SchedulerJobStateChangeEventListener listener) {
-        this.schedulerJobStateChangeEventListeners.add(listener);
+    public void addSchedulerJobStateChangeEventListener(SchedulerJobInstanceStateChangeEventListener listener) {
+        this.schedulerJobInstanceStateChangeEventListeners.add(listener);
     }
 
-    private void issueSchedulerJobStateChangeEvent(SchedulerJobStateChangeEvent event) {
-        this.executor.submit(() -> this.schedulerJobStateChangeEventListeners
-            .forEach(listener -> listener.onSchedulerJobStateChangeEvent(event)));
+    private void issueSchedulerJobStateChangeEvent(SchedulerJobInstanceStateChangeEvent event) {
+        this.executor.submit(() -> this.schedulerJobInstanceStateChangeEventListeners
+            .forEach(listener -> listener.onSchedulerJobInstanceStateChangeEvent(event)));
     }
 
     /**
