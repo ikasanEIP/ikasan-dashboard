@@ -105,8 +105,6 @@ public class FlowFilteringGrid extends Grid<Flow>
 
     public void init()
     {
-        IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
-
         dataProvider = DataProvider.fromFilteringCallbacks(query ->
         {
             Optional<FlowSearchFilter> filter = query.getFilter();
@@ -206,10 +204,6 @@ public class FlowFilteringGrid extends Grid<Flow>
             .stream()
             .flatMap(metaData -> metaData.getFlows().stream().map(flowMetaData -> new Flow(metaData.getName(), flowMetaData.getName())))
             .collect(Collectors.toList());
-
-        if(flows.size() > limit-offset) {
-            return flows.subList(0, flows.size()<limit-offset ? flows.size() : limit-offset);
-        }
 
         return flows;
     }
