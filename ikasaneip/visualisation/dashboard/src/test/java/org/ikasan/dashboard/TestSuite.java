@@ -21,6 +21,7 @@ import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGridTest;
 import org.ikasan.dashboard.ui.search.view.SearchViewTest;
 import org.ikasan.dashboard.ui.visualisation.adapter.service.ModuleVisjsAdapterTest;
 import org.ikasan.dashboard.ui.visualisation.component.ComponentConfigurationDialogTest;
+import org.ikasan.dashboard.ui.visualisation.component.FlowFilteringGridTest;
 import org.ikasan.dashboard.ui.visualisation.component.ModuleFilteringGridTest;
 import org.ikasan.dashboard.ui.visualisation.dao.ModuleMetaDataDaoImplTest;
 import org.ikasan.dashboard.ui.visualisation.layout.IkasanFlowLayoutManagerTest;
@@ -64,6 +65,7 @@ import org.junit.runners.Suite;
     EventLifeIdDeepLinkViewTest.class,
     ComponentConfigurationDialogTest.class,
     ModuleFilteringGridTest.class,
+    FlowFilteringGridTest.class,
     LdapDirectorySynchronisationJobTest.class,
     ModuleVisualisationViewTest.class,
     SystemEventSearchViewTest.class,
