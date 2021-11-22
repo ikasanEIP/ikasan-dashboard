@@ -193,6 +193,17 @@ public class ContextMachineTest extends AbstractTest {
 
         JSONAssert.assertEquals(loadDataFile("/data/machine/result/job16-success-context-status.json")
             , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
     }
 
     @Test
