@@ -19,9 +19,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ContextMachine {
     private ContextInstance contextInstance;
-    private JobLogicMachine jobLogicMachine = new JobLogicMachine();
-    private ContextInstanceToContextInstanceStatusConverter statusConverter
-        = new ContextInstanceToContextInstanceStatusConverter();
+    private JobLogicMachine jobLogicMachine;
+    private ContextInstanceToContextInstanceStatusConverter statusConverter;
     private List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners;
     private ExecutorService executor;
 
