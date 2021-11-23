@@ -209,7 +209,7 @@ public class FlowFilteringGrid extends Grid<Flow>
             return flows;
         }
         else {
-            return offset + limit > flows.size() ? flows.subList(offset, results.getResultList().size()) : flows.subList(offset, offset + limit - 1);
+            return offset + limit > flows.size() ? flows.subList(offset, results.getResultList().size()) : flows.subList(offset, offset + limit);
         }
     }
 
