@@ -8,8 +8,8 @@ import java.util.List;
 
 public class FlowSearchFilter
 {
-    private String moduleNameFilter = null;
-    private String flowNameFilter = null;
+    private String moduleNameFilter = "";
+    private String flowNameFilter = "";
 
     public String getModuleNameFilter()
     {
@@ -17,7 +17,9 @@ public class FlowSearchFilter
     }
     public void setModuleNameFilter(String moduleNameFilter)
     {
-        this.moduleNameFilter = moduleNameFilter;
+        if(moduleNameFilter != null) {
+            this.moduleNameFilter = moduleNameFilter;
+        }
     }
 
     public String getFlowNameFilter() {
@@ -25,7 +27,9 @@ public class FlowSearchFilter
     }
 
     public void setFlowNameFilter(String flowNameFilter) {
-        this.flowNameFilter = flowNameFilter;
+        if(flowNameFilter != null) {
+            this.flowNameFilter = flowNameFilter;
+        }
     }
 
     public Comparator getSortComparator(List<QuerySortOrder> querySortOrders)
