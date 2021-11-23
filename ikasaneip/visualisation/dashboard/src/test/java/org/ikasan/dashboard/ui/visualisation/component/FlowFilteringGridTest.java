@@ -56,7 +56,7 @@ public class FlowFilteringGridTest extends UITest {
 
         List<Flow> moduleMetaData = GridKt._findAll(flowFilteringGrid);
 
-        Assert.assertEquals(100, moduleMetaData.size());
+        Assert.assertEquals(50, moduleMetaData.size());
     }
 
     private List<ModuleMetaData> getModuleMetaData(int num) {
