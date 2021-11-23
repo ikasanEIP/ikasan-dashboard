@@ -205,7 +205,7 @@ public class FlowFilteringGrid extends Grid<Flow>
             .flatMap(metaData -> metaData.getFlows().stream().map(flowMetaData -> new Flow(metaData.getName(), flowMetaData.getName())))
             .collect(Collectors.toList());
 
-        return flows;
+        return offset+limit > flows.size() ? flows.subList(offset, results.getResultList().size()):flows.subList(offset, offset+limit-1);
     }
 
     public long getResultSize()
