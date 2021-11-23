@@ -222,7 +222,7 @@ public class FlowFilteringGrid extends Grid<Flow>
             return flows;
         }
         else {
-            logger.info(String.format("limit[%s] - offset[%s] - number flows[%s]", limit, offset, flows.size()));
+            logger.debug(String.format("limit[%s] - offset[%s] - number flows[%s]", limit, offset, flows.size()));
             return offset + limit > flows.size() ? flows.subList(offset, flows.size()) : flows.subList(offset, offset + limit);
         }
     }
