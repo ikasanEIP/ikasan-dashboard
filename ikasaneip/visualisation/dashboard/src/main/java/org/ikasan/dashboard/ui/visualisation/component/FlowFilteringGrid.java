@@ -115,7 +115,7 @@ public class FlowFilteringGrid extends Grid<Flow>
             // The number of items to load
             int limit = query.getLimit();
 
-            List<Flow> results = this.getResults(filter.get(), offset, limit);
+            List<Flow> results = this.getResults(filter.get(), offset, limit, false);
 
             return results.stream();
         }, query ->
@@ -130,7 +130,7 @@ public class FlowFilteringGrid extends Grid<Flow>
             // The number of items to load
             int limit = query.getLimit();
 
-            results = this.getResults(filter.get(), offset, limit);
+            results = this.getResults(filter.get(), offset, limit, true);
 
             this.resultSize = results.size();
 
@@ -143,7 +143,7 @@ public class FlowFilteringGrid extends Grid<Flow>
         this.setDataProvider(filteredDataProvider);
     }
 
-    private List<Flow> getResults(FlowSearchFilter filter, int offset, int limit)
+    private List<Flow> getResults(FlowSearchFilter filter, int offset, int limit, boolean all)
     {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -205,7 +205,12 @@ public class FlowFilteringGrid extends Grid<Flow>
             .flatMap(metaData -> metaData.getFlows().stream().map(flowMetaData -> new Flow(metaData.getName(), flowMetaData.getName())))
             .collect(Collectors.toList());
 
-        return offset+limit > flows.size() ? flows.subList(offset, results.getResultList().size()):flows.subList(offset, offset+limit-1);
+        if(all) {
+            return flows;
+        }
+        else {
+            return offset + limit > flows.size() ? flows.subList(offset, results.getResultList().size()) : flows.subList(offset, offset + limit - 1);
+        }
     }
 
     public long getResultSize()
