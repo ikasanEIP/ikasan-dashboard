@@ -178,17 +178,30 @@ public class FlowFilteringGrid extends Grid<Flow>
 
         try {
             if(moduleType == ModuleType.SCHEDULER_AGENT) {
-                results = this.solrSearchService.find(moduleNames, this.moduleType, offset, limit);
-            }
-            else {
-                results =  this.solrSearchService.find(moduleNames, offset, limit);
+                long searchStart = System.currentTimeMillis();
+                List<ModuleMetaData> moduleMetaData =  this.solrSearchService.findAll();
 
-                List<ModuleMetaData> moduleMetaData = results.getResultList().stream().filter(module ->
-                    module.getType() == null || module.getType() != ModuleType.SCHEDULER_AGENT)
+                moduleMetaData = moduleMetaData.stream().filter(module ->
+                    module.getType() != null && module.getType() == ModuleType.SCHEDULER_AGENT)
                     .collect(Collectors.toList());
+                long searchEnd = System.currentTimeMillis();
 
                 results = new ModuleMetadataSearchResults(moduleMetaData, moduleMetaData.size()
-                    , results.getQueryResponseTime());
+                    , searchEnd - searchStart);
+            }
+            else {
+                long searchStart = System.currentTimeMillis();
+                List<ModuleMetaData> moduleMetaData =  this.solrSearchService.findAll();
+
+                moduleMetaData = moduleMetaData.stream().filter(module ->
+                    module.getType() == null || module.getType() == ModuleType.INTEGRATION_MODULE)
+                    .collect(Collectors.toList());
+
+                long searchEnd = System.currentTimeMillis();
+
+                results = new ModuleMetadataSearchResults(moduleMetaData, moduleMetaData.size()
+                    , searchEnd - searchStart);
+
             }
         }
         catch (Exception e) {
@@ -209,7 +222,8 @@ public class FlowFilteringGrid extends Grid<Flow>
             return flows;
         }
         else {
-            return offset + limit > flows.size() ? flows.subList(offset, results.getResultList().size()) : flows.subList(offset, offset + limit);
+            logger.info(String.format("limit[%s] - offset[%s] - number flows[%s]", limit, offset, flows.size()));
+            return offset + limit > flows.size() ? flows.subList(offset, flows.size()) : flows.subList(offset, offset + limit);
         }
     }
 
