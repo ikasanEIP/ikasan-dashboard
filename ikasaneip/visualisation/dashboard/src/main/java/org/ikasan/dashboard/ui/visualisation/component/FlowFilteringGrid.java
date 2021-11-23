@@ -148,30 +148,9 @@ public class FlowFilteringGrid extends Grid<Flow>
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         final List<String> moduleNames = new ArrayList<>();
-        Set<String> accessibleModules = new HashSet<>();
 
         if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)) {
-            accessibleModules = SecurityUtils.getAccessibleModules(authentication);
-            moduleNames.addAll(accessibleModules);
-        }
-
-        if(filter.getModuleNameFilter() != null && !filter.getModuleNameFilter().isEmpty()) {
-            moduleNames.clear();
-            if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)) {
-                accessibleModules.stream().forEach(accessibleModule -> {
-                    if(accessibleModule.toLowerCase().contains(filter.getModuleNameFilter().toLowerCase())) {
-                        moduleNames.add(accessibleModule);
-                    }
-                });
-            }
-            else {
-                moduleNames.add("*" + ClientUtils.escapeQueryChars(filter.getModuleNameFilter()) + "*");
-            }
-        }
-
-        if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)
-            && !authentication.hasGrantedAuthority(SecurityConstants.BUSINESS_STREAM_ADMIN) && moduleNames.isEmpty()){
-            moduleNames.add(SearchConstants.NONSENSE_STRING);
+            moduleNames.addAll(SecurityUtils.getAccessibleModules(authentication));
         }
 
         ModuleMetadataSearchResults results;
@@ -216,6 +195,10 @@ public class FlowFilteringGrid extends Grid<Flow>
         List<Flow> flows = results.getResultList()
             .stream()
             .flatMap(metaData -> metaData.getFlows().stream().map(flowMetaData -> new Flow(metaData.getName(), flowMetaData.getName())))
+            .filter(flow -> filter != null && (flow.getModuleName().toLowerCase().startsWith(filter.getModuleNameFilter().toLowerCase())
+                || flow.getFlowName().toLowerCase().startsWith(filter.getFlowNameFilter().toLowerCase())))
+            .filter(flow -> authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)
+                || moduleNames.contains(flow.getModuleName()))
             .collect(Collectors.toList());
 
         if(all) {
