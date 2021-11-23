@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static org.mockito.ArgumentMatchers.argThat;
-
 public class FlowFilteringGridTest extends UITest {
 
     @MockBean
@@ -29,29 +27,21 @@ public class FlowFilteringGridTest extends UITest {
     @MockBean
     private FlowSearchFilter searchFilter;
 
-    private ModuleType moduleType = ModuleType.INTEGRATION_MODULE;
 
     public void setup_expectations() {
     }
 
     @Test
-    public void test_search_admin_user_search()
+    public void test_search_admin_user_search_integration_module()
     {
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(true);
 
-        Mockito.when(this.moduleMetadataService.find(argThat(strings -> strings.size() == 0)
-            , Mockito.anyInt(), Mockito.anyInt()))
-            .thenReturn(this.moduleMetadataSearchResults);
-        Mockito.when(this.moduleMetadataSearchResults.getResultList())
-            .thenReturn(this.getModuleMetaData(50));
-        Mockito.when(this.moduleMetadataSearchResults.getTotalNumberOfResults())
-            .thenReturn(25L);
-        Mockito.when(this.moduleMetadataSearchResults.getQueryResponseTime())
-            .thenReturn(100L);
+        Mockito.when(this.moduleMetadataService.findAll())
+            .thenReturn(getModuleMetaData(25, ModuleType.INTEGRATION_MODULE));
 
         FlowFilteringGrid flowFilteringGrid = new FlowFilteringGrid(moduleMetadataService,
-        searchFilter, moduleType);
+        searchFilter, ModuleType.INTEGRATION_MODULE);
         flowFilteringGrid.init();
 
         List<Flow> moduleMetaData = GridKt._findAll(flowFilteringGrid);
@@ -59,7 +49,61 @@ public class FlowFilteringGridTest extends UITest {
         Assert.assertEquals(50, moduleMetaData.size());
     }
 
-    private List<ModuleMetaData> getModuleMetaData(int num) {
+    @Test
+    public void test_search_admin_user_search_integration_modulenone_found()
+    {
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(true);
+
+        Mockito.when(this.moduleMetadataService.findAll())
+            .thenReturn(getModuleMetaData(25, ModuleType.INTEGRATION_MODULE));
+
+        FlowFilteringGrid flowFilteringGrid = new FlowFilteringGrid(moduleMetadataService,
+            searchFilter, ModuleType.SCHEDULER_AGENT);
+        flowFilteringGrid.init();
+
+        List<Flow> moduleMetaData = GridKt._findAll(flowFilteringGrid);
+
+        Assert.assertEquals(0, moduleMetaData.size());
+    }
+
+    @Test
+    public void test_search_admin_user_search_scheduler_agent()
+    {
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(true);
+
+        Mockito.when(this.moduleMetadataService.findAll())
+            .thenReturn(getModuleMetaData(25, ModuleType.SCHEDULER_AGENT));
+
+        FlowFilteringGrid flowFilteringGrid = new FlowFilteringGrid(moduleMetadataService,
+            searchFilter, ModuleType.SCHEDULER_AGENT);
+        flowFilteringGrid.init();
+
+        List<Flow> moduleMetaData = GridKt._findAll(flowFilteringGrid);
+
+        Assert.assertEquals(50, moduleMetaData.size());
+    }
+
+    @Test
+    public void test_search_admin_user_search_scheduler_agent_none_found()
+    {
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(true);
+
+        Mockito.when(this.moduleMetadataService.findAll())
+            .thenReturn(getModuleMetaData(25, ModuleType.INTEGRATION_MODULE));
+
+        FlowFilteringGrid flowFilteringGrid = new FlowFilteringGrid(moduleMetadataService,
+            searchFilter, ModuleType.SCHEDULER_AGENT);
+        flowFilteringGrid.init();
+
+        List<Flow> moduleMetaData = GridKt._findAll(flowFilteringGrid);
+
+        Assert.assertEquals(0, moduleMetaData.size());
+    }
+
+    private List<ModuleMetaData> getModuleMetaData(int num, ModuleType moduleType) {
         List<ModuleMetaData> moduleMetaDataList = new ArrayList<>();
 
         IntStream.range(0, num).forEach(i -> {
@@ -68,6 +112,7 @@ public class FlowFilteringGridTest extends UITest {
             moduleMetaData.setUrl("url"+i);
             moduleMetaData.setDescription("description"+i);
             moduleMetaData.setVersion("version"+i);
+            moduleMetaData.setType(moduleType);
 
             moduleMetaData.setFlows(List.of(solrFlowMetaDataImpl("flowA"+i), solrFlowMetaDataImpl("flowB"+i)));
 
@@ -76,6 +121,7 @@ public class FlowFilteringGridTest extends UITest {
 
         return moduleMetaDataList;
     }
+
 
     private SolrFlowMetaDataImpl solrFlowMetaDataImpl(String name) {
         SolrFlowMetaDataImpl flowMetaData = new SolrFlowMetaDataImpl();
