@@ -259,6 +259,11 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
     }
 
     @Override
+    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(String agentName, String jobGroupName, String jobName, long startTime, long endTime, int start, int limit, String sortOrder) {
+        return this.scheduledProcessEventDao.getScheduleProcessEvents(agentName, jobGroupName, jobName, startTime, endTime, start, limit, sortOrder);
+    }
+
+    @Override
     public ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getScheduleProcessAggregateConfigurations(String agent, String filter) {
         long start = System.currentTimeMillis();
         List<FlowMetaData> flows = this.getFlowsForAgent(agent);

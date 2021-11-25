@@ -153,6 +153,112 @@ public class ScheduleProcessEventDaoTest extends SolrTestCaseJ4 {
         }
     }
 
+    @Test
+    public void test_get_scheduled_process_events_with_job_name() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            server.add("ikasan", this.createScheduledEventRecords(10, true));
+            server.commit();
+            server.add("ikasan", this.createAgentRecords(10));
+            server.commit();
+
+            ScheduledProcessEventSearchResults<ScheduledProcessEvent> scheduledProcessEventSearchResults
+                = dao.getScheduleProcessEvents("myAgent", null, "jobName1"
+                    , 0, System.currentTimeMillis() + 1000000L, 0, 1000, null);
+
+            assertEquals(1, scheduledProcessEventSearchResults.getResultList().size());
+
+            scheduledProcessEventSearchResults
+                = dao.getScheduleProcessEvents("myAgent", null, "bad -jobName1"
+                , 0, System.currentTimeMillis() + 1000000L, 0, 1000, null);
+
+            assertEquals(0, scheduledProcessEventSearchResults.getResultList().size());
+        }
+    }
+
+    @Test
+    public void test_get_scheduled_process_events_with_agent_name() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            server.add("ikasan", this.createScheduledEventRecords(10, true));
+            server.commit();
+            server.add("ikasan", this.createAgentRecords(10));
+            server.commit();
+
+            ScheduledProcessEventSearchResults<ScheduledProcessEvent> scheduledProcessEventSearchResults
+                = dao.getScheduleProcessEvents("myAgent", null, null
+                , 0, System.currentTimeMillis() + 1000000L, 0, 1000, null);
+
+            assertEquals(10, scheduledProcessEventSearchResults.getResultList().size());
+
+            scheduledProcessEventSearchResults
+                = dao.getScheduleProcessEvents("bad", null, null
+                , 0, System.currentTimeMillis() + 1000000L, 0, 1000, null);
+
+            assertEquals(0, scheduledProcessEventSearchResults.getResultList().size());
+        }
+    }
+
+    @Test
+    public void test_get_scheduled_process_events_with_job_group_name() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            server.add("ikasan", this.createScheduledEventRecords(10, true));
+            server.commit();
+            server.add("ikasan", this.createAgentRecords(10));
+            server.commit();
+
+            ScheduledProcessEventSearchResults<ScheduledProcessEvent> scheduledProcessEventSearchResults
+                = dao.getScheduleProcessEvents(null, "jobGroup1", null
+                , 0, System.currentTimeMillis() + 1000000L, 0, 1000, null);
+
+            assertEquals(1, scheduledProcessEventSearchResults.getResultList().size());
+
+            scheduledProcessEventSearchResults
+                = dao.getScheduleProcessEvents(null, "bad", null
+                , 0, System.currentTimeMillis() + 1000000L, 0, 1000, null);
+
+            assertEquals(0, scheduledProcessEventSearchResults.getResultList().size());
+        }
+    }
+
+    @Test
+    public void test_get_scheduled_process_events_with_agent_job_and_job_group_name() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            server.add("ikasan", this.createScheduledEventRecords(10, true));
+            server.commit();
+            server.add("ikasan", this.createAgentRecords(10));
+            server.commit();
+
+            ScheduledProcessEventSearchResults<ScheduledProcessEvent> scheduledProcessEventSearchResults
+                = dao.getScheduleProcessEvents("myAgent", "jobGroup1", "jobName1"
+                , 0, System.currentTimeMillis() + 1000000L, 0, 1000, null);
+
+            assertEquals(1, scheduledProcessEventSearchResults.getResultList().size());
+
+            scheduledProcessEventSearchResults
+                = dao.getScheduleProcessEvents("bad", "bad", "bad"
+                , 0, System.currentTimeMillis() + 1000000L, 0, 1000, null);
+
+            assertEquals(0, scheduledProcessEventSearchResults.getResultList().size());
+        }
+    }
+
+
+
     @Test(expected = RuntimeException.class)
     public void test_get_scheduled_process_events_exception() {
             dao = new SolrScheduledProcessEventDao();

@@ -162,8 +162,8 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
         int limit = 1000;
 
         ScheduledProcessEventSearchResults<ScheduledProcessEvent> scheduledProcessEventSearchResults
-            = this.scheduledProcessManagementService.getScheduledProcessEvents(null, 0, System.currentTimeMillis(), this.agent.getName()
-            , false, 0, limit, "asc");
+            = this.scheduledProcessManagementService.getScheduledProcessEvents(this.agent.getName(), null, this.jobName, 0, System.currentTimeMillis()
+                , 0, limit, "asc");
         DataSeries dataSeries = new DataSeries();
         dataSeries.setName(this.jobName);
 
@@ -173,8 +173,8 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
             limit += 1000;
 
             scheduledProcessEventSearchResults
-                = this.scheduledProcessManagementService.getScheduledProcessEvents(null, 0, System.currentTimeMillis(), this.agent.getName()
-                , false, limit - 1000, limit, "asc");
+                = this.scheduledProcessManagementService.getScheduledProcessEvents(this.agent.getName(), null, this.jobName, 0, System.currentTimeMillis()
+                    , 0, limit, "asc");
 
             this.populateDataSeries(scheduledProcessEventSearchResults, dataSeries);
         }
@@ -206,8 +206,7 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
      * @param dataSeries
      */
     private void populateDataSeries(ScheduledProcessEventSearchResults<ScheduledProcessEvent> scheduledProcessEventSearchResults, DataSeries dataSeries) {
-        scheduledProcessEventSearchResults.getResultList().stream()
-            .filter(scheduledProcessEvent -> this.jobName.equals(scheduledProcessEvent.getJobName()))
+        scheduledProcessEventSearchResults.getResultList()
             .forEach(scheduledProcessEvent -> {
                 DataSeriesItem item = new DataSeriesItem();
                 item.setX(Instant.ofEpochMilli(scheduledProcessEvent.getFireTime() + TimeZone.getTimeZone(DateTimeUtil.getZoneOffset()).getRawOffset()));
