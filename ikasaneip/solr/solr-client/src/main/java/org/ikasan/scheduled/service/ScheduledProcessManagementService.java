@@ -71,6 +71,21 @@ public interface ScheduledProcessManagementService {
     ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(String agent, long startTime, long endTime);
 
     /**
+     * Get filtered scheduled process events by agent name, jobGroupName and jobName within a time window. A scheduled process event represents an executed schedule job.
+     *
+     * @param agentName
+     * @param jobGroupName
+     * @param jobName
+     * @param startTime
+     * @param endTime
+     * @param start
+     * @param limit
+     * @param sortOrder
+     * @return
+     */
+    ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(String agentName, String jobGroupName, String jobName, long startTime, long endTime, int start, int limit, String sortOrder);
+
+    /**
      * Get filtered scheduled process events for a given agent within a time window, that are accessible to the user. A scheduled process event represents an executed schedule job.
      *
      * @param accessibleAgents
@@ -84,6 +99,7 @@ public interface ScheduledProcessManagementService {
      * @return
      */
     ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduledProcessEvents(List<String> accessibleAgents,long startTime, long endTime, String filter, boolean errorsOnly, int start, int limit, String sortOrder);
+
 
     /**
      * Get the aggregate configurations for an agent, with filter if necessary.
