@@ -1,8 +1,11 @@
 package org.ikasan.dashboard.ui.general.component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
@@ -25,6 +28,9 @@ public abstract class AbstractEntityViewDialog<ENTITY> extends AbstractCloseable
     protected Transformer transformer;
     protected AceEditor aceEditor;
     protected boolean initialised = false;
+    protected ObjectMapper objectMapper;
+    protected Select select;
+    protected String rawContent;
 
     protected VerticalLayout content;
 
@@ -47,6 +53,7 @@ public abstract class AbstractEntityViewDialog<ENTITY> extends AbstractCloseable
             transformer = TransformerFactory.newInstance().newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            objectMapper = new ObjectMapper();
         }
         catch (Exception e)
         {
@@ -54,6 +61,21 @@ public abstract class AbstractEntityViewDialog<ENTITY> extends AbstractCloseable
         }
 
         initialiseEditor();
+
+        select = new Select<>();
+        select.setItems(getTranslation("label.none", UI.getCurrent().getLocale()), "XML", "JSON");
+        select.setLabel(getTranslation("label.format", UI.getCurrent().getLocale()));
+        select.addValueChangeListener(componentValueChangeEvent -> {
+            if(componentValueChangeEvent.getValue().equals("XML")) {
+                this.aceEditor.setValue(this.formatXml(this.aceEditor.getValue()));
+            }
+            else if(componentValueChangeEvent.getValue().equals("JSON")) {
+                this.aceEditor.setValue(this.formatJson(this.aceEditor.getValue()));
+            }
+            else {
+                this.aceEditor.setValue(this.rawContent);
+            }
+        });
     }
 
     protected void init()
@@ -78,6 +100,39 @@ public abstract class AbstractEntityViewDialog<ENTITY> extends AbstractCloseable
         open();
 
         aceEditor.setValue(event);
+        this.rawContent = event;
+    }
+
+    protected String formatXml(String event)
+    {
+        String xmlString;
+        try
+        {
+            Document doc = this.documentBuilder
+                .parse(new InputSource(new StringReader(event)));
+
+            StreamResult result = new StreamResult(new StringWriter());
+            DOMSource source = new DOMSource(doc);
+            transformer.transform(source, result);
+            xmlString = result.getWriter().toString();
+        }
+        catch (Exception e)
+        {
+            xmlString = event;
+        }
+
+        return xmlString;
+    }
+
+    protected String formatJson(String event)
+    {
+        try {
+            Object json = objectMapper.readValue(event, Object.class);
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+        }
+        catch (Exception e) {
+            return event;
+        }
     }
 
     protected void initialiseEditor()
