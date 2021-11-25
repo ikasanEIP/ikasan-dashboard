@@ -200,7 +200,9 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             entityContentsViewDialog.populate(this.replayEvent);
         });
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.add(buttonWrapper, downloadButtonTooltip, newWindowButton);
+        buttonLayout.add(super.select, buttonWrapper, downloadButtonTooltip, newWindowButton);
+        buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, super.select);
+        buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper, newWindowButton);
 
         VerticalLayout layout = new VerticalLayout();
         layout.add(headerLayout, formLayout, buttonLayout, replayButton);
