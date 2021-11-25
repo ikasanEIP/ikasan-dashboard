@@ -122,7 +122,17 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             }
             else
             {
-                super.aceEditor.setValue(Optional.ofNullable(errorEvent)
+                String content;
+                if(super.select.getValue() != null && super.select.getValue().equals("XML")){
+                    content = super.formatXml(errorEvent);
+                }
+                else if(super.select.getValue() != null && super.select.getValue().equals("JSON")){
+                    content = super.formatJson(errorEvent);
+                }
+                else {
+                    content = errorEvent;
+                }
+                super.aceEditor.setValue(Optional.ofNullable(content)
                     .orElse(getTranslation("placeholder.not-content", UI.getCurrent().getLocale())));
             }
         });
@@ -138,7 +148,9 @@ public class ErrorDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             }
         });
         HorizontalLayout iconLayout = new HorizontalLayout();
-        iconLayout.add(buttonWrapper, downloadButtonTooltip, newWindowButton);
+        iconLayout.add(super.select, buttonWrapper, downloadButtonTooltip, newWindowButton);
+        iconLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, super.select);
+        iconLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper, newWindowButton);
 
         VerticalLayout layout = new VerticalLayout();
         layout.add(headerLayout, formLayout, iconLayout);

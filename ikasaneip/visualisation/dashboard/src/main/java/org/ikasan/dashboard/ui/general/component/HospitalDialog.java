@@ -290,11 +290,24 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         {
             if(tabs.getSelectedTab().equals(exclusionTab))
             {
-                super.aceEditor.setValue(Optional.ofNullable(this.exclusionPayload).orElse(getTranslation("placeholder.not-content", UI.getCurrent().getLocale())));
+                String content;
+                if(super.select.getValue() != null && super.select.getValue().equals("XML")){
+                    content = super.formatXml(exclusionPayload);
+                }
+                else if(super.select.getValue() != null && super.select.getValue().equals("JSON")){
+                    content = super.formatJson(exclusionPayload);
+                }
+                else {
+                    content = exclusionPayload;
+                }
+
+                super.aceEditor.setValue(Optional.ofNullable(content)
+                    .orElse(getTranslation("placeholder.not-content", UI.getCurrent().getLocale())));
             }
             else
             {
-                super.aceEditor.setValue(Optional.ofNullable(this.errorOccurrence.getErrorDetail()).orElse(getTranslation("placeholder.not-content", UI.getCurrent().getLocale())));
+                super.aceEditor.setValue(Optional.ofNullable(this.errorOccurrence.getErrorDetail())
+                    .orElse(getTranslation("placeholder.not-content", UI.getCurrent().getLocale())));
             }
         });
 
@@ -311,7 +324,9 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
             }
         });
         HorizontalLayout iconLayout = new HorizontalLayout();
-        iconLayout.add(buttonWrapper, downloadButtonTooltip, newWindowButton);
+        iconLayout.add(super.select, buttonWrapper, downloadButtonTooltip, newWindowButton);
+        iconLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, super.select);
+        iconLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, buttonWrapper, newWindowButton);
 
         VerticalLayout layout = new VerticalLayout();
         layout.add(headerLayout, formLayout, iconLayout, buttonLayout);
