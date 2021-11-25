@@ -15,10 +15,7 @@ import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEvent>
 {
@@ -150,6 +147,51 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
 
         try
         {
+            QueryRequest req = new QueryRequest(query);
+            req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+
+            QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
+
+            return new ScheduledProcessEventSearchResults(this.convert(rsp.getBeans(SolrScheduledProcessEventRecord.class)),
+                rsp.getResults().getNumFound(), rsp.getElapsedTime());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Error resolving solr solr scheduled process event by query [" + query
+                + "] from the ikasan solr index!", e);
+        }
+    }
+
+    public ScheduledProcessEventSearchResults<ScheduledProcessEvent> getScheduleProcessEvents(String agentName, String jobGroupName, String jobName, long startTime, long endTime, int start, int limit,
+                                                                                              String sortOrder) {
+        SolrQuery query = new SolrQuery();
+
+        try
+        {
+            query.setQuery(super.buildQuery(agentName!= null?List.of(agentName):List.of(), jobGroupName!=null?List.of(jobGroupName):List.of()
+                , jobName!=null?List.of(jobName):List.of(), new Date(startTime), new Date(endTime), null, null
+                , List.of("scheduledProcessEvent"), false));
+
+            if(sortOrder != null && !sortOrder.isEmpty())
+            {
+                if(sortOrder.equals("asc"))
+                {
+                    query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.asc);
+                }
+                else
+                {
+                    query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
+                }
+            }
+            else
+            {
+                // Default
+                query.addSort(SolrDaoBase.CREATED_DATE_TIME, SolrQuery.ORDER.desc);
+            }
+
+            query.setStart(start);
+            query.setRows(limit);
+
             QueryRequest req = new QueryRequest(query);
             req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
