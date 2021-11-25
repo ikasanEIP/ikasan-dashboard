@@ -377,6 +377,22 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>Vaadin Directory</id>
+            <url>http://maven.vaadin.com/vaadin-addons</url>
+        </repository>
+        <repository>
+            <id>Maven Central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
+            <id>Big Queue Repo</id>
+            <url>https://raw.github.com/bulldog2011/bulldog-repo/master/repo/releases/</url>
+        </repository>
+    </repositories>
+
     <build>
         <pluginManagement>
             <plugins>
