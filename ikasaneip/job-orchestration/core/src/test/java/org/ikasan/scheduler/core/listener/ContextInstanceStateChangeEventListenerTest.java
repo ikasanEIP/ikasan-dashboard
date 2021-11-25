@@ -1,5 +1,6 @@
 package org.ikasan.scheduler.core.listener;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.scheduler.core.AbstractTest;
 import org.ikasan.scheduler.core.machine.ContextMachine;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
@@ -16,10 +17,11 @@ public class ContextInstanceStateChangeEventListenerTest extends AbstractTest {
     private ContextService contextService = new ContextService();
 
     @Test
-    public void test_context_instance_event_listener_success() throws IOException {
+    public void test_context_instance_event_listener_success() throws IOException, InterruptedException {
         ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         ContextMachine contextMachine  = new ContextMachine(context);
+        contextMachine.init();
         contextMachine.addContextInstanceStateChangeEventListener(event -> {
             Assert.assertNotNull(event);
             Assert.assertEquals("Context3", event.getContextInstance().getName());
@@ -36,6 +38,10 @@ public class ContextInstanceStateChangeEventListenerTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance = scheduledProcessEventInstance("jobName3",
             "agentName3", true);
 
-        contextMachine.eventReceived(eventInstance);
+        ObjectMapper mapper = new ObjectMapper();
+        contextMachine.eventReceived(mapper.writeValueAsString(eventInstance));
+
+        Thread.sleep(1000);
+        contextMachine.teardown();
     }
 }
