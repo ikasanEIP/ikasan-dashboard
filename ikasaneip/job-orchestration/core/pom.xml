@@ -78,6 +78,12 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.leansoft</groupId>
+            <artifactId>bigqueue</artifactId>
+            <version>0.7.2</version>
+        </dependency>
+
         <!-- Test Dependencies -->
 
         <dependency>
