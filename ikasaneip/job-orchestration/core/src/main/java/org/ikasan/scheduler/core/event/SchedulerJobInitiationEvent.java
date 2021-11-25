@@ -12,6 +12,10 @@ public class SchedulerJobInitiationEvent {
         this.jobName = jobName;
     }
 
+    public SchedulerJobInitiationEvent() {
+
+    }
+
     public String getAgentName() {
         return agentName;
     }
@@ -20,7 +24,19 @@ public class SchedulerJobInitiationEvent {
         return jobName;
     }
 
-    public InternalEventDrivenJob getSchedulerJob() {
+    public InternalEventDrivenJob getInternalEventDrivenJob() {
         return internalEventDrivenJob;
+    }
+
+    public void setAgentName(String agentName) {
+        this.agentName = agentName;
+    }
+
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
+    }
+
+    public void setInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob) {
+        this.internalEventDrivenJob = internalEventDrivenJob;
     }
 }
