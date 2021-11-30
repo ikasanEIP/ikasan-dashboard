@@ -19,6 +19,7 @@ import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.solr.service.SolrGeneralServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
@@ -60,6 +61,9 @@ public abstract class UITest
 
     @MockBean
     protected ModuleMetaDataService moduleMetadataService;
+
+//    @MockBean
+//    protected ScheduledContextService scheduledContextService;
 
     public abstract void setup_expectations() throws IOException;
 

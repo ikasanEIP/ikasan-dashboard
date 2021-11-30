@@ -2,7 +2,8 @@ package org.ikasan.scheduler.core.machine;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.scheduler.core.AbstractTest;
-import org.ikasan.scheduler.core.event.SchedulerJobInitiationEvent;
+import org.ikasan.scheduler.core.ScheduledContextInstanceServiceTestImpl;
+import org.ikasan.scheduler.core.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
 import org.ikasan.scheduler.core.spec.InstanceStatus;
 import org.ikasan.scheduler.core.model.instance.ScheduledProcessEventInstance;
@@ -25,12 +26,12 @@ public class ContextMachineTest extends AbstractTest {
     public void test_context_machine_full_nested_context_success() throws IOException, JSONException {
         ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        ContextMachine contextMachine  = new ContextMachine(context);
+        ContextMachine contextMachine  = new ContextMachine(context, new ScheduledContextInstanceServiceTestImpl());
 
         ScheduledProcessEventInstance eventInstance = scheduledProcessEventInstance("jobName3",
             "agentName3", true);
 
-        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+        List<SchedulerJobInitiationEventImpl> events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
 
         JSONAssert.assertEquals(loadDataFile("/data/machine/result/job1-success-context-status.json")
@@ -211,7 +212,7 @@ public class ContextMachineTest extends AbstractTest {
         ObjectMapper objectMapper = new ObjectMapper();
         ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        ContextMachine contextMachine  = new ContextMachine(context);
+        ContextMachine contextMachine  = new ContextMachine(context, new ScheduledContextInstanceServiceTestImpl());
         contextMachine.init();
 
         contextMachine.addSchedulerJobInitiationEventRaisedListener(event -> {
@@ -419,7 +420,7 @@ public class ContextMachineTest extends AbstractTest {
     public void test_get_context_status() throws IOException {
         ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        ContextMachine contextMachine  = new ContextMachine(context);
+        ContextMachine contextMachine  = new ContextMachine(context, new ScheduledContextInstanceServiceTestImpl());
         InstanceStatus status = contextMachine.getContextStatus("Context3");
         Assert.assertEquals(InstanceStatus.WAITING, status);
 
@@ -459,7 +460,7 @@ public class ContextMachineTest extends AbstractTest {
     public void test_get_context_status_error() throws IOException {
         ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        ContextMachine contextMachine  = new ContextMachine(context);
+        ContextMachine contextMachine  = new ContextMachine(context, new ScheduledContextInstanceServiceTestImpl());
         InstanceStatus status = contextMachine.getContextStatus("Context3");
         Assert.assertEquals(InstanceStatus.WAITING, status);
 
@@ -491,7 +492,7 @@ public class ContextMachineTest extends AbstractTest {
     public void test_get_status_non_existent_context() throws IOException {
         ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        ContextMachine contextMachine  = new ContextMachine(context);
+        ContextMachine contextMachine  = new ContextMachine(context, new ScheduledContextInstanceServiceTestImpl());
         InstanceStatus status = contextMachine.getContextStatus("NonExistentContext");
 
         Assert.assertNull(status);
@@ -501,7 +502,7 @@ public class ContextMachineTest extends AbstractTest {
     public void test_get_context() throws IOException {
         ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        ContextMachine contextMachine  = new ContextMachine(context);
+        ContextMachine contextMachine  = new ContextMachine(context, new ScheduledContextInstanceServiceTestImpl());
         ContextInstance contextInstance = contextMachine.getContext("Context3");
         Assert.assertEquals("Context3", contextInstance.getName());
 

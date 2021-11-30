@@ -52,16 +52,11 @@
         <version>3.3.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>ikasan-job-orchestration-core</artifactId>
+    <artifactId>ikasan-job-orchestration</artifactId>
     <packaging>jar</packaging>
     <name>Ikasan Job Orchestration Core</name>
 
     <dependencies>
-
-        <dependency>
-            <groupId>org.ikasan</groupId>
-            <artifactId>ikasan-housekeeping</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.ikasan</groupId>
@@ -74,6 +69,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-quartz-dashboard</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
@@ -81,7 +81,16 @@
         <dependency>
             <groupId>com.leansoft</groupId>
             <artifactId>bigqueue</artifactId>
-            <version>0.7.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
         </dependency>
 
         <!-- Test Dependencies -->

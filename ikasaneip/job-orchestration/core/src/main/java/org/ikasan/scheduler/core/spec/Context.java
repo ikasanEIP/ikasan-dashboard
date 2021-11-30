@@ -17,6 +17,9 @@ public class Context<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Schedul
     protected List<ContextDependency> contextDependencies;
     protected List<CONTEXT_PARAM> contextParameters;
     protected List<JOB> scheduledJobs;
+    protected String timeWindowStart;
+    protected String timeWindowEnd;
+
     @JsonIgnore
     protected Map<String, JOB> scheduledJobsMap = new HashMap<>();
     @JsonIgnore
@@ -84,5 +87,21 @@ public class Context<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Schedul
 
     public Map<String, CONTEXT> getContextsMap() {
         return contextsMap;
+    }
+
+    public String getTimeWindowStart() {
+        return timeWindowStart;
+    }
+
+    public void setTimeWindowStart(String timeWindowStart) {
+        this.timeWindowStart = timeWindowStart;
+    }
+
+    public String getTimeWindowEnd() {
+        return timeWindowEnd;
+    }
+
+    public void setTimeWindowEnd(String timeWindowEnd) {
+        this.timeWindowEnd = timeWindowEnd;
     }
 }

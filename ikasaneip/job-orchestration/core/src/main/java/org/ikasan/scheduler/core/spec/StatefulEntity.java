@@ -2,7 +2,7 @@ package org.ikasan.scheduler.core.spec;
 
 public interface StatefulEntity {
 
-    public InstanceStatus getStatus();
+    InstanceStatus getStatus();
 
-    public void setStatus(InstanceStatus status);
+    void setStatus(InstanceStatus status);
 }

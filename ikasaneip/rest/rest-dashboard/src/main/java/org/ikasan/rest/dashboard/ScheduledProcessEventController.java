@@ -42,6 +42,7 @@ package org.ikasan.rest.dashboard;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.leansoft.bigqueue.IBigQueue;
 import org.ikasan.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.rest.dashboard.model.scheduled.ScheduledProcessEventImpl;
 import org.ikasan.rest.dashboard.model.systemevent.SystemEventImpl;
@@ -73,6 +74,8 @@ public class ScheduledProcessEventController
 
     private BatchInsert<ScheduledProcessEvent> batchInsert;
 
+    protected IBigQueue inboundQueue;
+
     public ScheduledProcessEventController(BatchInsert<ScheduledProcessEvent> batchInsert)
     {
         this.batchInsert = batchInsert;
@@ -87,7 +90,7 @@ public class ScheduledProcessEventController
     @RequestMapping(method = RequestMethod.PUT,
         value = "/harvest/scheduled")
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity harvestSystemEvents(@RequestBody String scheduledProcessEventPayload)
+    public ResponseEntity harvestScheduledEvents(@RequestBody String scheduledProcessEventPayload)
     {
         try
         {
@@ -95,6 +98,26 @@ public class ScheduledProcessEventController
             List<ScheduledProcessEvent> scheduledProcessEvents = this.mapper.readValue(scheduledProcessEventPayload
                 , mapper.getTypeFactory().constructCollectionType(List.class, ScheduledProcessEventImpl.class));
             this.batchInsert.insert(scheduledProcessEvents);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return new ResponseEntity(
+                new ErrorDto("An error has occurred attempting to perform a batch insert of ScheduledProcessEvents! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.PUT,
+        value = "/event/scheduled")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity scheduledEvent(@RequestBody String scheduledProcessEventPayload)
+    {
+        try
+        {
+            logger.debug(scheduledProcessEventPayload);
+            this.inboundQueue.enqueue(scheduledProcessEventPayload.getBytes());
         }
         catch (Exception e)
         {

@@ -51,5 +51,6 @@
     <field name="relatedEventId" type="strings" multiValued="false" stored="true"/>
     <field name="timestamp" type="plongs" multiValued="false" stored="true"/>
     <field name="type" type="strings" multiValued="false" stored="true"/>
+    <field name="status" type="strings" multiValued="false" stored="true"/>
 
 </schema>
