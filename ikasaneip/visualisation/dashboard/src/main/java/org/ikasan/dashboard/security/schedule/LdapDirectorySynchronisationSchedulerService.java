@@ -1,6 +1,6 @@
 package org.ikasan.dashboard.security.schedule;
 
-import org.ikasan.dashboard.schedule.AbstractDashboardSchedulerService;
+import org.ikasan.quartz.AbstractDashboardSchedulerService;
 import org.ikasan.scheduler.ScheduledJobFactory;
 import org.ikasan.security.model.AuthenticationMethod;
 import org.ikasan.security.service.LdapService;

@@ -1,7 +1,7 @@
 package org.ikasan.dashboard.notification.business.stream.service;
 
 import org.ikasan.dashboard.notification.business.stream.BusinessStreamNotificationJob;
-import org.ikasan.dashboard.schedule.AbstractDashboardSchedulerService;
+import org.ikasan.quartz.AbstractDashboardSchedulerService;
 import org.ikasan.scheduler.ScheduledJobFactory;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;

@@ -1,13 +1,16 @@
-package org.ikasan.dashboard.schedule;
+package org.ikasan.quartz;
 
 import org.ikasan.scheduler.ScheduledJobFactory;
+import org.ikasan.spec.scheduler.DashboardJob;
 import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import java.text.ParseException;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
