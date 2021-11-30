@@ -1,12 +1,12 @@
 package org.ikasan.dashboard.notification.business.stream;
 
-import org.ikasan.dashboard.notification.business.stream.model.BusinessStreamNotification;
 import org.ikasan.dashboard.notification.business.stream.model.BusinessStreamExclusions;
+import org.ikasan.dashboard.notification.business.stream.model.BusinessStreamNotification;
 import org.ikasan.dashboard.notification.business.stream.service.BusinessStreamNotificationService;
-import org.ikasan.dashboard.notification.email.EmailNotifier;
 import org.ikasan.dashboard.notification.email.EmailNotification;
-import org.ikasan.dashboard.schedule.DashboardJob;
+import org.ikasan.dashboard.notification.email.EmailNotifier;
 import org.ikasan.spec.configuration.PlatformConfigurationService;
+import org.ikasan.spec.scheduler.DashboardJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;

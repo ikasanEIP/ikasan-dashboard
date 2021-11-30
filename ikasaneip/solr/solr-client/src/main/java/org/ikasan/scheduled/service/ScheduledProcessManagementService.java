@@ -5,7 +5,6 @@ import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.model.UpcomingScheduledProcess;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
-import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
 import org.ikasan.spec.metadata.FlowMetaData;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 import org.ikasan.spec.solr.BatchInsertListener;
