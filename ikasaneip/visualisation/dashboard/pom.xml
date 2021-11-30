@@ -302,6 +302,16 @@
         </dependency>
 
         <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-quartz-dashboard</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-job-orchestration</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.vaadin.erik</groupId>
             <artifactId>slidetab</artifactId>
         </dependency>

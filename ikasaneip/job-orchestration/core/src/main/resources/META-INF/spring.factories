@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=org.ikasan.housekeeping.DashboardJobOrchestrationAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=org.ikasan.scheduler.DashboardJobOrchestrationAutoConfiguration

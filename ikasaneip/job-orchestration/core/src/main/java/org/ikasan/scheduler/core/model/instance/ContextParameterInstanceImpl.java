@@ -1,8 +1,9 @@
 package org.ikasan.scheduler.core.model.instance;
 
 import org.ikasan.scheduler.core.model.context.ContextParameter;
+import org.ikasan.spec.scheduled.ContextParameterInstance;
 
-public class ContextParameterInstance extends ContextParameter {
+public class ContextParameterInstanceImpl extends ContextParameter implements ContextParameterInstance {
     private Object value;
 
     public Object getValue() {

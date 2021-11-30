@@ -1,6 +1,6 @@
 package org.ikasan.scheduler.core.machine;
 
-import org.ikasan.scheduler.core.event.SchedulerJobInitiationEvent;
+import org.ikasan.scheduler.core.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduler.core.event.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.scheduler.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.scheduler.core.model.context.JobDependency;
@@ -32,7 +32,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      * @param jobDependencies
      * @return
      */
-    public List<SchedulerJobInitiationEvent> getJobInitiationEvents(ScheduledProcessEvent scheduledProcessEvent
+    public List<SchedulerJobInitiationEventImpl> getJobInitiationEvents(ScheduledProcessEvent scheduledProcessEvent
         , Map<String, SchedulerJobInstance> schedulerJobInstancesMap, List<JobDependency> jobDependencies) {
         SchedulerJobInstance schedulerJobInstance = schedulerJobInstancesMap
             .get(scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName());
@@ -54,7 +54,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 schedulerJobInstance.getStatus()));
         }
 
-        List<SchedulerJobInitiationEvent> results = new ArrayList<>();
+        List<SchedulerJobInitiationEventImpl> results = new ArrayList<>();
 
         for(JobDependency jobDependency: jobDependencies) {
             if(this.shouldRaiseEvent(jobDependency.getLogicalGrouping(), schedulerJobInstancesMap)) {
@@ -63,7 +63,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 // We only want to raise the job initiation event once!
                 if(!instance.isInitiationEventRaised()) {
                     instance.setInitiationEventRaised(true);
-                    results.add(new SchedulerJobInitiationEvent(instance.getAgentName(), instance.getJobName()));
+                    results.add(new SchedulerJobInitiationEventImpl(instance.getAgentName(), instance.getJobName()));
                 }
             }
         }
