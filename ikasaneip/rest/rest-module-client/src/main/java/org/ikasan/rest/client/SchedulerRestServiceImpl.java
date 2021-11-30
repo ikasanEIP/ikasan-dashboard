@@ -16,7 +16,7 @@ import java.util.*;
 
 public class SchedulerRestServiceImpl extends ModuleRestService implements SchedulerService {
 
-    Logger logger = LoggerFactory.getLogger(ModuleControlRestServiceImpl.class);
+    Logger logger = LoggerFactory.getLogger(SchedulerRestServiceImpl.class);
 
     public static final String TRIGGER_URL = "/rest/scheduler";
     public static final String FLOW_SCHEDULE_FIRE_NOW_URL = "/rest/scheduler/{moduleName}/{flowName}";

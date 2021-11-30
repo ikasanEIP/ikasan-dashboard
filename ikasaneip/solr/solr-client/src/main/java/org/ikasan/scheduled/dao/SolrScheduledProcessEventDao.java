@@ -15,7 +15,9 @@ import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEvent>
 {

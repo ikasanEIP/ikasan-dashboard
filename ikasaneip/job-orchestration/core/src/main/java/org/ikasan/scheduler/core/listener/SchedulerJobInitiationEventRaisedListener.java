@@ -1,8 +1,8 @@
 package org.ikasan.scheduler.core.listener;
 
-import org.ikasan.scheduler.core.event.SchedulerJobInitiationEvent;
+import org.ikasan.scheduler.core.event.SchedulerJobInitiationEventImpl;
 
 public interface SchedulerJobInitiationEventRaisedListener {
 
-    public void onSchedulerJobInitiationEventRaised(SchedulerJobInitiationEvent event);
+    public void onSchedulerJobInitiationEventRaised(SchedulerJobInitiationEventImpl event);
 }
