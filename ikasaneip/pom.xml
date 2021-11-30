@@ -369,6 +369,7 @@
         <version.iron-icons>2.0.1</version.iron-icons>
         <version.font-awesome-iron-iconset>2.2.0</version.font-awesome-iron-iconset>
         <version.ace.editor>1.3.4</version.ace.editor>
+        <version.big.queue>0.7.2</version.big.queue>
         <ikasan.core.version>3.3.0-SNAPSHOT</ikasan.core.version>
     </properties>
 
@@ -728,6 +729,7 @@
                 <module>rest</module>
                 <module>housekeeping</module>
                 <module>job-orchestration</module>
+                <module>quartz</module>
             </modules>
         </profile>
         <profile>
@@ -1320,6 +1322,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.ikasan</groupId>
+                <artifactId>ikasan-quartz-dashboard</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
+                <artifactId>ikasan-job-orchestration</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.esotericsoftware</groupId>
                 <artifactId>kryo</artifactId>
                 <version>${version.kryo}</version>
@@ -1591,6 +1605,12 @@
                 <groupId>commons-logging</groupId>
                 <artifactId>commons-logging</artifactId>
                 <version>${version.commons-logging}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.leansoft</groupId>
+                <artifactId>bigqueue</artifactId>
+                <version>${version.big.queue}</version>
             </dependency>
 
             <dependency>

@@ -1,7 +1,7 @@
 package org.ikasan.scheduler.core.machine;
 
 import org.ikasan.scheduler.core.AbstractTest;
-import org.ikasan.scheduler.core.event.SchedulerJobInitiationEvent;
+import org.ikasan.scheduler.core.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
 import org.ikasan.scheduler.core.model.instance.ScheduledProcessEventInstance;
 import org.ikasan.scheduler.core.service.ContextService;
@@ -41,7 +41,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(1, events.size());
@@ -78,7 +78,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("irrelevantJobName1", "irrelevantAgentName1", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(0, events.size());
@@ -114,7 +114,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(0, events.size());
@@ -163,7 +163,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         System.out.println(context);
@@ -209,7 +209,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(1, events.size());
@@ -250,7 +250,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(1, events.size());
@@ -304,7 +304,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(0, events.size());
@@ -357,7 +357,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(1, events.size());
@@ -402,7 +402,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(0, events.size());
@@ -481,7 +481,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(0, events.size());
@@ -560,7 +560,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(0, events.size());
@@ -631,7 +631,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(0, events.size());
@@ -735,7 +735,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(0, events.size());
@@ -823,7 +823,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(0, events.size());
@@ -911,7 +911,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(0, events.size());
@@ -1015,7 +1015,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(0, events.size());
@@ -1111,7 +1111,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(0, events.size());
@@ -1215,7 +1215,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(4, events.size());
@@ -1338,7 +1338,7 @@ public class JobLogicMachineTest extends AbstractTest {
         ScheduledProcessEventInstance eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
-        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
 
         Assert.assertEquals(0, events.size());

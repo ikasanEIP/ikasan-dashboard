@@ -1,10 +1,10 @@
 package org.ikasan.dashboard.security.schedule;
 
-import org.ikasan.dashboard.schedule.DashboardJob;
 import org.ikasan.security.model.AuthenticationMethod;
 import org.ikasan.security.service.LdapService;
 import org.ikasan.security.service.LdapServiceException;
 import org.ikasan.security.service.SecurityService;
+import org.ikasan.spec.scheduler.DashboardJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;

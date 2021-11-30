@@ -1,4 +1,4 @@
 package org.ikasan.scheduler.core.model.job;
 
-public class ScheduleDrivenJob extends SchedulerJob {
+public class ScheduleDrivenJob extends SchedulerJobImpl {
 }
