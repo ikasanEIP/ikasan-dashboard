@@ -4,7 +4,8 @@ import org.ikasan.scheduler.core.spec.Context;
 import org.ikasan.scheduler.core.spec.InstanceStatus;
 import org.ikasan.scheduler.core.spec.StatefulEntity;
 
-public class ContextInstance extends Context<ContextInstance, ContextParameterInstance, SchedulerJobInstance> implements StatefulEntity {
+public class ContextInstance extends Context<ContextInstance, ContextParameterInstanceImpl, SchedulerJobInstance> implements StatefulEntity {
+    private String id;
     private long createdDateTime;
     private long updatedDateTime;
     private long startTime;
@@ -16,6 +17,14 @@ public class ContextInstance extends Context<ContextInstance, ContextParameterIn
         status = InstanceStatus.WAITING;
         createdDateTime = System.currentTimeMillis();
         updatedDateTime = System.currentTimeMillis();
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public long getCreatedDateTime() {

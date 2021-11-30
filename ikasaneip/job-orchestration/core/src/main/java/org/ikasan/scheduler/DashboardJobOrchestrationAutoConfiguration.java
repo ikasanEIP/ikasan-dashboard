@@ -1,16 +1,10 @@
 package org.ikasan.scheduler;
 
-import org.ikasan.scheduler.CachingScheduledJobFactory;
-import org.ikasan.scheduler.SchedulerFactory;
-import org.ikasan.spec.housekeeping.HousekeepService;
-import org.ikasan.spec.housekeeping.HousekeepingJob;
-import org.ikasan.spec.housekeeping.HousekeepingSchedulerService;
+import org.ikasan.scheduler.context.register.ContextInstanceSchedulerService;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * House keeping related configuration required by dashboard.
@@ -19,4 +13,11 @@ import java.util.List;
 @Configuration
 public class DashboardJobOrchestrationAutoConfiguration {
 
+
+    @Bean
+    public ContextInstanceSchedulerService schedulerNotificationSchedulerService(ScheduledContextService scheduledContextService,
+                                                                                 ScheduledContextInstanceService scheduledContextInstanceService) {
+        return new ContextInstanceSchedulerService(SchedulerFactory.getInstance().getScheduler()
+            , CachingScheduledJobFactory.getInstance(), scheduledContextService, scheduledContextInstanceService);
+    }
 }
