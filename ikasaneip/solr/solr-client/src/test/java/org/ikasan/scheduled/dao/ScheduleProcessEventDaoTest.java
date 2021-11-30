@@ -2,7 +2,6 @@ package org.ikasan.scheduled.dao;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.SolrTestCaseJ4;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
@@ -14,10 +13,10 @@ import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.model.SolrScheduledProcessEvent;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
 import org.ikasan.spec.solr.SolrDaoBase;
-import org.jmock.Mockery;
-import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.*;
-import org.springframework.test.annotation.DirtiesContext;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.util.FileSystemUtils;
 
 import java.io.IOException;
@@ -39,7 +38,6 @@ public class ScheduleProcessEventDaoTest extends SolrTestCaseJ4 {
     @Before
     public void setup()
     {
-
         tmppath = createTempDir();
 
         SolrResourceLoader loader = new SolrResourceLoader(tmppath);

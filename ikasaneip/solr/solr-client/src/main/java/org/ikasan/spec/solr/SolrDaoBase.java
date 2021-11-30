@@ -47,6 +47,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     public static final String ERROR_ACTION = "errorAction";
     public static final String ERROR_MESSAGE = "errorMessage";
     public static final String EXCEPTION_CLASS = "exceptionClass";
+    public static final String STATUS = "status";
 
 
     public static final String AND = " AND ";

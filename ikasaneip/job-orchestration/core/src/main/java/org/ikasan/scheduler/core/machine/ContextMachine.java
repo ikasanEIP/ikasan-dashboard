@@ -1,21 +1,25 @@
 package org.ikasan.scheduler.core.machine;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
 import org.ikasan.scheduler.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.scheduler.core.event.ContextInstanceStateChangeEvent;
-import org.ikasan.scheduler.core.event.SchedulerJobInitiationEvent;
+import org.ikasan.scheduler.core.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduler.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.scheduler.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.scheduler.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
+import org.ikasan.scheduler.core.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.scheduler.core.model.instance.ScheduledProcessEventInstance;
 import org.ikasan.scheduler.core.model.status.ContextInstanceStatus;
 import org.ikasan.scheduler.core.spec.Context;
 import org.ikasan.scheduler.core.spec.InstanceStatus;
 import org.ikasan.spec.scheduled.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.context.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,21 +40,24 @@ public class ContextMachine {
     private IBigQueue outboundQueue;
     private ListenableFuture<byte[]> inboundListenableFuture;
     private ObjectMapper objectMapper;
+    private ScheduledContextInstanceService scheduledContextInstanceService;
 
     /**
      * Constructor
      *
      * @param contextInstance
      */
-    public ContextMachine(ContextInstance contextInstance) {
+    public ContextMachine(ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService) {
         this.contextInstance = contextInstance;
-        jobLogicMachine = new JobLogicMachine();
-        statusConverter = new ContextInstanceToContextInstanceStatusConverter();
-        contextInstanceStateChangeEventListeners = new ArrayList<>();
-        statusListenerExecutor = Executors.newSingleThreadExecutor();
+        this.jobLogicMachine = new JobLogicMachine();
+        this.statusConverter = new ContextInstanceToContextInstanceStatusConverter();
+        this.contextInstanceStateChangeEventListeners = new ArrayList<>();
+        this.statusListenerExecutor = Executors.newSingleThreadExecutor();
         this.contextExecutor = Executors.newSingleThreadExecutor();
         this.schedulerInitiatorEventRaisedListenerExecutor = Executors.newSingleThreadExecutor();
         this.objectMapper = new ObjectMapper();
+
+        this.scheduledContextInstanceService = scheduledContextInstanceService;
     }
 
     public void init() throws IOException {
@@ -77,8 +84,8 @@ public class ContextMachine {
                     return;
                 }
 
-                SchedulerJobInitiationEvent schedulerJobInitiationEvent
-                    = this.objectMapper.readValue(event, SchedulerJobInitiationEvent.class);
+                SchedulerJobInitiationEventImpl schedulerJobInitiationEvent
+                    = this.objectMapper.readValue(event, SchedulerJobInitiationEventImpl.class);
 
                 listener.onSchedulerJobInitiationEventRaised(schedulerJobInitiationEvent);
 
@@ -100,7 +107,7 @@ public class ContextMachine {
      * @param scheduledProcessEvent
      * @return
      */
-    protected List<SchedulerJobInitiationEvent> eventReceived(ScheduledProcessEvent scheduledProcessEvent) {
+    protected List<SchedulerJobInitiationEventImpl> eventReceived(ScheduledProcessEvent scheduledProcessEvent) {
         return this.getInitiationEvents(this.contextInstance, scheduledProcessEvent);
     }
 
@@ -160,14 +167,14 @@ public class ContextMachine {
      * @param scheduledProcessEvent
      * @return
      */
-    private List<SchedulerJobInitiationEvent> getInitiationEvents(ContextInstance contextInstance, ScheduledProcessEvent scheduledProcessEvent) {
+    private List<SchedulerJobInitiationEventImpl> getInitiationEvents(ContextInstance contextInstance, ScheduledProcessEvent scheduledProcessEvent) {
          if(!contextInstance.getStatus().equals(InstanceStatus.COMPLETE)
              && contextInstance.getScheduledJobsMap().containsKey(scheduledProcessEvent.getAgentName()
                 + "-" + scheduledProcessEvent.getJobName())) {
 
              // Delegate to the JobLogicMachine to determine if any any SchedulerJobInitiationEvents are
              // required to be raised.
-             List<SchedulerJobInitiationEvent> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
+             List<SchedulerJobInitiationEventImpl> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
                  , contextInstance.getScheduledJobsMap(), contextInstance.getJobDependencies());
 
              // Update the context status after event received and attached
@@ -177,7 +184,7 @@ public class ContextMachine {
              return events;
         }
 
-        List<SchedulerJobInitiationEvent> results = new ArrayList<>();
+        List<SchedulerJobInitiationEventImpl> results = new ArrayList<>();
 
         if (contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()){
             for(Context instance: contextInstance.getContexts()) {
@@ -288,6 +295,14 @@ public class ContextMachine {
         inboundListenableFuture.addListener(new InboundQueueMessageRunner(), contextExecutor);
     }
 
+    private void saveContext() throws JsonProcessingException {
+        ScheduledContextInstanceRecordImpl scheduledContextInstanceRecord
+            = new ScheduledContextInstanceRecordImpl(this.contextInstance.getId(), this.contextInstance.getName(),
+                this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this.contextInstance), this.contextInstance.getCreatedDateTime());
+
+        scheduledContextInstanceService.save(scheduledContextInstanceRecord);
+    }
+
     private class InboundQueueMessageRunner implements Runnable {
 
         @Override
@@ -302,14 +317,17 @@ public class ContextMachine {
                 ScheduledProcessEvent scheduledProcessEvent
                     = objectMapper.readValue(event, ScheduledProcessEventInstance.class);
 
-                for(SchedulerJobInitiationEvent schedulerJobInitiationEvent: eventReceived(scheduledProcessEvent)) {
+                List<SchedulerJobInitiationEventImpl> schedulerJobInitiationEvents = eventReceived(scheduledProcessEvent);
+
+                saveContext();
+
+                for(SchedulerJobInitiationEventImpl schedulerJobInitiationEvent: schedulerJobInitiationEvents) {
                     String serialised = objectMapper.writeValueAsString(schedulerJobInitiationEvent);
                     outboundQueue.enqueue(serialised.getBytes());
                 }
 
                 inboundQueue.dequeue();
                 inboundQueue.gc();
-
             }
             catch (Exception e) {
                 // do something
