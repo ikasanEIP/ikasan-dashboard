@@ -1,6 +1,7 @@
 package org.ikasan.scheduler.core.model.job;
 
-import org.ikasan.spec.scheduled.SchedulerJob;
+
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 public abstract class SchedulerJobImpl implements SchedulerJob {
     protected String jobIdentifier;

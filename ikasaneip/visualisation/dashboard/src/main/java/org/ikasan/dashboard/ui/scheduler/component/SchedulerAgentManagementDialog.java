@@ -17,7 +17,7 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.scheduler.model.AgentJobFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.scheduled.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -83,11 +83,55 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
             scheduledJobDialog.open();
         });
 
+        IronIcon addIcon = IronIcons.ADD.create();
+        addIcon.setSize("16pt");
+        addButton.getElement().appendChild(addIcon.getElement());
+
+        Button addQuartzJobButton = new Button("New Quartz");
+        addQuartzJobButton.setId("newScheduledJobButton");
+        addQuartzJobButton.getStyle().set("position", "absolute");
+        addQuartzJobButton.getStyle().set("top", "70px");
+        addQuartzJobButton.getStyle().set("right", "70px");
+
+        addQuartzJobButton.addClickListener(buttonClickEvent -> {
+            QuartzDrivenScheduledJobDialog scheduledJobDialog = new QuartzDrivenScheduledJobDialog(this.agent,
+                this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+                this.metaDataRestService, this.systemEventLogger);
+
+            scheduledJobDialog.open();
+        });
+
+        Button addFileEventJobButton = new Button("New File");
+        addFileEventJobButton.setId("addFileEventJobButton");
+        addFileEventJobButton.getStyle().set("position", "absolute");
+        addFileEventJobButton.getStyle().set("top", "70px");
+        addFileEventJobButton.getStyle().set("right", "180px");
+
+        addFileEventJobButton.addClickListener(buttonClickEvent -> {
+            FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(this.agent,
+                this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+                this.metaDataRestService, this.systemEventLogger);
+
+            fileEventJobDialog.open();
+        });
+
+        Button addInternalEventJobButton = new Button("New Internal");
+        addInternalEventJobButton.setId("addInternalEventJobButton");
+        addInternalEventJobButton.getStyle().set("position", "absolute");
+        addInternalEventJobButton.getStyle().set("top", "70px");
+        addInternalEventJobButton.getStyle().set("right", "270px");
+
+        addInternalEventJobButton.addClickListener(buttonClickEvent -> {
+            InternalEventDrivenJobDialog fileEventJobDialog = new InternalEventDrivenJobDialog(this.agent,
+                this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+                this.metaDataRestService, this.systemEventLogger);
+
+            fileEventJobDialog.open();
+        });
+
         // todo translation for header.agent-details not in bundle.
         H4 agentDetails = new H4(getTranslation("header.agent-details", UI.getCurrent().getLocale()));
 
-        IronIcon addIcon = IronIcons.ADD.create();
-        addIcon.setSize("16pt");
 
         FormLayout formLayout = new FormLayout();
 
@@ -105,7 +149,6 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         agentUrlLf.setValue(" ");
         formLayout.add(agentUrlLf);
 
-        addButton.getElement().appendChild(addIcon.getElement());
 
         H4 scheduledJobsLabel = new H4(getTranslation("header.scheduled-jobs", UI.getCurrent().getLocale()));
 
@@ -139,7 +182,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
-        layout.add(agentDetails, addButton, formLayout, scheduledJobsLabel, filterLayout, filteringGrid);
+        layout.add(agentDetails, addInternalEventJobButton, addButton, addFileEventJobButton, addQuartzJobButton, formLayout, scheduledJobsLabel,     filterLayout, filteringGrid);
         super.content.add(layout);
     }
 }

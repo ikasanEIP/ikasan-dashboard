@@ -2,7 +2,7 @@ package org.ikasan.scheduler.core.event;
 
 import org.ikasan.scheduler.core.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.scheduler.core.model.job.InternalEventDrivenJobImpl;
-import org.ikasan.spec.scheduled.SchedulerJobInitiationEvent;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 
 import java.util.List;
 
@@ -81,5 +81,28 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
     @Override
     public List<ContextParameterInstanceImpl> getContextParameters() {
         return this.contextParameters;
+    }
+
+    @Override
+    public boolean isDryRun() {
+        return false;
+    }
+
+    @Override
+    public void setDryRun(boolean dryRun) {
+
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("SchedulerJobInitiationEventImpl{");
+        sb.append("agentName='").append(agentName).append('\'');
+        sb.append(", jobName='").append(jobName).append('\'');
+        sb.append(", internalEventDrivenJob=").append(internalEventDrivenJob);
+        sb.append(", contextId='").append(contextId).append('\'');
+        sb.append(", contextInstanceId='").append(contextInstanceId).append('\'');
+        sb.append(", contextParameters=").append(contextParameters);
+        sb.append('}');
+        return sb.toString();
     }
 }

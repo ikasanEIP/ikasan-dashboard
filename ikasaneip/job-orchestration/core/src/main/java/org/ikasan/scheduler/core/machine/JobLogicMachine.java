@@ -7,7 +7,7 @@ import org.ikasan.scheduler.core.model.context.JobDependency;
 import org.ikasan.scheduler.core.model.context.LogicalGrouping;
 import org.ikasan.scheduler.core.spec.InstanceStatus;
 import org.ikasan.scheduler.core.model.instance.SchedulerJobInstance;
-import org.ikasan.spec.scheduled.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,10 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             // we update the job result with the event if it is relevant in this context.
             InstanceStatus currentJobState = schedulerJobInstance.getStatus();
 
-            if(scheduledProcessEvent.isSuccessful()) {
+            if(scheduledProcessEvent.isJobStarting()) {
+                schedulerJobInstance.setStatus(InstanceStatus.RUNNING);
+            }
+            else if(scheduledProcessEvent.isSuccessful()) {
                 schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
             }
             else {
@@ -82,7 +85,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
     /**
      * This method assesses the logic defined in a LogicalGrouping to determine if an event should be raised. The LogicalGrouping
-     * data structure allows for nested logical groupings that are analogous to brackets used defining complex nested logic.
+     * data structure allows for nested logical groupings that are analogous to brackets used when defining complex nested logic.
      * Therefore this method employs recursion in order to assess the nested nature of logical statements.
      *
      * @param logicalGrouping

@@ -4,6 +4,7 @@ import org.ikasan.scheduler.core.machine.ContextMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ContextMachineCache
@@ -51,5 +52,9 @@ public class ContextMachineCache
         logger.debug(String.format("%s check contains[%s] - result [%s]",this
             , contextName));
         return this.cache.containsKey(contextName);
+    }
+
+    public Set keys() {
+        return this.cache.keySet();
     }
 }

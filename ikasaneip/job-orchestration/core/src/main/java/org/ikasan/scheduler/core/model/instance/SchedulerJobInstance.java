@@ -3,7 +3,7 @@ package org.ikasan.scheduler.core.model.instance;
 import org.ikasan.scheduler.core.model.context.SchedulerJob;
 import org.ikasan.scheduler.core.spec.InstanceStatus;
 import org.ikasan.scheduler.core.spec.StatefulEntity;
-import org.ikasan.spec.scheduled.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 
 public class SchedulerJobInstance extends SchedulerJob implements StatefulEntity {
     private boolean held = false;
