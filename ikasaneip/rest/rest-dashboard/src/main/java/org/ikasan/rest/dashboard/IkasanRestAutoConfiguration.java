@@ -40,6 +40,7 @@
  */
 package org.ikasan.rest.dashboard;
 
+import com.leansoft.bigqueue.IBigQueue;
 import org.ikasan.security.service.UserService;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -93,6 +94,9 @@ public class IkasanRestAutoConfiguration
     @Resource
     private FlowStateCacheAdapter cacheAdapter;
 
+    @Resource
+    private IBigQueue inboundQueue;
+
     @Bean
     public ReplayController replayApplication()
     {
@@ -133,7 +137,7 @@ public class IkasanRestAutoConfiguration
     @Bean
     public ScheduledProcessEventController scheduledProcessEventController()
     {
-        return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert);
+        return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert, this.inboundQueue);
     }
 
     @Bean

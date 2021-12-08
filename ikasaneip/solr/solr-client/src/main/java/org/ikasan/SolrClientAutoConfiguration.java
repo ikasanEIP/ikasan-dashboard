@@ -1,9 +1,9 @@
 package org.ikasan;
 
-import org.ikasan.scheduled.dao.SolrScheduledContextDaoImpl;
-import org.ikasan.scheduled.dao.SolrScheduledContextInstanceDaoImpl;
-import org.ikasan.scheduled.service.SolrScheduledContextInstanceServiceImpl;
-import org.ikasan.scheduled.service.SolrScheduledContextServiceImpl;
+import org.ikasan.scheduled.context.dao.SolrScheduledContextDaoImpl;
+import org.ikasan.scheduled.context.dao.SolrScheduledContextInstanceDaoImpl;
+import org.ikasan.scheduled.context.service.SolrScheduledContextInstanceServiceImpl;
+import org.ikasan.scheduled.context.service.SolrScheduledContextServiceImpl;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.springframework.beans.factory.annotation.Value;
