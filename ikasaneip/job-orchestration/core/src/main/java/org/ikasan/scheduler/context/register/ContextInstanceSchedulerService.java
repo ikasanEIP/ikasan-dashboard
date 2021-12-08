@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.quartz.AbstractDashboardSchedulerService;
 import org.ikasan.scheduler.ScheduledJobFactory;
 import org.ikasan.scheduler.core.spec.Context;
+import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -27,10 +28,12 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
     private ScheduledContextService scheduledContextService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private ObjectMapper objectMapper;
+    private SchedulerService schedulerService;
 
 
-    public ContextInstanceSchedulerService(Scheduler scheduler, ScheduledJobFactory scheduledJobFactory,
-                                           ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService) {
+    public ContextInstanceSchedulerService(Scheduler scheduler, ScheduledJobFactory scheduledJobFactory
+        , ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService
+        , SchedulerService schedulerService) {
         super(scheduler, scheduledJobFactory);
 
         this.scheduledContextService = scheduledContextService;
@@ -40,6 +43,10 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if (this.scheduledContextInstanceService == null) {
             throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
+        }
+        this.schedulerService = schedulerService;
+        if (this.schedulerService == null) {
+            throw new IllegalArgumentException("schedulerService cannot be null!");
         }
 
         this.objectMapper = new ObjectMapper();
@@ -55,7 +62,7 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
 
                 Context context = this.objectMapper.readValue(scheduledContextRecord.getContext(), Context.class);
                 ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(scheduledContextRecord.getContextName(),
-                    context.getTimeWindowStart(), this.scheduledContextService, this.scheduledContextInstanceService);
+                    context.getTimeWindowStart(), this.scheduledContextService, this.scheduledContextInstanceService, this.schedulerService);
                 JobDetail jobDetail = this.scheduledJobFactory.createJobDetail
                     (job, ContextInstanceRegisterJob.class, job.getJobName(), "context");
 

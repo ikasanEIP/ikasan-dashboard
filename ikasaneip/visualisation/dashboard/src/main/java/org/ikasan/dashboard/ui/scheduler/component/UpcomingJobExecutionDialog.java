@@ -11,7 +11,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterListener;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.scheduled.model.UpcomingScheduledProcess;
+import org.ikasan.scheduled.event.model.UpcomingScheduledProcess;
 import org.ikasan.spec.metadata.ModuleMetaData;
 
 public class UpcomingJobExecutionDialog extends AbstractCloseableResizableDialog implements BeforeEnterListener {

@@ -1,0 +1,234 @@
+{
+  "name": "Context1",
+  "jobDependencies": [
+    {
+      "jobIdentifier": "scheduler-agent-The Job"
+    },
+    {
+      "jobIdentifier": "scheduler-agent-Cron Job"
+    },
+    {
+      "jobIdentifier": "scheduler-agent-Internal Job",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-The Job"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-Another Test",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-Internal Job"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-Job 1",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-Internal Job"
+          },
+          {
+            "identifier": "scheduler-agent-Another Test"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-Job 2",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-Job 1"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-Job 3",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-Job 1"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-Job 4",
+      "logicalGrouping": {
+        "or": [
+          {
+            "identifier": "scheduler-agent-Job 3"
+          },
+          {
+            "identifier": "scheduler-agent-Job 2"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-Job 5",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-Job 4"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-Job 6",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-Job 4"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-Job 7",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-Job 4"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-Job 8",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-Job 5"
+          },
+          {
+            "identifier": "scheduler-agent-Job 7"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-Job 9",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-Job 6"
+          },
+          {
+            "identifier": "scheduler-agent-Cron Job"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "scheduler-agent-Job 10",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "scheduler-agent-Job 9"
+          },
+          {
+            "identifier": "scheduler-agent-Job 8"
+          }
+        ]
+      }
+    }
+  ],
+  "contexts": [],
+  "contextDependencies": [],
+  "contextParameters": [
+    {
+      "name": "name",
+      "type": "type"
+    },
+    {
+      "name": "name",
+      "type": "type"
+    },
+    {
+      "name": "name",
+      "type": "type"
+    }
+  ],
+  "scheduledJobs": [
+    {
+      "identifier": "scheduler-agent-The Job",
+      "agentName": "scheduler-agent",
+      "jobName": "The Job"
+    },
+    {
+      "identifier": "scheduler-agent-Cron Job",
+      "agentName": "scheduler-agent",
+      "jobName": "Cron Job"
+    },
+    {
+      "identifier": "scheduler-agent-Internal Job",
+      "agentName": "scheduler-agent",
+      "jobName": "Internal Job"
+    },
+    {
+      "identifier": "scheduler-agent-Another Test",
+      "agentName": "scheduler-agent",
+      "jobName": "Another Test"
+    },
+    {
+      "identifier": "scheduler-agent-Job 1",
+      "agentName": "scheduler-agent",
+      "jobName": "Job 1"
+    },
+    {
+      "identifier": "scheduler-agent-Job 2",
+      "agentName": "scheduler-agent",
+      "jobName": "Job 2"
+    },
+    {
+      "identifier": "scheduler-agent-Job 3",
+      "agentName": "scheduler-agent",
+      "jobName": "Job 3"
+    },
+    {
+      "identifier": "scheduler-agent-Job 4",
+      "agentName": "scheduler-agent",
+      "jobName": "Job 4"
+    },
+    {
+      "identifier": "scheduler-agent-Job 5",
+      "agentName": "scheduler-agent",
+      "jobName": "Job 5"
+    },
+    {
+      "identifier": "scheduler-agent-Job 6",
+      "agentName": "scheduler-agent",
+      "jobName": "Job 6"
+    },
+    {
+      "identifier": "scheduler-agent-Job 7",
+      "agentName": "scheduler-agent",
+      "jobName": "Job 7"
+    },
+    {
+      "identifier": "scheduler-agent-Job 8",
+      "agentName": "scheduler-agent",
+      "jobName": "Job 8"
+    },
+    {
+      "identifier": "scheduler-agent-Job 9",
+      "agentName": "scheduler-agent",
+      "jobName": "Job 9"
+    },
+    {
+      "identifier": "scheduler-agent-Job 10",
+      "agentName": "scheduler-agent",
+      "jobName": "Job 10"
+    }
+  ]
+}
