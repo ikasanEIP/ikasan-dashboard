@@ -72,6 +72,6 @@ public class ContextInstance extends Context<ContextInstance, ContextParameterIn
     }
 
     public void setStatus(InstanceStatus status) {
-        this.status = status;
+        if(status!= null)this.status = status;
     }
 }
