@@ -6,15 +6,8 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.spring.annotation.UIScope;
-import org.ikasan.dashboard.ui.dashboard.component.*;
-import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.rest.client.ModuleRestService;
-import org.ikasan.scheduled.service.ScheduledProcessManagementService;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
+import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -22,11 +15,6 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.SchedulerService;
-import org.ikasan.spec.solr.SolrGeneralService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
 
 @CssImport("./styles/dashboard-view.css")
 @CssImport(value="./styles/chart-styling.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")

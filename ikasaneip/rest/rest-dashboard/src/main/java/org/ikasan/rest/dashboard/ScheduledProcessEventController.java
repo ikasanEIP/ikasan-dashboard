@@ -47,7 +47,7 @@ import org.ikasan.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.rest.dashboard.model.scheduled.ScheduledProcessEventImpl;
 import org.ikasan.rest.dashboard.model.systemevent.SystemEventImpl;
 import org.ikasan.spec.persistence.BatchInsert;
-import org.ikasan.spec.scheduled.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.systemevent.SystemEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,12 +76,17 @@ public class ScheduledProcessEventController
 
     protected IBigQueue inboundQueue;
 
-    public ScheduledProcessEventController(BatchInsert<ScheduledProcessEvent> batchInsert)
+    public ScheduledProcessEventController(BatchInsert<ScheduledProcessEvent> batchInsert, IBigQueue inboundQueue)
     {
         this.batchInsert = batchInsert;
         if (this.batchInsert == null)
         {
             throw new IllegalArgumentException("BatchInsert cannot be null!");
+        }
+        this.inboundQueue = inboundQueue;
+        if (this.inboundQueue == null)
+        {
+            throw new IllegalArgumentException("inboundQueue cannot be null!");
         }
         this.mapper = new ObjectMapper();
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

@@ -1,8 +1,8 @@
 package org.ikasan.scheduled.converter;
 
-import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
-import org.ikasan.scheduled.model.ScheduleProcessConfigurationBucket;
-import org.ikasan.scheduled.model.ScheduledProcessConfigurationConstants;
+import org.ikasan.scheduled.event.model.ScheduledProcessAggregateConfiguration;
+import org.ikasan.scheduled.event.model.ScheduleProcessConfigurationBucket;
+import org.ikasan.scheduled.event.model.ScheduledProcessConfigurationConstants;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
 import org.ikasan.spec.serialiser.Converter;
@@ -66,10 +66,14 @@ public class ScheduledProcessAggregateConfigurationConverter implements Converte
     private Object getConfigurationParameterMetaDataValue(ConfigurationMetaData<List<ConfigurationParameterMetaData>> params
         , String paramName) {
         AtomicReference<Object> value = new AtomicReference<>();
-        params.getParameters().stream()
-            .filter(param -> param.getName().equals(paramName))
-            .findFirst()
-            .ifPresent(conf -> value.set(conf.getValue()));
+        value.set(null);
+
+        if(params != null) {
+            params.getParameters().stream()
+                .filter(param -> param.getName().equals(paramName))
+                .findFirst()
+                .ifPresent(conf -> value.set(conf.getValue()));
+        }
 
         return value.get();
     }
