@@ -1,6 +1,6 @@
 package org.ikasan.rest.dashboard.model.scheduled;
 
-import org.ikasan.spec.scheduled.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 
 import java.util.Objects;
 
@@ -180,6 +180,46 @@ public class ScheduledProcessEventImpl implements ScheduledProcessEvent<Outcome>
     @Override
     public void setOutcome(Outcome outcome) {
         this.outcome = outcome;
+    }
+
+    @Override
+    public boolean isJobStarting() {
+            return false;
+    }
+
+    @Override
+    public void setJobStarting(boolean jobStarting) {
+
+    }
+
+    @Override
+    public boolean isDryRun() {
+        return false;
+    }
+
+    @Override
+    public void setDryRun(boolean dryRun) {
+
+    }
+
+    @Override
+    public String getContextId() {
+        return null;
+    }
+
+    @Override
+    public void setContextId(String contextId) {
+
+    }
+
+    @Override
+    public String getContextInstanceId() {
+        return null;
+    }
+
+    @Override
+    public void setContextInstanceId(String contextInstanceId) {
+
     }
 
     @Override

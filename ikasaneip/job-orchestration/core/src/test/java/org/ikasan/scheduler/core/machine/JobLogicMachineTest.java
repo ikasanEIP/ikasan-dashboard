@@ -55,6 +55,71 @@ public class JobLogicMachineTest extends AbstractTest {
      * This test evaluates a simple dependency:
      *      agentName1-jobName1 --> agentName2-jobName2
      *
+     * "jobDependencies" : [ {
+     *     "jobIdentifier" : "agentName2-jobName2",
+     *     "logicalGrouping" : {
+     *       "logicalGrouping" : null,
+     *       "and" : [ {
+     *         "identifier" : "agentName1-jobName1"
+     *       }],
+     *       "or" : null,
+     *       "not" : null
+     *     }
+     *   } ]
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_simple_context_and_single_dependency_relevant_event_not_successful() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+
+        ScheduledProcessEventInstance eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", false);
+
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        // No event raise because the job was not successful.
+        Assert.assertEquals(0, events.size());
+    }
+
+    /**
+     * This test evaluates a simple dependency:
+     *      agentName1-jobName1 --> agentName2-jobName2
+     *
+     * "jobDependencies" : [ {
+     *     "jobIdentifier" : "agentName2-jobName2",
+     *     "logicalGrouping" : {
+     *       "logicalGrouping" : null,
+     *       "and" : [ {
+     *         "identifier" : "agentName1-jobName1"
+     *       }],
+     *       "or" : null,
+     *       "not" : null
+     *     }
+     *   } ]
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_simple_context_and_single_dependency_relevant_event_job_starting() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+
+        ScheduledProcessEventInstance eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", false);
+        eventInstance.setJobStarting(true);
+
+        List<SchedulerJobInitiationEventImpl> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context.getScheduledJobsMap(), context.getJobDependencies());
+
+        // No event raise because the job is starting.
+        Assert.assertEquals(0, events.size());
+    }
+
+    /**
+     * This test evaluates a simple dependency:
+     *      agentName1-jobName1 --> agentName2-jobName2
+     *
      * The test asserts that no events are raised when an irrelevant scheduled job event is received.
      *
      * "jobDependencies" : [ {
