@@ -98,11 +98,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
                                                                                                 "/webjars/**",
                                                                                                 // (development mode) H2 debugging console
                                                                                                 "/h2-console/**",
+                                                                                                "/swagger-ui/**",
                                                                                                 // (production mode) static resources
                                                                                                 "/frontend-es5/**",
                                                                                                 "/frontend-es6/**")
             .permitAll().antMatchers("/authenticate").permitAll()
-            .antMatchers("/swagger-ui.html").permitAll()
+            .antMatchers("/swagger-ui.html", "/swagger-ui/**").permitAll()
             // Allow all requests by logged in users.
             .anyRequest().authenticated()
             // Configure the login page.

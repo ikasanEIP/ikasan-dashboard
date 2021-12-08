@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.scheduler.context.cache.ContextMachineCache;
 import org.ikasan.scheduler.core.machine.ContextMachine;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
+import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -25,9 +26,10 @@ public class ContextInstanceRegisterJob implements DashboardJob {
     private ScheduledContextService scheduledContextService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private ObjectMapper objectMapper;
+    private SchedulerService schedulerService;
 
     public ContextInstanceRegisterJob(String jobName, String cronExpression, ScheduledContextService scheduledContextService,
-                                      ScheduledContextInstanceService scheduledContextInstanceService) {
+                                      ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService) {
         this.jobName = jobName;
         if(this.jobName == null) {
             throw new IllegalArgumentException("jobName cannot be null!");
@@ -43,6 +45,10 @@ public class ContextInstanceRegisterJob implements DashboardJob {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if(this.scheduledContextInstanceService == null) {
             throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
+        }
+        this.schedulerService = schedulerService;
+        if(this.schedulerService == null) {
+            throw new IllegalArgumentException("schedulerService cannot be null!");
         }
 
         this.objectMapper = new ObjectMapper();
@@ -63,7 +69,13 @@ public class ContextInstanceRegisterJob implements DashboardJob {
         try {
             ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(this.jobName);
             ContextInstance contextInstance = this.objectMapper.readValue(scheduledContextRecord.getContext(), ContextInstance.class);
-            ContextMachineCache.instance().put(this.jobName, new ContextMachine(contextInstance, this.scheduledContextInstanceService));
+
+            ContextMachine contextMachine = new ContextMachine(contextInstance, this.scheduledContextInstanceService);
+            contextMachine.addSchedulerJobInitiationEventRaisedListener(event -> {
+                this.schedulerService.raiseSchedulerJobInitiationEvent("", event);
+            });
+
+            ContextMachineCache.instance().put(this.jobName, contextMachine);
         }
         catch (Exception e) {
             logger.error(String.format("An error has occurred executing ContextInstanceRegisterJob[%s]", e.getMessage()), e);

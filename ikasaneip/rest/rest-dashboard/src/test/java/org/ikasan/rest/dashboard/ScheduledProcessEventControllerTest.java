@@ -3,11 +3,14 @@ package org.ikasan.rest.dashboard;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.leansoft.bigqueue.IBigQueue;
+import org.jmock.auto.Mock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -38,8 +41,12 @@ public class ScheduledProcessEventControllerTest extends  AbstractRestMvcTest
     public static final String SCHEDULED_PROCESS_EVENTS_JSON = "/data/scheduledProcessEvents.json";
 
     protected MockMvc mvc;
+
     @Autowired
     WebApplicationContext webApplicationContext;
+
+    @MockBean
+    private IBigQueue inboundQueue;
 
     private ObjectMapper objectMapper;
 
@@ -77,6 +84,6 @@ public class ScheduledProcessEventControllerTest extends  AbstractRestMvcTest
         int status = mvcResult.getResponse().getStatus();
         assertEquals(HttpStatus.BAD_REQUEST.value(), status);
         String content = mvcResult.getResponse().getContentAsString();
-        assertThat(content,containsString( "An error has occurred attempting to perform a batch insert of ScheduledProcessEvents!"));
+        assertThat(content,  containsString( "An error has occurred attempting to perform a batch insert of ScheduledProcessEvents!"));
     }
 }
