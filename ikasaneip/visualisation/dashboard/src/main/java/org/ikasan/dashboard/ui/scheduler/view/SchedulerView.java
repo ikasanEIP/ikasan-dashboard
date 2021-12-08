@@ -13,19 +13,20 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
-import org.ikasan.dashboard.ui.scheduler.component.RunningAndRecentlyCompletedJobExecutionsWidget;
+import org.ikasan.dashboard.ui.scheduler.component.ContextDebugWidget;
 import org.ikasan.dashboard.ui.scheduler.component.SchedulerAgentDashboardView;
-import org.ikasan.dashboard.ui.scheduler.component.UpcomingJobExecutionsWidget;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.scheduled.service.ScheduledProcessManagementService;
+import org.ikasan.rest.client.ModuleRestService;
+import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.SchedulerService;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,14 +70,19 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private SchedulerService schedulerService;
 
+    @Resource
+    private ScheduledContextInstanceService scheduledContextInstanceService;
+
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
     private Board scheduledJobsBoard;
+    private Board contextDebugBoard;
 
     private boolean initialised = false;
 
     private Tab schedulerDashboardTab;
     private Tab schedulerJobTab;
+    private Tab contextDebugTab;
     private Tabs tabs;
 
     /**
@@ -105,16 +111,25 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.scheduledJobsBoard.setVisible(false);
         this.scheduledJobsBoard.setId("scheduledJobsBoard");
 
+        this.contextDebugBoard = new Board();
+        this.contextDebugBoard.addClassName("styled");
+        this.contextDebugBoard.setSizeFull();
+        this.contextDebugBoard.setVisible(false);
+        this.contextDebugBoard.setId("contextDebugBoard");
+
 
         this.schedulerDashboardTab = new Tab(getTranslation("tab.label.scheduler-dashboard", UI.getCurrent().getLocale()));
         this.schedulerDashboardTab.setId("schedulerDashboardTab");
         this.schedulerJobTab = new Tab(getTranslation("tab.label.scheduled-jobs", UI.getCurrent().getLocale()));
         this.schedulerJobTab.setId("scheduledJobsTab");
-        this.tabs = new Tabs(schedulerDashboardTab, schedulerJobTab);
+        this.contextDebugTab = new Tab("Context Debug");
+        this.contextDebugTab.setId("contextDebugTab");
+        this.tabs = new Tabs(schedulerDashboardTab, schedulerJobTab, contextDebugTab);
 
         Map<Tab, com.vaadin.flow.component.Component> tabsToPages = new HashMap<>();
         tabsToPages.put(this.schedulerDashboardTab, this.schedulerAgentDashboardView);
         tabsToPages.put(this.schedulerJobTab, this.scheduledJobsBoard);
+        tabsToPages.put(this.contextDebugTab, this.contextDebugBoard);
 
         tabs.addSelectedChangeListener(event -> {
             tabsToPages.values().forEach(page -> page.setVisible(false));
@@ -126,7 +141,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         IronIcon addIcon = IronIcons.ADD.create();
         addIcon.setSize("16pt");
 
-        this.add(tabs, this.schedulerAgentDashboardView, scheduledJobsBoard);
+        this.add(tabs, this.schedulerAgentDashboardView, scheduledJobsBoard, contextDebugBoard);
     }
 
     @Override
@@ -140,11 +155,11 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         if(!initialised) {
             this.init();
             this.schedulerAgentDashboardView.beforeEnter(beforeEnterEvent);
-            scheduledJobsBoard.addRow(new UpcomingJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter, this.configurationRestService,
-                this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
-            scheduledJobsBoard.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
-                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
-
+//            scheduledJobsBoard.addRow(new UpcomingJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter, this.configurationRestService,
+//                this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
+//            scheduledJobsBoard.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
+//                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
+            this.contextDebugBoard.addRow(new ContextDebugWidget(this.scheduledContextInstanceService, this.schedulerService));
             initialised = true;
         }
     }

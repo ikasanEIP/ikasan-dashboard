@@ -2,7 +2,6 @@ package org.ikasan.spec.solr;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.QueryRequest;
@@ -10,14 +9,18 @@ import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.configuration.metadata.model.SolrComponentConfiguration;
-import org.ikasan.solr.model.IkasanSolrDocument;
+import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.solr.util.SolrTokenizerQueryBuilder;
+import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
+import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -650,6 +653,28 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         catch (Exception e) {
             throw new RuntimeException(String.format("An error has occurred performing a facet field query" +
                 ". Query[%s]: Field[%s]", query, field), e);
+        }
+    }
+
+    /**
+     * Helper method to find by query.
+     *
+     * @param query
+     */
+    protected SearchResults findByQuery(SolrQuery query, Class clazz) {
+        logger.debug("queryString: " + query);
+
+        try {
+            QueryRequest req = new QueryRequest(query);
+            req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+
+            QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
+
+            return new SearchResultsImpl<>(rsp.getBeans(clazz)
+                , rsp.getResults().getNumFound(), rsp.getElapsedTime());
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Error resolving FileEventDrivenJobRecord by query [" + query + "] from the ikasan solr index!", e);
         }
     }
 }

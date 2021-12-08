@@ -1,63 +1,40 @@
 package org.ikasan.dashboard.ui.scheduler.view;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.github.mvysny.kaributesting.v10.GridKt;
-import com.github.mvysny.kaributesting.v10.LocatorJ;
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
-import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.provider.Query;
 import org.apache.commons.io.IOUtils;
-import org.ikasan.configuration.metadata.model.SolrConfigurationMetaData;
-import org.ikasan.configuration.metadata.model.SolrConfigurationParameterMetaData;
 import org.ikasan.dashboard.ui.UITest;
-import org.ikasan.dashboard.ui.scheduler.component.*;
-import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
-import org.ikasan.module.metadata.model.SolrFlowElementMetaDataImpl;
-import org.ikasan.module.metadata.model.SolrFlowMetaDataImpl;
+import org.ikasan.dashboard.ui.scheduler.component.RunningAndRecentlyCompletedJobExecutionFilteringGrid;
+import org.ikasan.dashboard.ui.scheduler.component.ScheduledAgentsFilteringGrid;
+import org.ikasan.dashboard.ui.scheduler.component.UpcomingJobExecutionFilteringGrid;
 import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
-import org.ikasan.module.metadata.model.SolrTransitionImpl;
-import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
-import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
-import org.ikasan.scheduled.model.SolrScheduledProcessEvent;
-import org.ikasan.scheduled.model.UpcomingScheduledProcess;
-import org.ikasan.scheduled.service.SolrScheduledProcessServiceImpl;
-import org.ikasan.spec.metadata.*;
+import org.ikasan.scheduled.event.model.ScheduledProcessEventSearchResults;
+import org.ikasan.scheduled.event.model.SolrScheduledProcessEvent;
+import org.ikasan.scheduled.event.model.UpcomingScheduledProcess;
+import org.ikasan.scheduled.event.service.SolrScheduledProcessServiceImpl;
+import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.vaadin.miki.superfields.dates.SuperDatePicker;
-import org.vaadin.stefan.fullcalendar.FullCalendar;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.IntStream;
 
-import static com.github.mvysny.kaributesting.v10.LocatorJ._click;
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
-import static org.mockito.ArgumentMatchers.eq;
 
 public class SchedulerViewTest extends UITest {
 

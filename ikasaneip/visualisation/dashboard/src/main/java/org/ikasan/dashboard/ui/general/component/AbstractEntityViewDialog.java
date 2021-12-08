@@ -6,18 +6,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.StringReader;
-import java.io.StringWriter;
 
 public abstract class AbstractEntityViewDialog<ENTITY> extends AbstractCloseableResizableDialog
 {

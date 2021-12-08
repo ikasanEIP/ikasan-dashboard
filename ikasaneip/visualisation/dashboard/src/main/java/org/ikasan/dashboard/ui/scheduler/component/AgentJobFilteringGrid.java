@@ -28,9 +28,9 @@ import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
-import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
-import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
-import org.ikasan.scheduled.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.event.model.ScheduledProcessAggregateConfiguration;
+import org.ikasan.scheduled.event.model.ScheduledProcessEventSearchResults;
+import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
@@ -446,7 +446,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
 
     @Override
     protected ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getResults(AgentJobFilter agentJobFilter, int offset, int limit) {
-        return this.scheduledProcessManagementService.getScheduleProcessAggregateConfigurations(this.agent.getName(), agentJobFilter.getFilter());
+        return this.scheduledProcessManagementService.getScheduleProcessAggregateConfigurations(this.agent.getName(), agentJobFilter.getFilter(), offset, limit);
     }
 
     /**

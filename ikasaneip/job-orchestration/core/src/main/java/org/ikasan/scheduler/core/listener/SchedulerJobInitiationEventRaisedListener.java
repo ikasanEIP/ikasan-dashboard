@@ -1,8 +1,9 @@
 package org.ikasan.scheduler.core.listener;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.ikasan.scheduler.core.event.SchedulerJobInitiationEventImpl;
 
 public interface SchedulerJobInitiationEventRaisedListener {
 
-    public void onSchedulerJobInitiationEventRaised(SchedulerJobInitiationEventImpl event);
+    void onSchedulerJobInitiationEventRaised(SchedulerJobInitiationEventImpl event) throws JsonProcessingException;
 }

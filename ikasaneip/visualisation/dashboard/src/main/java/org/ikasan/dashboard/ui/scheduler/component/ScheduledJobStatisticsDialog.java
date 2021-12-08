@@ -12,11 +12,11 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
-import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
-import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
-import org.ikasan.scheduled.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.event.model.ScheduledProcessAggregateConfiguration;
+import org.ikasan.scheduled.event.model.ScheduledProcessEventSearchResults;
+import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.scheduled.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 
 import java.time.Instant;
 import java.util.TimeZone;
