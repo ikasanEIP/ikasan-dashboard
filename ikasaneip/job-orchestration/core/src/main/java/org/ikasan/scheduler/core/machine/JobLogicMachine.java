@@ -5,9 +5,12 @@ import org.ikasan.scheduler.core.event.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.scheduler.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.scheduler.core.model.context.JobDependency;
 import org.ikasan.scheduler.core.model.context.LogicalGrouping;
+import org.ikasan.scheduler.core.model.instance.ContextInstance;
 import org.ikasan.scheduler.core.spec.InstanceStatus;
 import org.ikasan.scheduler.core.model.instance.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +31,13 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
     /**
      *
      * @param scheduledProcessEvent
-     * @param schedulerJobInstancesMap
-     * @param jobDependencies
+     * @param contextInstance
+     *
      * @return
      */
-    public List<SchedulerJobInitiationEventImpl> getJobInitiationEvents(ScheduledProcessEvent scheduledProcessEvent
-        , Map<String, SchedulerJobInstance> schedulerJobInstancesMap, List<JobDependency> jobDependencies) {
-        SchedulerJobInstance schedulerJobInstance = schedulerJobInstancesMap
+    public List<SchedulerJobInitiationEvent> getJobInitiationEvents(ScheduledProcessEvent scheduledProcessEvent
+        , ContextInstance contextInstance, DryRunParameters dryRunParameters) {
+        SchedulerJobInstance schedulerJobInstance = contextInstance.getScheduledJobsMap()
             .get(scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName());
 
         if(schedulerJobInstance != null) {
@@ -57,16 +60,25 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 schedulerJobInstance.getStatus()));
         }
 
-        List<SchedulerJobInitiationEventImpl> results = new ArrayList<>();
+        List<SchedulerJobInitiationEvent> results = new ArrayList<>();
 
-        for(JobDependency jobDependency: jobDependencies) {
-            if(this.shouldRaiseEvent(jobDependency.getLogicalGrouping(), schedulerJobInstancesMap)) {
-                SchedulerJobInstance instance = schedulerJobInstancesMap.get(jobDependency.getJobIdentifier());
+        for(JobDependency jobDependency: contextInstance.getJobDependencies()) {
+            if(this.shouldRaiseEvent(jobDependency.getLogicalGrouping(), contextInstance.getScheduledJobsMap())) {
+                SchedulerJobInstance instance = contextInstance.getScheduledJobsMap().get(jobDependency.getJobIdentifier());
 
                 // We only want to raise the job initiation event once!
                 if(!instance.isInitiationEventRaised()) {
                     instance.setInitiationEventRaised(true);
-                    results.add(new SchedulerJobInitiationEventImpl(instance.getAgentName(), instance.getJobName()));
+
+                    SchedulerJobInitiationEvent schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
+                    schedulerJobInitiationEvent.setAgentName(instance.getAgentName());
+                    schedulerJobInitiationEvent.setJobName(instance.getJobName());
+                    schedulerJobInitiationEvent.setContextId(contextInstance.getName());
+                    schedulerJobInitiationEvent.setContextInstanceId(contextInstance.getId());
+                    schedulerJobInitiationEvent.setDryRun(dryRunParameters != null);
+                    schedulerJobInitiationEvent.setDryRunParameters(dryRunParameters);
+
+                    results.add(schedulerJobInitiationEvent);
                 }
             }
         }

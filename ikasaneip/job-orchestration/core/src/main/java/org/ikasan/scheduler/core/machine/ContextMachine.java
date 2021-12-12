@@ -14,13 +14,15 @@ import org.ikasan.scheduler.core.listener.SchedulerJobInitiationEventRaisedListe
 import org.ikasan.scheduler.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
 import org.ikasan.scheduler.core.model.instance.ScheduledContextInstanceRecordImpl;
-import org.ikasan.scheduler.core.model.instance.ScheduledProcessEventInstance;
+import org.ikasan.scheduler.core.model.instance.ContextualisedScheduledProcessEventInstance;
 import org.ikasan.scheduler.core.model.status.ContextInstanceStatus;
 import org.ikasan.scheduler.core.service.ContextService;
 import org.ikasan.scheduler.core.spec.Context;
 import org.ikasan.scheduler.core.spec.InstanceStatus;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,8 +50,11 @@ public class ContextMachine {
     private ListenableFuture<byte[]> outboundListenableFuture;
     private ObjectMapper objectMapper;
     private ScheduledContextInstanceService scheduledContextInstanceService;
-    private List<SchedulerJobInitiationEventRaisedListener> schedulerJobInitiationEventRaisedListeners;
+    private SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener;
     private Context context;
+    private int attempts;
+    private long maxWait;
+    private DryRunParameters dryRunParameters;
 
     public ContextMachine(Context context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService) {
         this(contextInstance, scheduledContextInstanceService);
@@ -73,7 +78,6 @@ public class ContextMachine {
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
-        this.schedulerJobInitiationEventRaisedListeners = new ArrayList<>();
     }
 
     public void init() throws IOException {
@@ -86,8 +90,10 @@ public class ContextMachine {
         inboundListenableFuture = this.inboundQueue.peekAsync();
         inboundListenableFuture.addListener(new InboundQueueMessageRunner(), this.contextExecutor);
 
-        outboundListenableFuture = this.outboundQueue.peekAsync();
-        outboundListenableFuture.addListener(new OutboundQueueMessageRunner(), this.schedulerInitiatorEventRaisedListenerExecutor);
+        this.addOutboundListener();
+
+        this.attempts = 0;
+        this.maxWait = 10000L;
     }
 
     public void resetContextInstance() throws JsonProcessingException {
@@ -103,17 +109,8 @@ public class ContextMachine {
         this.outboundQueue.close();
     }
 
-    public void addSchedulerJobInitiationEventRaisedListener(SchedulerJobInitiationEventRaisedListener listener) {
-        this.schedulerJobInitiationEventRaisedListeners.add(listener);
-    }
-
-    /**
-     *
-     * @param scheduledProcessEvent
-     * @return
-     */
-    protected List<SchedulerJobInitiationEventImpl> eventReceived(ScheduledProcessEvent scheduledProcessEvent) {
-        return this.getInitiationEvents(this.contextInstance, scheduledProcessEvent);
+    public void setSchedulerJobInitiationEventRaisedListener(SchedulerJobInitiationEventRaisedListener listener) {
+        this.schedulerJobInitiationEventRaisedListener = listener;
     }
 
     /**
@@ -124,6 +121,7 @@ public class ContextMachine {
     public void eventReceived(String scheduledProcessEvent) throws IOException {
         this.inboundQueue.enqueue(scheduledProcessEvent.getBytes());
     }
+
 
     /**
      * Get the context status by context name.
@@ -172,6 +170,19 @@ public class ContextMachine {
         this.contextInstanceStateChangeEventListeners.add(listener);
     }
 
+    public void setDryRunParameters(DryRunParameters dryRunParameters) {
+        this.dryRunParameters = dryRunParameters;
+    }
+
+    /**
+     *
+     * @param scheduledProcessEvent
+     * @return
+     */
+    protected List<SchedulerJobInitiationEvent> eventReceived(ScheduledProcessEvent scheduledProcessEvent) {
+        return this.getInitiationEvents(this.contextInstance, scheduledProcessEvent);
+    }
+
     /**
      * Helper method to determine if there are any SchedulerJobInitiationEvent to be raised. This method employs recursion to determine
      * which context, if any, that the job associated with the scheduled process event is associated with. It then delegates to the
@@ -181,15 +192,15 @@ public class ContextMachine {
      * @param scheduledProcessEvent
      * @return
      */
-    private List<SchedulerJobInitiationEventImpl> getInitiationEvents(ContextInstance contextInstance, ScheduledProcessEvent scheduledProcessEvent) {
+    private List<SchedulerJobInitiationEvent> getInitiationEvents(ContextInstance contextInstance, ScheduledProcessEvent scheduledProcessEvent) {
          if(!contextInstance.getStatus().equals(InstanceStatus.COMPLETE)
              && contextInstance.getScheduledJobsMap().containsKey(scheduledProcessEvent.getAgentName()
                 + "-" + scheduledProcessEvent.getJobName())) {
 
              // Delegate to the JobLogicMachine to determine if any any SchedulerJobInitiationEvents are
              // required to be raised.
-             List<SchedulerJobInitiationEventImpl> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
-                 , contextInstance.getScheduledJobsMap(), contextInstance.getJobDependencies());
+             List<SchedulerJobInitiationEvent> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
+                 , contextInstance, this.dryRunParameters);
 
              // Update the context status after event received and attached
              // to the job instance.
@@ -198,7 +209,7 @@ public class ContextMachine {
              return events;
         }
 
-        List<SchedulerJobInitiationEventImpl> results = new ArrayList<>();
+        List<SchedulerJobInitiationEvent> results = new ArrayList<>();
 
         if (contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()){
             for(Context instance: contextInstance.getContexts()) {
@@ -331,13 +342,13 @@ public class ContextMachine {
                 }
 
                 ScheduledProcessEvent scheduledProcessEvent
-                    = objectMapper.readValue(event, ScheduledProcessEventInstance.class);
+                    = objectMapper.readValue(event, ContextualisedScheduledProcessEventInstance.class);
 
-                List<SchedulerJobInitiationEventImpl> schedulerJobInitiationEvents = eventReceived(scheduledProcessEvent);
+                List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents = eventReceived(scheduledProcessEvent);
 
                 saveContext();
 
-                for(SchedulerJobInitiationEventImpl schedulerJobInitiationEvent: schedulerJobInitiationEvents) {
+                for(SchedulerJobInitiationEvent schedulerJobInitiationEvent: schedulerJobInitiationEvents) {
                     String serialised = objectMapper.writeValueAsString(schedulerJobInitiationEvent);
                     logger.info("Enqueue job initiation event: " + serialised);
                     outboundQueue.enqueue(serialised.getBytes());
@@ -362,31 +373,64 @@ public class ContextMachine {
 
         @Override
         public void run() {
+            boolean exception = false;
+            SchedulerJobInitiationEventImpl schedulerJobInitiationEvent = null;
             try {
                 byte[] event = outboundQueue.peek();
                 if(event == null) {
                     return;
                 }
 
-                SchedulerJobInitiationEventImpl schedulerJobInitiationEvent
+                schedulerJobInitiationEvent
                     = objectMapper.readValue(event, SchedulerJobInitiationEventImpl.class);
 
-                for (SchedulerJobInitiationEventRaisedListener listener : schedulerJobInitiationEventRaisedListeners) {
-                    listener.onSchedulerJobInitiationEventRaised(schedulerJobInitiationEvent);
-                }
+                schedulerJobInitiationEventRaisedListener.onSchedulerJobInitiationEventRaised(schedulerJobInitiationEvent);
 
-                outboundQueue.dequeue();
-                outboundQueue.gc();
-                logger.info("Dequeue job initiation event: " + schedulerJobInitiationEvent);
-                logger.info("Outbound queue size: " + outboundQueue.size());
+                // We've been successful so set the attempts back to 0.
+                attempts = 0;
             }
             catch (Exception e) {
                 e.printStackTrace();
+                exception = true;
+                try {
+                    // If an exception occurs trying to raise the event, then put the message onto the back of the queue.
+                    outboundQueue.enqueue(outboundQueue.dequeue());
+                    outboundQueue.gc();
+
+                    // We are using an exponential retry back off which is calculated here.
+                    long sleepTime = 500L*attempts*1;
+
+                    if(sleepTime > maxWait) {
+                        sleepTime = maxWait;
+                    }
+                    Thread.sleep(sleepTime);
+                    attempts++;
+                }
+                catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
             finally {
-                outboundListenableFuture = outboundQueue.peekAsync();
-                outboundListenableFuture.addListener(new OutboundQueueMessageRunner(), schedulerInitiatorEventRaisedListenerExecutor);
+                // We only dequeue messages when there has been no exception.
+                if(!exception) {
+                    try {
+                        outboundQueue.dequeue();
+                        outboundQueue.gc();
+                        logger.info("Dequeue job initiation event: " + schedulerJobInitiationEvent);
+                        logger.info("Outbound queue size: " + outboundQueue.size());
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                addOutboundListener();
             }
         }
+    }
+
+    protected void addOutboundListener() {
+        outboundListenableFuture = outboundQueue.peekAsync();
+        outboundListenableFuture.addListener(new OutboundQueueMessageRunner(), schedulerInitiatorEventRaisedListenerExecutor);
     }
 }
