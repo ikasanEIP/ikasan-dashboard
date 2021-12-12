@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -14,18 +15,21 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
-import org.ikasan.dashboard.security.ContextCache;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.rest.client.ModuleRestService;
 import org.ikasan.scheduler.context.cache.ContextMachineCache;
+import org.ikasan.scheduler.core.event.DryRunParametersImpl;
 import org.ikasan.scheduler.core.machine.ContextMachine;
+import org.ikasan.scheduler.core.model.context.ContextTemplate;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
+import org.ikasan.scheduler.core.model.instance.ScheduledContextRecordImpl;
 import org.ikasan.scheduler.core.service.ContextService;
 import org.ikasan.scheduler.core.spec.Context;
 import org.ikasan.spec.scheduled.SchedulerService;
+import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 
-import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
@@ -36,15 +40,18 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
 
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerService schedulerService;
+    private ScheduledContextService scheduledContextService;
 
     /**
      * Constructor
      *
      */
-    public ContextUploadDialog(ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService)
+    public ContextUploadDialog(ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
+                               ScheduledContextService scheduledContextService)
     {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.schedulerService = schedulerService;
+        this.scheduledContextService = scheduledContextService;
         this.init();
     }
 
@@ -94,18 +101,25 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             ContextService contextService = new ContextService();
             try {
+                ContextTemplate contextTemplate = contextService.getContext(new String(contextFile));
+                ScheduledContextRecord scheduledContextRecord = new ScheduledContextRecordImpl(contextTemplate.getName(),
+                    contextTemplate.getName(), new String(contextFile), System.currentTimeMillis());
+                this.scheduledContextService.save(scheduledContextRecord);
+
                 ContextInstance contextInstance = contextService.getContextInstance(new String(contextFile));
                 Context context = contextService.getContext(new String(contextFile));
                 contextInstance.setId(UUID.randomUUID().toString());
                 ContextMachine contextMachine = new ContextMachine(context, contextInstance, scheduledContextInstanceService);
                 contextMachine.init();
-                contextMachine.addSchedulerJobInitiationEventRaisedListener(event -> {
+                contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
                     // todo work out how to get agent url
                     schedulerService.raiseSchedulerJobInitiationEvent("http://localhost:8080/scheduler-agent", event);
                 });
 
-                ContextMachineCache.instance().put(contextNameTextfield.getValue()
-                    , contextMachine);
+                DryRunParameters dryRunParameters = new DryRunParametersImpl();
+                contextMachine.setDryRunParameters(dryRunParameters);
+
+                ContextMachineCache.instance().put(contextMachine);
             }
             catch (JsonProcessingException e) {
                 e.printStackTrace();

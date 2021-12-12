@@ -71,11 +71,11 @@ public class ContextInstanceRegisterJob implements DashboardJob {
             ContextInstance contextInstance = this.objectMapper.readValue(scheduledContextRecord.getContext(), ContextInstance.class);
 
             ContextMachine contextMachine = new ContextMachine(contextInstance, this.scheduledContextInstanceService);
-            contextMachine.addSchedulerJobInitiationEventRaisedListener(event -> {
+            contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
                 this.schedulerService.raiseSchedulerJobInitiationEvent("", event);
             });
 
-            ContextMachineCache.instance().put(this.jobName, contextMachine);
+            ContextMachineCache.instance().put(contextMachine);
         }
         catch (Exception e) {
             logger.error(String.format("An error has occurred executing ContextInstanceRegisterJob[%s]", e.getMessage()), e);
