@@ -1,8 +1,9 @@
 package org.ikasan.scheduler.core.model.instance;
 
-import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
+import org.ikasan.scheduler.core.event.DryRunParametersImpl;
+import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 
-public class ScheduledProcessEventInstance implements ScheduledProcessEvent<String> {
+public class ContextualisedScheduledProcessEventInstance implements ContextualisedScheduledProcessEvent<String, DryRunParametersImpl> {
     private Long id;
     private String agentName;
     private String jobName;
@@ -23,6 +24,7 @@ public class ScheduledProcessEventInstance implements ScheduledProcessEvent<Stri
     private String contextId;
     private String contextInstanceId;
     private boolean jobStarting = false;
+    private DryRunParametersImpl dryRunParameters;
 
 
     public Long getId()
@@ -232,6 +234,16 @@ public class ScheduledProcessEventInstance implements ScheduledProcessEvent<Stri
     @Override
     public void setJobStarting(boolean jobStarting) {
         this.jobStarting = jobStarting;
+    }
+
+    @Override
+    public void setDryRunParameters(DryRunParametersImpl dryRunParameters) {
+        this.dryRunParameters = dryRunParameters;
+    }
+
+    @Override
+    public DryRunParametersImpl getDryRunParameters() {
+        return this.dryRunParameters;
     }
 
     @Override

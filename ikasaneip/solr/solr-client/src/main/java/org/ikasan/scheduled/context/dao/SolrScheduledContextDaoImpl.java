@@ -33,7 +33,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
         SolrInputDocument document = new SolrInputDocument();
         document.addField(TYPE, SCHEDULED_CONTEXT);
         document.addField(PAYLOAD_CONTENT, scheduledProcessEvent.getContext());
-        document.addField(ID, scheduledProcessEvent.getId());
+        document.addField(ID, scheduledProcessEvent.getId() + "-" + SCHEDULED_CONTEXT);
         document.addField(MODULE_NAME, scheduledProcessEvent.getContextName());
         document.addField(CREATED_DATE_TIME, scheduledProcessEvent.getTimestamp());
         document.setField(EXPIRY, expiry);

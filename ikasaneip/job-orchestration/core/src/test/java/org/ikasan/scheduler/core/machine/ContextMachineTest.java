@@ -4,11 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.scheduler.core.AbstractTest;
 import org.ikasan.scheduler.core.ScheduledContextInstanceServiceTestImpl;
-import org.ikasan.scheduler.core.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
-import org.ikasan.scheduler.core.spec.InstanceStatus;
-import org.ikasan.scheduler.core.model.instance.ScheduledProcessEventInstance;
+import org.ikasan.scheduler.core.model.instance.ContextualisedScheduledProcessEventInstance;
 import org.ikasan.scheduler.core.service.ContextService;
+import org.ikasan.scheduler.core.spec.InstanceStatus;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,11 +29,11 @@ public class ContextMachineTest extends AbstractTest {
 
         ContextMachine contextMachine  = new ContextMachine(context, new ScheduledContextInstanceServiceTestImpl());
 
-        ScheduledProcessEventInstance eventInstance = scheduledProcessEventInstance("jobName3",
+        ContextualisedScheduledProcessEventInstance eventInstance = scheduledProcessEventInstance("jobName3",
             "agentName3", false);
         eventInstance.setJobStarting(true);
 
-        List<SchedulerJobInitiationEventImpl> events = contextMachine.eventReceived(eventInstance);
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(0, events.size());
 
         JSONAssert.assertEquals(loadDataFile("/data/machine/result/job1-running-context-status.json")
@@ -226,23 +226,23 @@ public class ContextMachineTest extends AbstractTest {
         ContextMachine contextMachine  = new ContextMachine(context, new ScheduledContextInstanceServiceTestImpl());
         contextMachine.init();
 
-        contextMachine.addSchedulerJobInitiationEventRaisedListener(event -> {
+        contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
             System.out.println("1 "+event.getJobName());
         });
 
-        contextMachine.addSchedulerJobInitiationEventRaisedListener(event -> {
+        contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
             System.out.println("2 "+event.getJobName());
         });
 
-        contextMachine.addSchedulerJobInitiationEventRaisedListener(event -> {
+        contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
             System.out.println("3 "+event.getJobName());
         });
 
-        contextMachine.addSchedulerJobInitiationEventRaisedListener(event -> {
+        contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
             System.out.println("4 "+event.getJobName());
         });
 
-        ScheduledProcessEventInstance eventInstance = scheduledProcessEventInstance("jobName3",
+        ContextualisedScheduledProcessEventInstance eventInstance = scheduledProcessEventInstance("jobName3",
             "agentName3", true);
         contextMachine.eventReceived(objectMapper.writeValueAsString(eventInstance));
 
@@ -447,7 +447,7 @@ public class ContextMachineTest extends AbstractTest {
         InstanceStatus status = contextMachine.getContextStatus("Context3");
         Assert.assertEquals(InstanceStatus.WAITING, status);
 
-        ScheduledProcessEventInstance eventInstance = scheduledProcessEventInstance("jobName1",
+        ContextualisedScheduledProcessEventInstance eventInstance = scheduledProcessEventInstance("jobName1",
             "agentName1", true);
 
         contextMachine.eventReceived(eventInstance);
@@ -487,7 +487,7 @@ public class ContextMachineTest extends AbstractTest {
         InstanceStatus status = contextMachine.getContextStatus("Context3");
         Assert.assertEquals(InstanceStatus.WAITING, status);
 
-        ScheduledProcessEventInstance eventInstance = scheduledProcessEventInstance("jobName1",
+        ContextualisedScheduledProcessEventInstance eventInstance = scheduledProcessEventInstance("jobName1",
             "agentName1", true);
 
         contextMachine.eventReceived(eventInstance);
@@ -537,7 +537,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test() throws JsonProcessingException {
-        ScheduledProcessEventInstance eventInstance = scheduledProcessEventInstance("jobName3",
+        ContextualisedScheduledProcessEventInstance eventInstance = scheduledProcessEventInstance("jobName3",
             "agentName3", true);
 
         System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(eventInstance));

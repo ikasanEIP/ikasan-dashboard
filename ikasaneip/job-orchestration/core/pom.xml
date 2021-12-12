@@ -60,6 +60,36 @@
 
         <dependency>
             <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-eip-standalone</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.springfox</groupId>
+                    <artifactId>springfox-boot-starter</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.validation</groupId>
+                    <artifactId>validation-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-h2-standalone-persistence</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-big-queue</artifactId>
+            <version>${ikasan.core.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
             <artifactId>ikasan-spec-scheduled</artifactId>
         </dependency>
 
@@ -91,6 +121,12 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>tech.huffman.re-retrying</groupId>
+            <artifactId>re-retrying</artifactId>
+            <version>3.0.0</version>
         </dependency>
 
         <!-- Test Dependencies -->
