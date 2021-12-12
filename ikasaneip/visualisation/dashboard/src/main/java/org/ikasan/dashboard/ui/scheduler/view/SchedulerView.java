@@ -27,6 +27,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     @Resource
     private ScheduledContextInstanceService scheduledContextInstanceService;
+
+    @Resource
+    private ScheduledContextService scheduledContextService;
 
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
@@ -159,7 +163,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 //                this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
 //            scheduledJobsBoard.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
 //                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
-            this.contextDebugBoard.addRow(new ContextDebugWidget(this.scheduledContextInstanceService, this.schedulerService));
+            this.contextDebugBoard.addRow(new ContextDebugWidget(this.scheduledContextInstanceService, this.schedulerService, this.scheduledContextService));
             initialised = true;
         }
     }
