@@ -6,22 +6,16 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 
 import java.util.List;
 
-public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEvent<ContextParameterInstanceImpl, InternalEventDrivenJobImpl> {
+public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEvent<ContextParameterInstanceImpl, InternalEventDrivenJobImpl,
+    DryRunParametersImpl> {
     private String agentName;
     private String jobName;
     private InternalEventDrivenJobImpl internalEventDrivenJob;
     private String contextId;
     private String contextInstanceId;
     private List<ContextParameterInstanceImpl> contextParameters;
-
-    public SchedulerJobInitiationEventImpl(String agentName, String jobName) {
-        this.agentName = agentName;
-        this.jobName = jobName;
-    }
-
-    public SchedulerJobInitiationEventImpl() {
-
-    }
+    private boolean dryRun;
+    private DryRunParametersImpl dryRunParameters;
 
     @Override
     public String getAgentName() {
@@ -85,12 +79,22 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
 
     @Override
     public boolean isDryRun() {
-        return false;
+        return dryRun;
     }
 
     @Override
     public void setDryRun(boolean dryRun) {
+        this.dryRun = dryRun;
+    }
 
+    @Override
+    public void setDryRunParameters(DryRunParametersImpl dryRunParameters) {
+        this.dryRunParameters = dryRunParameters;
+    }
+
+    @Override
+    public DryRunParametersImpl getDryRunParameters() {
+        return this.dryRunParameters;
     }
 
     @Override
@@ -102,6 +106,7 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
         sb.append(", contextId='").append(contextId).append('\'');
         sb.append(", contextInstanceId='").append(contextInstanceId).append('\'');
         sb.append(", contextParameters=").append(contextParameters);
+        sb.append(", dryRun=").append(dryRun);
         sb.append('}');
         return sb.toString();
     }

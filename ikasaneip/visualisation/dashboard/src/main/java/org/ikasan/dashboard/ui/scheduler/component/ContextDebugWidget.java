@@ -17,9 +17,9 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.scheduler.context.cache.ContextMachineCache;
 import org.ikasan.scheduler.core.machine.ContextMachine;
-import org.ikasan.scheduler.core.model.instance.ContextInstance;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 public class ContextDebugWidget extends Div implements BeforeEnterListener {
 
     Logger logger = LoggerFactory.getLogger(ContextDebugWidget.class);
+
+    private ScheduledContextService scheduledContextService;
 
     protected AceEditor aceEditor;
 
@@ -46,10 +48,13 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
     /**
      * Constructor
      */
-    public ContextDebugWidget(ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService) {
+    public ContextDebugWidget(ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
+                              ScheduledContextService scheduledContextService) {
         Div div = new Div();
         div.addClassNames("card-counter");
         div.setHeight("100%");
+
+        this.scheduledContextService = scheduledContextService;
 
         this.initialiseEditor();
 
@@ -61,11 +66,8 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
         this.contextInstances.setLabel("Context Instance");
         this.contextInstances.addValueChangeListener(listener -> {
             try {
-                ContextMachine contextMachine = ContextMachineCache.instance().get(this.contextInstances.getValue());
+                ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
                 if(contextMachine != null) {
-                    contextMachine.addSchedulerJobInitiationEventRaisedListener(event -> {
-                        events.append(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(event));
-                    });
                 }
                 else {
                     return;
@@ -86,20 +88,21 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
 
         Button addContextButton = new Button("Add Context");
         addContextButton.addClickListener(buttonClickEvent -> {
-            ContextUploadDialog contextUploadDialog = new ContextUploadDialog(scheduledContextInstanceService, schedulerService);
+            ContextUploadDialog contextUploadDialog = new ContextUploadDialog(scheduledContextInstanceService,
+                schedulerService, this.scheduledContextService);
             contextUploadDialog.open();
 
             contextUploadDialog.addOpenedChangeListener(event -> {
                 if(!event.isOpened()){
                     this.contextInstances.removeAll();
-                    this.contextInstances.setItems(ContextMachineCache.instance().keys());
+                    this.contextInstances.setItems(ContextMachineCache.instance().contextNames());
                 }
             });
         });
 
         Button resetContextButton = new Button("Reset Context");
         resetContextButton.addClickListener(buttonClickEvent -> {
-            ContextMachine contextMachine = ContextMachineCache.instance().get(this.contextInstances.getValue());
+            ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
             try {
                 contextMachine.resetContextInstance();
                 if(tabs.getSelectedTab().equals(this.fullContextInstance)) {
@@ -113,7 +116,7 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
                 }
                 else if(tabs.getSelectedTab().equals(this.contextStatus)) {
                     if(this.contextInstances.getValue() != null && !this.contextInstances.getValue().isEmpty()){
-                        contextMachine = ContextMachineCache.instance().get(this.contextInstances.getValue());
+                        contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
                         this.aceEditor.setValue(this.objectMapper.writerWithDefaultPrettyPrinter()
                             .writeValueAsString(contextMachine.getContextInstanceStatus()));
                     }
@@ -142,7 +145,7 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
             try {
                 if(tabs.getSelectedTab().equals(this.fullContextInstance)) {
                     if(this.contextInstances.getValue() != null && !this.contextInstances.getValue().isEmpty()){
-                        ContextMachine contextMachine = ContextMachineCache.instance().get(this.contextInstances.getValue());
+                        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
                         contextMachine.addSchedulerJobStateChangeEventListener(stateChange
                             -> {
                             ui.access(() -> {
@@ -162,7 +165,7 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
                 }
                 else if(tabs.getSelectedTab().equals(this.contextStatus)) {
                     if(this.contextInstances.getValue() != null && !this.contextInstances.getValue().isEmpty()){
-                        ContextMachine contextMachine = ContextMachineCache.instance().get(this.contextInstances.getValue());
+                        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
                         contextMachine.addSchedulerJobStateChangeEventListener(stateChange
                             -> {
                             ui.access(() -> {
@@ -214,6 +217,6 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-        this.contextInstances.setItems(ContextMachineCache.instance().keys());
+        this.contextInstances.setItems(ContextMachineCache.instance().contextNames());
     }
 }
