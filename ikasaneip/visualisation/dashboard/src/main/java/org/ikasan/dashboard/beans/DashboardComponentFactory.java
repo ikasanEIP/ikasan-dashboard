@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.beans;
 
+import com.leansoft.bigqueue.BigQueueImpl;
+import com.leansoft.bigqueue.IBigQueue;
 import com.vaadin.flow.server.*;
 import org.ikasan.business.stream.metadata.dao.SolrBusinessStreamMetadataDao;
 import org.ikasan.business.stream.metadata.service.SolrBusinessStreamMetaDataServiceImpl;
@@ -51,6 +53,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 
 @Configuration
 public class DashboardComponentFactory
@@ -71,6 +74,13 @@ public class DashboardComponentFactory
     @ConfigurationProperties(prefix = "scheduler.calendar")
     public CalendarConfiguration calendarConfiguration() {
         return new CalendarConfiguration();
+    }
+
+    @Bean
+    public IBigQueue inboundQueue() throws IOException {
+        String queueDir = "/sandbox/mick/bigquque";
+        String queueName = "dashboard-inbound-queue";
+        return new BigQueueImpl(queueDir, queueName);
     }
 
     @Component
