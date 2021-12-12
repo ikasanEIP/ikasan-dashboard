@@ -25,36 +25,55 @@ public class ContextMachineCache
         return INSTANCE;
     }
 
-    private ConcurrentHashMap<String, ContextMachine> cache;
+    private ConcurrentHashMap<String, ContextMachine> contextInstanceByContextNameCache;
+    private ConcurrentHashMap<String, ContextMachine> contextInstanceByContextInstanceIdCache;
 
     private ContextMachineCache() {
-        cache = new ConcurrentHashMap<>();
+        this.contextInstanceByContextNameCache = new ConcurrentHashMap<>();
+        this.contextInstanceByContextInstanceIdCache = new ConcurrentHashMap<>();
     }
 
-    public void put(String contextName, ContextMachine contextMachine)
+    public void put(ContextMachine contextMachine)
     {
-        logger.debug(String.format("%s attempting to put key[%s]", this, contextName));
-
-        this.cache.put(contextName, contextMachine);
+        this.contextInstanceByContextNameCache.put(contextMachine.getContext().getName(), contextMachine);
+        this.contextInstanceByContextInstanceIdCache.put(contextMachine.getContext().getId(), contextMachine);
     }
 
 
-    public ContextMachine get(String contextName)
+    public ContextMachine getByContextName(String contextName)
     {
-        logger.debug(String.format("%s attempting to get context[%s]"
+        logger.debug(String.format("%s attempting to get context using context name[%s]"
             , this, contextName));
 
-        return this.cache.get(contextName);
+        return this.contextInstanceByContextNameCache.get(contextName);
     }
 
-    public boolean contains(String contextName)
+    public ContextMachine getByContextInstanceId(String contextName)
+    {
+        logger.debug(String.format("%s attempting to get context using context instance id[%s]"
+            , this, contextName));
+
+        return this.contextInstanceByContextInstanceIdCache.get(contextName);
+    }
+
+    public boolean containsContextName(String contextName)
     {
         logger.debug(String.format("%s check contains[%s] - result [%s]",this
             , contextName));
-        return this.cache.containsKey(contextName);
+        return this.contextInstanceByContextNameCache.containsKey(contextName);
     }
 
-    public Set keys() {
-        return this.cache.keySet();
+    public boolean containsInstanceIdentifier(String contextInstanceId)
+    {
+        logger.debug(String.format("%s check contains[%s] - result [%s]",this
+            , contextInstanceId));
+        return this.contextInstanceByContextInstanceIdCache.containsKey(contextInstanceId);
+    }
+
+    public Set contextNames() {
+        return this.contextInstanceByContextNameCache.keySet();
+    }
+    public Set contextInstanceIdentifiers() {
+        return this.contextInstanceByContextInstanceIdCache.keySet();
     }
 }

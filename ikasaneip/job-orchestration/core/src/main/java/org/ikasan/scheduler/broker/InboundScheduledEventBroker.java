@@ -6,7 +6,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.leansoft.bigqueue.IBigQueue;
 import org.ikasan.scheduler.context.cache.ContextMachineCache;
 import org.ikasan.scheduler.core.machine.ContextMachine;
-import org.ikasan.scheduler.core.model.instance.ScheduledProcessEventInstance;
+import org.ikasan.scheduler.core.model.instance.ContextualisedScheduledProcessEventInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,13 +60,21 @@ public class InboundScheduledEventBroker {
                     return;
                 }
 
-                ScheduledProcessEventInstance scheduledProcessEventInstance
-                    = objectMapper.readValue(event, ScheduledProcessEventInstance.class);
+                ContextualisedScheduledProcessEventInstance contextualisedScheduledProcessEventInstance
+                    = objectMapper.readValue(event, ContextualisedScheduledProcessEventInstance.class);
 
-                ContextMachine contextMachine = ContextMachineCache.instance().get("test");
+                ContextMachine contextMachine;
+                if(contextualisedScheduledProcessEventInstance.getContextInstanceId() != null) {
+                    contextMachine = ContextMachineCache.instance()
+                        .getByContextName(contextualisedScheduledProcessEventInstance.getContextInstanceId());
+                }
+                else {
+                    contextMachine = ContextMachineCache.instance()
+                        .getByContextName(contextualisedScheduledProcessEventInstance.getContextId());
+                }
 
                 if(contextMachine == null) {
-                   logger.warn("Could not get context machine for context: " + scheduledProcessEventInstance.getContextId());
+                   logger.warn("Could not get context machine for context: " + contextualisedScheduledProcessEventInstance.getContextId());
                     inboundQueue.dequeue();
                     inboundQueue.gc();
                     return;
