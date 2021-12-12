@@ -1,7 +1,7 @@
 package org.ikasan.scheduler.core;
 
 import org.apache.commons.io.IOUtils;
-import org.ikasan.scheduler.core.model.instance.ScheduledProcessEventInstance;
+import org.ikasan.scheduler.core.model.instance.ContextualisedScheduledProcessEventInstance;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,9 +18,9 @@ public class AbstractTest
         return getClass().getResourceAsStream(fileName);
     }
 
-    protected ScheduledProcessEventInstance scheduledProcessEventInstance(String jobName, String agentName
+    protected ContextualisedScheduledProcessEventInstance scheduledProcessEventInstance(String jobName, String agentName
         , boolean isSuccessful) {
-        ScheduledProcessEventInstance eventInstance = new ScheduledProcessEventInstance();
+        ContextualisedScheduledProcessEventInstance eventInstance = new ContextualisedScheduledProcessEventInstance();
         eventInstance.setJobName(jobName);
         eventInstance.setAgentName(agentName);
         eventInstance.setSuccessful(isSuccessful);
