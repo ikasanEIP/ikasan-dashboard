@@ -14,8 +14,9 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
     private String contextId;
     private String contextInstanceId;
     private List<ContextParameterInstanceImpl> contextParameters;
-    private boolean dryRun;
+    private boolean dryRun = false;
     private DryRunParametersImpl dryRunParameters;
+    private boolean skipped = false;
 
     @Override
     public String getAgentName() {
@@ -98,6 +99,16 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
     }
 
     @Override
+    public void setSkipped(boolean skipped) {
+        this.skipped = skipped;
+    }
+
+    @Override
+    public boolean isSkipped() {
+        return skipped;
+    }
+
+    @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("SchedulerJobInitiationEventImpl{");
         sb.append("agentName='").append(agentName).append('\'');
@@ -107,6 +118,8 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
         sb.append(", contextInstanceId='").append(contextInstanceId).append('\'');
         sb.append(", contextParameters=").append(contextParameters);
         sb.append(", dryRun=").append(dryRun);
+        sb.append(", dryRunParameters=").append(dryRunParameters);
+        sb.append(", skipped=").append(skipped);
         sb.append('}');
         return sb.toString();
     }

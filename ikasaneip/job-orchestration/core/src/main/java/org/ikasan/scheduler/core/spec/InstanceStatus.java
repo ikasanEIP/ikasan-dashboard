@@ -4,5 +4,8 @@ public enum InstanceStatus {
     RUNNING,
     COMPLETE,
     WAITING,
-    ERROR;
+    ERROR,
+    SKIPPED,
+    ON_HOLD,
+    RELEASED;
 }
