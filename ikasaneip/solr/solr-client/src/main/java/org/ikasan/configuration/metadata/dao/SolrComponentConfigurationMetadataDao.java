@@ -15,6 +15,7 @@ import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -114,6 +115,10 @@ public class SolrComponentConfigurationMetadataDao extends SolrDaoBase<Configura
 
     public List<ConfigurationMetaData> findInIdList(List<String> configurationIds)
     {
+        if(configurationIds == null || configurationIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
         StringBuffer queryString = new StringBuffer("type: \"").append(COMPONENT_CONFIGURATION).append("\"");
         queryString.append(" AND id:(");
 
