@@ -29,13 +29,13 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
      */
     public static final String SCHEDULED_CONTEXT = "scheduledContext";
 
-    protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, ScheduledContextRecord scheduledProcessEvent) {
+    protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, ScheduledContextRecord scheduledContextRecord) {
         SolrInputDocument document = new SolrInputDocument();
         document.addField(TYPE, SCHEDULED_CONTEXT);
-        document.addField(PAYLOAD_CONTENT, scheduledProcessEvent.getContext());
-        document.addField(ID, scheduledProcessEvent.getId() + "-" + SCHEDULED_CONTEXT);
-        document.addField(MODULE_NAME, scheduledProcessEvent.getContextName());
-        document.addField(CREATED_DATE_TIME, scheduledProcessEvent.getTimestamp());
+        document.addField(PAYLOAD_CONTENT, scheduledContextRecord.getContext());
+        document.addField(ID, scheduledContextRecord.getId() + "-" + SCHEDULED_CONTEXT);
+        document.addField(MODULE_NAME, scheduledContextRecord.getContextName());
+        document.addField(CREATED_DATE_TIME, scheduledContextRecord.getTimestamp());
         document.setField(EXPIRY, expiry);
 
         logger.debug(String.format("Converted scheduled context record to SolrDocument[%s]", document));

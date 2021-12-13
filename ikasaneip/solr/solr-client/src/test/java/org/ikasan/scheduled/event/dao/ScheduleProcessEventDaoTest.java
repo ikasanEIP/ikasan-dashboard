@@ -93,11 +93,12 @@ public class ScheduleProcessEventDaoTest extends SolrTestCaseJ4 {
         Assert.assertEquals("jobName", solrInputDocument.getFieldValue(SolrDaoBase.COMPONENT_NAME));
         Assert.assertEquals("agentName", solrInputDocument.getFieldValue(SolrDaoBase.MODULE_NAME));
         Assert.assertEquals(1000L, solrInputDocument.getFieldValue(SolrDaoBase.CREATED_DATE_TIME));
-        JSONAssert.assertEquals("{\"agentName\":\"agentName\",\"jobName\":\"jobName\"," +
-                "\"jobGroup\":\"jobGroup\",\"jobDescription\":\"jobDescription\",\"commandLine\":\"commandLine\",\"resultOutput\":\"output\"" +
-                ",\"resultError\":\"error\",\"pid\":1234,\"user\":\"user\",\"fireTime\":1000,\"nextFireTime\":1000,\"successful\":true," +
-                "\"completionTime\":1000,\"returnCode\":0,\"outcome\":\"EXECUTION_INVOKED\",\"jobStarting\":false,\"dryRun\":false," +
-                "\"contextId\":null,\"contextInstanceId\":null}", (String)solrInputDocument.getFieldValue(SolrDaoBase.PAYLOAD_CONTENT), true);
+        JSONAssert.assertEquals("{\"agentName\":\"agentName\",\"jobName\":\"jobName\",\"jobGroup\":" +
+            "\"jobGroup\",\"jobDescription\":\"jobDescription\",\"commandLine\":\"commandLine\",\"resultOutput\":" +
+            "\"output\",\"resultError\":\"error\",\"pid\":1234,\"user\":\"user\",\"fireTime\":1000,\"nextFireTime\"" +
+            ":1000,\"successful\":true,\"completionTime\":1000,\"returnCode\":0,\"outcome\":\"EXECUTION_INVOKED\"," +
+            "\"dryRunParameters\":null,\"jobStarting\":false,\"dryRun\":false}"
+            , (String)solrInputDocument.getFieldValue(SolrDaoBase.PAYLOAD_CONTENT), true);
         Assert.assertEquals(1L, solrInputDocument.getFieldValue(SolrDaoBase.EXPIRY));
     }
 

@@ -25,6 +25,7 @@ public class ContextualisedScheduledProcessEventInstance implements Contextualis
     private String contextInstanceId;
     private boolean jobStarting = false;
     private DryRunParametersImpl dryRunParameters;
+    private boolean skipped;
 
 
     public Long getId()
@@ -244,6 +245,16 @@ public class ContextualisedScheduledProcessEventInstance implements Contextualis
     @Override
     public DryRunParametersImpl getDryRunParameters() {
         return this.dryRunParameters;
+    }
+
+    @Override
+    public void setSkipped(boolean skipped) {
+        this.skipped = skipped;
+    }
+
+    @Override
+    public boolean isSkipped() {
+        return skipped;
     }
 
     @Override
