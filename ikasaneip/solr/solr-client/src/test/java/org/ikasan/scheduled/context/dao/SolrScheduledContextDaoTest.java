@@ -19,6 +19,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static org.ikasan.scheduled.context.dao.SolrScheduledContextDaoImpl.SCHEDULED_CONTEXT;
+
 public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
 
     private SolrScheduledContextDaoImpl dao;
@@ -66,9 +68,9 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
                 , "contextName", "context", 1000000L);
             this.dao.save(scheduledContextRecord);
 
-            ScheduledContextRecord found = this.dao.findById("id");
+            ScheduledContextRecord found = this.dao.findById("id-" + SCHEDULED_CONTEXT);
 
-            Assert.assertEquals("id", found.getId());
+            Assert.assertEquals("id-" + SCHEDULED_CONTEXT, found.getId());
             Assert.assertEquals("contextName", found.getContextName());
             Assert.assertEquals("context", found.getContext());
             Assert.assertEquals(1000000L, found.getTimestamp());
