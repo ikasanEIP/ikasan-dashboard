@@ -4,7 +4,7 @@ import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 
 import java.util.Objects;
 
-public class SolrScheduledProcessEvent implements ScheduledProcessEvent<Outcome> {
+public class SolrScheduledProcessEvent implements ScheduledProcessEvent<Outcome, SolrDryRunParameters> {
     private String agentName;
     private String agentHostname;
     private String jobName;
@@ -21,6 +21,7 @@ public class SolrScheduledProcessEvent implements ScheduledProcessEvent<Outcome>
     private long completionTime;
     private int returnCode;
     private Outcome outcome;
+    private SolrDryRunParameters dryRunParameters;
 
     @Override
     public int getReturnCode() {
@@ -203,24 +204,34 @@ public class SolrScheduledProcessEvent implements ScheduledProcessEvent<Outcome>
     }
 
     @Override
-    public String getContextId() {
-        return null;
+    public void setDryRunParameters(SolrDryRunParameters dryRunParameters) {
+        this.dryRunParameters = dryRunParameters;
     }
 
     @Override
-    public void setContextId(String contextId) {
-
+    public SolrDryRunParameters getDryRunParameters() {
+        return this.dryRunParameters;
     }
 
-    @Override
-    public String getContextInstanceId() {
-        return null;
-    }
-
-    @Override
-    public void setContextInstanceId(String contextInstanceId) {
-
-    }
+    //    @Override
+//    public String getContextId() {
+//        return null;
+//    }
+//
+//    @Override
+//    public void setContextId(String contextId) {
+//
+//    }
+//
+//    @Override
+//    public String getContextInstanceId() {
+//        return null;
+//    }
+//
+//    @Override
+//    public void setContextInstanceId(String contextInstanceId) {
+//
+//    }
 
     @Override
     public String toString() {
