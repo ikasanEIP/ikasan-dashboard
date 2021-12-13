@@ -4,7 +4,7 @@ import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 
 import java.util.Objects;
 
-public class ScheduledProcessEventImpl implements ScheduledProcessEvent<Outcome> {
+public class ScheduledProcessEventImpl implements ScheduledProcessEvent<Outcome, DryRunParametersImpl> {
     private String agentName;
     private String jobName;
     private String jobGroup;
@@ -20,6 +20,7 @@ public class ScheduledProcessEventImpl implements ScheduledProcessEvent<Outcome>
     private long completionTime;
     private int returnCode;
     private Outcome outcome;
+    private DryRunParametersImpl dryRunParameters;
 
     @Override
     public int getReturnCode() {
@@ -192,24 +193,36 @@ public class ScheduledProcessEventImpl implements ScheduledProcessEvent<Outcome>
     }
 
     @Override
-    public String getContextId() {
-        return null;
+    public void setDryRunParameters(DryRunParametersImpl dryRunParameters) {
+        this.dryRunParameters = dryRunParameters;
     }
 
     @Override
-    public void setContextId(String contextId) {
-
+    public DryRunParametersImpl getDryRunParameters() {
+        return this.dryRunParameters;
     }
 
-    @Override
-    public String getContextInstanceId() {
-        return null;
-    }
+    //    @Override
+//    public String getContextId() {
+//        return null;
+//    }
+//
+//    @Override
+//    public void setContextId(String contextId) {
+//
+//    }
+//
+//    @Override
+//    public String getContextInstanceId() {
+//        return null;
+//    }
+//
+//    @Override
+//    public void setContextInstanceId(String contextInstanceId) {
+//
+//    }
 
-    @Override
-    public void setContextInstanceId(String contextInstanceId) {
 
-    }
 
     @Override
     public boolean equals(Object o) {
