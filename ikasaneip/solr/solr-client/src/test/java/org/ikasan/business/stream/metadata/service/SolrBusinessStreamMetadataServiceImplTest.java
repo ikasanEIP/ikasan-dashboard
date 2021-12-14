@@ -19,6 +19,7 @@ import org.ikasan.module.metadata.model.SolrFlowMetaDataImpl;
 import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
 import org.ikasan.module.metadata.model.SolrTransitionImpl;
 import org.ikasan.spec.metadata.*;
+import org.ikasan.spec.module.ModuleType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -118,7 +119,7 @@ public class SolrBusinessStreamMetadataServiceImplTest extends SolrTestCaseJ4
             SolrBusinessStream solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream");
             solrBusinessStream.setName("businessStream");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             dao.save(solrBusinessStream);
 
@@ -178,7 +179,7 @@ public class SolrBusinessStreamMetadataServiceImplTest extends SolrTestCaseJ4
             SolrBusinessStream solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream");
             solrBusinessStream.setName("businessStream");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             dao.save(solrBusinessStream);
 
@@ -216,7 +217,7 @@ public class SolrBusinessStreamMetadataServiceImplTest extends SolrTestCaseJ4
             SolrBusinessStream solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream");
             solrBusinessStream.setName("businessStream");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             dao.save(solrBusinessStream);
 
@@ -225,6 +226,58 @@ public class SolrBusinessStreamMetadataServiceImplTest extends SolrTestCaseJ4
             Assert.assertEquals("Number of results 1",1, businessStreamMetaData.size());
             Assert.assertEquals("name equals","businessStream", businessStreamMetaData.get(0).getName());
             Assert.assertEquals("meta data equals", businessStream, businessStreamMetaData.get(0).getJson());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_find_business_stream_for_module() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            SimpleModule m = new SimpleModule();
+            m.addAbstractTypeMapping(ModuleMetaData.class, SolrModuleMetaDataImpl.class);
+            m.addAbstractTypeMapping(FlowMetaData.class, SolrFlowMetaDataImpl.class);
+            m.addAbstractTypeMapping(FlowElementMetaData.class, SolrFlowElementMetaDataImpl.class);
+            m.addAbstractTypeMapping(Transition.class, SolrTransitionImpl.class);
+
+            objectMapper.registerModule(m);
+
+            String businessStream = loadDataFile(BUSINESS_STREAM_JSON);
+
+            SolrBusinessStream solrBusinessStream = new SolrBusinessStream();
+            solrBusinessStream.setId("businessStream");
+            solrBusinessStream.setName("businessStream");
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
+
+            dao.save(solrBusinessStream);
+
+            ModuleMetaData moduleMetaData = new SolrModuleMetaDataImpl();
+            moduleMetaData.setName("reporting1-tradeReporting");
+
+            FlowMetaData flowMetaData = new SolrFlowMetaDataImpl();
+            flowMetaData.setName("Bond Trades messages Transformation Flow");
+            moduleMetaData.setFlows(List.of(flowMetaData));
+
+            BusinessStreamMetadataSearchResults businessStreamMetaData = solrBusinessStreamMetaDataService.findBusinessStreamsForModules(null, List.of(moduleMetaData), 0, 100);
+
+            Assert.assertEquals("Number of results 1",1, businessStreamMetaData.getResultList().size());
+            Assert.assertEquals("name equals","businessStream", businessStreamMetaData.getResultList().get(0).getName());
+            Assert.assertEquals("meta data equals", businessStream, businessStreamMetaData.getResultList().get(0).getJson());
+
+            moduleMetaData = new SolrModuleMetaDataImpl();
+            moduleMetaData.setName("dodgy module name");
+
+            flowMetaData = new SolrFlowMetaDataImpl();
+            flowMetaData.setName("dodgy flow name");
+            moduleMetaData.setFlows(List.of(flowMetaData));
+
+            businessStreamMetaData = solrBusinessStreamMetaDataService.findBusinessStreamsForModules(null, List.of(moduleMetaData), 0, 100);
+
+            Assert.assertEquals("Number of results 0",0, businessStreamMetaData.getResultList().size());
         }
     }
 
@@ -250,21 +303,21 @@ public class SolrBusinessStreamMetadataServiceImplTest extends SolrTestCaseJ4
             SolrBusinessStream solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream");
             solrBusinessStream.setName("businessStream");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             dao.save(solrBusinessStream);
 
             solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream2");
             solrBusinessStream.setName("businessStream2");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             dao.save(solrBusinessStream);
 
             solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("anotherBusinessStream");
             solrBusinessStream.setName("anotherBusinessStream");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             dao.save(solrBusinessStream);
 
