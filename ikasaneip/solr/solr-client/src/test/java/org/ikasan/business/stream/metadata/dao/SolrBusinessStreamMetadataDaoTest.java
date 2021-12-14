@@ -1,6 +1,5 @@
 package org.ikasan.business.stream.metadata.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.io.IOUtils;
@@ -13,8 +12,6 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.NodeConfig;
 import org.apache.solr.core.SolrResourceLoader;
 import org.ikasan.business.stream.metadata.model.SolrBusinessStream;
-import org.ikasan.configuration.metadata.dao.SolrComponentConfigurationMetadataDao;
-import org.ikasan.configuration.metadata.model.SolrConfigurationMetaData;
 import org.ikasan.configuration.metadata.model.SolrConfigurationParameterMetaData;
 import org.ikasan.module.metadata.model.SolrFlowElementMetaDataImpl;
 import org.ikasan.module.metadata.model.SolrFlowMetaDataImpl;
@@ -88,7 +85,7 @@ public class SolrBusinessStreamMetadataDaoTest extends SolrTestCaseJ4
             SolrBusinessStream solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream");
             solrBusinessStream.setName("businessStream");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             dao.save(solrBusinessStream);
 
@@ -119,7 +116,7 @@ public class SolrBusinessStreamMetadataDaoTest extends SolrTestCaseJ4
             SolrBusinessStream solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream");
             solrBusinessStream.setName("businessStream");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             dao.save(solrBusinessStream);
 
@@ -154,7 +151,7 @@ public class SolrBusinessStreamMetadataDaoTest extends SolrTestCaseJ4
             SolrBusinessStream solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream");
             solrBusinessStream.setName("businessStream");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             dao.save(solrBusinessStream);
 
@@ -187,7 +184,7 @@ public class SolrBusinessStreamMetadataDaoTest extends SolrTestCaseJ4
             SolrBusinessStream solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream");
             solrBusinessStream.setName("businessStream");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             dao.save(solrBusinessStream);
 
@@ -220,7 +217,7 @@ public class SolrBusinessStreamMetadataDaoTest extends SolrTestCaseJ4
             SolrBusinessStream solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream");
             solrBusinessStream.setName("businessStream");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             dao.save(solrBusinessStream);
 
@@ -256,14 +253,14 @@ public class SolrBusinessStreamMetadataDaoTest extends SolrTestCaseJ4
             SolrBusinessStream solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream1");
             solrBusinessStream.setName("businessStream1");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             businessStreams.add(solrBusinessStream);
 
             solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream2");
             solrBusinessStream.setName("businessStream2");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             businessStreams.add(solrBusinessStream);
 
@@ -271,7 +268,7 @@ public class SolrBusinessStreamMetadataDaoTest extends SolrTestCaseJ4
             solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream3");
             solrBusinessStream.setName("businessStream3");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             businessStreams.add(solrBusinessStream);
 
@@ -279,14 +276,14 @@ public class SolrBusinessStreamMetadataDaoTest extends SolrTestCaseJ4
             solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream4");
             solrBusinessStream.setName("businessStream4");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             businessStreams.add(solrBusinessStream);
 
             solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream5");
             solrBusinessStream.setName("blah");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             businessStreams.add(solrBusinessStream);
 
@@ -334,14 +331,14 @@ public class SolrBusinessStreamMetadataDaoTest extends SolrTestCaseJ4
             SolrBusinessStream solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream1");
             solrBusinessStream.setName("businessStream1");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             businessStreams.add(solrBusinessStream);
 
             solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream2");
             solrBusinessStream.setName("businessStream2");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             businessStreams.add(solrBusinessStream);
 
@@ -349,7 +346,7 @@ public class SolrBusinessStreamMetadataDaoTest extends SolrTestCaseJ4
             solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream3");
             solrBusinessStream.setName("businessStream3");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             businessStreams.add(solrBusinessStream);
 
@@ -357,14 +354,14 @@ public class SolrBusinessStreamMetadataDaoTest extends SolrTestCaseJ4
             solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream4");
             solrBusinessStream.setName("businessStream4");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             businessStreams.add(solrBusinessStream);
 
             solrBusinessStream = new SolrBusinessStream();
             solrBusinessStream.setId("businessStream5");
             solrBusinessStream.setName("businessStream5");
-            solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+            solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
             businessStreams.add(solrBusinessStream);
 
@@ -392,7 +389,7 @@ public class SolrBusinessStreamMetadataDaoTest extends SolrTestCaseJ4
         solrBusinessStream.setId("businessStream1");
         solrBusinessStream.setName("businessStream1");
         solrBusinessStream.setDescription("businessStream1Description");
-        solrBusinessStream.setRawBusinessStreamMetadata(businessStream);
+        solrBusinessStream.setBusinessStreamMetadata(businessStream);
 
         SolrBusinessStreamMetadataDao dao = new SolrBusinessStreamMetadataDao();
         SolrInputDocument solrInputDocument = dao.convertEntityToSolrInputDocument(1L, solrBusinessStream);

@@ -5,6 +5,7 @@ import org.ikasan.spec.metadata.BusinessStreamMetadataSearchResults;
 import org.ikasan.business.stream.metadata.model.SolrBusinessStream;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
+import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.solr.SolrServiceBase;
 
 import java.util.List;
@@ -49,7 +50,7 @@ public class SolrBusinessStreamMetaDataServiceImpl extends SolrServiceBase imple
         solrBusinessStream.setId(metaData.getId());
         solrBusinessStream.setName(metaData.getName());
         solrBusinessStream.setDescription(metaData.getDescription());
-        solrBusinessStream.setRawBusinessStreamMetadata(metaData.getJson());
+        solrBusinessStream.setBusinessStreamMetadata(metaData.getJson());
 
         dao.setSolrUsername(super.solrUsername);
         dao.setSolrPassword(super.solrPassword);
@@ -72,9 +73,10 @@ public class SolrBusinessStreamMetaDataServiceImpl extends SolrServiceBase imple
     }
 
     @Override
-    public BusinessStreamMetadataSearchResults findBusinessStreamsForModules(String filter, List<String> moduleNames, int offset, int limit) {
+    public BusinessStreamMetadataSearchResults findBusinessStreamsForModules(String filter, List<ModuleMetaData> modules, int offset, int limit) {
         dao.setSolrUsername(super.solrUsername);
         dao.setSolrPassword(super.solrPassword);
-        return this.dao.findBusinessStreamsForModules(filter, moduleNames, offset, limit);
+
+        return this.dao.findBusinessStreamsForModules(filter, modules, offset, limit);
     }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.request.QueryRequest;
+import org.apache.solr.client.solrj.request.json.JsonQueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
@@ -143,8 +144,8 @@ public class SolrBusinessStreamMetadataDao extends SolrDaoBase<SolrBusinessStrea
             .collect(Collectors.toList());
     }
 
-    public BusinessStreamMetadataSearchResults findBusinessStreamsForModules(String filter, List<String> moduleNames, int offset, int limit) {
-        if(moduleNames == null || moduleNames.size() == 0) {
+    public BusinessStreamMetadataSearchResults findBusinessStreamsForModules(String filter, List<ModuleMetaData> modules, int offset, int limit) {
+        if(modules == null || modules.size() == 0) {
             return new BusinessStreamMetadataSearchResults(List.of(), 0, 0);
         }
 
@@ -154,15 +155,24 @@ public class SolrBusinessStreamMetadataDao extends SolrDaoBase<SolrBusinessStrea
         }
         queryString.append(" AND (");
 
-        String moduleQuery = moduleNames.stream()
-            .map(moduleName -> {
+        List<String> moduleQuery = modules.stream()
+            .map(module -> module.getFlows().stream().map(flowMetaData -> {
                 StringBuffer queryPart = new StringBuffer();
-                queryPart.append("payload:\"*").append(moduleName).append(".").append("*\"");
+                queryPart.append("payload:\"*").append(module.getName()).append(".").append(flowMetaData.getName()).append("*\"");
                 return queryPart;
-            })
-            .collect(Collectors.joining(" OR "));
+            }).collect(Collectors.joining(" OR ")))
+            .collect(Collectors.toList());
 
-        queryString.append(moduleQuery).append(")");
+        StringBuffer moduleQueryString = new StringBuffer();
+
+        for(int i=0; i<moduleQuery.size(); i++) {
+            moduleQueryString.append(moduleQuery.get(i));
+            if(i<moduleQuery.size()-1 && !moduleQuery.get(i).isEmpty()) {
+                moduleQueryString.append(" OR ");
+            }
+        }
+
+        queryString.append(moduleQueryString).append(")");
 
         SolrQuery query = new SolrQuery();
         query.setQuery(queryString.toString());
@@ -173,7 +183,7 @@ public class SolrBusinessStreamMetadataDao extends SolrDaoBase<SolrBusinessStrea
 
         try
         {
-            QueryRequest req = new QueryRequest(query);
+            JsonQueryRequest req = new JsonQueryRequest(query);
             req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
             QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
