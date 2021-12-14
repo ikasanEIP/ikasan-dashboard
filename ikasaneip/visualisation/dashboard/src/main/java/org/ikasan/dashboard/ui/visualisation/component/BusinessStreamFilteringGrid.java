@@ -174,8 +174,9 @@ public class BusinessStreamFilteringGrid extends Grid<BusinessStreamMetaData>
                     }
                 }
 
+
                 return this.solrSearchService.findBusinessStreamsForModules(filter.getBusinessStreamNameFilter(),
-                    accessibleModules, offset, limit);
+                    this.moduleMetaDataService.find(accessibleModules).getResultList(), offset, limit);
             }
         }
         catch (Exception e) {

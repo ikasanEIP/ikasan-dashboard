@@ -44,6 +44,11 @@ public class ComponentFactory
             public void deleteById(String name) {
 
             }
+
+            @Override
+            public ModuleMetadataSearchResults find(List<String> modulesNames) {
+                return null;
+            }
         };
     }
 
