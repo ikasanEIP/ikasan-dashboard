@@ -63,6 +63,27 @@ public class SolrModuleMetadataServiceImpl extends SolrServiceBase implements Ba
     }
 
     @Override
+    public ModuleMetadataSearchResults find(List<String> modulesNames) {
+        dao.setSolrUsername(super.solrUsername);
+        dao.setSolrPassword(super.solrPassword);
+
+        if(modulesNames ==  null || modulesNames.isEmpty()) {
+            return new ModuleMetadataSearchResults(List.of(), 0, 0);
+        }
+
+        ModuleMetadataSearchResults moduleMetadataSearchResults = this.find(modulesNames, 0, 0);
+
+        int numResults = Integer.MAX_VALUE;
+        if(moduleMetadataSearchResults.getTotalNumberOfResults() < Integer.MAX_VALUE)
+        {
+            numResults = (int) moduleMetadataSearchResults.getTotalNumberOfResults();
+        }
+
+
+        return this.dao.find(modulesNames,0, numResults);
+    }
+
+    @Override
     public ModuleMetadataSearchResults find(List<String> modulesNames, Integer startOffset, Integer resultSize) {
         dao.setSolrUsername(super.solrUsername);
         dao.setSolrPassword(super.solrPassword);

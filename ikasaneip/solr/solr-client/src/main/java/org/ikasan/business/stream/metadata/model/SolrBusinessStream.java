@@ -51,7 +51,7 @@ public class SolrBusinessStream
         this.description = description;
     }
 
-    public void setRawBusinessStreamMetadata(String businessStreamMetadata)
+    public void setBusinessStreamMetadata(String businessStreamMetadata)
     {
         this.businessStreamMetadata = businessStreamMetadata;
     }
