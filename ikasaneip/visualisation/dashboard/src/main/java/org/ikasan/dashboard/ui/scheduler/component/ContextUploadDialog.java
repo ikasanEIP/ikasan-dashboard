@@ -116,8 +116,8 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
                     schedulerService.raiseSchedulerJobInitiationEvent("http://localhost:8080/scheduler-agent", event);
                 });
 
-                DryRunParameters dryRunParameters = new DryRunParametersImpl();
-                contextMachine.setDryRunParameters(dryRunParameters);
+//                DryRunParameters dryRunParameters = new DryRunParametersImpl();
+//                contextMachine.setDryRunParameters(dryRunParameters);
 
                 ContextMachineCache.instance().put(contextMachine);
             }
