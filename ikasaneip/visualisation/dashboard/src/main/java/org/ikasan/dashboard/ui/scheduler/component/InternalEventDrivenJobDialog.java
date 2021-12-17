@@ -11,6 +11,7 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -25,9 +26,12 @@ import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
+import org.ikasan.dashboard.ui.general.component.EntityContentsViewDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.general.component.TableButton;
 import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.model.ScheduledProcessAggregateConfiguration;
@@ -63,15 +67,11 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     private TextField jobNameTf;
     private TextField jobGroupTf;
     private TextArea jobDescriptionTa;
-    private ComboBox<DateTimeUtil.TimezonePair> timezoneCb;
 
 
     // Fields to capture job execution properties.
     private AceEditor commandLineTa;
     private TextField workingDirectoryTf;
-    private TextField secondsToWaitForProcessStartTf;
-    private TextField stdOutTf;
-    private TextField stdErrTf;
     private List<TextField> successfulReturnCodes;
 
     private Label successfulReturnCodesLabel;
@@ -133,8 +133,6 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.formBinder
             = new Binder<>(ScheduledProcessAggregateConfiguration.class);
         this.successfulReturnCodes = new ArrayList<>();
-
-
 
         this.setHeight("900px");
         this.setWidth("1200px");
@@ -215,11 +213,10 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.startAutomaticCb.setValue(true);
         formBinder.forField(this.startAutomaticCb)
             .bind(ScheduledProcessAggregateConfiguration::isStartAutomatically, ScheduledProcessAggregateConfiguration::setStartAutomatically);
-        formLayout.add(this.startAutomaticCb);
+//        formLayout.add(this.startAutomaticCb);
 
-        // Fields to capture schedule job properties.
-        H3 scheduleDetailsLabel = new H3(getTranslation("header.schedule-details", UI.getCurrent().getLocale()));
-        formLayout.add(scheduleDetailsLabel, 2);
+        H3 jobExecutionLabel = new H3(getTranslation("header.job-execution-details", UI.getCurrent().getLocale()));
+        formLayout.add(jobExecutionLabel, 2);
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setId("jobNameTf");
@@ -250,20 +247,34 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         formLayout.add(jobDescriptionTa, 2);
 
 
-        this.timezoneCb = new ComboBox<>(getTranslation("label.timezone", UI.getCurrent().getLocale()));
-        ComboBox.ItemFilter<DateTimeUtil.TimezonePair> filter = (element, filterString) ->
-            element.zoneId.toLowerCase().contains(filterString.toLowerCase());
-        this.timezoneCb.setId("timezoneCb");
-        this.timezoneCb.setItems(filter, DateTimeUtil.getAllZoneIdsAndItsOffSet());
-        this.timezoneCb.setItemLabelGenerator((ItemLabelGenerator<DateTimeUtil.TimezonePair>) s -> String.format("%35s (UTC%s) %n", s.zoneId, s.offset).trim());
-        this.timezoneCb.setClearButtonVisible(true);
-        this.timezoneCb.setPlaceholder(getTranslation("label.choose-a-timezone", UI.getCurrent().getLocale()));
-        this.timezoneCb.setErrorMessage(getTranslation("error.timezone-required", UI.getCurrent().getLocale()));
-        formLayout.add(timezoneCb);
+        // todo translation
+        Icon parametersIcon = IconDecorator.decorate(new Icon(VaadinIcon.SLIDERS), "Job Parameters", "14pt", "rgba(241, 90, 35, 1.0)");
 
-        // Fields to capture job execution properties.
-        H3 jobExecutionLabel = new H3(getTranslation("header.job-execution-details", UI.getCurrent().getLocale()));
-        formLayout.add(jobExecutionLabel, 2);
+//        Button parametersButton = new Button(parametersIcon);
+//        parametersButton.addClickListener(buttonClickEvent -> {
+////            EntityContentsViewDialog entityContentsViewDialog = new EntityContentsViewDialog("Wiretap " + wiretapEvent.getEventId());
+////            entityContentsViewDialog.populate(this.wiretapEvent);
+//        });
+
+        // todo translation
+        Icon externalIcon = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), "Expand Text Editor", "14pt", "rgba(241, 90, 35, 1.0)");
+
+//        Button newWindowButton = new Button(externalIcon);
+//        newWindowButton.addClickListener(buttonClickEvent -> {
+////            EntityContentsViewDialog entityContentsViewDialog = new EntityContentsViewDialog("Wiretap " + wiretapEvent.getEventId());
+////            entityContentsViewDialog.populate(this.wiretapEvent);
+//        });
+
+
+        HorizontalLayout horizontalLayout = new HorizontalLayout();
+        horizontalLayout.add(parametersIcon, externalIcon);
+
+        VerticalLayout newButtonLayout = new VerticalLayout();
+        newButtonLayout.setWidth("100%");
+        newButtonLayout.add(horizontalLayout);
+        newButtonLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, horizontalLayout);
+
+        formLayout.add(newButtonLayout, 2);
 
         this.commandLineTa = new AceEditor();
         this.commandLineTa.setHeight("300px");
@@ -280,38 +291,17 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         formBinder.forField(this.workingDirectoryTf)
             .withNullRepresentation("")
             .bind(ScheduledProcessAggregateConfiguration::getWorkingDirectory, ScheduledProcessAggregateConfiguration::setWorkingDirectory);
-        formLayout.add(workingDirectoryTf);
-
-        this.secondsToWaitForProcessStartTf = new TextField(getTranslation("label.seconds-to-wait", UI.getCurrent().getLocale()));
-        formBinder.forField(this.secondsToWaitForProcessStartTf)
-            .withNullRepresentation("")
-            .withConverter(new StringToLongConverter(getTranslation("error.must-be-a-number", UI.getCurrent().getLocale())))
-            .bind(ScheduledProcessAggregateConfiguration::getSecondsToWaitForProcessStart, ScheduledProcessAggregateConfiguration::setSecondsToWaitForProcessStart);
-        formLayout.add(secondsToWaitForProcessStartTf);
-
-        this.stdOutTf = new TextField(getTranslation("label.std-out", UI.getCurrent().getLocale()));
-        this.stdOutTf.setRequired(true);
-        this.stdOutTf.setId("stdOutTf");
-        formBinder.forField(this.stdOutTf)
-            .withNullRepresentation("")
-            .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-std-out", UI.getCurrent().getLocale()))
-            .bind(ScheduledProcessAggregateConfiguration::getStdOut, ScheduledProcessAggregateConfiguration::setStdOut);
-        formLayout.add(stdOutTf);
-
-        this.stdErrTf = new TextField(getTranslation("label.std-err", UI.getCurrent().getLocale()));
-        this.stdErrTf.setRequired(true);
-        this.stdErrTf.setId("stdErrTf");
-        formBinder.forField(this.stdErrTf)
-            .withNullRepresentation("")
-            .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-std-err", UI.getCurrent().getLocale()))
-            .bind(ScheduledProcessAggregateConfiguration::getStdErr, ScheduledProcessAggregateConfiguration::setStdErr);
-        formLayout.add(this.stdErrTf);
+        formLayout.add(workingDirectoryTf, 2);
 
         this.successfulReturnCodesLabel = new Label(getTranslation("label.successful-return-codes", UI.getCurrent().getLocale()));
+        this.successfulReturnCodesLabel.getStyle().set("color", "rgba(0, 0, 0, 0.54)");
+        this.successfulReturnCodesLabel.getStyle().set("margin-top", "30px");
+
         this.successfulReturnCodesButton = new Button(VaadinIcon.PLUS.create(), e -> {
             this.addSuccessfulReturnCodes(null);
         });
         this.successfulReturnCodesButton.setId("successfulReturnCodesButton");
+        this.successfulReturnCodesButton.getStyle().set("margin-top", "30px");
 
         this.returnCodesDiv = new Div();
         this.returnCodesDiv.setVisible(false);
@@ -332,10 +322,6 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             AtomicBoolean isValid = new AtomicBoolean(true);
 
             scheduleProcessAggregateConfiguration.getBlackoutDateTimeRanges().clear();
-
-            if(this.timezoneCb.getValue() != null) {
-                scheduleProcessAggregateConfiguration.setTimezone(this.timezoneCb.getValue().zoneId);
-            }
 
             formBinder.writeBean(scheduleProcessAggregateConfiguration);
 
@@ -569,19 +555,12 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
 
-        this.timezoneCb.setEnabled(enabled);
-
         this.jobNameTf.setEnabled(this.editMode == EditMode.NEW);
         this.jobGroupTf.setEnabled(enabled);
         this.jobDescriptionTa.setEnabled(enabled);
-        this.timezoneCb.setEnabled(enabled);
-
 
         this.commandLineTa.setEnabled(enabled);
         this.workingDirectoryTf.setEnabled(enabled);
-        this.secondsToWaitForProcessStartTf.setEnabled(enabled);
-        this.stdOutTf.setEnabled(enabled);
-        this.stdErrTf.setEnabled(enabled);
         this.successfulReturnCodes.forEach(successfulReturnCode -> successfulReturnCode.setEnabled(enabled));
 
         this.saveButton.setVisible(enabled);
@@ -599,7 +578,6 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.scheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
         this.oldScheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
         this.formBinder.readBean(this.scheduleProcessAggregateConfiguration);
-        this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(scheduleProcessAggregateConfiguration.getTimezone()));
         this.bindCollections(scheduleProcessAggregateConfiguration);
         this.editMode = editMode;
 

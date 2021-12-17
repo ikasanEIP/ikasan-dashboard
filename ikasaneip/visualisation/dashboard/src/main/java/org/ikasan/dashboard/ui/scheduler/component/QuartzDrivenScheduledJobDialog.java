@@ -11,6 +11,7 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -25,6 +26,7 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.model.ScheduledProcessAggregateConfiguration;
@@ -105,6 +107,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger) {
         super.showResize(false);
+        // todo translation
         super.title.setText("Scheduled Job");
 
         this.agent = agent;
@@ -194,12 +197,12 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
             .bind(ScheduledProcessAggregateConfiguration::getAgentName, ScheduledProcessAggregateConfiguration::setAgentName);
         formLayout.add(agentCb, 2);
 
-        this.startAutomaticCb = new Checkbox(getTranslation("label.start-automatically", UI.getCurrent().getLocale()));
-        this.startAutomaticCb.setId("startAutomaticCb");
-        this.startAutomaticCb.setValue(true);
-        formBinder.forField(this.startAutomaticCb)
-            .bind(ScheduledProcessAggregateConfiguration::isStartAutomatically, ScheduledProcessAggregateConfiguration::setStartAutomatically);
-        formLayout.add(this.startAutomaticCb);
+//        this.startAutomaticCb = new Checkbox(getTranslation("label.start-automatically", UI.getCurrent().getLocale()));
+//        this.startAutomaticCb.setId("startAutomaticCb");
+//        this.startAutomaticCb.setValue(true);
+//        formBinder.forField(this.startAutomaticCb)
+//            .bind(ScheduledProcessAggregateConfiguration::isStartAutomatically, ScheduledProcessAggregateConfiguration::setStartAutomatically);
+//        formLayout.add(this.startAutomaticCb);
 
         // Fields to capture schedule job properties.
         H3 scheduleDetailsLabel = new H3(getTranslation("header.schedule-details", UI.getCurrent().getLocale()));
@@ -234,9 +237,16 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         formLayout.add(jobDescriptionTa, 2);
 
 
+        Icon builderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), "Build cron expression", "14pt", "rgba(241, 90, 35, 1.0)");
+        builderIcon.addClickListener(event -> {
+            CronBuilderDialog dialog = new CronBuilderDialog();
+            dialog.open();
+        });
+
         this.cronExpressionTf = new TextField(getTranslation("label.cron-expression", UI.getCurrent().getLocale()));
         this.cronExpressionTf.setRequired(true);
         this.cronExpressionTf.setId("cronExpressionTf");
+        this.cronExpressionTf.setSuffixComponent(builderIcon);
         formBinder.forField(this.cronExpressionTf)
             .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
             .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
