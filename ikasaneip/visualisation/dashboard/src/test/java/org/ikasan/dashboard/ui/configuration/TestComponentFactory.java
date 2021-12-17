@@ -10,7 +10,7 @@ import java.util.List;
 
 @Profile("test")
 @Configuration
-public class ComponentFactory
+public class TestComponentFactory
 {
 
     @Bean({"moduleMetadataService"})
