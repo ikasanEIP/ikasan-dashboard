@@ -66,7 +66,7 @@ public class JobInitiationEventOutboundFlowFactory
     BuilderFactory builderFactory;
 
     @Resource
-    JobInitiationEventOutboundFlowComponentFactory componentFactory;
+    JobInitiationEventOutboundFlowComponentFactory jobInitiationEventOutboundFlowComponentFactory;
 
     @Resource
     public Consumer outboundBigQueueConsumer;

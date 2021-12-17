@@ -77,6 +77,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                     schedulerJobInitiationEvent.setContextInstanceId(contextInstance.getId());
                     schedulerJobInitiationEvent.setDryRun(dryRunParameters != null);
                     schedulerJobInitiationEvent.setDryRunParameters(dryRunParameters);
+                    schedulerJobInitiationEvent.setSkipped(instance.isSkip());
 
                     results.add(schedulerJobInitiationEvent);
                 }

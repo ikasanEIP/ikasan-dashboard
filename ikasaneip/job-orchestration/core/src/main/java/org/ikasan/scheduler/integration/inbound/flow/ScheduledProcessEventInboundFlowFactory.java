@@ -65,15 +65,15 @@ public class ScheduledProcessEventInboundFlowFactory
     BuilderFactory builderFactory;
 
     @Resource
-    ScheduledProcessEventInboundFlowComponentFactory componentFactory;
+    ScheduledProcessEventInboundFlowComponentFactory scheduledProcessEventInboundFlowComponentFactory;
 
 
     @Bean
     public Flow scheduledProcessEventInboundFlow() throws IOException {
         return builderFactory.getModuleBuilder(moduleName).getFlowBuilder("Scheduled Process Event Inbound Flow")
             .withDescription("Scheduled Process Event Inbound Flow")
-            .consumer("Scheduled Consumer", componentFactory.getOutboundBigQueueConsumer())
-            .producer("Dashboard Producer", componentFactory.getScheduledStatusProducer())
+            .consumer("Scheduled Consumer", scheduledProcessEventInboundFlowComponentFactory.getOutboundBigQueueConsumer())
+            .producer("Dashboard Producer", scheduledProcessEventInboundFlowComponentFactory.getScheduledStatusProducer())
             .build();
     }
 }
