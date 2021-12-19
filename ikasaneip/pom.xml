@@ -1908,6 +1908,36 @@
             </dependency>
 
             <dependency>
+                <groupId>org.vaadin.stefan</groupId>
+                <artifactId>fullcalendar2</artifactId>
+                <version>${version.fullcalendar2}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.flowingcode.addons</groupId>
+                <artifactId>iron-icons</artifactId>
+                <version>${version.iron-icons}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.flowingcode.addons</groupId>
+                <artifactId>font-awesome-iron-iconset</artifactId>
+                <version>${version.font-awesome-iron-iconset}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.vaadin.miki</groupId>
+                <artifactId>superfields</artifactId>
+                <version>${version.superfields}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.flipkart.zjsonpatch</groupId>
+                <artifactId>zjsonpatch</artifactId>
+                <version>${version.zjsonpatch}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>de.f0rce</groupId>
                 <artifactId>ace</artifactId>
                 <version>${version.ace.editor}</version>
