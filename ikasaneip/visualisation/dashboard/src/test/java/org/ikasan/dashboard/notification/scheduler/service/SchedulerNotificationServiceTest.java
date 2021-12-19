@@ -42,10 +42,7 @@ public class SchedulerNotificationServiceTest extends SolrTestCaseJ4 {
         Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         rootLogger.setLevel(Level.WARN);
 
-        Path path = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(path);
-        config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString()).build();
 
 
