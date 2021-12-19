@@ -36,10 +36,7 @@ public class SolrGeneralSearchServiceTest extends SolrTestCaseJ4
     @Test
     @DirtiesContext
     public void test_search_success() throws Exception {
-        Path path = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(path);
-        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
                 .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString())
                 .build();
 
@@ -86,10 +83,7 @@ public class SolrGeneralSearchServiceTest extends SolrTestCaseJ4
     @Test
     @DirtiesContext
     public void test_search_with_offset_success() throws Exception {
-        Path path = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(path);
-        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString())
             .build();
 
@@ -136,10 +130,7 @@ public class SolrGeneralSearchServiceTest extends SolrTestCaseJ4
     @Test
     @DirtiesContext
     public void test_search_entity_types_success() throws Exception {
-        Path path = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(path);
-        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
                 .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString())
                 .build();
 
@@ -190,10 +181,7 @@ public class SolrGeneralSearchServiceTest extends SolrTestCaseJ4
     @Test
     @DirtiesContext
     public void test_search_entity_types_no_module_or_flow_success() throws Exception {
-        Path path = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(path);
-        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString())
             .build();
 
@@ -244,10 +232,7 @@ public class SolrGeneralSearchServiceTest extends SolrTestCaseJ4
     @Test
     @DirtiesContext
     public void test_search_success_with_query_filter() throws Exception {
-        Path path = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(path);
-        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
                 .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString())
                 .build();
 
@@ -300,10 +285,7 @@ public class SolrGeneralSearchServiceTest extends SolrTestCaseJ4
     @Test
     @DirtiesContext
     public void test_save_document() throws Exception {
-        Path path = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(path);
-        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString())
             .build();
 
@@ -339,10 +321,7 @@ public class SolrGeneralSearchServiceTest extends SolrTestCaseJ4
     @Test
     @DirtiesContext
     public void test_save_documents() throws Exception {
-        Path path = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(path);
-        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString())
             .build();
 

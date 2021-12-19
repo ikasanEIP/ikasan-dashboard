@@ -45,10 +45,7 @@ public class SolrModuleMetadataServiceTest extends SolrTestCaseJ4
     @Test
     @DirtiesContext
     public void test_save_module_metadata_list() throws Exception {
-        Path path = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(path);
-        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString())
             .build();
 
@@ -90,10 +87,7 @@ public class SolrModuleMetadataServiceTest extends SolrTestCaseJ4
     @Test
     @DirtiesContext
     public void test_find_all() throws Exception {
-        Path path = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(path);
-        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString())
             .build();
 
@@ -133,10 +127,7 @@ public class SolrModuleMetadataServiceTest extends SolrTestCaseJ4
     @Test
     @DirtiesContext
     public void test_find_by_id() throws Exception {
-        Path path = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(path);
-        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString())
             .build();
 
@@ -181,10 +172,7 @@ public class SolrModuleMetadataServiceTest extends SolrTestCaseJ4
     @Test
     @DirtiesContext
     public void test_delete_module_metadata() throws Exception {
-        Path path = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(path);
-        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString())
             .build();
 

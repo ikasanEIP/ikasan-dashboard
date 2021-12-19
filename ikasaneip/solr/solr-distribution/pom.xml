@@ -58,7 +58,6 @@
     <description>Ikasan EIP Solr Distribution</description>
 
     <properties>
-        <solr.version>8.2.0</solr.version>
         <solr.archive.file>${project.build.directory}/ikasan-solr-distribution-${project.version}.zip</solr.archive.file>
     </properties>
 
@@ -82,7 +81,7 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <url>https://archive.apache.org/dist/lucene/solr/${solr.version}/solr-${solr.version}.zip</url>
+                            <url>https://archive.apache.org/dist/lucene/solr/${version.org.apache.solr}/solr-${version.org.apache.solr}.zip</url>
                             <unpack>true</unpack>
                             <outputDirectory>${project.build.directory}</outputDirectory>
                         </configuration>
@@ -107,14 +106,14 @@
                             <target>
                                 <echo message="Re-packaging Solr..." />
 
-                                <copy todir="${project.build.directory}/solr-${solr.version}/server/solr/ikasan">
+                                <copy todir="${project.build.directory}/solr-${version.org.apache.solr}/server/solr/ikasan">
                                     <fileset dir="${basedir}/src/main/resources/ikasan" includes="**" />
                                 </copy>
 
-                                <copy file="${basedir}/src/main/resources/security.json" tofile="${project.build.directory}/solr-${solr.version}/server/solr/security.json" />
+                                <copy file="${basedir}/src/main/resources/security.json" tofile="${project.build.directory}/solr-${version.org.apache.solr}/server/solr/security.json" />
 
                                 <zip destfile="${project.build.directory}/ikasan-solr-distribution-${version}.zip">
-                                    <zipfileset filemode="755" dir="${project.build.directory}/solr-${solr.version}/" />
+                                    <zipfileset filemode="755" dir="${project.build.directory}/solr-${version.org.apache.solr}/" />
                                 </zip>
 
                             </target>
