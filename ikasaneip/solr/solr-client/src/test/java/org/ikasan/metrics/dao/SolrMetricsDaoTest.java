@@ -64,16 +64,10 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
 
     private NodeConfig config;
 
-    private  Path tmppath;
-
     @Before
     public void setup()
     {
-
-        tmppath = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(tmppath);
-        config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString()).build();
 
         this.mapper = new ObjectMapper();
@@ -83,7 +77,7 @@ public class SolrMetricsDaoTest extends SolrTestCaseJ4
     @After
     public void teardown() throws IOException
     {
-        FileSystemUtils.deleteRecursively(tmppath);
+        FileSystemUtils.deleteRecursively(createTempDir());
     }
 
     private void init(EmbeddedSolrServer server) throws IOException, SolrServerException

@@ -59,11 +59,9 @@ public class SolrGeneralSearchDaoTest extends SolrTestCaseJ4
     @Before
     public void setup()
     {
-
         tmppath = createTempDir();
 
-        SolrResourceLoader loader = new SolrResourceLoader(tmppath);
-        config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        config = new NodeConfig.NodeConfigBuilder("testnode", tmppath)
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString()).build();
 
     }
