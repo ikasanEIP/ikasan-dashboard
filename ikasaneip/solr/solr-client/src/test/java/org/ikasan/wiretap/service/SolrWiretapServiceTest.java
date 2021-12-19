@@ -64,10 +64,7 @@ public class SolrWiretapServiceTest extends SolrTestCaseJ4
     @Test
     @DirtiesContext
     public void test_save_collection() throws Exception {
-        Path path = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(path);
-        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString())
             .build();
 
@@ -101,10 +98,7 @@ public class SolrWiretapServiceTest extends SolrTestCaseJ4
     @Test
     @DirtiesContext
     public void test_save_batch_insert() throws Exception {
-        Path path = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(path);
-        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString())
             .build();
 
@@ -138,10 +132,7 @@ public class SolrWiretapServiceTest extends SolrTestCaseJ4
     @Test
     @DirtiesContext
     public void test_save() throws Exception {
-        Path path = createTempDir();
-
-        SolrResourceLoader loader = new SolrResourceLoader(path);
-        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        NodeConfig config = new NodeConfig.NodeConfigBuilder("testnode", createTempDir())
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString())
             .build();
 
