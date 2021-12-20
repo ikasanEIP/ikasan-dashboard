@@ -240,7 +240,14 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         Icon builderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), "Build cron expression", "14pt", "rgba(241, 90, 35, 1.0)");
         builderIcon.addClickListener(event -> {
             CronBuilderDialog dialog = new CronBuilderDialog();
+            dialog.init(this.cronExpressionTf.getValue());
             dialog.open();
+
+            dialog.addOpenedChangeListener(openedChangeEvent -> {
+               if(!openedChangeEvent.isOpened() && dialog.isSaveClose()) {
+                   this.cronExpressionTf.setValue(dialog.getCronExpression());
+               }
+            });
         });
 
         this.cronExpressionTf = new TextField(getTranslation("label.cron-expression", UI.getCurrent().getLocale()));
