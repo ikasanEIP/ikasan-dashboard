@@ -9,6 +9,8 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -21,6 +23,7 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.model.ScheduledProcessAggregateConfiguration;
@@ -50,7 +53,6 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     Logger logger = LoggerFactory.getLogger(FileEventJobDialog.class);
 
     private ComboBox<String> agentCb;
-    private Checkbox startAutomaticCb;
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
@@ -187,13 +189,6 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             .bind(ScheduledProcessAggregateConfiguration::getAgentName, ScheduledProcessAggregateConfiguration::setAgentName);
         formLayout.add(agentCb, 2);
 
-        this.startAutomaticCb = new Checkbox(getTranslation("label.start-automatically", UI.getCurrent().getLocale()));
-        this.startAutomaticCb.setId("startAutomaticCb");
-        this.startAutomaticCb.setValue(true);
-        formBinder.forField(this.startAutomaticCb)
-            .bind(ScheduledProcessAggregateConfiguration::isStartAutomatically, ScheduledProcessAggregateConfiguration::setStartAutomatically);
-        formLayout.add(this.startAutomaticCb);
-
         // Fields to capture schedule job properties.
         H3 scheduleDetailsLabel = new H3(getTranslation("header.schedule-details", UI.getCurrent().getLocale()));
         formLayout.add(scheduleDetailsLabel, 2);
@@ -234,9 +229,22 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             .bind(ScheduledProcessAggregateConfiguration::getJobDescription, ScheduledProcessAggregateConfiguration::setJobDescription);
         formLayout.add(filePathTf, 2);
 
+        Icon builderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), "Build cron expression", "14pt", "rgba(241, 90, 35, 1.0)");
+        builderIcon.addClickListener(event -> {
+            CronBuilderDialog dialog = new CronBuilderDialog();
+            dialog.init(this.cronExpressionTf.getValue());
+            dialog.open();
+
+            dialog.addOpenedChangeListener(openedChangeEvent -> {
+                if(!openedChangeEvent.isOpened() && dialog.isSaveClose()) {
+                    this.cronExpressionTf.setValue(dialog.getCronExpression());
+                }
+            });
+        });
 
         this.cronExpressionTf = new TextField(getTranslation("label.cron-expression", UI.getCurrent().getLocale()));
         this.cronExpressionTf.setRequired(true);
+        this.cronExpressionTf.setSuffixComponent(builderIcon);
         this.cronExpressionTf.setId("cronExpressionTf");
         formBinder.forField(this.cronExpressionTf)
             .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
@@ -355,28 +363,28 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             }
             this.scheduledProcessManagementService.saveConfiguration(moduleConsumerConfiguration);
 
-            if(this.startAutomaticCb.getValue()) {
-                // Now that all configurations are applied we need to set up the startup type and restart the flow
-                String startupType = this.startAutomaticCb.getValue() ? "AUTOMATIC" : "MANUAL";
-                moduleConfiguration.getParameters().stream()
-                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
-                    .findFirst().ifPresentOrElse(flowDefinitions -> {
-                    // Add the new job flow to the map.
-                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
-                    configurationMap.replace(scheduleProcessAggregateConfiguration.getJobName(), startupType);
-                    flowDefinitions.setValue(configurationMap);
-
-                    logger.info("Module Configuration: " + moduleConfiguration);
-                    // update the configuration back onto the module.
-                    this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
-                }, () -> {
-                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s] " +
-                        "when attempting to update start up control.", agent));
-                });
-
-                this.moduleControlRestService.changeFlowStartupType(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName()
-                    , startupType, "Scheduler flow requires automatic startup.");
-            }
+//            if(this.startAutomaticCb.getValue()) {
+//                // Now that all configurations are applied we need to set up the startup type and restart the flow
+//                String startupType = this.startAutomaticCb.getValue() ? "AUTOMATIC" : "MANUAL";
+//                moduleConfiguration.getParameters().stream()
+//                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
+//                    .findFirst().ifPresentOrElse(flowDefinitions -> {
+//                    // Add the new job flow to the map.
+//                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
+//                    configurationMap.replace(scheduleProcessAggregateConfiguration.getJobName(), startupType);
+//                    flowDefinitions.setValue(configurationMap);
+//
+//                    logger.info("Module Configuration: " + moduleConfiguration);
+//                    // update the configuration back onto the module.
+//                    this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
+//                }, () -> {
+//                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s] " +
+//                        "when attempting to update start up control.", agent));
+//                });
+//
+//                this.moduleControlRestService.changeFlowStartupType(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName()
+//                    , startupType, "Scheduler flow requires automatic startup.");
+//            }
 
             // In order for the configuration to be applied the flow must be stopped and started.
             this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName(), "stop");
