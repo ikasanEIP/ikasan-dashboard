@@ -25,6 +25,7 @@ public abstract class AbstractCloseableResizableDialog extends Dialog
     private Header header;
     private Button min;
     private Button max;
+    private Button close;
 
     protected VerticalLayout content;
 
@@ -53,7 +54,7 @@ public abstract class AbstractCloseableResizableDialog extends Dialog
         max.getIcon().getElement().getStyle().set("color", "#FFFFFF");
         max.addClickListener(event -> maximise());
 
-        Button close = new Button(VaadinIcon.CLOSE_SMALL.create());
+        close = new Button(VaadinIcon.CLOSE_SMALL.create());
         close.getIcon().getElement().getStyle().set("color", "#FFFFFF");
         close.addClickListener(event -> close());
 
@@ -125,5 +126,9 @@ public abstract class AbstractCloseableResizableDialog extends Dialog
     public void showResize(boolean show) {
         this.max.setVisible(show);
         this.min.setVisible(show);
+    }
+
+    public void showClose(boolean show) {
+        this.close.setVisible(show);
     }
 }
