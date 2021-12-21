@@ -135,6 +135,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
 
         super.content.add(this.cronExpressionTf, this.naturalLanguageTf, tabs, secondsLayout, minutesLayout, hoursLayout, daysLayout, buttonLayout);
 
+
         this.setWidth("1000px");
         this.setHeight("550px");
     }
