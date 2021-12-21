@@ -1,25 +1,26 @@
 package org.ikasan.scheduled.job.service;
 
-import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobRecordDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrInternalEventDrivenJobRecordDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrQuartzScheduleDrivenJobRecordDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrSchedulerJobRecordDaoImpl;
+import org.ikasan.spec.scheduled.job.dao.FileEventDrivenJobRecordDao;
+import org.ikasan.spec.scheduled.job.dao.InternalEventDrivenJobRecordDao;
+import org.ikasan.spec.scheduled.job.dao.QuartzScheduleDrivenJobRecordDao;
+import org.ikasan.spec.scheduled.job.dao.SchedulerJobRecordDao;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.solr.SolrServiceBase;
 
-public class SolrSchedulerJobServiceImpl extends SolrServiceBase {
+public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements SchedulerJobService {
 
-    private SolrFileEventDrivenJobRecordDaoImpl fileEventDrivenJobRecordDao;
-    private SolrInternalEventDrivenJobRecordDaoImpl internalEventDrivenJobRecordDao;
-    private SolrQuartzScheduleDrivenJobRecordDaoImpl quartzScheduleDrivenJobRecordDao;
-    private SolrSchedulerJobRecordDaoImpl schedulerJobRecordDao;
+    private FileEventDrivenJobRecordDao fileEventDrivenJobRecordDao;
+    private InternalEventDrivenJobRecordDao internalEventDrivenJobRecordDao;
+    private QuartzScheduleDrivenJobRecordDao quartzScheduleDrivenJobRecordDao;
+    private SchedulerJobRecordDao schedulerJobRecordDao;
 
-    public SolrSchedulerJobServiceImpl(SolrFileEventDrivenJobRecordDaoImpl fileEventDrivenJobRecordDao
-        , SolrInternalEventDrivenJobRecordDaoImpl internalEventDrivenJobRecordDao
-        , SolrQuartzScheduleDrivenJobRecordDaoImpl quartzScheduleDrivenJobRecordDao
-        , SolrSchedulerJobRecordDaoImpl schedulerJobRecordDao) {
+    public SolrSchedulerJobServiceImpl(FileEventDrivenJobRecordDao fileEventDrivenJobRecordDao
+        , InternalEventDrivenJobRecordDao internalEventDrivenJobRecordDao
+        , QuartzScheduleDrivenJobRecordDao quartzScheduleDrivenJobRecordDao
+        , SchedulerJobRecordDao schedulerJobRecordDao) {
         this.fileEventDrivenJobRecordDao = fileEventDrivenJobRecordDao;
         if(this.fileEventDrivenJobRecordDao == null)
         {
@@ -43,20 +44,14 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase {
     }
 
     public void saveFileEventDrivenJobRecord(FileEventDrivenJobRecord fileEventDrivenJobRecord) {
-        this.fileEventDrivenJobRecordDao.setSolrUsername(solrUsername);
-        this.fileEventDrivenJobRecordDao.setSolrPassword(solrPassword);
         this.fileEventDrivenJobRecordDao.save(fileEventDrivenJobRecord);
     }
 
     public void saveInternalEventDrivenJobRecord(InternalEventDrivenJobRecord internalEventDrivenJobRecord) {
-        this.internalEventDrivenJobRecordDao.setSolrUsername(solrUsername);
-        this.internalEventDrivenJobRecordDao.setSolrPassword(solrPassword);
         this.internalEventDrivenJobRecordDao.save(internalEventDrivenJobRecord);
     }
 
     public void saveQuartzScheduledJobRecord(QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord) {
-        this.quartzScheduleDrivenJobRecordDao.setSolrUsername(solrUsername);
-        this.quartzScheduleDrivenJobRecordDao.setSolrPassword(solrPassword);
         this.quartzScheduleDrivenJobRecordDao.save(quartzScheduleDrivenJobRecord);
     }
 }

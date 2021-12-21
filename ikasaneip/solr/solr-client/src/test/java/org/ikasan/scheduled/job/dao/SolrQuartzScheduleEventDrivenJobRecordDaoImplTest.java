@@ -67,7 +67,6 @@ public class SolrQuartzScheduleEventDrivenJobRecordDaoImplTest extends SolrTestC
 
             SolrQuartzScheduleDrivenJobImpl solrQuartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
             SolrQuartzScheduleDrivenJobRecordImpl solrQuartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
-            solrQuartzScheduleDrivenJobRecord.setId("id");
             solrQuartzScheduleDrivenJobRecord.setAgentName("agentName");
             solrQuartzScheduleDrivenJobRecord.setJobName("jobName");
             solrQuartzScheduleDrivenJobRecord.setTimestamp(1000000L);
@@ -75,9 +74,9 @@ public class SolrQuartzScheduleEventDrivenJobRecordDaoImplTest extends SolrTestC
 
             this.dao.save(solrQuartzScheduleDrivenJobRecord);
 
-            QuartzScheduleDrivenJobRecord found = this.dao.findById("id");
+            QuartzScheduleDrivenJobRecord found = this.dao.findById("quartzScheduleDrivenJob_agentName_jobName");
 
-            Assert.assertEquals("id", found.getId());
+            Assert.assertEquals("quartzScheduleDrivenJob_agentName_jobName", found.getId());
             Assert.assertEquals("agentName", found.getAgentName());
             Assert.assertEquals("jobName", found.getJobName());
             Assert.assertEquals(1000000L, found.getTimestamp());
