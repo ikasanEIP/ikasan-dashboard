@@ -91,6 +91,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         else {
             this.cronExpression = cronExpression;
         }
+
         this.setNaturalLanguageDescription(this.cronExpression);
         this.cronExpressionTf.setValue(this.cronExpression);
         this.initialiseParts();
