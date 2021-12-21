@@ -2,24 +2,17 @@ package org.ikasan.scheduled.job.model;
 
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 
-public class SolrFileEventDrivenJobImpl extends SolrSchedulerJobImpl implements FileEventDrivenJob {
-    @Override
-    public String getCronExpression() {
-        return null;
-    }
+public class SolrFileEventDrivenJobImpl extends SolrQuartzScheduleDrivenJobImpl implements FileEventDrivenJob {
 
-    @Override
-    public void setCronExpression(String cronExpression) {
-
-    }
+    private String filePath;
 
     @Override
     public String getFilePath() {
-        return null;
+        return this.filePath;
     }
 
     @Override
     public void setFilePath(String path) {
-
+        this.filePath = path;
     }
 }
