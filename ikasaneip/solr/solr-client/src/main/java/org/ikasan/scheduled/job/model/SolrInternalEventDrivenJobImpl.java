@@ -5,73 +5,39 @@ import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import java.util.List;
 
 public class SolrInternalEventDrivenJobImpl extends SolrSchedulerJobImpl implements InternalEventDrivenJob {
+
+    private List<String> successfulReturnCodes;
+    private String workingDirectory;
+    private String commandLine;
+
     @Override
     public List<String> getSuccessfulReturnCodes() {
-        return null;
+        return this.successfulReturnCodes;
     }
 
     @Override
     public void setSuccessfulReturnCodes(List<String> successfulReturnCodes) {
-
-    }
-
-    @Override
-    public long getSecondsToWaitForProcessStart() {
-        return 0;
-    }
-
-    @Override
-    public void setSecondsToWaitForProcessStart(long secondsToWaitForProcessStart) {
-
+        this.successfulReturnCodes = successfulReturnCodes;
     }
 
     @Override
     public String getWorkingDirectory() {
-        return null;
+        return this.workingDirectory;
     }
 
     @Override
     public void setWorkingDirectory(String workingDirectory) {
-
+        this.workingDirectory = workingDirectory;
     }
 
     @Override
     public String getCommandLine() {
-        return null;
+        return this.commandLine;
     }
 
     @Override
     public void setCommandLine(String commandLine) {
-
+        this.commandLine = commandLine;
     }
 
-    @Override
-    public String getStdErr() {
-        return null;
-    }
-
-    @Override
-    public void setStdErr(String stdErr) {
-
-    }
-
-    @Override
-    public String getStdOut() {
-        return null;
-    }
-
-    @Override
-    public void setStdOut(String stdOut) {
-
-    }
-
-    @Override
-    public boolean isRetryOnFail() {
-        return false;
-    }
-
-    @Override
-    public void setRetryOnFail(boolean retryOnFail) {
-
-    }
 }

@@ -15,6 +15,7 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.SchedulerService;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 
 @CssImport("./styles/dashboard-view.css")
 @CssImport(value="./styles/chart-styling.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
@@ -29,6 +30,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
     private SchedulerService schedulerService;
+    private SchedulerJobService schedulerJobService;
 
     private SystemEventLogger systemEventLogger;
 
@@ -49,7 +51,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
      */
     public SchedulerAgentDashboardView(ModuleMetaDataService moduleMetadataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                        ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
-                                       SystemEventLogger systemEventLogger, SchedulerService schedulerService) {
+                                       SystemEventLogger systemEventLogger, SchedulerService schedulerService, SchedulerJobService schedulerJobService) {
         this.moduleMetadataService = moduleMetadataService;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
@@ -57,6 +59,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
         this.metaDataRestService = metaDataRestService;
         this.systemEventLogger = systemEventLogger;
         this.schedulerService = schedulerService;
+        this.schedulerJobService = schedulerJobService;
 
         board = new Board();
         board.addClassName("styled");
@@ -70,7 +73,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
         if(!initialised) {
             board.addRow(new AgentWidget(this.moduleMetadataService, this.scheduledProcessManagementService
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
-                , this.schedulerService), new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
+                , this.schedulerService, this.schedulerJobService), new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
 
             initialised = true;
         }
