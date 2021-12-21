@@ -20,6 +20,7 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.SchedulerService;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 
 public class AgentWidget extends Div {
 
@@ -32,6 +33,7 @@ public class AgentWidget extends Div {
     private MetaDataService metaDataRestService;
     private SystemEventLogger systemEventLogger;
     private SchedulerService schedulerService;
+    private SchedulerJobService schedulerJobService;
 
     /**
      * Constructor
@@ -46,7 +48,7 @@ public class AgentWidget extends Div {
      */
     public AgentWidget(ModuleMetaDataService moduleMetadataService, ScheduledProcessManagementService scheduledProcessManagementService,
                        ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
-                       SystemEventLogger systemEventLogger, SchedulerService schedulerService) {
+                       SystemEventLogger systemEventLogger, SchedulerService schedulerService, SchedulerJobService schedulerJobService) {
         this.moduleMetadataService = moduleMetadataService;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
@@ -54,6 +56,7 @@ public class AgentWidget extends Div {
         this.metaDataRestService = metaDataRestService;
         this.systemEventLogger = systemEventLogger;
         this.schedulerService = schedulerService;
+        this.schedulerJobService = schedulerJobService;
         this.textField = new TextField();
         this.createGrid();
 
@@ -106,7 +109,7 @@ public class AgentWidget extends Div {
             SchedulerAgentManagementDialog schedulerAgentManagementDialog
                 = new SchedulerAgentManagementDialog(moduleMetaDataItemDoubleClickEvent.getItem()
                     , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
-                    , this.moduleMetadataService, systemEventLogger, schedulerService);
+                    , this.moduleMetadataService, systemEventLogger, schedulerService, this.schedulerJobService);
 
             schedulerAgentManagementDialog.open();
         });

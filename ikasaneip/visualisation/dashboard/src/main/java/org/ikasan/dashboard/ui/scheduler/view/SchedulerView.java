@@ -19,7 +19,6 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.rest.client.ModuleRestService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -28,6 +27,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +77,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private ScheduledContextService scheduledContextService;
 
+    @Resource
+    private SchedulerJobService schedulerJobService;
+
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
     private Board scheduledJobsBoard;
@@ -103,7 +106,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     private void init() {
         this.schedulerAgentDashboardView = new SchedulerAgentDashboardView(this.moduleMetadataService
             , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
-            , this.systemEventLogger, this.schedulerService);
+            , this.systemEventLogger, this.schedulerService, this.schedulerJobService);
 
         this.schedulerAgentDashboardView.addClassName("styled");
         this.schedulerAgentDashboardView.setSizeFull();

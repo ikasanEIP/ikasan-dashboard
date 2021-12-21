@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ItemLabelGenerator;
@@ -29,6 +30,9 @@ import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.event.model.ScheduledProcessConfigurationConstants;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobRecordDaoImpl;
+import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobImpl;
+import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobRecordImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
@@ -36,6 +40,7 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,10 +77,12 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
 
-    private ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration = new ScheduledProcessAggregateConfiguration();
-    private ScheduledProcessAggregateConfiguration oldScheduleProcessAggregateConfiguration;
+//    private ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration = new ScheduledProcessAggregateConfiguration();
+//    private ScheduledProcessAggregateConfiguration oldScheduleProcessAggregateConfiguration;
 
-    private Binder<ScheduledProcessAggregateConfiguration> formBinder;
+    private SolrFileEventDrivenJobImpl fileEventDrivenJob;
+
+    private Binder<SolrFileEventDrivenJobImpl> formBinder;
 
     private EditMode editMode = EditMode.NEW;
 
@@ -84,6 +91,8 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     private boolean enabled = true;
 
     private SystemEventLogger systemEventLogger;
+
+    private SchedulerJobService schedulerJobService;
 
 
     /**
@@ -98,7 +107,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
      */
     public FileEventJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                              MetaDataService metaDataRestService, SystemEventLogger systemEventLogger) {
+                              MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService) {
         super.showResize(false);
         super.title.setText("Scheduled Job");
 
@@ -108,10 +117,12 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
         this.systemEventLogger = systemEventLogger;
+        this.schedulerJobService = schedulerJobService;
 
+        this.fileEventDrivenJob = new SolrFileEventDrivenJobImpl();
 
         this.formBinder
-            = new Binder<>(ScheduledProcessAggregateConfiguration.class);
+            = new Binder<>(SolrFileEventDrivenJobImpl.class);
 
 
 
@@ -122,13 +133,13 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         saveButton.setId("scheduledJobSaveButton");
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->  {
 
-            if(!this.performFormValidation(this.scheduleProcessAggregateConfiguration)) {
+            if(!this.performFormValidation(this.fileEventDrivenJob)) {
                 NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-configuration", UI.getCurrent().getLocale()));
                 return;
             }
 
             try {
-                createOrUpdateScheduledJob(this.scheduleProcessAggregateConfiguration);
+                createOrUpdateScheduledJob(this.fileEventDrivenJob);
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -139,12 +150,12 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
             if (this.editMode == EditMode.NEW) {
-                String action = String.format("New scheduled job created [%s].", this.scheduleProcessAggregateConfiguration);
+                String action = String.format("New scheduled job created [%s].", this.fileEventDrivenJob);
                 this.systemEventLogger.logEvent(SystemEventConstants.NEW_SCHEDULED_JOB_CREATED, action, authentication.getName());
             }
             else if (this.editMode == EditMode.EDIT) {
-                String action = String.format("Scheduled job edited. \nBefore [%s]\nAfter [%s].", this.oldScheduleProcessAggregateConfiguration,
-                    this.scheduleProcessAggregateConfiguration);
+                String action = String.format("Scheduled job edited. \nBefore [%s]\nAfter [%s].", this.fileEventDrivenJob,
+                    this.fileEventDrivenJob);
                 this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_EDIT, action, authentication.getName());
             }
 
@@ -186,7 +197,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         }
         formBinder.forField(this.agentCb)
             .withValidator(agentValue -> !agentValue.isEmpty(), getTranslation("error.missing-agent", UI.getCurrent().getLocale()))
-            .bind(ScheduledProcessAggregateConfiguration::getAgentName, ScheduledProcessAggregateConfiguration::setAgentName);
+            .bind(SolrFileEventDrivenJobImpl::getAgentName, SolrFileEventDrivenJobImpl::setAgentName);
         formLayout.add(agentCb, 2);
 
         // Fields to capture schedule job properties.
@@ -199,7 +210,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.jobNameTf.setEnabled(this.editMode == EditMode.NEW);
         formBinder.forField(this.jobNameTf)
             .withValidator(jobName -> !jobName.isEmpty(), getTranslation("error.missing-job-name", UI.getCurrent().getLocale()))
-            .bind(ScheduledProcessAggregateConfiguration::getJobName, ScheduledProcessAggregateConfiguration::setJobName);
+            .bind(SolrFileEventDrivenJobImpl::getJobName, SolrFileEventDrivenJobImpl::setJobName);
         formLayout.add(jobNameTf);
 
 
@@ -208,7 +219,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.jobGroupTf.setId("jobGroupTf");
         formBinder.forField(this.jobGroupTf)
             .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-group", UI.getCurrent().getLocale()))
-            .bind(ScheduledProcessAggregateConfiguration::getJobGroup, ScheduledProcessAggregateConfiguration::setJobGroup);
+            .bind(SolrFileEventDrivenJobImpl::getJobGroup, SolrFileEventDrivenJobImpl::setJobGroup);
         formLayout.add(jobGroupTf);
 
 
@@ -218,7 +229,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         jobDescriptionTa.getStyle().set("minHeight", "100px");
         formBinder.forField(this.jobDescriptionTa)
             .withValidator(jobDescription -> !jobDescription.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
-            .bind(ScheduledProcessAggregateConfiguration::getJobDescription, ScheduledProcessAggregateConfiguration::setJobDescription);
+            .bind(SolrFileEventDrivenJobImpl::getJobDescription, SolrFileEventDrivenJobImpl::setJobDescription);
         formLayout.add(jobDescriptionTa, 2);
 
         this.filePathTf = new TextField("File path");
@@ -226,7 +237,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.filePathTf.setId("filePathTf");
         formBinder.forField(this.filePathTf)
             .withValidator(filePath -> !filePath.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
-            .bind(ScheduledProcessAggregateConfiguration::getJobDescription, ScheduledProcessAggregateConfiguration::setJobDescription);
+            .bind(SolrFileEventDrivenJobImpl::getJobDescription, SolrFileEventDrivenJobImpl::setJobDescription);
         formLayout.add(filePathTf, 2);
 
         Icon builderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), "Build cron expression", "14pt", "rgba(241, 90, 35, 1.0)");
@@ -249,7 +260,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         formBinder.forField(this.cronExpressionTf)
             .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
             .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
-            .bind(ScheduledProcessAggregateConfiguration::getCronExpression, ScheduledProcessAggregateConfiguration::setCronExpression);
+            .bind(SolrFileEventDrivenJobImpl::getCronExpression, SolrFileEventDrivenJobImpl::setCronExpression);
         formLayout.add(cronExpressionTf);
 
 
@@ -270,19 +281,19 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     /**
      * Perform validation of the form.
      *
-     * @param scheduleProcessAggregateConfiguration
+     * @param solrFileEventDrivenJob
      * @return
      */
-    private boolean performFormValidation(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
+    private boolean performFormValidation(SolrFileEventDrivenJobImpl solrFileEventDrivenJob) {
 
         try {
             AtomicBoolean isValid = new AtomicBoolean(true);
 
             if(this.timezoneCb.getValue() != null) {
-                scheduleProcessAggregateConfiguration.setTimezone(this.timezoneCb.getValue().zoneId);
+                solrFileEventDrivenJob.setTimeZone(this.timezoneCb.getValue().zoneId);
             }
 
-            formBinder.writeBean(scheduleProcessAggregateConfiguration);
+            formBinder.writeBean(solrFileEventDrivenJob);
 
             if(!isValid.get()){
                 return false;
@@ -299,133 +310,143 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     /**
      * This method interacts with with agent in order to create a new scheduler agent flow or update an existing flow and associated job.
      *
-     * @param scheduleProcessAggregateConfiguration
+     * @param fileEventDrivenJob
      */
-    public void createOrUpdateScheduledJob(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
+    public void createOrUpdateScheduledJob(SolrFileEventDrivenJobImpl fileEventDrivenJob) throws JsonProcessingException {
         // Get the module configuration from the module.
-        ConfigurationMetaData<List<ConfigurationParameterMetaData>> moduleConfiguration
-            = this.configurationRestService.getModuleConfiguration(this.agent.getUrl());
+        SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
+        solrFileEventDrivenJobRecord.setAgentName(fileEventDrivenJob.getAgentName());
+        solrFileEventDrivenJobRecord.setJobName(fileEventDrivenJob.getJobName());
+        // todo sort out context
+        solrFileEventDrivenJobRecord.setContextId("TBD");
+        solrFileEventDrivenJobRecord.setTimestamp(System.currentTimeMillis());
+        solrFileEventDrivenJobRecord.setFileEventDrivenJob(fileEventDrivenJob);
 
-        try {
+        this.schedulerJobService.saveFileEventDrivenJobRecord(solrFileEventDrivenJobRecord);
 
-            if (moduleConfiguration == null) {
-                throw new RuntimeException(String.format("Could not find module configuration for agent[%s]", agent));
-            }
-
-            logger.debug("Module Configuration: " + moduleConfiguration);
-
-            if (this.editMode == EditMode.NEW) {
-                // Get the flowDefinitions from the configuration metadata.
-                moduleConfiguration.getParameters().stream()
-                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
-                    .findFirst().ifPresentOrElse(flowDefinitions -> {
-                    // Add the new job flow to the map.
-                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
-                    configurationMap.put(scheduleProcessAggregateConfiguration.getJobName(), "MANUAL");
-                    flowDefinitions.setValue(configurationMap);
-                }, () -> {
-                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
-                });
-
-                moduleConfiguration.getParameters().stream()
-                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitionProfiles"))
-                    .findFirst().ifPresentOrElse(flowDefinitions -> {
-                    // Add the new job flow to the map.
-                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
-                    configurationMap.put(scheduleProcessAggregateConfiguration.getJobName(), "FILE");
-                    flowDefinitions.setValue(configurationMap);
-                }, () -> {
-                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
-                });
-
-                logger.info("Module Configuration: " + moduleConfiguration);
-                // update the configuration back onto the module.
-                this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
-
-                // We need to deactivate and activate the module so the new flow is initialised
-                this.changeActivation("deactivate");
-                this.changeActivation("activate");
-            }
-
-            /// Load the required configurations for a scheduled job.
-            Optional<ModuleMetaData> moduleMetaData = this.metaDataRestService.getModuleMetadata(agent.getUrl(), agent.getName());
-
-            ConfigurationMetaData<List<ConfigurationParameterMetaData>> moduleConsumerConfiguration = this.getConfigurationForAgentFlowComponent(moduleMetaData,
-                this.jobNameTf.getValue(), ScheduledProcessConstants.FILE_CONSUMER);
-
-            // Update all the configurations with the configurations provided in the form.
-            this.updateFileConsumerConfiguration(moduleConsumerConfiguration, scheduleProcessAggregateConfiguration);
-
-            // Save all the configurations back to the agent.
-            logger.debug(moduleConsumerConfiguration.toString());
-            if(!this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConsumerConfiguration)) {
-                throw new RuntimeException(String.format("Could not store scheduled consumer configuration [%s]", moduleConsumerConfiguration));
-            }
-            this.scheduledProcessManagementService.saveConfiguration(moduleConsumerConfiguration);
-
-//            if(this.startAutomaticCb.getValue()) {
-//                // Now that all configurations are applied we need to set up the startup type and restart the flow
-//                String startupType = this.startAutomaticCb.getValue() ? "AUTOMATIC" : "MANUAL";
+//        ConfigurationMetaData<List<ConfigurationParameterMetaData>> moduleConfiguration
+//            = this.configurationRestService.getModuleConfiguration(this.agent.getUrl());
+//
+//        try {
+//
+//            if (moduleConfiguration == null) {
+//                throw new RuntimeException(String.format("Could not find module configuration for agent[%s]", agent));
+//            }
+//
+//            logger.debug("Module Configuration: " + moduleConfiguration);
+//
+//            if (this.editMode == EditMode.NEW) {
+//                // Get the flowDefinitions from the configuration metadata.
 //                moduleConfiguration.getParameters().stream()
 //                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
 //                    .findFirst().ifPresentOrElse(flowDefinitions -> {
 //                    // Add the new job flow to the map.
 //                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
-//                    configurationMap.replace(scheduleProcessAggregateConfiguration.getJobName(), startupType);
+//                    configurationMap.put(scheduleProcessAggregateConfiguration.getJobName(), "MANUAL");
 //                    flowDefinitions.setValue(configurationMap);
-//
-//                    logger.info("Module Configuration: " + moduleConfiguration);
-//                    // update the configuration back onto the module.
-//                    this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
 //                }, () -> {
-//                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s] " +
-//                        "when attempting to update start up control.", agent));
+//                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
 //                });
 //
-//                this.moduleControlRestService.changeFlowStartupType(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName()
-//                    , startupType, "Scheduler flow requires automatic startup.");
+//                moduleConfiguration.getParameters().stream()
+//                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitionProfiles"))
+//                    .findFirst().ifPresentOrElse(flowDefinitions -> {
+//                    // Add the new job flow to the map.
+//                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
+//                    configurationMap.put(scheduleProcessAggregateConfiguration.getJobName(), "FILE");
+//                    flowDefinitions.setValue(configurationMap);
+//                }, () -> {
+//                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
+//                });
+//
+//                logger.info("Module Configuration: " + moduleConfiguration);
+//                // update the configuration back onto the module.
+//                this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
+//
+//                // We need to deactivate and activate the module so the new flow is initialised
+//                this.changeActivation("deactivate");
+//                this.changeActivation("activate");
 //            }
-
-            // In order for the configuration to be applied the flow must be stopped and started.
-            this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName(), "stop");
-            this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName(), "start");
-        }
-        catch (Exception e) {
-            // If any exceptions occur we are going to remove the job that we attempted to create.
-            if(moduleConfiguration != null) {
-                moduleConfiguration.getParameters().stream()
-                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
-                    .findFirst().ifPresentOrElse(flowDefinitions -> {
-                    // Add the new job flow to the map.
-                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
-                    configurationMap.remove(scheduleProcessAggregateConfiguration.getJobName());
-                    flowDefinitions.setValue(configurationMap);
-                }, () -> {
-                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
-                });
-
-
-                moduleConfiguration.getParameters().stream()
-                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitionProfiles"))
-                    .findFirst().ifPresentOrElse(flowDefinitions -> {
-                    // Add the new job flow to the map.
-                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
-                    configurationMap.remove(scheduleProcessAggregateConfiguration.getJobName());
-                    flowDefinitions.setValue(configurationMap);
-                }, () -> {
-                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
-                });
-
-                logger.info("Module Configuration: " + moduleConfiguration);
-                // update the configuration back onto the module.
-                this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
-                // We need to deactivate and activate the module so the new flow is removed when initialisation occurs.
-                this.changeActivation("deactivate");
-                this.changeActivation("activate");
-            }
-
-            throw e;
-        }
+//
+//            /// Load the required configurations for a scheduled job.
+//            Optional<ModuleMetaData> moduleMetaData = this.metaDataRestService.getModuleMetadata(agent.getUrl(), agent.getName());
+//
+//            ConfigurationMetaData<List<ConfigurationParameterMetaData>> moduleConsumerConfiguration = this.getConfigurationForAgentFlowComponent(moduleMetaData,
+//                this.jobNameTf.getValue(), ScheduledProcessConstants.FILE_CONSUMER);
+//
+//            // Update all the configurations with the configurations provided in the form.
+//            this.updateFileConsumerConfiguration(moduleConsumerConfiguration, scheduleProcessAggregateConfiguration);
+//
+//            // Save all the configurations back to the agent.
+//            logger.debug(moduleConsumerConfiguration.toString());
+//            if(!this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConsumerConfiguration)) {
+//                throw new RuntimeException(String.format("Could not store scheduled consumer configuration [%s]", moduleConsumerConfiguration));
+//            }
+//            this.scheduledProcessManagementService.saveConfiguration(moduleConsumerConfiguration);
+//
+////            if(this.startAutomaticCb.getValue()) {
+////                // Now that all configurations are applied we need to set up the startup type and restart the flow
+////                String startupType = this.startAutomaticCb.getValue() ? "AUTOMATIC" : "MANUAL";
+////                moduleConfiguration.getParameters().stream()
+////                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
+////                    .findFirst().ifPresentOrElse(flowDefinitions -> {
+////                    // Add the new job flow to the map.
+////                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
+////                    configurationMap.replace(scheduleProcessAggregateConfiguration.getJobName(), startupType);
+////                    flowDefinitions.setValue(configurationMap);
+////
+////                    logger.info("Module Configuration: " + moduleConfiguration);
+////                    // update the configuration back onto the module.
+////                    this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
+////                }, () -> {
+////                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s] " +
+////                        "when attempting to update start up control.", agent));
+////                });
+////
+////                this.moduleControlRestService.changeFlowStartupType(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName()
+////                    , startupType, "Scheduler flow requires automatic startup.");
+////            }
+//
+//            // In order for the configuration to be applied the flow must be stopped and started.
+//            this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName(), "stop");
+//            this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName(), "start");
+//        }
+//        catch (Exception e) {
+//            // If any exceptions occur we are going to remove the job that we attempted to create.
+//            if(moduleConfiguration != null) {
+//                moduleConfiguration.getParameters().stream()
+//                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
+//                    .findFirst().ifPresentOrElse(flowDefinitions -> {
+//                    // Add the new job flow to the map.
+//                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
+//                    configurationMap.remove(scheduleProcessAggregateConfiguration.getJobName());
+//                    flowDefinitions.setValue(configurationMap);
+//                }, () -> {
+//                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
+//                });
+//
+//
+//                moduleConfiguration.getParameters().stream()
+//                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitionProfiles"))
+//                    .findFirst().ifPresentOrElse(flowDefinitions -> {
+//                    // Add the new job flow to the map.
+//                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
+//                    configurationMap.remove(scheduleProcessAggregateConfiguration.getJobName());
+//                    flowDefinitions.setValue(configurationMap);
+//                }, () -> {
+//                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
+//                });
+//
+//                logger.info("Module Configuration: " + moduleConfiguration);
+//                // update the configuration back onto the module.
+//                this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
+//                // We need to deactivate and activate the module so the new flow is removed when initialisation occurs.
+//                this.changeActivation("deactivate");
+//                this.changeActivation("activate");
+//            }
+//
+//            throw e;
+//        }
      }
 
     /**
@@ -545,9 +566,9 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
      */
     public void setScheduleProcessAggregateConfiguration(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration, EditMode editMode) {
         this.enabled = editMode == EditMode.NEW || editMode == EditMode.EDIT ? true : false;
-        this.scheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
-        this.oldScheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
-        this.formBinder.readBean(this.scheduleProcessAggregateConfiguration);
+//        this.scheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
+//        this.oldScheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
+//        this.formBinder.readBean(this.scheduleProcessAggregateConfiguration);
         this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(scheduleProcessAggregateConfiguration.getTimezone()));
         this.editMode = editMode;
 
