@@ -37,8 +37,8 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
     private Tab daysTab;
     private Tabs tabs;
 
-    private TextField cronTextField;
-    private TextField naturalLanguageLabel;
+    private TextField cronExpressionTf;
+    private TextField naturalLanguageTf;
     private String secondPart = "*";
     private String minutePart = "*";
     private String hourPart = "*";
@@ -50,16 +50,22 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
     private String cronExpression;
     private boolean isSaveClose = false;
 
+    private CronParser parser;
+    private CronDescriptor descriptor;
+
     public CronBuilderDialog() {
         super.showResize(false);
 
+        parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(QUARTZ));
+        descriptor = CronDescriptor.instance(Locale.UK);
+
         super.title.setText(getTranslation("header.cronBuilder", UI.getCurrent().getLocale()));
 
-        naturalLanguageLabel = new TextField(getTranslation("text-field.description", UI.getCurrent().getLocale()));
+        naturalLanguageTf = new TextField(getTranslation("text-field.description", UI.getCurrent().getLocale()));
 
-        this.cronTextField = new TextField(getTranslation("text-field.cronExpression", UI.getCurrent().getLocale()));
-        this.cronTextField.setValue(this.getCronExpression());
-        this.cronTextField.setEnabled(false);
+        this.cronExpressionTf = new TextField(getTranslation("text-field.cronExpression", UI.getCurrent().getLocale()));
+        this.cronExpressionTf.setValue(this.getCronExpression());
+        this.cronExpressionTf.setEnabled(false);
 
         this.secondsTab = new Tab(getTranslation("tab.seconds", UI.getCurrent().getLocale()));
         this.secondsTab.setId("secondsTab");
@@ -85,8 +91,8 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         else {
             this.cronExpression = cronExpression;
         }
-
-        this.cronTextField.setValue(this.cronExpression);
+        this.setNaturalLanguageDescription(this.cronExpression);
+        this.cronExpressionTf.setValue(this.cronExpression);
         this.initialiseParts();
 
         Component secondsLayout = this.getSecondsLayout();
@@ -126,7 +132,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         buttonLayout.add(buttons);
         buttonLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttons);
 
-        super.content.add(this.cronTextField, this.naturalLanguageLabel, tabs, secondsLayout, minutesLayout, hoursLayout, daysLayout, buttonLayout);
+        super.content.add(this.cronExpressionTf, this.naturalLanguageTf, tabs, secondsLayout, minutesLayout, hoursLayout, daysLayout, buttonLayout);
 
         this.setWidth("1000px");
         this.setHeight("550px");
@@ -178,7 +184,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
 
         radioGroup.addValueChangeListener(event -> {
             this.secondPart = event.getValue().getValue();
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
             layout.removeAll();
             layout.add(radioGroup, event.getValue().getComponent());
         });
@@ -234,13 +240,13 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         secondSelect.addValueChangeListener(event -> {
             this.secondPart = secondStartSelect.getValue() + "/" + event.getValue();
             timeComponent.setValue(this.secondPart);
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
         secondStartSelect.addValueChangeListener(event -> {
             this.secondPart = event.getValue() + "/" + secondSelect.getValue();
             timeComponent.setValue(this.secondPart);
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
         Label label2 = new Label(getTranslation("time-component.seconds-starting-at"
@@ -292,13 +298,13 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         secondsStartSelect.addValueChangeListener(event -> {
             this.secondPart = event.getValue() + "-" + secondsEndSelect.getValue();
             timeComponent.setValue(this.secondPart);
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
         secondsEndSelect.addValueChangeListener(event -> {
             this.secondPart = secondsStartSelect.getValue() + "-" + event.getValue();
             timeComponent.setValue(this.secondPart);
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
         Label label2 = new Label(getTranslation("time-component.and-second"
@@ -344,7 +350,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
                 });
                 this.secondPart = value.substring(0, value.length()-1);
                 timeComponent.setValue(this.secondPart);
-                this.cronTextField.setValue(this.getCronExpression());
+                this.cronExpressionTf.setValue(this.getCronExpression());
             });
             layout.addComponent(item);
         });
@@ -396,7 +402,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
 
         radioGroup.addValueChangeListener(event -> {
             this.minutePart = event.getValue().getValue();
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
             layout.removeAll();
             layout.add(radioGroup, event.getValue().getComponent());
         });
@@ -458,13 +464,13 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         minuteSelect.addValueChangeListener(event -> {
             this.minutePart = minuteStartSelect.getValue() + "/" + event.getValue();
             timeComponent.setValue(this.minutePart);
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
         minuteStartSelect.addValueChangeListener(event -> {
             this.minutePart = event.getValue() + "/" + minuteSelect.getValue();
             timeComponent.setValue(this.minutePart);
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
         return timeComponent;
@@ -514,12 +520,12 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
 
         minutesStartSelect.addValueChangeListener(event -> {
             this.minutePart = event.getValue() + "-" + minutesEndSelect.getValue();
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
         minutesEndSelect.addValueChangeListener(event -> {
             this.minutePart = minutesStartSelect.getValue() + "-" + event.getValue();
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
         layout.add(label, minutesStartSelect, label2, minutesEndSelect);
@@ -564,7 +570,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
                 });
                 this.minutePart = value.substring(0, value.length()-1);
                 timeComponent.setValue(this.minutePart);
-                this.cronTextField.setValue(this.getCronExpression());
+                this.cronExpressionTf.setValue(this.getCronExpression());
             });
         });
         layout.setSizeFull();
@@ -617,7 +623,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
 
         radioGroup.addValueChangeListener(event -> {
             this.hourPart = event.getValue().getValue();
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
             layout.removeAll();
             layout.add(radioGroup, event.getValue().getComponent());
         });
@@ -681,12 +687,12 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
 
         hoursSelect.addValueChangeListener(event -> {
             this.hourPart = hoursStartSelect.getValue() + "/" + event.getValue();
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
         hoursStartSelect.addValueChangeListener(event -> {
             this.hourPart = event.getValue() + "/" + hoursSelect.getValue();
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
 
@@ -735,12 +741,12 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
 
         hoursStartSelect.addValueChangeListener(event -> {
             this.hourPart = event.getValue() + "-" + hoursEndSelect.getValue();
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
         hoursEndSelect.addValueChangeListener(event -> {
             this.hourPart = hoursStartSelect.getValue() + "-" + event.getValue();
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
         return timeComponent;
@@ -779,7 +785,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
                 });
                 this.hourPart = value.substring(0, value.length()-1);
                 timeComponent.setValue(this.hourPart);
-                this.cronTextField.setValue(this.getCronExpression());
+                this.cronExpressionTf.setValue(this.getCronExpression());
             });
         });
         layout.setSizeFull();
@@ -864,7 +870,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
                 this.dayOfMonthPart = event.getValue().getValue();
                 this.dayOfWeekPart = "?";
             }
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
 
             layout.removeAll();
             layout.add(radioGroup, event.getValue().getComponent());
@@ -926,13 +932,13 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         dayStartSelect.addValueChangeListener(event -> {
             this.dayOfWeekPart = this.dayOfWeek(event.getValue()) + "/" + daySelect.getValue();
             this.dayOfMonthPart = "?";
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
         daySelect.addValueChangeListener(event -> {
             this.dayOfWeekPart = this.dayOfWeek(dayStartSelect.getValue()) + "/" + event.getValue();
             this.dayOfMonthPart = "?";
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
         return timeComponent;
@@ -994,14 +1000,14 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         dayStartSelect.addValueChangeListener(event -> {
             this.dayOfMonthPart = event.getValue().substring(0, event.getValue().length()-2) + "/" + daySelect.getValue();
             this.dayOfWeekPart = "?";
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
             timeComponent.setValue(this.dayOfMonthPart);
         });
 
         daySelect.addValueChangeListener(event -> {
             this.dayOfMonthPart = dayStartSelect.getValue().substring(0, dayStartSelect.getValue().length()-2) + "/" + event.getValue();
             this.dayOfWeekPart = "?";
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
             timeComponent.setValue(this.dayOfMonthPart);
         });
 
@@ -1037,7 +1043,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
                 this.dayOfWeekPart = value.substring(0, value.length()-1);
                 timeComponent.setValue(this.dayOfWeekPart);
                 dayOfMonthPart = "?";
-                this.cronTextField.setValue(this.getCronExpression());
+                this.cronExpressionTf.setValue(this.getCronExpression());
             });
         });
         layout.setSizeFull();
@@ -1081,7 +1087,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
                 this.dayOfMonthPart = value.substring(0, value.length()-1);
                 timeComponent.setValue(this.dayOfMonthPart);
                 dayOfWeekPart = "?";
-                this.cronTextField.setValue(this.getCronExpression());
+                this.cronExpressionTf.setValue(this.getCronExpression());
             });
         });
 
@@ -1139,7 +1145,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         daySelect.addValueChangeListener(event -> {
             this.dayOfMonthPart = "?";
             this.dayOfWeekPart = this.dayOfWeek(event.getValue()) + "L";
-            this.cronTextField.setValue(this.getCronExpression());
+            this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
         return timeComponent;
@@ -1156,12 +1162,14 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         cronExpression.append(this.dayOfWeekPart).append(" ");
         cronExpression.append(this.yearPart);
 
-        CronParser parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(QUARTZ));
-        Cron quartzCron = parser.parse(cronExpression.toString());
-        CronDescriptor descriptor = CronDescriptor.instance(Locale.UK);
-        this.naturalLanguageLabel.setValue(descriptor.describe(quartzCron));
+        this.setNaturalLanguageDescription(cronExpression.toString());
 
         return cronExpression.toString();
+    }
+
+    private void setNaturalLanguageDescription(String cronExpression) {
+        Cron quartzCron = parser.parse(cronExpression);
+        this.naturalLanguageTf.setValue(descriptor.describe(quartzCron));
     }
 
     private String dayOfWeek(String textDay) {
