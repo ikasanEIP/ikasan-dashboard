@@ -24,6 +24,7 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.SchedulerService;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 
 public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDialog {
 
@@ -54,7 +55,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
     public SchedulerAgentManagementDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService,
-                                          SystemEventLogger systemEventLogger, SchedulerService schedulerService) {
+                                          SystemEventLogger systemEventLogger, SchedulerService schedulerService, SchedulerJobService schedulerJobService) {
         this.agent = agent;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
@@ -69,11 +70,14 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         this.setHeight("850px");
         this.setWidth("95%");
 
-        Button addButton = new Button();
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.getStyle().set("position", "absolute");
+        buttonLayout.getStyle().set("top", "70px");
+        buttonLayout.getStyle().set("right", "30px");
+
+        Button addButton = new Button("Standalone Scheduled Job");
         addButton.setId("newScheduledJobButton");
-        addButton.getStyle().set("position", "absolute");
-        addButton.getStyle().set("top", "70px");
-        addButton.getStyle().set("right", "30px");
+        addButton.setIcon(IronIcons.ADD.create());
 
         addButton.addClickListener(buttonClickEvent -> {
             ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(this.agent,
@@ -83,48 +87,38 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
             scheduledJobDialog.open();
         });
 
-        IronIcon addIcon = IronIcons.ADD.create();
-        addIcon.setSize("16pt");
-        addButton.getElement().appendChild(addIcon.getElement());
-
-        Button addQuartzJobButton = new Button("New Quartz");
+        Button addQuartzJobButton = new Button("Scheduled Event");
         addQuartzJobButton.setId("newScheduledJobButton");
-        addQuartzJobButton.getStyle().set("position", "absolute");
-        addQuartzJobButton.getStyle().set("top", "70px");
-        addQuartzJobButton.getStyle().set("right", "70px");
+        addQuartzJobButton.setIcon(IronIcons.ADD.create());
 
         addQuartzJobButton.addClickListener(buttonClickEvent -> {
             QuartzDrivenScheduledJobDialog scheduledJobDialog = new QuartzDrivenScheduledJobDialog(this.agent,
                 this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                this.metaDataRestService, this.systemEventLogger);
+                this.metaDataRestService, this.systemEventLogger, schedulerJobService);
 
             scheduledJobDialog.open();
         });
 
-        Button addFileEventJobButton = new Button("New File");
+        Button addFileEventJobButton = new Button("File Event");
         addFileEventJobButton.setId("addFileEventJobButton");
-        addFileEventJobButton.getStyle().set("position", "absolute");
-        addFileEventJobButton.getStyle().set("top", "70px");
-        addFileEventJobButton.getStyle().set("right", "180px");
+        addFileEventJobButton.setIcon(IronIcons.ADD.create());
 
         addFileEventJobButton.addClickListener(buttonClickEvent -> {
             FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(this.agent,
                 this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                this.metaDataRestService, this.systemEventLogger);
+                this.metaDataRestService, this.systemEventLogger, schedulerJobService);
 
             fileEventJobDialog.open();
         });
 
-        Button addInternalEventJobButton = new Button("New Internal");
+        Button addInternalEventJobButton = new Button("Job");
         addInternalEventJobButton.setId("addInternalEventJobButton");
-        addInternalEventJobButton.getStyle().set("position", "absolute");
-        addInternalEventJobButton.getStyle().set("top", "70px");
-        addInternalEventJobButton.getStyle().set("right", "270px");
+        addInternalEventJobButton.setIcon(IronIcons.ADD.create());
 
         addInternalEventJobButton.addClickListener(buttonClickEvent -> {
             InternalEventDrivenJobDialog fileEventJobDialog = new InternalEventDrivenJobDialog(this.agent,
                 this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                this.metaDataRestService, this.systemEventLogger);
+                this.metaDataRestService, this.systemEventLogger, schedulerJobService);
 
             fileEventJobDialog.open();
         });
@@ -180,9 +174,11 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
 
         filteringGrid.addGridFiltering(this.filterTf, agentJobFiler::setFilter);
 
+        buttonLayout.add(addQuartzJobButton, addFileEventJobButton, addInternalEventJobButton, addButton);
+
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
-        layout.add(agentDetails, addInternalEventJobButton, addButton, addFileEventJobButton, addQuartzJobButton, formLayout, scheduledJobsLabel,     filterLayout, filteringGrid);
+        layout.add(agentDetails, buttonLayout, formLayout, scheduledJobsLabel, filterLayout, filteringGrid);
         super.content.add(layout);
     }
 }

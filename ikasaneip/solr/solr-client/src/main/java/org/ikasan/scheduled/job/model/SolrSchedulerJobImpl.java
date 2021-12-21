@@ -7,6 +7,7 @@ public abstract class SolrSchedulerJobImpl implements SchedulerJob {
     protected String jobIdentifier;
     protected String agentName;
     protected String jobName;
+    protected String jobDescription;
     protected String contextId;
 
     @Override
@@ -47,5 +48,15 @@ public abstract class SolrSchedulerJobImpl implements SchedulerJob {
     @Override
     public void setJobName(String jobName) {
         this.jobName = jobName;
+    }
+
+    @Override
+    public String getJobDescription() {
+        return this.jobDescription;
+    }
+
+    @Override
+    public void setJobDescription(String jobDescription) {
+        this.jobDescription = jobDescription;
     }
 }
