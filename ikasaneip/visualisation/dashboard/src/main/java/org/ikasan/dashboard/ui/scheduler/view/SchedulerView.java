@@ -26,6 +26,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,12 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private ScheduledContextInstanceService scheduledContextInstanceService;
 
+    @Resource
+    private ScheduledContextService scheduledContextService;
+
+    @Resource
+    private SchedulerJobService schedulerJobService;
+
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
     private UpcomingJobExecutionsWidget upcomingJobExecutionsWidget;
@@ -100,7 +107,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     private void init() {
         this.schedulerAgentDashboardView = new SchedulerAgentDashboardView(this.moduleMetadataService
             , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
-            , this.systemEventLogger, this.schedulerService);
+            , this.systemEventLogger, this.schedulerService, this.schedulerJobService);
 
         this.schedulerAgentDashboardView.addClassName("styled");
         this.schedulerAgentDashboardView.setSizeFull();
