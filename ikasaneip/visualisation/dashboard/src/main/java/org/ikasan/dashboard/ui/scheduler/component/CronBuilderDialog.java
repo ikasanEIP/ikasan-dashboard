@@ -29,7 +29,6 @@ import java.util.stream.IntStream;
 
 import static com.cronutils.model.CronType.QUARTZ;
 
-// todo translation for entire class...
 public class CronBuilderDialog extends AbstractCloseableResizableDialog {
 
     private Tab secondsTab;
@@ -53,8 +52,8 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
 
     public CronBuilderDialog() {
         super.showResize(false);
-        // todo translation
-        super.title.setText("Cron Builder");
+
+        super.title.setText(getTranslation("header.cronBuilder", UI.getCurrent().getLocale()));
 
         naturalLanguageLabel = new TextField(getTranslation("text-field.description", UI.getCurrent().getLocale()));
 
@@ -62,7 +61,6 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         this.cronTextField.setValue(this.getCronExpression());
         this.cronTextField.setEnabled(false);
 
-        // todo translation
         this.secondsTab = new Tab(getTranslation("tab.seconds", UI.getCurrent().getLocale()));
         this.secondsTab.setId("secondsTab");
         this.minutesTab = new Tab(getTranslation("tab.minutes", UI.getCurrent().getLocale()));
@@ -482,7 +480,8 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
             , UI.getCurrent().getLocale()));
         List<String> minutesStart = new ArrayList<>();
 
-        Label label2 = new Label(" and minute ");
+        Label label2 = new Label(getTranslation("time-component.and-minute"
+            , UI.getCurrent().getLocale()));
 
         HorizontalLayout layout = new HorizontalLayout();
 
@@ -875,14 +874,16 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
     }
 
     private TimeComponent getEveryDay() {
-        TimeComponent timeComponent = new TimeComponent("Every day", new Div());
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.every-day"
+            , UI.getCurrent().getLocale()), new Div());
         timeComponent.setValue("*");
 
         return timeComponent;
     }
 
     private TimeComponent getEveryDayStartingOnDay() {
-        Label label = new Label("Every ");
+        Label label = new Label(getTranslation("time-component.every"
+            , UI.getCurrent().getLocale()));
         List<String> days = new ArrayList<>();
         IntStream.range(1, 8).forEach(i -> days.add(Integer.toString(i)));
         Select<String> daySelect = new Select<>();
@@ -904,13 +905,15 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         dayStartSelect.setItems(dayStart);
         dayStartSelect.setValue("Sunday");
 
-        Label label2 = new Label(" days(s) starting on ");
+        Label label2 = new Label(getTranslation("time-component.days-starting-on"
+            , UI.getCurrent().getLocale()));
 
         HorizontalLayout layout = new HorizontalLayout();
         layout.add(label, daySelect, label2, dayStartSelect);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, label, label2);
 
-        TimeComponent timeComponent = new TimeComponent("Every nth day starting on", layout);
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.every-nth-day-starting-on"
+            , UI.getCurrent().getLocale()), layout);
         timeComponent.setValue("1/1");
 
         if(this.dayOfWeekPart.contains("/")) {
@@ -936,7 +939,8 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
     }
 
     private TimeComponent getEveryDayStartingOnCalendarDay() {
-        Label label = new Label("Every ");
+        Label label = new Label(getTranslation("time-component.every"
+            , UI.getCurrent().getLocale()));
         List<String> days = new ArrayList<>();
         IntStream.range(1, 8).forEach(i -> days.add(Integer.toString(i)));
         Select<String> daySelect = new Select<>();
@@ -953,13 +957,15 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         dayStartSelect.setItems(dayStart);
         dayStartSelect.setValue("1st");
 
-        Label label2 = new Label(" days(s) starting on the ");
+        Label label2 = new Label(getTranslation("time-component.days-starting-on-the"
+            , UI.getCurrent().getLocale()));
 
         HorizontalLayout layout = new HorizontalLayout();
         layout.add(label, daySelect, label2, dayStartSelect);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, label, label2);
 
-        TimeComponent timeComponent = new TimeComponent("Every nth day starting on the", layout);
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.every-nth-day-starting-on-the"
+            , UI.getCurrent().getLocale()), layout);
         timeComponent.setValue("1/1");
 
         if(this.dayOfMonthPart.contains("/")) {
@@ -1014,7 +1020,8 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         dayStart.add(new Checkbox("Sunday"));
 
         GridLayout layout = new GridLayout(7, 1);
-        TimeComponent timeComponent = new TimeComponent("Specific day of week", layout);
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.specific-day-of-the-week"
+            , UI.getCurrent().getLocale()), layout);
         timeComponent.setValue("SUN");
 
         dayStart.forEach(item -> {
@@ -1046,7 +1053,8 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         GridLayout layout = new GridLayout(12, 3);
         layout.setSizeFull();
 
-        TimeComponent timeComponent = new TimeComponent("Specific day of month", layout);
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.specific-day-of-the-month"
+            , UI.getCurrent().getLocale()), layout);
 
         if(this.dayOfMonthPart.contains(",") || StringUtils.isNumeric(this.dayOfMonthPart)) {
             timeComponent.setValue(this.dayOfMonthPart);
@@ -1081,14 +1089,16 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
     }
 
     private TimeComponent getLastDayOfMonth() {
-        TimeComponent timeComponent = new TimeComponent("Last day of month", new Div());
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.last-day-of-the-month"
+            , UI.getCurrent().getLocale()), new Div());
         timeComponent.setValue("L");
 
         return timeComponent;
     }
 
     private TimeComponent getLastWeekOfMonth() {
-        TimeComponent timeComponent = new TimeComponent("Last week day of month", new Div());
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.last-weekday-of-the-month"
+            , UI.getCurrent().getLocale()), new Div());
         timeComponent.setValue("LW");
 
         return timeComponent;
@@ -1108,14 +1118,17 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         daySelect.setEnabled(true);
         daySelect.setItems(dayStart);
 
-        Label start = new Label("On the last ");
-        Label end = new Label(" of the month");
+        Label start = new Label(getTranslation("time-component.on-the-last"
+            , UI.getCurrent().getLocale()));
+        Label end = new Label(getTranslation("time-component.of-the-month"
+            , UI.getCurrent().getLocale()));
 
         HorizontalLayout layout = new HorizontalLayout();
         layout.add(start, daySelect, end);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, start, end);
 
-        TimeComponent timeComponent = new TimeComponent("Specific last day of month", layout);
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.specific-last-day-of-month"
+            , UI.getCurrent().getLocale()), layout);
         timeComponent.setValue("1L");
 
         if(this.dayOfWeekPart.contains("L")) {
