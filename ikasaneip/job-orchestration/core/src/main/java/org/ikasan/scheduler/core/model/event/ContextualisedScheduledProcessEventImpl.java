@@ -1,9 +1,8 @@
-package org.ikasan.scheduler.core.model.instance;
+package org.ikasan.scheduler.core.model.event;
 
-import org.ikasan.scheduler.core.event.DryRunParametersImpl;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 
-public class ContextualisedScheduledProcessEventInstance implements ContextualisedScheduledProcessEvent<String, DryRunParametersImpl> {
+public class ContextualisedScheduledProcessEventImpl implements ContextualisedScheduledProcessEvent<String, DryRunParametersImpl> {
     private Long id;
     private String agentName;
     private String jobName;

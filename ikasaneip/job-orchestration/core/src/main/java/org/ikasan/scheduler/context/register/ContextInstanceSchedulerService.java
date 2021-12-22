@@ -3,7 +3,7 @@ package org.ikasan.scheduler.context.register;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.quartz.AbstractDashboardSchedulerService;
 import org.ikasan.scheduler.ScheduledJobFactory;
-import org.ikasan.scheduler.core.spec.Context;
+import org.ikasan.scheduler.core.model.context.ContextImpl;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
@@ -60,7 +60,7 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
 
             for (ScheduledContextRecord scheduledContextRecord : scheduledContextRecords) {
 
-                Context context = this.objectMapper.readValue(scheduledContextRecord.getContext(), Context.class);
+                ContextImpl context = this.objectMapper.readValue(scheduledContextRecord.getContext(), ContextImpl.class);
                 ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(scheduledContextRecord.getContextName(),
                     context.getTimeWindowStart(), this.scheduledContextService, this.scheduledContextInstanceService, this.schedulerService);
                 JobDetail jobDetail = this.scheduledJobFactory.createJobDetail

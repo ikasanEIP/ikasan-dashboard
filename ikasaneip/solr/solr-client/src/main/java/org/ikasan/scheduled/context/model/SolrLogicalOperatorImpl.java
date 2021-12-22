@@ -1,6 +1,9 @@
-package org.ikasan.scheduler.core.model.context;
+package org.ikasan.scheduled.context.model;
 
-public abstract class LogicalOperator {
+import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
+import org.ikasan.spec.scheduled.context.model.LogicalOperator;
+
+public abstract class SolrLogicalOperatorImpl implements LogicalOperator {
     protected String identifier;
     protected LogicalGrouping logicalGrouping;
 

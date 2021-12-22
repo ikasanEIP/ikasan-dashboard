@@ -1,10 +1,12 @@
 package org.ikasan.scheduler.core.model.instance;
 
-import org.ikasan.scheduler.core.spec.Context;
-import org.ikasan.scheduler.core.spec.InstanceStatus;
-import org.ikasan.scheduler.core.spec.StatefulEntity;
+import org.ikasan.scheduler.core.model.context.ContextImpl;
+import org.ikasan.spec.scheduled.context.model.ContextParameterInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.StatefulEntity;
 
-public class ContextInstance extends Context<ContextInstance, ContextParameterInstanceImpl, SchedulerJobInstance> implements StatefulEntity {
+
+public class ContextInstance extends ContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance> implements StatefulEntity {
     private String id;
     private long createdDateTime;
     private long updatedDateTime;

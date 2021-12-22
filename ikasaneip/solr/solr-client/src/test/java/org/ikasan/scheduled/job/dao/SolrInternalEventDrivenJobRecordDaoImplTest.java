@@ -6,12 +6,8 @@ import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
 import org.apache.solr.core.SolrResourceLoader;
-import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobImpl;
-import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobRecordImpl;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobRecordImpl;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.junit.After;
 import org.junit.Assert;
@@ -68,7 +64,6 @@ public class SolrInternalEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 
 
             SolrInternalEventDrivenJobImpl solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
             SolrInternalEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
-            solrFileEventDrivenJobRecord.setId("id");
             solrFileEventDrivenJobRecord.setAgentName("agentName");
             solrFileEventDrivenJobRecord.setJobName("jobName");
             solrFileEventDrivenJobRecord.setTimestamp(1000000L);
@@ -76,9 +71,9 @@ public class SolrInternalEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 
 
             this.dao.save(solrFileEventDrivenJobRecord);
 
-            InternalEventDrivenJobRecord found = this.dao.findById("id");
+            InternalEventDrivenJobRecord found = this.dao.findById("internalEventDrivenJob_agentName_jobName");
 
-            Assert.assertEquals("id", found.getId());
+            Assert.assertEquals("internalEventDrivenJob_agentName_jobName", found.getId());
             Assert.assertEquals("agentName", found.getAgentName());
             Assert.assertEquals("jobName", found.getJobName());
             Assert.assertEquals(1000000L, found.getTimestamp());

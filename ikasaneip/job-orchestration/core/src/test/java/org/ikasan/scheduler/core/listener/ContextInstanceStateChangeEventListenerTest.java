@@ -5,9 +5,9 @@ import org.ikasan.scheduler.core.AbstractTest;
 import org.ikasan.scheduler.core.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.scheduler.core.machine.ContextMachine;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
-import org.ikasan.scheduler.core.model.instance.ContextualisedScheduledProcessEventInstance;
+import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduler.core.service.ContextService;
-import org.ikasan.scheduler.core.spec.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -36,7 +36,7 @@ public class ContextInstanceStateChangeEventListenerTest extends AbstractTest {
             Assert.assertEquals(InstanceStatus.RUNNING, event.getPreviousStatus());
         });
 
-        ContextualisedScheduledProcessEventInstance eventInstance = scheduledProcessEventInstance("jobName3",
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
             "agentName3", true);
 
         ObjectMapper mapper = new ObjectMapper();

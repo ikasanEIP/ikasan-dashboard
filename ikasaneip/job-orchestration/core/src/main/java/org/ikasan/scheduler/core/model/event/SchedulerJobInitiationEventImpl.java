@@ -1,4 +1,4 @@
-package org.ikasan.scheduler.core.event;
+package org.ikasan.scheduler.core.model.event;
 
 import org.ikasan.scheduler.core.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.scheduler.core.model.job.InternalEventDrivenJobImpl;
