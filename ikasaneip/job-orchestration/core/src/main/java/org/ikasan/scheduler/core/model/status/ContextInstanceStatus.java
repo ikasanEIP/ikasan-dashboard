@@ -1,6 +1,7 @@
 package org.ikasan.scheduler.core.model.status;
 
-import org.ikasan.scheduler.core.spec.InstanceStatus;
+
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
 import java.util.List;
 

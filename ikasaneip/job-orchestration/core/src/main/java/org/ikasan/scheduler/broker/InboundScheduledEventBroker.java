@@ -6,7 +6,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.leansoft.bigqueue.IBigQueue;
 import org.ikasan.scheduler.context.cache.ContextMachineCache;
 import org.ikasan.scheduler.core.machine.ContextMachine;
-import org.ikasan.scheduler.core.model.instance.ContextualisedScheduledProcessEventInstance;
+import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEventImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,8 +60,8 @@ public class InboundScheduledEventBroker {
                     return;
                 }
 
-                ContextualisedScheduledProcessEventInstance contextualisedScheduledProcessEventInstance
-                    = objectMapper.readValue(event, ContextualisedScheduledProcessEventInstance.class);
+                ContextualisedScheduledProcessEventImpl contextualisedScheduledProcessEventInstance
+                    = objectMapper.readValue(event, ContextualisedScheduledProcessEventImpl.class);
 
                 ContextMachine contextMachine;
                 if(contextualisedScheduledProcessEventInstance.getContextInstanceId() != null) {

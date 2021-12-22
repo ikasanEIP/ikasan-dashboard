@@ -41,7 +41,7 @@
 package org.ikasan.scheduler.integration.outbound.component.endpoint;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.ikasan.scheduler.core.event.SchedulerJobInitiationEventImpl;
+import org.ikasan.scheduler.core.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.spec.component.endpoint.EndpointException;
 import org.ikasan.spec.component.endpoint.Producer;
 import org.ikasan.spec.scheduled.SchedulerService;

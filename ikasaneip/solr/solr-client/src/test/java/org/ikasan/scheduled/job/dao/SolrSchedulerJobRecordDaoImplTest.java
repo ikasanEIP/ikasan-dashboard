@@ -131,17 +131,17 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             this.insertInternalEventDrivenRecords("iddi", 1000, "context2Id");
             this.insertInternalEventDrivenRecords("idddi", 267, "context3Id");
 
-            SchedulerJobRecord solrSchedulerJobRecord = this.dao.findById("idd100");
+            SchedulerJobRecord solrSchedulerJobRecord = this.dao.findById("fileEventDrivenJob_iddagentName100_jobName100");
             SchedulerJob job = solrSchedulerJobRecord.getJob();
 
             Assert.assertTrue(job instanceof SolrFileEventDrivenJobImpl);
 
-            solrSchedulerJobRecord = this.dao.findById("iddq100");
+            solrSchedulerJobRecord = this.dao.findById("quartzScheduleDrivenJob_iddqagentName100_jobName100");
             job = solrSchedulerJobRecord.getJob();
 
             Assert.assertTrue(job instanceof SolrQuartzScheduleDrivenJobImpl);
 
-            solrSchedulerJobRecord = this.dao.findById("iddi100");
+            solrSchedulerJobRecord = this.dao.findById("internalEventDrivenJob_iddiagentName100_jobName100");
             job = solrSchedulerJobRecord.getJob();
 
             Assert.assertTrue(job instanceof SolrInternalEventDrivenJobImpl);
@@ -152,15 +152,14 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
     private void insertFileEventRecords(String idPrefix, int num, String contextId) {
         IntStream.range(0, num).forEach(i -> {
             SolrFileEventDrivenJobImpl solrFileEventDrivenJob = new SolrFileEventDrivenJobImpl();
-            solrFileEventDrivenJob.setAgentName("agentName"+i);
+            solrFileEventDrivenJob.setAgentName(idPrefix+"agentName"+i);
             solrFileEventDrivenJob.setJobName("jobName"+i);
             solrFileEventDrivenJob.setContextId(contextId);
             solrFileEventDrivenJob.setCronExpression("cronExpression");
             solrFileEventDrivenJob.setFilePath("filePath");
 
             SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
-            solrFileEventDrivenJobRecord.setId(idPrefix+i);
-            solrFileEventDrivenJobRecord.setAgentName("agentName"+i);
+            solrFileEventDrivenJobRecord.setAgentName(idPrefix+"agentName"+i);
             solrFileEventDrivenJobRecord.setJobName("jobName"+i);
             solrFileEventDrivenJobRecord.setContextId(contextId);
             solrFileEventDrivenJobRecord.setTimestamp(1000000L);
@@ -184,8 +183,7 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             solrQuartzScheduleDrivenJob.setCronExpression("cronExpression");
 
             SolrQuartzScheduleDrivenJobRecordImpl solrQuartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
-            solrQuartzScheduleDrivenJobRecord.setId(idPrefix+i);
-            solrQuartzScheduleDrivenJobRecord.setAgentName("agentName"+i);
+            solrQuartzScheduleDrivenJobRecord.setAgentName(idPrefix+"agentName"+i);
             solrQuartzScheduleDrivenJobRecord.setJobName("jobName"+i);
             solrQuartzScheduleDrivenJobRecord.setContextId(contextId);
             solrQuartzScheduleDrivenJobRecord.setTimestamp(1000000L);
@@ -208,8 +206,7 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             solrInternalEventDrivenJob.setContextId(contextId);
 
             SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
-            solrInternalEventDrivenJobRecord.setId(idPrefix+i);
-            solrInternalEventDrivenJobRecord.setAgentName("agentName"+i);
+            solrInternalEventDrivenJobRecord.setAgentName(idPrefix+"agentName"+i);
             solrInternalEventDrivenJobRecord.setJobName("jobName"+i);
             solrInternalEventDrivenJobRecord.setContextId(contextId);
             solrInternalEventDrivenJobRecord.setTimestamp(1000000L);

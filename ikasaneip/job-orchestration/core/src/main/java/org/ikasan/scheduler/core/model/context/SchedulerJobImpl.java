@@ -1,6 +1,8 @@
 package org.ikasan.scheduler.core.model.context;
 
-public class SchedulerJob {
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+
+public class SchedulerJobImpl implements SchedulerJob {
     private String identifier;
     private String agentName;
     private String jobName;
@@ -27,5 +29,25 @@ public class SchedulerJob {
 
     public void setJobName(String jobName) {
         this.jobName = jobName;
+    }
+
+    @Override
+    public String getContextId() {
+        return null;
+    }
+
+    @Override
+    public void setContextId(String contextId) {
+
+    }
+
+    @Override
+    public String getJobIdentifier() {
+        return identifier;
+    }
+
+    @Override
+    public void setJobIdentifier(String jobIdentifier) {
+        this.identifier = jobIdentifier;
     }
 }

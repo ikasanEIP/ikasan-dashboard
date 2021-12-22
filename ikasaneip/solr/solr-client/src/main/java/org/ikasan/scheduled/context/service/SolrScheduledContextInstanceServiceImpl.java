@@ -1,8 +1,9 @@
 package org.ikasan.scheduled.context.service;
 
-import org.ikasan.spec.scheduled.context.dao.ScheduledContextInstanceDao;
-import org.ikasan.spec.scheduled.context.model.ScheduledContextInstanceRecord;
-import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
+
+import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 
 public class SolrScheduledContextInstanceServiceImpl implements ScheduledContextInstanceService {
     private ScheduledContextInstanceDao scheduledContextInstanceDao;

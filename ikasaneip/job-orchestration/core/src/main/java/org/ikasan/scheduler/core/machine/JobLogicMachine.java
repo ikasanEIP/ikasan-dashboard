@@ -1,16 +1,16 @@
 package org.ikasan.scheduler.core.machine;
 
-import org.ikasan.scheduler.core.event.SchedulerJobInitiationEventImpl;
-import org.ikasan.scheduler.core.event.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.scheduler.core.model.event.SchedulerJobInitiationEventImpl;
+import org.ikasan.scheduler.core.model.event.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.scheduler.core.listener.SchedulerJobInstanceStateChangeEventListener;
-import org.ikasan.scheduler.core.model.context.JobDependency;
-import org.ikasan.scheduler.core.model.context.LogicalGrouping;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
-import org.ikasan.scheduler.core.spec.InstanceStatus;
 import org.ikasan.scheduler.core.model.instance.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.context.model.JobDependency;
+import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
 import java.util.ArrayList;
 import java.util.List;

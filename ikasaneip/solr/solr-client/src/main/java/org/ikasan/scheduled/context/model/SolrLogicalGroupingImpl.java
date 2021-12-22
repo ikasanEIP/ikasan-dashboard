@@ -1,8 +1,13 @@
-package org.ikasan.scheduler.core.model.context;
+package org.ikasan.scheduled.context.model;
+
+import org.ikasan.spec.scheduled.context.model.And;
+import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
+import org.ikasan.spec.scheduled.context.model.Not;
+import org.ikasan.spec.scheduled.context.model.Or;
 
 import java.util.List;
 
-public class LogicalGrouping {
+public class SolrLogicalGroupingImpl implements LogicalGrouping {
     private LogicalGrouping logicalGrouping;
     private List<And> and;
     private List<Or> or;

@@ -1,7 +1,7 @@
 package org.ikasan.scheduled.context.model;
 
 import org.apache.solr.client.solrj.beans.Field;
-import org.ikasan.spec.scheduled.context.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrScheduledContextInstanceRecordImpl implements ScheduledContextInstanceRecord {
