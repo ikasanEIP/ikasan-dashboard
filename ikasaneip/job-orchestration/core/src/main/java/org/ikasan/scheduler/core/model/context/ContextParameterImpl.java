@@ -1,6 +1,8 @@
 package org.ikasan.scheduler.core.model.context;
 
-public class ContextParameter {
+import org.ikasan.spec.scheduled.context.model.ContextParameter;
+
+public class ContextParameterImpl implements ContextParameter {
     private String name;
     private String type;
 

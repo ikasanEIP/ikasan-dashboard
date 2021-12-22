@@ -1,7 +1,7 @@
 package org.ikasan.scheduler.core.service;
 
 import org.ikasan.scheduler.core.AbstractTest;
-import org.ikasan.scheduler.core.model.context.ContextTemplate;
+import org.ikasan.scheduler.core.model.context.ContextTemplateImpl;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
 import org.junit.Test;
 
@@ -13,7 +13,7 @@ public class ContextServiceTest extends AbstractTest {
 
     @Test
     public void test_load_context() throws IOException {
-        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
+        ContextTemplateImpl context = this.contextService.getContext(loadDataFile("/data/context.json"));
     }
 
     @Test

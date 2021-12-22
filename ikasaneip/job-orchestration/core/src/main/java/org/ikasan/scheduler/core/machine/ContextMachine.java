@@ -7,22 +7,22 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
 import org.ikasan.scheduler.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
-import org.ikasan.scheduler.core.event.ContextInstanceStateChangeEvent;
-import org.ikasan.scheduler.core.event.SchedulerJobInitiationEventImpl;
+import org.ikasan.scheduler.core.model.event.ContextInstanceStateChangeEvent;
+import org.ikasan.scheduler.core.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduler.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.scheduler.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.scheduler.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
 import org.ikasan.scheduler.core.model.instance.ScheduledContextInstanceRecordImpl;
-import org.ikasan.scheduler.core.model.instance.ContextualisedScheduledProcessEventInstance;
+import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduler.core.model.status.ContextInstanceStatus;
 import org.ikasan.scheduler.core.service.ContextService;
-import org.ikasan.scheduler.core.spec.Context;
-import org.ikasan.scheduler.core.spec.InstanceStatus;
+import org.ikasan.scheduler.core.model.context.ContextImpl;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,12 +51,12 @@ public class ContextMachine {
     private ObjectMapper objectMapper;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener;
-    private Context context;
+    private ContextImpl context;
     private int attempts;
     private long maxWait;
     private DryRunParameters dryRunParameters;
 
-    public ContextMachine(Context context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService) {
+    public ContextMachine(ContextImpl context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService) {
         this(contextInstance, scheduledContextInstanceService);
         this.context = context;
     }
@@ -212,7 +212,7 @@ public class ContextMachine {
         List<SchedulerJobInitiationEvent> results = new ArrayList<>();
 
         if (contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()){
-            for(Context instance: contextInstance.getContexts()) {
+            for(ContextImpl instance: contextInstance.getContexts()) {
                 // Recursively work our way through all nested contexts to determine if and job initiation events need to be raised.
                 results.addAll(this.getInitiationEvents((ContextInstance) instance, scheduledProcessEvent));
                 this.setContextStatus(contextInstance);
@@ -342,7 +342,7 @@ public class ContextMachine {
                 }
 
                 ScheduledProcessEvent scheduledProcessEvent
-                    = objectMapper.readValue(event, ContextualisedScheduledProcessEventInstance.class);
+                    = objectMapper.readValue(event, ContextualisedScheduledProcessEventImpl.class);
 
                 List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents = eventReceived(scheduledProcessEvent);
 

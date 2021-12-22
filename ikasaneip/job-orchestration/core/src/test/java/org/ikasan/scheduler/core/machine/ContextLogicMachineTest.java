@@ -2,8 +2,8 @@ package org.ikasan.scheduler.core.machine;
 
 import org.ikasan.scheduler.core.AbstractTest;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
-import org.ikasan.scheduler.core.spec.InstanceStatus;
 import org.ikasan.scheduler.core.service.ContextService;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.junit.Assert;
 import org.junit.Test;
 

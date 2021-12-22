@@ -15,6 +15,7 @@ import com.vaadin.flow.router.BeforeEnterListener;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduler.context.cache.ContextMachineCache;
 import org.ikasan.scheduler.core.machine.ContextMachine;
 import org.ikasan.spec.scheduled.SchedulerService;
@@ -49,7 +50,7 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
      * Constructor
      */
     public ContextDebugWidget(ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
-                              ScheduledContextService scheduledContextService) {
+                              ScheduledContextService scheduledContextService, SystemEventLogger systemEventLogger) {
         Div div = new Div();
         div.addClassNames("card-counter");
         div.setHeight("100%");
@@ -100,6 +101,20 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
             });
         });
 
+        Button newContextButton = new Button("New Context");
+        newContextButton.addClickListener(buttonClickEvent -> {
+            ContextDialog contextUploadDialog = new ContextDialog(systemEventLogger,
+                this.scheduledContextService);
+            contextUploadDialog.open();
+
+            contextUploadDialog.addOpenedChangeListener(event -> {
+                if(!event.isOpened()){
+    //                    this.contextInstances.removeAll();
+    //                    this.contextInstances.setItems(ContextMachineCache.instance().contextNames());
+                }
+            });
+        });
+
         Button resetContextButton = new Button("Reset Context");
         resetContextButton.addClickListener(buttonClickEvent -> {
             ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
@@ -134,7 +149,7 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
         });
 
         HorizontalLayout controlsLayout = new HorizontalLayout();
-        controlsLayout.add(this.contextInstances, addContextButton, resetContextButton);
+        controlsLayout.add(this.contextInstances, newContextButton, addContextButton, resetContextButton);
 
         this.fullContextInstance = new Tab("Full Context Instance");
         this.contextStatus = new Tab("Context Instance Status");

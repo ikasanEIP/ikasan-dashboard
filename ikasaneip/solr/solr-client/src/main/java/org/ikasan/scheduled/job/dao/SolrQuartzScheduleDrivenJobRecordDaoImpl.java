@@ -7,11 +7,8 @@ import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.job.model.JobConstants;
-import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobRecordImpl;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobRecordImpl;
 import org.ikasan.spec.scheduled.job.dao.QuartzScheduleDrivenJobRecordDao;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
 import org.ikasan.spec.search.SearchResults;
@@ -47,7 +44,6 @@ public class SolrQuartzScheduleDrivenJobRecordDaoImpl extends SolrDaoBase<Quartz
         document.addField(ID, JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB + "_" + event.getAgentName() + "_" + event.getJobName());
         document.addField(MODULE_NAME, event.getAgentName());
         document.addField(FLOW_NAME, event.getJobName());
-        document.addField(COMPONENT_NAME, event.getContextId());
         document.addField(CREATED_DATE_TIME, event.getTimestamp());
         document.setField(EXPIRY, expiry);
 
