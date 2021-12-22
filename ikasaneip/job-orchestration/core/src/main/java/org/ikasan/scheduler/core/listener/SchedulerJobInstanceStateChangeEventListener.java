@@ -1,6 +1,6 @@
 package org.ikasan.scheduler.core.listener;
 
-import org.ikasan.scheduler.core.event.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.scheduler.core.model.event.SchedulerJobInstanceStateChangeEvent;
 
 @FunctionalInterface
 public interface SchedulerJobInstanceStateChangeEventListener {

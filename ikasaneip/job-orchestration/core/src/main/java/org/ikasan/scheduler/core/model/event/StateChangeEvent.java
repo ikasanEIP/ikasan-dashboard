@@ -1,6 +1,7 @@
-package org.ikasan.scheduler.core.event;
+package org.ikasan.scheduler.core.model.event;
 
-import org.ikasan.scheduler.core.spec.InstanceStatus;
+
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
 public abstract class StateChangeEvent {
     protected InstanceStatus previousStatus;
