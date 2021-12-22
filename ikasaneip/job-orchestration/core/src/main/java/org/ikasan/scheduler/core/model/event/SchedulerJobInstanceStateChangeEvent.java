@@ -1,7 +1,7 @@
-package org.ikasan.scheduler.core.event;
+package org.ikasan.scheduler.core.model.event;
 
 import org.ikasan.scheduler.core.model.instance.SchedulerJobInstance;
-import org.ikasan.scheduler.core.spec.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
 public class SchedulerJobInstanceStateChangeEvent extends StateChangeEvent {
     private SchedulerJobInstance schedulerJobInstance;

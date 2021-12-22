@@ -7,7 +7,7 @@ import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
 import org.apache.solr.core.SolrResourceLoader;
 import org.ikasan.scheduled.context.model.SolrScheduledContextInstanceRecordImpl;
-import org.ikasan.spec.scheduled.context.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

@@ -1,8 +1,8 @@
 package org.ikasan.scheduler.core.machine;
 
-import org.ikasan.scheduler.core.model.context.LogicalGrouping;
-import org.ikasan.scheduler.core.spec.InstanceStatus;
-import org.ikasan.scheduler.core.spec.StatefulEntity;
+import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.StatefulEntity;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;

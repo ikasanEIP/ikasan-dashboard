@@ -9,6 +9,8 @@ import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrQuartzScheduleDrivenJobRecordImpl implements QuartzScheduleDrivenJobRecord {
 
+    private static ObjectMapper objectMapper = new ObjectMapper();
+
     @Field(SolrDaoBase.ID)
     private String id;
 
@@ -26,8 +28,6 @@ public class SolrQuartzScheduleDrivenJobRecordImpl implements QuartzScheduleDriv
 
     @Field(SolrDaoBase.CREATED_DATE_TIME)
     private long timestamp;
-
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     public String getId() {
         return id;
@@ -68,11 +68,11 @@ public class SolrQuartzScheduleDrivenJobRecordImpl implements QuartzScheduleDriv
     }
 
     public QuartzScheduleDrivenJob getQuartzScheduleDrivenJob() throws JsonProcessingException {
-        return this.objectMapper.readValue(quartzScheduleDrivenJob, SolrQuartzScheduleDrivenJobImpl.class);
+        return objectMapper.readValue(quartzScheduleDrivenJob, SolrQuartzScheduleDrivenJobImpl.class);
     }
 
     public void setQuartzScheduleDrivenJob(QuartzScheduleDrivenJob quartzScheduleDrivenJob) throws JsonProcessingException {
-        this.quartzScheduleDrivenJob = this.objectMapper.writeValueAsString(quartzScheduleDrivenJob);
+        this.quartzScheduleDrivenJob = objectMapper.writeValueAsString(quartzScheduleDrivenJob);
     }
 
     public long getTimestamp() {

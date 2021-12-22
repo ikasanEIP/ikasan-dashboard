@@ -1,4 +1,4 @@
-package org.ikasan.scheduler.core.model.instance;
+package org.ikasan.scheduler.core.model.context;
 
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 

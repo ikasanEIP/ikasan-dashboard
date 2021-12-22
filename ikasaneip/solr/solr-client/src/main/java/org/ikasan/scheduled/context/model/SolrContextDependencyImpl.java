@@ -1,8 +1,11 @@
-package org.ikasan.scheduler.core.model.context;
+package org.ikasan.scheduled.context.model;
+
+import org.ikasan.spec.scheduled.context.model.ContextDependency;
+import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 
 import java.util.List;
 
-public class ContextDependency {
+public class SolrContextDependencyImpl implements ContextDependency {
     private String contextIdentifier;
     private String contextDependencyName;
     private LogicalGrouping logicalGrouping;

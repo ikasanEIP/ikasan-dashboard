@@ -9,6 +9,8 @@ import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrFileEventDrivenJobRecordImpl implements FileEventDrivenJobRecord {
 
+    private static ObjectMapper objectMapper = new ObjectMapper();
+
     @Field(SolrDaoBase.ID)
     private String id;
 
@@ -26,8 +28,6 @@ public class SolrFileEventDrivenJobRecordImpl implements FileEventDrivenJobRecor
 
     @Field(SolrDaoBase.CREATED_DATE_TIME)
     private long timestamp;
-
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     public String getId() {
         return id;
@@ -68,11 +68,11 @@ public class SolrFileEventDrivenJobRecordImpl implements FileEventDrivenJobRecor
     }
 
     public FileEventDrivenJob getFileEventDrivenJob() throws JsonProcessingException {
-        return this.objectMapper.readValue(fileEventDrivenJob, SolrFileEventDrivenJobImpl.class);
+        return objectMapper.readValue(fileEventDrivenJob, SolrFileEventDrivenJobImpl.class);
     }
 
     public void setFileEventDrivenJob(FileEventDrivenJob fileEventDrivenJob) throws JsonProcessingException {
-        this.fileEventDrivenJob = this.objectMapper.writeValueAsString(fileEventDrivenJob);
+        this.fileEventDrivenJob = objectMapper.writeValueAsString(fileEventDrivenJob);
     }
 
     public long getTimestamp() {

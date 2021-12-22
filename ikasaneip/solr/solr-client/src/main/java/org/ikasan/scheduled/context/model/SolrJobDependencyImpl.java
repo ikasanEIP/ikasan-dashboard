@@ -1,6 +1,9 @@
-package org.ikasan.scheduler.core.model.context;
+package org.ikasan.scheduled.context.model;
 
-public class JobDependency {
+import org.ikasan.spec.scheduled.context.model.JobDependency;
+import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
+
+public class SolrJobDependencyImpl implements JobDependency {
     private String jobIdentifier;
     private LogicalGrouping logicalGrouping;
 

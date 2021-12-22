@@ -1,16 +1,17 @@
-package org.ikasan.scheduler.core.spec;
+package org.ikasan.scheduler.core.model.context;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.ikasan.scheduler.core.model.context.ContextDependency;
-import org.ikasan.scheduler.core.model.context.JobDependency;
-import org.ikasan.scheduler.core.model.context.SchedulerJob;
+import org.ikasan.spec.scheduled.context.model.Context;
+import org.ikasan.spec.scheduled.context.model.ContextDependency;
+import org.ikasan.spec.scheduled.context.model.JobDependency;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class Context<CONTEXT extends Context, CONTEXT_PARAM, JOB extends SchedulerJob> {
+public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends SchedulerJob> implements Context<CONTEXT, CONTEXT_PARAM, JOB> {
     protected String name;
     protected List<JobDependency> jobDependencies;
     protected List<CONTEXT> contexts;
@@ -49,7 +50,7 @@ public class Context<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Schedul
         this.scheduledJobs = scheduledJobs;
         if(scheduledJobs != null) {
             this.scheduledJobsMap = this.scheduledJobs.stream()
-                .collect(Collectors.toMap(item -> item.getIdentifier() , item -> item));
+                .collect(Collectors.toMap(item -> item.getJobIdentifier() , item -> item));
         }
     }
 
