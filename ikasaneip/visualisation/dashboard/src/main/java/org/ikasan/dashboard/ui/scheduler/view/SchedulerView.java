@@ -166,7 +166,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 //                this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
 //            scheduledJobsBoard.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
 //                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
-            this.contextDebugBoard.addRow(new ContextDebugWidget(this.scheduledContextInstanceService, this.schedulerService, this.scheduledContextService));
+            this.contextDebugBoard.addRow(new ContextDebugWidget(this.scheduledContextInstanceService, this.schedulerService, this.scheduledContextService, this.systemEventLogger));
             initialised = true;
         }
     }

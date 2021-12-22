@@ -67,10 +67,10 @@ public class SolrFileEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 {
 
             this.insertRecords("id", 1, "contextId");
 
-            FileEventDrivenJobRecord found = this.dao.findById("id0");
+            FileEventDrivenJobRecord found = this.dao.findById("fileEventDrivenJob_idagentName0_jobName0");
 
-            Assert.assertEquals("id0", found.getId());
-            Assert.assertEquals("agentName0", found.getAgentName());
+            Assert.assertEquals("fileEventDrivenJob_idagentName0_jobName0", found.getId());
+            Assert.assertEquals("idagentName0", found.getAgentName());
             Assert.assertEquals("jobName0", found.getJobName());
             Assert.assertEquals("contextId", found.getContextId());
             Assert.assertEquals(1000000L, found.getTimestamp());
@@ -120,7 +120,7 @@ public class SolrFileEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 {
     private void insertRecords(String idPrefix, int num, String contextId) {
         IntStream.range(0, num).forEach(i -> {
             SolrFileEventDrivenJobImpl solrFileEventDrivenJob = new SolrFileEventDrivenJobImpl();
-            solrFileEventDrivenJob.setAgentName("agentName"+i);
+            solrFileEventDrivenJob.setAgentName(idPrefix+"agentName"+i);
             solrFileEventDrivenJob.setJobName("jobName"+i);
             solrFileEventDrivenJob.setContextId(contextId);
             solrFileEventDrivenJob.setCronExpression("cronExpression");
@@ -128,7 +128,7 @@ public class SolrFileEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 {
 
             SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
             solrFileEventDrivenJobRecord.setId(idPrefix+i);
-            solrFileEventDrivenJobRecord.setAgentName("agentName"+i);
+            solrFileEventDrivenJobRecord.setAgentName(idPrefix+"agentName"+i);
             solrFileEventDrivenJobRecord.setJobName("jobName"+i);
             solrFileEventDrivenJobRecord.setContextId(contextId);
             solrFileEventDrivenJobRecord.setTimestamp(1000000L);

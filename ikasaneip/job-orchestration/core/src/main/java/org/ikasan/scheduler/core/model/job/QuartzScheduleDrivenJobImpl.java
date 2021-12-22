@@ -2,7 +2,7 @@ package org.ikasan.scheduler.core.model.job;
 
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 
-public class SolrQuartzScheduleDrivenJobImpl extends SchedulerJobImpl implements QuartzScheduleDrivenJob {
+public class QuartzScheduleDrivenJobImpl extends SchedulerJobImpl implements QuartzScheduleDrivenJob {
 
     @Override
     public String getCronExpression() {

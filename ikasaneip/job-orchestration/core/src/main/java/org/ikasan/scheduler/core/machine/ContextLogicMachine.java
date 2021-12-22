@@ -1,8 +1,8 @@
 package org.ikasan.scheduler.core.machine;
 
-import org.ikasan.scheduler.core.model.context.ContextDependency;
 import org.ikasan.scheduler.core.model.instance.ContextInstance;
-import org.ikasan.scheduler.core.spec.InstanceStatus;
+import org.ikasan.spec.scheduled.context.model.ContextDependency;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
 import java.util.List;
 import java.util.Map;
