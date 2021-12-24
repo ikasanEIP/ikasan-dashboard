@@ -21,12 +21,12 @@ public abstract class SolrSchedulerJobImpl implements SchedulerJob {
     }
 
     @Override
-    public String getJobIdentifier() {
+    public String getIdentifier() {
         return this.jobIdentifier;
     }
 
     @Override
-    public void setJobIdentifier(String jobIdentifier) {
+    public void setIdentifier(String jobIdentifier) {
         this.jobIdentifier = jobIdentifier;
     }
 

@@ -5,83 +5,51 @@ import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import java.util.List;
 
 public class InternalEventDrivenJobImpl extends SchedulerJobImpl implements InternalEventDrivenJob {
+
+    private List<String> successfulReturnCodes;
+    private String workingDirectory;
+    private String commandLine;
     @Override
     public List<String> getSuccessfulReturnCodes() {
-        return null;
+        return this.successfulReturnCodes;
     }
 
     @Override
     public void setSuccessfulReturnCodes(List<String> successfulReturnCodes) {
-
-    }
-
-    @Override
-    public long getSecondsToWaitForProcessStart() {
-        return 0;
-    }
-
-    @Override
-    public void setSecondsToWaitForProcessStart(long secondsToWaitForProcessStart) {
-
+        this.successfulReturnCodes = successfulReturnCodes;
     }
 
     @Override
     public String getWorkingDirectory() {
-        return null;
+        return this.workingDirectory;
     }
 
     @Override
     public void setWorkingDirectory(String workingDirectory) {
-
+        this.workingDirectory = workingDirectory;
     }
 
     @Override
     public String getCommandLine() {
-        return null;
+        return this.commandLine;
     }
 
     @Override
     public void setCommandLine(String commandLine) {
-
-    }
-
-    @Override
-    public String getStdErr() {
-        return null;
-    }
-
-    @Override
-    public void setStdErr(String stdErr) {
-
-    }
-
-    @Override
-    public String getStdOut() {
-        return null;
-    }
-
-    @Override
-    public void setStdOut(String stdOut) {
-
-    }
-
-    @Override
-    public boolean isRetryOnFail() {
-        return false;
-    }
-
-    @Override
-    public void setRetryOnFail(boolean retryOnFail) {
-
+        this.commandLine = commandLine;
     }
 
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("InternalEventDrivenJobImpl{");
-        sb.append("jobIdentifier='").append(jobIdentifier).append('\'');
+        sb.append("successfulReturnCodes=").append(successfulReturnCodes);
+        sb.append(", workingDirectory='").append(workingDirectory).append('\'');
+        sb.append(", commandLine='").append(commandLine).append('\'');
+        sb.append(", jobIdentifier='").append(jobIdentifier).append('\'');
         sb.append(", agentName='").append(agentName).append('\'');
         sb.append(", jobName='").append(jobName).append('\'');
         sb.append(", contextId='").append(contextId).append('\'');
+        sb.append(", description='").append(description).append('\'');
         sb.append('}');
         return sb.toString();
     }

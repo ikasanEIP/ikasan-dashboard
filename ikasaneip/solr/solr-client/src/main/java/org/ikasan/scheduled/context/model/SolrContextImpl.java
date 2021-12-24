@@ -50,7 +50,7 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
         this.scheduledJobs = scheduledJobs;
         if(scheduledJobs != null) {
             this.scheduledJobsMap = this.scheduledJobs.stream()
-                .collect(Collectors.toMap(item -> item.getJobIdentifier() , item -> item));
+                .collect(Collectors.toMap(item -> item.getIdentifier() , item -> item));
         }
     }
 
