@@ -163,12 +163,7 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             solrFileEventDrivenJobRecord.setJobName("jobName"+i);
             solrFileEventDrivenJobRecord.setContextId(contextId);
             solrFileEventDrivenJobRecord.setTimestamp(1000000L);
-            try {
-                solrFileEventDrivenJobRecord.setFileEventDrivenJob(solrFileEventDrivenJob);
-            }
-            catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
+            solrFileEventDrivenJobRecord.setFileEventDrivenJob(solrFileEventDrivenJob);
 
             this.solrFileEventDrivenJobRecordDao.save(solrFileEventDrivenJobRecord);
         });
@@ -187,12 +182,8 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             solrQuartzScheduleDrivenJobRecord.setJobName("jobName"+i);
             solrQuartzScheduleDrivenJobRecord.setContextId(contextId);
             solrQuartzScheduleDrivenJobRecord.setTimestamp(1000000L);
-            try {
-                solrQuartzScheduleDrivenJobRecord.setQuartzScheduleDrivenJob(solrQuartzScheduleDrivenJob);
-            }
-            catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
+            solrQuartzScheduleDrivenJobRecord.setQuartzScheduleDrivenJob(solrQuartzScheduleDrivenJob);
+
 
             this.solrQuartzScheduleDrivenJobRecordDao.save(solrQuartzScheduleDrivenJobRecord);
         });
@@ -210,12 +201,8 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             solrInternalEventDrivenJobRecord.setJobName("jobName"+i);
             solrInternalEventDrivenJobRecord.setContextId(contextId);
             solrInternalEventDrivenJobRecord.setTimestamp(1000000L);
-            try {
-                solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(solrInternalEventDrivenJob);
-            }
-            catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
+            solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(solrInternalEventDrivenJob);
+
 
             this.solrInternalEventDrivenJobRecordDao.save(solrInternalEventDrivenJobRecord);
         });

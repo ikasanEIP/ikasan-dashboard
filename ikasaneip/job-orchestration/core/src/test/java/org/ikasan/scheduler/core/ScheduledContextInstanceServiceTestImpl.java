@@ -1,7 +1,8 @@
 package org.ikasan.scheduler.core;
 
-import org.ikasan.spec.scheduled.context.model.ScheduledContextInstanceRecord;
-import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
+
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 
 public class ScheduledContextInstanceServiceTestImpl implements ScheduledContextInstanceService {
 

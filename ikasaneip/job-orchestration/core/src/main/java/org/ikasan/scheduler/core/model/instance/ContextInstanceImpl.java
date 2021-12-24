@@ -1,12 +1,10 @@
 package org.ikasan.scheduler.core.model.instance;
 
 import org.ikasan.scheduler.core.model.context.ContextImpl;
-import org.ikasan.spec.scheduled.context.model.ContextParameterInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.StatefulEntity;
+import org.ikasan.spec.scheduled.instance.model.*;
 
-
-public class ContextInstance extends ContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance> implements StatefulEntity {
+public class ContextInstanceImpl extends ContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance>
+    implements StatefulEntity, ContextInstance {
     private String id;
     private long createdDateTime;
     private long updatedDateTime;
@@ -15,7 +13,7 @@ public class ContextInstance extends ContextImpl<ContextInstance, ContextParamet
     private String timezone;
     private InstanceStatus status;
 
-    public ContextInstance() {
+    public ContextInstanceImpl() {
         status = InstanceStatus.WAITING;
         createdDateTime = System.currentTimeMillis();
         updatedDateTime = System.currentTimeMillis();

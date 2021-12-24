@@ -19,8 +19,8 @@ import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduler.context.cache.ContextMachineCache;
 import org.ikasan.scheduler.core.machine.ContextMachine;
 import org.ikasan.spec.scheduled.SchedulerService;
-import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
