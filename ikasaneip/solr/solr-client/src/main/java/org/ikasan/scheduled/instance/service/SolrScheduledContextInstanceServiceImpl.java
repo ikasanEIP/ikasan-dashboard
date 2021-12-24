@@ -1,4 +1,4 @@
-package org.ikasan.scheduled.context.service;
+package org.ikasan.scheduled.instance.service;
 
 
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao;

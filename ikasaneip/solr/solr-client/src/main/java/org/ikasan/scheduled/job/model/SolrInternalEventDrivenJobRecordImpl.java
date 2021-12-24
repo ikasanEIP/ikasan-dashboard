@@ -3,6 +3,7 @@ package org.ikasan.scheduled.job.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
+import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
@@ -29,12 +30,9 @@ public class SolrInternalEventDrivenJobRecordImpl implements InternalEventDriven
     @Field(SolrDaoBase.CREATED_DATE_TIME)
     private long timestamp;
 
+    @Override
     public String getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     @Override
@@ -67,12 +65,22 @@ public class SolrInternalEventDrivenJobRecordImpl implements InternalEventDriven
         this.contextId = contextId;
     }
 
-    public InternalEventDrivenJob getInternalEventDrivenJob() throws JsonProcessingException {
-        return objectMapper.readValue(internalEventDrivenJob, SolrInternalEventDrivenJobImpl.class);
+    public InternalEventDrivenJob getInternalEventDrivenJob() {
+        try {
+            return objectMapper.readValue(internalEventDrivenJob, SolrInternalEventDrivenJobImpl.class);
+        }
+        catch (JsonProcessingException e) {
+            throw new SolrEntityConversionException("Could not convert string to entity: " + this.internalEventDrivenJob, e);
+        }
     }
 
-    public void setInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob) throws JsonProcessingException {
-        this.internalEventDrivenJob = objectMapper.writeValueAsString(internalEventDrivenJob);
+    public void setInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob) {
+        try {
+            this.internalEventDrivenJob = objectMapper.writeValueAsString(internalEventDrivenJob);
+        }
+        catch (JsonProcessingException e) {
+            throw new SolrEntityConversionException("Could not convert entity to string: " + internalEventDrivenJob, e);
+        }
     }
 
     public long getTimestamp() {

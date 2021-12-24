@@ -1,13 +1,17 @@
 package org.ikasan.scheduled.context.dao;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
+import org.ikasan.scheduled.context.model.*;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextDao;
-import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
+import org.ikasan.spec.scheduled.context.model.*;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
@@ -17,12 +21,12 @@ import java.util.List;
 
 public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRecord> implements ScheduledContextDao
 {
+    private static ObjectMapper objectMapper = new ObjectMapper();
+
     /**
      * Logger for this class
      */
     private static Logger logger = LoggerFactory.getLogger(SolrScheduledContextDaoImpl.class);
-
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * We need to give this dao it's context.
@@ -32,14 +36,24 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, ScheduledContextRecord scheduledContextRecord) {
         SolrInputDocument document = new SolrInputDocument();
         document.addField(TYPE, SCHEDULED_CONTEXT);
-        document.addField(PAYLOAD_CONTENT, scheduledContextRecord.getContext());
-        document.addField(ID, scheduledContextRecord.getId() + "-" + SCHEDULED_CONTEXT);
+        try {
+            document.addField(PAYLOAD_CONTENT, this.getPayloadContents(scheduledContextRecord.getContext()));
+        }
+        catch (JsonProcessingException e) {
+            throw new RuntimeException(String.format("Cannot convert FileEventDrivenJob to string! [%s]"
+                , scheduledContextRecord.getContext()));
+        }
+        document.addField(ID, scheduledContextRecord.getContextName() + "-" + SCHEDULED_CONTEXT);
         document.addField(MODULE_NAME, scheduledContextRecord.getContextName());
         document.addField(CREATED_DATE_TIME, scheduledContextRecord.getTimestamp());
         document.setField(EXPIRY, expiry);
 
         logger.debug(String.format("Converted scheduled context record to SolrDocument[%s]", document));
         return document;
+    }
+
+    protected String getPayloadContents(ContextTemplate contextTemplate) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(contextTemplate);
     }
 
     @Override

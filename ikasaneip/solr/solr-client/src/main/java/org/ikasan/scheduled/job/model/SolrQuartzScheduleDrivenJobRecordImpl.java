@@ -3,6 +3,7 @@ package org.ikasan.scheduled.job.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
+import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
@@ -29,12 +30,9 @@ public class SolrQuartzScheduleDrivenJobRecordImpl implements QuartzScheduleDriv
     @Field(SolrDaoBase.CREATED_DATE_TIME)
     private long timestamp;
 
+    @Override
     public String getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     @Override
@@ -67,12 +65,22 @@ public class SolrQuartzScheduleDrivenJobRecordImpl implements QuartzScheduleDriv
         this.contextId = contextId;
     }
 
-    public QuartzScheduleDrivenJob getQuartzScheduleDrivenJob() throws JsonProcessingException {
-        return objectMapper.readValue(quartzScheduleDrivenJob, SolrQuartzScheduleDrivenJobImpl.class);
+    public QuartzScheduleDrivenJob getQuartzScheduleDrivenJob() {
+        try {
+            return objectMapper.readValue(quartzScheduleDrivenJob, SolrQuartzScheduleDrivenJobImpl.class);
+        }
+        catch (JsonProcessingException e) {
+            throw new SolrEntityConversionException("Could not convert string to entity: " + this.quartzScheduleDrivenJob, e);
+        }
     }
 
-    public void setQuartzScheduleDrivenJob(QuartzScheduleDrivenJob quartzScheduleDrivenJob) throws JsonProcessingException {
-        this.quartzScheduleDrivenJob = objectMapper.writeValueAsString(quartzScheduleDrivenJob);
+    public void setQuartzScheduleDrivenJob(QuartzScheduleDrivenJob quartzScheduleDrivenJob) {
+        try {
+            this.quartzScheduleDrivenJob = objectMapper.writeValueAsString(quartzScheduleDrivenJob);
+        }
+        catch (JsonProcessingException e) {
+            throw new SolrEntityConversionException("Could not convert entity to string: " + quartzScheduleDrivenJob, e);
+        }
     }
 
     public long getTimestamp() {

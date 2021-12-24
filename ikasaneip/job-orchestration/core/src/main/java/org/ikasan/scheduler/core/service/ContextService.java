@@ -4,9 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.ikasan.scheduler.core.model.context.*;
-import org.ikasan.scheduler.core.model.instance.ContextInstance;
+import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
 import org.ikasan.scheduler.core.model.instance.ContextParameterInstanceImpl;
+import org.ikasan.scheduler.core.model.instance.SchedulerJobInstanceImpl;
+import org.ikasan.scheduler.core.model.job.SchedulerJobImpl;
 import org.ikasan.spec.scheduled.context.model.*;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 public class ContextService {
@@ -26,6 +31,8 @@ public class ContextService {
             .addAbstractTypeMapping(ContextDependency.class, ContextDependencyImpl.class)
             .addAbstractTypeMapping(LogicalGrouping.class, LogicalGroupingImpl.class)
             .addAbstractTypeMapping(LogicalOperator.class, LogicalOperatorImpl.class)
+            .addAbstractTypeMapping(ContextInstance.class, ContextInstanceImpl.class)
+            .addAbstractTypeMapping(SchedulerJobInstance.class, SchedulerJobInstanceImpl.class)
             .addAbstractTypeMapping(ContextParameterInstance.class, ContextParameterInstanceImpl.class);
 
         this.objectMapper.registerModule(simpleModule);
@@ -39,11 +46,11 @@ public class ContextService {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(context);
     }
 
-    public ContextInstance getContextInstance(String context) throws JsonProcessingException {
-        return objectMapper.readValue(context, ContextInstance.class);
+    public ContextInstanceImpl getContextInstance(String context) throws JsonProcessingException {
+        return objectMapper.readValue(context, ContextInstanceImpl.class);
     }
 
-    public String getContextInstanceString(ContextInstance context) throws JsonProcessingException {
+    public String getContextInstanceString(ContextInstanceImpl context) throws JsonProcessingException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(context);
     }
 }

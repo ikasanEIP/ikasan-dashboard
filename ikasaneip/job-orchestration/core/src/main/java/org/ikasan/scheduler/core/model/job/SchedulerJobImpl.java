@@ -3,11 +3,12 @@ package org.ikasan.scheduler.core.model.job;
 
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
-public abstract class SchedulerJobImpl implements SchedulerJob {
+public class SchedulerJobImpl implements SchedulerJob {
     protected String jobIdentifier;
     protected String agentName;
     protected String jobName;
     protected String contextId;
+    protected String description;
 
     @Override
     public String getContextId() {
@@ -20,12 +21,12 @@ public abstract class SchedulerJobImpl implements SchedulerJob {
     }
 
     @Override
-    public String getJobIdentifier() {
+    public String getIdentifier() {
         return this.jobIdentifier;
     }
 
     @Override
-    public void setJobIdentifier(String jobIdentifier) {
+    public void setIdentifier(String jobIdentifier) {
         this.jobIdentifier = jobIdentifier;
     }
 
@@ -47,5 +48,27 @@ public abstract class SchedulerJobImpl implements SchedulerJob {
     @Override
     public void setJobName(String jobName) {
         this.jobName = jobName;
+    }
+
+    @Override
+    public String getJobDescription() {
+        return this.description;
+    }
+
+    @Override
+    public void setJobDescription(String jobDescription) {
+        this.description = jobDescription;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("SchedulerJobImpl{");
+        sb.append("jobIdentifier='").append(jobIdentifier).append('\'');
+        sb.append(", agentName='").append(agentName).append('\'');
+        sb.append(", jobName='").append(jobName).append('\'');
+        sb.append(", contextId='").append(contextId).append('\'');
+        sb.append(", description='").append(description).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

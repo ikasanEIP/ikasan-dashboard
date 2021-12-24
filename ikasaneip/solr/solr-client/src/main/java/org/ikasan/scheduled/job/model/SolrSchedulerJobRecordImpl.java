@@ -3,6 +3,7 @@ package org.ikasan.scheduled.job.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
+import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -60,17 +61,22 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
     }
 
     @Override
-    public SchedulerJob getJob() throws JsonProcessingException {
-        switch (this.type) {
-            case JobConstants.FILE_EVENT_DRIVEN_JOB:
-                return objectMapper.readValue(this.job, SolrFileEventDrivenJobImpl.class);
-            case JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB:
-                return objectMapper.readValue(this.job, SolrQuartzScheduleDrivenJobImpl.class);
-            case JobConstants.INTERNAL_EVENT_DRIVEN_JOB:
-                return objectMapper.readValue(this.job, SolrInternalEventDrivenJobImpl.class);
-            default:
-                throw new RuntimeException("Could not resolve job type: " + this.type);
+    public SchedulerJob getJob() {
+        try {
+            switch (this.type) {
+                case JobConstants.FILE_EVENT_DRIVEN_JOB:
+                    return objectMapper.readValue(this.job, SolrFileEventDrivenJobImpl.class);
+                case JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB:
+                    return objectMapper.readValue(this.job, SolrQuartzScheduleDrivenJobImpl.class);
+                case JobConstants.INTERNAL_EVENT_DRIVEN_JOB:
+                    return objectMapper.readValue(this.job, SolrInternalEventDrivenJobImpl.class);
+                default:
+                    throw new SolrEntityConversionException("Could not resolve job type: " + this.type);
 
+            }
+        }
+        catch (JsonProcessingException e) {
+            throw new SolrEntityConversionException("Could not convert entity: " + this.job, e);
         }
     }
 

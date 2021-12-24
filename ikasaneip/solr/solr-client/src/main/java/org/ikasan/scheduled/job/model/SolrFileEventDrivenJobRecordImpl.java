@@ -3,6 +3,8 @@ package org.ikasan.scheduled.job.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
+import org.ikasan.scheduled.general.SolrEntityConversionException;
+import org.ikasan.scheduled.instance.model.SolrContextInstanceImpl;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
@@ -29,12 +31,9 @@ public class SolrFileEventDrivenJobRecordImpl implements FileEventDrivenJobRecor
     @Field(SolrDaoBase.CREATED_DATE_TIME)
     private long timestamp;
 
+    @Override
     public String getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     @Override
@@ -67,12 +66,22 @@ public class SolrFileEventDrivenJobRecordImpl implements FileEventDrivenJobRecor
         this.contextId = contextId;
     }
 
-    public FileEventDrivenJob getFileEventDrivenJob() throws JsonProcessingException {
-        return objectMapper.readValue(fileEventDrivenJob, SolrFileEventDrivenJobImpl.class);
+    public FileEventDrivenJob getFileEventDrivenJob() {
+        try {
+            return objectMapper.readValue(fileEventDrivenJob, SolrFileEventDrivenJobImpl.class);
+        }
+        catch (JsonProcessingException e) {
+            throw new SolrEntityConversionException("Could not convert string to entity: " + this.fileEventDrivenJob, e);
+        }
     }
 
-    public void setFileEventDrivenJob(FileEventDrivenJob fileEventDrivenJob) throws JsonProcessingException {
-        this.fileEventDrivenJob = objectMapper.writeValueAsString(fileEventDrivenJob);
+    public void setFileEventDrivenJob(FileEventDrivenJob fileEventDrivenJob)  {
+        try {
+            this.fileEventDrivenJob = objectMapper.writeValueAsString(fileEventDrivenJob);
+        }
+        catch (JsonProcessingException e) {
+            throw new SolrEntityConversionException("Could not convert entity to string: " + fileEventDrivenJob, e);
+        }
     }
 
     public long getTimestamp() {
