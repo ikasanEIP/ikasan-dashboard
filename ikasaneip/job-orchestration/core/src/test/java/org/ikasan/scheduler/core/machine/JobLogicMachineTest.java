@@ -1,7 +1,7 @@
 package org.ikasan.scheduler.core.machine;
 
 import org.ikasan.scheduler.core.AbstractTest;
-import org.ikasan.scheduler.core.model.instance.ContextInstance;
+import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
 import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduler.core.service.ContextService;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
@@ -36,7 +36,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_single_dependency_relevant_event() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-and-single-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -71,7 +71,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_single_dependency_relevant_event_not_successful() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-and-single-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", false);
@@ -103,7 +103,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_single_dependency_relevant_event_job_starting() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-and-single-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", false);
@@ -138,7 +138,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_single_dependency_irrelevant_event() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-and-single-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("irrelevantJobName1", "irrelevantAgentName1", true);
@@ -174,7 +174,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_multiple_dependency_relevant_event() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-and-multiple-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-and-multiple-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -223,7 +223,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_multiple_dependency_irrelevant_event() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-and-multiple-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-and-multiple-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -269,7 +269,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_or_dependency_relevant_event() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-or-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-or-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -310,7 +310,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_or_dependency_relevant_event_make_sure_event_not_raised_twice() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-or-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-or-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -364,7 +364,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_or_dependency_relevant_and_statement_fulfilled() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-and-or-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-and-or-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -417,7 +417,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_or_dependency_relevant_or_statement_fulfilled() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-and-or-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-and-or-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
@@ -462,7 +462,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_or_dependency_relevant_or_statement_fulfilled_assert_initiation_event_not_raised_twice() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-and-or-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-and-or-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -541,7 +541,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_nested_and_or_with_and_dependency_relevant_inner_and_outer_and_statement_fulfilled() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -620,7 +620,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_nested_and_or_with_and_dependency_relevant_inner_or_outer_and_statement_fulfilled() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
@@ -691,7 +691,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_nested_and_or_with_and_dependency_relevant_inner_or_outer_and_statement_fulfilled_assert_event_not_raised_twice() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
@@ -795,7 +795,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_two_nested_and_with_outer_or_dependency_and_statement_fulfilled() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -883,7 +883,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_two_nested_and_with_outer_or_dependency_and_statement_fulfilled_other_side_of_or_fulfilled() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
@@ -971,7 +971,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_two_nested_and_with_outer_or_dependency_and_statement_fulfilled_all_jobs_assert_only_one_event_created() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -1075,7 +1075,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_two_nested_and_or_with_outer_and_dependency_and_statement_fulfilled() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-outer-and-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-nested-and-or-with-outer-and-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -1171,7 +1171,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_two_nested_and_or_with_outer_and_dependency_and_statement_fulfilled_assert_event_not_sent_twice() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-outer-and-dependency.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-nested-and-or-with-outer-and-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -1275,7 +1275,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_single_job_creates_multiple_events() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-single-job-produces-multiple-events.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-single-job-produces-multiple-events.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -1398,7 +1398,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_chained_jobs() throws IOException {
-        ContextInstance context = context("/data/logic/simple-context-chained-jobs.json");
+        ContextInstanceImpl context = context("/data/logic/simple-context-chained-jobs.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -1473,7 +1473,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
     }
 
-    private ContextInstance context(String filename) throws IOException {
+    private ContextInstanceImpl context(String filename) throws IOException {
         return this.contextService.getContextInstance(loadDataFile(filename));
     }
 }

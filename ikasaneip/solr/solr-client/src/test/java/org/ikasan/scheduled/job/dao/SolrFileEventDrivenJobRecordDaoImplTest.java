@@ -127,17 +127,12 @@ public class SolrFileEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 {
             solrFileEventDrivenJob.setFilePath("filePath");
 
             SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
-            solrFileEventDrivenJobRecord.setId(idPrefix+i);
             solrFileEventDrivenJobRecord.setAgentName(idPrefix+"agentName"+i);
             solrFileEventDrivenJobRecord.setJobName("jobName"+i);
             solrFileEventDrivenJobRecord.setContextId(contextId);
             solrFileEventDrivenJobRecord.setTimestamp(1000000L);
-            try {
-                solrFileEventDrivenJobRecord.setFileEventDrivenJob(solrFileEventDrivenJob);
-            }
-            catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
+            solrFileEventDrivenJobRecord.setFileEventDrivenJob(solrFileEventDrivenJob);
+
 
             this.dao.save(solrFileEventDrivenJobRecord);
         });

@@ -6,6 +6,7 @@ import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
 import org.apache.solr.core.SolrResourceLoader;
+import org.ikasan.scheduled.context.model.SolrContextTemplateImpl;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.junit.After;
@@ -64,15 +65,20 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
         {
             init(server);
 
-            SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl("id"
-                , "contextName", "context", 1000000L);
+            SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
+            solrContextTemplate.setName("contextName");
+            SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setContext(solrContextTemplate);
+
             this.dao.save(scheduledContextRecord);
 
-            ScheduledContextRecord found = this.dao.findById("id-" + SCHEDULED_CONTEXT);
+            ScheduledContextRecord found = this.dao.findById("contextName-" + SCHEDULED_CONTEXT);
 
-            Assert.assertEquals("id-" + SCHEDULED_CONTEXT, found.getId());
+            Assert.assertEquals("contextName-" + SCHEDULED_CONTEXT, found.getId());
             Assert.assertEquals("contextName", found.getContextName());
-//            Assert.assertEquals("context", found.getContext());
+            Assert.assertEquals("contextName", found.getContext().getName());
             Assert.assertEquals(1000000L, found.getTimestamp());
 
             Assert.assertNull(this.dao.findById("bad_id"));
@@ -86,12 +92,20 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
         {
             init(server);
 
-            SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl("id"
-                , "contextName", "context", 1000000L);
+            SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
+            solrContextTemplate.setName("contextName1");
+            SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
+            scheduledContextRecord.setContextName("contextName1");
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setContext(solrContextTemplate);
             this.dao.save(scheduledContextRecord);
 
-            scheduledContextRecord = new SolrScheduledContextRecordImpl("id2"
-                , "contextName", "context", 1000000L);
+            solrContextTemplate = new SolrContextTemplateImpl();
+            solrContextTemplate.setName("contextName2");
+            scheduledContextRecord = new SolrScheduledContextRecordImpl();
+            scheduledContextRecord.setContextName("contextName2");
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setContext(solrContextTemplate);
             this.dao.save(scheduledContextRecord);
 
             List<ScheduledContextRecord> found = (List<ScheduledContextRecord>) this.dao.findAll();

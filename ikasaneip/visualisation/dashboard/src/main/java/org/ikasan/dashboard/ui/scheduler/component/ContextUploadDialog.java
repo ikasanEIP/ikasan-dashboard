@@ -15,17 +15,17 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
+import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
 import org.ikasan.scheduler.context.cache.ContextMachineCache;
 import org.ikasan.scheduler.core.machine.ContextMachine;
-import org.ikasan.scheduler.core.model.context.ContextTemplateImpl;
-import org.ikasan.scheduler.core.model.instance.ContextInstance;
-import org.ikasan.scheduler.core.model.context.ScheduledContextRecordImpl;
-import org.ikasan.scheduler.core.service.ContextService;
 import org.ikasan.scheduler.core.model.context.ContextImpl;
+import org.ikasan.scheduler.core.model.context.ContextTemplateImpl;
+import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
+import org.ikasan.scheduler.core.service.ContextService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
-import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -99,11 +99,13 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
             ContextService contextService = new ContextService();
             try {
                 ContextTemplateImpl contextTemplate = contextService.getContext(new String(contextFile));
-                ScheduledContextRecord scheduledContextRecord = new ScheduledContextRecordImpl(contextTemplate.getName(),
-                    contextTemplate.getName(), new String(contextFile), System.currentTimeMillis());
+                ScheduledContextRecord scheduledContextRecord = new SolrScheduledContextRecordImpl();
+                scheduledContextRecord.setContextName(contextTemplate.getName());
+                scheduledContextRecord.setContext(contextTemplate);
+                scheduledContextRecord.setTimestamp(System.currentTimeMillis());
                 this.scheduledContextService.save(scheduledContextRecord);
 
-                ContextInstance contextInstance = contextService.getContextInstance(new String(contextFile));
+                ContextInstanceImpl contextInstance = contextService.getContextInstance(new String(contextFile));
                 ContextImpl context = contextService.getContext(new String(contextFile));
                 contextInstance.setId(UUID.randomUUID().toString());
                 ContextMachine contextMachine = new ContextMachine(context, contextInstance, scheduledContextInstanceService);

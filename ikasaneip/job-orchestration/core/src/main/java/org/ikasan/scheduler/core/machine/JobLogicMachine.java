@@ -1,16 +1,16 @@
 package org.ikasan.scheduler.core.machine;
 
+import org.ikasan.scheduler.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.scheduler.core.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduler.core.model.event.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.scheduler.core.listener.SchedulerJobInstanceStateChangeEventListener;
-import org.ikasan.scheduler.core.model.instance.ContextInstance;
-import org.ikasan.scheduler.core.model.instance.SchedulerJobInstance;
+import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
 import org.ikasan.spec.scheduled.context.model.JobDependency;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +36,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      * @return
      */
     public List<SchedulerJobInitiationEvent> getJobInitiationEvents(ScheduledProcessEvent scheduledProcessEvent
-        , ContextInstance contextInstance, DryRunParameters dryRunParameters) {
+        , ContextInstanceImpl contextInstance, DryRunParameters dryRunParameters) {
         SchedulerJobInstance schedulerJobInstance = contextInstance.getScheduledJobsMap()
             .get(scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName());
 

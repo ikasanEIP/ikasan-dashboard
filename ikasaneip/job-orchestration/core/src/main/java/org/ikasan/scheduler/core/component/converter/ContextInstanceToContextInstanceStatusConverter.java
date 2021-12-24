@@ -1,19 +1,21 @@
 package org.ikasan.scheduler.core.component.converter;
 
-import org.ikasan.scheduler.core.model.instance.ContextInstance;
-import org.ikasan.scheduler.core.model.instance.SchedulerJobInstance;
+import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
+import org.ikasan.scheduler.core.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.scheduler.core.model.status.ContextInstanceStatus;
 import org.ikasan.scheduler.core.model.status.SchedulerJobInstanceStatus;
 import org.ikasan.spec.component.transformation.Converter;
 import org.ikasan.spec.component.transformation.TransformationException;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContextInstanceToContextInstanceStatusConverter implements Converter<ContextInstance, ContextInstanceStatus> {
+public class ContextInstanceToContextInstanceStatusConverter implements Converter<ContextInstanceImpl, ContextInstanceStatus> {
 
     @Override
-    public ContextInstanceStatus convert(ContextInstance contextInstance) throws TransformationException {
+    public ContextInstanceStatus convert(ContextInstanceImpl contextInstance) throws TransformationException {
         ContextInstanceStatus contextInstanceStatus = new ContextInstanceStatus();
 
         try {
