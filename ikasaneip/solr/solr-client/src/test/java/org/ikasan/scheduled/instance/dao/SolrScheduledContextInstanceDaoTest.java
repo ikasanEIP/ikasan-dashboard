@@ -1,4 +1,4 @@
-package org.ikasan.scheduled.context.dao;
+package org.ikasan.scheduled.instance.dao;
 
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -6,7 +6,8 @@ import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
 import org.apache.solr.core.SolrResourceLoader;
-import org.ikasan.scheduled.context.model.SolrScheduledContextInstanceRecordImpl;
+import org.ikasan.scheduled.instance.model.SolrContextInstanceImpl;
+import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.junit.After;
 import org.junit.Assert;
@@ -61,16 +62,20 @@ public class SolrScheduledContextInstanceDaoTest extends SolrTestCaseJ4 {
         {
             init(server);
 
-            SolrScheduledContextInstanceRecordImpl scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl("id"
-                , "contextName", "contextInstance", 1000000L);
+            SolrContextInstanceImpl contextInstance = new SolrContextInstanceImpl();
+            contextInstance.setName("contextInstance");
+            SolrScheduledContextInstanceRecordImpl scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setContextInstance(contextInstance);
+            scheduledContextRecord.setTimestamp(1000000L);
             scheduledContextRecord.setStatus("RUNNING");
             this.dao.save(scheduledContextRecord);
 
-            ScheduledContextInstanceRecord found = this.dao.findById("id");
+            ScheduledContextInstanceRecord found = this.dao.findById("contextName_scheduledContextInstance");
 
-            Assert.assertEquals("id", found.getId());
+            Assert.assertEquals("contextName_scheduledContextInstance", found.getId());
             Assert.assertEquals("contextName", found.getContextName());
-            Assert.assertEquals("contextInstance", found.getContextInstance());
+            Assert.assertEquals("contextInstance", found.getContextInstance().getName());
             Assert.assertEquals("RUNNING", found.getStatus());
             Assert.assertEquals(1000000L, found.getTimestamp());
 
@@ -85,16 +90,20 @@ public class SolrScheduledContextInstanceDaoTest extends SolrTestCaseJ4 {
         {
             init(server);
 
-            SolrScheduledContextInstanceRecordImpl scheduledContextInstanceRecord = new SolrScheduledContextInstanceRecordImpl("id"
-                , "contextName", "contextInstance", 1000000L);
-            scheduledContextInstanceRecord.setStatus("WAITING");
-            this.dao.save(scheduledContextInstanceRecord);
+            SolrContextInstanceImpl contextInstance = new SolrContextInstanceImpl();
+            contextInstance.setName("contextInstance");
+            SolrScheduledContextInstanceRecordImpl scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setContextInstance(contextInstance);
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setStatus("WAITING");
+            this.dao.save(scheduledContextRecord);
 
-            ScheduledContextInstanceRecord found = this.dao.findById("id");
+            ScheduledContextInstanceRecord found = this.dao.findById("contextName_scheduledContextInstance");
 
-            Assert.assertEquals("id", found.getId());
+            Assert.assertEquals("contextName_scheduledContextInstance", found.getId());
             Assert.assertEquals("contextName", found.getContextName());
-            Assert.assertEquals("contextInstance", found.getContextInstance());
+            Assert.assertEquals("contextInstance", found.getContextInstance().getName());
             Assert.assertEquals("WAITING", found.getStatus());
             Assert.assertEquals(1000000L, found.getTimestamp());
 
@@ -102,11 +111,11 @@ public class SolrScheduledContextInstanceDaoTest extends SolrTestCaseJ4 {
 
             this.dao.save(found);
 
-            found = this.dao.findById("id");
+            found = this.dao.findById("contextName_scheduledContextInstance");
 
-            Assert.assertEquals("id", found.getId());
+            Assert.assertEquals("contextName_scheduledContextInstance", found.getId());
             Assert.assertEquals("contextName", found.getContextName());
-            Assert.assertEquals("contextInstance", found.getContextInstance());
+            Assert.assertEquals("contextInstance", found.getContextInstance().getName());
             Assert.assertEquals("RUNNING", found.getStatus());
             Assert.assertEquals(1000000L, found.getTimestamp());
         }

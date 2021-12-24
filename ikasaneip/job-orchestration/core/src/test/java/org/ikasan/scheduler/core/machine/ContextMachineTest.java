@@ -4,10 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.scheduler.core.AbstractTest;
 import org.ikasan.scheduler.core.ScheduledContextInstanceServiceTestImpl;
-import org.ikasan.scheduler.core.model.instance.ContextInstance;
+import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
 import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduler.core.service.ContextService;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.json.JSONException;
 import org.junit.Assert;
@@ -25,7 +26,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_context_machine_full_nested_context_success() throws IOException, JSONException {
-        ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        ContextInstanceImpl context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         ContextMachine contextMachine  = new ContextMachine(context, new ScheduledContextInstanceServiceTestImpl());
 
@@ -221,7 +222,7 @@ public class ContextMachineTest extends AbstractTest {
     @Test
     public void test_context_machine_full_via_big_queue_nested_context_success() throws IOException, JSONException, InterruptedException {
         ObjectMapper objectMapper = new ObjectMapper();
-        ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        ContextInstanceImpl context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         ContextMachine contextMachine  = new ContextMachine(context, new ScheduledContextInstanceServiceTestImpl());
         contextMachine.init();
@@ -441,7 +442,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_get_context_status() throws IOException {
-        ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        ContextInstanceImpl context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         ContextMachine contextMachine  = new ContextMachine(context, new ScheduledContextInstanceServiceTestImpl());
         InstanceStatus status = contextMachine.getContextStatus("Context3");
@@ -481,7 +482,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_get_context_status_error() throws IOException {
-        ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        ContextInstanceImpl context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         ContextMachine contextMachine  = new ContextMachine(context, new ScheduledContextInstanceServiceTestImpl());
         InstanceStatus status = contextMachine.getContextStatus("Context3");
@@ -513,7 +514,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_get_status_non_existent_context() throws IOException {
-        ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        ContextInstanceImpl context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         ContextMachine contextMachine  = new ContextMachine(context, new ScheduledContextInstanceServiceTestImpl());
         InstanceStatus status = contextMachine.getContextStatus("NonExistentContext");
@@ -523,7 +524,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_get_context() throws IOException {
-        ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        ContextInstanceImpl context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         ContextMachine contextMachine  = new ContextMachine(context, new ScheduledContextInstanceServiceTestImpl());
         ContextInstance contextInstance = contextMachine.getContext("Context3");

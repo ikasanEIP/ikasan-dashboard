@@ -1,17 +1,17 @@
 package org.ikasan.scheduler.core.model.event;
 
-import org.ikasan.scheduler.core.model.instance.ContextInstance;
+import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
 public class ContextInstanceStateChangeEvent extends StateChangeEvent {
-    private ContextInstance contextInstance;
+    private ContextInstanceImpl contextInstance;
 
-    public ContextInstanceStateChangeEvent(ContextInstance contextInstance, InstanceStatus previousStatus, InstanceStatus newStatus) {
+    public ContextInstanceStateChangeEvent(ContextInstanceImpl contextInstance, InstanceStatus previousStatus, InstanceStatus newStatus) {
         super(previousStatus, newStatus);
         this.contextInstance = contextInstance;
     }
 
-    public ContextInstance getContextInstance() {
+    public ContextInstanceImpl getContextInstance() {
         return contextInstance;
     }
 }

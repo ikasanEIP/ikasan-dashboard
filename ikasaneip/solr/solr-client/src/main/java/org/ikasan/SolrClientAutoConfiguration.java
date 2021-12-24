@@ -1,9 +1,9 @@
 package org.ikasan;
 
 import org.ikasan.scheduled.context.dao.SolrScheduledContextDaoImpl;
-import org.ikasan.scheduled.context.dao.SolrScheduledContextInstanceDaoImpl;
-import org.ikasan.scheduled.context.service.SolrScheduledContextInstanceServiceImpl;
 import org.ikasan.scheduled.context.service.SolrScheduledContextServiceImpl;
+import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl;
+import org.ikasan.scheduled.instance.service.SolrScheduledContextInstanceServiceImpl;
 import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobRecordDaoImpl;
 import org.ikasan.scheduled.job.dao.SolrInternalEventDrivenJobRecordDaoImpl;
 import org.ikasan.scheduled.job.dao.SolrQuartzScheduleDrivenJobRecordDaoImpl;

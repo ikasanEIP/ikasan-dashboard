@@ -2,7 +2,7 @@ package org.ikasan.scheduler.core.component.converter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.scheduler.core.AbstractTest;
-import org.ikasan.scheduler.core.model.instance.ContextInstance;
+import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
 import org.ikasan.scheduler.core.model.status.ContextInstanceStatus;
 import org.ikasan.scheduler.core.service.ContextService;
 import org.junit.Test;
@@ -15,7 +15,7 @@ public class ContextInstanceToContextInstanceStatusConverterTest extends Abstrac
 
     @Test
     public void test() throws IOException {
-        ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        ContextInstanceImpl context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         ContextInstanceToContextInstanceStatusConverter converter = new ContextInstanceToContextInstanceStatusConverter();
         ContextInstanceStatus contextInstanceStatus = converter.convert(context);

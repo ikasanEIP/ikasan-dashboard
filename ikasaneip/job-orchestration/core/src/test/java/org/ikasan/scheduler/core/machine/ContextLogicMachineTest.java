@@ -1,8 +1,9 @@
 package org.ikasan.scheduler.core.machine;
 
 import org.ikasan.scheduler.core.AbstractTest;
-import org.ikasan.scheduler.core.model.instance.ContextInstance;
+import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
 import org.ikasan.scheduler.core.service.ContextService;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,14 +17,14 @@ public class ContextLogicMachineTest extends AbstractTest {
 
     @Test
         public void test_context_machine() throws IOException {
-        ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        ContextInstanceImpl context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         Assert.assertFalse(contextLogicMachine.contextLogicSatisfied(context.getContextsMap(), context.getContextDependencies()));
     }
 
     @Test
     public void test_context_machine_context_all_satisfied() throws IOException {
-        ContextInstance context1 = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        ContextInstanceImpl context1 = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         // Get a handle to Context2 which has a dependency on Context4.
         ContextInstance context2 = context1.getContexts().get(0);
@@ -49,7 +50,7 @@ public class ContextLogicMachineTest extends AbstractTest {
         Assert.assertFalse(contextLogicMachine.contextLogicSatisfied(context1.getContextsMap(), context1.getContextDependencies()));
 
         // Get a handle to Context5 which has a dependency on Context2.
-        ContextInstance context5 = context1.getContexts().get(1);
+        ContextInstance  context5 = context1.getContexts().get(1);
         // Context5 has all of its dependencies satisfied.
         Assert.assertTrue(contextLogicMachine.contextLogicSatisfied(context5.getContextsMap(), context5.getContextDependencies()));
         context5.setStatus(InstanceStatus.COMPLETE);
