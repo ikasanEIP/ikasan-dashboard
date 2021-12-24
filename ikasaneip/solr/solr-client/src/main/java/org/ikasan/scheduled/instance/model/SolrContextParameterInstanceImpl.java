@@ -1,10 +1,10 @@
-package org.ikasan.scheduler.core.model.instance;
+package org.ikasan.scheduled.instance.model;
 
-import org.ikasan.scheduler.core.model.context.ContextParameterImpl;
+import org.ikasan.scheduled.context.model.SolrContextParameterImpl;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 
 
-public class ContextParameterInstanceImpl extends ContextParameterImpl implements ContextParameterInstance {
+public class SolrContextParameterInstanceImpl extends SolrContextParameterImpl implements ContextParameterInstance {
     private Object value;
 
     public Object getValue() {

@@ -12,17 +12,19 @@ import org.ikasan.scheduler.core.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduler.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.scheduler.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.scheduler.core.listener.SchedulerJobInstanceStateChangeEventListener;
-import org.ikasan.scheduler.core.model.instance.ContextInstance;
+import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
 import org.ikasan.scheduler.core.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduler.core.model.status.ContextInstanceStatus;
 import org.ikasan.scheduler.core.service.ContextService;
 import org.ikasan.scheduler.core.model.context.ContextImpl;
-import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ContextMachine {
     private Logger logger = LoggerFactory.getLogger(ContextMachine.class);
 
-    private ContextInstance contextInstance;
+    private ContextInstanceImpl contextInstance;
     private JobLogicMachine jobLogicMachine;
     private ContextInstanceToContextInstanceStatusConverter statusConverter;
     private List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners;
@@ -56,7 +58,7 @@ public class ContextMachine {
     private long maxWait;
     private DryRunParameters dryRunParameters;
 
-    public ContextMachine(ContextImpl context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService) {
+    public ContextMachine(ContextImpl context, ContextInstanceImpl contextInstance, ScheduledContextInstanceService scheduledContextInstanceService) {
         this(contextInstance, scheduledContextInstanceService);
         this.context = context;
     }
@@ -65,7 +67,7 @@ public class ContextMachine {
      *
      * @param contextInstance
      */
-    public ContextMachine(ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService) {
+    public ContextMachine(ContextInstanceImpl contextInstance, ScheduledContextInstanceService scheduledContextInstanceService) {
         this.contextInstance = contextInstance;
         this.jobLogicMachine = new JobLogicMachine();
         this.statusConverter = new ContextInstanceToContextInstanceStatusConverter();
@@ -158,7 +160,7 @@ public class ContextMachine {
      *
      * @return
      */
-    public ContextInstance getContext() {
+    public ContextInstanceImpl getContext() {
         return this.contextInstance;
     }
 
@@ -192,7 +194,7 @@ public class ContextMachine {
      * @param scheduledProcessEvent
      * @return
      */
-    private List<SchedulerJobInitiationEvent> getInitiationEvents(ContextInstance contextInstance, ScheduledProcessEvent scheduledProcessEvent) {
+    private List<SchedulerJobInitiationEvent> getInitiationEvents(ContextInstanceImpl contextInstance, ScheduledProcessEvent scheduledProcessEvent) {
          if(!contextInstance.getStatus().equals(InstanceStatus.COMPLETE)
              && contextInstance.getScheduledJobsMap().containsKey(scheduledProcessEvent.getAgentName()
                 + "-" + scheduledProcessEvent.getJobName())) {
@@ -212,9 +214,9 @@ public class ContextMachine {
         List<SchedulerJobInitiationEvent> results = new ArrayList<>();
 
         if (contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()){
-            for(ContextImpl instance: contextInstance.getContexts()) {
+            for(ContextInstance instance: contextInstance.getContexts()) {
                 // Recursively work our way through all nested contexts to determine if and job initiation events need to be raised.
-                results.addAll(this.getInitiationEvents((ContextInstance) instance, scheduledProcessEvent));
+                results.addAll(this.getInitiationEvents((ContextInstanceImpl) instance, scheduledProcessEvent));
                 this.setContextStatus(contextInstance);
             }
         }
@@ -252,7 +254,7 @@ public class ContextMachine {
      *
      * @param contextInstance
      */
-    private void setContextStatus(ContextInstance contextInstance) {
+    private void setContextStatus(ContextInstanceImpl contextInstance) {
         if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
             AtomicBoolean allJobsComplete = new AtomicBoolean(true);
             AtomicBoolean anyErrorJobs = new AtomicBoolean(false);
@@ -320,11 +322,12 @@ public class ContextMachine {
         inboundListenableFuture.addListener(new InboundQueueMessageRunner(), contextExecutor);
     }
 
-    private void saveContext() throws JsonProcessingException {
-        ScheduledContextInstanceRecordImpl scheduledContextInstanceRecord
-            = new ScheduledContextInstanceRecordImpl(this.contextInstance.getId(), this.contextInstance.getName(),
-                this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this.contextInstance),
-                this.contextInstance.getCreatedDateTime());
+    private void saveContext() {
+        ScheduledContextInstanceRecord scheduledContextInstanceRecord
+            = new ScheduledContextInstanceRecordImpl();
+        scheduledContextInstanceRecord.setContextName(this.contextInstance.getName());
+        scheduledContextInstanceRecord.setContextInstance(this.contextInstance);
+        scheduledContextInstanceRecord.setTimestamp(this.contextInstance.getCreatedDateTime());
         scheduledContextInstanceRecord.setStatus(this.contextInstance.getStatus().name());
 
         scheduledContextInstanceService.save(scheduledContextInstanceRecord);
@@ -384,7 +387,9 @@ public class ContextMachine {
                 schedulerJobInitiationEvent
                     = objectMapper.readValue(event, SchedulerJobInitiationEventImpl.class);
 
-                schedulerJobInitiationEventRaisedListener.onSchedulerJobInitiationEventRaised(schedulerJobInitiationEvent);
+                if(schedulerJobInitiationEventRaisedListener != null) {
+                    schedulerJobInitiationEventRaisedListener.onSchedulerJobInitiationEventRaised(schedulerJobInitiationEvent);
+                }
 
                 // We've been successful so set the attempts back to 0.
                 attempts = 0;

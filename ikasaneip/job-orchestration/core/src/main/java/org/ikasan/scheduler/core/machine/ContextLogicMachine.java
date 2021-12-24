@@ -1,13 +1,13 @@
 package org.ikasan.scheduler.core.machine;
 
-import org.ikasan.scheduler.core.model.instance.ContextInstance;
 import org.ikasan.spec.scheduled.context.model.ContextDependency;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
 import java.util.List;
 import java.util.Map;
 
-public class ContextLogicMachine extends AbstractLogicMachine<ContextInstance> {
+public class ContextLogicMachine extends AbstractLogicMachine<ContextInstance   > {
 
 
     public boolean contextLogicSatisfied(Map<String, ContextInstance> contextInstanceMap, List<ContextDependency> contextDependencies) {

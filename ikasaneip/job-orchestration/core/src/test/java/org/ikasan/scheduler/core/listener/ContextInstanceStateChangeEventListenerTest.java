@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.scheduler.core.AbstractTest;
 import org.ikasan.scheduler.core.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.scheduler.core.machine.ContextMachine;
-import org.ikasan.scheduler.core.model.instance.ContextInstance;
+import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
 import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduler.core.service.ContextService;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -19,7 +19,7 @@ public class ContextInstanceStateChangeEventListenerTest extends AbstractTest {
 
     @Test
     public void test_context_instance_event_listener_success() throws IOException, InterruptedException {
-        ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        ContextInstanceImpl context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         ContextMachine contextMachine  = new ContextMachine(context, new ScheduledContextInstanceServiceTestImpl());
         contextMachine.init();

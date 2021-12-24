@@ -3,11 +3,11 @@ package org.ikasan.scheduler.context.register;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.scheduler.context.cache.ContextMachineCache;
 import org.ikasan.scheduler.core.machine.ContextMachine;
-import org.ikasan.scheduler.core.model.instance.ContextInstance;
+import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
-import org.ikasan.spec.scheduled.context.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduler.DashboardJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -68,7 +68,8 @@ public class ContextInstanceRegisterJob implements DashboardJob {
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         try {
             ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(this.jobName);
-            ContextInstance contextInstance = this.objectMapper.readValue(scheduledContextRecord.getContext(), ContextInstance.class);
+            ContextInstanceImpl contextInstance = this.objectMapper
+                .readValue(this.objectMapper.writeValueAsBytes(scheduledContextRecord.getContext()), ContextInstanceImpl.class);
 
             ContextMachine contextMachine = new ContextMachine(contextInstance, this.scheduledContextInstanceService);
             contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
