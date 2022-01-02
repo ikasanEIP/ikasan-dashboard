@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends SchedulerJob> implements Context<CONTEXT, CONTEXT_PARAM, JOB> {
     protected String name;
+    protected String description;
+    protected String timezone;
     protected List<JobDependency> jobDependencies;
     protected List<CONTEXT> contexts;
     protected List<ContextDependency> contextDependencies;
@@ -26,26 +28,52 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     @JsonIgnore
     protected Map<String, CONTEXT> contextsMap = new HashMap<>();
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
 
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    @Override
+    public String getTimezone() {
+        return timezone;
+    }
+
+    @Override
+    public void setTimezone(String timezone) {
+        this.timezone = timezone;
+    }
+
+    @Override
     public List<CONTEXT_PARAM> getContextParameters() {
         return contextParameters;
     }
 
+    @Override
     public void setContextParameters(List<CONTEXT_PARAM> contextParameters) {
         this.contextParameters = contextParameters;
     }
 
+    @Override
     public List<JOB> getScheduledJobs() {
         return scheduledJobs;
     }
 
+    @Override
     public void setScheduledJobs(List<JOB> scheduledJobs) {
         this.scheduledJobs = scheduledJobs;
         if(scheduledJobs != null) {
@@ -54,18 +82,22 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
         }
     }
 
+    @Override
     public List<JobDependency> getJobDependencies() {
         return jobDependencies;
     }
 
+    @Override
     public void setJobDependencies(List<JobDependency> jobDependencies) {
         this.jobDependencies = jobDependencies;
     }
 
+    @Override
     public List<CONTEXT> getContexts() {
         return contexts;
     }
 
+    @Override
     public void setContexts(List<CONTEXT> contexts) {
         this.contexts = contexts;
         if(this.contexts != null) {
@@ -74,34 +106,42 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
         }
     }
 
+    @Override
     public List<ContextDependency> getContextDependencies() {
         return contextDependencies;
     }
 
+    @Override
     public void setContextDependencies(List<ContextDependency> contextDependencies) {
         this.contextDependencies = contextDependencies;
     }
 
+    @Override
     public Map<String, JOB> getScheduledJobsMap() {
         return scheduledJobsMap;
     }
 
+    @Override
     public Map<String, CONTEXT> getContextsMap() {
         return contextsMap;
     }
 
+    @Override
     public String getTimeWindowStart() {
         return timeWindowStart;
     }
 
+    @Override
     public void setTimeWindowStart(String timeWindowStart) {
         this.timeWindowStart = timeWindowStart;
     }
 
+    @Override
     public String getTimeWindowEnd() {
         return timeWindowEnd;
     }
 
+    @Override
     public void setTimeWindowEnd(String timeWindowEnd) {
         this.timeWindowEnd = timeWindowEnd;
     }

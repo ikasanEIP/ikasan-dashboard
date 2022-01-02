@@ -108,7 +108,9 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
                 ContextInstanceImpl contextInstance = contextService.getContextInstance(new String(contextFile));
                 ContextImpl context = contextService.getContext(new String(contextFile));
                 contextInstance.setId(UUID.randomUUID().toString());
-                ContextMachine contextMachine = new ContextMachine(context, contextInstance, scheduledContextInstanceService);
+                // todo sort out the internal jobs and the queue dir.
+                ContextMachine contextMachine = new ContextMachine(context, contextInstance, scheduledContextInstanceService
+                    , null, "/sandbox/mick/bigquque");
                 contextMachine.init();
                 contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
                     // todo work out how to get agent url

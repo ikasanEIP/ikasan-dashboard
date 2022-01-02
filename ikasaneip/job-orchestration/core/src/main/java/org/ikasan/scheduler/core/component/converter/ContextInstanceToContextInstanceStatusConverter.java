@@ -12,10 +12,10 @@ import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContextInstanceToContextInstanceStatusConverter implements Converter<ContextInstanceImpl, ContextInstanceStatus> {
+public class ContextInstanceToContextInstanceStatusConverter implements Converter<ContextInstance, ContextInstanceStatus> {
 
     @Override
-    public ContextInstanceStatus convert(ContextInstanceImpl contextInstance) throws TransformationException {
+    public ContextInstanceStatus convert(ContextInstance contextInstance) throws TransformationException {
         ContextInstanceStatus contextInstanceStatus = new ContextInstanceStatus();
 
         try {
