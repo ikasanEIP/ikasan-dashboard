@@ -3,6 +3,8 @@ package org.ikasan.scheduler.core.model.instance;
 import org.ikasan.scheduler.core.model.context.ContextImpl;
 import org.ikasan.spec.scheduled.instance.model.*;
 
+import java.util.UUID;
+
 public class ContextInstanceImpl extends ContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance>
     implements StatefulEntity, ContextInstance {
     private String id;
@@ -14,6 +16,7 @@ public class ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPar
     private InstanceStatus status;
 
     public ContextInstanceImpl() {
+        this.id = UUID.randomUUID().toString();
         status = InstanceStatus.WAITING;
         createdDateTime = System.currentTimeMillis();
         updatedDateTime = System.currentTimeMillis();

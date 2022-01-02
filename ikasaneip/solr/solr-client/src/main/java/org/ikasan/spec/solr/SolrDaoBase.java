@@ -10,6 +10,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SearchResultsImpl;
+import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
 import org.ikasan.solr.util.SolrTokenizerQueryBuilder;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
 import org.ikasan.spec.search.SearchResults;
@@ -675,6 +676,52 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         }
         catch (Exception e) {
             throw new RuntimeException("Error resolving FileEventDrivenJobRecord by query [" + query + "] from the ikasan solr index!", e);
+        }
+    }
+
+    /**
+     * Helper method to find by query.
+     *
+     * @param query
+     */
+    protected List<T> findByQuery(SolrQuery query, Class clazz, int offset, int limit) {
+        logger.debug("queryString: " + query);
+
+        try {
+            if(offset > -1 && limit > -1) {
+                query.setRows(limit);
+                query.setStart(offset);
+
+                QueryRequest req = new QueryRequest(query);
+                req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+
+                QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
+
+                return rsp.getBeans(clazz);
+            }
+            else {
+                query.setStart(0);
+                query.setRows(0);
+
+                QueryRequest req = new QueryRequest(query);
+                req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+
+                QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
+
+                query.setRows((int)rsp.getResults().getNumFound());
+
+                req = new QueryRequest(query);
+                req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+
+                rsp = req.process(this.solrClient, SolrConstants.CORE);
+
+                return rsp.getBeans(clazz);
+            }
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Error resolving " + clazz.getName() + " record data by query [" + query
+                + "] from the ikasan solr index!", e);
         }
     }
 }
