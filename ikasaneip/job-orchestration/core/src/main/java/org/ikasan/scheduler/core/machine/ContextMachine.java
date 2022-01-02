@@ -7,17 +7,17 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
 import org.ikasan.scheduler.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
-import org.ikasan.scheduler.core.model.event.ContextInstanceStateChangeEvent;
-import org.ikasan.scheduler.core.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduler.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.scheduler.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.scheduler.core.listener.SchedulerJobInstanceStateChangeEventListener;
+import org.ikasan.scheduler.core.model.event.ContextInstanceStateChangeEvent;
+import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.scheduler.core.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
 import org.ikasan.scheduler.core.model.instance.ScheduledContextInstanceRecordImpl;
-import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduler.core.model.status.ContextInstanceStatus;
 import org.ikasan.scheduler.core.service.ContextService;
-import org.ikasan.scheduler.core.model.context.ContextImpl;
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
@@ -25,12 +25,14 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,7 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ContextMachine {
     private Logger logger = LoggerFactory.getLogger(ContextMachine.class);
 
-    private ContextInstanceImpl contextInstance;
+    private ContextInstance contextInstance;
     private JobLogicMachine jobLogicMachine;
     private ContextInstanceToContextInstanceStatusConverter statusConverter;
     private List<ContextInstanceStateChangeEventListener> contextInstanceStateChangeEventListeners;
@@ -53,29 +55,29 @@ public class ContextMachine {
     private ObjectMapper objectMapper;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener;
-    private ContextImpl context;
+    private Context context;
     private int attempts;
     private long maxWait;
     private DryRunParameters dryRunParameters;
+    private Map<String, InternalEventDrivenJob> internalEventDrivenJobs;
+    private String queueDir;
 
-    public ContextMachine(ContextImpl context, ContextInstanceImpl contextInstance, ScheduledContextInstanceService scheduledContextInstanceService) {
-        this(contextInstance, scheduledContextInstanceService);
+    // todo clean up the transient queues once a context is complete. Also need to initialise
+    //  the queue names based on the context identifier.
+    public ContextMachine(Context context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
+                          Map<String, InternalEventDrivenJob> internalEventDrivenJobs, String queueDir) {
+        this.internalEventDrivenJobs = internalEventDrivenJobs;
         this.context = context;
-    }
-    /**
-     * Constructor
-     *
-     * @param contextInstance
-     */
-    public ContextMachine(ContextInstanceImpl contextInstance, ScheduledContextInstanceService scheduledContextInstanceService) {
+
         this.contextInstance = contextInstance;
+        this.internalEventDrivenJobs = internalEventDrivenJobs;
+        this.queueDir = queueDir;
         this.jobLogicMachine = new JobLogicMachine();
         this.statusConverter = new ContextInstanceToContextInstanceStatusConverter();
         this.contextInstanceStateChangeEventListeners = new ArrayList<>();
         this.statusListenerExecutor = Executors.newSingleThreadExecutor();
         this.contextExecutor = Executors.newSingleThreadExecutor();
         this.schedulerInitiatorEventRaisedListenerExecutor = Executors.newSingleThreadExecutor();
-//        this.schedulerInitiatorEventRaisedListenerExecutor = Executors.newCachedThreadPool();
         this.objectMapper = new ObjectMapper();
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -83,11 +85,10 @@ public class ContextMachine {
     }
 
     public void init() throws IOException {
-        String queueDir = "/sandbox/mick/bigquque";
-        String inboundQueueName = "inbound-context-queue";
-        String outboundQueueName = "outbound-context-queue";
-        this.inboundQueue = new BigQueueImpl(queueDir, inboundQueueName);
-        this.outboundQueue = new BigQueueImpl(queueDir, outboundQueueName);
+        String inboundQueueName = "inbound-"+this.contextInstance.getId()+"-queue";
+        String outboundQueueName = "outbound-"+this.contextInstance.getId()+"-queue";
+        this.inboundQueue = new BigQueueImpl(this.queueDir, inboundQueueName);
+        this.outboundQueue = new BigQueueImpl(this.queueDir, outboundQueueName);
 
         inboundListenableFuture = this.inboundQueue.peekAsync();
         inboundListenableFuture.addListener(new InboundQueueMessageRunner(), this.contextExecutor);
@@ -160,7 +161,7 @@ public class ContextMachine {
      *
      * @return
      */
-    public ContextInstanceImpl getContext() {
+    public ContextInstance getContext() {
         return this.contextInstance;
     }
 
@@ -194,7 +195,7 @@ public class ContextMachine {
      * @param scheduledProcessEvent
      * @return
      */
-    private List<SchedulerJobInitiationEvent> getInitiationEvents(ContextInstanceImpl contextInstance, ScheduledProcessEvent scheduledProcessEvent) {
+    private List<SchedulerJobInitiationEvent> getInitiationEvents(ContextInstance contextInstance, ScheduledProcessEvent scheduledProcessEvent) {
          if(!contextInstance.getStatus().equals(InstanceStatus.COMPLETE)
              && contextInstance.getScheduledJobsMap().containsKey(scheduledProcessEvent.getAgentName()
                 + "-" + scheduledProcessEvent.getJobName())) {
@@ -202,7 +203,7 @@ public class ContextMachine {
              // Delegate to the JobLogicMachine to determine if any any SchedulerJobInitiationEvents are
              // required to be raised.
              List<SchedulerJobInitiationEvent> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
-                 , contextInstance, this.dryRunParameters);
+                 , contextInstance, this.dryRunParameters, this.internalEventDrivenJobs);
 
              // Update the context status after event received and attached
              // to the job instance.
@@ -254,7 +255,7 @@ public class ContextMachine {
      *
      * @param contextInstance
      */
-    private void setContextStatus(ContextInstanceImpl contextInstance) {
+    private void setContextStatus(ContextInstance contextInstance) {
         if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
             AtomicBoolean allJobsComplete = new AtomicBoolean(true);
             AtomicBoolean anyErrorJobs = new AtomicBoolean(false);
@@ -316,10 +317,6 @@ public class ContextMachine {
     private void issueContextInstanceStateChangeEvent(ContextInstanceStateChangeEvent event) {
         this.statusListenerExecutor.submit(() -> this.contextInstanceStateChangeEventListeners
             .forEach(listener -> listener.onContextInstanceStateChangeEvent(event)));
-    }
-
-    private void addInboundQueueRunner() {
-        inboundListenableFuture.addListener(new InboundQueueMessageRunner(), contextExecutor);
     }
 
     private void saveContext() {

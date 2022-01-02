@@ -1,7 +1,10 @@
 package org.ikasan.scheduler.core;
 
 import org.apache.commons.io.IOUtils;
+import org.ikasan.scheduler.core.model.context.ContextParameterImpl;
 import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
+import org.ikasan.spec.scheduled.context.model.ContextParameter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +29,14 @@ public class AbstractTest
         eventInstance.setSuccessful(isSuccessful);
 
         return eventInstance;
+    }
+
+    protected ContextParameter getContextParameter(String name, String type) {
+        ContextParameterImpl contextParameter = new ContextParameterImpl();
+        contextParameter.setName(name);
+        contextParameter.setType(type);
+
+        return contextParameter;
     }
 
 }

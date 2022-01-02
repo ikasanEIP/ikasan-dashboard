@@ -26,7 +26,9 @@ import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
 import org.ikasan.scheduler.core.model.context.ContextTemplateImpl;
+import org.ikasan.scheduler.core.model.context.ScheduledContextRecordImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
+import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
@@ -38,9 +40,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ContextDialog extends AbstractCloseableResizableDialog {
 
     Logger logger = LoggerFactory.getLogger(ContextDialog.class);
-
-//    private ComboBox<String> agentCb;
-//    private Checkbox startAutomaticCb;
 
     // Fields to capture schedule job properties.
     private TextField contextNameTf;
@@ -67,7 +66,7 @@ public class ContextDialog extends AbstractCloseableResizableDialog {
 
     private SystemEventLogger systemEventLogger;
 
-
+    private ScheduledContextService scheduledContextService;
 
     /**
      * Constructor
@@ -77,8 +76,9 @@ public class ContextDialog extends AbstractCloseableResizableDialog {
     public ContextDialog(SystemEventLogger systemEventLogger, ScheduledContextService scheduledContextService) {
         super.showResize(false);
         // todo translation
-        super.title.setText("Scheduled Job");
+        super.title.setText("Context");
         this.systemEventLogger = systemEventLogger;
+        this.scheduledContextService = scheduledContextService;
         this.contextTemplate = new ContextTemplateImpl();
 
         this.quartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
@@ -149,32 +149,31 @@ public class ContextDialog extends AbstractCloseableResizableDialog {
         formLayout = new FormLayout();
 
         // Fields to capture context.
-        H3 scheduleDetailsLabel = new H3(getTranslation("header.schedule-details", UI.getCurrent().getLocale()));
+        H3 scheduleDetailsLabel = new H3(getTranslation("header.context", UI.getCurrent().getLocale()));
         formLayout.add(scheduleDetailsLabel, 2);
 
-        this.contextNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
+        this.contextNameTf = new TextField(getTranslation("label.context-name", UI.getCurrent().getLocale()));
         this.contextNameTf.setId("jobNameTf");
         this.contextNameTf.setRequired(true);
         this.contextNameTf.setEnabled(this.editMode == EditMode.NEW);
         formBinder.forField(this.contextNameTf)
-            .withValidator(jobName -> !jobName.isEmpty(), getTranslation("error.missing-job-name", UI.getCurrent().getLocale()))
+            .withValidator(jobName -> !jobName.isEmpty(), getTranslation("error.missing-context-name", UI.getCurrent().getLocale()))
             .bind(ContextTemplateImpl::getName, ContextTemplateImpl::setName);
-        formLayout.add(contextNameTf);
+        formLayout.add(contextNameTf, 2);
 
 
-        this.contextDescriptionTa = new TextArea(getTranslation("label.job-description", UI.getCurrent().getLocale()));
+        this.contextDescriptionTa = new TextArea(getTranslation("label.context-description", UI.getCurrent().getLocale()));
         this.contextDescriptionTa.setRequired(true);
-        this.contextDescriptionTa.setId("jobDescriptionTa");
+        this.contextDescriptionTa.setId("contextDescriptionTa");
         contextDescriptionTa.getStyle().set("minHeight", "100px");
-        // todo add context description to domain object
-//        formBinder.forField(this.contextDescriptionTa)
-//            .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
-//            .bind(SolrQuartzScheduleDrivenJobImpl::getJobDescription, SolrQuartzScheduleDrivenJobImpl::setJobDescription);
+        formBinder.forField(this.contextDescriptionTa)
+            .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-context-description", UI.getCurrent().getLocale()))
+            .bind(ContextTemplateImpl::getDescription, ContextTemplateImpl::setDescription);
         formLayout.add(contextDescriptionTa, 2);
 
 
-        Icon builderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), "Build cron expression", "14pt", "rgba(241, 90, 35, 1.0)");
-        builderIcon.addClickListener(event -> {
+        Icon timeWindowStartBuilderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), "Build cron expression", "14pt", "rgba(241, 90, 35, 1.0)");
+        timeWindowStartBuilderIcon.addClickListener(event -> {
             CronBuilderDialog dialog = new CronBuilderDialog();
             dialog.init(this.timeWindowStartExpressionTf.getValue());
             dialog.open();
@@ -186,20 +185,33 @@ public class ContextDialog extends AbstractCloseableResizableDialog {
             });
         });
 
-        this.timeWindowStartExpressionTf = new TextField(getTranslation("label.cron-expression", UI.getCurrent().getLocale()));
+        this.timeWindowStartExpressionTf = new TextField(getTranslation("label.context-time-window-start-cron-expression", UI.getCurrent().getLocale()));
         this.timeWindowStartExpressionTf.setRequired(true);
-        this.timeWindowStartExpressionTf.setId("cronExpressionTf");
-        this.timeWindowStartExpressionTf.setSuffixComponent(builderIcon);
+        this.timeWindowStartExpressionTf.setId("timeWindowStartExpressionTf");
+        this.timeWindowStartExpressionTf.setSuffixComponent(timeWindowStartBuilderIcon);
         formBinder.forField(this.timeWindowStartExpressionTf)
             .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
             .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
             .bind(ContextTemplateImpl::getTimeWindowStart, ContextTemplateImpl::setTimeWindowStart);
         formLayout.add(timeWindowStartExpressionTf);
 
-        this.timeWindowEndExpressionTf = new TextField(getTranslation("label.cron-expression", UI.getCurrent().getLocale()));
+        Icon timeWindowEndBuilderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), "Build cron expression", "14pt", "rgba(241, 90, 35, 1.0)");
+        timeWindowEndBuilderIcon.addClickListener(event -> {
+            CronBuilderDialog dialog = new CronBuilderDialog();
+            dialog.init(this.timeWindowEndExpressionTf.getValue());
+            dialog.open();
+
+            dialog.addOpenedChangeListener(openedChangeEvent -> {
+                if(!openedChangeEvent.isOpened() && dialog.isSaveClose()) {
+                    this.timeWindowEndExpressionTf.setValue(dialog.getCronExpression());
+                }
+            });
+        });
+
+        this.timeWindowEndExpressionTf = new TextField(getTranslation("label.context-time-window-end-cron-expression", UI.getCurrent().getLocale()));
         this.timeWindowEndExpressionTf.setRequired(true);
-        this.timeWindowEndExpressionTf.setId("cronExpressionTf");
-        this.timeWindowEndExpressionTf.setSuffixComponent(builderIcon);
+        this.timeWindowEndExpressionTf.setId("timeWindowEndExpressionTf");
+        this.timeWindowEndExpressionTf.setSuffixComponent(timeWindowEndBuilderIcon);
         formBinder.forField(this.timeWindowEndExpressionTf)
             .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
             .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
@@ -232,10 +244,9 @@ public class ContextDialog extends AbstractCloseableResizableDialog {
         try {
             AtomicBoolean isValid = new AtomicBoolean(true);
 
-//            if(this.timezoneCb.getValue() != null) {
-//                // todo add timezone to the domain object
-//                contextTemplate.setTimeZone(this.timezoneCb.getValue().zoneId);
-//            }
+            if(this.timezoneCb.getValue() != null) {
+                contextTemplate.setTimezone(this.timezoneCb.getValue().zoneId);
+            }
 
             formBinder.writeBean(contextTemplate);
 
@@ -256,8 +267,13 @@ public class ContextDialog extends AbstractCloseableResizableDialog {
      *
      * @param contextTemplate
      */
-    public void createOrUpdateContext(ContextTemplateImpl contextTemplate) throws JsonProcessingException {
+    public void createOrUpdateContext(ContextTemplateImpl contextTemplate) {
+        ScheduledContextRecord scheduledContextRecord = new ScheduledContextRecordImpl();
+        scheduledContextRecord.setTimestamp(System.currentTimeMillis());
+        scheduledContextRecord.setContextName(contextTemplate.getName());
+        scheduledContextRecord.setContext(contextTemplate);
 
+        this.scheduledContextService.save(scheduledContextRecord);
     }
 
 
