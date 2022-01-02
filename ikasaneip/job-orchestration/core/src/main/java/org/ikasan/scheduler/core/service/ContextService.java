@@ -42,7 +42,7 @@ public class ContextService {
         return objectMapper.readValue(context, ContextTemplateImpl.class);
     }
 
-    public String getContextString(ContextImpl context) throws JsonProcessingException {
+    public String getContextString(Context context) throws JsonProcessingException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(context);
     }
 
@@ -50,7 +50,7 @@ public class ContextService {
         return objectMapper.readValue(context, ContextInstanceImpl.class);
     }
 
-    public String getContextInstanceString(ContextInstanceImpl context) throws JsonProcessingException {
+    public String getContextInstanceString(ContextInstance context) throws JsonProcessingException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(context);
     }
 }

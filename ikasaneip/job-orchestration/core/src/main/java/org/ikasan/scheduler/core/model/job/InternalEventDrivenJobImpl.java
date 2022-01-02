@@ -1,7 +1,9 @@
 package org.ikasan.scheduler.core.model.job;
 
+import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class InternalEventDrivenJobImpl extends SchedulerJobImpl implements InternalEventDrivenJob {
@@ -9,6 +11,11 @@ public class InternalEventDrivenJobImpl extends SchedulerJobImpl implements Inte
     private List<String> successfulReturnCodes;
     private String workingDirectory;
     private String commandLine;
+    private long minExecutionTime;
+    private long maxExecutionTime;
+    private List<ContextParameter> contextParameters = new ArrayList<>();
+
+
     @Override
     public List<String> getSuccessfulReturnCodes() {
         return this.successfulReturnCodes;
@@ -37,6 +44,36 @@ public class InternalEventDrivenJobImpl extends SchedulerJobImpl implements Inte
     @Override
     public void setCommandLine(String commandLine) {
         this.commandLine = commandLine;
+    }
+
+    @Override
+    public long getMinExecutionTime() {
+        return minExecutionTime;
+    }
+
+    @Override
+    public void setMinExecutionTime(long minExecutionTime) {
+        this.minExecutionTime = minExecutionTime;
+    }
+
+    @Override
+    public long getMaxExecutionTime() {
+        return maxExecutionTime;
+    }
+
+    @Override
+    public void setMaxExecutionTime(long maxExecutionTime) {
+        this.maxExecutionTime = maxExecutionTime;
+    }
+
+    @Override
+    public List<ContextParameter> getContextParameters() {
+        return contextParameters;
+    }
+
+    @Override
+    public void setContextParameters(List<ContextParameter> contextParameters) {
+        this.contextParameters = contextParameters;
     }
 
     @Override

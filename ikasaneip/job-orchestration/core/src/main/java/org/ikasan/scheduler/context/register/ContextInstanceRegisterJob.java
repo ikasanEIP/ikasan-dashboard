@@ -3,6 +3,7 @@ package org.ikasan.scheduler.context.register;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.scheduler.context.cache.ContextMachineCache;
 import org.ikasan.scheduler.core.machine.ContextMachine;
+import org.ikasan.scheduler.core.model.context.ContextImpl;
 import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -13,6 +14,8 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
 
 public class ContextInstanceRegisterJob implements DashboardJob {
 
@@ -68,10 +71,14 @@ public class ContextInstanceRegisterJob implements DashboardJob {
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         try {
             ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(this.jobName);
+            ContextImpl context = this.objectMapper
+                .readValue(this.objectMapper.writeValueAsBytes(scheduledContextRecord.getContext()), ContextImpl.class);
             ContextInstanceImpl contextInstance = this.objectMapper
                 .readValue(this.objectMapper.writeValueAsBytes(scheduledContextRecord.getContext()), ContextInstanceImpl.class);
 
-            ContextMachine contextMachine = new ContextMachine(contextInstance, this.scheduledContextInstanceService);
+            // todo sort out the queue dir
+            ContextMachine contextMachine = new ContextMachine(context, contextInstance, this.scheduledContextInstanceService, new HashMap<>(),
+                "/sandbox/mick/bigquque");
             contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
                 this.schedulerService.raiseSchedulerJobInitiationEvent("", event);
             });
