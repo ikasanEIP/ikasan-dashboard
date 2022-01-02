@@ -3,6 +3,8 @@ package org.ikasan.scheduled.instance.model;
 import org.ikasan.scheduled.context.model.SolrContextImpl;
 import org.ikasan.spec.scheduled.instance.model.*;
 
+import java.util.UUID;
+
 public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance>
     implements StatefulEntity, ContextInstance {
     private String id;
@@ -17,6 +19,7 @@ public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, Co
         status = InstanceStatus.WAITING;
         createdDateTime = System.currentTimeMillis();
         updatedDateTime = System.currentTimeMillis();
+        this.id = UUID.randomUUID().toString();
     }
 
     public String getId() {

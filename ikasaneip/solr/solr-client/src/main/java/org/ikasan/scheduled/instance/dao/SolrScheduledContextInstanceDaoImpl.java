@@ -10,6 +10,7 @@ import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImp
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledContextInstanceRecord> implements ScheduledContextInstanceDao {
 
@@ -34,7 +36,7 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
 
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, ScheduledContextInstanceRecord scheduledContextInstanceRecord) {
         SolrInputDocument document = new SolrInputDocument();
-        document.addField(ID, scheduledContextInstanceRecord.getContextName() + "_" + SCHEDULED_CONTEXT_INSTANCE);
+        document.addField(ID, scheduledContextInstanceRecord.getContextInstance().getId() + "_" + SCHEDULED_CONTEXT_INSTANCE);
         document.addField(TYPE, SCHEDULED_CONTEXT_INSTANCE);
         try {
             document.addField(PAYLOAD_CONTENT, this.getPayloadContents(scheduledContextInstanceRecord.getContextInstance()));
@@ -63,7 +65,8 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
 
         logger.debug("query: " + query);
 
-        List<SolrScheduledContextInstanceRecordImpl> beans = this.findByQuery(query);
+        List<ScheduledContextInstanceRecord> beans
+            = this.findByQuery(query, SolrScheduledContextInstanceRecordImpl.class, 0, 1);
 
         if(beans.size() > 0)
         {
@@ -75,25 +78,17 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         }
     }
 
-    /**
-     * Helper method to find by query.
-     *
-     * @param query
-     */
-    private List<SolrScheduledContextInstanceRecordImpl> findByQuery(SolrQuery query) {
-        logger.debug("queryString: " + query);
+    @Override
+    public List<? extends ScheduledContextInstanceRecord> getScheduledContextInstancesByStatus(List<InstanceStatus> instanceStatuses) {
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(super.buildStringListQueryPart(instanceStatuses
+            .stream()
+            .map(instanceStatus -> instanceStatus.toString())
+            .collect(Collectors.toList()), STATUS).toString());
 
-        try {
-            QueryRequest req = new QueryRequest(query);
-            req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
-            QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
-
-            return rsp.getBeans(SolrScheduledContextInstanceRecordImpl.class);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException("Error resolving scheduled context instance record data by query [" + query + "] from the ikasan solr index!", e);
-        }
+        return this.findByQuery(solrQuery, SolrScheduledContextInstanceRecordImpl.class, -1, -1);
     }
+
+
 }

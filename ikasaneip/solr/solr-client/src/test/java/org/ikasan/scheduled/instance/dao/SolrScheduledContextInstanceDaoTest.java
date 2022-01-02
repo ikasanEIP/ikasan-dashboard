@@ -8,6 +8,7 @@ import org.apache.solr.core.NodeConfig;
 import org.apache.solr.core.SolrResourceLoader;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceImpl;
 import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.junit.After;
 import org.junit.Assert;
@@ -18,6 +19,7 @@ import org.springframework.util.FileSystemUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class SolrScheduledContextInstanceDaoTest extends SolrTestCaseJ4 {
 
@@ -71,9 +73,9 @@ public class SolrScheduledContextInstanceDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setStatus("RUNNING");
             this.dao.save(scheduledContextRecord);
 
-            ScheduledContextInstanceRecord found = this.dao.findById("contextName_scheduledContextInstance");
+            ScheduledContextInstanceRecord found = this.dao.findById(contextInstance.getId()+"_scheduledContextInstance");
 
-            Assert.assertEquals("contextName_scheduledContextInstance", found.getId());
+            Assert.assertEquals(contextInstance.getId()+"_scheduledContextInstance", found.getId());
             Assert.assertEquals("contextName", found.getContextName());
             Assert.assertEquals("contextInstance", found.getContextInstance().getName());
             Assert.assertEquals("RUNNING", found.getStatus());
@@ -99,9 +101,9 @@ public class SolrScheduledContextInstanceDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setStatus("WAITING");
             this.dao.save(scheduledContextRecord);
 
-            ScheduledContextInstanceRecord found = this.dao.findById("contextName_scheduledContextInstance");
+            ScheduledContextInstanceRecord found = this.dao.findById(contextInstance.getId()+"_scheduledContextInstance");
 
-            Assert.assertEquals("contextName_scheduledContextInstance", found.getId());
+            Assert.assertEquals(contextInstance.getId()+"_scheduledContextInstance", found.getId());
             Assert.assertEquals("contextName", found.getContextName());
             Assert.assertEquals("contextInstance", found.getContextInstance().getName());
             Assert.assertEquals("WAITING", found.getStatus());
@@ -111,13 +113,104 @@ public class SolrScheduledContextInstanceDaoTest extends SolrTestCaseJ4 {
 
             this.dao.save(found);
 
-            found = this.dao.findById("contextName_scheduledContextInstance");
+            found = this.dao.findById(contextInstance.getId()+"_scheduledContextInstance");
 
-            Assert.assertEquals("contextName_scheduledContextInstance", found.getId());
+            Assert.assertEquals(contextInstance.getId()+"_scheduledContextInstance", found.getId());
             Assert.assertEquals("contextName", found.getContextName());
             Assert.assertEquals("contextInstance", found.getContextInstance().getName());
             Assert.assertEquals("RUNNING", found.getStatus());
             Assert.assertEquals(1000000L, found.getTimestamp());
+        }
+    }
+
+    @Test
+    public void test_find_by_status_success() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrContextInstanceImpl contextInstance = new SolrContextInstanceImpl();
+            contextInstance.setName("contextInstance");
+            SolrScheduledContextInstanceRecordImpl scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setContextInstance(contextInstance);
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setStatus(InstanceStatus.WAITING.name());
+            this.dao.save(scheduledContextRecord);
+
+            contextInstance = new SolrContextInstanceImpl();
+            contextInstance.setName("contextInstance");
+            scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setContextInstance(contextInstance);
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setStatus(InstanceStatus.WAITING.name());
+            this.dao.save(scheduledContextRecord);
+
+            contextInstance = new SolrContextInstanceImpl();
+            contextInstance.setName("contextInstance");
+            scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setContextInstance(contextInstance);
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setStatus(InstanceStatus.RUNNING.name());
+            this.dao.save(scheduledContextRecord);
+
+            contextInstance = new SolrContextInstanceImpl();
+            contextInstance.setName("contextInstance");
+            scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setContextInstance(contextInstance);
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setStatus(InstanceStatus.ON_HOLD.name());
+            this.dao.save(scheduledContextRecord);
+
+            contextInstance = new SolrContextInstanceImpl();
+            contextInstance.setName("contextInstance");
+            scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setContextInstance(contextInstance);
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setStatus(InstanceStatus.COMPLETE.name());
+            this.dao.save(scheduledContextRecord);
+
+            contextInstance = new SolrContextInstanceImpl();
+            contextInstance.setName("contextInstance");
+            scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setContextInstance(contextInstance);
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setStatus(InstanceStatus.COMPLETE.name());
+            this.dao.save(scheduledContextRecord);
+
+            contextInstance = new SolrContextInstanceImpl();
+            contextInstance.setName("contextInstance");
+            scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setContextInstance(contextInstance);
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setStatus(InstanceStatus.RELEASED.name());
+            this.dao.save(scheduledContextRecord);
+
+            contextInstance = new SolrContextInstanceImpl();
+            contextInstance.setName("contextInstance");
+            scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setContextInstance(contextInstance);
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setStatus(InstanceStatus.ERROR.name());
+            this.dao.save(scheduledContextRecord);
+
+            Assert.assertEquals(1, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.ERROR)).size());
+            Assert.assertEquals(1, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.RELEASED)).size());
+            Assert.assertEquals(2, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.COMPLETE)).size());
+            Assert.assertEquals(1, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.ON_HOLD)).size());
+            Assert.assertEquals(1, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.RUNNING)).size());
+            Assert.assertEquals(2, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING)).size());
+
+            Assert.assertEquals(8, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING
+                , InstanceStatus.ERROR, InstanceStatus.COMPLETE, InstanceStatus.ON_HOLD, InstanceStatus.RUNNING, InstanceStatus.RELEASED)).size());
         }
     }
 
