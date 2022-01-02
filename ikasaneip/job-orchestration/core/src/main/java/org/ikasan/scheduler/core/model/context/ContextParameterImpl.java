@@ -2,9 +2,11 @@ package org.ikasan.scheduler.core.model.context;
 
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 
+import java.util.Objects;
+
 public class ContextParameterImpl implements ContextParameter {
-    private String name;
-    private String type;
+    protected String name;
+    protected String type;
 
     public String getName() {
         return name;
@@ -20,5 +22,18 @@ public class ContextParameterImpl implements ContextParameter {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ContextParameterImpl that = (ContextParameterImpl) o;
+        return Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 }
