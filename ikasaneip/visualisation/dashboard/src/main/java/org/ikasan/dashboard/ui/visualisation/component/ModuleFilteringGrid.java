@@ -148,7 +148,7 @@ public class ModuleFilteringGrid extends Grid<ModuleMetaData>
         final List<String> moduleNames = new ArrayList<>();
         Set<String> accessibleModules = new HashSet<>();
 
-        if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)) {
+        if(!this.canAccessAllModules(authentication)) {
             accessibleModules = SecurityUtils.getAccessibleModules(authentication);
             moduleNames.addAll(accessibleModules);
         }
@@ -167,7 +167,7 @@ public class ModuleFilteringGrid extends Grid<ModuleMetaData>
             }
         }
 
-        if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) && moduleNames.isEmpty()){
+        if(!this.canAccessAllModules(authentication) && moduleNames.isEmpty()){
             moduleNames.add(SearchConstants.NONSENSE_STRING);
         }
 
@@ -203,5 +203,22 @@ public class ModuleFilteringGrid extends Grid<ModuleMetaData>
     public long getResultSize()
     {
         return resultSize;
+    }
+
+    private boolean canAccessAllModules(IkasanAuthentication authentication) {
+        return authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) ||
+            authentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_ADMIN) ||
+            authentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN) ||
+            authentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN) ||
+            authentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN);
+
     }
 }

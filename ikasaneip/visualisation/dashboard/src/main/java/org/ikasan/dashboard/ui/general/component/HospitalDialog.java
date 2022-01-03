@@ -118,6 +118,9 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
 
         translatedEventActionMessage = getTranslation("message.resubmission-event-action"
             , UI.getCurrent().getLocale());
+
+        resubmitButton = new Button(getTranslation("button.resubmit", UI.getCurrent().getLocale(), null));
+        ignoreButton = new Button(getTranslation("button.ignore", UI.getCurrent().getLocale(), null));
     }
 
 
@@ -162,9 +165,6 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
 
         buttonWrapper = new FileDownloadWrapper(this.streamResource);
         buttonWrapper.wrapComponent(downloadButton);
-
-        resubmitButton = new Button(getTranslation("button.resubmit", UI.getCurrent().getLocale(), null));
-        ignoreButton = new Button(getTranslation("button.ignore", UI.getCurrent().getLocale(), null));
 
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -278,8 +278,12 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.add(resubmitButton, ignoreButton);
 
-        ComponentSecurityVisibility.applySecurity(buttonLayout, SecurityConstants.ACTIONED_EXCLUSION_ADMIN
-            , SecurityConstants.EXCLUSION_WRITE, SecurityConstants.ALL_AUTHORITY);
+        ComponentSecurityVisibility.applySecurity(buttonLayout
+            , SecurityConstants.EXCLUSION_ADMIN
+            , SecurityConstants.EXCLUSION_WRITE
+            , SecurityConstants.EXCLUSION_ALL_MODULES_WRITE
+            , SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN
+            , SecurityConstants.ALL_AUTHORITY);
 
 
         Tab exclusionTab = new Tab(getTranslation("tab-label.exclusion", UI.getCurrent().getLocale(), null));
@@ -357,8 +361,18 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
         this.exclusionPayload = ikasanSolrDocument.getEvent();
         this.errorActionTf.setValue(Optional.ofNullable(this.errorOccurrence.getErrorAction()).orElse(""));
 
-        ComponentSecurityVisibility.applySecurity(resubmitButton, SecurityConstants.EXCLUSION_WRITE, SecurityConstants.EXCLUSION_ADMIN, SecurityConstants.ALL_AUTHORITY);
-        ComponentSecurityVisibility.applySecurity(ignoreButton, SecurityConstants.EXCLUSION_WRITE, SecurityConstants.EXCLUSION_ADMIN, SecurityConstants.ALL_AUTHORITY);
+        ComponentSecurityVisibility.applySecurity(resubmitButton
+            , SecurityConstants.EXCLUSION_WRITE
+            , SecurityConstants.EXCLUSION_ADMIN
+            , SecurityConstants.EXCLUSION_ALL_MODULES_WRITE
+            , SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN
+            , SecurityConstants.ALL_AUTHORITY);
+        ComponentSecurityVisibility.applySecurity(ignoreButton
+            , SecurityConstants.EXCLUSION_WRITE
+            , SecurityConstants.EXCLUSION_ADMIN
+            , SecurityConstants.EXCLUSION_ALL_MODULES_WRITE
+            , SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN
+            , SecurityConstants.ALL_AUTHORITY);
 
         super.open(ikasanSolrDocument.getEvent());
     }

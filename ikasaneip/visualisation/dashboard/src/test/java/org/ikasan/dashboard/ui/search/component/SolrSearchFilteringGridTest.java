@@ -28,7 +28,7 @@ import static com.github.mvysny.kaributesting.v10.ButtonKt._click;
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 import static org.mockito.ArgumentMatchers.*;
 
-    public class SolrSearchFilteringGridTest extends UITest {
+public class SolrSearchFilteringGridTest extends UITest {
 
     @MockBean
     private Set<IkasanPrincipal> principals;
@@ -62,8 +62,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_filtered_data_provider_not_null_after_search() throws IOException
-    {
+    public void test_filtered_data_provider_not_null_after_search() throws IOException {
         UI.getCurrent().navigate("Search");
 
         SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
@@ -75,8 +74,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_filtered_data_provider_null_before_search() throws IOException
-    {
+    public void test_filtered_data_provider_null_before_search() throws IOException {
         UI.getCurrent().navigate("Search");
 
         SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
@@ -87,8 +85,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_filtered_data_provider_null_before_search_add_filter() throws IOException
-    {
+    public void test_filtered_data_provider_null_before_search_add_filter() throws IOException {
         UI.getCurrent().navigate("Search");
 
         SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
@@ -101,8 +98,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_filter_user_all()
-    {
+    public void test_search_and_filter_user_all() {
         UI.getCurrent().navigate("Search");
 
         SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
@@ -124,8 +120,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_non_admin_user_search_no_associated_modules()
-    {
+    public void test_search_non_admin_user_search_no_associated_modules() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -168,8 +163,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_non_admin_user_search_with_module_name_filter_no_associated_modules()
-    {
+    public void test_search_non_admin_user_search_with_module_name_filter_no_associated_modules() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -215,8 +209,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_event_id_filter_non_admin_user_search_with_associated_module_wiretap()
-    {
+    public void test_search_and_event_id_filter_non_admin_user_search_with_associated_module_wiretap() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -260,8 +253,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_event_id_filter_admin_user_search_wiretap()
-    {
+    public void test_search_and_event_id_filter_admin_user_search_wiretap() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -292,8 +284,106 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_module_name_filter_non_admin_user_search_with_associated_module_wiretap()
-    {
+    public void test_search_and_event_id_filter_wiretap_all_modules_read_user_search_wiretap() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_READ))
+            .thenReturn(true);
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
+        eventFilter.setValue("event1");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_event_id_filter_wiretap_all_modules_write_user_search_wiretap() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_WRITE))
+            .thenReturn(true);
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
+        eventFilter.setValue("event1");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_event_id_filter_wiretap_all_modules_write_admin_search_wiretap() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
+        eventFilter.setValue("event1");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_module_name_filter_non_admin_user_search_with_associated_module_wiretap() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -337,8 +427,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_module_name_filter_admin_user_search_wiretap()
-    {
+    public void test_search_and_module_name_filter_admin_user_search_wiretap() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -369,8 +458,106 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_flow_name_filter_non_admin_user_search_with_associated_module_wiretap()
-    {
+    public void test_search_and_module_name_filter_wiretap_all_modules_read_user_search_wiretap() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_READ))
+            .thenReturn(true);
+        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_module_name_filter_wiretap_all_modules_write_user_search_wiretap() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_WRITE))
+            .thenReturn(true);
+        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_module_name_filter_wiretap_all_modules_admin_user_search_wiretap() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_flow_name_filter_non_admin_user_search_with_associated_module_wiretap() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -415,8 +602,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_flow_name_filter_admin_user_search_wiretap()
-    {
+    public void test_search_and_flow_name_filter_admin_user_search_wiretap() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -448,8 +634,109 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_component_name_filter_non_admin_user_search_with_associated_module_wiretap()
-    {
+    public void test_search_and_flow_name_filter_wiretap_all_modules_read_user_search_wiretap() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_READ))
+            .thenReturn(true);
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_flow_name_filter_wiretap_all_modules_write_user_search_wiretap() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_WRITE))
+            .thenReturn(true);
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_flow_name_filter_wiretap_all_modules_admin_user_search_wiretap() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_component_name_filter_non_admin_user_search_with_associated_module_wiretap() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -494,8 +781,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_component_name_filter_admin_user_search_wiretap()
-    {
+    public void test_search_and_component_name_filter_admin_user_search_wiretap() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -528,8 +814,112 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_event_id_filter_non_admin_user_search_with_associated_module_replay_event()
-    {
+    public void test_search_and_component_name_filter_wiretap_all_modules_read_user_search_wiretap() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_component_name_filter_wiretap_all_modules_write_user_search_wiretap() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_component_name_filter_wiretap_all_modules_admin_user_search_wiretap() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("wiretap")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_event_id_filter_non_admin_user_search_with_associated_module_replay_event() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -573,8 +963,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_event_id_filter_admin_user_search_replay_event()
-    {
+    public void test_search_and_event_id_filter_admin_user_search_replay_event() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -606,8 +995,109 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_module_name_filter_non_admin_user_search_with_associated_module_replay_event()
-    {
+    public void test_search_and_event_id_filter_replay_all_module_read_user_search_replay_event() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
+        eventFilter.setValue("event1");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_event_id_filter_replay_all_module_write_user_search_replay_event() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
+        eventFilter.setValue("event1");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_event_id_filter_replay_all_module_admin_user_search_replay_event() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
+        eventFilter.setValue("event1");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_module_name_filter_non_admin_user_search_with_associated_module_replay_event() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -651,8 +1141,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_module_name_filter_admin_user_search_replay_event()
-    {
+    public void test_search_and_module_name_filter_admin_user_search_replay_event() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -684,8 +1173,109 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_flow_name_filter_non_admin_user_search_with_associated_module_replay_event()
-    {
+    public void test_search_and_module_name_filter_replay_all_modules_read_user_search_replay_event() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_module_name_filter_replay_all_modules_write_user_search_replay_event() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_module_name_filter_replay_all_modules_admin_user_search_replay_event() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_flow_name_filter_non_admin_user_search_with_associated_module_replay_event() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -730,8 +1320,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_flow_name_filter_admin_user_search_replay_event()
-    {
+    public void test_search_and_flow_name_filter_admin_user_search_replay_event() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -764,8 +1353,112 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_component_name_filter_non_admin_user_search_with_associated_module_replay_event()
-    {
+    public void test_search_and_flow_name_filter_replay_all_modules_read_user_search_replay_event() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_flow_name_filter_replay_all_modules_write_user_search_replay_event() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_flow_name_filter_replay_all_modules_admin_user_search_replay_event() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_component_name_filter_non_admin_user_search_with_associated_module_replay_event() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -810,8 +1503,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_component_name_filter_admin_user_search_replay_event()
-    {
+    public void test_search_and_component_name_filter_admin_user_search_replay_event() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -844,8 +1536,112 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_event_id_filter_non_admin_user_search_with_associated_module_exclusion()
-    {
+    public void test_search_and_component_name_filter_replay_all_modules_read_user_search_replay_event() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_component_name_filter_replay_all_modules_write_user_search_replay_event() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_component_name_filter_replay_all_modules_admin_user_search_replay_event() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("replay")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_event_id_filter_non_admin_user_search_with_associated_module_exclusion() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -889,8 +1685,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_event_id_filter_admin_user_search_exclusion()
-    {
+    public void test_search_and_event_id_filter_admin_user_search_exclusion() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -922,8 +1717,109 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_module_name_filter_non_admin_user_search_with_associated_module_exclusion()
-    {
+    public void test_search_and_event_id_filter_exclusion_all_modules_read_user_search_exclusion() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
+        eventFilter.setValue("event1");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_event_id_filter_exclusion_all_modules_write_user_search_exclusion() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
+        eventFilter.setValue("event1");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_event_id_filter_exclusion_all_modules_admin_user_search_exclusion() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
+        eventFilter.setValue("event1");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_module_name_filter_non_admin_user_search_with_associated_module_exclusion() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -967,8 +1863,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_module_name_filter_admin_user_search_exclusion()
-    {
+    public void test_search_and_module_name_filter_admin_user_search_exclusion() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1000,8 +1895,109 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_flow_name_filter_non_admin_user_search_with_associated_module_exclusion()
-    {
+    public void test_search_and_module_name_filter_exclusion_all_modules_read_user_search_exclusion() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_module_name_filter_exclusion_all_modules_write_user_search_exclusion() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_module_name_filter_exclusion_all_modules_admin_user_search_exclusion() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_flow_name_filter_non_admin_user_search_with_associated_module_exclusion() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1046,8 +2042,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_flow_name_filter_admin_user_search_with_exclusion()
-    {
+    public void test_search_and_flow_name_filter_admin_user_search_with_exclusion() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1080,8 +2075,112 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_component_name_filter_non_admin_user_search_with_associated_module_exclusion()
-    {
+    public void test_search_and_flow_name_filter_exclusion_all_modules_read_user_search_with_exclusion() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_flow_name_filter_exclusion_all_modules_write_user_search_with_exclusion() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_flow_name_filter_exclusion_all_modules_admin_user_search_with_exclusion() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_component_name_filter_non_admin_user_search_with_associated_module_exclusion() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1126,8 +2225,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_component_name_filter_admin_user_search_exclusion()
-    {
+    public void test_search_and_component_name_filter_admin_user_search_exclusion() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1160,8 +2258,112 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_event_id_filter_non_admin_user_search_with_associated_module_error()
-    {
+    public void test_search_and_component_name_filter_exclustion_all_modules_read_user_search_exclusion() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_component_name_filter_exclustion_all_modules_write_user_search_exclusion() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_component_name_filter_exclustion_all_modules_admin_user_search_exclusion() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("exclusion")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "errorChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_event_id_filter_non_admin_user_search_with_associated_module_error() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1205,8 +2407,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_event_id_filter_admin_user_search_error()
-    {
+    public void test_search_and_event_id_filter_admin_user_search_error() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1238,8 +2439,109 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_module_name_filter_non_admin_user_search_with_associated_module_error()
-    {
+    public void test_search_and_event_id_filter_error_all_modules_read_user_search_error() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
+        eventFilter.setValue("event1");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_event_id_filter_error_all_modules_write_user_search_error() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
+        eventFilter.setValue("event1");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_event_id_filter_error_all_modules_admin_user_search_error() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
+        eventFilter.setValue("event1");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_module_name_filter_non_admin_user_search_with_associated_module_error() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1283,8 +2585,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_module_name_filter_admin_user_search_error()
-    {
+    public void test_search_and_module_name_filter_admin_user_search_error() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1316,8 +2617,109 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_flow_name_filter_non_admin_user_search_with_associated_module_replay_error()
-    {
+    public void test_search_and_module_name_filter_error_all_modules_read_user_search_error() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+
+        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_module_name_filter_error_all_modules_write_user_search_error() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_WRITE))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+
+        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_module_name_filter_error_all_modules_admin_user_search_error() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+
+        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_flow_name_filter_non_admin_user_search_with_associated_module_replay_error() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1362,8 +2764,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_flow_name_filter_admin_user_search_error()
-    {
+    public void test_search_and_flow_name_filter_admin_user_search_error() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1396,8 +2797,112 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_component_name_filter_non_admin_user_search_with_associated_module_replay_error()
-    {
+    public void test_search_and_flow_name_filter_error_all_modules_read_user_search_error() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_flow_name_filter_error_all_modules_write_user_search_error() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_flow_name_filter_error_all_modules_admin_user_search_error() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("flowName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_component_name_filter_non_admin_user_search_with_associated_module_replay_error() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1442,8 +2947,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_component_name_filter_admin_user_search_error()
-    {
+    public void test_search_and_component_name_filter_admin_user_search_error() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1476,8 +2980,113 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_event_id_filter_non_admin_user_search_with_associated_module_all_event_types()
-    {
+    public void test_search_and_component_name_filter_error_all_modules_read_user_search_error() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_component_name_filter_error_all_modules_write_user_search_error() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+
+    @Test
+    public void test_search_and_component_name_filter_error_all_modules_admin_user_search_error() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")), Mockito.isNull(),
+            Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+            argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("error")), Mockito.anyBoolean(),
+            Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.FALSE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.FALSE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("componentName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_event_id_filter_non_admin_user_search_with_associated_module_all_event_types() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1522,8 +3131,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_event_id_filter_admin_user_search_all_event_types()
-    {
+    public void test_search_and_event_id_filter_admin_user_search_all_event_types() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1556,8 +3164,131 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_module_name_filter_non_admin_user_search_with_associated_module_all_event_types()
-    {
+    public void test_search_and_event_id_filter_all_modules_read_user_search_all_event_types() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_READ))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_READ))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.TRUE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
+        eventFilter.setValue("event1");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_event_id_filter_all_modules_write_user_search_all_event_types() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_WRITE))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.TRUE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
+        eventFilter.setValue("event1");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_event_id_filter_all_modules_admin_user_search_all_event_types() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(Mockito.isNull(),
+            Mockito.isNull(), Mockito.isNull(), eq("*event1*"), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.TRUE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("event"));
+        eventFilter.setValue("event1");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+
+    @Test
+    public void test_search_and_module_name_filter_non_admin_user_search_with_associated_module_all_event_types() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1602,8 +3333,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_module_name_filter_admin_user_search_all_event_types()
-    {
+    public void test_search_and_module_name_filter_admin_user_search_all_event_types() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1636,8 +3366,130 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_flow_name_filter_non_admin_user_search_with_associated_module_all_event_types()
-    {
+    public void test_search_and_module_name_filter_all_modules_read_user_search_all_event_types() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_READ))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_READ))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.TRUE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_module_name_filter_all_modules_write_user_search_all_event_types() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_WRITE))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.TRUE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_module_name_filter_all_modules_admin_user_search_all_event_types() {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+        Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        Mockito.when(this.solrSearchService.search(argThat(strings -> strings.size() == 1 && strings.stream().findFirst().get().equals("*test*")),
+            Mockito.isNull(), Mockito.isNull(), Mockito.isNull(), Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(),
+            Mockito.anyInt(), argThat(strings -> strings.size() == 4 && strings.contains("error") && strings.contains("exclusion") && strings.contains("wiretap") && strings.contains("replay")),
+            Mockito.anyBoolean(), Mockito.isNull(), Mockito.isNull()))
+            .thenReturn(this.getSolrResults(1));
+
+        SolrSearchFilteringGrid solrSearchFilteringGrid = _get(SolrSearchFilteringGrid.class);
+        Assertions.assertNotNull(solrSearchFilteringGrid);
+
+        SearchForm searchForm = _get(SearchForm.class);
+        Assertions.assertNotNull(searchForm);
+
+        ReflectionTestUtils.setField(searchForm, "hospitalChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "wiretapChecked", Boolean.TRUE);
+        ReflectionTestUtils.setField(searchForm, "replayChecked", Boolean.TRUE);
+
+        TextField eventFilter = _get(TextField.class, spec -> spec.withId("moduleName"));
+        eventFilter.setValue("test");
+
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+        _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
+
+        Assert.assertEquals(1, solrSearchFilteringGrid.getResultSize());
+    }
+
+    @Test
+    public void test_search_and_flow_name_filter_non_admin_user_search_with_associated_module_all_event_types() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1683,8 +3535,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_flow_name_filter_admin_user_search_all_event_types()
-    {
+    public void test_search_and_flow_name_filter_admin_user_search_all_event_types() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1718,8 +3569,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_component_name_filter_non_admin_user_search_with_associated_module_all_event_types()
-    {
+    public void test_search_and_component_name_filter_non_admin_user_search_with_associated_module_all_event_types() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1765,8 +3615,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_and_component_name_filter_admin_user_search_all_event_types()
-    {
+    public void test_search_and_component_name_filter_admin_user_search_all_event_types() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1800,8 +3649,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_no_filter_non_admin_user_search_with_associated_module_all_event_types()
-    {
+    public void test_search_no_filter_non_admin_user_search_with_associated_module_all_event_types() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1844,8 +3692,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_no_filter_admin_user_search_all_event_types()
-    {
+    public void test_search_no_filter_admin_user_search_all_event_types() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1875,8 +3722,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_no_filter_admin_user_search_no_event_types()
-    {
+    public void test_search_no_filter_admin_user_search_no_event_types() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
@@ -1906,8 +3752,7 @@ import static org.mockito.ArgumentMatchers.*;
     }
 
     @Test
-    public void test_search_with_sort_order()
-    {
+    public void test_search_with_sort_order() {
         UI.getCurrent().navigate("Search");
 
         Mockito.when(super.ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))

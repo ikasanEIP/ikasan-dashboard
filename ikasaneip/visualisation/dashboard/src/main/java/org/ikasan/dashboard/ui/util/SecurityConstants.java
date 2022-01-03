@@ -58,9 +58,17 @@ public class SecurityConstants
 	public static String WIRETAP_WRITE = "wiretap-write";
 	public static String WIRETAP_ADMIN = "wiretap-admin";
 
+    public static String WIRETAP_ALL_MODULES_READ = "wiretap_all_modules-read";
+    public static String WIRETAP_ALL_MODULES_WRITE = "wiretap_all_modules-write";
+    public static String WIRETAP_ALL_MODULES_ADMIN = "wiretap_all_modules-admin";
+
 	public static String ERROR_READ = "error-read";
 	public static String ERROR_WRITE = "error-write";
 	public static String ERROR_ADMIN = "error-admin";
+
+    public static String ERROR_ALL_MODULES_READ = "error_all_modules-read";
+    public static String ERROR_ALL_MODULES_WRITE = "error_all_modules-write";
+    public static String ERROR_ALL_MODULES_ADMIN = "error_all_modules-admin";
 
 	public static String ACTIONED_ERROR_READ = "actioned_error-read";
 	public static String ACTIONED_ERROR_WRITE = "actioned_error-write";
@@ -73,6 +81,10 @@ public class SecurityConstants
 	public static String EXCLUSION_READ = "exclusion-read";
 	public static String EXCLUSION_WRITE = "exclusion-write";
 	public static String EXCLUSION_ADMIN = "exclusion-admin";
+
+    public static String EXCLUSION_ALL_MODULES_READ = "exclusion_all_modules-read";
+    public static String EXCLUSION_ALL_MODULES_WRITE = "exclusion_all_modules-write";
+    public static String EXCLUSION_ALL_MODULES_ADMIN = "exclusion_all_modules-admin";
 
 	public static String ACTIONED_EXCLUSION_READ = "actioned_exclusion-read";
 	public static String ACTIONED_EXCLUSION_WRITE = "actioned_exclusion-write";
@@ -105,6 +117,10 @@ public class SecurityConstants
 	public static String REPLAY_READ = "replay-read";
 	public static String REPLAY_WRITE = "replay-write";
 	public static String REPLAY_ADMIN = "replay-admin";
+
+    public static String REPLAY_ALL_MODULES_READ = "replay_all_modules-read";
+    public static String REPLAY_ALL_MODULES_WRITE = "replay_all_modules-write";
+    public static String REPLAY_ALL_MODULES_ADMIN = "replay_all_modules-admin";
 
 	public static String SEARCH_REPLAY_READ = "search-replay-read";
 	public static String SEARCH_REPLAY_WRITE = "search-replay-write";

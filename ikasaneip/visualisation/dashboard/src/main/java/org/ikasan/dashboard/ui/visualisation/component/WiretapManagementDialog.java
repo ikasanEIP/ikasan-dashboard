@@ -131,7 +131,9 @@ public class WiretapManagementDialog extends Dialog
 
         ComponentSecurityVisibility.applySecurity(removeWiretapButton, SecurityConstants.ALL_AUTHORITY
             , SecurityConstants.WIRETAP_ADMIN
-            , SecurityConstants.WIRETAP_WRITE);
+            , SecurityConstants.WIRETAP_WRITE
+            , SecurityConstants.WIRETAP_ALL_MODULES_WRITE
+            , SecurityConstants.WIRETAP_ALL_MODULES_ADMIN);
 
         verticalLayout.add(removeWiretapButton);
 

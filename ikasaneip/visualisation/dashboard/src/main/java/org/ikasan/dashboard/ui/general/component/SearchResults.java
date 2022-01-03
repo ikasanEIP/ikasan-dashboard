@@ -500,8 +500,18 @@ public class SearchResults extends Div {
         {
             buttonLayout.add(replayButton, replayButtonTooltip, selectAllButton, selectAllTooltip);
 
-            ComponentSecurityVisibility.applySecurity(replayButton, SecurityConstants.REPLAY_WRITE, SecurityConstants.REPLAY_ADMIN, SecurityConstants.ALL_AUTHORITY);
-            ComponentSecurityVisibility.applySecurity(selectAllButton, SecurityConstants.REPLAY_WRITE, SecurityConstants.REPLAY_ADMIN, SecurityConstants.ALL_AUTHORITY);
+            ComponentSecurityVisibility.applySecurity(replayButton
+                , SecurityConstants.REPLAY_WRITE
+                , SecurityConstants.REPLAY_ADMIN
+                , SecurityConstants.REPLAY_ALL_MODULES_WRITE
+                , SecurityConstants.REPLAY_ALL_MODULES_ADMIN
+                , SecurityConstants.ALL_AUTHORITY);
+            ComponentSecurityVisibility.applySecurity(selectAllButton
+                , SecurityConstants.REPLAY_WRITE
+                , SecurityConstants.REPLAY_ADMIN
+                , SecurityConstants.REPLAY_ALL_MODULES_WRITE
+                , SecurityConstants.REPLAY_ALL_MODULES_ADMIN
+                , SecurityConstants.ALL_AUTHORITY);
 
             buttonLayout.setWidth("80px");
         }
@@ -509,9 +519,24 @@ public class SearchResults extends Div {
         {
             buttonLayout.add(this.resubmitButton, resubmitButtonTooltip, this.ignoreButton, ignoreButtonTooltip, this.selectAllButton, selectAllTooltip);
 
-            ComponentSecurityVisibility.applySecurity(resubmitButton, SecurityConstants.REPLAY_WRITE, SecurityConstants.REPLAY_ADMIN, SecurityConstants.ALL_AUTHORITY);
-            ComponentSecurityVisibility.applySecurity(ignoreButton, SecurityConstants.REPLAY_WRITE, SecurityConstants.REPLAY_ADMIN, SecurityConstants.ALL_AUTHORITY);
-            ComponentSecurityVisibility.applySecurity(selectAllButton, SecurityConstants.REPLAY_WRITE, SecurityConstants.REPLAY_ADMIN, SecurityConstants.ALL_AUTHORITY);
+            ComponentSecurityVisibility.applySecurity(resubmitButton
+                , SecurityConstants.EXCLUSION_WRITE
+                , SecurityConstants.EXCLUSION_ADMIN
+                , SecurityConstants.EXCLUSION_ALL_MODULES_WRITE
+                , SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN
+                , SecurityConstants.ALL_AUTHORITY);
+            ComponentSecurityVisibility.applySecurity(ignoreButton
+                , SecurityConstants.EXCLUSION_WRITE
+                , SecurityConstants.EXCLUSION_ADMIN
+                , SecurityConstants.EXCLUSION_ALL_MODULES_WRITE
+                , SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN
+                , SecurityConstants.ALL_AUTHORITY);
+            ComponentSecurityVisibility.applySecurity(selectAllButton
+                , SecurityConstants.EXCLUSION_WRITE
+                , SecurityConstants.EXCLUSION_ADMIN
+                , SecurityConstants.EXCLUSION_ALL_MODULES_WRITE
+                , SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN
+                , SecurityConstants.ALL_AUTHORITY);
 
             buttonLayout.setWidth("130px");
         }
