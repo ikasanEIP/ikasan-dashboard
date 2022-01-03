@@ -128,7 +128,9 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
 
         ComponentSecurityVisibility.applySecurity(createWiretapBeforeComponentWithTTLOneDayButton, SecurityConstants.ALL_AUTHORITY
             , SecurityConstants.WIRETAP_WRITE
-            , SecurityConstants.WIRETAP_ADMIN);
+            , SecurityConstants.WIRETAP_ADMIN
+            , SecurityConstants.WIRETAP_ALL_MODULES_WRITE
+            , SecurityConstants.WIRETAP_ALL_MODULES_ADMIN);
 
         Button createWiretapAfterComponentWithTTLOneDayButton = new Button(
             getTranslation("button.wiretap-after-component-oneday", UI.getCurrent().getLocale()));
@@ -139,7 +141,9 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
 
         ComponentSecurityVisibility.applySecurity(createWiretapAfterComponentWithTTLOneDayButton, SecurityConstants.ALL_AUTHORITY
             , SecurityConstants.WIRETAP_ADMIN
-            , SecurityConstants.WIRETAP_WRITE);
+            , SecurityConstants.WIRETAP_WRITE
+            , SecurityConstants.WIRETAP_ALL_MODULES_WRITE
+            , SecurityConstants.WIRETAP_ALL_MODULES_ADMIN);
 
         Button createLogBeforeComponentButton = new Button(
             getTranslation("button.log-before-component", UI.getCurrent().getLocale()));
@@ -150,7 +154,9 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
 
         ComponentSecurityVisibility.applySecurity(createLogBeforeComponentButton, SecurityConstants.ALL_AUTHORITY
             , SecurityConstants.WIRETAP_ADMIN
-            , SecurityConstants.WIRETAP_WRITE);
+            , SecurityConstants.WIRETAP_WRITE
+            , SecurityConstants.WIRETAP_ALL_MODULES_WRITE
+            , SecurityConstants.WIRETAP_ALL_MODULES_ADMIN);
 
         Button createLogAfterComponentButton = new Button(
             getTranslation("button.log-after-component", UI.getCurrent().getLocale()));
@@ -161,7 +167,9 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
 
         ComponentSecurityVisibility.applySecurity(createLogAfterComponentButton, SecurityConstants.ALL_AUTHORITY
             , SecurityConstants.WIRETAP_ADMIN
-            , SecurityConstants.WIRETAP_WRITE);
+            , SecurityConstants.WIRETAP_WRITE
+            , SecurityConstants.WIRETAP_ALL_MODULES_WRITE
+            , SecurityConstants.WIRETAP_ALL_MODULES_ADMIN);
 
 
         super.content.add(verticalLayout);

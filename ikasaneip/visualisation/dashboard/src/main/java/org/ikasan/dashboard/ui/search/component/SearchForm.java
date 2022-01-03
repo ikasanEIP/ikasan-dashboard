@@ -258,19 +258,27 @@ public class SearchForm extends VerticalLayout {
             , this.errorCheckButton, this.errorButtonTooltip, checkboxLayout);
         searchIconLayout.setVerticalComponentAlignment(Alignment.CENTER, checkboxLayout);
 
-        ComponentSecurityVisibility.applySecurity(this.wiretapCheckButton, SecurityConstants.WIRETAP_ADMIN, SecurityConstants.WIRETAP_READ, SecurityConstants.WIRETAP_WRITE, SecurityConstants.ALL_AUTHORITY);
+        ComponentSecurityVisibility.applySecurity(this.wiretapCheckButton, SecurityConstants.WIRETAP_ADMIN, SecurityConstants.WIRETAP_READ
+            , SecurityConstants.WIRETAP_WRITE, SecurityConstants.WIRETAP_ALL_MODULES_READ, SecurityConstants.WIRETAP_ALL_MODULES_WRITE
+            , SecurityConstants.WIRETAP_ALL_MODULES_ADMIN, SecurityConstants.ALL_AUTHORITY);
         if(!this.wiretapCheckButton.isVisible()) {
             this.wiretapChecked = false;
         }
-        ComponentSecurityVisibility.applySecurity(this.errorCheckButton, SecurityConstants.ERROR_READ, SecurityConstants.ERROR_WRITE, SecurityConstants.ERROR_ADMIN,SecurityConstants.ALL_AUTHORITY);
+        ComponentSecurityVisibility.applySecurity(this.errorCheckButton, SecurityConstants.ERROR_READ, SecurityConstants.ERROR_WRITE
+            , SecurityConstants.ERROR_ADMIN, SecurityConstants.ERROR_ALL_MODULES_READ, SecurityConstants.ERROR_ALL_MODULES_WRITE
+            , SecurityConstants.ERROR_ALL_MODULES_ADMIN ,SecurityConstants.ALL_AUTHORITY);
         if(!this.errorCheckButton.isVisible()) {
             this.errorChecked = false;
         }
-        ComponentSecurityVisibility.applySecurity(this.hospitalCheckButton, SecurityConstants.EXCLUSION_READ, SecurityConstants.EXCLUSION_WRITE, SecurityConstants.EXCLUSION_ADMIN,SecurityConstants.ALL_AUTHORITY);
+        ComponentSecurityVisibility.applySecurity(this.hospitalCheckButton, SecurityConstants.EXCLUSION_READ, SecurityConstants.EXCLUSION_WRITE
+            , SecurityConstants.EXCLUSION_ADMIN, SecurityConstants.EXCLUSION_ALL_MODULES_READ, SecurityConstants.EXCLUSION_ALL_MODULES_WRITE
+            , SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN, SecurityConstants.ALL_AUTHORITY);
         if(!this.hospitalCheckButton.isVisible()) {
             this.hospitalChecked = false;
         }
-        ComponentSecurityVisibility.applySecurity(this.replayCheckButton, SecurityConstants.REPLAY_READ, SecurityConstants.REPLAY_WRITE, SecurityConstants.REPLAY_ADMIN, SecurityConstants.ALL_AUTHORITY);
+        ComponentSecurityVisibility.applySecurity(this.replayCheckButton, SecurityConstants.REPLAY_READ, SecurityConstants.REPLAY_WRITE
+            , SecurityConstants.REPLAY_ADMIN, SecurityConstants.REPLAY_ALL_MODULES_READ, SecurityConstants.REPLAY_ALL_MODULES_WRITE
+            , SecurityConstants.REPLAY_ALL_MODULES_ADMIN, SecurityConstants.ALL_AUTHORITY);
         if(!this.replayCheckButton.isVisible()) {
             this.replayChecked = false;
         }
