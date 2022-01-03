@@ -160,7 +160,7 @@ public class BusinessStreamFilteringGrid extends Grid<BusinessStreamMetaData>
         try {
             IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-            if(authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) || authentication.hasGrantedAuthority(SecurityConstants.BUSINESS_STREAM_ADMIN)) {
+            if(this.canAccessAllModules(authentication) || authentication.hasGrantedAuthority(SecurityConstants.BUSINESS_STREAM_ADMIN)) {
                 return this.solrSearchService.find(businessStreamNames, offset, limit);
             }
             else {
@@ -192,5 +192,22 @@ public class BusinessStreamFilteringGrid extends Grid<BusinessStreamMetaData>
     public long getResultSize()
     {
         return resultSize;
+    }
+
+    private boolean canAccessAllModules(IkasanAuthentication authentication) {
+        return authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) ||
+            authentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_ADMIN) ||
+            authentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN) ||
+            authentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN) ||
+            authentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN);
+
     }
 }

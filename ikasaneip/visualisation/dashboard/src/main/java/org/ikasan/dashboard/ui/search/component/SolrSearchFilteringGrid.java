@@ -175,7 +175,7 @@ public class SolrSearchFilteringGrid extends Grid<IkasanSolrDocument>
         if(filter.isValidModuleNameFilter()) {
             moduleNames = new HashSet<>();
 
-            if(authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)) {
+            if(this.canAccessAllModules(authentication)) {
                 moduleNames.add("*" + ClientUtils.escapeQueryChars(filter.getModuleNameFilter()) + "*");
             }
             else {
@@ -198,7 +198,7 @@ public class SolrSearchFilteringGrid extends Grid<IkasanSolrDocument>
         {
             moduleNames = new HashSet<>();
 
-            if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            if(!this.canAccessAllModules(authentication))
             {
                 moduleNames.addAll(allowedModuleNames.stream()
                     .filter(name -> filter.getModuleNamesFilterList()
@@ -252,7 +252,7 @@ public class SolrSearchFilteringGrid extends Grid<IkasanSolrDocument>
             eventId = "*" + ClientUtils.escapeQueryChars(filter.getEventIdFilter()) + "*";
         }
 
-        if(!authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) && moduleNames == null)
+        if(!this.canAccessAllModules(authentication) && moduleNames == null)
         {
             moduleNames = allowedModuleNames;
 
@@ -277,6 +277,23 @@ public class SolrSearchFilteringGrid extends Grid<IkasanSolrDocument>
         }
 
         return new IkasanSolrDocumentSearchResults(new ArrayList<>(), 0, 0);
+    }
+
+    private boolean canAccessAllModules(IkasanAuthentication authentication) {
+        return authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) ||
+            authentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_ADMIN) ||
+            authentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN) ||
+            authentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN) ||
+            authentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN);
+
     }
 
     public long getResultSize()

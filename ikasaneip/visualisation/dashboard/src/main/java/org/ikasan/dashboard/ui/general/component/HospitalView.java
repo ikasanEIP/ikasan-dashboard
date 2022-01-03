@@ -278,8 +278,12 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.add(resubmitButton, ignoreButton);
 
-        ComponentSecurityVisibility.applySecurity(buttonLayout, SecurityConstants.ACTIONED_EXCLUSION_ADMIN
-            , SecurityConstants.EXCLUSION_WRITE, SecurityConstants.ALL_AUTHORITY);
+        ComponentSecurityVisibility.applySecurity(buttonLayout
+            , SecurityConstants.EXCLUSION_ADMIN
+            , SecurityConstants.EXCLUSION_WRITE
+            , SecurityConstants.EXCLUSION_ALL_MODULES_WRITE
+            , SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN
+            , SecurityConstants.ALL_AUTHORITY);
 
         VerticalLayout layout = new VerticalLayout();
         layout.add(headerLayout, formLayout, buttonWrapper, buttonLayout, downloadButtonTooltip);
@@ -328,8 +332,18 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
             this.errorActionTf.setValue(Optional.ofNullable(this.errorOccurrence.getErrorAction()).orElse(""));
         }
 
-        ComponentSecurityVisibility.applySecurity(resubmitButton, SecurityConstants.EXCLUSION_WRITE, SecurityConstants.EXCLUSION_ADMIN, SecurityConstants.ALL_AUTHORITY);
-        ComponentSecurityVisibility.applySecurity(ignoreButton, SecurityConstants.EXCLUSION_WRITE, SecurityConstants.EXCLUSION_ADMIN, SecurityConstants.ALL_AUTHORITY);
+        ComponentSecurityVisibility.applySecurity(resubmitButton
+            , SecurityConstants.EXCLUSION_WRITE
+            , SecurityConstants.EXCLUSION_ADMIN
+            , SecurityConstants.EXCLUSION_ALL_MODULES_WRITE
+            , SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN
+            , SecurityConstants.ALL_AUTHORITY);
+        ComponentSecurityVisibility.applySecurity(ignoreButton
+            , SecurityConstants.EXCLUSION_WRITE
+            , SecurityConstants.EXCLUSION_ADMIN
+            , SecurityConstants.EXCLUSION_ALL_MODULES_WRITE
+            , SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN
+            , SecurityConstants.ALL_AUTHORITY);
 
         super.open(ikasanSolrDocument.getEvent());
     }

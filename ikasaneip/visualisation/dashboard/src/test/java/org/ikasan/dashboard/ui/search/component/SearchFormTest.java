@@ -41,6 +41,31 @@ public class SearchFormTest extends UITest {
     }
 
     @Test
+    public void test_security_wiretap_read_all_modules()
+    {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
+
+        SearchForm searchForm = new SearchForm();
+
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "hospitalChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "replayChecked"));
+        Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "wiretapChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "errorChecked"));
+
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "hospitalCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "replayCheckButton")).isVisible());
+        Assert.assertEquals(true, ((Button)ReflectionTestUtils.getField(searchForm, "wiretapCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "errorCheckButton")).isVisible());
+    }
+
+    @Test
     public void test_security_wiretap_write()
     {
         UI.getCurrent().navigate("Search");
@@ -48,6 +73,31 @@ public class SearchFormTest extends UITest {
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_WRITE))
+            .thenReturn(true);
+
+        SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
+
+        SearchForm searchForm = new SearchForm();
+
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "hospitalChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "replayChecked"));
+        Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "wiretapChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "errorChecked"));
+
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "hospitalCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "replayCheckButton")).isVisible());
+        Assert.assertEquals(true, ((Button)ReflectionTestUtils.getField(searchForm, "wiretapCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "errorCheckButton")).isVisible());
+    }
+
+    @Test
+    public void test_security_wiretap_write_all_module()
+    {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_WRITE))
             .thenReturn(true);
 
         SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
@@ -91,6 +141,31 @@ public class SearchFormTest extends UITest {
     }
 
     @Test
+    public void test_security_wiretap_admin_all_modules()
+    {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
+
+        SearchForm searchForm = new SearchForm();
+
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "hospitalChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "replayChecked"));
+        Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "wiretapChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "errorChecked"));
+
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "hospitalCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "replayCheckButton")).isVisible());
+        Assert.assertEquals(true, ((Button)ReflectionTestUtils.getField(searchForm, "wiretapCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "errorCheckButton")).isVisible());
+    }
+
+    @Test
     public void test_security_error_read()
     {
         UI.getCurrent().navigate("Search");
@@ -98,6 +173,31 @@ public class SearchFormTest extends UITest {
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_READ))
+            .thenReturn(true);
+
+        SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
+
+        SearchForm searchForm = new SearchForm();
+
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "hospitalChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "replayChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "wiretapChecked"));
+        Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "errorChecked"));
+
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "hospitalCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "replayCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "wiretapCheckButton")).isVisible());
+        Assert.assertEquals(true, ((Button)ReflectionTestUtils.getField(searchForm, "errorCheckButton")).isVisible());
+    }
+
+    @Test
+    public void test_security_error_read_all_modules()
+    {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ))
             .thenReturn(true);
 
         SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
@@ -141,6 +241,31 @@ public class SearchFormTest extends UITest {
     }
 
     @Test
+    public void test_security_error_write_all_modules()
+    {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
+
+        SearchForm searchForm = new SearchForm();
+
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "hospitalChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "replayChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "wiretapChecked"));
+        Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "errorChecked"));
+
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "hospitalCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "replayCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "wiretapCheckButton")).isVisible());
+        Assert.assertEquals(true, ((Button)ReflectionTestUtils.getField(searchForm, "errorCheckButton")).isVisible());
+    }
+
+    @Test
     public void test_security_error_admin()
     {
         UI.getCurrent().navigate("Search");
@@ -148,6 +273,31 @@ public class SearchFormTest extends UITest {
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ADMIN))
+            .thenReturn(true);
+
+        SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
+
+        SearchForm searchForm = new SearchForm();
+
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "hospitalChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "replayChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "wiretapChecked"));
+        Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "errorChecked"));
+
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "hospitalCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "replayCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "wiretapCheckButton")).isVisible());
+        Assert.assertEquals(true, ((Button)ReflectionTestUtils.getField(searchForm, "errorCheckButton")).isVisible());
+    }
+
+    @Test
+    public void test_security_error_admin_all_modules()
+    {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
         SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
@@ -191,6 +341,31 @@ public class SearchFormTest extends UITest {
     }
 
     @Test
+    public void test_security_exclusion_read_all_modules()
+    {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_READ))
+            .thenReturn(true);
+
+        SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
+
+        SearchForm searchForm = new SearchForm();
+
+        Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "hospitalChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "replayChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "wiretapChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "errorChecked"));
+
+        Assert.assertEquals(true, ((Button)ReflectionTestUtils.getField(searchForm, "hospitalCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "replayCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "wiretapCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "errorCheckButton")).isVisible());
+    }
+
+    @Test
     public void test_security_exclusion_write()
     {
         UI.getCurrent().navigate("Search");
@@ -198,6 +373,31 @@ public class SearchFormTest extends UITest {
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_WRITE))
+            .thenReturn(true);
+
+        SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
+
+        SearchForm searchForm = new SearchForm();
+
+        Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "hospitalChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "replayChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "wiretapChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "errorChecked"));
+
+        Assert.assertEquals(true, ((Button)ReflectionTestUtils.getField(searchForm, "hospitalCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "replayCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "wiretapCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "errorCheckButton")).isVisible());
+    }
+
+    @Test
+    public void test_security_exclusion_write_all_modules()
+    {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE))
             .thenReturn(true);
 
         SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
@@ -241,6 +441,31 @@ public class SearchFormTest extends UITest {
     }
 
     @Test
+    public void test_security_exclusion_admin_all_modules()
+    {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN))
+            .thenReturn(true);
+
+        SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
+
+        SearchForm searchForm = new SearchForm();
+
+        Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "hospitalChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "replayChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "wiretapChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "errorChecked"));
+
+        Assert.assertEquals(true, ((Button)ReflectionTestUtils.getField(searchForm, "hospitalCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "replayCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "wiretapCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "errorCheckButton")).isVisible());
+    }
+
+    @Test
     public void test_security_replay_read()
     {
         UI.getCurrent().navigate("Search");
@@ -248,6 +473,31 @@ public class SearchFormTest extends UITest {
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_READ))
+            .thenReturn(true);
+
+        SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
+
+        SearchForm searchForm = new SearchForm();
+
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "hospitalChecked"));
+        Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "replayChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "wiretapChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "errorChecked"));
+
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "hospitalCheckButton")).isVisible());
+        Assert.assertEquals(true, ((Button)ReflectionTestUtils.getField(searchForm, "replayCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "wiretapCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "errorCheckButton")).isVisible());
+    }
+
+    @Test
+    public void test_security_replay_read_all_modules()
+    {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ))
             .thenReturn(true);
 
         SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
@@ -291,6 +541,31 @@ public class SearchFormTest extends UITest {
     }
 
     @Test
+    public void test_security_replay_write_all_modules()
+    {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE))
+            .thenReturn(true);
+
+        SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
+
+        SearchForm searchForm = new SearchForm();
+
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "hospitalChecked"));
+        Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "replayChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "wiretapChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "errorChecked"));
+
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "hospitalCheckButton")).isVisible());
+        Assert.assertEquals(true, ((Button)ReflectionTestUtils.getField(searchForm, "replayCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "wiretapCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "errorCheckButton")).isVisible());
+    }
+
+    @Test
     public void test_security_replay_admin()
     {
         UI.getCurrent().navigate("Search");
@@ -298,6 +573,31 @@ public class SearchFormTest extends UITest {
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
             .thenReturn(false);
         Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ADMIN))
+            .thenReturn(true);
+
+        SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
+
+        SearchForm searchForm = new SearchForm();
+
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "hospitalChecked"));
+        Assert.assertEquals(true, ReflectionTestUtils.getField(searchForm, "replayChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "wiretapChecked"));
+        Assert.assertEquals(false, ReflectionTestUtils.getField(searchForm, "errorChecked"));
+
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "hospitalCheckButton")).isVisible());
+        Assert.assertEquals(true, ((Button)ReflectionTestUtils.getField(searchForm, "replayCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "wiretapCheckButton")).isVisible());
+        Assert.assertEquals(false, ((Button)ReflectionTestUtils.getField(searchForm, "errorCheckButton")).isVisible());
+    }
+
+    @Test
+    public void test_security_replay_admin_all_modules()
+    {
+        UI.getCurrent().navigate("Search");
+
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY))
+            .thenReturn(false);
+        Mockito.when(ikasanAuthentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN))
             .thenReturn(true);
 
         SecurityContextHolder.getContext().setAuthentication(ikasanAuthentication);
