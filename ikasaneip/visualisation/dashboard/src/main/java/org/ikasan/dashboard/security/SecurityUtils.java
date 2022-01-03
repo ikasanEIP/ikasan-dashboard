@@ -68,7 +68,19 @@ public final class SecurityUtils {
 
         User user = (User)authentication.getPrincipal();
 
-        if(authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)){
+        if(authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) ||
+            authentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.WIRETAP_ALL_MODULES_ADMIN) ||
+            authentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN) ||
+            authentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.ERROR_ALL_MODULES_ADMIN) ||
+            authentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.REPLAY_ALL_MODULES_ADMIN)){
             return results;
         }
 

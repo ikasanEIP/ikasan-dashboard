@@ -178,8 +178,10 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
             {
                 AbstractWiretapNode node = this.wiretapClickedOn(this.currentFlow.getConsumer(), x, y);
 
-                if(node != null && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.WIRETAP_ADMIN,
-                    SecurityConstants.WIRETAP_WRITE, SecurityConstants.ALL_AUTHORITY)) {
+                if(node != null && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.WIRETAP_ADMIN
+                    , SecurityConstants.WIRETAP_ALL_MODULES_WRITE
+                    , SecurityConstants.WIRETAP_ALL_MODULES_ADMIN
+                    , SecurityConstants.WIRETAP_WRITE, SecurityConstants.ALL_AUTHORITY)) {
                     if(node.wiretapBeforeClickedOn(x, y)) {
                         WiretapManagementDialog wiretapManagementDialog = new WiretapManagementDialog(this.triggerRestService,
                             this.getModule(), this.currentFlow,
