@@ -86,7 +86,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
     @Override
     public ScheduledContextRecord findByName(String name) {
         SolrQuery query = new SolrQuery(super.buildFieldPredicate(name, MODULE_NAME)
-            .append(" AND ").append(super.buildFieldPredicate("SCHEDULED_CONTEXT", TYPE)).toString());
+            .append(" AND ").append(super.buildFieldPredicate(SCHEDULED_CONTEXT, TYPE)).toString());
 
         logger.debug("query: " + query);
 
