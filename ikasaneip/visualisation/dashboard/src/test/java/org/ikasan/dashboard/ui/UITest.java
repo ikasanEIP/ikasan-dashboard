@@ -11,6 +11,8 @@ import kotlin.jvm.functions.Function0;
 import org.ikasan.dashboard.Application;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SessionAttributeConstants;
+import org.ikasan.scheduler.context.recovery.ContextInstanceRecoveryManager;
+import org.ikasan.scheduler.context.register.ContextInstanceSchedulerService;
 import org.ikasan.security.model.User;
 import org.ikasan.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -61,6 +63,12 @@ public abstract class UITest
 
     @MockBean
     protected ModuleMetaDataService moduleMetadataService;
+
+    @MockBean
+    protected ContextInstanceRecoveryManager contextInstanceRecoveryManager;
+
+    @MockBean
+    protected ContextInstanceSchedulerService contextInstanceSchedulerService;
 
     public abstract void setup_expectations() throws IOException;
 
