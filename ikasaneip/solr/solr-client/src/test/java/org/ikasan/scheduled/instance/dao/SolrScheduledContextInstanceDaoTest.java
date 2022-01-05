@@ -5,7 +5,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
-import org.apache.solr.core.SolrResourceLoader;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceImpl;
 import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -34,8 +33,7 @@ public class SolrScheduledContextInstanceDaoTest extends SolrTestCaseJ4 {
     {
         tmppath = createTempDir();
 
-        SolrResourceLoader loader = new SolrResourceLoader(tmppath);
-        config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        config = new NodeConfig.NodeConfigBuilder("testnode", tmppath)
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString()).build();
 
     }
@@ -202,15 +200,15 @@ public class SolrScheduledContextInstanceDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setStatus(InstanceStatus.ERROR.name());
             this.dao.save(scheduledContextRecord);
 
-            Assert.assertEquals(1, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.ERROR)).size());
-            Assert.assertEquals(1, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.RELEASED)).size());
-            Assert.assertEquals(2, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.COMPLETE)).size());
-            Assert.assertEquals(1, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.ON_HOLD)).size());
-            Assert.assertEquals(1, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.RUNNING)).size());
-            Assert.assertEquals(2, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING)).size());
+            Assert.assertEquals(1, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.ERROR)).getResultList().size());
+            Assert.assertEquals(1, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.RELEASED)).getResultList().size());
+            Assert.assertEquals(2, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.COMPLETE)).getResultList().size());
+            Assert.assertEquals(1, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.ON_HOLD)).getResultList().size());
+            Assert.assertEquals(1, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.RUNNING)).getResultList().size());
+            Assert.assertEquals(2, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING)).getResultList().size());
 
             Assert.assertEquals(8, this.dao.getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING
-                , InstanceStatus.ERROR, InstanceStatus.COMPLETE, InstanceStatus.ON_HOLD, InstanceStatus.RUNNING, InstanceStatus.RELEASED)).size());
+                , InstanceStatus.ERROR, InstanceStatus.COMPLETE, InstanceStatus.ON_HOLD, InstanceStatus.RUNNING, InstanceStatus.RELEASED)).getResultList().size());
         }
     }
 

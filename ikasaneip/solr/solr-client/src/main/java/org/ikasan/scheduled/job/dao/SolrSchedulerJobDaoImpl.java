@@ -4,7 +4,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobRecordImpl;
-import org.ikasan.spec.scheduled.job.dao.SchedulerJobRecordDao;
+import org.ikasan.spec.scheduled.job.dao.SchedulerJobDao;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
@@ -13,13 +13,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class SolrSchedulerJobRecordDaoImpl extends SolrDaoBase<SchedulerJobRecord>
-    implements SchedulerJobRecordDao<SchedulerJobRecord> {
+public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
+    implements SchedulerJobDao<SchedulerJobRecord> {
 
     /**
      * Logger for this class
      */
-    private static Logger logger = LoggerFactory.getLogger(SolrSchedulerJobRecordDaoImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(SolrSchedulerJobDaoImpl.class);
 
     @Override
     public SearchResults<? extends SchedulerJobRecord> findAll(int limit, int offset) {

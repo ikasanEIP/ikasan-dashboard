@@ -8,7 +8,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobRecordImpl;
-import org.ikasan.spec.scheduled.job.dao.QuartzScheduleDrivenJobRecordDao;
+import org.ikasan.spec.scheduled.job.dao.QuartzScheduleDrivenJobDao;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
 import org.ikasan.spec.search.SearchResults;
@@ -19,13 +19,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class SolrQuartzScheduleDrivenJobRecordDaoImpl extends SolrDaoBase<QuartzScheduleDrivenJobRecord>
-    implements QuartzScheduleDrivenJobRecordDao<QuartzScheduleDrivenJobRecord> {
+public class SolrQuartzScheduleDrivenJobDaoImpl extends SolrDaoBase<QuartzScheduleDrivenJobRecord>
+    implements QuartzScheduleDrivenJobDao<QuartzScheduleDrivenJobRecord> {
 
     /**
      * Logger for this class
      */
-    private static Logger logger = LoggerFactory.getLogger(SolrQuartzScheduleDrivenJobRecordDaoImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(SolrQuartzScheduleDrivenJobDaoImpl.class);
 
 
     private ObjectMapper objectMapper = new ObjectMapper();
