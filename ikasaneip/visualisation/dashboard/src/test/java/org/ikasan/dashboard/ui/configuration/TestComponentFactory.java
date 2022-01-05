@@ -1,7 +1,10 @@
 package org.ikasan.dashboard.ui.configuration;
 
+import org.apache.catalina.Context;
+import org.apache.tomcat.util.scan.StandardJarScanner;
 import org.ikasan.spec.metadata.*;
 import org.ikasan.spec.module.ModuleType;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -12,6 +15,15 @@ import java.util.List;
 @Configuration
 public class TestComponentFactory
 {
+    @Bean
+    public TomcatServletWebServerFactory tomcatFactory() {
+        return new TomcatServletWebServerFactory() {
+            @Override
+            protected void postProcessContext(Context context) {
+                ((StandardJarScanner) context.getJarScanner()).setScanManifest(false);
+            }
+        };
+    }
 
     @Bean({"moduleMetadataService"})
     public ModuleMetaDataService moduleMetadataService()
