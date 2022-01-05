@@ -1,9 +1,9 @@
 package org.ikasan.scheduled.job.service;
 
-import org.ikasan.spec.scheduled.job.dao.FileEventDrivenJobRecordDao;
-import org.ikasan.spec.scheduled.job.dao.InternalEventDrivenJobRecordDao;
-import org.ikasan.spec.scheduled.job.dao.QuartzScheduleDrivenJobRecordDao;
-import org.ikasan.spec.scheduled.job.dao.SchedulerJobRecordDao;
+import org.ikasan.spec.scheduled.job.dao.FileEventDrivenJobDao;
+import org.ikasan.spec.scheduled.job.dao.InternalEventDrivenJobDao;
+import org.ikasan.spec.scheduled.job.dao.QuartzScheduleDrivenJobDao;
+import org.ikasan.spec.scheduled.job.dao.SchedulerJobDao;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
@@ -12,15 +12,15 @@ import org.ikasan.spec.solr.SolrServiceBase;
 
 public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements SchedulerJobService {
 
-    private FileEventDrivenJobRecordDao fileEventDrivenJobRecordDao;
-    private InternalEventDrivenJobRecordDao internalEventDrivenJobRecordDao;
-    private QuartzScheduleDrivenJobRecordDao quartzScheduleDrivenJobRecordDao;
-    private SchedulerJobRecordDao schedulerJobRecordDao;
+    private FileEventDrivenJobDao fileEventDrivenJobRecordDao;
+    private InternalEventDrivenJobDao internalEventDrivenJobRecordDao;
+    private QuartzScheduleDrivenJobDao quartzScheduleDrivenJobRecordDao;
+    private SchedulerJobDao schedulerJobRecordDao;
 
-    public SolrSchedulerJobServiceImpl(FileEventDrivenJobRecordDao fileEventDrivenJobRecordDao
-        , InternalEventDrivenJobRecordDao internalEventDrivenJobRecordDao
-        , QuartzScheduleDrivenJobRecordDao quartzScheduleDrivenJobRecordDao
-        , SchedulerJobRecordDao schedulerJobRecordDao) {
+    public SolrSchedulerJobServiceImpl(FileEventDrivenJobDao fileEventDrivenJobRecordDao
+        , InternalEventDrivenJobDao internalEventDrivenJobRecordDao
+        , QuartzScheduleDrivenJobDao quartzScheduleDrivenJobRecordDao
+        , SchedulerJobDao schedulerJobRecordDao) {
         this.fileEventDrivenJobRecordDao = fileEventDrivenJobRecordDao;
         if(this.fileEventDrivenJobRecordDao == null)
         {

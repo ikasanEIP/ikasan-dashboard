@@ -6,7 +6,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobRecordImpl;
-import org.ikasan.spec.scheduled.job.dao.InternalEventDrivenJobRecordDao;
+import org.ikasan.spec.scheduled.job.dao.InternalEventDrivenJobDao;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.search.SearchResults;
@@ -16,13 +16,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class SolrInternalEventDrivenJobRecordDaoImpl extends SolrDaoBase<InternalEventDrivenJobRecord>
-    implements InternalEventDrivenJobRecordDao<InternalEventDrivenJobRecord> {
+public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEventDrivenJobRecord>
+    implements InternalEventDrivenJobDao<InternalEventDrivenJobRecord> {
 
     /**
      * Logger for this class
      */
-    private static Logger logger = LoggerFactory.getLogger(SolrInternalEventDrivenJobRecordDaoImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(SolrInternalEventDrivenJobDaoImpl.class);
 
 
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -78,13 +78,9 @@ public class SolrInternalEventDrivenJobRecordDaoImpl extends SolrDaoBase<Interna
         queryBuffer.append("\"").append(contextId).append("\" ");
 
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery(queryBuffer.toString());
-        solrQuery.setRows(limit);
-        solrQuery.setStart(offset);
-
         logger.debug("query: " + solrQuery);
 
-        return this.findByQuery(solrQuery, SolrInternalEventDrivenJobRecordImpl.class);
+        return this.findByQuery(solrQuery, SolrInternalEventDrivenJobRecordImpl.class, offset, limit);
     }
 
     @Override

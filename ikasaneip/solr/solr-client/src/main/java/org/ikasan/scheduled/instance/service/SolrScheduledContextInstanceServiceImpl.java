@@ -5,6 +5,7 @@ import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.search.SearchResults;
 
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class SolrScheduledContextInstanceServiceImpl implements ScheduledContext
     }
 
     @Override
-    public List<? extends ScheduledContextInstanceRecord> getScheduledContextInstancesByStatus(List<InstanceStatus> instanceStatuses) {
+    public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByStatus(List<InstanceStatus> instanceStatuses) {
         return this.scheduledContextInstanceDao.getScheduledContextInstancesByStatus(instanceStatuses);
     }
 }

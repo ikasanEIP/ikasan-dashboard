@@ -1,14 +1,11 @@
 package org.ikasan.scheduled.job.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
-import org.apache.solr.core.SolrResourceLoader;
 import org.ikasan.scheduled.job.model.*;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.junit.After;
@@ -24,10 +21,10 @@ import java.util.stream.IntStream;
 
 public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
 
-    private SolrSchedulerJobRecordDaoImpl dao;
-    private SolrFileEventDrivenJobRecordDaoImpl solrFileEventDrivenJobRecordDao;
-    private SolrQuartzScheduleDrivenJobRecordDaoImpl solrQuartzScheduleDrivenJobRecordDao;
-    private SolrInternalEventDrivenJobRecordDaoImpl solrInternalEventDrivenJobRecordDao;
+    private SolrSchedulerJobDaoImpl dao;
+    private SolrFileEventDrivenJobDaoImpl solrFileEventDrivenJobRecordDao;
+    private SolrQuartzScheduleDrivenJobDaoImpl solrQuartzScheduleDrivenJobRecordDao;
+    private SolrInternalEventDrivenJobDaoImpl solrInternalEventDrivenJobRecordDao;
 
     private NodeConfig config;
 
@@ -38,8 +35,7 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
     {
         tmppath = createTempDir();
 
-        SolrResourceLoader loader = new SolrResourceLoader(tmppath);
-        config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        config = new NodeConfig.NodeConfigBuilder("testnode", tmppath)
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString()).build();
 
     }
@@ -57,13 +53,13 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
         createRequest.setConfigSet("minimal");
         server.request(createRequest);
 
-        this.dao = new SolrSchedulerJobRecordDaoImpl();
+        this.dao = new SolrSchedulerJobDaoImpl();
         this.dao.setSolrClient(server);
-        this.solrFileEventDrivenJobRecordDao = new SolrFileEventDrivenJobRecordDaoImpl();
+        this.solrFileEventDrivenJobRecordDao = new SolrFileEventDrivenJobDaoImpl();
         this.solrFileEventDrivenJobRecordDao.setSolrClient(server);
-        this.solrQuartzScheduleDrivenJobRecordDao = new SolrQuartzScheduleDrivenJobRecordDaoImpl();
+        this.solrQuartzScheduleDrivenJobRecordDao = new SolrQuartzScheduleDrivenJobDaoImpl();
         this.solrQuartzScheduleDrivenJobRecordDao.setSolrClient(server);
-        this.solrInternalEventDrivenJobRecordDao = new SolrInternalEventDrivenJobRecordDaoImpl();
+        this.solrInternalEventDrivenJobRecordDao = new SolrInternalEventDrivenJobDaoImpl();
         this.solrInternalEventDrivenJobRecordDao.setSolrClient(server);
     }
 

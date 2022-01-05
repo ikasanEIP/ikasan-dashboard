@@ -3,16 +3,13 @@ package org.ikasan.scheduled.instance.dao;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.request.QueryRequest;
-import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
-import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
-import org.ikasan.spec.solr.SolrConstants;
+import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,12 +62,12 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
 
         logger.debug("query: " + query);
 
-        List<ScheduledContextInstanceRecord> beans
+        SearchResults<ScheduledContextInstanceRecord> searchResults
             = this.findByQuery(query, SolrScheduledContextInstanceRecordImpl.class, 0, 1);
 
-        if(beans.size() > 0)
+        if(searchResults.getResultList().size() > 0)
         {
-            return beans.get(0);
+            return searchResults.getResultList().get(0);
         }
         else
         {
@@ -79,7 +76,7 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
     }
 
     @Override
-    public List<? extends ScheduledContextInstanceRecord> getScheduledContextInstancesByStatus(List<InstanceStatus> instanceStatuses) {
+    public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByStatus(List<InstanceStatus> instanceStatuses) {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(super.buildStringListQueryPart(instanceStatuses
             .stream()

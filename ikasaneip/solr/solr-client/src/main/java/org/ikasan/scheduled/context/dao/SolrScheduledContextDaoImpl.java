@@ -2,22 +2,16 @@ package org.ikasan.scheduled.context.dao;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.request.QueryRequest;
-import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.scheduled.context.model.*;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
+import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextDao;
-import org.ikasan.spec.scheduled.context.model.*;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
-import org.ikasan.spec.solr.SolrConstants;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
+import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRecord> implements ScheduledContextDao
 {
@@ -57,7 +51,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
     }
 
     @Override
-    public List<? extends ScheduledContextRecord> findAll() {
+    public SearchResults<ScheduledContextRecord> findAll() {
         StringBuffer typeBuffer = new StringBuffer();
         typeBuffer.append(TYPE + COLON);
         typeBuffer.append("\"").append(SCHEDULED_CONTEXT).append("\" ");
@@ -67,7 +61,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
 
         logger.debug("query: " + solrQuery);
 
-        return this.findByQuery(solrQuery);
+        return this.findByQuery(solrQuery, SolrScheduledContextRecordImpl.class,-1, -1);
     }
 
     @Override
@@ -76,11 +70,12 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
 
         logger.debug("query: " + query);
 
-        List<? extends ScheduledContextRecord> beans = this.findByQuery(query);
+        SearchResults<? extends ScheduledContextRecord> searchResults = this
+            .findByQuery(query, SolrScheduledContextRecordImpl.class, 0, 1);
 
-        if(beans.size() > 0)
+        if(searchResults.getResultList().size() > 0)
         {
-            return beans.get(0);
+            return searchResults.getResultList().get(0);
         }
         else
         {
@@ -88,24 +83,23 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
         }
     }
 
-    /**
-     * Helper method to find by query.
-     *
-     * @param query
-     */
-    private List<? extends ScheduledContextRecord> findByQuery(SolrQuery query) {
-        logger.debug("queryString: " + query);
+    @Override
+    public ScheduledContextRecord findByName(String name) {
+        SolrQuery query = new SolrQuery(super.buildFieldPredicate(name, MODULE_NAME)
+            .append(" AND ").append(super.buildFieldPredicate("SCHEDULED_CONTEXT", TYPE)).toString());
 
-        try {
-            QueryRequest req = new QueryRequest(query);
-            req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+        logger.debug("query: " + query);
 
-            QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
+        SearchResults<? extends ScheduledContextRecord> searchResults = this
+            .findByQuery(query, SolrScheduledContextRecordImpl.class, 0, 1);
 
-            return rsp.getBeans(SolrScheduledContextRecordImpl.class);
+        if(searchResults.getResultList().size() > 0)
+        {
+            return searchResults.getResultList().get(0);
         }
-        catch (Exception e) {
-            throw new RuntimeException("Error resolving scheduled context record meta data by query [" + query + "] from the ikasan solr index!", e);
+        else
+        {
+            return null;
         }
     }
 }
