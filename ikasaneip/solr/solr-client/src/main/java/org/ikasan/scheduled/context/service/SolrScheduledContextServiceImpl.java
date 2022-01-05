@@ -3,8 +3,7 @@ package org.ikasan.scheduled.context.service;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextDao;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-
-import java.util.List;
+import org.ikasan.spec.search.SearchResults;
 
 public class SolrScheduledContextServiceImpl implements ScheduledContextService {
 
@@ -18,13 +17,18 @@ public class SolrScheduledContextServiceImpl implements ScheduledContextService 
     }
 
     @Override
-    public List<? extends ScheduledContextRecord> findAll() {
+    public SearchResults<? extends ScheduledContextRecord> findAll() {
         return this.dao.findAll();
     }
 
     @Override
     public ScheduledContextRecord findById(String id) {
         return this.dao.findById(id);
+    }
+
+    @Override
+    public ScheduledContextRecord findByName(String name) {
+        return this.dao.findByName(name);
     }
 
     @Override

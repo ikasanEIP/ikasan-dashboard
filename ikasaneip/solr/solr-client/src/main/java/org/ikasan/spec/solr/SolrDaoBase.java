@@ -684,7 +684,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
      *
      * @param query
      */
-    protected List<T> findByQuery(SolrQuery query, Class clazz, int offset, int limit) {
+    protected SearchResults<T> findByQuery(SolrQuery query, Class clazz, int offset, int limit) {
         logger.debug("queryString: " + query);
 
         try {
@@ -697,7 +697,8 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
 
                 QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
 
-                return rsp.getBeans(clazz);
+                return new SearchResultsImpl<>(rsp.getBeans(clazz)
+                    , rsp.getResults().getNumFound(), rsp.getElapsedTime());
             }
             else {
                 query.setStart(0);
@@ -715,7 +716,8 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
 
                 rsp = req.process(this.solrClient, SolrConstants.CORE);
 
-                return rsp.getBeans(clazz);
+                return new SearchResultsImpl<>(rsp.getBeans(clazz)
+                    , rsp.getResults().getNumFound(), rsp.getElapsedTime());
             }
         }
         catch (Exception e)
