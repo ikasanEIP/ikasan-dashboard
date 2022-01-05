@@ -1,13 +1,10 @@
 package org.ikasan.scheduled.job.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
-import org.apache.solr.core.SolrResourceLoader;
-import org.ikasan.scheduled.context.dao.SolrScheduledContextDaoImpl;
 import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobRecordImpl;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
@@ -24,7 +21,7 @@ import java.util.stream.IntStream;
 
 public class SolrFileEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 {
 
-    private SolrFileEventDrivenJobRecordDaoImpl dao;
+    private SolrFileEventDrivenJobDaoImpl dao;
 
     private NodeConfig config;
 
@@ -35,8 +32,7 @@ public class SolrFileEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 {
     {
         tmppath = createTempDir();
 
-        SolrResourceLoader loader = new SolrResourceLoader(tmppath);
-        config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        config = new NodeConfig.NodeConfigBuilder("testnode", tmppath)
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString()).build();
 
     }
@@ -54,7 +50,7 @@ public class SolrFileEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 {
         createRequest.setConfigSet("minimal");
         server.request(createRequest);
 
-        dao = new SolrFileEventDrivenJobRecordDaoImpl();
+        dao = new SolrFileEventDrivenJobDaoImpl();
         dao.setSolrClient(server);
     }
 

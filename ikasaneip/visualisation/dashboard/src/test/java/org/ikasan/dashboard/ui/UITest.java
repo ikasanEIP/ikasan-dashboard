@@ -62,9 +62,6 @@ public abstract class UITest
     @MockBean
     protected ModuleMetaDataService moduleMetadataService;
 
-//    @MockBean
-//    protected ScheduledContextService scheduledContextService;
-
     public abstract void setup_expectations() throws IOException;
 
     protected void setup_general_expectations() {

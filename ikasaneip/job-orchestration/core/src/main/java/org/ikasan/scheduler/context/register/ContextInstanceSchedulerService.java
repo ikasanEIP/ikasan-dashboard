@@ -7,6 +7,7 @@ import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.search.SearchResults;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.slf4j.Logger;
@@ -54,10 +55,10 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
     @PostConstruct
     public void registerJobs() {
         try {
-            List<ScheduledContextRecord> scheduledContextRecords
-                = (List<ScheduledContextRecord>) this.scheduledContextService.findAll();
+            SearchResults<ScheduledContextRecord> scheduledContextRecords
+                = (SearchResults<ScheduledContextRecord>) this.scheduledContextService.findAll();
 
-            for (ScheduledContextRecord scheduledContextRecord : scheduledContextRecords) {
+            for (ScheduledContextRecord scheduledContextRecord : scheduledContextRecords.getResultList()) {
 
                 ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(scheduledContextRecord.getContextName(),
                     scheduledContextRecord.getContext().getTimeWindowStart(), this.scheduledContextService
@@ -76,6 +77,7 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
             }
         }
         catch (Exception ex) {
+            // todo need to add some notifications here
             logger.error(String.format("An exception has occurred registering contexts [%s]", ex.getMessage()), ex);
         }
     }

@@ -6,7 +6,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobRecordImpl;
-import org.ikasan.spec.scheduled.job.dao.FileEventDrivenJobRecordDao;
+import org.ikasan.spec.scheduled.job.dao.FileEventDrivenJobDao;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
 import org.ikasan.spec.search.SearchResults;
@@ -16,13 +16,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class SolrFileEventDrivenJobRecordDaoImpl extends SolrDaoBase<FileEventDrivenJobRecord>
-    implements FileEventDrivenJobRecordDao<FileEventDrivenJobRecord> {
+public class SolrFileEventDrivenJobDaoImpl extends SolrDaoBase<FileEventDrivenJobRecord>
+    implements FileEventDrivenJobDao<FileEventDrivenJobRecord> {
 
     /**
      * Logger for this class
      */
-    private static Logger logger = LoggerFactory.getLogger(SolrFileEventDrivenJobRecordDaoImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(SolrFileEventDrivenJobDaoImpl.class);
 
 
     private ObjectMapper objectMapper = new ObjectMapper();
