@@ -58,16 +58,19 @@ public class ContextMachineCache
 
     public boolean containsContextName(String contextName)
     {
+        boolean result = this.contextInstanceByContextNameCache.containsKey(contextName);
         logger.debug(String.format("%s check contains[%s] - result [%s]",this
-            , contextName));
-        return this.contextInstanceByContextNameCache.containsKey(contextName);
+            , contextName, result));
+        return result;
     }
 
     public boolean containsInstanceIdentifier(String contextInstanceId)
     {
+        boolean result = this.contextInstanceByContextInstanceIdCache.containsKey(contextInstanceId);
+
         logger.debug(String.format("%s check contains[%s] - result [%s]",this
-            , contextInstanceId));
-        return this.contextInstanceByContextInstanceIdCache.containsKey(contextInstanceId);
+            , contextInstanceId, result));
+        return result;
     }
 
     public Set contextNames() {

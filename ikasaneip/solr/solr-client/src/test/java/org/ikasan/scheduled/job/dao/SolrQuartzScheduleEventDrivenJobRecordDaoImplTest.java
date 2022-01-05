@@ -5,12 +5,8 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
-import org.apache.solr.core.SolrResourceLoader;
-import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobImpl;
-import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobRecordImpl;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobRecordImpl;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
 import org.junit.After;
 import org.junit.Assert;
@@ -24,7 +20,7 @@ import java.nio.file.Paths;
 
 public class SolrQuartzScheduleEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 {
 
-    private SolrQuartzScheduleDrivenJobRecordDaoImpl dao;
+    private SolrQuartzScheduleDrivenJobDaoImpl dao;
 
     private NodeConfig config;
 
@@ -35,8 +31,7 @@ public class SolrQuartzScheduleEventDrivenJobRecordDaoImplTest extends SolrTestC
     {
         tmppath = createTempDir();
 
-        SolrResourceLoader loader = new SolrResourceLoader(tmppath);
-        config = new NodeConfig.NodeConfigBuilder("testnode", loader)
+        config = new NodeConfig.NodeConfigBuilder("testnode", tmppath)
             .setConfigSetBaseDirectory(Paths.get(TEST_HOME()).resolve("configsets").toString()).build();
 
     }
@@ -54,7 +49,7 @@ public class SolrQuartzScheduleEventDrivenJobRecordDaoImplTest extends SolrTestC
         createRequest.setConfigSet("minimal");
         server.request(createRequest);
 
-        dao = new SolrQuartzScheduleDrivenJobRecordDaoImpl();
+        dao = new SolrQuartzScheduleDrivenJobDaoImpl();
         dao.setSolrClient(server);
     }
 

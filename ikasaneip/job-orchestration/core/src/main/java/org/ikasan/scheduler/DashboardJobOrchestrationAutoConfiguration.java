@@ -2,6 +2,7 @@ package org.ikasan.scheduler;
 
 import org.ikasan.module.service.ModuleActivatorDefaultImpl;
 import org.ikasan.module.startup.dao.StartupControlDao;
+import org.ikasan.scheduler.context.recovery.ContextInstanceRecoveryManager;
 import org.ikasan.scheduler.context.register.ContextInstanceSchedulerService;
 import org.ikasan.scheduler.integration.StartupApplicationListener;
 import org.ikasan.scheduler.integration.module.InboundModuleFactory;
@@ -13,7 +14,8 @@ import org.ikasan.spec.module.ModuleActivator;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -29,17 +31,21 @@ import javax.annotation.Resource;
 @Import({InboundModuleFactory.class})
 public class DashboardJobOrchestrationAutoConfiguration {
 
-    @Autowired
+    @Value("${scheduled.job.context.queue.directory}")
+    private String queueDirectory;
+
+    @Resource
     ConfigurationService configurationService;
 
     @Resource
     Module<Flow> inboundFlowModule;
 
-    @Resource
-    private DashboardRestService moduleMetadataDashboardRestService;
-
-    @Resource
-    private DashboardRestService configurationMetadataDashboardRestService;
+    @Bean
+    public ContextInstanceRecoveryManager contextInstanceRecoveryManager(ScheduledContextInstanceService scheduledContextInstanceService
+        , ScheduledContextService scheduledContextService, InternalEventDrivenJobService internalEventDrivenJobRecordService) {
+        return new ContextInstanceRecoveryManager(scheduledContextInstanceService, scheduledContextService, internalEventDrivenJobRecordService,
+            queueDirectory);
+    }
 
     @Bean
     public ContextInstanceSchedulerService contextInstanceSchedulerService(ScheduledContextService scheduledContextService
@@ -57,8 +63,8 @@ public class DashboardJobOrchestrationAutoConfiguration {
     public StartupApplicationListener startupApplicationListener(DashboardRestService moduleMetadataDashboardRestService,
                                                                  DashboardRestService configurationMetadataDashboardRestService,
                                                                  Module<Flow> inboundFlowModule) {
-        return new StartupApplicationListener(this.moduleMetadataDashboardRestService,
-            this.configurationMetadataDashboardRestService, inboundFlowModule);
+        return new StartupApplicationListener(moduleMetadataDashboardRestService,
+            configurationMetadataDashboardRestService, inboundFlowModule);
     }
 
 

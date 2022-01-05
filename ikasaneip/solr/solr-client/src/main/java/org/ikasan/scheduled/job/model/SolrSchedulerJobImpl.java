@@ -3,7 +3,7 @@ package org.ikasan.scheduled.job.model;
 
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
-public abstract class SolrSchedulerJobImpl implements SchedulerJob {
+public class SolrSchedulerJobImpl implements SchedulerJob {
     protected String jobIdentifier;
     protected String agentName;
     protected String jobName;
