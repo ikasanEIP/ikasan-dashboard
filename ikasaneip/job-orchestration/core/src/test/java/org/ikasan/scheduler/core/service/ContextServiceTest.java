@@ -14,6 +14,10 @@ public class ContextServiceTest extends AbstractTest {
     @Test
     public void test_load_context() throws IOException {
         ContextTemplateImpl context = this.contextService.getContext(loadDataFile("/data/context.json"));
+
+        ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
+
+        System.out.println(contextService.getContextString(contextTemplate));
     }
 
     @Test
