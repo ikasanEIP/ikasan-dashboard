@@ -194,7 +194,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             Date next = cronExpression.getNextValidTimeAfter(new Date(startTime));
 
             // project the upcoming jobs forward
-            while (next.before(new Date(endTime))) {
+            while (next != null && next.before(new Date(endTime))) {
                 results.add(new UpcomingScheduledProcess(agent, jobName.get(),
                     jobGroup.get(), jobDescription.get(), next.getTime(), scheduledConsumerConfigurationMetaData,
                     processExecutionBrokerConfigurationMetaData, blackoutRouterConfigurationMetaData, cronExpression.getTimeZone().getID()));
