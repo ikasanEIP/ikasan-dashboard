@@ -236,6 +236,58 @@ public class ScheduleProcessServiceTest extends SolrTestCaseJ4 {
 
     }
 
+    @Test
+    public void test_get_upcoming_scheduled_processes_cron_in_past() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "scheduler-agent");
+            doc.addField("moduleName", "scheduler-agent");
+            doc.addField("type", "moduleMetaData");
+            doc.addField("payload", this.loadDataFile("/data/scheduler-agent-module-metadata.json"));
+            doc.addField("timestamp", 100l);
+
+            server.add("ikasan", doc);
+            server.commit();
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "scheduler-agent_5 minute job_Scheduled Consumer_-946268323_C");
+            doc.addField("type", "componentConfiguration");
+            doc.addField("payload", this.loadDataFile("/data/scheduler-consumer-configuration-cron-in-past.json"));
+            doc.addField("timestamp", 100l);
+
+            server.add("ikasan", doc);
+            server.commit();
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "scheduler-agent_5 minute job_Blackout Router_-176915388_C");
+            doc.addField("type", "componentConfiguration");
+            doc.addField("payload", this.loadDataFile("/data/blackout_router_configuration.json"));
+            doc.addField("timestamp", 100l);
+
+            server.add("ikasan", doc);
+            server.commit();
+
+            doc = new SolrInputDocument();
+            doc.addField("id", "scheduler-agent_5 minute job_Process Execution Broker_1959287546_C");
+            doc.addField("type", "componentConfiguration");
+            doc.addField("payload", this.loadDataFile("/data/process_execution_broker_configuration.json"));
+            doc.addField("timestamp", 100l);
+
+            server.add("ikasan", doc);
+            server.commit();
+
+            List<UpcomingScheduledProcess> upComingScheduledProcesses = this.solrScheduledProcessService.getUpComingScheduledProcesses("scheduler-agent",
+                "5 minute job", System.currentTimeMillis(), System.currentTimeMillis() + 600000L);
+
+            Assert.assertNotNull(upComingScheduledProcesses);
+            Assert.assertEquals(0, upComingScheduledProcesses.size());
+        }
+
+    }
+
     @Test(expected = RuntimeException.class)
     public void test_get_upcoming_scheduled_processes_exception_null_consumer_configuration() throws Exception {
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))

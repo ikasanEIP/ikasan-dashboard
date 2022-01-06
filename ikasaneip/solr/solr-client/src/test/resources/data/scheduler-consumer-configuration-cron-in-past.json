@@ -1,0 +1,70 @@
+{
+  "configurationId": "scheduler-agent_5 minute job_Scheduled Consumer_-946268323_C",
+  "description": null,
+  "implementingClass": "org.ikasan.component.endpoint.quartz.consumer.ScheduledConsumerConfiguration",
+  "parameters": [
+    {
+      "id": 2,
+      "name": "cronExpression",
+      "value": "0 0 0 1 1 ? 1970",
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterStringImpl"
+    },
+    {
+      "id": 3,
+      "name": "description",
+      "value": "description",
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterStringImpl"
+    },
+    {
+      "id": 4,
+      "name": "eager",
+      "value": false,
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterBooleanImpl"
+    },
+    {
+      "id": 5,
+      "name": "ignoreMisfire",
+      "value": false,
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterBooleanImpl"
+    },
+    {
+      "id": 6,
+      "name": "jobGroupName",
+      "value": "group",
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterStringImpl"
+    },
+    {
+      "id": 7,
+      "name": "jobName",
+      "value": "5 minute job",
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterStringImpl"
+    },
+    {
+      "id": 8,
+      "name": "maxEagerCallbacks",
+      "value": null,
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterIntegerImpl"
+    },
+    {
+      "id": 9,
+      "name": "passthroughProperties",
+      "value": {},
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterMapImpl"
+    },
+    {
+      "id": 10,
+      "name": "timezone",
+      "value": "Europe/Paris",
+      "description": null,
+      "implementingClass": "org.ikasan.configurationService.model.ConfigurationParameterStringImpl"
+    }
+  ]
+}
