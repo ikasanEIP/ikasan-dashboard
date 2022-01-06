@@ -1,0 +1,134 @@
+{
+  "name" : "Context Template Name",
+  "description" : "Context Template Description",
+  "timezone" : null,
+  "jobDependencies" : [ {
+    "jobIdentifier" : "AgentName-Job2",
+    "logicalGrouping" : null
+  }, {
+    "jobIdentifier" : "AgentName-Job3",
+    "logicalGrouping" : null
+  }, {
+    "jobIdentifier" : "AgentName-Job5",
+    "logicalGrouping" : null
+  }, {
+    "jobIdentifier" : "AgentName-Job1",
+    "logicalGrouping" : {
+      "logicalGrouping" : null,
+      "and" : [ {
+        "identifier" : "AgentName-Job2",
+        "logicalGrouping" : null
+      }, {
+        "identifier" : "AgentName-Job3",
+        "logicalGrouping" : null
+      } ],
+      "or" : null,
+      "not" : null
+    }
+  }, {
+    "jobIdentifier" : "AgentName-Job8",
+    "logicalGrouping" : {
+      "logicalGrouping" : null,
+      "and" : null,
+      "or" : [ {
+        "identifier" : "null-null",
+        "logicalGrouping" : {
+          "logicalGrouping" : null,
+          "and" : [ {
+            "identifier" : "AgentName-Job4",
+            "logicalGrouping" : null
+          }, {
+            "identifier" : "AgentName-Job5",
+            "logicalGrouping" : null
+          } ],
+          "or" : null,
+          "not" : null
+        }
+      }, {
+        "identifier" : "null-null",
+        "logicalGrouping" : {
+          "logicalGrouping" : null,
+          "and" : [ {
+            "identifier" : "AgentName-Job6",
+            "logicalGrouping" : null
+          }, {
+            "identifier" : "AgentName-Job7",
+            "logicalGrouping" : null
+          } ],
+          "or" : null,
+          "not" : null
+        }
+      } ],
+      "not" : null
+    }
+  } ],
+  "contexts" : null,
+  "contextDependencies" : null,
+  "contextParameters" : [ {
+    "name" : "param1",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "param2",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "param3",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "param4",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "param5",
+    "type" : "java.lang.String"
+  } ],
+  "scheduledJobs" : [ {
+    "agentName" : "AgentName",
+    "jobName" : "Job1",
+    "contextId" : null,
+    "identifier" : "AgentName-Job1",
+    "jobDescription" : "Job1 Description"
+  }, {
+    "agentName" : "AgentName",
+    "jobName" : "Job2",
+    "contextId" : null,
+    "identifier" : "AgentName-Job2",
+    "jobDescription" : "Job2 Description"
+  }, {
+    "agentName" : "AgentName",
+    "jobName" : "Job3",
+    "contextId" : null,
+    "identifier" : "AgentName-Job3",
+    "jobDescription" : "Job3 Description"
+  }, {
+    "agentName" : "AgentName",
+    "jobName" : "Job4",
+    "contextId" : null,
+    "identifier" : "AgentName-Job4",
+    "jobDescription" : "Job4 Description"
+  }, {
+    "agentName" : "AgentName",
+    "jobName" : "Job5",
+    "contextId" : null,
+    "identifier" : "AgentName-Job5",
+    "jobDescription" : "Job5 Description"
+  }, {
+    "agentName" : "AgentName",
+    "jobName" : "Job6",
+    "contextId" : null,
+    "identifier" : "AgentName-Job6",
+    "jobDescription" : "Job6 Description"
+  }, {
+    "agentName" : "AgentName",
+    "jobName" : "Job7",
+    "contextId" : null,
+    "identifier" : "AgentName-Job7",
+    "jobDescription" : "Job7 Description"
+  }, {
+    "agentName" : "AgentName",
+    "jobName" : "Job8",
+    "contextId" : null,
+    "identifier" : "AgentName-Job8",
+    "jobDescription" : "Job8 Description"
+  } ],
+  "timeWindowStart" : "* * 6 ? * * *",
+  "timeWindowEnd" : "* * 15 ? * * *"
+}
