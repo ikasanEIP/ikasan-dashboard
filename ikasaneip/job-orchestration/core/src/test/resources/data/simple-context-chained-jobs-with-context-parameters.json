@@ -1,5 +1,8 @@
 {
   "name": "Context1",
+  "description" : "Context Template Description",
+  "timeWindowStart" : "* * 6 ? * * *",
+  "timeWindowEnd" : "* * 15 ? * * *",
   "jobDependencies": [
     {
       "jobIdentifier": "agentName1-jobName1"
