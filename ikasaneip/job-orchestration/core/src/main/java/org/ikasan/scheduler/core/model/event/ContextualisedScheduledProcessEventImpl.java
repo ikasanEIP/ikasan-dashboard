@@ -1,6 +1,7 @@
 package org.ikasan.scheduler.core.model.event;
 
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 
 public class ContextualisedScheduledProcessEventImpl implements ContextualisedScheduledProcessEvent<String, DryRunParametersImpl> {
     private Long id;
@@ -25,6 +26,7 @@ public class ContextualisedScheduledProcessEventImpl implements ContextualisedSc
     private boolean jobStarting = false;
     private DryRunParametersImpl dryRunParameters;
     private boolean skipped;
+    private InternalEventDrivenJob internalEventDrivenJob;
 
 
     public Long getId()
@@ -254,6 +256,16 @@ public class ContextualisedScheduledProcessEventImpl implements ContextualisedSc
     @Override
     public boolean isSkipped() {
         return skipped;
+    }
+
+    @Override
+    public void setInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob) {
+        this.internalEventDrivenJob = internalEventDrivenJob;
+    }
+
+    @Override
+    public InternalEventDrivenJob getInternalEventDrivenJob() {
+        return this.internalEventDrivenJob;
     }
 
     @Override
