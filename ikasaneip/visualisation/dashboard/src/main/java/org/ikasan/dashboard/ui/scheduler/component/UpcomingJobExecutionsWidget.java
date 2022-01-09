@@ -9,26 +9,35 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.RouterLink;
+import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
+import org.ikasan.spec.metadata.FlowMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.miki.shared.dates.DatePatterns;
 import org.vaadin.miki.superfields.dates.SuperDatePicker;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @CssImport("./styles/dashboard-view.css")
@@ -41,7 +50,8 @@ public class UpcomingJobExecutionsWidget extends Div {
 
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private DateFormatter dateFormatter;
-    private TextField textField = new TextField(getTranslation("label.search", UI.getCurrent().getLocale()));
+    private Select<String> agentSelect = new Select();
+    private Select<FlowMetaData> jobSelect = new Select();
     private SuperDatePicker date;
     private TimePicker startTime;
     private TimePicker endTime;
@@ -50,6 +60,7 @@ public class UpcomingJobExecutionsWidget extends Div {
     private MetaDataService metaDataRestService;
     private ModuleMetaDataService moduleMetaDataService;
     private SystemEventLogger systemEventLogger;
+    private IkasanAuthentication authentication;
 
     /**
      * Constructor
@@ -73,6 +84,7 @@ public class UpcomingJobExecutionsWidget extends Div {
         this.metaDataRestService = metaDataRestService;
         this.moduleMetaDataService = moduleMetaDataService;
         this.systemEventLogger = systemEventLogger;
+        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.scheduledProcessFilter = new ScheduledProcessFilter();
         Div div = new Div();
@@ -87,8 +99,44 @@ public class UpcomingJobExecutionsWidget extends Div {
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
 
-        this.textField.setSuffixComponent(icon);
-        this.textField.setWidth("300px");
+        agentSelect.setLabel(getTranslation("label.agent", UI.getCurrent().getLocale()));
+        jobSelect.setLabel(getTranslation("label.job-name", UI.getCurrent().getLocale()));
+        jobSelect.setItemLabelGenerator(FlowMetaData::getName);
+        List<String> agentNames;
+
+        if(this.authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)
+            || this.authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
+
+            agentNames = this.scheduledProcessManagementService.getAllAgentNames();
+        }
+        else {
+
+            agentNames = new ArrayList<>(SecurityUtils.getAccessibleModules(this.authentication));
+        }
+        agentSelect.setItems(agentNames);
+
+        if(agentNames.size() > 0) {
+            agentSelect.setValue(agentNames.get(0));
+
+            List<FlowMetaData> flowMetaData = null;
+            flowMetaData = this.scheduledProcessManagementService.getFlowsForAgent(agentNames.get(0));
+
+            if(flowMetaData.size() > 0) {
+                jobSelect.setItems(flowMetaData);
+                jobSelect.setValue(flowMetaData.get(0));
+            }
+        }
+
+        agentSelect.addValueChangeListener(event -> {
+            jobSelect.removeAll();
+            List<FlowMetaData> flowMetaData = this.scheduledProcessManagementService.getFlowsForAgent(event.getValue());
+
+            if(flowMetaData.size() > 0) {
+                jobSelect.setItems(flowMetaData);
+                jobSelect.setValue(flowMetaData.get(0));
+            }
+        });
+
         HorizontalLayout layout = new HorizontalLayout();
         H4 modules = new H4(getTranslation("header.upcoming-job-executions", UI.getCurrent().getLocale()));
 
@@ -119,7 +167,7 @@ public class UpcomingJobExecutionsWidget extends Div {
         newWindowButton.setVisible(!isDeeplink);
 
         HorizontalLayout timeComponents = new HorizontalLayout();
-        timeComponents.add(date, startTime, endTime, textField, refreshButton, newWindowButton);
+        timeComponents.add(date, startTime, endTime, agentSelect, jobSelect, refreshButton, newWindowButton);
         timeComponents.getElement().getStyle().set("margin-left", "auto");
 
         layout.add(modules, timeComponents);
@@ -159,7 +207,8 @@ public class UpcomingJobExecutionsWidget extends Div {
             , this.scheduledProcessFilter, this.dateFormatter, this.configurationRestService, this.moduleControlRestService,
             this.metaDataRestService, this.moduleMetaDataService, this.systemEventLogger);
 
-        this.upcomingJobExecutionFilteringGrid.addGridFiltering(textField, this.scheduledProcessFilter::setFilter);
+        this.upcomingJobExecutionFilteringGrid.addGridFiltering(this.agentSelect, this.jobSelect, this.scheduledProcessFilter::setAgentName,
+            this.scheduledProcessFilter::setJobName);
         this.upcomingJobExecutionFilteringGrid.addGridFiltering(date, startTime, endTime,
             this.scheduledProcessFilter::setStartTime, this.scheduledProcessFilter::setEndTime);
     }

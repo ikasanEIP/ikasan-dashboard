@@ -6,7 +6,9 @@ public class ScheduledProcessFilter {
 
     private long endTime;
 
-    private String filter;
+    private String agentName;
+
+    private String jobName;
 
     private boolean errorsOnly = false;
 
@@ -26,12 +28,12 @@ public class ScheduledProcessFilter {
         this.endTime = endTime;
     }
 
-    public String getFilter() {
-        return filter;
+    public String getAgentName() {
+        return agentName;
     }
 
-    public void setFilter(String filter) {
-        this.filter = filter;
+    public void setAgentName(String agentName) {
+        this.agentName = agentName;
     }
 
     public boolean isErrorsOnly() {
@@ -40,5 +42,13 @@ public class ScheduledProcessFilter {
 
     public void setErrorsOnly(boolean errorsOnly) {
         this.errorsOnly = errorsOnly;
+    }
+
+    public String getJobName() {
+        return jobName;
+    }
+
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
     }
 }
