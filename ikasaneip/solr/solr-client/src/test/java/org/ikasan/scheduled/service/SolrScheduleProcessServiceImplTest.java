@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class ScheduleProcessServiceTest extends SolrTestCaseJ4 {
+public class SolrScheduleProcessServiceImplTest extends SolrTestCaseJ4 {
 
     private SolrScheduledProcessServiceImpl solrScheduledProcessService;
 
@@ -227,11 +227,11 @@ public class ScheduleProcessServiceTest extends SolrTestCaseJ4 {
             server.add("ikasan", doc);
             server.commit();
 
-            List<UpcomingScheduledProcess> upComingScheduledProcesses = this.solrScheduledProcessService.getUpComingScheduledProcesses("scheduler-agent",
-                "5 minute job", System.currentTimeMillis(), System.currentTimeMillis() + 600000L);
+            ScheduledProcessEventSearchResults upComingScheduledProcesses = this.solrScheduledProcessService.getUpComingScheduledProcesses("scheduler-agent",
+                "5 minute job", System.currentTimeMillis(), System.currentTimeMillis() + 600000L, 0, 10);
 
             Assert.assertNotNull(upComingScheduledProcesses);
-            Assert.assertEquals(2, upComingScheduledProcesses.size());
+            Assert.assertEquals(2, upComingScheduledProcesses.getResultList().size());
         }
 
     }
@@ -322,11 +322,11 @@ public class ScheduleProcessServiceTest extends SolrTestCaseJ4 {
             server.add("ikasan", doc);
             server.commit();
 
-            List<UpcomingScheduledProcess> upComingScheduledProcesses = this.solrScheduledProcessService.getUpComingScheduledProcesses("scheduler-agent",
-                "5 minute job", System.currentTimeMillis(), System.currentTimeMillis() + 600000L);
+            ScheduledProcessEventSearchResults upComingScheduledProcesses = this.solrScheduledProcessService.getUpComingScheduledProcesses("scheduler-agent",
+                "5 minute job", System.currentTimeMillis(), System.currentTimeMillis() + 600000L, 0, 10);
 
             Assert.assertNotNull(upComingScheduledProcesses);
-            Assert.assertEquals(2, upComingScheduledProcesses.size());
+            Assert.assertEquals(2, upComingScheduledProcesses.getResultList().size());
         }
 
     }
@@ -365,11 +365,11 @@ public class ScheduleProcessServiceTest extends SolrTestCaseJ4 {
             server.add("ikasan", doc);
             server.commit();
 
-            List<UpcomingScheduledProcess> upComingScheduledProcesses = this.solrScheduledProcessService.getUpComingScheduledProcesses("scheduler-agent",
-                "5 minute job", System.currentTimeMillis(), System.currentTimeMillis() + 600000L);
+            ScheduledProcessEventSearchResults upComingScheduledProcesses = this.solrScheduledProcessService.getUpComingScheduledProcesses("scheduler-agent",
+                "5 minute job", System.currentTimeMillis(), System.currentTimeMillis() + 600000L, 0, 10);
 
             Assert.assertNotNull(upComingScheduledProcesses);
-            Assert.assertEquals(2, upComingScheduledProcesses.size());
+            Assert.assertEquals(2, upComingScheduledProcesses.getResultList().size());
         }
 
     }
@@ -402,11 +402,11 @@ public class ScheduleProcessServiceTest extends SolrTestCaseJ4 {
             server.add("ikasan", doc);
             server.commit();
 
-            List<UpcomingScheduledProcess> upComingScheduledProcesses = this.solrScheduledProcessService.getUpComingScheduledProcesses("scheduler-agent",
-                "5 minute job", System.currentTimeMillis(), System.currentTimeMillis() + 600000L);
+            ScheduledProcessEventSearchResults upComingScheduledProcesses = this.solrScheduledProcessService.getUpComingScheduledProcesses("scheduler-agent",
+                "5 minute job", System.currentTimeMillis(), System.currentTimeMillis() + 600000L, 0, 10);
 
             Assert.assertNotNull(upComingScheduledProcesses);
-            Assert.assertEquals(2, upComingScheduledProcesses.size());
+            Assert.assertEquals(2, upComingScheduledProcesses.getResultList().size());
         }
 
     }
@@ -455,7 +455,7 @@ public class ScheduleProcessServiceTest extends SolrTestCaseJ4 {
             server.commit();
 
             ScheduledProcessEventSearchResults<UpcomingScheduledProcess> upComingScheduledProcesses = this.solrScheduledProcessService
-                .getUpComingScheduledProcesses(List.of("scheduler-agent"), System.currentTimeMillis(), System.currentTimeMillis() + 600000L, null);
+                .getUpComingScheduledProcesses(List.of("scheduler-agent"), System.currentTimeMillis(), System.currentTimeMillis() + 600000L, null, 0, 10);
 
             Assert.assertNotNull(upComingScheduledProcesses);
             Assert.assertEquals(2, upComingScheduledProcesses.getResultList().size());
@@ -507,7 +507,7 @@ public class ScheduleProcessServiceTest extends SolrTestCaseJ4 {
             server.commit();
 
             ScheduledProcessEventSearchResults<UpcomingScheduledProcess> upComingScheduledProcesses = this.solrScheduledProcessService
-                .getUpComingScheduledProcesses(List.of("scheduler-agent"), System.currentTimeMillis(), System.currentTimeMillis() + 600000L, "sched");
+                .getUpComingScheduledProcesses(List.of("scheduler-agent"), System.currentTimeMillis(), System.currentTimeMillis() + 600000L, "sched", 0, 10);
 
             Assert.assertNotNull(upComingScheduledProcesses);
             Assert.assertEquals(2, upComingScheduledProcesses.getResultList().size());
@@ -559,7 +559,7 @@ public class ScheduleProcessServiceTest extends SolrTestCaseJ4 {
             server.commit();
 
             ScheduledProcessEventSearchResults<UpcomingScheduledProcess> upComingScheduledProcesses = this.solrScheduledProcessService
-                .getUpComingScheduledProcesses(List.of("scheduler-agent"), System.currentTimeMillis(), System.currentTimeMillis() + 600000L, "bad filter");
+                .getUpComingScheduledProcesses(List.of("scheduler-agent"), System.currentTimeMillis(), System.currentTimeMillis() + 600000L, "bad filter", 0, 10);
 
             Assert.assertNotNull(upComingScheduledProcesses);
             Assert.assertEquals(0, upComingScheduledProcesses.getResultList().size());
@@ -611,7 +611,7 @@ public class ScheduleProcessServiceTest extends SolrTestCaseJ4 {
             server.commit();
 
             ScheduledProcessEventSearchResults<UpcomingScheduledProcess> upComingScheduledProcesses = this.solrScheduledProcessService
-                .getUpComingScheduledProcesses(null, System.currentTimeMillis(), System.currentTimeMillis() + 600000L, null);
+                .getUpComingScheduledProcesses(null, System.currentTimeMillis(), System.currentTimeMillis() + 600000L, null, 0, 10);
 
             Assert.assertNotNull(upComingScheduledProcesses);
             Assert.assertEquals(2, upComingScheduledProcesses.getResultList().size());
@@ -663,7 +663,7 @@ public class ScheduleProcessServiceTest extends SolrTestCaseJ4 {
             server.commit();
 
             ScheduledProcessEventSearchResults<UpcomingScheduledProcess> upComingScheduledProcesses = this.solrScheduledProcessService
-                .getUpComingScheduledProcesses(List.of(), System.currentTimeMillis(), System.currentTimeMillis() + 600000L, null);
+                .getUpComingScheduledProcesses(List.of(), System.currentTimeMillis(), System.currentTimeMillis() + 600000L, null, 0, 10);
 
             Assert.assertNotNull(upComingScheduledProcesses);
             Assert.assertEquals(0, upComingScheduledProcesses.getResultList().size());
