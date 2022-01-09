@@ -18,6 +18,8 @@ import org.ikasan.spec.solr.BatchInsertListener;
 import org.ikasan.spec.solr.SolrService;
 import org.ikasan.spec.solr.SolrServiceBase;
 import org.quartz.CronExpression;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.util.*;
@@ -30,6 +32,8 @@ import java.util.stream.Collectors;
  */
 public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements ScheduledProcessManagementService, ScheduledProcessService, SolrService<ScheduledProcessEvent>, BatchInsert<ScheduledProcessEvent>
 {
+    private Logger logger = LoggerFactory.getLogger(SolrScheduledProcessServiceImpl.class);
+
     private SolrScheduledProcessEventDao scheduledProcessEventDao;
     private SolrModuleMetadataDao solrModuleMetadataDao;
     private SolrComponentConfigurationMetadataDao solrComponentConfigurationMetadataDao;
@@ -198,7 +202,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
 
             // project the upcoming jobs forward
             while (next != null && next.before(new Date(endTime))) {
-                if(offsetCounter >= offset) {
+                if(offsetCounter >= offset && offsetCounter < offset+limit) {
                     results.add(new UpcomingScheduledProcess(agent, jobName.get(),
                         jobGroup.get(), jobDescription.get(), next.getTime(), scheduledConsumerConfigurationMetaData,
                         processExecutionBrokerConfigurationMetaData, blackoutRouterConfigurationMetaData, cronExpression.getTimeZone().getID()));
@@ -213,6 +217,8 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
                 , cronExpressionString.get(), agent, flow), e);
         }
 
+        logger.info(String.format("Agent[%s], Job[%s], Offset[%s], Limit[%s], Results Size[%s], Total Size[%s]"
+            , agent, jobName, offset, limit, results.size(), offsetCounter));
         return new ScheduledProcessEventSearchResults(results, offsetCounter, 1L);
     }
 
@@ -264,6 +270,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             finalResults = results;
         }
 
+        logger.info(String.format("Final Results - Offset[%s], Limit[%s], Results Size[%s], Total Size[%s]", offset, limit, finalResults.size(), totalResults.get()));
         return new ScheduledProcessEventSearchResults(finalResults, totalResults.get(), System.currentTimeMillis() - start);
     }
 
