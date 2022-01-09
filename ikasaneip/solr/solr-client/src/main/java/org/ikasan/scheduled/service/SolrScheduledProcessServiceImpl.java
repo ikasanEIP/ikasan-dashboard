@@ -126,6 +126,10 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
 
     @Override
     public ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpComingScheduledProcesses(String agent, String flow, long startTime, long endTime, int offset, int limit) {
+        if(agent == null || agent.isEmpty() || flow == null || flow.isEmpty()) {
+            return new ScheduledProcessEventSearchResults<>(new ArrayList<>(), 0, 0);
+        }
+
         ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfigurationMetaData
             = this.getConfigurationForAgentFlowComponent(agent, flow, "Scheduled Consumer");
 
@@ -202,7 +206,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
 
             // project the upcoming jobs forward
             while (next != null && next.before(new Date(endTime))) {
-                if(offsetCounter >= offset && offsetCounter < offset+limit) {
+                if(offsetCounter >= offset && offsetCounter <= offset+limit) {
                     results.add(new UpcomingScheduledProcess(agent, jobName.get(),
                         jobGroup.get(), jobDescription.get(), next.getTime(), scheduledConsumerConfigurationMetaData,
                         processExecutionBrokerConfigurationMetaData, blackoutRouterConfigurationMetaData, cronExpression.getTimeZone().getID()));
@@ -217,9 +221,21 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
                 , cronExpressionString.get(), agent, flow), e);
         }
 
+        List<UpcomingScheduledProcess> finalResults = new ArrayList<>();
+
+        if(limit == 0) {
+            finalResults = results.subList(0, limit);
+        }
+        else if(results.size() > limit) {
+            finalResults = results.subList(0, limit);
+        }
+        else {
+            finalResults = results;
+        }
+
         logger.info(String.format("Agent[%s], Job[%s], Offset[%s], Limit[%s], Results Size[%s], Total Size[%s]"
             , agent, jobName, offset, limit, results.size(), offsetCounter));
-        return new ScheduledProcessEventSearchResults(results, offsetCounter, 1L);
+        return new ScheduledProcessEventSearchResults(finalResults, offsetCounter, 1L);
     }
 
     @Override

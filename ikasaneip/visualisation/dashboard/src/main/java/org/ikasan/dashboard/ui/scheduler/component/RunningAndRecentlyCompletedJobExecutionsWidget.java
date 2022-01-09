@@ -163,7 +163,7 @@ public class RunningAndRecentlyCompletedJobExecutionsWidget extends Div {
             , this.scheduledProcessFilter, this.dateFormatter, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetaDataService
             , this.systemEventLogger);
 
-        this.runningAndRecentlyCompletedJobExecutionFilteringGrid.addGridFiltering(textField, this.scheduledProcessFilter::setFilter);
+        this.runningAndRecentlyCompletedJobExecutionFilteringGrid.addGridFiltering(textField, this.scheduledProcessFilter::setAgentName);
         this.runningAndRecentlyCompletedJobExecutionFilteringGrid.addGridFiltering(date, startTime, endTime,
             this.scheduledProcessFilter::setStartTime, this.scheduledProcessFilter::setEndTime);
     }

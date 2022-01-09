@@ -82,8 +82,8 @@ public class SchedulerViewTest extends UITest {
             Mockito.anyLong(), Mockito.isNull(), Mockito.anyBoolean(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyString()))
             .thenReturn(this.getScheduledEventsResults(50));
 
-        Mockito.when(this.scheduledProcessEventBatchInsert.getUpComingScheduledProcesses(Mockito.isNull(), Mockito.anyLong(),
-            Mockito.anyLong(), Mockito.isNull(), Mockito.anyInt(), Mockito.anyInt()))
+        Mockito.when(this.scheduledProcessEventBatchInsert.getUpComingScheduledProcesses(Mockito.isNull(), Mockito.isNull(), Mockito.anyLong(),
+            Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt()))
             .thenReturn(this.getUpcomingScheduledEventsResults(25));
 
         Mockito.when(this.scheduledProcessEventBatchInsert.getScheduleProcessAggregateConfigurations(Mockito.anyString(), Mockito.isNull()))
