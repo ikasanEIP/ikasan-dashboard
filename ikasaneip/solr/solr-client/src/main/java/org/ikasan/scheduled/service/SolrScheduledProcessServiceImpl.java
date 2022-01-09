@@ -21,6 +21,7 @@ import org.quartz.CronExpression;
 
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -120,7 +121,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
     }
 
     @Override
-    public List<UpcomingScheduledProcess> getUpComingScheduledProcesses(String agent, String flow, long startTime, long endTime) {
+    public ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpComingScheduledProcesses(String agent, String flow, long startTime, long endTime, int offset, int limit) {
         ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfigurationMetaData
             = this.getConfigurationForAgentFlowComponent(agent, flow, "Scheduled Consumer");
 
@@ -182,6 +183,8 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             startTime = System.currentTimeMillis();
         }
 
+        int offsetCounter = 0;
+
         try {
             CronExpression cronExpression = new CronExpression(cronExpressionString.get());
 
@@ -195,11 +198,14 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
 
             // project the upcoming jobs forward
             while (next != null && next.before(new Date(endTime))) {
-                results.add(new UpcomingScheduledProcess(agent, jobName.get(),
-                    jobGroup.get(), jobDescription.get(), next.getTime(), scheduledConsumerConfigurationMetaData,
-                    processExecutionBrokerConfigurationMetaData, blackoutRouterConfigurationMetaData, cronExpression.getTimeZone().getID()));
+                if(offsetCounter >= offset) {
+                    results.add(new UpcomingScheduledProcess(agent, jobName.get(),
+                        jobGroup.get(), jobDescription.get(), next.getTime(), scheduledConsumerConfigurationMetaData,
+                        processExecutionBrokerConfigurationMetaData, blackoutRouterConfigurationMetaData, cronExpression.getTimeZone().getID()));
+                }
 
                 next = cronExpression.getNextValidTimeAfter(next);
+                offsetCounter++;
             }
         }
         catch (ParseException e) {
@@ -207,45 +213,58 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
                 , cronExpressionString.get(), agent, flow), e);
         }
 
-        return results;
+        return new ScheduledProcessEventSearchResults(results, offsetCounter, 1L);
     }
 
     @Override
-    public ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpComingScheduledProcesses(List<String> accessibleModules, long startTime, long endTime, String filter) {
+    public ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpComingScheduledProcesses(List<String> accessibleModules, long startTime, long endTime, String filter, int offset, int limit) {
 
         List<UpcomingScheduledProcess> results = new ArrayList<>();
 
         long start = System.currentTimeMillis();
+
+        AtomicLong totalResults = new AtomicLong();
 
         this.scheduledProcessEventDao.getAllAgentNames().forEach(agentName -> {
             if(accessibleModules == null || accessibleModules.contains(agentName)) {
                 ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agentName);
 
                 moduleMetaData.getFlows().forEach(flowMetaData -> {
-                    results.addAll(this.getUpComingScheduledProcesses(agentName, flowMetaData.getName(), startTime, endTime));
+                    ScheduledProcessEventSearchResults<UpcomingScheduledProcess> scheduledProcessEventSearchResults;
+
+                    if(filter != null && (agentName.toLowerCase().contains(filter.toLowerCase()) || (flowMetaData.getName().toLowerCase().contains(filter.toLowerCase())))){
+                        scheduledProcessEventSearchResults = this.getUpComingScheduledProcesses(agentName, flowMetaData.getName(), startTime, endTime, offset, limit);
+                        results.addAll(scheduledProcessEventSearchResults.getResultList());
+                        totalResults.addAndGet(scheduledProcessEventSearchResults.getTotalNumberOfResults());
+                    }
+                    else if(filter == null) {
+                        scheduledProcessEventSearchResults = this.getUpComingScheduledProcesses(agentName, flowMetaData.getName(), startTime, endTime, offset, limit);
+                        results.addAll(scheduledProcessEventSearchResults.getResultList());
+                        totalResults.addAndGet(scheduledProcessEventSearchResults.getTotalNumberOfResults());
+                    }
                 });
             }
         });
 
-        List<UpcomingScheduledProcess> finalResults = results.stream().filter(upcomingScheduledProcess -> {
-            if(filter != null) {
-                return  upcomingScheduledProcess.getAgentName().toLowerCase().contains(filter.toLowerCase()) ||
-                    upcomingScheduledProcess.getJobName().toLowerCase().contains(filter.toLowerCase()) ||
-                    upcomingScheduledProcess.getJobDescription().toLowerCase().contains(filter.toLowerCase()) ||
-                    upcomingScheduledProcess.getJobGroup().toLowerCase().contains(filter.toLowerCase());
-            }
-
-            return true;
-        }).collect(Collectors.toList());
-
-        finalResults.sort((o1, o2) -> {
+        results.sort((o1, o2) -> {
             if(o1.getFireTime() > o2.getFireTime()) return 1;
             else if(o1.getFireTime() < o2.getFireTime()) return -1;
             else return 0;
         });
 
+        List<UpcomingScheduledProcess> finalResults = new ArrayList<>();
 
-        return new ScheduledProcessEventSearchResults(finalResults, finalResults.size(), System.currentTimeMillis() - start);
+        if(limit == 0) {
+            finalResults = results.subList(0, limit);
+        }
+        else if(results.size() > limit) {
+            finalResults = results.subList(0, limit);
+        }
+        else {
+            finalResults = results;
+        }
+
+        return new ScheduledProcessEventSearchResults(finalResults, totalResults.get(), System.currentTimeMillis() - start);
     }
 
     @Override
