@@ -8,6 +8,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
@@ -32,6 +33,7 @@ import org.ikasan.scheduled.model.UpcomingScheduledProcess;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
+import org.ikasan.spec.metadata.FlowMetaData;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -326,26 +328,37 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
 
             filteredDataProvider.refreshAll();
         });
-
     }
+
+    /**
+     * Add filtering to the grid.
+     *
+     * @param agentSelect
+     * @param jobSelect
+     * @param agentFilter
+     * @param jobFilter
+     */
+    public void addGridFiltering(Select<String> agentSelect, Select<FlowMetaData> jobSelect, Consumer<String> agentFilter, Consumer<String> jobFilter)
+    {
+        agentSelect.addValueChangeListener(ev->{
+            agentFilter.accept(ev.getValue());
+            filteredDataProvider.refreshAll();
+        });
+
+        jobSelect.addValueChangeListener(ev -> {
+            jobFilter.accept(ev.getValue().getName());
+            filteredDataProvider.refreshAll();
+        });
+    }
+
 
     @Override
     protected ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getResults(ScheduledProcessFilter scheduledProcessFilter, int offset, int limit) {
         this.agentJobBusinessStreams = new HashMap<>();
         this.agents = new HashMap<>();
 
-        ScheduledProcessEventSearchResults<UpcomingScheduledProcess> results;
-        if(this.authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) || this.authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
-            results =  this.scheduledProcessManagementService.getUpComingScheduledProcesses(null, scheduledProcessFilter.getStartTime()
-                , scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter(), offset, limit);
-        }
-        else {
-            results =  this.scheduledProcessManagementService.getUpComingScheduledProcesses(new ArrayList<>(SecurityUtils.getAccessibleModules(this.authentication))
-                , scheduledProcessFilter.getStartTime(), scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter(), offset, limit);
-        }
-
-
-        return results;
+        return this.scheduledProcessManagementService.getUpComingScheduledProcesses(scheduledProcessFilter.getAgentName(), scheduledProcessFilter.getJobName(), scheduledProcessFilter.getStartTime()
+                , scheduledProcessFilter.getEndTime(), offset, limit);
     }
 
     @Override
