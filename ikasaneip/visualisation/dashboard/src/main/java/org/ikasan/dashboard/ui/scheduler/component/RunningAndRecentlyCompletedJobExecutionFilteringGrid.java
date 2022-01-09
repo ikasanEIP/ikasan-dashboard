@@ -302,12 +302,12 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
 
         if(this.authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) || this.authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
             return this.scheduledProcessManagementService.getScheduledProcessEvents(null,
-                scheduledProcessFilter.getStartTime(), scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter(),
+                scheduledProcessFilter.getStartTime(), scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getAgentName(),
                 scheduledProcessFilter.isErrorsOnly(), offset, limit, "desc");
         }
         else {
             return this.scheduledProcessManagementService.getScheduledProcessEvents(new ArrayList<>(SecurityUtils.getAccessibleModules(this.authentication)),
-                scheduledProcessFilter.getStartTime(), scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter(),
+                scheduledProcessFilter.getStartTime(), scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getAgentName(),
                 scheduledProcessFilter.isErrorsOnly(), offset, limit, "desc");
         }
     }
