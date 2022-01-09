@@ -279,11 +279,11 @@ public class SolrScheduleProcessServiceImplTest extends SolrTestCaseJ4 {
             server.add("ikasan", doc);
             server.commit();
 
-            List<UpcomingScheduledProcess> upComingScheduledProcesses = this.solrScheduledProcessService.getUpComingScheduledProcesses("scheduler-agent",
-                "5 minute job", System.currentTimeMillis(), System.currentTimeMillis() + 600000L);
+            ScheduledProcessEventSearchResults<UpcomingScheduledProcess> upComingScheduledProcesses = this.solrScheduledProcessService.getUpComingScheduledProcesses("scheduler-agent",
+                "5 minute job", System.currentTimeMillis(), System.currentTimeMillis() + 600000L, 0, 50);
 
             Assert.assertNotNull(upComingScheduledProcesses);
-            Assert.assertEquals(0, upComingScheduledProcesses.size());
+            Assert.assertEquals(0, upComingScheduledProcesses.getResultList().size());
         }
 
     }
