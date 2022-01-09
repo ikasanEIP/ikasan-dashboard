@@ -337,16 +337,15 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
         ScheduledProcessEventSearchResults<UpcomingScheduledProcess> results;
         if(this.authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) || this.authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
             results =  this.scheduledProcessManagementService.getUpComingScheduledProcesses(null, scheduledProcessFilter.getStartTime()
-                , scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter());
+                , scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter(), offset, limit);
         }
         else {
             results =  this.scheduledProcessManagementService.getUpComingScheduledProcesses(new ArrayList<>(SecurityUtils.getAccessibleModules(this.authentication))
-                , scheduledProcessFilter.getStartTime(), scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter());
+                , scheduledProcessFilter.getStartTime(), scheduledProcessFilter.getEndTime(), scheduledProcessFilter.getFilter(), offset, limit);
         }
 
 
-        return new ScheduledProcessEventSearchResults(offset+limit > results.getResultList().size() ?results.getResultList().subList(offset, results.getResultList().size()):results.getResultList().subList(offset, offset+limit)
-            , results.getTotalNumberOfResults(), results.getQueryResponseTime());
+        return results;
     }
 
     @Override

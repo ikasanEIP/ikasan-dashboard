@@ -47,7 +47,7 @@ public interface ScheduledProcessManagementService {
      * @param endTime
      * @return
      */
-    List<UpcomingScheduledProcess> getUpComingScheduledProcesses(String agent, String flow, long startTime, long endTime);
+    ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpComingScheduledProcesses(String agent, String flow, long startTime, long endTime, int offset, int limit);
 
     /**
      * Get filtered upcoming scheduled processes for a specific agent, job and time window for only the agents that the user can access.
@@ -58,7 +58,7 @@ public interface ScheduledProcessManagementService {
      * @param filter
      * @return
      */
-    ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpComingScheduledProcesses(List<String> accessibleAgents, long startTime, long endTime, String filter);
+    ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getUpComingScheduledProcesses(List<String> accessibleAgents, long startTime, long endTime, String filter, int offset, int limit);
 
     /**
      * Get all scheduled process events for a given agent within a time window. A scheduled process event represents an executed schedule job.
