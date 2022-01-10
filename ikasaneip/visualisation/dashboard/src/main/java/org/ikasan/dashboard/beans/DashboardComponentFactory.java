@@ -58,6 +58,9 @@ public class DashboardComponentFactory
     @Value("${solr.url}")
     private String solrUrl;
 
+    @Value("${notify.scheduled.events.batch.insert.listeners:false}")
+    private boolean notifyBatchInsertListeners;
+
     @Value("${solr.username}")
     private String solrUsername;
 
@@ -217,7 +220,7 @@ public class DashboardComponentFactory
         solrBusinessStreamMetadataDao.setSolrPassword(solrPassword);
 
         SolrScheduledProcessServiceImpl service = new SolrScheduledProcessServiceImpl(dao, solrModuleMetadataDao
-            , solrComponentConfigurationMetadataDao, solrBusinessStreamMetadataDao);
+            , solrComponentConfigurationMetadataDao, solrBusinessStreamMetadataDao, notifyBatchInsertListeners);
         service.setSolrUsername(solrUsername);
         service.setSolrPassword(solrPassword);
 

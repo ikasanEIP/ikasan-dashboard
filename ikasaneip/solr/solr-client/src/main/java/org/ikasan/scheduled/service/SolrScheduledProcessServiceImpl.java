@@ -40,11 +40,12 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
     private ScheduledProcessAggregateConfigurationConverter scheduledProcessAggregateConfigurationConverter;
     private SolrBusinessStreamMetadataDao solrBusinessStreamMetadataDao;
     private List<BatchInsertListener<ScheduledProcessEvent>> batchInsertListeners;
+    private boolean notifyBatchInsertListeners;
 
 
     public SolrScheduledProcessServiceImpl(SolrScheduledProcessEventDao solrScheduledProcessEventDao
         , SolrModuleMetadataDao solrModuleMetadataDao, SolrComponentConfigurationMetadataDao solrComponentConfigurationMetadataDao
-        , SolrBusinessStreamMetadataDao solrBusinessStreamMetadataDao)
+        , SolrBusinessStreamMetadataDao solrBusinessStreamMetadataDao, boolean notifyBatchInsertListeners)
     {
         this.scheduledProcessEventDao = solrScheduledProcessEventDao;
         if(this.scheduledProcessEventDao == null)
@@ -66,6 +67,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         {
             throw new IllegalArgumentException("solrBusinessStreamMetadataDao cannot be null!");
         }
+        this.notifyBatchInsertListeners = notifyBatchInsertListeners;
 
         this.scheduledProcessAggregateConfigurationConverter = new ScheduledProcessAggregateConfigurationConverter();
         this.batchInsertListeners = new ArrayList<>();
@@ -75,8 +77,10 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
     public void insert(List<ScheduledProcessEvent> scheduledProcessEvents) {
         this.save(scheduledProcessEvents);
 
-        this.batchInsertListeners.forEach(batchInsertListeners
-            -> batchInsertListeners.onBatchInsert(new BatchInsertEvent<>(scheduledProcessEvents)));
+        if(notifyBatchInsertListeners) {
+            this.batchInsertListeners.forEach(batchInsertListeners
+                -> batchInsertListeners.onBatchInsert(new BatchInsertEvent<>(scheduledProcessEvents)));
+        }
     }
 
     @Override
