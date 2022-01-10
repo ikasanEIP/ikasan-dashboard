@@ -237,7 +237,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             finalResults = results;
         }
 
-        logger.info(String.format("Agent[%s], Job[%s], Offset[%s], Limit[%s], Results Size[%s], Total Size[%s]"
+        logger.debug(String.format("Agent[%s], Job[%s], Offset[%s], Limit[%s], Results Size[%s], Total Size[%s]"
             , agent, jobName, offset, limit, results.size(), offsetCounter));
         return new ScheduledProcessEventSearchResults(finalResults, offsetCounter, 1L);
     }
@@ -290,7 +290,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             finalResults = results;
         }
 
-        logger.info(String.format("Final Results - Offset[%s], Limit[%s], Results Size[%s], Total Size[%s]", offset, limit, finalResults.size(), totalResults.get()));
+        logger.debug(String.format("Final Results - Offset[%s], Limit[%s], Results Size[%s], Total Size[%s]", offset, limit, finalResults.size(), totalResults.get()));
         return new ScheduledProcessEventSearchResults(finalResults, totalResults.get(), System.currentTimeMillis() - start);
     }
 
