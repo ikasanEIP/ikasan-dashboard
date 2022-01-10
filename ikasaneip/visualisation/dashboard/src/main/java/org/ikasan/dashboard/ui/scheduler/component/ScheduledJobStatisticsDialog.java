@@ -179,7 +179,12 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
             this.populateDataSeries(scheduledProcessEventSearchResults, dataSeries);
         }
 
-        this.averageExecutionTime = this.averageExecutionTime/dataSeries.size();
+        if(dataSeries.size() > 0) {
+            this.averageExecutionTime = this.averageExecutionTime / dataSeries.size();
+        }
+        else {
+            this.averageExecutionTime = 0L;
+        }
 
         PlotOptionsLine lineOptions = new PlotOptionsLine();
         lineOptions.setColorIndex(3);
