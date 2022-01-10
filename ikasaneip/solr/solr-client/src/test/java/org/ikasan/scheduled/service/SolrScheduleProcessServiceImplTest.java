@@ -76,31 +76,31 @@ public class SolrScheduleProcessServiceImplTest extends SolrTestCaseJ4 {
         solrBusinessStreamMetadataDao.setSolrClient(server);
 
         this.solrScheduledProcessService = new SolrScheduledProcessServiceImpl(scheduledProcessEventDao,
-            solrModuleMetadataDao, solrComponentConfigurationMetadataDao, solrBusinessStreamMetadataDao);
+            solrModuleMetadataDao, solrComponentConfigurationMetadataDao, solrBusinessStreamMetadataDao, false);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void test_exception_constructor_null_scheduled_proceess_event_dao() throws Exception {
         new SolrScheduledProcessServiceImpl(null,
-            new SolrModuleMetadataDao(), new SolrComponentConfigurationMetadataDao(), new SolrBusinessStreamMetadataDao());
+            new SolrModuleMetadataDao(), new SolrComponentConfigurationMetadataDao(), new SolrBusinessStreamMetadataDao(), false);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void test_exception_constructor_null_module_metadata_dao() throws Exception {
         new SolrScheduledProcessServiceImpl(new SolrScheduledProcessEventDao(),
-            null, new SolrComponentConfigurationMetadataDao(), new SolrBusinessStreamMetadataDao());
+            null, new SolrComponentConfigurationMetadataDao(), new SolrBusinessStreamMetadataDao(), false);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void test_exception_constructor_null_component_configuration_metadata_dao() throws Exception {
         new SolrScheduledProcessServiceImpl(new SolrScheduledProcessEventDao(),
-            new SolrModuleMetadataDao(), null, new SolrBusinessStreamMetadataDao());
+            new SolrModuleMetadataDao(), null, new SolrBusinessStreamMetadataDao(), false);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void test_exception_constructor_null_business_stream_metadata_dao() throws Exception {
         new SolrScheduledProcessServiceImpl(new SolrScheduledProcessEventDao(),
-            new SolrModuleMetadataDao(), new SolrComponentConfigurationMetadataDao(), null);
+            new SolrModuleMetadataDao(), new SolrComponentConfigurationMetadataDao(), null, false);
     }
 
     @Test

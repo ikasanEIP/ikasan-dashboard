@@ -11,6 +11,7 @@ import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -25,6 +26,7 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
+import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
@@ -284,9 +286,23 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         formLayout.add(jobDescriptionTa, 2);
 
 
+        Icon builderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), "Build cron expression", "14pt", "rgba(241, 90, 35, 1.0)");
+        builderIcon.addClickListener(event -> {
+            CronBuilderDialog dialog = new CronBuilderDialog();
+            dialog.init(this.cronExpressionTf.getValue());
+            dialog.open();
+
+            dialog.addOpenedChangeListener(openedChangeEvent -> {
+                if(!openedChangeEvent.isOpened() && dialog.isSaveClose()) {
+                    this.cronExpressionTf.setValue(dialog.getCronExpression());
+                }
+            });
+        });
+
         this.cronExpressionTf = new TextField(getTranslation("label.cron-expression", UI.getCurrent().getLocale()));
         this.cronExpressionTf.setRequired(true);
         this.cronExpressionTf.setId("cronExpressionTf");
+        this.cronExpressionTf.setSuffixComponent(builderIcon);
         formBinder.forField(this.cronExpressionTf)
             .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
             .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
@@ -525,7 +541,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         try {
 
             if (moduleConfiguration == null) {
-                throw new RuntimeException(String.format("Could not find module configuration for agent[%s]", agent));
+                throw new RuntimeException(String.format("Could not find module configuration for agent[%s]", agent.getName()));
             }
 
             logger.debug("Module Configuration: " + moduleConfiguration);

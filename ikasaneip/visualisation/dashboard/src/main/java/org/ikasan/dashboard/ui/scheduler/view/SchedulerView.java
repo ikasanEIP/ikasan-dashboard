@@ -71,6 +71,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
+    private UpcomingJobExecutionsWidget upcomingJobExecutionsWidget;
+
     private Board scheduledJobsBoard;
 
     private boolean initialised = false;
@@ -120,6 +122,10 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             tabsToPages.values().forEach(page -> page.setVisible(false));
             com.vaadin.flow.component.Component selectedPage = tabsToPages.get(tabs.getSelectedTab());
             selectedPage.setVisible(true);
+
+            if(selectedPage.equals(this.scheduledJobsBoard)) {
+                this.upcomingJobExecutionsWidget.initialise();
+            }
         });
 
 
@@ -140,8 +146,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         if(!initialised) {
             this.init();
             this.schedulerAgentDashboardView.beforeEnter(beforeEnterEvent);
-            scheduledJobsBoard.addRow(new UpcomingJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter, this.configurationRestService,
-                this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
+            this.upcomingJobExecutionsWidget = new UpcomingJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter, this.configurationRestService,
+                this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger);
+            scheduledJobsBoard.addRow(this.upcomingJobExecutionsWidget);
             scheduledJobsBoard.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
 

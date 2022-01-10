@@ -346,8 +346,10 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
         });
 
         jobSelect.addValueChangeListener(ev -> {
-            jobFilter.accept(ev.getValue().getName());
-            filteredDataProvider.refreshAll();
+            if(ev.getValue() != null) {
+                jobFilter.accept(ev.getValue().getName());
+                filteredDataProvider.refreshAll();
+            }
         });
     }
 

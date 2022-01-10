@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -13,6 +14,8 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.RouterLink;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
@@ -102,40 +105,6 @@ public class UpcomingJobExecutionsWidget extends Div {
         agentSelect.setLabel(getTranslation("label.agent", UI.getCurrent().getLocale()));
         jobSelect.setLabel(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         jobSelect.setItemLabelGenerator(FlowMetaData::getName);
-        List<String> agentNames;
-
-        if(this.authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)
-            || this.authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
-
-            agentNames = this.scheduledProcessManagementService.getAllAgentNames();
-        }
-        else {
-
-            agentNames = new ArrayList<>(SecurityUtils.getAccessibleModules(this.authentication));
-        }
-        agentSelect.setItems(agentNames);
-
-        if(agentNames.size() > 0) {
-            agentSelect.setValue(agentNames.get(0));
-
-            List<FlowMetaData> flowMetaData = null;
-            flowMetaData = this.scheduledProcessManagementService.getFlowsForAgent(agentNames.get(0));
-
-            if(flowMetaData.size() > 0) {
-                jobSelect.setItems(flowMetaData);
-                jobSelect.setValue(flowMetaData.get(0));
-            }
-        }
-
-        agentSelect.addValueChangeListener(event -> {
-            jobSelect.removeAll();
-            List<FlowMetaData> flowMetaData = this.scheduledProcessManagementService.getFlowsForAgent(event.getValue());
-
-            if(flowMetaData.size() > 0) {
-                jobSelect.setItems(flowMetaData);
-                jobSelect.setValue(flowMetaData.get(0));
-            }
-        });
 
         HorizontalLayout layout = new HorizontalLayout();
         H4 modules = new H4(getTranslation("header.upcoming-job-executions", UI.getCurrent().getLocale()));
@@ -213,4 +182,46 @@ public class UpcomingJobExecutionsWidget extends Div {
             this.scheduledProcessFilter::setStartTime, this.scheduledProcessFilter::setEndTime);
     }
 
+    public void initialise() {
+        List<String> agentNames;
+
+        if(this.authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)
+            || this.authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
+
+            agentNames = this.scheduledProcessManagementService.getAllAgentNames();
+        }
+        else {
+            agentNames = new ArrayList<>(SecurityUtils.getAccessibleModules(this.authentication));
+        }
+        agentSelect.setItems(agentNames);
+
+        if(agentNames.size() > 0) {
+            agentSelect.setValue(agentNames.get(0));
+            this.scheduledProcessFilter.setAgentName(agentNames.get(0));
+
+            List<FlowMetaData> flowMetaData = null;
+            flowMetaData = this.scheduledProcessManagementService.getFlowsForAgent(agentNames.get(0));
+
+            if(flowMetaData.size() > 0) {
+                jobSelect.setItems(flowMetaData);
+                jobSelect.setValue(flowMetaData.get(0));
+            }
+        }
+
+        agentSelect.addValueChangeListener(event -> {
+            jobSelect.removeAll();
+
+            if(event.getValue() != null) {
+                List<FlowMetaData> flowMetaData = this.scheduledProcessManagementService.getFlowsForAgent(event.getValue());
+
+                if (flowMetaData.size() > 0) {
+                    jobSelect.setItems(flowMetaData);
+                    jobSelect.setValue(flowMetaData.get(0));
+                    this.scheduledProcessFilter.setJobName(flowMetaData.get(0).getName());
+                }
+            }
+        });
+
+        this.upcomingJobExecutionFilteringGrid.refresh();
+    }
 }
