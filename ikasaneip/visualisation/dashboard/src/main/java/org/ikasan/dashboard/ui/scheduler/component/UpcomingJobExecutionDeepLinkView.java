@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/presets/compact.html")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
 @Theme(Material.class)
-@Route(value = "upcomingJobsDeepLink")
+@Route(value = "upcomingJobsDeepLink/:agent?/:job?")
 @UIScope
 @Component
 public class UpcomingJobExecutionDeepLinkView extends VerticalLayout implements BeforeEnterObserver
@@ -87,6 +87,12 @@ public class UpcomingJobExecutionDeepLinkView extends VerticalLayout implements 
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        String agent = beforeEnterEvent.getRouteParameters().get("agent").get();
+        String job = beforeEnterEvent.getRouteParameters().get("job").get();
 
+        this.upcomingJobExecutionsWidget.setSelectedAgent(agent);
+        this.upcomingJobExecutionsWidget.setSelectedFlowMetaData(this.scheduledProcessManagementService
+            .getFlowsForAgent(agent).stream().filter(f -> f.getName().equals(job)).findFirst().get());
+        this.upcomingJobExecutionsWidget.initialise();
     }
 }
