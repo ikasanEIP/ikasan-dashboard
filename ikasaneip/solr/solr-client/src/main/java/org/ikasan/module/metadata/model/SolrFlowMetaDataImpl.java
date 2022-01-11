@@ -118,12 +118,7 @@ public class SolrFlowMetaDataImpl implements FlowMetaData
         if (o == null || getClass() != o.getClass()) return false;
         SolrFlowMetaDataImpl that = (SolrFlowMetaDataImpl) o;
         return Objects.equals(name, that.name) &&
-            Objects.equals(consumer, that.consumer) &&
-            Objects.equals(transitions, that.transitions) &&
-            Objects.equals(flowElements, that.flowElements) &&
-            Objects.equals(configurationId, that.configurationId) &&
-            Objects.equals(flowStartupType, that.flowStartupType) &&
-            Objects.equals(flowStartupComment, that.flowStartupComment);
+            Objects.equals(configurationId, that.configurationId);
     }
 
     @Override

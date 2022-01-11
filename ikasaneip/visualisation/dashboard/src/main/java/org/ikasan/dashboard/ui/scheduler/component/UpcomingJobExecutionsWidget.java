@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -11,11 +10,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.select.Select;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.RouterLink;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
@@ -64,6 +59,11 @@ public class UpcomingJobExecutionsWidget extends Div {
     private ModuleMetaDataService moduleMetaDataService;
     private SystemEventLogger systemEventLogger;
     private IkasanAuthentication authentication;
+
+    private boolean initialised = false;
+
+    private String selectedAgent = null;
+    private FlowMetaData selectedFlowMetaData = null;
 
     /**
      * Constructor
@@ -185,6 +185,9 @@ public class UpcomingJobExecutionsWidget extends Div {
     public void initialise() {
         List<String> agentNames;
 
+        this.selectedAgent = this.agentSelect.getValue();
+        this.selectedFlowMetaData = this.jobSelect.getValue();
+
         if(this.authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)
             || this.authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
 
@@ -196,32 +199,61 @@ public class UpcomingJobExecutionsWidget extends Div {
         agentSelect.setItems(agentNames);
 
         if(agentNames.size() > 0) {
-            agentSelect.setValue(agentNames.get(0));
-            this.scheduledProcessFilter.setAgentName(agentNames.get(0));
+            List<FlowMetaData> flowMetaData;
+            if(selectedAgent != null && agentNames.contains(selectedAgent)) {
+                agentSelect.setValue(selectedAgent);
+                this.scheduledProcessFilter.setAgentName(selectedAgent);
+                flowMetaData = this.scheduledProcessManagementService.getFlowsForAgent(selectedAgent);
+            }
+            else {
+                agentSelect.setValue(agentNames.get(0));
+                this.scheduledProcessFilter.setAgentName(agentNames.get(0));
+                flowMetaData = this.scheduledProcessManagementService.getFlowsForAgent(agentNames.get(0));
+            }
 
-            List<FlowMetaData> flowMetaData = null;
-            flowMetaData = this.scheduledProcessManagementService.getFlowsForAgent(agentNames.get(0));
 
             if(flowMetaData.size() > 0) {
                 jobSelect.setItems(flowMetaData);
-                jobSelect.setValue(flowMetaData.get(0));
-            }
-        }
-
-        agentSelect.addValueChangeListener(event -> {
-            jobSelect.removeAll();
-
-            if(event.getValue() != null) {
-                List<FlowMetaData> flowMetaData = this.scheduledProcessManagementService.getFlowsForAgent(event.getValue());
-
-                if (flowMetaData.size() > 0) {
-                    jobSelect.setItems(flowMetaData);
+                if(selectedFlowMetaData != null && flowMetaData.contains(selectedFlowMetaData)) {
+                    jobSelect.setValue(flowMetaData.stream().filter(e -> e.equals(selectedFlowMetaData)).findFirst().get());
+                    this.scheduledProcessFilter.setJobName(selectedFlowMetaData.getName());
+                }
+                else {
                     jobSelect.setValue(flowMetaData.get(0));
                     this.scheduledProcessFilter.setJobName(flowMetaData.get(0).getName());
                 }
             }
-        });
+        }
+
+        if(!initialised) {
+            jobSelect.addValueChangeListener(event -> {
+                if(event.getValue() != null) {
+                    this.selectedFlowMetaData = event.getValue();
+                }
+            });
+
+            agentSelect.addValueChangeListener(event -> {
+                jobSelect.removeAll();
+
+                if (event.getValue() != null) {
+                    this.selectedAgent = event.getValue();
+                    List<FlowMetaData> flowMetaData = this.scheduledProcessManagementService.getFlowsForAgent(event.getValue());
+
+                    if (flowMetaData.size() > 0) {
+                        jobSelect.setItems(flowMetaData);
+                        if (this.selectedFlowMetaData != null && flowMetaData.contains(this.selectedFlowMetaData)) {
+                            jobSelect.setValue(flowMetaData.stream().filter(e -> e.equals(selectedFlowMetaData)).findFirst().get());
+                            this.scheduledProcessFilter.setJobName(selectedFlowMetaData.getName());
+                        } else {
+                            jobSelect.setValue(flowMetaData.get(0));
+                            this.scheduledProcessFilter.setJobName(flowMetaData.get(0).getName());
+                        }
+                    }
+                }
+            });
+        }
 
         this.upcomingJobExecutionFilteringGrid.refresh();
+        this.initialised = true;
     }
 }
