@@ -147,7 +147,6 @@ public abstract class FilteringGrid<DATA, FILTER, RESULTS extends SearchResults>
     public void refresh() {
         ui.access(() -> {
             this.dataProvider.refreshAll();
-            this.filteredDataProvider.refreshAll();
         });
     }
 

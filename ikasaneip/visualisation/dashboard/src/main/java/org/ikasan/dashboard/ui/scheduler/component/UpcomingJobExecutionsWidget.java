@@ -11,6 +11,9 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.timepicker.TimePicker;
+import com.vaadin.flow.router.QueryParameters;
+import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLink;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.scheduler.model.ScheduledProcessFilter;
@@ -36,6 +39,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 @CssImport("./styles/dashboard-view.css")
@@ -129,7 +133,8 @@ public class UpcomingJobExecutionsWidget extends Div {
 
         Button newWindowButton = new Button();
         newWindowButton.addClickListener(buttonClickEvent -> {
-            RouterLink link = new RouterLink(null, UpcomingJobExecutionDeepLinkView.class);
+            RouteParameters routeParameters = new RouteParameters(new RouteParam("agent", this.selectedAgent), new RouteParam("job", this.selectedFlowMetaData.getName()));
+            RouterLink link = new RouterLink(null, UpcomingJobExecutionDeepLinkView.class, routeParameters);
             getUI().ifPresent(ui -> ui.getPage().open(link.getHref()));
         });
         newWindowButton.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
@@ -185,9 +190,6 @@ public class UpcomingJobExecutionsWidget extends Div {
     public void initialise() {
         List<String> agentNames;
 
-        this.selectedAgent = this.agentSelect.getValue();
-        this.selectedFlowMetaData = this.jobSelect.getValue();
-
         if(this.authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)
             || this.authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
 
@@ -211,6 +213,8 @@ public class UpcomingJobExecutionsWidget extends Div {
                 flowMetaData = this.scheduledProcessManagementService.getFlowsForAgent(agentNames.get(0));
             }
 
+            this.selectedAgent = this.agentSelect.getValue();
+
 
             if(flowMetaData.size() > 0) {
                 jobSelect.setItems(flowMetaData);
@@ -222,6 +226,8 @@ public class UpcomingJobExecutionsWidget extends Div {
                     jobSelect.setValue(flowMetaData.get(0));
                     this.scheduledProcessFilter.setJobName(flowMetaData.get(0).getName());
                 }
+
+                this.selectedFlowMetaData = this.jobSelect.getValue();
             }
         }
 
@@ -237,6 +243,7 @@ public class UpcomingJobExecutionsWidget extends Div {
 
                 if (event.getValue() != null) {
                     this.selectedAgent = event.getValue();
+                    this.selectedAgent = this.agentSelect.getValue();
                     List<FlowMetaData> flowMetaData = this.scheduledProcessManagementService.getFlowsForAgent(event.getValue());
 
                     if (flowMetaData.size() > 0) {
@@ -248,6 +255,7 @@ public class UpcomingJobExecutionsWidget extends Div {
                             jobSelect.setValue(flowMetaData.get(0));
                             this.scheduledProcessFilter.setJobName(flowMetaData.get(0).getName());
                         }
+                        this.selectedFlowMetaData = this.jobSelect.getValue();
                     }
                 }
             });
@@ -255,5 +263,15 @@ public class UpcomingJobExecutionsWidget extends Div {
 
         this.upcomingJobExecutionFilteringGrid.refresh();
         this.initialised = true;
+    }
+
+
+    public void setSelectedAgent(String selectedAgent) {
+        this.selectedAgent = selectedAgent;
+    }
+
+
+    public void setSelectedFlowMetaData(FlowMetaData selectedFlowMetaData) {
+        this.selectedFlowMetaData = selectedFlowMetaData;
     }
 }
