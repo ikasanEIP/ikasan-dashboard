@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
@@ -22,6 +23,7 @@ public abstract class FilteringGrid<DATA, FILTER, RESULTS extends SearchResults>
     protected ConfigurableFilterDataProvider<DATA,Void, FILTER> filteredDataProvider;
 
     protected FILTER searchFilter;
+    protected UI ui;
 
     private long resultSize = 0;
 
@@ -35,6 +37,8 @@ public abstract class FilteringGrid<DATA, FILTER, RESULTS extends SearchResults>
         {
             throw new IllegalArgumentException("SearchFilter cannot be null!");
         }
+
+        this.ui = UI.getCurrent();
     }
 
     /**
@@ -141,8 +145,10 @@ public abstract class FilteringGrid<DATA, FILTER, RESULTS extends SearchResults>
      * Refresh the data presented to the grid.
      */
     public void refresh() {
-        this.dataProvider.refreshAll();
-        this.filteredDataProvider.refreshAll();
+        ui.access(() -> {
+            this.dataProvider.refreshAll();
+            this.filteredDataProvider.refreshAll();
+        });
     }
 
     protected abstract RESULTS getResults(FILTER filter, int offset, int limit);
