@@ -64,6 +64,9 @@ public class DashboardComponentFactory
     @Value("${notify.scheduled.events.batch.insert.listeners:false}")
     private boolean notifyBatchInsertListeners;
 
+    @Value("${scheduled.job.context.queue.directory}")
+    private String queueDirectory;
+
     @Value("${solr.username}")
     private String solrUsername;
 
@@ -81,9 +84,8 @@ public class DashboardComponentFactory
 
     @Bean
     public IBigQueue inboundQueue() throws IOException {
-        String queueDir = "/sandbox/mick/bigquque";
         String queueName = "dashboard-inbound-queue";
-        return new BigQueueImpl(queueDir, queueName);
+        return new BigQueueImpl(queueDirectory, queueName);
     }
 
     @Component
