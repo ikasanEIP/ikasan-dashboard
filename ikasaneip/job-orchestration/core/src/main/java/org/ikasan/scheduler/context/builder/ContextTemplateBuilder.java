@@ -8,7 +8,9 @@ import org.ikasan.spec.scheduled.context.model.JobDependency;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ContextTemplateBuilder {
     protected String name;
@@ -21,6 +23,7 @@ public class ContextTemplateBuilder {
     protected List<SchedulerJob> scheduledJobs;
     protected String timeWindowStartCronExpression;
     protected String timeWindowEndCronExpression;
+    protected Map<String, List<SchedulerJob>> jobLocks;
 
     public ContextTemplateBuilder withName(String name) {
         this.name = name;
@@ -74,6 +77,16 @@ public class ContextTemplateBuilder {
             this.scheduledJobs = new ArrayList<>();
         }
         this.scheduledJobs.add(schedulerJob);
+        return this;
+    }
+
+    public ContextTemplateBuilder addJobLocks(Map<String, List<SchedulerJob>> jobLocks) {
+        if(this.jobLocks == null) {
+            this.jobLocks = new HashMap<>();
+        }
+
+        this.jobLocks.putAll(jobLocks);
+
         return this;
     }
 
@@ -131,6 +144,10 @@ public class ContextTemplateBuilder {
         return new ContextDependencyBuilder();
     }
 
+    public JobLockBuilder getJobLockBuilder() {
+        return new JobLockBuilder();
+    }
+
     public ContextTemplate build() {
         ContextTemplate contextTemplate = new ContextTemplateImpl();
         contextTemplate.setName(this.name);
@@ -143,6 +160,7 @@ public class ContextTemplateBuilder {
         contextTemplate.setContextParameters(this.contextParameters);
         contextTemplate.setJobDependencies(this.jobDependencies);
         contextTemplate.setScheduledJobs(this.scheduledJobs);
+        contextTemplate.setJobLocks(this.jobLocks);
 
         return contextTemplate;
     }

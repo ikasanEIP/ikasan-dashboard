@@ -1,5 +1,6 @@
 package org.ikasan.scheduler.core.service;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -36,6 +37,7 @@ public class ContextService {
             .addAbstractTypeMapping(ContextParameterInstance.class, ContextParameterInstanceImpl.class);
 
         this.objectMapper.registerModule(simpleModule);
+        this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
     public ContextTemplateImpl getContext(String context) throws JsonProcessingException {

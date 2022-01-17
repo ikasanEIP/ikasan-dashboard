@@ -22,6 +22,7 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     protected List<JOB> scheduledJobs;
     protected String timeWindowStart;
     protected String timeWindowEnd;
+    protected Map<String, List<JOB>> jobLocks;
 
     @JsonIgnore
     protected Map<String, JOB> scheduledJobsMap = new HashMap<>();
@@ -144,5 +145,15 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     @Override
     public void setTimeWindowEnd(String timeWindowEnd) {
         this.timeWindowEnd = timeWindowEnd;
+    }
+
+    @Override
+    public Map<String, List<JOB>> getJobLocks() {
+        return jobLocks;
+    }
+
+    @Override
+    public void setJobLocks(Map<String, List<JOB>> jobLocks) {
+        this.jobLocks = jobLocks;
     }
 }
