@@ -9,6 +9,9 @@ public class JobNotBuilder {
     protected String jobName;
     protected LogicalGrouping logicalGrouping;
 
+    protected JobNotBuilder() {
+    }
+
     public JobNotBuilder withAgentName(String agentName) {
         this.agentName = agentName;
 
@@ -29,7 +32,10 @@ public class JobNotBuilder {
 
     public Not build() {
         Not not = new NotImpl();
-        not.setIdentifier(this.agentName+"-"+this.jobName);
+
+        if(this.agentName != null && this.jobName != null) {
+            not.setIdentifier(this.agentName + "-" + this.jobName);
+        }
         not.setLogicalGrouping(this.logicalGrouping);
 
         return not;
