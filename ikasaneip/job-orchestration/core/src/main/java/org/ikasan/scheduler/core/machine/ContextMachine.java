@@ -62,8 +62,7 @@ public class ContextMachine {
     private Map<String, InternalEventDrivenJob> internalEventDrivenJobs;
     private String queueDir;
 
-    // todo clean up the transient queues once a context is complete. Also need to initialise
-    //  the queue names based on the context identifier.
+    // todo clean up the transient queues once a context is complete.
     public ContextMachine(Context context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
                           Map<String, InternalEventDrivenJob> internalEventDrivenJobs, String queueDir) {
         this.internalEventDrivenJobs = internalEventDrivenJobs;
@@ -216,7 +215,7 @@ public class ContextMachine {
 
         if (contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()){
             for(ContextInstance instance: contextInstance.getContexts()) {
-                // Recursively work our way through all nested contexts to determine if and job initiation events need to be raised.
+                // Recursively work our way through all nested contexts to determine if any job initiation events need to be raised.
                 results.addAll(this.getInitiationEvents((ContextInstanceImpl) instance, scheduledProcessEvent));
                 this.setContextStatus(contextInstance);
             }

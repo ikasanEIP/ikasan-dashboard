@@ -8,6 +8,9 @@ public class ContextAndBuilder {
     protected String identifier;
     protected LogicalGrouping logicalGrouping;
 
+    protected ContextAndBuilder() {
+    }
+
     public ContextAndBuilder withIdentifier(String identifier) {
         this.identifier = identifier;
 

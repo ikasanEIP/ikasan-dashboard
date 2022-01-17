@@ -15,6 +15,9 @@ public class LogicalGroupingBuilder {
     private List<Or> or;
     private List<Not> not;
 
+    protected LogicalGroupingBuilder() {
+    }
+
     public LogicalGroupingBuilder withLogicalGrouping(LogicalGrouping logicalGrouping) {
         this.logicalGrouping = logicalGrouping;
 
