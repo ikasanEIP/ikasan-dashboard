@@ -8,6 +8,9 @@ public class ContextNotBuilder {
     protected String identifier;
     protected LogicalGrouping logicalGrouping;
 
+    protected ContextNotBuilder() {
+    }
+
     public ContextNotBuilder withIdentifier(String identifier) {
         this.identifier = identifier;
 

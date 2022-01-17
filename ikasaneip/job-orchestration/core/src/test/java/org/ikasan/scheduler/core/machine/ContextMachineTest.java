@@ -253,6 +253,77 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
+    public void test_context_machine_with_job_locks() throws IOException, JSONException {
+        Context context = this.contextService.getContext(loadDataFile("/data/logic/context-with-job-locks.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/logic/context-with-job-locks.json"));
+
+        ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+            , this.internalEventDrivenJobs, this.queueDir);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1",
+            "agentName1", false);
+        eventInstance.setJobStarting(true);
+
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName1",
+            "agentName1", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        SchedulerJobInitiationEvent event = events.get(0);
+
+        eventInstance = scheduledProcessEventInstance(event.getJobName(),
+            event.getAgentName(), false);
+        eventInstance.setJobStarting(true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance(event.getJobName(),
+            event.getAgentName(), true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        event = events.get(0);
+
+        eventInstance = scheduledProcessEventInstance(event.getJobName(),
+            event.getAgentName(), false);
+        eventInstance.setJobStarting(true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance(event.getJobName(),
+            event.getAgentName(), true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        event = events.get(0);
+
+        eventInstance = scheduledProcessEventInstance(event.getJobName(),
+            event.getAgentName(), false);
+        eventInstance.setJobStarting(true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance(event.getJobName(),
+            event.getAgentName(), true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+
+        InstanceStatus status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+    }
+
+    @Test
     public void test_context_machine_full_via_big_queue_nested_context_success() throws IOException, JSONException, InterruptedException {
         ObjectMapper objectMapper = new ObjectMapper();
         Context context = this.contextService.getContext(loadDataFile("/data/context.json"));

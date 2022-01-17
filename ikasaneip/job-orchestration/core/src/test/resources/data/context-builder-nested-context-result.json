@@ -1,158 +1,104 @@
 {
   "name" : "Parent Context",
   "description" : "Context Template Description",
-  "timezone" : null,
-  "jobDependencies" : null,
   "contexts" : [ {
     "name" : "Context Template 1",
-    "description" : null,
-    "timezone" : null,
     "jobDependencies" : [ {
-      "jobIdentifier" : "AgentName-Job2",
-      "logicalGrouping" : null
+      "jobIdentifier" : "AgentName-Job2"
     }, {
-      "jobIdentifier" : "AgentName-Job3",
-      "logicalGrouping" : null
+      "jobIdentifier" : "AgentName-Job3"
     }, {
       "jobIdentifier" : "AgentName-Job1",
       "logicalGrouping" : {
-        "logicalGrouping" : null,
         "and" : [ {
-          "identifier" : "AgentName-Job2",
-          "logicalGrouping" : null
+          "identifier" : "AgentName-Job2"
         }, {
-          "identifier" : "AgentName-Job3",
-          "logicalGrouping" : null
-        } ],
-        "or" : null,
-        "not" : null
+          "identifier" : "AgentName-Job3"
+        } ]
       }
     } ],
-    "contexts" : null,
-    "contextDependencies" : null,
-    "contextParameters" : null,
     "scheduledJobs" : [ {
       "agentName" : "AgentName",
       "jobName" : "Job1",
-      "contextId" : null,
-      "jobDescription" : "Job1 Description",
-      "identifier" : "AgentName-Job1"
+      "identifier" : "AgentName-Job1",
+      "jobDescription" : "Job1 Description"
     }, {
       "agentName" : "AgentName",
       "jobName" : "Job2",
-      "contextId" : null,
-      "jobDescription" : "Job2 Description",
-      "identifier" : "AgentName-Job2"
+      "identifier" : "AgentName-Job2",
+      "jobDescription" : "Job2 Description"
     }, {
       "agentName" : "AgentName",
       "jobName" : "Job3",
-      "contextId" : null,
-      "jobDescription" : "Job3 Description",
-      "identifier" : "AgentName-Job3"
-    } ],
-    "timeWindowStart" : null,
-    "timeWindowEnd" : null
+      "identifier" : "AgentName-Job3",
+      "jobDescription" : "Job3 Description"
+    } ]
   }, {
     "name" : "Context Template 2",
-    "description" : null,
-    "timezone" : null,
     "jobDependencies" : [ {
-      "jobIdentifier" : "AgentName-Job4",
-      "logicalGrouping" : null
+      "jobIdentifier" : "AgentName-Job4"
     }, {
-      "jobIdentifier" : "AgentName-Job5",
-      "logicalGrouping" : null
+      "jobIdentifier" : "AgentName-Job5"
     }, {
-      "jobIdentifier" : "AgentName-Job6",
-      "logicalGrouping" : null
+      "jobIdentifier" : "AgentName-Job6"
     }, {
-      "jobIdentifier" : "AgentName-Job7",
-      "logicalGrouping" : null
+      "jobIdentifier" : "AgentName-Job7"
     }, {
       "jobIdentifier" : "AgentName-Job8",
       "logicalGrouping" : {
-        "logicalGrouping" : null,
-        "and" : null,
         "or" : [ {
-          "identifier" : "null-null",
           "logicalGrouping" : {
-            "logicalGrouping" : null,
             "and" : [ {
-              "identifier" : "AgentName-Job4",
-              "logicalGrouping" : null
+              "identifier" : "AgentName-Job4"
             }, {
-              "identifier" : "AgentName-Job5",
-              "logicalGrouping" : null
-            } ],
-            "or" : null,
-            "not" : null
+              "identifier" : "AgentName-Job5"
+            } ]
           }
         }, {
-          "identifier" : "null-null",
           "logicalGrouping" : {
-            "logicalGrouping" : null,
             "and" : [ {
-              "identifier" : "AgentName-Job6",
-              "logicalGrouping" : null
+              "identifier" : "AgentName-Job6"
             }, {
-              "identifier" : "AgentName-Job7",
-              "logicalGrouping" : null
-            } ],
-            "or" : null,
-            "not" : null
+              "identifier" : "AgentName-Job7"
+            } ]
           }
-        } ],
-        "not" : null
+        } ]
       }
     } ],
-    "contexts" : null,
-    "contextDependencies" : null,
-    "contextParameters" : null,
     "scheduledJobs" : [ {
       "agentName" : "AgentName",
       "jobName" : "Job4",
-      "contextId" : null,
-      "jobDescription" : "Job4 Description",
-      "identifier" : "AgentName-Job4"
+      "identifier" : "AgentName-Job4",
+      "jobDescription" : "Job4 Description"
     }, {
       "agentName" : "AgentName",
       "jobName" : "Job5",
-      "contextId" : null,
-      "jobDescription" : "Job5 Description",
-      "identifier" : "AgentName-Job5"
+      "identifier" : "AgentName-Job5",
+      "jobDescription" : "Job5 Description"
     }, {
       "agentName" : "AgentName",
       "jobName" : "Job6",
-      "contextId" : null,
-      "jobDescription" : "Job6 Description",
-      "identifier" : "AgentName-Job6"
+      "identifier" : "AgentName-Job6",
+      "jobDescription" : "Job6 Description"
     }, {
       "agentName" : "AgentName",
       "jobName" : "Job7",
-      "contextId" : null,
-      "jobDescription" : "Job7 Description",
-      "identifier" : "AgentName-Job7"
+      "identifier" : "AgentName-Job7",
+      "jobDescription" : "Job7 Description"
     }, {
       "agentName" : "AgentName",
       "jobName" : "Job8",
-      "contextId" : null,
-      "jobDescription" : "Job8 Description",
-      "identifier" : "AgentName-Job8"
-    } ],
-    "timeWindowStart" : null,
-    "timeWindowEnd" : null
+      "identifier" : "AgentName-Job8",
+      "jobDescription" : "Job8 Description"
+    } ]
   } ],
   "contextDependencies" : [ {
     "contextIdentifier" : "Context Template 1",
     "contextDependencyName" : "parent context dependency",
     "logicalGrouping" : {
-      "logicalGrouping" : null,
       "and" : [ {
-        "identifier" : "Context Template 2",
-        "logicalGrouping" : null
-      } ],
-      "or" : null,
-      "not" : null
+        "identifier" : "Context Template 2"
+      } ]
     }
   } ],
   "contextParameters" : [ {
@@ -171,7 +117,6 @@
     "name" : "param5",
     "type" : "java.lang.String"
   } ],
-  "scheduledJobs" : null,
   "timeWindowStart" : "* * 6 ? * * *",
   "timeWindowEnd" : "* * 15 ? * * *"
 }

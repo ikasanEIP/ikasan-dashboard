@@ -9,6 +9,9 @@ public class SchedulerJobBuilder {
     protected String contextId;
     protected String description;
 
+    protected SchedulerJobBuilder() {
+    }
+
     /**
      * Set the agent name.
      *

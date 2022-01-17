@@ -9,6 +9,9 @@ public class ContextDependencyBuilder {
     private String contextDependencyName;
     private LogicalGrouping logicalGrouping;
 
+    protected ContextDependencyBuilder() {
+    }
+
     public ContextDependencyBuilder withContextIdentifier(String contextIdentifier) {
         this.contextIdentifier = contextIdentifier;
 

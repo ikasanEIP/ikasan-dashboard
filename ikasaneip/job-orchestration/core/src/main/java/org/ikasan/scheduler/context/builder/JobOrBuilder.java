@@ -9,6 +9,9 @@ public class JobOrBuilder {
     protected String jobName;
     protected LogicalGrouping logicalGrouping;
 
+    protected JobOrBuilder() {
+    }
+
     public JobOrBuilder withAgentName(String agentName) {
         this.agentName = agentName;
 
@@ -29,7 +32,9 @@ public class JobOrBuilder {
 
     public Or build() {
         Or or = new OrImpl();
-        or.setIdentifier(this.agentName+"-"+this.jobName);
+        if(this.agentName != null && this.jobName != null) {
+            or.setIdentifier(this.agentName + "-" + this.jobName);
+        }
         or.setLogicalGrouping(this.logicalGrouping);
 
         return or;

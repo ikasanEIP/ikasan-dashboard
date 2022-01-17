@@ -8,6 +8,9 @@ public class ContextOrBuilder {
     protected String identifier;
     protected LogicalGrouping logicalGrouping;
 
+    protected ContextOrBuilder() {
+    }
+
     public ContextOrBuilder withIdentifier(String identifier) {
         this.identifier = identifier;
 
