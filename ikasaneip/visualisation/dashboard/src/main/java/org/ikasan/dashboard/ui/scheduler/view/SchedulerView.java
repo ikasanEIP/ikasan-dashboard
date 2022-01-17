@@ -13,6 +13,7 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
+import org.ikasan.dashboard.ui.scheduler.component.ContextDebugWidget;
 import org.ikasan.dashboard.ui.scheduler.component.RunningAndRecentlyCompletedJobExecutionsWidget;
 import org.ikasan.dashboard.ui.scheduler.component.SchedulerAgentDashboardView;
 import org.ikasan.dashboard.ui.scheduler.component.UpcomingJobExecutionsWidget;
@@ -174,7 +175,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             scheduledJobsBoard.addRow(this.upcomingJobExecutionsWidget);
             scheduledJobsBoard.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
-
+            this.contextDebugBoard.addRow(new ContextDebugWidget(this.scheduledContextInstanceService, this.schedulerService, this.scheduledContextService, this.systemEventLogger));
             initialised = true;
         }
     }

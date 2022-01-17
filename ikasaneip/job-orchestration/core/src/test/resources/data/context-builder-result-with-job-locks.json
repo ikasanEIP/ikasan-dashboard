@@ -96,5 +96,18 @@
     "jobDescription" : "Job8 Description"
   } ],
   "timeWindowStart" : "* * 6 ? * * *",
-  "timeWindowEnd" : "* * 15 ? * * *"
+  "timeWindowEnd" : "* * 15 ? * * *",
+  "jobLocks" : {
+    "TEST-LOCK" : [ {
+      "agentName" : "AgentName",
+      "jobName" : "Job1",
+      "identifier" : "AgentName-Job1",
+      "jobDescription" : "Job1 Description"
+    }, {
+      "agentName" : "AgentName",
+      "jobName" : "Job2",
+      "identifier" : "AgentName-Job2",
+      "jobDescription" : "Job2 Description"
+    } ]
+  }
 }

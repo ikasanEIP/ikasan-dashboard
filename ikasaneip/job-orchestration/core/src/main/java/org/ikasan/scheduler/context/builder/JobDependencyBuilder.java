@@ -9,6 +9,9 @@ public class JobDependencyBuilder {
     protected String jobName;
     private LogicalGrouping logicalGrouping;
 
+    protected JobDependencyBuilder() {
+    }
+
     public JobDependencyBuilder withAgentName(String agentName) {
         this.agentName = agentName;
 
@@ -29,7 +32,7 @@ public class JobDependencyBuilder {
 
     public JobDependency build() {
         if(this.agentName == null || this.jobName == null) {
-            throw new ContextBuilderException("Both agent name and job name must no be null!");
+            throw new ContextBuilderException("Both agent name and job name must not be null!");
         }
 
         JobDependency jobDependency = new JobDependencyImpl();

@@ -7,6 +7,9 @@ public class ContextParameterBuilder {
     protected String name;
     protected String type;
 
+    protected ContextParameterBuilder() {
+    }
+
     public ContextParameterBuilder withName(String name) {
         this.name = name;
 
