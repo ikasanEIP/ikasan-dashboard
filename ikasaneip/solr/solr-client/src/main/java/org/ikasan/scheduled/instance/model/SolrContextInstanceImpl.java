@@ -1,6 +1,7 @@
 package org.ikasan.scheduled.instance.model;
 
 import org.ikasan.scheduled.context.model.SolrContextImpl;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 
 import java.util.Map;
@@ -16,6 +17,7 @@ public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, Co
     private String timezone;
     private InstanceStatus status;
     private Map<String, String> lockHolders;
+    private Map<String, SchedulerJobInitiationEvent> heldJobs;
 
     public SolrContextInstanceImpl() {
         status = InstanceStatus.WAITING;
@@ -102,5 +104,15 @@ public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, Co
     @Override
     public void setLockHolders(Map<String, String> lockHolders) {
         this.lockHolders = lockHolders;
+    }
+
+    @Override
+    public Map<String, SchedulerJobInitiationEvent> getHeldJobs() {
+        return heldJobs;
+    }
+
+    @Override
+    public void setHeldJobs(Map<String, SchedulerJobInitiationEvent> heldJobs) {
+        this.heldJobs = heldJobs;
     }
 }

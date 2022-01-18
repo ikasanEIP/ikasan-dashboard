@@ -1,8 +1,10 @@
 package org.ikasan.scheduler.core.machine;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
@@ -10,22 +12,25 @@ import org.ikasan.scheduler.core.component.converter.ContextInstanceToContextIns
 import org.ikasan.scheduler.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.scheduler.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.scheduler.core.listener.SchedulerJobInstanceStateChangeEventListener;
+import org.ikasan.scheduler.core.model.context.*;
 import org.ikasan.scheduler.core.model.event.ContextInstanceStateChangeEvent;
 import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduler.core.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
+import org.ikasan.scheduler.core.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.scheduler.core.model.instance.ScheduledContextInstanceRecordImpl;
+import org.ikasan.scheduler.core.model.instance.SchedulerJobInstanceImpl;
+import org.ikasan.scheduler.core.model.job.SchedulerJobImpl;
 import org.ikasan.scheduler.core.model.status.ContextInstanceStatus;
 import org.ikasan.scheduler.core.service.ContextService;
-import org.ikasan.spec.scheduled.context.model.Context;
+import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +83,24 @@ public class ContextMachine {
         this.contextExecutor = Executors.newSingleThreadExecutor();
         this.schedulerInitiatorEventRaisedListenerExecutor = Executors.newSingleThreadExecutor();
         this.objectMapper = new ObjectMapper();
+        final var simpleModule = new SimpleModule()
+            .addAbstractTypeMapping(And.class, AndImpl.class)
+            .addAbstractTypeMapping(Or.class, OrImpl.class)
+            .addAbstractTypeMapping(Not.class, NotImpl.class)
+            .addAbstractTypeMapping(ContextTemplate.class, ContextTemplateImpl.class)
+            .addAbstractTypeMapping(Context.class, ContextImpl.class)
+            .addAbstractTypeMapping(ContextParameter.class, ContextParameterImpl.class)
+            .addAbstractTypeMapping(SchedulerJob.class, SchedulerJobImpl.class)
+            .addAbstractTypeMapping(JobDependency.class, JobDependencyImpl.class)
+            .addAbstractTypeMapping(ContextDependency.class, ContextDependencyImpl.class)
+            .addAbstractTypeMapping(LogicalGrouping.class, LogicalGroupingImpl.class)
+            .addAbstractTypeMapping(LogicalOperator.class, LogicalOperatorImpl.class)
+            .addAbstractTypeMapping(ContextInstance.class, ContextInstanceImpl.class)
+            .addAbstractTypeMapping(SchedulerJobInstance.class, SchedulerJobInstanceImpl.class)
+            .addAbstractTypeMapping(ContextParameterInstance.class, ContextParameterInstanceImpl.class);
+
+        this.objectMapper.registerModule(simpleModule);
+        this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
@@ -176,13 +199,48 @@ public class ContextMachine {
         this.dryRunParameters = dryRunParameters;
     }
 
+    public void holdJob(String jobIdentifier) {
+        SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, jobIdentifier);
+        if(schedulerJobInstance != null) {
+            schedulerJobInstance.setHeld(true);
+            this.saveContext();
+        }
+    }
+
+    public void releaseJob(String jobIdentifier) throws IOException {
+        SchedulerJobInitiationEvent event = this.contextInstance.getHeldJobs().get(jobIdentifier);
+        if(event != null) {
+            this.contextInstance.getHeldJobs().remove(jobIdentifier);
+            String serialised = objectMapper.writeValueAsString(event);
+            logger.info("Enqueue job initiation event: " + serialised);
+            outboundQueue.enqueue(serialised.getBytes());
+            logger.info("Outbound queue size: " + outboundQueue.size());
+            this.saveContext();
+        }
+    }
+
     /**
      *
      * @param scheduledProcessEvent
      * @return
      */
     protected List<SchedulerJobInitiationEvent> eventReceived(ScheduledProcessEvent scheduledProcessEvent) {
-        return this.getInitiationEvents(this.contextInstance, scheduledProcessEvent);
+        List<SchedulerJobInitiationEvent> events = this.getInitiationEvents(this.contextInstance, scheduledProcessEvent);
+
+        List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();
+
+        events.forEach(event -> {
+            SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(contextInstance, event.getInternalEventDrivenJob().getIdentifier());
+
+            if(schedulerJobInstance != null && schedulerJobInstance.isHeld()) {
+                this.contextInstance.getHeldJobs().put(schedulerJobInstance.getIdentifier(), event);
+            }
+            else {
+                finalEvents.add(event);
+            }
+        });
+
+        return finalEvents;
     }
 
     /**
@@ -327,6 +385,25 @@ public class ContextMachine {
         scheduledContextInstanceRecord.setStatus(this.contextInstance.getStatus().name());
 
         scheduledContextInstanceService.save(scheduledContextInstanceRecord);
+    }
+
+    private SchedulerJobInstance getSchedulerJob(ContextInstance contextInstance, String jobIdentifier) {
+        if(contextInstance.getScheduledJobsMap() != null && contextInstance.getScheduledJobsMap().containsKey(jobIdentifier)) {
+            return contextInstance.getScheduledJobsMap().get(jobIdentifier);
+        }
+        else if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
+            for(ContextInstance contextInstance1: contextInstance.getContexts()) {
+                 SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(contextInstance1, jobIdentifier);
+
+                 if(schedulerJobInstance != null) {
+                     return schedulerJobInstance;
+                 }
+            }
+
+            return null;
+        }
+
+        return null;
     }
 
     private class InboundQueueMessageRunner implements Runnable {
