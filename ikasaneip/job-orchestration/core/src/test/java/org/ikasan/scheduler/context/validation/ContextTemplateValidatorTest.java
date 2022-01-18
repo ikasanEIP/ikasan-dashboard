@@ -30,6 +30,55 @@ public class ContextTemplateValidatorTest extends AbstractTest {
         validator.validate(contextTemplate);
     }
 
+    @Test
+    public void test_context_with_job_locks_validation_success() throws IOException, InvalidContextTemplateException {
+        ContextService contextService = new ContextService();
+
+        ContextTemplate contextTemplate = contextService
+            .getContext(loadDataFile("/data/locks/context-with-job-locks-validation.json"));
+        ContextTemplateValidator validator = new ContextTemplateValidator();
+        validator.validate(contextTemplate);
+    }
+
+    @Test(expected = InvalidContextTemplateException.class)
+    public void test_context_with_job_locks_validation_fail_bad_job_identifier() throws IOException, InvalidContextTemplateException {
+        ContextService contextService = new ContextService();
+
+        ContextTemplate contextTemplate = contextService
+            .getContext(loadDataFile("/data/locks/context-with-job-locks-validation-fail-bad-job-identifier.json"));
+        ContextTemplateValidator validator = new ContextTemplateValidator();
+
+        try {
+            validator.validate(contextTemplate);
+        }
+        catch (InvalidContextTemplateException e) {
+            Assert.assertEquals("Context[Context Template Name] contains jobs locks and and jobs, however there " +
+                    "are job identifiers defined in job lock[TEST-LOCK] that do not reference scheduler jobs defined within the context.\n"
+                , e.getMessage());
+            throw e;
+        }
+    }
+
+    @Test(expected = InvalidContextTemplateException.class)
+    public void test_context_with_job_locks_validation_fail_contexts_at_same_level() throws IOException, InvalidContextTemplateException {
+        ContextService contextService = new ContextService();
+
+        ContextTemplate contextTemplate = contextService
+            .getContext(loadDataFile("/data/locks/context-with-job-locks-validation-fail-contexts-and-job-locks-at-same-level.json"));
+        ContextTemplateValidator validator = new ContextTemplateValidator();
+
+        try {
+            validator.validate(contextTemplate);
+        }
+        catch (InvalidContextTemplateException e) {
+            Assert.assertEquals("Context[Context Template Name] contains both scheduled jobs and contexts. A context can only contain " +
+                    "either scheduled jobs or contexts, but not both.\n" +
+                    "Context[Context Template Name] contains both jobs locks and contexts. A context cannot contain contexts and job locks.\n"
+                , e.getMessage());
+            throw e;
+        }
+    }
+
     @Test(expected = InvalidContextTemplateException.class)
     public void test_exception_scheduler_jobs_and_contexts_at_parent_level() throws IOException, InvalidContextTemplateException {
         ContextService contextService = new ContextService();
