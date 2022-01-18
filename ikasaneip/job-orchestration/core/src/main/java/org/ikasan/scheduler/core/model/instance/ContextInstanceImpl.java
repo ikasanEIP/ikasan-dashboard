@@ -1,6 +1,8 @@
 package org.ikasan.scheduler.core.model.instance;
 
 import org.ikasan.scheduler.core.model.context.ContextImpl;
+import org.ikasan.scheduler.core.model.event.SchedulerJobInitiationEventImpl;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 
 import java.util.HashMap;
@@ -17,6 +19,7 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
     private String timezone;
     private InstanceStatus status;
     private Map<String, String> lockHolders;
+    private Map<String, SchedulerJobInitiationEvent> heldJobs;
 
     public ContextInstanceImpl() {
         this.id = UUID.randomUUID().toString();
@@ -24,6 +27,7 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
         createdDateTime = System.currentTimeMillis();
         updatedDateTime = System.currentTimeMillis();
         this.lockHolders = new HashMap<>();
+        this.heldJobs = new HashMap<>();
     }
 
     @Override
@@ -104,5 +108,15 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
     @Override
     public void setLockHolders(Map<String, String> lockHolders) {
         this.lockHolders = lockHolders;
+    }
+
+    @Override
+    public Map<String, SchedulerJobInitiationEvent> getHeldJobs() {
+        return heldJobs;
+    }
+
+    @Override
+    public void setHeldJobs(Map<String, SchedulerJobInitiationEvent> heldJobs) {
+        this.heldJobs = heldJobs;
     }
 }
