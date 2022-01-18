@@ -3,6 +3,7 @@ package org.ikasan.scheduled.instance.model;
 import org.ikasan.scheduled.context.model.SolrContextImpl;
 import org.ikasan.spec.scheduled.instance.model.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance>
@@ -14,6 +15,7 @@ public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, Co
     private long endTime;
     private String timezone;
     private InstanceStatus status;
+    private Map<String, String> lockHolders;
 
     public SolrContextInstanceImpl() {
         status = InstanceStatus.WAITING;
@@ -22,59 +24,83 @@ public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, Co
         this.id = UUID.randomUUID().toString();
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public void setId(String id) {
         this.id = id;
     }
 
+    @Override
     public long getCreatedDateTime() {
         return createdDateTime;
     }
 
+    @Override
     public void setCreatedDateTime(long createdDateTime) {
         this.createdDateTime = createdDateTime;
     }
 
+    @Override
     public long getUpdatedDateTime() {
         return updatedDateTime;
     }
 
+    @Override
     public void setUpdatedDateTime(long updatedDateTime) {
         this.updatedDateTime = updatedDateTime;
     }
 
+    @Override
     public long getStartTime() {
         return startTime;
     }
 
+    @Override
     public void setStartTime(long startTime) {
         this.startTime = startTime;
     }
 
+    @Override
     public long getEndTime() {
         return endTime;
     }
 
+    @Override
     public void setEndTime(long endTime) {
         this.endTime = endTime;
     }
 
+    @Override
     public String getTimezone() {
         return timezone;
     }
 
+    @Override
     public void setTimezone(String timezone) {
         this.timezone = timezone;
     }
 
+    @Override
     public InstanceStatus getStatus() {
         return status;
     }
 
+    @Override
     public void setStatus(InstanceStatus status) {
         if(status!= null)this.status = status;
+    }
+
+    @Override
+    public Map<String, String> getLockHolders() {
+        return lockHolders;
+    }
+
+    @Override
+    public void setLockHolders(Map<String, String> lockHolders) {
+        this.lockHolders = lockHolders;
     }
 }
