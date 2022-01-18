@@ -83,7 +83,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                         SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(job.getIdentifier());
                         InternalEventDrivenJob internalEventDrivenJob = internalEventDrivenJobs.get(job.getIdentifier());
 
-                        // Get the first job that is WAITiNG and release it. Assign the job lock to it.
+                        // Get the first job that is WAITING and release it. Assign the job lock to it.
                         if (jobInstance.getStatus().equals(InstanceStatus.WAITING)) {
                             contextInstance.getLockHolders().put(entry.getKey(), jobInstance.getIdentifier());
                             results.add(this.createSchedulerJobInitiationEvent(contextInstance, jobInstance
@@ -152,6 +152,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 .filter(contextParameter -> contextParameterInstance.getName().equals(contextParameter.getName()))
                 .collect(Collectors.toList()).size() > 0)
             .collect(Collectors.toList()));
+        schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
 
         return schedulerJobInitiationEvent;
     }

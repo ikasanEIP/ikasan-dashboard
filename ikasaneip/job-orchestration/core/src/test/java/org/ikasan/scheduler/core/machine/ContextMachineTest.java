@@ -22,6 +22,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ContextMachineTest extends AbstractTest {
 
@@ -34,21 +35,29 @@ public class ContextMachineTest extends AbstractTest {
     @Before
     public void init() {
         internalEventDrivenJobs.clear();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName5-jobName5", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName6-jobName6", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName7-jobName7", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName8-jobName8", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName9-jobName9", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName10-jobName10", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName11-jobName11", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName12-jobName12", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName13-jobName13", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName14-jobName14", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName15-jobName15", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName16-jobName16", new InternalEventDrivenJobImpl());
+        internalEventDrivenJobs.put("agentName1-jobName1", this.newInternalEventDrivenJob("agentName1-jobName1"));
+        internalEventDrivenJobs.put("agentName2-jobName2", this.newInternalEventDrivenJob("agentName2-jobName2"));
+        internalEventDrivenJobs.put("agentName3-jobName3", this.newInternalEventDrivenJob("agentName3-jobName3"));
+        internalEventDrivenJobs.put("agentName4-jobName4", this.newInternalEventDrivenJob("agentName4-jobName4"));
+        internalEventDrivenJobs.put("agentName5-jobName5", this.newInternalEventDrivenJob("agentName5-jobName5"));
+        internalEventDrivenJobs.put("agentName6-jobName6", this.newInternalEventDrivenJob("agentName6-jobName6"));
+        internalEventDrivenJobs.put("agentName7-jobName7", this.newInternalEventDrivenJob("agentName7-jobName7"));
+        internalEventDrivenJobs.put("agentName8-jobName8", this.newInternalEventDrivenJob("agentName8-jobName8"));
+        internalEventDrivenJobs.put("agentName9-jobName9", this.newInternalEventDrivenJob("agentName9-jobName9"));
+        internalEventDrivenJobs.put("agentName10-jobName10", this.newInternalEventDrivenJob("agentName10-jobName10"));
+        internalEventDrivenJobs.put("agentName11-jobName11", this.newInternalEventDrivenJob("agentName11-jobName11"));
+        internalEventDrivenJobs.put("agentName12-jobName12", this.newInternalEventDrivenJob("agentName12-jobName12"));
+        internalEventDrivenJobs.put("agentName13-jobName13", this.newInternalEventDrivenJob("agentName13-jobName13"));
+        internalEventDrivenJobs.put("agentName14-jobName14", this.newInternalEventDrivenJob("agentName14-jobName14"));
+        internalEventDrivenJobs.put("agentName15-jobName15", this.newInternalEventDrivenJob("agentName15-jobName15"));
+        internalEventDrivenJobs.put("agentName16-jobName16", this.newInternalEventDrivenJob("agentName16-jobName16"));
+    }
+
+    private InternalEventDrivenJob newInternalEventDrivenJob(String jobIdentifier) {
+        InternalEventDrivenJob job = new InternalEventDrivenJobImpl();
+        job.setIdentifier(jobIdentifier);
+
+        return job;
     }
 
 
@@ -227,6 +236,234 @@ public class ContextMachineTest extends AbstractTest {
 
         JSONAssert.assertEquals(loadDataFile("/data/machine/result/job15-success-context-status.json")
             , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName16",
+            "agentName16", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job16-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+    }
+
+    @Test
+    public void test_context_machine_full_nested_context_job_held_success() throws IOException, JSONException, InterruptedException {
+        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+            , this.internalEventDrivenJobs, this.queueDir);
+        contextMachine.init();
+        contextMachine.holdJob("agentName5-jobName5");
+        contextMachine.holdJob("agentName16-jobName16");
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
+            "agentName3", false);
+        eventInstance.setJobStarting(true);
+
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job1-running-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName3",
+            "agentName3", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job1-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName1",
+            "agentName1", true);
+        InstanceStatus status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job3-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName2",
+            "agentName2", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job2-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName4",
+            "agentName4", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job4-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        Assert.assertEquals(1, contextInstance.getHeldJobs().size());
+
+        AtomicReference<String> jobName = new AtomicReference<>();
+        contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
+            jobName.set(event.getJobName());
+        });
+
+        contextMachine.releaseJob("agentName5-jobName5");
+
+        Assert.assertEquals(0, contextInstance.getHeldJobs().size());
+
+        Thread.sleep(1000);
+
+        Assert.assertEquals("jobName5", jobName.get());
+
+        eventInstance = scheduledProcessEventInstance("jobName5",
+            "agentName5", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job5-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName6",
+            "agentName6", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job6-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName7",
+            "agentName7", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(2, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job7-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName8",
+            "agentName8", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job8-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName9",
+            "agentName9", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job9-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        eventInstance = scheduledProcessEventInstance("jobName10",
+            "agentName10", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job10-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName11",
+            "agentName11", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job11-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        eventInstance = scheduledProcessEventInstance("jobName12",
+            "agentName12", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job12-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName13",
+            "agentName13", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job13-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName14",
+            "agentName14", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job14-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        eventInstance = scheduledProcessEventInstance("jobName15",
+            "agentName15", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job15-success-context-status.json")
+            , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
+
+        AtomicReference<String> jobName2 = new AtomicReference<>();
+        contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
+            jobName2.set(event.getJobName());
+        });
+
+        contextMachine.releaseJob("agentName16-jobName16");
+
+        Assert.assertEquals(0, contextInstance.getHeldJobs().size());
+
+        Thread.sleep(1000);
+
+        Assert.assertEquals("jobName16", jobName2.get());
 
         eventInstance = scheduledProcessEventInstance("jobName16",
             "agentName16", true);
