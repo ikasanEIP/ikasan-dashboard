@@ -1,0 +1,313 @@
+{
+  "name": "Context Template Name",
+  "description": "Context Template Description",
+  "jobDependencies": [
+    {
+      "jobIdentifier": "AgentName-Job2"
+    },
+    {
+      "jobIdentifier": "AgentName-Job3"
+    },
+    {
+      "jobIdentifier": "AgentName-Job5"
+    },
+    {
+      "jobIdentifier": "AgentName-Job1",
+      "logicalGrouping": {
+        "and": [
+          {
+            "identifier": "AgentName-Job2"
+          },
+          {
+            "identifier": "AgentName-Job3"
+          }
+        ]
+      }
+    },
+    {
+      "jobIdentifier": "AgentName-Job8",
+      "logicalGrouping": {
+        "or": [
+          {
+            "logicalGrouping": {
+              "and": [
+                {
+                  "identifier": "AgentName-Job4"
+                },
+                {
+                  "identifier": "AgentName-Job5"
+                }
+              ]
+            }
+          },
+          {
+            "logicalGrouping": {
+              "and": [
+                {
+                  "identifier": "AgentName-Job6"
+                },
+                {
+                  "identifier": "AgentName-Job7"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "name": "Context3",
+      "scheduledJobs": [
+        {
+          "identifier": "agentName1-jobName1",
+          "agentName": "agentName1",
+          "jobName": "jobName1"
+        },
+        {
+          "identifier": "agentName2-jobName2",
+          "agentName": "agentName2",
+          "jobName": "jobName2"
+        },
+        {
+          "identifier": "agentName3-jobName3",
+          "agentName": "agentName3",
+          "jobName": "jobName3"
+        },
+        {
+          "identifier": "agentName4-jobName4",
+          "agentName": "agentName4",
+          "jobName": "jobName4"
+        },
+        {
+          "identifier": "agentName5-jobName5",
+          "agentName": "agentName5",
+          "jobName": "jobName5"
+        },
+        {
+          "identifier": "agentName6-jobName6",
+          "agentName": "agentName6",
+          "jobName": "jobName6"
+        }
+      ],
+      "jobDependencies": [
+        {
+          "jobIdentifier": "agentName1-jobName1"
+        },
+        {
+          "jobIdentifier": "agentName2-jobName2"
+        },
+        {
+          "jobIdentifier": "agentName3-jobName3"
+        },
+        {
+          "jobIdentifier": "agentName4-jobName4"
+        },
+        {
+          "jobIdentifier": "agentName5-jobName5",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "agentName1-jobName1"
+              },
+              {
+                "identifier": "agentName2-jobName2"
+              }
+            ],
+            "or": [
+              {
+                "identifier": "agentName3-jobName3"
+              }
+            ]
+          }
+        },
+        {
+          "jobIdentifier": "agentName6-jobName6",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "agentName4-jobName4"
+              },
+              {
+                "identifier": "agentName5-jobName5"
+              }
+            ]
+          }
+        }
+      ],
+      "contexts": [
+      ],
+      "contextDependencies": [
+      ]
+    },
+    {
+      "name": "Context4",
+      "scheduledJobs": [
+        {
+          "identifier": "agentName7-jobName7",
+          "agentName": "agentName7",
+          "jobName": "jobName7"
+        },
+        {
+          "identifier": "agentName8-jobName8",
+          "agentName": "agentName8",
+          "jobName": "jobName8"
+        },
+        {
+          "identifier": "agentName9-jobName9",
+          "agentName": "agentName9",
+          "jobName": "jobName9"
+        },
+        {
+          "identifier": "agentName10-jobName10",
+          "agentName": "agentName10",
+          "jobName": "jobName10"
+        },
+        {
+          "identifier": "agentName11-jobName11",
+          "agentName": "agentName11",
+          "jobName": "jobName11"
+        }
+      ],
+      "jobDependencies": [
+        {
+          "jobIdentifier": "agentName7-jobName7"
+        },
+        {
+          "jobIdentifier": "agentName8-jobName8"
+        },
+        {
+          "jobIdentifier": "agentName9-jobName9",
+          "logicalGrouping": {
+            "or": [
+              {
+                "identifier": "agentName8-jobName8"
+              },
+              {
+                "identifier": "agentName7-jobName7"
+              }
+            ]
+          }
+        },
+        {
+          "jobIdentifier": "agentName10-jobName10",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "agentName7-jobName7"
+              }
+            ]
+          }
+        },
+        {
+          "jobIdentifier": "agentName11-jobName11",
+          "logicalGrouping": {
+            "and": [
+              {
+                "identifier": "agentName9-jobName9"
+              },
+              {
+                "identifier": "agentName10-jobName10"
+              }
+            ]
+          }
+        }
+      ],
+      "contexts": [
+      ],
+      "contextDependencies": [
+      ]
+    }
+  ],
+  "contextParameters": [
+    {
+      "name": "param1",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "param2",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "param3",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "param4",
+      "type": "java.lang.String"
+    },
+    {
+      "name": "param5",
+      "type": "java.lang.String"
+    }
+  ],
+  "scheduledJobs": [
+    {
+      "agentName": "AgentName",
+      "jobName": "Job1",
+      "identifier": "AgentName-Job1",
+      "jobDescription": "Job1 Description"
+    },
+    {
+      "agentName": "AgentName",
+      "jobName": "Job2",
+      "identifier": "AgentName-Job2",
+      "jobDescription": "Job2 Description"
+    },
+    {
+      "agentName": "AgentName",
+      "jobName": "Job3",
+      "identifier": "AgentName-Job3",
+      "jobDescription": "Job3 Description"
+    },
+    {
+      "agentName": "AgentName",
+      "jobName": "Job4",
+      "identifier": "AgentName-Job4",
+      "jobDescription": "Job4 Description"
+    },
+    {
+      "agentName": "AgentName",
+      "jobName": "Job5",
+      "identifier": "AgentName-Job5",
+      "jobDescription": "Job5 Description"
+    },
+    {
+      "agentName": "AgentName",
+      "jobName": "Job6",
+      "identifier": "AgentName-Job6",
+      "jobDescription": "Job6 Description"
+    },
+    {
+      "agentName": "AgentName",
+      "jobName": "Job7",
+      "identifier": "AgentName-Job7",
+      "jobDescription": "Job7 Description"
+    },
+    {
+      "agentName": "AgentName",
+      "jobName": "Job8",
+      "identifier": "AgentName-Job8",
+      "jobDescription": "Job8 Description"
+    }
+  ],
+  "timeWindowStart": "* * 6 ? * * *",
+  "timeWindowEnd": "* * 15 ? * * *",
+  "jobLocks": {
+    "TEST-LOCK": [
+      {
+        "agentName": "AgentName",
+        "jobName": "Job1",
+        "identifier": "AgentName-Job1",
+        "jobDescription": "Job1 Description"
+      },
+      {
+        "agentName": "AgentName",
+        "jobName": "Job2",
+        "identifier": "AgentName-Job2",
+        "jobDescription": "Job2 Description"
+      }
+    ]
+  }
+}
