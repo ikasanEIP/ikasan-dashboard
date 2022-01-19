@@ -6,9 +6,9 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 
 import java.util.List;
 
-public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEvent<ContextParameterInstanceImpl, InternalEventDrivenJobImpl,
-    DryRunParametersImpl> {
+public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEvent<ContextParameterInstanceImpl, InternalEventDrivenJobImpl, DryRunParametersImpl> {
     private String agentName;
+    private String agentUrl;
     private String jobName;
     private InternalEventDrivenJobImpl internalEventDrivenJob;
     private String contextId;
@@ -26,6 +26,16 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
     @Override
     public void setAgentName(String agentName) {
         this.agentName = agentName;
+    }
+
+    @Override
+    public String getAgentUrl() {
+        return agentUrl;
+    }
+
+    @Override
+    public void setAgentUrl(String agentUrl) {
+        this.agentUrl = agentUrl;
     }
 
     @Override
