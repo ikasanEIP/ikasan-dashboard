@@ -113,8 +113,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
                     , null, "/sandbox/mick/bigquque");
                 contextMachine.init();
                 contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
-                    // todo work out how to get agent url
-                    schedulerService.raiseSchedulerJobInitiationEvent("http://localhost:8080/scheduler-agent", event);
+                    schedulerService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event);
                 });
 
 //                DryRunParameters dryRunParameters = new DryRunParametersImpl();

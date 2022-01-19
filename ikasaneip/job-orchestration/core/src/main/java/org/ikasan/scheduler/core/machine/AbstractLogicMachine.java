@@ -30,7 +30,7 @@ public class AbstractLogicMachine<STATEFUL_ENTITY extends StatefulEntity> {
                 else {
                     STATEFUL_ENTITY statefulEntity = statefulEntityMap.get(operator.getIdentifier());
                     if (statefulEntity == null) {
-                        throw new RuntimeException(String.format("Could not locate stateful entity[%s] when trying to assess logical group and[%s]",
+                        throw new ContextMachineException(String.format("Could not locate stateful entity[%s] when trying to assess logical group and[%s]",
                             operator.getIdentifier(), logicalGrouping));
                     }
 
@@ -63,7 +63,7 @@ public class AbstractLogicMachine<STATEFUL_ENTITY extends StatefulEntity> {
                 else {
                     STATEFUL_ENTITY statefulEntity = statefulEntityMap.get(operator.getIdentifier());
                     if (statefulEntity == null) {
-                        throw new RuntimeException(String.format("Could not locate stateful entity[%s] when trying to assess logical group or[%s]",
+                        throw new ContextMachineException(String.format("Could not locate stateful entity[%s] when trying to assess logical group or[%s]",
                             operator.getIdentifier(), logicalGrouping));
                     }
 
@@ -96,7 +96,7 @@ public class AbstractLogicMachine<STATEFUL_ENTITY extends StatefulEntity> {
                 else {
                     STATEFUL_ENTITY statefulEntity = statefulEntityMap.get(operator.getIdentifier());
                     if (statefulEntity == null) {
-                        throw new RuntimeException(String.format("Could not locate stateful entity[%s] when trying to assess logical group or[%s]",
+                        throw new ContextMachineException(String.format("Could not locate stateful entity[%s] when trying to assess logical group or[%s]",
                             operator.getIdentifier(), logicalGrouping));
                     }
 
