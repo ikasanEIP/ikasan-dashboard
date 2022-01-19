@@ -9,11 +9,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
 import org.ikasan.scheduler.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
-import org.ikasan.scheduler.core.listener.ContextInstanceStateChangeEventListener;
-import org.ikasan.scheduler.core.listener.SchedulerJobInitiationEventRaisedListener;
-import org.ikasan.scheduler.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.scheduler.core.model.context.*;
-import org.ikasan.scheduler.core.model.event.ContextInstanceStateChangeEvent;
+import org.ikasan.scheduler.core.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduler.core.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
@@ -24,6 +21,9 @@ import org.ikasan.scheduler.core.model.job.SchedulerJobImpl;
 import org.ikasan.scheduler.core.model.status.ContextInstanceStatus;
 import org.ikasan.scheduler.core.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.*;
+import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
+import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
+import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
@@ -106,6 +106,10 @@ public class ContextMachine {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
     }
 
+    /**
+     *
+     * @throws IOException
+     */
     public void init() throws IOException {
         String inboundQueueName = "inbound-"+this.contextInstance.getId()+"-queue";
         String outboundQueueName = "outbound-"+this.contextInstance.getId()+"-queue";
@@ -121,6 +125,10 @@ public class ContextMachine {
         this.maxWait = 10000L;
     }
 
+    /**
+     *
+     * @throws JsonProcessingException
+     */
     public void resetContextInstance() throws JsonProcessingException {
         if(this.context != null) {
             ContextService contextService = new ContextService();
@@ -129,11 +137,19 @@ public class ContextMachine {
         }
     }
 
+    /**
+     *
+     * @throws IOException
+     */
     public void teardown() throws IOException {
         this.inboundQueue.close();
         this.outboundQueue.close();
     }
 
+    /**
+     *
+     * @param listener
+     */
     public void setSchedulerJobInitiationEventRaisedListener(SchedulerJobInitiationEventRaisedListener listener) {
         this.schedulerJobInitiationEventRaisedListener = listener;
     }
@@ -164,6 +180,10 @@ public class ContextMachine {
         return null;
     }
 
+    /**
+     *
+     * @return
+     */
     public ContextInstanceStatus getContextInstanceStatus() {
         return this.statusConverter.convert(this.contextInstance);
     }
@@ -187,26 +207,61 @@ public class ContextMachine {
         return this.contextInstance;
     }
 
+    /**
+     *
+     * @param listener
+     */
     public void addSchedulerJobStateChangeEventListener(SchedulerJobInstanceStateChangeEventListener listener) {
         this.jobLogicMachine.addSchedulerJobStateChangeEventListener(listener);
     }
 
+    /**
+     *
+     * @param listener
+     */
     public void addContextInstanceStateChangeEventListener(ContextInstanceStateChangeEventListener listener) {
         this.contextInstanceStateChangeEventListeners.add(listener);
     }
 
+    /**
+     *
+     * @param dryRunParameters
+     */
     public void setDryRunParameters(DryRunParameters dryRunParameters) {
         this.dryRunParameters = dryRunParameters;
     }
 
+    /**
+     *
+     * @param jobIdentifier
+     */
     public void holdJob(String jobIdentifier) {
         SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, jobIdentifier);
         if(schedulerJobInstance != null) {
+            if(!schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING) &&
+                !schedulerJobInstance.getStatus().equals(InstanceStatus.RELEASED)) {
+                throw new ContextMachineException(String.format("Attempting to hold job[%s], " +
+                        "in context[%s] with instance id[%s]. The job currently has a status of [%s] which cannot be put on hold."
+                    , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId(), schedulerJobInstance.getStatus()));
+            }
             schedulerJobInstance.setHeld(true);
+            schedulerJobInstance.setStatus(InstanceStatus.ON_HOLD);
             this.saveContext();
+            logger.info(String.format("Successfully held job[%s]. Context[%s], Context Instance[%s]."
+                , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId()));
+        }
+        else {
+            throw new ContextMachineException(String.format("Attempting to hold job[%s], however this job does not " +
+                "appear in context[%s] with instance id[%s], or any of its nested contexts."
+                , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId()));
         }
     }
 
+    /**
+     *
+     * @param jobIdentifier
+     * @throws IOException
+     */
     public void releaseJob(String jobIdentifier) throws IOException {
         SchedulerJobInitiationEvent event = this.contextInstance.getHeldJobs().get(jobIdentifier);
         if(event != null) {
@@ -215,7 +270,41 @@ public class ContextMachine {
             logger.info("Enqueue job initiation event: " + serialised);
             outboundQueue.enqueue(serialised.getBytes());
             logger.info("Outbound queue size: " + outboundQueue.size());
+            SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, jobIdentifier);
+            schedulerJobInstance.setHeld(false);
+            schedulerJobInstance.setStatus(InstanceStatus.RELEASED);
             this.saveContext();
+            logger.info(String.format("Successfully released job[%s]. Context[%s], Context Instance[%s]."
+                , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId()));
+        }
+        else {
+            SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, jobIdentifier);
+
+            if(schedulerJobInstance != null) {
+                if(!schedulerJobInstance.getStatus().equals(InstanceStatus.ON_HOLD)) {
+                    throw new ContextMachineException(String.format("Attempting to release job[%s], " +
+                            "in context[%s] with instance id[%s]. The job currently has a status of [%s] which cannot be released."
+                        , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId(), schedulerJobInstance.getStatus()));
+                }
+                schedulerJobInstance.setHeld(false);
+                schedulerJobInstance.setStatus(InstanceStatus.RELEASED);
+                this.saveContext();
+                logger.info(String.format("Successfully released job[%s]. Context[%s], Context Instance[%s]."
+                    , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId()));
+            }
+            else {
+                StringBuffer heldJobs = new StringBuffer();
+                this.contextInstance.getHeldJobs().entrySet().forEach(entry -> heldJobs.append(entry.getKey()).append(", "));
+                String heldJobsString = heldJobs.toString().trim();
+                if (heldJobsString.endsWith(",")) {
+                    heldJobsString = heldJobsString.substring(0, heldJobsString.length() - 1);
+                }
+
+                throw new ContextMachineException(String.format("Attempting to release job[%s], however this job is not " +
+                        "currently held in context[%s] with instance id[%s]. Current held jobs[%s]. Nor is the job found " +
+                        "in the context or any of its nested contexts!"
+                    , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId(), heldJobsString));
+            }
         }
     }
 
@@ -342,7 +431,7 @@ public class ContextMachine {
             InstanceStatus newStatus = contextInstance.getStatus();
 
             if(!previousStatus.equals(newStatus)) {
-                this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEvent(contextInstance, previousStatus, newStatus));
+                this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl(contextInstance, previousStatus, newStatus));
             }
         }
         else if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
@@ -371,7 +460,7 @@ public class ContextMachine {
         }
     }
 
-    private void issueContextInstanceStateChangeEvent(ContextInstanceStateChangeEvent event) {
+    private void issueContextInstanceStateChangeEvent(ContextInstanceStateChangeEventImpl event) {
         this.statusListenerExecutor.submit(() -> this.contextInstanceStateChangeEventListeners
             .forEach(listener -> listener.onContextInstanceStateChangeEvent(event)));
     }
@@ -406,7 +495,7 @@ public class ContextMachine {
         return null;
     }
 
-    private class InboundQueueMessageRunner implements Runnable {
+    protected class InboundQueueMessageRunner implements Runnable {
 
         @Override
         public void run() {
@@ -445,7 +534,7 @@ public class ContextMachine {
         }
     }
 
-    private class OutboundQueueMessageRunner implements Runnable {
+    protected class OutboundQueueMessageRunner implements Runnable {
 
         @Override
         public void run() {

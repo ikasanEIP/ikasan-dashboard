@@ -1,10 +1,10 @@
 package org.ikasan.scheduler.core.machine;
 
-import org.ikasan.scheduler.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.scheduler.core.model.event.SchedulerJobInitiationEventImpl;
-import org.ikasan.scheduler.core.model.event.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.scheduler.core.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.spec.scheduled.context.model.JobDependency;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
+import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
@@ -65,7 +65,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
             schedulerJobInstance.setScheduledProcessEvent(scheduledProcessEvent);
 
-            this.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEvent(schedulerJobInstance, currentJobState,
+            this.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, currentJobState,
                 schedulerJobInstance.getStatus()));
         }
 
@@ -129,7 +129,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         this.schedulerJobInstanceStateChangeEventListeners.add(listener);
     }
 
-    private void issueSchedulerJobStateChangeEvent(SchedulerJobInstanceStateChangeEvent event) {
+    private void issueSchedulerJobStateChangeEvent(SchedulerJobInstanceStateChangeEventImpl event) {
         this.executor.submit(() -> this.schedulerJobInstanceStateChangeEventListeners
             .forEach(listener -> listener.onSchedulerJobInstanceStateChangeEvent(event)));
     }

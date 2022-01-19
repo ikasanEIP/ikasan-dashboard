@@ -1,0 +1,90 @@
+{
+  "contextName" : "Context1",
+  "instanceStatus" : "RUNNING",
+  "contextInstanceStatuses" : [ {
+    "contextName" : "Context2",
+    "instanceStatus" : "RUNNING",
+    "contextInstanceStatuses" : [ {
+      "contextName" : "Context3",
+      "instanceStatus" : "COMPLETE",
+      "contextInstanceStatuses" : [ ],
+      "schedulerJobInstanceStatuses" : [ {
+        "jobName" : "jobName1",
+        "agentName" : "agentName1",
+        "instanceStatus" : "COMPLETE"
+      }, {
+        "jobName" : "jobName2",
+        "agentName" : "agentName2",
+        "instanceStatus" : "COMPLETE"
+      }, {
+        "jobName" : "jobName3",
+        "agentName" : "agentName3",
+        "instanceStatus" : "COMPLETE"
+      }, {
+        "jobName" : "jobName4",
+        "agentName" : "agentName4",
+        "instanceStatus" : "COMPLETE"
+      }, {
+        "jobName" : "jobName5",
+        "agentName" : "agentName5",
+        "instanceStatus" : "COMPLETE"
+      }, {
+        "jobName" : "jobName6",
+        "agentName" : "agentName6",
+        "instanceStatus" : "COMPLETE"
+      } ]
+    }, {
+      "contextName" : "Context4",
+      "instanceStatus" : "RUNNING",
+      "contextInstanceStatuses" : [ ],
+      "schedulerJobInstanceStatuses" : [ {
+        "jobName" : "jobName7",
+        "agentName" : "agentName7",
+        "instanceStatus" : "COMPLETE"
+      }, {
+        "jobName" : "jobName8",
+        "agentName" : "agentName8",
+        "instanceStatus" : "COMPLETE"
+      }, {
+        "jobName" : "jobName9",
+        "agentName" : "agentName9",
+        "instanceStatus" : "WAITING"
+      }, {
+        "jobName" : "jobName10",
+        "agentName" : "agentName10",
+        "instanceStatus" : "WAITING"
+      }, {
+        "jobName" : "jobName11",
+        "agentName" : "agentName11",
+        "instanceStatus" : "WAITING"
+      } ]
+    } ],
+    "schedulerJobInstanceStatuses" : [ ]
+  }, {
+    "contextName" : "Context5",
+    "instanceStatus" : "WAITING",
+    "contextInstanceStatuses" : [ ],
+    "schedulerJobInstanceStatuses" : [ {
+      "jobName" : "jobName12",
+      "agentName" : "agentName12",
+      "instanceStatus" : "WAITING"
+    }, {
+      "jobName" : "jobName13",
+      "agentName" : "agentName13",
+      "instanceStatus" : "WAITING"
+    }, {
+      "jobName" : "jobName14",
+      "agentName" : "agentName14",
+      "instanceStatus" : "WAITING"
+    }, {
+      "jobName" : "jobName15",
+      "agentName" : "agentName15",
+      "instanceStatus" : "WAITING"
+    }, {
+      "jobName" : "jobName16",
+      "agentName" : "agentName16",
+      "instanceStatus" : "ON_HOLD"
+    } ]
+  } ],
+  "schedulerJobInstanceStatuses" : [ ]
+}
