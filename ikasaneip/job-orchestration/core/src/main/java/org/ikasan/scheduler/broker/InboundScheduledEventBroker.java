@@ -7,6 +7,7 @@ import com.leansoft.bigqueue.IBigQueue;
 import org.ikasan.scheduler.context.cache.ContextMachineCache;
 import org.ikasan.scheduler.core.machine.ContextMachine;
 import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.scheduler.util.ObjectMapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ public class InboundScheduledEventBroker {
         this.inboundQueue = inboundQueue;
         this.bigQueueListenerExecutor = Executors.newSingleThreadExecutor();
         this.addInboundListener();
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = ObjectMapperFactory.newInstance();
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 

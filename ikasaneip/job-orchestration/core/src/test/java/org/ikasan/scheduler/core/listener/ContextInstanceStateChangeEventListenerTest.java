@@ -9,6 +9,7 @@ import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEvent
 import org.ikasan.scheduler.core.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.scheduler.core.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.Context;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
@@ -26,7 +27,7 @@ public class ContextInstanceStateChangeEventListenerTest extends AbstractTest {
 
     @Test
     public void test_context_instance_event_listener_success() throws IOException, InterruptedException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();

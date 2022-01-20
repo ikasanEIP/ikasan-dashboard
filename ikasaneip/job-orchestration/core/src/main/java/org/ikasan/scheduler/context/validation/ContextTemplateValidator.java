@@ -17,7 +17,7 @@ public class ContextTemplateValidator {
      * @param contextTemplate
      * @throws InvalidContextTemplateException
      */
-    public void validate(ContextTemplate contextTemplate) throws InvalidContextTemplateException{
+    public void validate(ContextTemplate contextTemplate) throws InvalidContextTemplateException {
         this.assertThatContextsAndScheduledJobsCannotBePresentAtSameLevel(contextTemplate);
         this.assertThatContextsJobLocksCannotBeAtTheSameLevel(contextTemplate);
         this.assertJobLocksContainOnlyJobsAssociatedWithTheContext(contextTemplate);

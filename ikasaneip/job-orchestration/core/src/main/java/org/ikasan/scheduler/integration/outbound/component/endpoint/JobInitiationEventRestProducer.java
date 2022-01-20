@@ -42,6 +42,7 @@ package org.ikasan.scheduler.integration.outbound.component.endpoint;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.scheduler.core.model.event.SchedulerJobInitiationEventImpl;
+import org.ikasan.scheduler.util.ObjectMapperFactory;
 import org.ikasan.spec.component.endpoint.EndpointException;
 import org.ikasan.spec.component.endpoint.Producer;
 import org.ikasan.spec.scheduled.SchedulerService;
@@ -68,7 +69,7 @@ public class JobInitiationEventRestProducer implements Producer<String>
             throw new IllegalArgumentException("schedulerService cannot be 'null");
         }
 
-        objectMapper = new ObjectMapper();
+        objectMapper = ObjectMapperFactory.newInstance();
     }
 
     @Override

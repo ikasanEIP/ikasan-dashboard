@@ -4,18 +4,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.scheduler.context.cache.ContextMachineCache;
 import org.ikasan.scheduler.core.machine.ContextMachine;
 import org.ikasan.scheduler.core.model.context.ContextImpl;
+import org.ikasan.scheduler.core.model.context.ContextTemplateImpl;
 import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
+import org.ikasan.scheduler.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.SchedulerService;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
+import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduler.DashboardJob;
+import org.ikasan.spec.search.SearchResults;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ContextInstanceRegisterJob implements DashboardJob {
 
@@ -30,9 +40,12 @@ public class ContextInstanceRegisterJob implements DashboardJob {
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private ObjectMapper objectMapper;
     private SchedulerService schedulerService;
+    private InternalEventDrivenJobService internalEventDrivenJobService;
+    private String queueDirectory;
 
     public ContextInstanceRegisterJob(String jobName, String cronExpression, ScheduledContextService scheduledContextService,
-                                      ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService) {
+                                      ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
+                                      InternalEventDrivenJobService internalEventDrivenJobService, String queueDirectory) {
         this.jobName = jobName;
         if(this.jobName == null) {
             throw new IllegalArgumentException("jobName cannot be null!");
@@ -53,8 +66,16 @@ public class ContextInstanceRegisterJob implements DashboardJob {
         if(this.schedulerService == null) {
             throw new IllegalArgumentException("schedulerService cannot be null!");
         }
+        this.internalEventDrivenJobService = internalEventDrivenJobService;
+        if(this.internalEventDrivenJobService == null) {
+            throw new IllegalArgumentException("internalEventDrivenJobService cannot be null!");
+        }
+        this.queueDirectory = queueDirectory;
+        if(this.queueDirectory == null) {
+            throw new IllegalArgumentException("queueDirectory cannot be null!");
+        }
 
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = ObjectMapperFactory.newInstance();;
     }
 
     @Override
@@ -71,16 +92,22 @@ public class ContextInstanceRegisterJob implements DashboardJob {
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         try {
             ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(this.jobName);
-            ContextImpl context = this.objectMapper
-                .readValue(this.objectMapper.writeValueAsBytes(scheduledContextRecord.getContext()), ContextImpl.class);
+            ContextTemplate context = this.objectMapper
+                .readValue(this.objectMapper.writeValueAsBytes(scheduledContextRecord.getContext()), ContextTemplateImpl.class);
             ContextInstanceImpl contextInstance = this.objectMapper
                 .readValue(this.objectMapper.writeValueAsBytes(scheduledContextRecord.getContext()), ContextInstanceImpl.class);
 
-            // todo sort out the queue dir
-            ContextMachine contextMachine = new ContextMachine(context, contextInstance, this.scheduledContextInstanceService, new HashMap<>(),
-                "/sandbox/mick/bigquque");
+            SearchResults<InternalEventDrivenJobRecord> internalEventDrivenJobRecordSearchResults
+                = this.internalEventDrivenJobService.findByContext(scheduledContextRecord.getContextName(), -1, -1);
+
+            Map<String, InternalEventDrivenJob> internalEventDrivenJobMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
+                .map(internalEventDrivenJobRecord -> internalEventDrivenJobRecord.getInternalEventDrivenJob())
+                .collect(Collectors.toMap(InternalEventDrivenJob::getIdentifier, Function.identity()));
+
+            ContextMachine contextMachine = new ContextMachine(context, contextInstance, this.scheduledContextInstanceService, internalEventDrivenJobMap,
+                this.queueDirectory);
             contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
-                this.schedulerService.raiseSchedulerJobInitiationEvent("", event);
+                this.schedulerService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event);
             });
 
             ContextMachineCache.instance().put(contextMachine);
