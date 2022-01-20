@@ -16,12 +16,9 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
-import org.ikasan.scheduler.context.cache.ContextMachineCache;
-import org.ikasan.scheduler.core.machine.ContextMachine;
-import org.ikasan.scheduler.core.model.context.ContextImpl;
-import org.ikasan.scheduler.core.model.context.ContextTemplateImpl;
-import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
-import org.ikasan.scheduler.core.service.ContextService;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -100,7 +97,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             ContextService contextService = new ContextService();
             try {
-                ContextTemplate contextTemplate = contextService.getContext(new String(contextFile));
+                ContextTemplate contextTemplate = contextService.getContextTemplate(new String(contextFile));
                 ScheduledContextRecord scheduledContextRecord = new SolrScheduledContextRecordImpl();
                 scheduledContextRecord.setContextName(contextTemplate.getName());
                 scheduledContextRecord.setContext(contextTemplate);
