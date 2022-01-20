@@ -1,0 +1,18 @@
+{
+  "agentName" : "agentName",
+  "jobName" : "jobName",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "working directory",
+  "commandLine" : "commandLine",
+  "minExecutionTime" : 1000,
+  "maxExecutionTime" : 100000,
+  "contextParameters" : [ {
+    "name" : "name1",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "name2",
+    "type" : "java.lang.String"
+  } ],
+  "jobDescription" : "description",
+  "identifier" : "agentName-jobName"
+}
