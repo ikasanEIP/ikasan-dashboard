@@ -888,6 +888,18 @@
 
             <dependency>
                 <groupId>org.ikasan</groupId>
+                <artifactId>ikasan-job-orchestration-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
+                <artifactId>ikasan-job-orchestration-builder</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-topology</artifactId>
                 <version>${ikasan.core.version}</version>
             </dependency>
