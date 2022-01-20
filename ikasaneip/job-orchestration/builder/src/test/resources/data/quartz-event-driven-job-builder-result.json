@@ -1,0 +1,10 @@
+{
+  "agentName" : "agentName",
+  "jobName" : "jobName",
+  "contextId" : "contextId",
+  "cronExpression" : "cronExpression",
+  "jobGroup" : "jobGroup",
+  "timeZone" : "timezone",
+  "identifier" : "agentName-jobName",
+  "jobDescription" : "description"
+}
