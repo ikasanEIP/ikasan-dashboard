@@ -21,20 +21,6 @@
   "contexts": [
     {
       "name": "Context2",
-      "contextParameters": [
-        {
-          "name": "name",
-          "type": "type"
-        },
-        {
-          "name": "name",
-          "type": "type"
-        },
-        {
-          "name": "name",
-          "type": "type"
-        }
-      ],
       "scheduledJobs": [
       ],
       "jobDependencies": [
@@ -42,20 +28,6 @@
       "contexts": [
         {
           "name": "Context3",
-          "contextParameters": [
-            {
-              "name": "name",
-              "type": "type"
-            },
-            {
-              "name": "name",
-              "type": "type"
-            },
-            {
-              "name": "name",
-              "type": "type"
-            }
-          ],
           "scheduledJobs": [
             {
               "identifier": "agentName1-jobName1",
@@ -140,20 +112,6 @@
         },
         {
           "name": "Context4",
-          "contextParameters": [
-            {
-              "name": "name",
-              "type": "type"
-            },
-            {
-              "name": "name",
-              "type": "type"
-            },
-            {
-              "name": "name",
-              "type": "type"
-            }
-          ],
           "scheduledJobs": [
             {
               "identifier": "agentName7-jobName7",
@@ -259,20 +217,6 @@
     },
     {
       "name": "Context5",
-      "contextParameters": [
-        {
-          "name": "name",
-          "type": "type"
-        },
-        {
-          "name": "name",
-          "type": "type"
-        },
-        {
-          "name": "name",
-          "type": "type"
-        }
-      ],
       "scheduledJobs": [
         {
           "identifier": "agentName12-jobName12",
@@ -354,5 +298,7 @@
         ]
       }
     }
-  ]
+  ],
+   "timeWindowStart" : "* * 6 ? * * *",
+   "timeWindowEnd" : "* * 15 ? * * *"
 }

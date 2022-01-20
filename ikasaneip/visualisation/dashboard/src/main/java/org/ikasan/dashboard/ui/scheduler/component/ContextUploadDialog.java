@@ -23,8 +23,10 @@ import org.ikasan.scheduler.core.model.context.ContextTemplateImpl;
 import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
 import org.ikasan.scheduler.core.service.ContextService;
 import org.ikasan.spec.scheduled.SchedulerService;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 
 import java.io.IOException;
@@ -98,18 +100,17 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             ContextService contextService = new ContextService();
             try {
-                ContextTemplateImpl contextTemplate = contextService.getContext(new String(contextFile));
+                ContextTemplate contextTemplate = contextService.getContext(new String(contextFile));
                 ScheduledContextRecord scheduledContextRecord = new SolrScheduledContextRecordImpl();
                 scheduledContextRecord.setContextName(contextTemplate.getName());
                 scheduledContextRecord.setContext(contextTemplate);
                 scheduledContextRecord.setTimestamp(System.currentTimeMillis());
                 this.scheduledContextService.save(scheduledContextRecord);
 
-                ContextInstanceImpl contextInstance = contextService.getContextInstance(new String(contextFile));
-                ContextImpl context = contextService.getContext(new String(contextFile));
+                ContextInstance contextInstance = contextService.getContextInstance(new String(contextFile));
                 contextInstance.setId(UUID.randomUUID().toString());
                 // todo sort out the internal jobs and the queue dir.
-                ContextMachine contextMachine = new ContextMachine(context, contextInstance, scheduledContextInstanceService
+                ContextMachine contextMachine = new ContextMachine(contextTemplate, contextInstance, scheduledContextInstanceService
                     , null, "/sandbox/mick/bigquque");
                 contextMachine.init();
                 contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {

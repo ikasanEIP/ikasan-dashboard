@@ -68,7 +68,7 @@ public class SolrClientAutoConfiguration {
     }
 
     @Bean
-    public InternalEventDrivenJobService internalEventDrivenJobRecordService(InternalEventDrivenJobDao internalEventDrivenJobDao) {
+    public InternalEventDrivenJobService internalEventDrivenJobService(InternalEventDrivenJobDao internalEventDrivenJobDao) {
         return new SolrInternalEventDrivenJobRecordServiceImpl(internalEventDrivenJobDao);
     }
 
