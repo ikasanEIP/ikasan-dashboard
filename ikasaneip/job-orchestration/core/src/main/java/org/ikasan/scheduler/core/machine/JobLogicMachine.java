@@ -2,6 +2,7 @@ package org.ikasan.scheduler.core.machine;
 
 import org.ikasan.scheduler.core.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduler.core.model.event.SchedulerJobInstanceStateChangeEventImpl;
+import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.JobDependency;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
@@ -9,6 +10,7 @@ import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
@@ -44,7 +46,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      * @return
      */
     public List<SchedulerJobInitiationEvent> getJobInitiationEvents(ScheduledProcessEvent scheduledProcessEvent
-        , ContextInstance contextInstance, DryRunParameters dryRunParameters, Map<String, InternalEventDrivenJob> internalEventDrivenJobs) {
+        , ContextInstance contextInstance, DryRunParameters dryRunParameters, Map<String, InternalEventDrivenJob> internalEventDrivenJobs
+        , List<ContextParameterInstance> contextParameters) {
         SchedulerJobInstance schedulerJobInstance = contextInstance.getScheduledJobsMap()
             .get(scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName());
 
@@ -87,7 +90,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                         if (jobInstance.getStatus().equals(InstanceStatus.WAITING)) {
                             contextInstance.getLockHolders().put(entry.getKey(), jobInstance.getIdentifier());
                             results.add(this.createSchedulerJobInitiationEvent(contextInstance, jobInstance
-                                , internalEventDrivenJob, dryRunParameters));
+                                , internalEventDrivenJob, dryRunParameters, contextParameters));
                             break;
                         }
                     }
@@ -117,7 +120,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 if(!instance.isInitiationEventRaised() && raiseEventDueToLock) {
                     instance.setInitiationEventRaised(true);
 
-                    results.add(this.createSchedulerJobInitiationEvent(contextInstance, instance, internalEventDrivenJob, dryRunParameters));
+                    results.add(this.createSchedulerJobInitiationEvent(contextInstance, instance, internalEventDrivenJob, dryRunParameters, contextParameters));
                 }
             }
         }
@@ -134,8 +137,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             .forEach(listener -> listener.onSchedulerJobInstanceStateChangeEvent(event)));
     }
 
-    private SchedulerJobInitiationEvent createSchedulerJobInitiationEvent(ContextInstance contextInstance, SchedulerJobInstance instance,
-                                                                          InternalEventDrivenJob internalEventDrivenJob, DryRunParameters dryRunParameters) {
+    private SchedulerJobInitiationEvent createSchedulerJobInitiationEvent(ContextInstance contextInstance, SchedulerJobInstance instance
+        , InternalEventDrivenJob internalEventDrivenJob, DryRunParameters dryRunParameters, List<ContextParameterInstance> contextParameters) {
         SchedulerJobInitiationEvent schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
         schedulerJobInitiationEvent.setAgentName(instance.getAgentName());
         schedulerJobInitiationEvent.setJobName(instance.getJobName());
@@ -144,14 +147,15 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         schedulerJobInitiationEvent.setDryRun(dryRunParameters != null);
         schedulerJobInitiationEvent.setDryRunParameters(dryRunParameters);
         schedulerJobInitiationEvent.setSkipped(instance.isSkip());
-        schedulerJobInitiationEvent.setContextParameters(contextInstance
-            .getContextParameters().stream()
-            .filter(contextParameterInstance -> internalEventDrivenJob
-                .getContextParameters()
-                .stream()
-                .filter(contextParameter -> contextParameterInstance.getName().equals(contextParameter.getName()))
-                .collect(Collectors.toList()).size() > 0)
-            .collect(Collectors.toList()));
+        if(contextParameters != null) {
+            schedulerJobInitiationEvent.setContextParameters(contextParameters.stream()
+                .filter(contextParameterInstance -> internalEventDrivenJob
+                    .getContextParameters()
+                    .stream()
+                    .filter(contextParameter -> contextParameterInstance.getName().equals(contextParameter.getName()))
+                    .collect(Collectors.toList()).size() > 0)
+                .collect(Collectors.toList()));
+        }
         schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
 
         return schedulerJobInitiationEvent;

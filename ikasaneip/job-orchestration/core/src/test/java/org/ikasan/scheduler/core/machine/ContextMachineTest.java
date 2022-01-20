@@ -1,13 +1,17 @@
 package org.ikasan.scheduler.core.machine;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ikasan.scheduler.context.validation.ContextTemplateValidator;
+import org.ikasan.scheduler.context.validation.InvalidContextTemplateException;
 import org.ikasan.scheduler.core.AbstractTest;
 import org.ikasan.scheduler.core.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
 import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduler.core.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.scheduler.core.service.ContextService;
+import org.ikasan.scheduler.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.Context;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -27,10 +31,12 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ContextMachineTest extends AbstractTest {
 
     private ContextService contextService = new ContextService();
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     private HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
     private String queueDir = "./target";
+
+    private ContextTemplateValidator contextTemplateValidator = new ContextTemplateValidator();
 
     @Before
     public void init() {
@@ -62,9 +68,11 @@ public class ContextMachineTest extends AbstractTest {
 
 
     @Test
-    public void test_context_machine_full_nested_context_success() throws IOException, JSONException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_full_nested_context_success() throws IOException, JSONException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
@@ -259,9 +267,11 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test(expected = ContextMachineException.class)
-    public void test_context_machine_full_nested_context_job_held_exception_bad_job_identifier() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_full_nested_context_job_held_exception_bad_job_identifier() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
@@ -270,9 +280,11 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test(expected = ContextMachineException.class)
-    public void test_context_machine_full_nested_context_job_release_exception_bad_job_identifier() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_full_nested_context_job_release_exception_bad_job_identifier() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
@@ -281,12 +293,14 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test(expected = ContextMachineException.class)
-    public void test_context_machine_full_nested_context_job_held_exception_job_already_complete() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_full_nested_context_job_held_exception_job_already_complete() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.COMPLETE);
 
+        this.contextTemplateValidator.validate(context);
+
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
         contextMachine.init();
@@ -294,12 +308,14 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test(expected = ContextMachineException.class)
-    public void test_context_machine_full_nested_context_job_held_exception_job_already_running() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_full_nested_context_job_held_exception_job_already_running() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RUNNING);
 
+        this.contextTemplateValidator.validate(context);
+
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
         contextMachine.init();
@@ -307,12 +323,14 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test(expected = ContextMachineException.class)
-    public void test_context_machine_full_nested_context_job_held_exception_job_already_on_hold() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_full_nested_context_job_held_exception_job_already_on_hold() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.ON_HOLD);
 
+        this.contextTemplateValidator.validate(context);
+
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
         contextMachine.init();
@@ -320,12 +338,14 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test(expected = ContextMachineException.class)
-    public void test_context_machine_full_nested_context_job_held_exception_job_already_in_error() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_full_nested_context_job_held_exception_job_already_in_error() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.ERROR);
 
+        this.contextTemplateValidator.validate(context);
+
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
         contextMachine.init();
@@ -333,12 +353,14 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test(expected = ContextMachineException.class)
-    public void test_context_machine_full_nested_context_job_held_exception_job_already_skipped() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_full_nested_context_job_held_exception_job_already_skipped() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.SKIPPED);
 
+        this.contextTemplateValidator.validate(context);
+
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
         contextMachine.init();
@@ -346,12 +368,14 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test(expected = ContextMachineException.class)
-    public void test_context_machine_full_nested_context_job_release_exception_job_already_complete() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_full_nested_context_job_release_exception_job_already_complete() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.COMPLETE);
 
+        this.contextTemplateValidator.validate(context);
+
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
         contextMachine.init();
@@ -359,12 +383,14 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test(expected = ContextMachineException.class)
-    public void test_context_machine_full_nested_context_job_release_exception_job_already_running() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_full_nested_context_job_release_exception_job_already_running() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RUNNING);
 
+        this.contextTemplateValidator.validate(context);
+
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
         contextMachine.init();
@@ -372,12 +398,14 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test(expected = ContextMachineException.class)
-    public void test_context_machine_full_nested_context_job_release_exception_job_already_released() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_full_nested_context_job_release_exception_job_already_released() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RELEASED);
 
+        this.contextTemplateValidator.validate(context);
+
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
         contextMachine.init();
@@ -385,12 +413,14 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test(expected = ContextMachineException.class)
-    public void test_context_machine_full_nested_context_job_release_exception_job_already_in_error() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_full_nested_context_job_release_exception_job_already_in_error() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.ERROR);
 
+        this.contextTemplateValidator.validate(context);
+
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
         contextMachine.init();
@@ -398,11 +428,13 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test(expected = ContextMachineException.class)
-    public void test_context_machine_full_nested_context_job_release_exception_job_already_skipped() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_full_nested_context_job_release_exception_job_already_skipped() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.SKIPPED);
+
+        this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
@@ -411,11 +443,13 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_context_machine_full_nested_context_job_release_success_job_already_on_hold() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_full_nested_context_job_release_success_job_already_on_hold() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.ON_HOLD);
+
+        this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
@@ -427,9 +461,11 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test(expected = ContextMachineException.class)
-    public void test_context_machine_release_bad_job_when_others_on_hold_exception() throws IOException, JSONException, InterruptedException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_release_bad_job_when_others_on_hold_exception() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
@@ -460,9 +496,11 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_context_machine_full_nested_context_job_held_success() throws IOException, JSONException, InterruptedException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_context_machine_full_nested_context_job_held_success() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
@@ -688,10 +726,12 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_context_machine_with_job_locks() throws IOException, JSONException {
-        Context context = this.contextService.getContext(loadDataFile("/data/locks/context-with-job-locks.json"));
+    public void test_context_machine_with_job_locks() throws IOException, JSONException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/locks/context-with-job-locks.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/locks/context-with-job-locks.json"));
 
+        this.contextTemplateValidator.validate(context);
+
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
 
@@ -759,10 +799,12 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_context_machine_with_job_locks_containing_four_jobs() throws IOException, JSONException {
-        Context context = this.contextService.getContext(loadDataFile("/data/locks/context-with-four-jobs-in-job-locks.json"));
+    public void test_context_machine_with_job_locks_containing_four_jobs() throws IOException, JSONException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/locks/context-with-four-jobs-in-job-locks.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/locks/context-with-four-jobs-in-job-locks.json"));
 
+        this.contextTemplateValidator.validate(context);
+
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
 
@@ -845,9 +887,11 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_context_machine_with_job_locks_containing_four_jobs_in_two_separate_job_locks() throws IOException, JSONException {
-        Context context = this.contextService.getContext(loadDataFile("/data/locks/context-with-four-jobs-in-two-separate-job-locks.json"));
+    public void test_context_machine_with_job_locks_containing_four_jobs_in_two_separate_job_locks() throws IOException, JSONException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/locks/context-with-four-jobs-in-two-separate-job-locks.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/locks/context-with-four-jobs-in-two-separate-job-locks.json"));
+
+        this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
@@ -930,9 +974,11 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_context_machine_full_nested_context_with_job_locks_success() throws IOException, JSONException {
-        Context context = this.contextService.getContext(loadDataFile("/data/locks/nested-contexts-with-locks.json"));
+    public void test_context_machine_full_nested_context_with_job_locks_success() throws IOException, JSONException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/locks/nested-contexts-with-locks.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/locks/nested-contexts-with-locks.json"));
+
+        this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
@@ -1124,9 +1170,11 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_context_machine_full_nested_context_with_job_locks_at_different_levels_success() throws IOException, JSONException {
-        Context context = this.contextService.getContext(loadDataFile("/data/locks/nested-contexts-with-locks-at-different-levels.json"));
+    public void test_context_machine_full_nested_context_with_job_locks_at_different_levels_success() throws IOException, JSONException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/locks/nested-contexts-with-locks-at-different-levels.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/locks/nested-contexts-with-locks-at-different-levels.json"));
+
+        this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
@@ -1306,10 +1354,12 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_context_machine_full_via_big_queue_nested_context_success() throws IOException, JSONException, InterruptedException {
+    public void test_context_machine_full_via_big_queue_nested_context_success() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
         ObjectMapper objectMapper = new ObjectMapper();
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
@@ -1348,9 +1398,11 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_get_context_status() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_get_context_status() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
@@ -1391,8 +1443,8 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_get_context_status_error() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
-        ContextInstanceImpl contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
@@ -1424,9 +1476,11 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_simple_context_chained_jobs_with_context_parameters() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/simple-context-chained-jobs-with-context-parameters.json"));
+    public void test_simple_context_chained_jobs_with_context_parameters() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/simple-context-chained-jobs-with-context-parameters.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/logic/simple-context-chained-jobs-with-context-parameters.json"));
+
+        this.contextTemplateValidator.validate(context);
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -1517,9 +1571,11 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_get_status_non_existent_context() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_get_status_non_existent_context() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);
@@ -1529,9 +1585,11 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    public void test_get_context() throws IOException {
-        Context context = this.contextService.getContext(loadDataFile("/data/context.json"));
+    public void test_get_context() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContext(loadDataFile("/data/context.json"));
         ContextInstance instance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, instance, new ScheduledContextInstanceServiceTestImpl()
             , this.internalEventDrivenJobs, this.queueDir);

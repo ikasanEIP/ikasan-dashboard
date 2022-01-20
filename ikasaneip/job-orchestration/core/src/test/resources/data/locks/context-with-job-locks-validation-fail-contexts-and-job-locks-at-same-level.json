@@ -309,5 +309,7 @@
         "jobDescription": "Job2 Description"
       }
     ]
-  }
+  },
+  "timeWindowStart" : "* * 6 ? * * *",
+  "timeWindowEnd" : "* * 15 ? * * *"
 }

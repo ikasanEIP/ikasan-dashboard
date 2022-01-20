@@ -99,5 +99,7 @@
       "identifier" : "agentName5-jobName5",
       "jobDescription" : "Job5 Description"
     } ]
-  }
+  },
+  "timeWindowStart" : "* * 6 ? * * *",
+  "timeWindowEnd" : "* * 15 ? * * *"
 }
