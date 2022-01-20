@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ItemLabelGenerator;
@@ -25,8 +24,8 @@ import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
-import org.ikasan.scheduler.core.model.context.ContextTemplateImpl;
-import org.ikasan.scheduler.core.model.context.ScheduledContextRecordImpl;
+import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
+import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
