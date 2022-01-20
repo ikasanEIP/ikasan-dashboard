@@ -3,10 +3,12 @@ package org.ikasan.scheduler.context.register;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.quartz.AbstractDashboardSchedulerService;
 import org.ikasan.scheduler.ScheduledJobFactory;
+import org.ikasan.scheduler.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.search.SearchResults;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
@@ -29,11 +31,13 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private ObjectMapper objectMapper;
     private SchedulerService schedulerService;
+    private InternalEventDrivenJobService internalEventDrivenJobService;
+    private String queueDirectory;
 
 
     public ContextInstanceSchedulerService(Scheduler scheduler, ScheduledJobFactory scheduledJobFactory
         , ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService
-        , SchedulerService schedulerService) {
+        , SchedulerService schedulerService, InternalEventDrivenJobService internalEventDrivenJobService, String queueDirectory) {
         super(scheduler, scheduledJobFactory);
 
         this.scheduledContextService = scheduledContextService;
@@ -48,8 +52,16 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
         if (this.schedulerService == null) {
             throw new IllegalArgumentException("schedulerService cannot be null!");
         }
+        this.internalEventDrivenJobService = internalEventDrivenJobService;
+        if(this.internalEventDrivenJobService == null) {
+            throw new IllegalArgumentException("internalEventDrivenJobService cannot be null!");
+        }
+        this.queueDirectory = queueDirectory;
+        if(this.queueDirectory == null) {
+            throw new IllegalArgumentException("queueDirectory cannot be null!");
+        }
 
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = ObjectMapperFactory.newInstance();;
     }
 
     @PostConstruct
@@ -62,7 +74,8 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
 
                 ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(scheduledContextRecord.getContextName(),
                     scheduledContextRecord.getContext().getTimeWindowStart(), this.scheduledContextService
-                    , this.scheduledContextInstanceService, this.schedulerService);
+                    , this.scheduledContextInstanceService, this.schedulerService, this.internalEventDrivenJobService
+                    , this.queueDirectory);
                 JobDetail jobDetail = this.scheduledJobFactory.createJobDetail
                     (job, ContextInstanceRegisterJob.class, job.getJobName(), "context");
 

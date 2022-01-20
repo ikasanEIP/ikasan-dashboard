@@ -109,5 +109,7 @@
       "identifier" : "AgentName-Job2",
       "jobDescription" : "Job2 Description"
     } ]
-  }
+  },
+  "timeWindowStart" : "* * 6 ? * * *",
+  "timeWindowEnd" : "* * 15 ? * * *"
 }

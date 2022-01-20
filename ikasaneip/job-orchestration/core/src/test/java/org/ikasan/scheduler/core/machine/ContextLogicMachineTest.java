@@ -17,14 +17,14 @@ public class ContextLogicMachineTest extends AbstractTest {
 
     @Test
         public void test_context_machine() throws IOException {
-        ContextInstanceImpl context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         Assert.assertFalse(contextLogicMachine.contextLogicSatisfied(context.getContextsMap(), context.getContextDependencies()));
     }
 
     @Test
     public void test_context_machine_context_all_satisfied() throws IOException {
-        ContextInstanceImpl context1 = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        ContextInstance context1 = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         // Get a handle to Context2 which has a dependency on Context4.
         ContextInstance context2 = context1.getContexts().get(0);

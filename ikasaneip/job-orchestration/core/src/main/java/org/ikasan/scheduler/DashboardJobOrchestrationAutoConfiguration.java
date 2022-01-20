@@ -40,6 +40,9 @@ public class DashboardJobOrchestrationAutoConfiguration {
     @Resource
     Module<Flow> inboundFlowModule;
 
+    @Resource
+    InternalEventDrivenJobService internalEventDrivenJobService;
+
     @Bean
     public ContextInstanceRecoveryManager contextInstanceRecoveryManager(ScheduledContextInstanceService scheduledContextInstanceService
         , ScheduledContextService scheduledContextService, InternalEventDrivenJobService internalEventDrivenJobRecordService) {
@@ -51,7 +54,8 @@ public class DashboardJobOrchestrationAutoConfiguration {
     public ContextInstanceSchedulerService contextInstanceSchedulerService(ScheduledContextService scheduledContextService
         , ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService) {
         return new ContextInstanceSchedulerService(SchedulerFactory.getInstance().getScheduler()
-            , CachingScheduledJobFactory.getInstance(), scheduledContextService, scheduledContextInstanceService, schedulerService);
+            , CachingScheduledJobFactory.getInstance(), scheduledContextService, scheduledContextInstanceService, schedulerService
+            , this.internalEventDrivenJobService, this.queueDirectory);
     }
 
     @Bean
