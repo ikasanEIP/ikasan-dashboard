@@ -1,5 +1,7 @@
 package org.ikasan.scheduler.core.machine;
 
+import org.ikasan.scheduler.context.validation.ContextTemplateValidator;
+import org.ikasan.scheduler.context.validation.InvalidContextTemplateException;
 import org.ikasan.scheduler.core.AbstractTest;
 import org.ikasan.scheduler.core.model.context.ContextParameterImpl;
 import org.ikasan.scheduler.core.model.instance.ContextInstanceImpl;
@@ -7,12 +9,15 @@ import org.ikasan.scheduler.core.model.event.ContextualisedScheduledProcessEvent
 import org.ikasan.scheduler.core.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.scheduler.core.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -40,8 +45,8 @@ public class JobLogicMachineTest extends AbstractTest {
      * @throws IOException
      */
     @Test
-    public void test_simple_context_and_single_dependency_relevant_event() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-and-single-dependency.json");
+    public void test_simple_context_and_single_dependency_relevant_event() throws IOException, InvalidContextTemplateException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -50,7 +55,7 @@ public class JobLogicMachineTest extends AbstractTest {
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName2", events.get(0).getAgentName());
@@ -79,13 +84,13 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_single_dependency_relevant_event_not_successful() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-and-single-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", false);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>());
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), context.getContextParameters());
 
         // No event raise because the job was not successful.
         Assert.assertEquals(0, events.size());
@@ -111,14 +116,14 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_single_dependency_relevant_event_job_starting() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-and-single-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", false);
         eventInstance.setJobStarting(true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>());
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), context.getContextParameters());
 
         // No event raise because the job is starting.
         Assert.assertEquals(0, events.size());
@@ -146,13 +151,13 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_single_dependency_irrelevant_event() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-and-single-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("irrelevantJobName1", "irrelevantAgentName1", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>());
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
     }
@@ -182,7 +187,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_multiple_dependency_relevant_event() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-and-multiple-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-and-multiple-dependency.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -192,7 +197,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -200,7 +205,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName2", "agentName2", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName3", events.get(0).getAgentName());
@@ -235,13 +240,13 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_multiple_dependency_irrelevant_event() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-and-multiple-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-and-multiple-dependency.json");
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>());
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -249,7 +254,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("irrelevantJobName1", "irrelevantAgentName1", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>());
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
     }
@@ -280,7 +285,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_or_dependency_relevant_event() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-or-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-or-dependency.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -290,7 +295,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName3", events.get(0).getAgentName());
@@ -325,7 +330,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_or_dependency_relevant_event_make_sure_event_not_raised_twice() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-or-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-or-dependency.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -335,7 +340,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName3", events.get(0).getAgentName());
@@ -346,7 +351,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>());
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
     }
@@ -383,7 +388,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_or_dependency_relevant_and_statement_fulfilled() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-and-or-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-and-or-dependency.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -394,7 +399,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -402,7 +407,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName2", "agentName2", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName4", events.get(0).getAgentName());
@@ -441,7 +446,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_or_dependency_relevant_or_statement_fulfilled() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-and-or-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-and-or-dependency.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -452,7 +457,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName4", events.get(0).getAgentName());
@@ -491,7 +496,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_and_or_dependency_relevant_or_statement_fulfilled_assert_initiation_event_not_raised_twice() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-and-or-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-and-or-dependency.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -502,7 +507,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -510,7 +515,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName4", events.get(0).getAgentName());
@@ -520,7 +525,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName2", "agentName2", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
     }
@@ -575,7 +580,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_nested_and_or_with_and_dependency_relevant_inner_and_outer_and_statement_fulfilled() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
         internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
@@ -586,7 +591,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -594,7 +599,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName2", "agentName2", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -602,7 +607,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName4", "agentName4", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -659,7 +664,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_nested_and_or_with_and_dependency_relevant_inner_or_outer_and_statement_fulfilled() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -671,7 +676,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -679,7 +684,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName4", "agentName4", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -736,7 +741,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_nested_and_or_with_and_dependency_relevant_inner_or_outer_and_statement_fulfilled_assert_event_not_raised_twice() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -748,7 +753,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -756,7 +761,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName4", "agentName4", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -766,7 +771,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -774,7 +779,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName2", "agentName2", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
     }
@@ -846,7 +851,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_two_nested_and_with_outer_or_dependency_and_statement_fulfilled() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -858,7 +863,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -866,7 +871,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName2", "agentName2", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -940,7 +945,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_two_nested_and_with_outer_or_dependency_and_statement_fulfilled_other_side_of_or_fulfilled() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -952,7 +957,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -960,7 +965,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName4", "agentName4", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1034,7 +1039,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_two_nested_and_with_outer_or_dependency_and_statement_fulfilled_all_jobs_assert_only_one_event_created() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -1046,7 +1051,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1054,7 +1059,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName4", "agentName4", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1062,7 +1067,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName2", "agentName2", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1072,7 +1077,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
     }
@@ -1144,7 +1149,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_two_nested_and_or_with_outer_and_dependency_and_statement_fulfilled() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-nested-and-or-with-outer-and-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-outer-and-dependency.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -1156,7 +1161,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1164,7 +1169,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName2", "agentName2", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1172,7 +1177,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1246,7 +1251,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_two_nested_and_or_with_outer_and_dependency_and_statement_fulfilled_assert_event_not_sent_twice() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-nested-and-or-with-outer-and-dependency.json");
+        ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-outer-and-dependency.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -1258,7 +1263,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1266,7 +1271,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName2", "agentName2", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1274,7 +1279,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1284,7 +1289,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName4", "agentName4", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
     }
@@ -1356,7 +1361,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_single_job_creates_multiple_events() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-single-job-produces-multiple-events.json");
+        ContextInstance context = context("/data/logic/simple-context-single-job-produces-multiple-events.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -1368,7 +1373,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(4, events.size());
 
@@ -1376,7 +1381,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName2", "agentName2", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1384,7 +1389,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null,internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null,internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1392,7 +1397,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName4", "agentName4", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1400,7 +1405,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName5", "agentName5", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
     }
@@ -1485,7 +1490,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_chained_jobs() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-chained-jobs.json");
+        ContextInstance context = context("/data/logic/simple-context-chained-jobs.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -1500,7 +1505,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1508,7 +1513,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName2", "agentName2", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1518,7 +1523,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1526,7 +1531,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName4", "agentName4", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>());
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1534,7 +1539,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName5", "agentName5", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName6", events.get(0).getAgentName());
@@ -1544,7 +1549,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName6", "agentName6", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1552,7 +1557,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName7", "agentName7", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName8", events.get(0).getAgentName());
@@ -1562,7 +1567,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName8", "agentName8", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1577,7 +1582,7 @@ public class JobLogicMachineTest extends AbstractTest {
      */
     @Test
     public void test_simple_context_chained_jobs_with_context_parameters() throws IOException {
-        ContextInstanceImpl context = context("/data/logic/simple-context-chained-jobs-with-context-parameters.json");
+        ContextInstance context = context("/data/logic/simple-context-chained-jobs-with-context-parameters.json");
 
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
         internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
@@ -1603,7 +1608,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1611,7 +1616,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName2", "agentName2", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName5", events.get(0).getAgentName());
@@ -1622,7 +1627,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1630,7 +1635,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName4", "agentName4", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>());
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1638,7 +1643,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName5", "agentName5", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName6", events.get(0).getAgentName());
@@ -1649,7 +1654,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName6", "agentName6", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
 
@@ -1657,7 +1662,7 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName7", "agentName7", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals("agentName8", events.get(0).getAgentName());
@@ -1668,12 +1673,16 @@ public class JobLogicMachineTest extends AbstractTest {
             = scheduledProcessEventInstance("jobName8", "agentName8", true);
 
         events =  jobLogicMachine
-            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs);
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters());
 
         Assert.assertEquals(0, events.size());
     }
 
-    private ContextInstanceImpl context(String filename) throws IOException {
+    private ContextInstance context(String filename) throws IOException {
         return this.contextService.getContextInstance(loadDataFile(filename));
+    }
+
+    private ContextTemplate contextTemplate(String filename) throws IOException {
+        return this.contextService.getContext(loadDataFile(filename));
     }
 }

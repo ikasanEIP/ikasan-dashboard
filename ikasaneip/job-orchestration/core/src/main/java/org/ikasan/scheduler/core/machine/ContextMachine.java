@@ -20,6 +20,7 @@ import org.ikasan.scheduler.core.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.scheduler.core.model.job.SchedulerJobImpl;
 import org.ikasan.scheduler.core.model.status.ContextInstanceStatus;
 import org.ikasan.scheduler.core.service.ContextService;
+import org.ikasan.scheduler.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
@@ -60,7 +61,7 @@ public class ContextMachine {
     private ObjectMapper objectMapper;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener;
-    private Context context;
+    private ContextTemplate context;
     private int attempts;
     private long maxWait;
     private DryRunParameters dryRunParameters;
@@ -68,7 +69,7 @@ public class ContextMachine {
     private String queueDir;
 
     // todo clean up the transient queues once a context is complete.
-    public ContextMachine(Context context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
+    public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
                           Map<String, InternalEventDrivenJob> internalEventDrivenJobs, String queueDir) {
         this.internalEventDrivenJobs = internalEventDrivenJobs;
         this.context = context;
@@ -82,25 +83,7 @@ public class ContextMachine {
         this.statusListenerExecutor = Executors.newSingleThreadExecutor();
         this.contextExecutor = Executors.newSingleThreadExecutor();
         this.schedulerInitiatorEventRaisedListenerExecutor = Executors.newSingleThreadExecutor();
-        this.objectMapper = new ObjectMapper();
-        final var simpleModule = new SimpleModule()
-            .addAbstractTypeMapping(And.class, AndImpl.class)
-            .addAbstractTypeMapping(Or.class, OrImpl.class)
-            .addAbstractTypeMapping(Not.class, NotImpl.class)
-            .addAbstractTypeMapping(ContextTemplate.class, ContextTemplateImpl.class)
-            .addAbstractTypeMapping(Context.class, ContextImpl.class)
-            .addAbstractTypeMapping(ContextParameter.class, ContextParameterImpl.class)
-            .addAbstractTypeMapping(SchedulerJob.class, SchedulerJobImpl.class)
-            .addAbstractTypeMapping(JobDependency.class, JobDependencyImpl.class)
-            .addAbstractTypeMapping(ContextDependency.class, ContextDependencyImpl.class)
-            .addAbstractTypeMapping(LogicalGrouping.class, LogicalGroupingImpl.class)
-            .addAbstractTypeMapping(LogicalOperator.class, LogicalOperatorImpl.class)
-            .addAbstractTypeMapping(ContextInstance.class, ContextInstanceImpl.class)
-            .addAbstractTypeMapping(SchedulerJobInstance.class, SchedulerJobInstanceImpl.class)
-            .addAbstractTypeMapping(ContextParameterInstance.class, ContextParameterInstanceImpl.class);
-
-        this.objectMapper.registerModule(simpleModule);
-        this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        this.objectMapper = ObjectMapperFactory.newInstance();
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
@@ -349,7 +332,7 @@ public class ContextMachine {
              // Delegate to the JobLogicMachine to determine if any any SchedulerJobInitiationEvents are
              // required to be raised.
              List<SchedulerJobInitiationEvent> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
-                 , contextInstance, this.dryRunParameters, this.internalEventDrivenJobs);
+                 , contextInstance, this.dryRunParameters, this.internalEventDrivenJobs, this.contextInstance.getContextParameters());
 
              // Update the context status after event received and attached
              // to the job instance.
