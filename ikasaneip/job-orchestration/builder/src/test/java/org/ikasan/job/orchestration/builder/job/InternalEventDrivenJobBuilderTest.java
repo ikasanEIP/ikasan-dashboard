@@ -1,9 +1,7 @@
 package org.ikasan.job.orchestration.builder.job;
 
 import org.ikasan.job.orchestration.AbstractTest;
-import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
 import org.ikasan.job.orchestration.service.ContextService;
-import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.json.JSONException;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
