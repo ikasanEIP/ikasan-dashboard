@@ -567,7 +567,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
                 this.changeActivation("activate");
             }
 
-            /// Load the required configurations for a scheduled job.
+            // Load the required configurations for a scheduled job.
             Optional<ModuleMetaData> moduleMetaData = this.metaDataRestService.getModuleMetadata(agent.getUrl(), agent.getName());
 
             ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration = this.getConfigurationForAgentFlowComponent(moduleMetaData,

@@ -1,0 +1,9 @@
+{
+  "url": "http://localhost:8080/agent2",
+  "name": "agent2",
+  "description": "Scheduler Agent Integration Module.",
+  "version": null,
+  "flows": [],
+  "configuredResourceId": "agent2",
+  "type": "SCHEDULER_AGENT"
+}
