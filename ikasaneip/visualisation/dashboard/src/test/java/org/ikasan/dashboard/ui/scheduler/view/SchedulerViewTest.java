@@ -180,7 +180,7 @@ public class SchedulerViewTest extends UITest {
         ArrayList<UpcomingScheduledProcess> ikasanSolrDocuments = new ArrayList<>();
 
         IntStream.range(0, size).forEach(i -> {
-            UpcomingScheduledProcess document = new UpcomingScheduledProcess("agentName", "jobName",
+            UpcomingScheduledProcess document = new UpcomingScheduledProcess("agentName", "hostname", "jobName",
                 "job group", "job description", System.currentTimeMillis(), null
                 , null, null, "UTC");
 

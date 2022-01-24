@@ -90,6 +90,11 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
         Checkbox errorCb = new Checkbox("Errors");
         addGridFiltering(errorCb, super.searchFilter::setErrorsOnly);
 
+        super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.agentHostname]]</div>")
+            .withProperty("agentHostname", ScheduledProcessEvent::getAgentHostname))
+            .setHeader(getTranslation("table-header.scheduled-agent-host-name", UI.getCurrent().getLocale()))
+            .setKey("agentHostname")
+            .setFlexGrow(1);
         super.addColumn(TemplateRenderer.<ScheduledProcessEvent>of("<div style='white-space:normal'>[[item.schedulerName]]</div>")
             .withProperty("schedulerName", ScheduledProcessEvent::getAgentName))
             .setHeader(getTranslation("table-header.scheduled-agent-name", UI.getCurrent().getLocale()))

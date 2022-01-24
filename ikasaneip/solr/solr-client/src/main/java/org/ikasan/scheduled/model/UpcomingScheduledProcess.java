@@ -7,6 +7,7 @@ import java.util.List;
 
 public class UpcomingScheduledProcess {
     private String agentName;
+    private String agentHostname;
     private String jobName;
     private String jobGroup;
     private String jobDescription;
@@ -16,11 +17,12 @@ public class UpcomingScheduledProcess {
     private ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfigurationMetaData;
     private ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfigurationMetaData;
 
-    public UpcomingScheduledProcess(String agentName, String jobName, String jobGroup, String jobDescription, long fireTime
+    public UpcomingScheduledProcess(String agentName, String agentHostname, String jobName, String jobGroup, String jobDescription, long fireTime
         , ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfigurationMetaData
         , ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfigurationMetaData
         ,ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfigurationMetaData, String timezone) {
         this.agentName = agentName;
+        this.agentHostname = agentHostname;
         this.jobName = jobName;
         this.jobGroup = jobGroup;
         this.jobDescription = jobDescription;
@@ -35,7 +37,10 @@ public class UpcomingScheduledProcess {
         return agentName;
     }
 
-    
+    public String getAgentHostname() {
+        return agentHostname;
+    }
+
     public String getJobName() {
         return jobName;
     }

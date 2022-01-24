@@ -6,6 +6,7 @@ import java.util.Objects;
 
 public class SolrScheduledProcessEvent implements ScheduledProcessEvent<Outcome> {
     private String agentName;
+    private String agentHostname;
     private String jobName;
     private String jobGroup;
     private String jobDescription;
@@ -69,6 +70,16 @@ public class SolrScheduledProcessEvent implements ScheduledProcessEvent<Outcome>
     @Override
     public void setAgentName(String agentName) {
         this.agentName = agentName;
+    }
+
+    @Override
+    public String getAgentHostname() {
+        return agentHostname;
+    }
+
+    @Override
+    public void setAgentHostname(String agentHostname) {
+        this.agentHostname = agentHostname;
     }
 
     @Override

@@ -223,8 +223,13 @@ public class SolrModuleMetadataDao extends SolrDaoBase<ModuleMetaData>
 
         SolrQuery query = new SolrQuery();
         query.setQuery(queryString);
-        query.setStart(startOffset);
-        query.setRows(resultSize);
+        if (startOffset > -1) {
+            query.setStart(startOffset);
+        }
+
+        if(resultSize > -1) {
+            query.setRows(resultSize);
+        }
 
         StringBuffer filterBuffer = new StringBuffer();
 
