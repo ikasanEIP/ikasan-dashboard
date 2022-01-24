@@ -98,6 +98,11 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
      * Create the upcoming jobs grid
      */
     private void initGrid() {
+        super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.agentHostname]]</div>")
+            .withProperty("agentHostname", UpcomingScheduledProcess::getAgentHostname))
+            .setHeader(getTranslation("table-header.scheduled-agent-host-name", UI.getCurrent().getLocale()))
+            .setKey("agentHostname")
+            .setFlexGrow(1);
         super.addColumn(TemplateRenderer.<UpcomingScheduledProcess>of("<div style='white-space:normal'>[[item.schedulerName]]</div>")
             .withProperty("schedulerName", UpcomingScheduledProcess::getAgentName))
             .setHeader(getTranslation("table-header.scheduled-agent-name", UI.getCurrent().getLocale()))

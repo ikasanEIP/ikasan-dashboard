@@ -92,9 +92,9 @@ public class ScheduledProcessEventController
         try
         {
             logger.debug(scheduledProcessEventPayload);
-            List<ScheduledProcessEvent> systemEvents = this.mapper.readValue(scheduledProcessEventPayload
+            List<ScheduledProcessEvent> scheduledProcessEvents = this.mapper.readValue(scheduledProcessEventPayload
                 , mapper.getTypeFactory().constructCollectionType(List.class, ScheduledProcessEventImpl.class));
-            this.batchInsert.insert(systemEvents);
+            this.batchInsert.insert(scheduledProcessEvents);
         }
         catch (Exception e)
         {
