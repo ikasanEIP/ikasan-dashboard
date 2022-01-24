@@ -3,6 +3,11 @@
   "description": "module description",
   "version": "module version",
   "type": "INTEGRATION_MODULE",
+  "url" : "url",
+  "host" : "host",
+  "port" : 8888,
+  "context" : "context",
+  "protocol" : "protocol",
   "flows": [
     {
       "name": "Simple Flow 1",

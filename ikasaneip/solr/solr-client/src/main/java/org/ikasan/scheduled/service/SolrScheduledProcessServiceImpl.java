@@ -197,6 +197,8 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
 
         int offsetCounter = 0;
 
+        ModuleMetaData agentMetaData = this.solrModuleMetadataDao.findById(agent);
+
         try {
             CronExpression cronExpression = new CronExpression(cronExpressionString.get());
 
@@ -211,7 +213,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             // project the upcoming jobs forward
             while (next != null && next.before(new Date(endTime))) {
                 if(offsetCounter >= offset && offsetCounter <= offset+limit) {
-                    results.add(new UpcomingScheduledProcess(agent, jobName.get(),
+                    results.add(new UpcomingScheduledProcess(agent, agentMetaData.getHost(), jobName.get(),
                         jobGroup.get(), jobDescription.get(), next.getTime(), scheduledConsumerConfigurationMetaData,
                         processExecutionBrokerConfigurationMetaData, blackoutRouterConfigurationMetaData, cronExpression.getTimeZone().getID()));
                 }
