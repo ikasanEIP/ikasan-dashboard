@@ -92,10 +92,11 @@ public class ScheduleProcessEventDaoTest extends SolrTestCaseJ4 {
         Assert.assertEquals("jobName", solrInputDocument.getFieldValue(SolrDaoBase.COMPONENT_NAME));
         Assert.assertEquals("agentName", solrInputDocument.getFieldValue(SolrDaoBase.MODULE_NAME));
         Assert.assertEquals(1000L, solrInputDocument.getFieldValue(SolrDaoBase.CREATED_DATE_TIME));
-        Assert.assertEquals("{\"agentName\":\"agentName\",\"jobName\":\"jobName\",\"jobGroup\":\"jobGroup\"," +
-            "\"jobDescription\":\"jobDescription\",\"commandLine\":\"commandLine\",\"resultOutput\":\"output\"," +
-            "\"resultError\":\"error\",\"pid\":1234,\"user\":\"user\",\"fireTime\":1000,\"nextFireTime\":1000," +
-            "\"successful\":true,\"completionTime\":1000,\"returnCode\":0,\"outcome\":\"EXECUTION_INVOKED\"}",
+        Assert.assertEquals("{\"agentName\":\"agentName\"," +
+                "\"agentHostname\":null,\"jobName\":\"jobName\",\"jobGroup\":\"jobGroup\",\"jobDescription\":" +
+                "\"jobDescription\",\"commandLine\":\"commandLine\",\"resultOutput\":\"output\",\"resultError\":" +
+                "\"error\",\"pid\":1234,\"user\":\"user\",\"fireTime\":1000,\"nextFireTime\":1000,\"successful\":true," +
+                "\"completionTime\":1000,\"returnCode\":0,\"outcome\":\"EXECUTION_INVOKED\"}",
             solrInputDocument.getFieldValue(SolrDaoBase.PAYLOAD_CONTENT));
         Assert.assertEquals(1L, solrInputDocument.getFieldValue(SolrDaoBase.EXPIRY));
     }
