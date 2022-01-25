@@ -5,13 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceImpl;
+import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrFileEventDrivenJobRecordImpl implements FileEventDrivenJobRecord {
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;

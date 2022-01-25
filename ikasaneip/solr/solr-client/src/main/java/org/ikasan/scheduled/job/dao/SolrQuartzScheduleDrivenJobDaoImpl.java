@@ -8,6 +8,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobRecordImpl;
+import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.job.dao.QuartzScheduleDrivenJobDao;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
@@ -28,7 +29,7 @@ public class SolrQuartzScheduleDrivenJobDaoImpl extends SolrDaoBase<QuartzSchedu
     private static Logger logger = LoggerFactory.getLogger(SolrQuartzScheduleDrivenJobDaoImpl.class);
 
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
     @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, QuartzScheduleDrivenJobRecord event) {
         SolrInputDocument document = new SolrInputDocument();

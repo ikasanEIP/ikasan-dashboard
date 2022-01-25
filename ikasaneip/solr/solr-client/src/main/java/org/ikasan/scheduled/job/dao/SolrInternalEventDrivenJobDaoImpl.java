@@ -6,6 +6,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobRecordImpl;
+import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.job.dao.InternalEventDrivenJobDao;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
@@ -25,7 +26,7 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
     private static Logger logger = LoggerFactory.getLogger(SolrInternalEventDrivenJobDaoImpl.class);
 
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, InternalEventDrivenJobRecord event) {
