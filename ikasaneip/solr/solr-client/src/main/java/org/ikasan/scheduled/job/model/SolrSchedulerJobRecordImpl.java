@@ -4,13 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
+import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
+
+    private ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;
@@ -32,8 +33,6 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
 
     @Field(SolrDaoBase.CREATED_DATE_TIME)
     private long timestamp;
-
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public String getId() {
