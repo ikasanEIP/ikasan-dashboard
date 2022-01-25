@@ -58,12 +58,14 @@
     <packaging>jar</packaging>
 
     <dependencies>
+
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>${version.javax.servlet}</version>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
@@ -74,10 +76,12 @@
             <groupId>org.ikasan</groupId>
             <artifactId>ikasan-spec-hospital</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.ikasan</groupId>
             <artifactId>ikasan-spec-resubmission</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.ikasan</groupId>
             <artifactId>ikasan-spec-metadata</artifactId>
@@ -146,6 +150,16 @@
         <dependency>
             <groupId>org.ikasan</groupId>
             <artifactId>ikasan-security-ldap</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-job-orchestration-model</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-job-orchestration-provision</artifactId>
         </dependency>
 
         <!-- spring web -->

@@ -4,13 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
+import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrInternalEventDrivenJobRecordImpl implements InternalEventDrivenJobRecord {
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;

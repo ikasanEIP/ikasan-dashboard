@@ -1,7 +1,5 @@
 package org.ikasan.job.orchestration.provision.job;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.provision.ScheduledProcessConfigurationConstants;
 import org.ikasan.job.orchestration.provision.ScheduledProcessConstants;
 import org.ikasan.spec.metadata.*;
@@ -9,20 +7,20 @@ import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class JobProvisionService {
+public class JobProvisionServiceImpl implements JobProvisionService {
 
-    Logger logger = LoggerFactory.getLogger(JobProvisionService.class);
+    Logger logger = LoggerFactory.getLogger(JobProvisionServiceImpl.class);
 
+    private SchedulerJobService schedulerJobService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private ModuleMetaDataService moduleMetaDataService;
@@ -40,8 +38,13 @@ public class JobProvisionService {
      * @param moduleControlRestService
      * @param moduleMetaDataService
      */
-    public JobProvisionService(ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                               ModuleMetaDataService moduleMetaDataService, MetaDataService metaDataRestService) {
+    public JobProvisionServiceImpl(SchedulerJobService schedulerJobService, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                   ModuleMetaDataService moduleMetaDataService, MetaDataService metaDataRestService) {
+        this.schedulerJobService = schedulerJobService;
+        if(this.schedulerJobService == null) {
+            throw new IllegalArgumentException("schedulerJobService cannot be null!");
+        }
+
         this.configurationRestService = configurationRestService;
         if(this.configurationRestService == null) {
             throw new IllegalArgumentException("configurationRestService cannot be null!");
@@ -68,36 +71,10 @@ public class JobProvisionService {
         this.uniqueAgentNames = new ArrayList<>();
     }
 
-    public void addSchedulerJob(SchedulerJob schedulerJob) {
-        if(schedulerJob instanceof InternalEventDrivenJob) {
-            if(!this.internalEventDrivenJobs.containsKey(schedulerJob.getAgentName())) {
-                this.internalEventDrivenJobs.put(schedulerJob.getAgentName(), new ArrayList<>());
-            }
-
-            this.internalEventDrivenJobs.get(schedulerJob.getAgentName()).add((InternalEventDrivenJob)schedulerJob);
-        }
-        else if(schedulerJob instanceof FileEventDrivenJob) {
-            if(!this.fileEventDrivenJobs.containsKey(schedulerJob.getAgentName())) {
-                this.fileEventDrivenJobs.put(schedulerJob.getAgentName(), new ArrayList<>());
-            }
-            this.fileEventDrivenJobs.get(schedulerJob.getAgentName()).add((FileEventDrivenJob)schedulerJob);
-        }
-        else if(schedulerJob instanceof QuartzScheduleDrivenJob) {
-            if(!this.quartzScheduleDrivenJobs.containsKey(schedulerJob.getAgentName())) {
-                this.quartzScheduleDrivenJobs.put(schedulerJob.getAgentName(), new ArrayList<>());
-            }
-            this.quartzScheduleDrivenJobs.get(schedulerJob.getAgentName()).add((QuartzScheduleDrivenJob)schedulerJob);
-        }
-        else {
-            throw new JobProvisionException("Invalid scheduler job!");
-        }
-
-        if(!this.uniqueAgentNames.contains(schedulerJob.getAgentName())) {
-            this.uniqueAgentNames.add(schedulerJob.getAgentName());
-        }
-    }
-
-    public void provisionJobs() {
+    public void provisionJobs(List<SchedulerJob> jobs) {
+        this.addSchedulerJob(jobs);
+        long now = System.currentTimeMillis();
+        logger.info(String.format("Provisioning %s jobs across %s agents", jobs.size(), uniqueAgentNames.size()));
         ModuleMetadataSearchResults agents = this.moduleMetaDataService
             .find(this.uniqueAgentNames, ModuleType.SCHEDULER_AGENT, -1, -1);
 
@@ -114,7 +91,7 @@ public class JobProvisionService {
                 this.populateFlowDefinitions(agent, moduleConfiguration);
                 this.populateFlowDefinitionProfiles(agent, moduleConfiguration);
 
-                logger.info("Module Configuration: " + moduleConfiguration);
+                logger.debug("Module Configuration: " + moduleConfiguration);
                 // update the configuration back onto the module.
                 this.configurationRestService.storeConfiguration(agent.getUrl(), moduleConfiguration);
                 // We need to deactivate and activate the module so the new flow is initialised
@@ -124,13 +101,6 @@ public class JobProvisionService {
                 // Refresh the module metadata with the new flows.
                 Optional<ModuleMetaData> moduleMetaData = this.metaDataRestService.getModuleMetadata(agent.getUrl(), agent.getName());
                 moduleMetaData.ifPresentOrElse(metaData -> {
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    try {
-                        logger.info(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(metaData));
-                    }
-                    catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                    }
                     this.configureFileEventJobs(metaData);
                     this.configureQuartzScheduleJobs(metaData);
                     metaData.getFlows().forEach(flowMetaData ->  {
@@ -157,6 +127,42 @@ public class JobProvisionService {
             // todo need to work out a nice way to deal with exceptions.
             throw new JobProvisionException("");
         }
+
+        logger.info(String.format("Finished provisioning %s jobs across %s agents. Time taken %s milliseconds.", jobs.size(), uniqueAgentNames.size(), System.currentTimeMillis()-now));
+    }
+
+    private void addSchedulerJob(List<SchedulerJob> jobs) {
+        jobs.forEach(schedulerJob -> {
+            if(schedulerJob instanceof InternalEventDrivenJob) {
+                if(!this.internalEventDrivenJobs.containsKey(schedulerJob.getAgentName())) {
+                    this.internalEventDrivenJobs.put(schedulerJob.getAgentName(), new ArrayList<>());
+                }
+
+                this.internalEventDrivenJobs.get(schedulerJob.getAgentName()).add((InternalEventDrivenJob)schedulerJob);
+                this.schedulerJobService.saveInternalEventDrivenJob((InternalEventDrivenJob)schedulerJob);
+            }
+            else if(schedulerJob instanceof FileEventDrivenJob) {
+                if(!this.fileEventDrivenJobs.containsKey(schedulerJob.getAgentName())) {
+                    this.fileEventDrivenJobs.put(schedulerJob.getAgentName(), new ArrayList<>());
+                }
+                this.fileEventDrivenJobs.get(schedulerJob.getAgentName()).add((FileEventDrivenJob)schedulerJob);
+                this.schedulerJobService.saveFileEventDrivenJob((FileEventDrivenJob)schedulerJob);
+            }
+            else if(schedulerJob instanceof QuartzScheduleDrivenJob) {
+                if(!this.quartzScheduleDrivenJobs.containsKey(schedulerJob.getAgentName())) {
+                    this.quartzScheduleDrivenJobs.put(schedulerJob.getAgentName(), new ArrayList<>());
+                }
+                this.quartzScheduleDrivenJobs.get(schedulerJob.getAgentName()).add((QuartzScheduleDrivenJob)schedulerJob);
+                this.schedulerJobService.saveQuartzScheduledJob((QuartzScheduleDrivenJob) schedulerJob);
+            }
+            else {
+                throw new JobProvisionException("Invalid scheduler job!");
+            }
+
+            if(!this.uniqueAgentNames.contains(schedulerJob.getAgentName())) {
+                this.uniqueAgentNames.add(schedulerJob.getAgentName());
+            }
+        });
     }
 
     private void populateFlowDefinitions(ModuleMetaData agent, ConfigurationMetaData<List<ConfigurationParameterMetaData>> moduleConfiguration) {
@@ -221,27 +227,27 @@ public class JobProvisionService {
     }
 
     private void configureFileEventJobs(ModuleMetaData agent) {
-        this.fileEventDrivenJobs.entrySet().forEach(entry -> {
-            entry.getValue().forEach(job -> {
+        if(fileEventDrivenJobs.containsKey(agent.getName())) {
+            this.fileEventDrivenJobs.get(agent.getName()).forEach(job -> {
                 ConfigurationMetaData<List<ConfigurationParameterMetaData>> fileEventConsumerConfiguration
                     = this.getConfigurationForAgentFlowComponent(agent, job.getJobName(), ScheduledProcessConstants.FILE_CONSUMER);
 
                 this.updateFileConsumerConfiguration(fileEventConsumerConfiguration, job);
                 this.configurationRestService.storeConfiguration(agent.getUrl(), fileEventConsumerConfiguration);
             });
-        });
+        }
     }
 
     private void configureQuartzScheduleJobs(ModuleMetaData agent) {
-        this.quartzScheduleDrivenJobs.entrySet().forEach(entry -> {
-            entry.getValue().forEach(job -> {
+        if(quartzScheduleDrivenJobs.containsKey(agent.getName())) {
+            this.quartzScheduleDrivenJobs.get(agent.getName()).forEach(job -> {
                 ConfigurationMetaData<List<ConfigurationParameterMetaData>> fileEventConsumerConfiguration
                     = this.getConfigurationForAgentFlowComponent(agent, job.getJobName(), ScheduledProcessConstants.SCHEDULED_CONSUMER);
 
                 this.updateScheduleConsumerConfiguration(fileEventConsumerConfiguration, job);
                 this.configurationRestService.storeConfiguration(agent.getUrl(), fileEventConsumerConfiguration);
             });
-        });
+        }
     }
 
 
@@ -317,7 +323,7 @@ public class JobProvisionService {
                 configurationMap.replace(jobName, startupType);
                 flowDefinitions.setValue(configurationMap);
 
-                logger.info("Module Configuration: " + moduleConfiguration);
+                logger.debug("Module Configuration: " + moduleConfiguration);
                 // update the configuration back onto the module.
                 this.configurationRestService.storeConfiguration(agent.getUrl(), moduleConfiguration);
             }, () -> {

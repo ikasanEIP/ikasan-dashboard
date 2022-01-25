@@ -46,6 +46,7 @@ import org.ikasan.spec.cache.FlowStateCacheAdapter;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.persistence.BatchInsert;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -96,6 +97,9 @@ public class IkasanRestAutoConfiguration
 
     @Resource
     private IBigQueue inboundQueue;
+
+    @Resource
+    private JobProvisionService jobProvisionService;
 
     @Bean
     public ReplayController replayApplication()
@@ -161,6 +165,10 @@ public class IkasanRestAutoConfiguration
     public NotifierController notifierControllerApplication()
     {
         return new NotifierController(this.cacheAdapter);
+    }
+
+    @Bean SchedulerJobProvisionController schedulerJobProvisionController() {
+        return new SchedulerJobProvisionController(this.jobProvisionService);
     }
 
     @Bean
