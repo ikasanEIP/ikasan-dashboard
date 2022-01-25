@@ -1,5 +1,7 @@
 package org.ikasan.job.orchestration.provision.job;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.provision.ScheduledProcessConfigurationConstants;
 import org.ikasan.job.orchestration.provision.ScheduledProcessConstants;
 import org.ikasan.spec.metadata.*;
@@ -74,17 +76,17 @@ public class JobProvisionService {
 
             this.internalEventDrivenJobs.get(schedulerJob.getAgentName()).add((InternalEventDrivenJob)schedulerJob);
         }
-        else if(schedulerJob instanceof QuartzScheduleDrivenJob) {
-            if(!this.quartzScheduleDrivenJobs.containsKey(schedulerJob.getAgentName())) {
-                this.quartzScheduleDrivenJobs.put(schedulerJob.getAgentName(), new ArrayList<>());
-            }
-            this.quartzScheduleDrivenJobs.get(schedulerJob.getAgentName()).add((QuartzScheduleDrivenJob)schedulerJob);
-        }
         else if(schedulerJob instanceof FileEventDrivenJob) {
             if(!this.fileEventDrivenJobs.containsKey(schedulerJob.getAgentName())) {
                 this.fileEventDrivenJobs.put(schedulerJob.getAgentName(), new ArrayList<>());
             }
             this.fileEventDrivenJobs.get(schedulerJob.getAgentName()).add((FileEventDrivenJob)schedulerJob);
+        }
+        else if(schedulerJob instanceof QuartzScheduleDrivenJob) {
+            if(!this.quartzScheduleDrivenJobs.containsKey(schedulerJob.getAgentName())) {
+                this.quartzScheduleDrivenJobs.put(schedulerJob.getAgentName(), new ArrayList<>());
+            }
+            this.quartzScheduleDrivenJobs.get(schedulerJob.getAgentName()).add((QuartzScheduleDrivenJob)schedulerJob);
         }
         else {
             throw new JobProvisionException("Invalid scheduler job!");
@@ -118,6 +120,28 @@ public class JobProvisionService {
                 // We need to deactivate and activate the module so the new flow is initialised
                 this.changeActivation(agent, "deactivate");
                 this.changeActivation(agent, "activate");
+
+                // Refresh the module metadata with the new flows.
+                Optional<ModuleMetaData> moduleMetaData = this.metaDataRestService.getModuleMetadata(agent.getUrl(), agent.getName());
+                moduleMetaData.ifPresentOrElse(metaData -> {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    try {
+                        logger.info(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(metaData));
+                    }
+                    catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
+                    this.configureFileEventJobs(metaData);
+                    this.configureQuartzScheduleJobs(metaData);
+                    metaData.getFlows().forEach(flowMetaData ->  {
+                        this.setStartUpControl(metaData, flowMetaData.getName(), moduleConfiguration);
+                        // start the flow
+                        this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), flowMetaData.getName(), "start");
+                    });
+                }, () -> {
+                    throw new JobProvisionException(String.format("Could not refresh module metadata for agent[%s] with url[%s]"
+                        , agent.getName(), agent.getUrl()));
+                });
             }
             catch (JobProvisionException e) {
                 e.printStackTrace();
@@ -179,8 +203,8 @@ public class JobProvisionService {
             }
 
             if(this.quartzScheduleDrivenJobs.containsKey(agent.getName())) {
-                this.quartzScheduleDrivenJobs.get(agent.getName()).forEach(fileEventDrivenJob
-                    -> configurationMap.put(fileEventDrivenJob.getJobName(), "QUARTZ"));
+                this.quartzScheduleDrivenJobs.get(agent.getName()).forEach(quartzScheduleDrivenJob
+                    -> configurationMap.put(quartzScheduleDrivenJob.getJobName(), "QUARTZ"));
             }
 
             if(this.internalEventDrivenJobs.containsKey(agent.getName())) {
@@ -192,18 +216,15 @@ public class JobProvisionService {
             flowDefinitionProfiles.setValue(configurationMap);
 
         }, () -> {
-            throw new JobProvisionException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
+            throw new JobProvisionException(String.format("Could not find flow definition profiles from module configuration for agent[%s]", agent));
         });
     }
 
     private void configureFileEventJobs(ModuleMetaData agent) {
-        // Load the required configurations for a scheduled job.
-        Optional<ModuleMetaData> moduleMetaData = this.metaDataRestService.getModuleMetadata(agent.getUrl(), agent.getName());
-
         this.fileEventDrivenJobs.entrySet().forEach(entry -> {
             entry.getValue().forEach(job -> {
-                ConfigurationMetaData<List<ConfigurationParameterMetaData>> fileEventConsumerConfiguration = this.getConfigurationForAgentFlowComponent(agent, moduleMetaData,
-                    job.getJobName(), ScheduledProcessConstants.SCHEDULED_CONSUMER);
+                ConfigurationMetaData<List<ConfigurationParameterMetaData>> fileEventConsumerConfiguration
+                    = this.getConfigurationForAgentFlowComponent(agent, job.getJobName(), ScheduledProcessConstants.FILE_CONSUMER);
 
                 this.updateFileConsumerConfiguration(fileEventConsumerConfiguration, job);
                 this.configurationRestService.storeConfiguration(agent.getUrl(), fileEventConsumerConfiguration);
@@ -211,136 +232,18 @@ public class JobProvisionService {
         });
     }
 
-//    /**
-//     * This method interacts with with agent in order to create a new scheduler agent flow or update an existing flow and associated job.
-//     *
-//     * @param scheduleProcessAggregateConfiguration
-//     */
-//    public void createOrUpdateScheduledJob(ModuleMetaData agent, ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
-//        // Get the module configuration from the module.
-//        ConfigurationMetaData<List<ConfigurationParameterMetaData>> moduleConfiguration
-//            = this.configurationRestService.getModuleConfiguration(agent.getUrl());
-//
-//        try {
-//
-//            if (moduleConfiguration == null) {
-//                throw new RuntimeException(String.format("Could not find module configuration for agent[%s]", agent.getName()));
-//            }
-//
-//            logger.debug("Module Configuration: " + moduleConfiguration);
-//
-//            if (this.editMode == EditMode.NEW) {
-//                // Get the flowDefinitions from the configuration metadata.
-//                moduleConfiguration.getParameters().stream()
-//                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
-//                    .findFirst().ifPresentOrElse(flowDefinitions -> {
-//                    // Add the new job flow to the map.
-//                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
-//                    configurationMap.put(scheduleProcessAggregateConfiguration.getJobName(), "MANUAL");
-//                    flowDefinitions.setValue(configurationMap);
-//
-//                    logger.info("Module Configuration: " + moduleConfiguration);
-//                    // update the configuration back onto the module.
-//                    this.configurationRestService.storeConfiguration(agent.getUrl(), moduleConfiguration);
-//                }, () -> {
-//                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
-//                });
-//
-//
-//                // We need to deactivate and activate the module so the new flow is initialised
-//                this.changeActivation(agent, "deactivate");
-//                this.changeActivation(agent, "activate");
-//            }
-//
-//            /// Load the required configurations for a scheduled job.
-//            Optional<ModuleMetaData> moduleMetaData = this.metaDataRestService.getModuleMetadata(agent.getUrl(), agent.getName());
-//
-//            ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration = this.getConfigurationForAgentFlowComponent(moduleMetaData,
-//                this.jobNameTf.getValue(), ScheduledProcessConstants.SCHEDULED_CONSUMER);
-//            ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfiguration = this.getConfigurationForAgentFlowComponent(moduleMetaData,
-//                this.jobNameTf.getValue(), ScheduledProcessConstants.BLACKOUT_ROUTER);
-//            ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfiguration = this.getConfigurationForAgentFlowComponent(moduleMetaData,
-//                this.jobNameTf.getValue(), ScheduledProcessConstants.PROCESS_EXECUTION_BROKER);
-//
-//            // Update all the configurations with the configurations provided in the form.
-//            this.updateScheduleConsumerConfiguration(scheduledConsumerConfiguration, scheduleProcessAggregateConfiguration);
-//            this.updateBlackoutRouterConfiguration(blackoutRouterConfiguration, scheduleProcessAggregateConfiguration);
-//            this.updateProcessExecutionBrokerConfiguration(processExecutionBrokerConfiguration, scheduleProcessAggregateConfiguration);
-//
-//            // Save all the configurations back to the agent.
-//            logger.debug(scheduledConsumerConfiguration.toString());
-//            if(!this.configurationRestService.storeConfiguration(agent.getUrl(), scheduledConsumerConfiguration)) {
-//                throw new RuntimeException(String.format("Could not store scheduled consumer configuration [%s]", scheduledConsumerConfiguration));
-//            }
-//            this.scheduledProcessManagementService.saveConfiguration(scheduledConsumerConfiguration);
-//
-//            logger.debug(blackoutRouterConfiguration.toString());
-//            if(!this.configurationRestService.storeConfiguration(agent.getUrl(), blackoutRouterConfiguration)) {
-//                throw new RuntimeException(String.format("Could not store blackout router configuration [%s]", blackoutRouterConfiguration));
-//            }
-//            this.scheduledProcessManagementService.saveConfiguration(blackoutRouterConfiguration);
-//
-//            logger.debug(processExecutionBrokerConfiguration.toString());
-//            if(!this.configurationRestService.storeConfiguration(agent.getUrl(), processExecutionBrokerConfiguration)) {
-//                throw new RuntimeException(String.format("Could not store process execution configuration [%s]", blackoutRouterConfiguration));
-//            }
-//            this.scheduledProcessManagementService.saveConfiguration(processExecutionBrokerConfiguration);
-//
-//
-//            if(this.startAutomaticCb.getValue()) {
-//                // Now that all configurations are applied we need to set up the startup type and restart the flow
-//                String startupType = this.startAutomaticCb.getValue() ? "AUTOMATIC" : "MANUAL";
-//                moduleConfiguration.getParameters().stream()
-//                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
-//                    .findFirst().ifPresentOrElse(flowDefinitions -> {
-//                    // Add the new job flow to the map.
-//                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
-//                    configurationMap.replace(scheduleProcessAggregateConfiguration.getJobName(), startupType);
-//                    flowDefinitions.setValue(configurationMap);
-//
-//                    logger.info("Module Configuration: " + moduleConfiguration);
-//                    // update the configuration back onto the module.
-//                    this.configurationRestService.storeConfiguration(agent.getUrl(), moduleConfiguration);
-//                }, () -> {
-//                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s] " +
-//                        "when attempting to update start up control.", agent));
-//                });
-//
-//                this.moduleControlRestService.changeFlowStartupType(agent.getUrl(), agent.getName(), scheduleProcessAggregateConfiguration.getJobName()
-//                    , startupType, "Scheduler flow requires automatic startup.");
-//            }
-//
-//            // In order for the configuration to be applied the flow must be stopped and started.
-//            this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduleProcessAggregateConfiguration.getJobName(), "stop");
-//            this.moduleControlRestService.changeFlowState(agent.getUrl(), agent.getName(), scheduleProcessAggregateConfiguration.getJobName(), "start");
-//        }
-//        catch (Exception e) {
-//            // If any exceptions occur we are going to remove the job that we attempted to create.
-//            if(moduleConfiguration != null) {
-//                moduleConfiguration.getParameters().stream()
-//                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
-//                    .findFirst().ifPresentOrElse(flowDefinitions -> {
-//                    // Add the new job flow to the map.
-//                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
-//                    configurationMap.remove(scheduleProcessAggregateConfiguration.getJobName());
-//                    flowDefinitions.setValue(configurationMap);
-//
-//                    logger.info("Module Configuration: " + moduleConfiguration);
-//                    // update the configuration back onto the module.
-//                    this.configurationRestService.storeConfiguration(agent.getUrl(), moduleConfiguration);
-//                }, () -> {
-//                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
-//                });
-//
-//
-//                // We need to deactivate and activate the module so the new flow is removed when initialisation occurs.
-//                this.changeActivation(agent,"deactivate");
-//                this.changeActivation(agent,"activate");
-//            }
-//
-//            throw e;
-//        }
-//    }
+    private void configureQuartzScheduleJobs(ModuleMetaData agent) {
+        this.quartzScheduleDrivenJobs.entrySet().forEach(entry -> {
+            entry.getValue().forEach(job -> {
+                ConfigurationMetaData<List<ConfigurationParameterMetaData>> fileEventConsumerConfiguration
+                    = this.getConfigurationForAgentFlowComponent(agent, job.getJobName(), ScheduledProcessConstants.SCHEDULED_CONSUMER);
+
+                this.updateScheduleConsumerConfiguration(fileEventConsumerConfiguration, job);
+                this.configurationRestService.storeConfiguration(agent.getUrl(), fileEventConsumerConfiguration);
+            });
+        });
+    }
+
 
     /**
      * Helper method to call activation endpoint on the scheduler agent.
@@ -351,7 +254,7 @@ public class JobProvisionService {
         boolean success = this.moduleControlRestService.changeModuleActivationState(agent.getUrl(), agent.getName(), action);
         if (!success) {
             throw new JobProvisionException(String.format("Agent[%s]. Attempting to change module activation state. Could not %s agent[%s]"
-                , agent.getName(), action, agent));
+                , agent.getName(), action, agent.getUrl()));
         }
     }
 
@@ -383,61 +286,48 @@ public class JobProvisionService {
      * Update the file consumer configuration.
      *
      * @param scheduledConsumerConfiguration
-     * @param scheduleProcessAggregateConfiguration
+     * @param fileEventDrivenJob
      */
     private void updateFileConsumerConfiguration(ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration
-        , FileEventDrivenJob scheduleProcessAggregateConfiguration) {
+        , FileEventDrivenJob fileEventDrivenJob) {
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.JOB_NAME,
-            scheduleProcessAggregateConfiguration.getJobName());
+            fileEventDrivenJob.getJobName());
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.JOB_GROUP_NAME,
-            scheduleProcessAggregateConfiguration.getJobGroup());
+            fileEventDrivenJob.getJobGroup());
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.JOB_DESCRIPTION,
-            scheduleProcessAggregateConfiguration.getJobDescription());
+            fileEventDrivenJob.getJobDescription());
         this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.CRON_EXPRESSION,
-            scheduleProcessAggregateConfiguration.getCronExpression());
-        if(scheduleProcessAggregateConfiguration.getTimeZone() != null) {
+            fileEventDrivenJob.getCronExpression());
+        if(fileEventDrivenJob.getTimeZone() != null) {
             this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.TIMEZONE,
-                scheduleProcessAggregateConfiguration.getTimeZone());
+                fileEventDrivenJob.getTimeZone());
         }
+        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.FILENAMES,
+            List.of(fileEventDrivenJob.getFilePath()));
     }
-//
-//    /**
-//     * Update the execution broker configuration.
-//     *
-//     * @param scheduledConsumerConfiguration
-//     * @param scheduleProcessAggregateConfiguration
-//     */
-//    private void updateProcessExecutionBrokerConfiguration(ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration
-//        , ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
-//        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.COMMAND_LINE,
-//            scheduleProcessAggregateConfiguration.getCommandLine());
-//        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.WORKING_DIRECTORY,
-//            scheduleProcessAggregateConfiguration.getWorkingDirectory());
-//        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.SUCCESSFUL_RETURN_CODES,
-//            scheduleProcessAggregateConfiguration.getSuccessfulReturnCodes());
-//        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.SECONDS_TO_WAIT_FOR_PROCESS_TO_START,
-//            scheduleProcessAggregateConfiguration.getSecondsToWaitForProcessStart());
-//        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.STD_ERR,
-//            scheduleProcessAggregateConfiguration.getStdErr());
-//        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.STD_OUT,
-//            scheduleProcessAggregateConfiguration.getStdOut());
-//        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.RETRY_ON_FAIL,
-//            scheduleProcessAggregateConfiguration.isRetryOnFail());
-//    }
-//
-//    /**
-//     * Update the blackout router configuration.
-//     *
-//     * @param scheduledConsumerConfiguration
-//     * @param scheduleProcessAggregateConfiguration
-//     */
-//    private void updateBlackoutRouterConfiguration(ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration
-//        , ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
-//        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.CRON_EXPRESSIONS,
-//            scheduleProcessAggregateConfiguration.getBlackoutCronExpressions());
-//        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.DATE_TIME_RANGES,
-//            scheduleProcessAggregateConfiguration.getBlackoutDateTimeRanges());
-//    }
+
+    private void setStartUpControl(ModuleMetaData agent, String jobName, ConfigurationMetaData<List<ConfigurationParameterMetaData>> moduleConfiguration) {
+            // Now that all configurations are applied we need to set up the startup type and restart the flow
+            String startupType = "AUTOMATIC";
+            moduleConfiguration.getParameters().stream()
+                .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
+                .findFirst().ifPresentOrElse(flowDefinitions -> {
+                // Add the new job flow to the map.
+                Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
+                configurationMap.replace(jobName, startupType);
+                flowDefinitions.setValue(configurationMap);
+
+                logger.info("Module Configuration: " + moduleConfiguration);
+                // update the configuration back onto the module.
+                this.configurationRestService.storeConfiguration(agent.getUrl(), moduleConfiguration);
+            }, () -> {
+                throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s] " +
+                    "when attempting to update start up control.", agent));
+            });
+
+            this.moduleControlRestService.changeFlowStartupType(agent.getUrl(), agent.getName(), jobName
+                , startupType, "Scheduler flow requires automatic startup.");
+    }
 
     /**
      * General method to set parameters on a configuration meta data.
@@ -458,35 +348,28 @@ public class JobProvisionService {
     /**
      * Helper method to get a specific component configuration from the module.
      *
-     * @param agentOptional
      * @param flow
      * @param component
      * @return
      */
-    private ConfigurationMetaData getConfigurationForAgentFlowComponent(ModuleMetaData agent, Optional<ModuleMetaData> agentOptional, String flow, String component) {
+    private ConfigurationMetaData getConfigurationForAgentFlowComponent(ModuleMetaData agent, String flow, String component) {
         AtomicReference<ConfigurationMetaData> configurationMetaData = new AtomicReference<>();
 
-        agentOptional.ifPresentOrElse(metaData -> {
-            metaData.getFlows().stream()
-                .filter(flowMetaData -> flowMetaData.getName().equals(flow))
-                .findFirst().ifPresentOrElse(flowMetaData -> {
-                flowMetaData.getFlowElements().stream()
-                    .filter(flowElementMetaData -> flowElementMetaData.getComponentName().equals(component))
-                    .findFirst().ifPresentOrElse(id -> configurationMetaData.set(configurationRestService
-                        .getConfiguredResourceConfiguration(metaData.getUrl(), metaData.getName(), flow, component))
-                    , () -> {
-                        throw new RuntimeException(String.format("Could not load configuration metadata for agent[%s], flow[%s], component[%s] at url[%s]!"
-                            , metaData.getName(), flow, component, metaData.getUrl()));
-                    });
-            }, () -> {
-                throw new RuntimeException(String.format("Could not load flow for agent[%s], flow[%s], component[%s] at url[%s]!"
-                    , metaData.getName(), flow, component, metaData.getUrl()));
-            });
-
+        agent.getFlows().stream()
+            .filter(flowMetaData -> flowMetaData.getName().equals(flow))
+            .findFirst().ifPresentOrElse(flowMetaData -> {
+            flowMetaData.getFlowElements().stream()
+                .filter(flowElementMetaData -> flowElementMetaData.getComponentName().equals(component))
+                .findFirst().ifPresentOrElse(id -> configurationMetaData.set(configurationRestService
+                    .getConfiguredResourceConfiguration(agent.getUrl(), agent.getName(), flow, component))
+                , () -> {
+                    throw new RuntimeException(String.format("Could not load configuration metadata for agent[%s], flow[%s], component[%s] at url[%s]!"
+                        , agent.getName(), flow, component, agent.getUrl()));
+                });
         }, () -> {
-            throw new RuntimeException(String.format("Could not load module metadata for agent[%s] at url[%s]!", agent.getName(), agent.getUrl()));
+            throw new RuntimeException(String.format("Could not load flow for agent[%s], flow[%s], component[%s] at url[%s]!"
+                , agent.getName(), flow, component, agent.getUrl()));
         });
-
 
         return configurationMetaData.get();
     }
