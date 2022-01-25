@@ -1,39 +1,22 @@
-package org.ikasan.job.orchestration.provision.job;
+package org.ikasan.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.configuration.metadata.model.SolrConfigurationMetaData;
 import org.ikasan.configuration.metadata.model.SolrConfigurationParameterMetaData;
-import org.ikasan.configurationService.metadata.JsonConfigurationMetaDataProvider;
-import org.ikasan.job.orchestration.AbstractTest;
 import org.ikasan.job.orchestration.builder.context.ContextParameterBuilder;
 import org.ikasan.job.orchestration.builder.job.FileEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.InternalEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.QuartzScheduleDrivenJobBuilder;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
-import org.ikasan.module.metadata.dao.SolrModuleMetadataDao;
+import org.ikasan.job.orchestration.rest.JobProvisionRestServiceImpl;
 import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
-import org.ikasan.module.metadata.service.SolrModuleMetadataServiceImpl;
-import org.ikasan.rest.client.ConfigurationRestServiceImpl;
-import org.ikasan.rest.client.MetaDataRestServiceImpl;
-import org.ikasan.rest.client.ModuleControlRestServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
-import org.ikasan.spec.module.ModuleType;
-import org.ikasan.spec.module.client.ConfigurationService;
-import org.ikasan.spec.module.client.MetaDataService;
-import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
-import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
-import org.junit.Ignore;
+import org.ikasan.spec.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -42,146 +25,40 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-@Ignore
-public class JobProvisionServiceTest extends AbstractTest {
-    @Mock
-    private SchedulerJobService schedulerJobService;
-    @Mock
-    private ConfigurationService configurationRestService;
-    @Mock
-    private ModuleControlService moduleControlRestService;
-    @Mock
-    private ModuleMetaDataService moduleMetaDataService;
-    @Mock
-    private MetaDataService metaDataRestService;
-    @Mock
-    private ModuleMetaData agent;
+public class JobProvisionRestServiceImplTest {
     @Mock
     Environment environment;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-
-
-    @Test
-    public void test() throws IOException {
-        when(moduleMetaDataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
-            .thenReturn(new ModuleMetadataSearchResults(List.of(this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")),
-                this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")),
-                this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")))
-                , 3, 3));
-
-        when(configurationRestService.getModuleConfiguration(anyString())).thenReturn(this.getConfigurarationMetaData());
-
-        when(this.moduleControlRestService.changeModuleActivationState(anyString(), anyString(), anyString())).thenReturn(true);
-
-        when(this.metaDataRestService.getModuleMetadata(anyString(), anyString())).thenReturn(Optional.of(agent));
-
-        when(this.configurationRestService.getConfiguredResourceConfiguration(anyString(), anyString(), anyString(), anyString()))
-            .thenReturn(this.getConfigurarationMetaData());
-
-        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService, configurationRestService,
-            moduleControlRestService, moduleMetaDataService, metaDataRestService);
-
-        List<SchedulerJob> schedulerJobs = new ArrayList<>();
-
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "agent1", "contextId", "description", "jobName1", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "agent1", "contextId", "description", "jobName2", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "agent1", "contextId", "description", "jobName3", getContextParameters(), List.of("1")));
-
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "agent2", "contextId", "description", "jobName1", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "agent2", "contextId", "description", "jobName2", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "agent2", "contextId", "description", "jobName3", getContextParameters(), List.of("1")));
-
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "agent3", "contextId", "description", "jobName1", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "agent3", "contextId", "description", "jobName2", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "agent3", "contextId", "description", "jobName3", getContextParameters(), List.of("1")));
-
-        schedulerJobs.add(this.createQuartzScheduleDrivenJob("agent1", "contextId", "description"
-            , "quartz-jobName1", "jobGroup", "cronExpression", "timezone"));
-        schedulerJobs.add(this.createQuartzScheduleDrivenJob("agent1", "contextId", "description"
-            , "quartz-jobName2", "jobGroup", "cronExpression", "timezone"));
-        schedulerJobs.add(this.createQuartzScheduleDrivenJob("agent1", "contextId", "description"
-            , "quartz-jobName3", "jobGroup", "cronExpression", "timezone"));
-
-        schedulerJobs.add(this.createQuartzScheduleDrivenJob("agent2", "contextId", "description"
-            , "quartz-jobName1", "jobGroup", "cronExpression", "timezone"));
-        schedulerJobs.add(this.createQuartzScheduleDrivenJob("agent2", "contextId", "description"
-            , "quartz-jobName2", "jobGroup", "cronExpression", "timezone"));
-        schedulerJobs.add(this.createQuartzScheduleDrivenJob("agent2", "contextId", "description"
-            , "quartz-jobName3", "jobGroup", "cronExpression", "timezone"));
-
-        schedulerJobs.add(this.createQuartzScheduleDrivenJob("agent3", "contextId", "description"
-            , "quartz-jobName1", "jobGroup", "cronExpression", "timezone"));
-        schedulerJobs.add(this.createQuartzScheduleDrivenJob("agent3", "contextId", "description"
-            , "quartz-jobName2", "jobGroup", "cronExpression", "timezone"));
-        schedulerJobs.add(this.createQuartzScheduleDrivenJob("agent3", "contextId", "description"
-            , "quartz-jobName3", "jobGroup", "cronExpression", "timezone"));
-
-        schedulerJobs.add(this.createFileEventDrivenJob("agent1", "contextId", "description"
-            , "file-jobName1", "jobGroup", "cronExpression", "timezone"));
-        schedulerJobs.add(this.createFileEventDrivenJob("agent1", "contextId", "description"
-            , "file-jobName2", "jobGroup", "cronExpression", "timezone"));
-        schedulerJobs.add(this.createFileEventDrivenJob("agent1", "contextId", "description"
-            , "file-jobName3", "jobGroup", "cronExpression", "timezone"));
-
-        schedulerJobs.add(this.createFileEventDrivenJob("agent2", "contextId", "description"
-            , "file-jobName1", "jobGroup", "cronExpression", "timezone"));
-        schedulerJobs.add(this.createFileEventDrivenJob("agent2", "contextId", "description"
-            , "file-jobName2", "jobGroup", "cronExpression", "timezone"));
-        schedulerJobs.add(this.createFileEventDrivenJob("agent2", "contextId", "description"
-            , "file-jobName3", "jobGroup", "cronExpression", "timezone"));
-
-        schedulerJobs.add(this.createFileEventDrivenJob("agent3", "contextId", "description"
-            , "file-jobName1", "jobGroup", "cronExpression", "timezone"));
-        schedulerJobs.add(this.createFileEventDrivenJob("agent3", "contextId", "description"
-            , "file-jobName2", "jobGroup", "cronExpression", "timezone"));
-        schedulerJobs.add(this.createFileEventDrivenJob("agent3", "contextId", "description"
-            , "file-jobName3", "jobGroup", "cronExpression", "timezone"));
-
-        jobProvisionService.provisionJobs(schedulerJobs);
-    }
+    public static final String DASHBOARD_BASE_URL_PROPERTY="ikasan.dashboard.base.url";
+    public static final String DASHBOARD_USERNAME_PROPERTY="ikasan.dashboard.rest.username";
+    public static final String DASHBOARD_PASSWORD_PROPERTY="ikasan.dashboard.rest.password";
+    public static final String DASHBOARD_REST_USERAGENT ="ikasan.dashboard.rest.useragent";
 
     @Test
     public void test2() throws IOException {
 
-        when(environment.getProperty("rest.module.username")).thenReturn("admin");
-        when(environment.getProperty("rest.module.password")).thenReturn("admin");
+        when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
+        when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
+        when(environment.getProperty("ikasan.dashboard.extract.password")).thenReturn("admin");
+        when(environment.getProperty("module.name")).thenReturn("useragent");
+        when(environment.getProperty("ikasan.dashboard.extract.base.url")).thenReturn("http://localhost:9090");
+        when(environment.getProperty("ikasan.dashboard.extract.exceptions", "false")).thenReturn("true");
 
-        JsonConfigurationMetaDataProvider jsonConfigurationMetaDataProvider = new JsonConfigurationMetaDataProvider(null);
-        ConfigurationService configurationRestService
-            = new ConfigurationRestServiceImpl(environment, jsonConfigurationMetaDataProvider, new HttpComponentsClientHttpRequestFactory());
 
-        ModuleControlService moduleControlService = new ModuleControlRestServiceImpl(environment, new HttpComponentsClientHttpRequestFactory());
 
-        MetaDataService metaDataService = new MetaDataRestServiceImpl(environment, new HttpComponentsClientHttpRequestFactory());
-
-        SolrModuleMetadataDao solrModuleMetadataDao = new SolrModuleMetadataDao();
-        solrModuleMetadataDao.initStandalone("http://localhost:8983/solr", 30);
-        solrModuleMetadataDao.setSolrUsername("ikasan");
-        solrModuleMetadataDao.setSolrPassword("1ka5an");
-        SolrModuleMetadataServiceImpl moduleMetaDataService = new SolrModuleMetadataServiceImpl(solrModuleMetadataDao);
-        moduleMetaDataService.setSolrUsername("ikasan");
-        moduleMetaDataService.setSolrPassword("1ka5an");
-
-        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService, configurationRestService,
-            moduleControlService, moduleMetaDataService, metaDataService);
+        JobProvisionRestServiceImpl jobProvisionService = new JobProvisionRestServiceImpl(environment,
+            new HttpComponentsClientHttpRequestFactory(), "/rest/provision/jobs");
 
         List<SchedulerJob> schedulerJobs = new ArrayList<>();
 
@@ -209,6 +86,30 @@ public class JobProvisionServiceTest extends AbstractTest {
             , "scheduler-agent", "contextId", "description", "jobName11", getContextParameters(), List.of("1")));
         schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
             , "scheduler-agent", "contextId", "description", "jobName12", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent", "contextId", "description", "jobName13", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent", "contextId", "description", "jobName14", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent", "contextId", "description", "jobName15", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent", "contextId", "description", "jobName16", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent", "contextId", "description", "jobName17", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent", "contextId", "description", "jobName18", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent", "contextId", "description", "jobName19", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent", "contextId", "description", "jobName20", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent", "contextId", "description", "jobName21", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent", "contextId", "description", "jobName22", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent", "contextId", "description", "jobName23", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent", "contextId", "description", "jobName24", getContextParameters(), List.of("1")));
 
 //        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
 //            , "agent2", "contextId", "description", "jobName1", getContextParameters(), List.of("1")));
@@ -252,6 +153,62 @@ public class JobProvisionServiceTest extends AbstractTest {
         schedulerJobs.add(this.createFileEventDrivenJob("scheduler-agent", "contextId", "description"
             , "file-jobName3", "jobGroup", "* 0/15 * ? * * *", "timezone"));
 
+        schedulerJobs.add(this.createFileEventDrivenJob("scheduler-agent-2", "contextId", "description"
+            , "file-jobName1", "jobGroup", "* 0/15 * ? * * *", "timezone"));
+        schedulerJobs.add(this.createFileEventDrivenJob("scheduler-agent-2", "contextId", "description"
+            , "file-jobName2", "jobGroup", "* 0/15 * ? * * *", "timezone"));
+        schedulerJobs.add(this.createFileEventDrivenJob("scheduler-agent-2", "contextId", "description"
+            , "file-jobName3", "jobGroup", "* 0/15 * ? * * *", "timezone"));
+
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName1", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName2", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName3", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName4", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName5", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName6", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName7", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName8", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName9", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName10", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName11", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName12", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName13", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName14", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName15", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName16", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName17", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName18", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName19", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName20", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName21", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName22", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName23", getContextParameters(), List.of("1")));
+        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName24", getContextParameters(), List.of("1")));
+
 //        schedulerJobs.add(this.createFileEventDrivenJob("agent2", "contextId", "description"
 //            , "file-jobName1", "jobGroup", "cronExpression", "timezone"));
 //        schedulerJobs.add(this.createFileEventDrivenJob("agent2", "contextId", "description"
@@ -266,23 +223,10 @@ public class JobProvisionServiceTest extends AbstractTest {
 //        schedulerJobs.add(this.createFileEventDrivenJob("agent3", "contextId", "description"
 //            , "file-jobName3", "jobGroup", "cronExpression", "timezone"));
 
-        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-            .allowIfSubType("org.ikasan.spec.scheduled.job.model")
-            .allowIfSubType("org.ikasan.job.orchestration.model.job")
-            .allowIfSubType("org.ikasan.job.orchestration.model.context")
-            .allowIfSubType("java.util.ArrayList")
-            .build();
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
 
-        SchedulerJobWrapperImpl schedulerJobWrapper = new SchedulerJobWrapperImpl();
-        schedulerJobWrapper.setJobs(schedulerJobs);
-
-        String serialised = objectMapper.writeValueAsString(schedulerJobWrapper);
-        SchedulerJobWrapperImpl schedulerJobWrapper1 = objectMapper.readValue(serialised, SchedulerJobWrapperImpl.class);
-
-
-        jobProvisionService.provisionJobs(schedulerJobWrapper1.getJobs());
+        SchedulerJobWrapper wrapper = new SchedulerJobWrapperImpl();
+        wrapper.setJobs(schedulerJobs);
+        jobProvisionService.provisionJobs(wrapper);
     }
 
     private InternalEventDrivenJob createInternalEventDrivenJob(String commandLine, String workingDirectory
