@@ -14,7 +14,6 @@ import java.util.Arrays;
 public abstract class ModuleRestService
 {
     protected final static String MODULE_REST_USERNAME_PROPERTY = "rest.module.username";
-
     protected final static String MODULE_REST_PASSWORD_PROPERTY = "rest.module.password";
 
     protected RestTemplate restTemplate;

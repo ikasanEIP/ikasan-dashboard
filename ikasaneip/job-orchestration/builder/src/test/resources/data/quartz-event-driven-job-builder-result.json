@@ -2,6 +2,7 @@
   "agentName" : "agentName",
   "jobName" : "jobName",
   "contextId" : "contextId",
+  "startupControlType" : "AUTOMATIC",
   "cronExpression" : "cronExpression",
   "jobGroup" : "jobGroup",
   "timeZone" : "timezone",

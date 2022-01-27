@@ -84,6 +84,18 @@
         </dependency>
 
         <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-rest-scheduler-provision-client</artifactId>
+            <version>3.3.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-rest-module-client</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
@@ -145,12 +157,6 @@
         <dependency>
             <groupId>org.ikasan</groupId>
             <artifactId>ikasan-solr-client</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.ikasan</groupId>
-            <artifactId>ikasan-rest-module-client</artifactId>
             <scope>test</scope>
         </dependency>
 
