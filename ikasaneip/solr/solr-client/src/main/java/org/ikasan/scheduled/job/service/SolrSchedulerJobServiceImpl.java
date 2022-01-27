@@ -1,27 +1,32 @@
 package org.ikasan.scheduled.job.service;
 
+import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobDaoImpl;
+import org.ikasan.scheduled.job.dao.SolrInternalEventDrivenJobDaoImpl;
+import org.ikasan.scheduled.job.dao.SolrQuartzScheduleDrivenJobDaoImpl;
+import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
 import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobRecordImpl;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobRecordImpl;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobRecordImpl;
-import org.ikasan.spec.scheduled.job.dao.FileEventDrivenJobDao;
-import org.ikasan.spec.scheduled.job.dao.InternalEventDrivenJobDao;
-import org.ikasan.spec.scheduled.job.dao.QuartzScheduleDrivenJobDao;
-import org.ikasan.spec.scheduled.job.dao.SchedulerJobDao;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobRecordImpl;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrServiceBase;
 
-public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements SchedulerJobService {
+import java.util.ArrayList;
+import java.util.List;
 
-    private FileEventDrivenJobDao fileEventDrivenJobRecordDao;
-    private InternalEventDrivenJobDao internalEventDrivenJobRecordDao;
-    private QuartzScheduleDrivenJobDao quartzScheduleDrivenJobRecordDao;
-    private SchedulerJobDao schedulerJobRecordDao;
+public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements SchedulerJobService<SolrSchedulerJobRecordImpl> {
 
-    public SolrSchedulerJobServiceImpl(FileEventDrivenJobDao fileEventDrivenJobRecordDao
-        , InternalEventDrivenJobDao internalEventDrivenJobRecordDao
-        , QuartzScheduleDrivenJobDao quartzScheduleDrivenJobRecordDao
-        , SchedulerJobDao schedulerJobRecordDao) {
+    private SolrFileEventDrivenJobDaoImpl fileEventDrivenJobRecordDao;
+    private SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao;
+    private SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobRecordDao;
+    private SolrSchedulerJobDaoImpl schedulerJobRecordDao;
+
+    public SolrSchedulerJobServiceImpl(SolrFileEventDrivenJobDaoImpl fileEventDrivenJobRecordDao
+        , SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao
+        , SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobRecordDao
+        , SolrSchedulerJobDaoImpl schedulerJobRecordDao) {
         this.fileEventDrivenJobRecordDao = fileEventDrivenJobRecordDao;
         if(this.fileEventDrivenJobRecordDao == null)
         {
@@ -44,33 +49,64 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         }
     }
 
+    @Override
+    public SearchResults findByAgent(String agent, int limit, int offset) {
+        return this.schedulerJobRecordDao.findByAgent(agent, limit, offset);
+    }
+
+    @Override
+    public void delete(SolrSchedulerJobRecordImpl record) {
+        this.schedulerJobRecordDao.delete(record);
+    }
+
+    @Override
+    public void deleteByAgentName(String agentName) {
+        this.schedulerJobRecordDao.deleteByAgentName(agentName);
+    }
+
+    @Override
     public void saveFileEventDrivenJobRecord(FileEventDrivenJobRecord fileEventDrivenJobRecord) {
         this.fileEventDrivenJobRecordDao.save(fileEventDrivenJobRecord);
     }
 
+    @Override
     public void saveInternalEventDrivenJobRecord(InternalEventDrivenJobRecord internalEventDrivenJobRecord) {
         this.internalEventDrivenJobRecordDao.save(internalEventDrivenJobRecord);
     }
 
+    @Override
     public void saveQuartzScheduledJobRecord(QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord) {
         this.quartzScheduleDrivenJobRecordDao.save(quartzScheduleDrivenJobRecord);
     }
 
     @Override
-    public void saveFileEventDrivenJob(FileEventDrivenJob fileEventDrivenJob) {
-        SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
-        solrFileEventDrivenJobRecord.setAgentName(fileEventDrivenJob.getAgentName());
-        solrFileEventDrivenJobRecord.setJobName(fileEventDrivenJob.getJobName());
-        // todo sort out context
-        solrFileEventDrivenJobRecord.setContextId("TBD");
-        solrFileEventDrivenJobRecord.setTimestamp(System.currentTimeMillis());
-        solrFileEventDrivenJobRecord.setFileEventDrivenJob(fileEventDrivenJob);
+    public void saveFileEventDrivenJobRecords(List<FileEventDrivenJobRecord> fileEventDrivenJobRecords) {
+        this.fileEventDrivenJobRecordDao.save(fileEventDrivenJobRecords);
+    }
 
-        this.saveFileEventDrivenJobRecord(solrFileEventDrivenJobRecord);
+    @Override
+    public void saveInternalEventDrivenJobRecords(List<InternalEventDrivenJobRecord> internalEventDrivenJobRecord) {
+        this.internalEventDrivenJobRecordDao.save(internalEventDrivenJobRecord);
+    }
+
+    @Override
+    public void saveQuartzScheduledJobRecords(List<QuartzScheduleDrivenJobRecord> quartzScheduleDrivenJobRecord) {
+        this.quartzScheduleDrivenJobRecordDao.save(quartzScheduleDrivenJobRecord);
     }
 
     @Override
     public void saveInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob) {
+        this.saveInternalEventDrivenJobRecord(internalEventDrivenJobRecord(internalEventDrivenJob));
+    }
+
+    @Override
+    public void saveInternalEventDrivenJobs(List<InternalEventDrivenJob> quartzScheduleDrivenJobs) {
+        List<InternalEventDrivenJobRecord> records = new ArrayList<>();
+        quartzScheduleDrivenJobs.forEach(job -> records.add(internalEventDrivenJobRecord(job)));
+        this.saveInternalEventDrivenJobRecords(records);
+    }
+
+    private SolrInternalEventDrivenJobRecordImpl internalEventDrivenJobRecord(InternalEventDrivenJob internalEventDrivenJob) {
         SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
         solrInternalEventDrivenJobRecord.setAgentName(internalEventDrivenJob.getAgentName());
         solrInternalEventDrivenJobRecord.setJobName(internalEventDrivenJob.getJobName());
@@ -79,11 +115,22 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         solrInternalEventDrivenJobRecord.setTimestamp(System.currentTimeMillis());
         solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
 
-        this.saveInternalEventDrivenJobRecord(solrInternalEventDrivenJobRecord);
+        return solrInternalEventDrivenJobRecord;
     }
 
     @Override
     public void saveQuartzScheduledJob(QuartzScheduleDrivenJob quartzScheduleDrivenJob) {
+        this.saveQuartzScheduledJobRecord(quartzScheduleDrivenJobRecord(quartzScheduleDrivenJob));
+    }
+
+    @Override
+    public void saveQuartzScheduledJobs(List<QuartzScheduleDrivenJob> quartzScheduleDrivenJobs) {
+        List<QuartzScheduleDrivenJobRecord> records = new ArrayList<>();
+        quartzScheduleDrivenJobs.forEach(job -> records.add(quartzScheduleDrivenJobRecord(job)));
+        this.saveQuartzScheduledJobRecords(records);
+    }
+
+    private QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord(QuartzScheduleDrivenJob quartzScheduleDrivenJob) {
         QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
         quartzScheduleDrivenJobRecord.setAgentName(quartzScheduleDrivenJob.getAgentName());
         // todo work out how context fits
@@ -92,6 +139,30 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         quartzScheduleDrivenJobRecord.setTimestamp(System.currentTimeMillis());
         quartzScheduleDrivenJobRecord.setQuartzScheduleDrivenJob(quartzScheduleDrivenJob);
 
-        this.saveQuartzScheduledJobRecord(quartzScheduleDrivenJobRecord);
+        return quartzScheduleDrivenJobRecord;
+    }
+
+    @Override
+    public void saveFileEventDrivenJob(FileEventDrivenJob fileEventDrivenJob) {
+        this.saveFileEventDrivenJobRecord(fileEventDrivenJobRecord(fileEventDrivenJob));
+    }
+
+    @Override
+    public void saveFileEventDrivenJobs(List<FileEventDrivenJob> quartzScheduleDrivenJobs) {
+        List<FileEventDrivenJobRecord> records = new ArrayList<>();
+        quartzScheduleDrivenJobs.forEach(job -> records.add(fileEventDrivenJobRecord(job)));
+        this.saveFileEventDrivenJobRecords(records);
+    }
+
+    private SolrFileEventDrivenJobRecordImpl fileEventDrivenJobRecord(FileEventDrivenJob fileEventDrivenJob) {
+        SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
+        solrFileEventDrivenJobRecord.setAgentName(fileEventDrivenJob.getAgentName());
+        solrFileEventDrivenJobRecord.setJobName(fileEventDrivenJob.getJobName());
+        // todo sort out context
+        solrFileEventDrivenJobRecord.setContextId("TBD");
+        solrFileEventDrivenJobRecord.setTimestamp(System.currentTimeMillis());
+        solrFileEventDrivenJobRecord.setFileEventDrivenJob(fileEventDrivenJob);
+
+        return solrFileEventDrivenJobRecord;
     }
 }

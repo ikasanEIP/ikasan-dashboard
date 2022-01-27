@@ -9,6 +9,7 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
     protected String jobName;
     protected String jobDescription;
     protected String contextId;
+    protected String startupControlType = "AUTOMATIC";
 
     @Override
     public String getContextId() {
@@ -58,5 +59,15 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
     @Override
     public void setJobDescription(String jobDescription) {
         this.jobDescription = jobDescription;
+    }
+
+    @Override
+    public String getStartupControlType() {
+        return startupControlType;
+    }
+
+    @Override
+    public void setStartupControlType(String startupControlType) {
+        this.startupControlType = startupControlType;
     }
 }
