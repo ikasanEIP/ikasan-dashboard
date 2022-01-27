@@ -9,6 +9,7 @@ public class SchedulerJobBuilder {
     protected String jobName;
     protected String contextId;
     protected String description;
+    protected String startupControlType = "AUTOMATIC";
 
     public SchedulerJobBuilder() {
     }
@@ -61,6 +62,18 @@ public class SchedulerJobBuilder {
         return this;
     }
 
+    /**
+     * Set the job startupControlType.
+     *
+     * @param startupControlType
+     * @return
+     */
+    public SchedulerJobBuilder withStartupControlType(String startupControlType) {
+        this.startupControlType = startupControlType;
+
+        return this;
+    }
+
     public SchedulerJob build() {
         if(this.agentName == null || this.jobName == null) {
             throw new ContextBuilderException("Both agent name and job name must no be null!");
@@ -71,6 +84,7 @@ public class SchedulerJobBuilder {
         schedulerJob.setAgentName(this.agentName);
         schedulerJob.setJobName(this.jobName);
         schedulerJob.setJobDescription(this.description);
+        schedulerJob.setStartupControlType(this.startupControlType);
 
         return schedulerJob;
     }

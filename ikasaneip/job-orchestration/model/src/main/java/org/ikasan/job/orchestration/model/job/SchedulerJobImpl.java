@@ -9,6 +9,7 @@ public class SchedulerJobImpl implements SchedulerJob {
     protected String jobName;
     protected String contextId;
     protected String description;
+    protected String startupControlType = "AUTOMATIC";
 
     @Override
     public String getContextId() {
@@ -58,6 +59,16 @@ public class SchedulerJobImpl implements SchedulerJob {
     @Override
     public void setJobDescription(String jobDescription) {
         this.description = jobDescription;
+    }
+
+    @Override
+    public String getStartupControlType() {
+        return startupControlType;
+    }
+
+    @Override
+    public void setStartupControlType(String startupControlType) {
+        this.startupControlType = startupControlType;
     }
 
     @Override
