@@ -59,9 +59,9 @@ public class SolrClientAutoConfiguration {
     }
 
     @Bean
-    public SchedulerJobService solrSchedulerJobService(FileEventDrivenJobDao fileEventDrivenJobDao
-        , InternalEventDrivenJobDao internalEventDrivenJobDao, QuartzScheduleDrivenJobDao quartzScheduleDrivenJobDao
-        , SchedulerJobDao schedulerJobDao   ) {
+    public SchedulerJobService solrSchedulerJobService(SolrFileEventDrivenJobDaoImpl fileEventDrivenJobDao
+        , SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobDao, SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobDao
+        , SolrSchedulerJobDaoImpl schedulerJobDao   ) {
         return new SolrSchedulerJobServiceImpl(fileEventDrivenJobDao
             ,internalEventDrivenJobDao, quartzScheduleDrivenJobDao
             , schedulerJobDao);
@@ -73,7 +73,7 @@ public class SolrClientAutoConfiguration {
     }
 
     @Bean
-    public FileEventDrivenJobDao fileEventDrivenJobRecordDao() {
+    public SolrFileEventDrivenJobDaoImpl fileEventDrivenJobRecordDao() {
         SolrFileEventDrivenJobDaoImpl dao = new SolrFileEventDrivenJobDaoImpl();
         dao.initStandalone(solrUrl, 30);
         dao.setSolrUsername(solrUsername);
@@ -83,7 +83,7 @@ public class SolrClientAutoConfiguration {
     }
 
     @Bean
-    public InternalEventDrivenJobDao internalEventDrivenJobRecordDao() {
+    public SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao() {
         SolrInternalEventDrivenJobDaoImpl dao = new SolrInternalEventDrivenJobDaoImpl();
         dao.initStandalone(solrUrl, 30);
         dao.setSolrUsername(solrUsername);
@@ -93,7 +93,7 @@ public class SolrClientAutoConfiguration {
     }
 
     @Bean
-    public QuartzScheduleDrivenJobDao quartzScheduleDrivenJobRecordDao() {
+    public SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobRecordDao() {
         SolrQuartzScheduleDrivenJobDaoImpl dao = new SolrQuartzScheduleDrivenJobDaoImpl();
         dao.initStandalone(solrUrl, 30);
         dao.setSolrUsername(solrUsername);
@@ -103,7 +103,7 @@ public class SolrClientAutoConfiguration {
     }
 
     @Bean
-    public SchedulerJobDao schedulerJobRecordDao() {
+    public SolrSchedulerJobDaoImpl schedulerJobRecordDao() {
         SolrSchedulerJobDaoImpl dao = new SolrSchedulerJobDaoImpl();
         dao.initStandalone(solrUrl, 30);
         dao.setSolrUsername(solrUsername);

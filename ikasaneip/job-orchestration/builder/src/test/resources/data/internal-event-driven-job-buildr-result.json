@@ -1,6 +1,7 @@
 {
   "agentName" : "agentName",
   "jobName" : "jobName",
+  "startupControlType" : "AUTOMATIC",
   "successfulReturnCodes" : [ "0" ],
   "workingDirectory" : "working directory",
   "commandLine" : "commandLine",
@@ -13,6 +14,6 @@
     "name" : "name2",
     "type" : "java.lang.String"
   } ],
-  "jobDescription" : "description",
-  "identifier" : "agentName-jobName"
+  "identifier" : "agentName-jobName",
+  "jobDescription" : "description"
 }

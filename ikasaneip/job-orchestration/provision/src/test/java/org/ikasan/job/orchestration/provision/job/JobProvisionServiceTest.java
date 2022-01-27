@@ -87,8 +87,8 @@ public class JobProvisionServiceTest extends AbstractTest {
         when(this.configurationRestService.getConfiguredResourceConfiguration(anyString(), anyString(), anyString(), anyString()))
             .thenReturn(this.getConfigurarationMetaData());
 
-        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService, configurationRestService,
-            moduleControlRestService, moduleMetaDataService, metaDataRestService);
+        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService,
+            moduleMetaDataService, null);
 
         List<SchedulerJob> schedulerJobs = new ArrayList<>();
 
@@ -180,8 +180,7 @@ public class JobProvisionServiceTest extends AbstractTest {
         moduleMetaDataService.setSolrUsername("ikasan");
         moduleMetaDataService.setSolrPassword("1ka5an");
 
-        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService, configurationRestService,
-            moduleControlService, moduleMetaDataService, metaDataService);
+        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService, moduleMetaDataService, null);
 
         List<SchedulerJob> schedulerJobs = new ArrayList<>();
 

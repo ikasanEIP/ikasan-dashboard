@@ -52,7 +52,7 @@
         <version>3.3.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>ikasan-rest-scheeduler-provision-client</artifactId>
+    <artifactId>ikasan-rest-scheduler-provision-client</artifactId>
     <packaging>jar</packaging>
     <name>Ikasan Rest Scheduler Provision Client</name>
     <description>The rest scheduler provision client library for the Ikasan Enterprise Integration Platform</description>
@@ -68,6 +68,11 @@
         <dependency>
             <groupId>org.ikasan</groupId>
             <artifactId>ikasan-spec-scheduled</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-rest-module-client</artifactId>
         </dependency>
 
         <dependency>

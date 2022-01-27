@@ -79,6 +79,7 @@ public class InternalEventDrivenJobBuilder extends SchedulerJobBuilder {
         internalEventDrivenJob.setWorkingDirectory(this.workingDirectory);
         internalEventDrivenJob.setMinExecutionTime(this.minExecutionTime);
         internalEventDrivenJob.setMaxExecutionTime(this.maxExecutionTime);
+        internalEventDrivenJob.setStartupControlType(super.startupControlType);
 
         return internalEventDrivenJob;
     }

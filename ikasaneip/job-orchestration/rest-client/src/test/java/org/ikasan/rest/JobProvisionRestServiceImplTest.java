@@ -17,6 +17,7 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -34,6 +35,7 @@ import java.util.stream.IntStream;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
+@Ignore
 public class JobProvisionRestServiceImplTest {
     @Mock
     Environment environment;
@@ -229,6 +231,48 @@ public class JobProvisionRestServiceImplTest {
         jobProvisionService.provisionJobs(wrapper);
     }
 
+    @Test
+    public void test_large_number_of_jobs() throws IOException {
+
+        when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
+        when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
+        when(environment.getProperty("ikasan.dashboard.extract.password")).thenReturn("admin");
+        when(environment.getProperty("module.name")).thenReturn("useragent");
+        when(environment.getProperty("ikasan.dashboard.extract.base.url")).thenReturn("http://localhost:9090");
+        when(environment.getProperty("ikasan.dashboard.extract.exceptions", "false")).thenReturn("true");
+
+
+
+        JobProvisionRestServiceImpl jobProvisionService = new JobProvisionRestServiceImpl(environment,
+            new HttpComponentsClientHttpRequestFactory(), "/rest/provision/jobs");
+
+        List<SchedulerJob> schedulerJobs = new ArrayList<>();
+
+        IntStream.range(0, 3420).forEach(i -> schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent", "contextId", "description", "jobName"+i, getContextParameters(), List.of("1"))));
+
+        IntStream.range(0, 3320).forEach(i -> schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+            , "scheduler-agent-2", "contextId", "description", "jobName"+i, getContextParameters(), List.of("1"))));
+
+        IntStream.range(0, 80).forEach(i -> schedulerJobs.add(this.createQuartzScheduleDrivenJob("scheduler-agent", "contextId", "description"
+            , "quartz-jobName"+i, "jobGroup", "* 0/15 * ? * * *", "timezone")));
+
+        IntStream.range(0, 20).forEach(i -> schedulerJobs.add(this.createQuartzScheduleDrivenJob("scheduler-agent-2", "contextId", "description"
+            , "quartz-jobName"+i, "jobGroup", "* 0/15 * ? * * *", "timezone")));
+
+        IntStream.range(0, 20).forEach(i -> schedulerJobs.add(this.createFileEventDrivenJob("scheduler-agent", "contextId", "description"
+            , "file-jobName"+i, "jobGroup", "* 0/15 * ? * * *", "timezone")));
+
+        IntStream.range(0, 50).forEach(i -> schedulerJobs.add(this.createFileEventDrivenJob("scheduler-agent-2", "contextId", "description"
+            , "file-jobName"+i, "jobGroup", "* 0/15 * ? * * *", "timezone")));
+
+
+
+        SchedulerJobWrapper wrapper = new SchedulerJobWrapperImpl();
+        wrapper.setJobs(schedulerJobs);
+        jobProvisionService.provisionJobs(wrapper);
+    }
+
     private InternalEventDrivenJob createInternalEventDrivenJob(String commandLine, String workingDirectory
         , String agentName, String contextId, String description, String jobName, List<ContextParameter> contextParameters
         , List<String> successfulReturnCodes) {
@@ -262,7 +306,8 @@ public class JobProvisionRestServiceImplTest {
             .withDescription(description)
             .withJobName(jobName)
             .withContextId(contextId)
-            .withAgentName(agentName);
+            .withAgentName(agentName)
+            .withStartupControlType("MANUAL");
 
         return quartzScheduleDrivenJobBuilder.build();
     }

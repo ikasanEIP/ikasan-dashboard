@@ -72,6 +72,36 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
     }
 
     @Override
+    public SearchResults<? extends SchedulerJobRecord> findByAgent(String agentName, int limit, int offset) {
+        StringBuffer queryBuffer = new StringBuffer();
+        queryBuffer.append(OPEN_BRACKET);
+        queryBuffer.append(TYPE + COLON);
+        queryBuffer.append("\"").append(JobConstants.FILE_EVENT_DRIVEN_JOB).append("\" ");
+        queryBuffer.append(OR).append(" ");
+        queryBuffer.append(TYPE + COLON);
+        queryBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB).append("\" ");
+        queryBuffer.append(OR).append(" ");
+        queryBuffer.append(TYPE + COLON);
+        queryBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB).append("\" ");
+        queryBuffer.append(CLOSE_BRACKET);
+        queryBuffer.append(AND).append(" ").append(MODULE_NAME).append(COLON);
+        queryBuffer.append("\"").append(agentName).append("\" ");
+
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(queryBuffer.toString());
+        if(limit == -1 && offset == -1) {
+            solrQuery.setRows(0);
+            solrQuery.setStart(0);
+            solrQuery.setRows((int)this.findByQuery(solrQuery
+                , SolrSchedulerJobRecordImpl.class).getTotalNumberOfResults());
+        }
+
+        logger.debug("query: " + solrQuery);
+
+        return this.findByQuery(solrQuery, SolrSchedulerJobRecordImpl.class);
+    }
+
+    @Override
     public SchedulerJobRecord findById(String id) {
         SolrQuery query = this.buildIdQuery(id);
 
@@ -87,6 +117,30 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
         {
             return null;
         }
+    }
+
+    @Override
+    public void delete(SchedulerJobRecord record) {
+        super.removeById(record.getType(), record.getId());
+    }
+
+    @Override
+    public void deleteByAgentName(String agentName) {
+        StringBuffer queryBuffer = new StringBuffer();
+        queryBuffer.append(OPEN_BRACKET);
+        queryBuffer.append(TYPE + COLON);
+        queryBuffer.append("\"").append(JobConstants.FILE_EVENT_DRIVEN_JOB).append("\" ");
+        queryBuffer.append(OR).append(" ");
+        queryBuffer.append(TYPE + COLON);
+        queryBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB).append("\" ");
+        queryBuffer.append(OR).append(" ");
+        queryBuffer.append(TYPE + COLON);
+        queryBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB).append("\" ");
+        queryBuffer.append(CLOSE_BRACKET);
+        queryBuffer.append(AND).append(" ").append(MODULE_NAME).append(COLON);
+        queryBuffer.append("\"").append(agentName).append("\" ");
+
+        super.deleteByQuery(queryBuffer.toString());
     }
 
     @Override
