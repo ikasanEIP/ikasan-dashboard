@@ -1,14 +1,13 @@
 package org.ikasan.job.orchestration.provision.job;
 
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
-import org.ikasan.job.orchestration.rest.JobProvisionModuleRestServiceImpl;
+import org.ikasan.job.orchestration.rest.client.JobProvisionModuleRestServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
-import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
