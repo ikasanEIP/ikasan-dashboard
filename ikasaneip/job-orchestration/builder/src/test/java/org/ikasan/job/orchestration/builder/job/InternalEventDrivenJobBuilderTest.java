@@ -30,6 +30,7 @@ public class InternalEventDrivenJobBuilderTest extends AbstractTest {
                 .withType("java.lang.String")
                 .build())
             .addSuccessfulReturnCode("0")
+            .withContextId("contextId")
             .withAgentName("agentName")
             .withContextId("contextId")
             .withDescription("description")

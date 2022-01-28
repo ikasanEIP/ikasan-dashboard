@@ -246,7 +246,7 @@ public class ContextTemplateBuilderTest extends AbstractTest {
         ContextService contextService = new ContextService();
 
         JSONAssert.assertEquals(super.loadDataFile("/data/context-builder-result-with-job-locks.json"),
-            contextService.getContextTemplateString(contextTemplate1), true);
+            contextService.getContextTemplateString(contextTemplate1), false);
     }
 
     @Test

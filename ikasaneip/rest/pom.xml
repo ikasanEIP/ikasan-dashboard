@@ -59,7 +59,6 @@
 
     <modules>
         <module>rest-module-client</module>
-        <module>rest-scheduler-agent-client</module>
         <module>rest-dashboard</module>
     </modules>
 
