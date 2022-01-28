@@ -14,6 +14,11 @@ import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class ObjectMapperFactory {
 
     /**
@@ -39,7 +44,9 @@ public class ObjectMapperFactory {
             .addAbstractTypeMapping(LogicalOperator.class, LogicalOperatorImpl.class)
             .addAbstractTypeMapping(ContextInstance.class, ContextInstanceImpl.class)
             .addAbstractTypeMapping(SchedulerJobInstance.class, SchedulerJobInstanceImpl.class)
-            .addAbstractTypeMapping(ContextParameterInstance.class, ContextParameterInstanceImpl.class);
+            .addAbstractTypeMapping(ContextParameterInstance.class, ContextParameterInstanceImpl.class)
+            .addAbstractTypeMapping(List.class, ArrayList.class)
+            .addAbstractTypeMapping(Map.class, HashMap.class);
 
         objectMapper.registerModule(simpleModule);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);

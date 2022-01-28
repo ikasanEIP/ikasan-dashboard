@@ -56,7 +56,7 @@
         <module>builder</module>
         <module>model</module>
         <module>provision</module>
-        <module>rest-client</module>
+        <module>rest</module>
     </modules>
 
 </project>

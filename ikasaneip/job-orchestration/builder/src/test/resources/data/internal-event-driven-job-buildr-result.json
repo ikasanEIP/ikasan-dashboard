@@ -1,6 +1,7 @@
 {
   "agentName" : "agentName",
   "jobName" : "jobName",
+  "contextId" : "contextId",
   "startupControlType" : "AUTOMATIC",
   "successfulReturnCodes" : [ "0" ],
   "workingDirectory" : "working directory",
