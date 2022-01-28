@@ -2,10 +2,18 @@
   "agentName" : "agentName",
   "jobName" : "jobName",
   "contextId" : "contextId",
-  "startupControlType" : "AUTOMATIC",
+  "startupControlType" : "MANUAL",
   "cronExpression" : "cronExpression",
   "jobGroup" : "jobGroup",
   "timeZone" : "timezone",
+  "ignoreMisfire" : true,
+  "eager" : true,
+  "maxEagerCallbacks" : 10,
+  "passthroughProperties" : {
+    "key" : "value"
+  },
+  "persistentRecovery" : true,
+  "recoveryTolerance" : 100,
   "identifier" : "agentName-jobName",
   "jobDescription" : "description"
 }

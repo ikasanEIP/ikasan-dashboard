@@ -80,6 +80,7 @@ public class InternalEventDrivenJobBuilder extends SchedulerJobBuilder {
         internalEventDrivenJob.setMinExecutionTime(this.minExecutionTime);
         internalEventDrivenJob.setMaxExecutionTime(this.maxExecutionTime);
         internalEventDrivenJob.setStartupControlType(super.startupControlType);
+        internalEventDrivenJob.setContextId(super.contextId);
 
         return internalEventDrivenJob;
     }
