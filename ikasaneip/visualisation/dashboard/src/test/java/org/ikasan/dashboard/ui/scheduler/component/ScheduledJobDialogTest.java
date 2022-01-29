@@ -143,8 +143,8 @@ public class ScheduledJobDialogTest extends UITest {
         Assertions.assertTrue(_get(TextArea.class, spec -> spec.withId("jobDescriptionTa")).isInvalid());
         Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("cronExpressionTf")).isInvalid());
         Assertions.assertTrue(_get(TextArea.class, spec -> spec.withId("commandLineTa")).isInvalid());
-        Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("stdOutTf")).isInvalid());
-        Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("stdErrTf")).isInvalid());
+        Assertions.assertFalse(_get(TextField.class, spec -> spec.withId("stdOutTf")).isInvalid());
+        Assertions.assertFalse(_get(TextField.class, spec -> spec.withId("stdErrTf")).isInvalid());
         Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("successfulReturnCodeTf0")).isInvalid());
         Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("successfulReturnCodeTf1")).isInvalid());
         Assertions.assertTrue(_get(TextField.class, spec -> spec.withId("blackoutCronExpressionTf0")).isInvalid());
@@ -160,7 +160,7 @@ public class ScheduledJobDialogTest extends UITest {
     }
 
     @Test
-    public void test_create_new_scheduled_job_failed_form_validation_bad_cron_expreession() throws IOException
+    public void test_create_new_scheduled_job_failed_form_validation_bad_cron_expression() throws IOException
     {
         // Navigate to the scheduler view.
         UI.getCurrent().navigate("scheduler");
