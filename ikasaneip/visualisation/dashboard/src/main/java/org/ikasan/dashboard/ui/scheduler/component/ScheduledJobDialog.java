@@ -358,20 +358,18 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         formLayout.add(secondsToWaitForProcessStartTf);
 
         this.stdOutTf = new TextField(getTranslation("label.std-out", UI.getCurrent().getLocale()));
-        this.stdOutTf.setRequired(true);
+        this.stdOutTf.setRequired(false);
         this.stdOutTf.setId("stdOutTf");
         formBinder.forField(this.stdOutTf)
             .withNullRepresentation("")
-            .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-std-out", UI.getCurrent().getLocale()))
             .bind(ScheduledProcessAggregateConfiguration::getStdOut, ScheduledProcessAggregateConfiguration::setStdOut);
         formLayout.add(stdOutTf);
 
         this.stdErrTf = new TextField(getTranslation("label.std-err", UI.getCurrent().getLocale()));
-        this.stdErrTf.setRequired(true);
+        this.stdErrTf.setRequired(false);
         this.stdErrTf.setId("stdErrTf");
         formBinder.forField(this.stdErrTf)
             .withNullRepresentation("")
-            .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-std-err", UI.getCurrent().getLocale()))
             .bind(ScheduledProcessAggregateConfiguration::getStdErr, ScheduledProcessAggregateConfiguration::setStdErr);
         formLayout.add(this.stdErrTf);
 
