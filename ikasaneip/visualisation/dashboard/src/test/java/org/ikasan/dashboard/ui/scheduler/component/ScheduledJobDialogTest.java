@@ -84,7 +84,8 @@ public class ScheduledJobDialogTest extends UITest {
             Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt()))
             .thenReturn(this.getUpcomingScheduledEventsResults(25));
 
-        Mockito.when(this.scheduledProcessEventBatchInsert.getScheduleProcessAggregateConfigurations(Mockito.anyString(), Mockito.isNull()))
+        Mockito.when(this.scheduledProcessEventBatchInsert.getScheduleProcessAggregateConfigurations(Mockito.anyString(), Mockito.isNull()
+            , Mockito.anyInt(), Mockito.anyInt(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(new ScheduledProcessEventSearchResults<>(List.of(), 0, 0));
 
         Mockito.when(this.moduleMetadataService.find(Mockito.any(ArrayList.class), Mockito.any(ModuleType.class),
@@ -484,7 +485,8 @@ public class ScheduledJobDialogTest extends UITest {
         Mockito.when(this.configurationRestService.storeConfiguration(Mockito.anyString(), Mockito.any(ConfigurationMetaData.class)))
             .thenReturn(true);
 
-        Mockito.when(this.scheduledProcessEventBatchInsert.getScheduleProcessAggregateConfigurations(Mockito.anyString(), Mockito.isNull()))
+        Mockito.when(this.scheduledProcessEventBatchInsert.getScheduleProcessAggregateConfigurations(Mockito.anyString()
+            , Mockito.isNull(), Mockito.anyInt(), Mockito.anyInt(), Mockito.isNull(), Mockito.isNull()))
             .thenReturn(this.getScheduledProcessAggregateConfiguration());
 
 
