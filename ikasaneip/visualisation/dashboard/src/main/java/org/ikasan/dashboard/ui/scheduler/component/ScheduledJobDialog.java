@@ -195,7 +195,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
             IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-            if (this.editMode == EditMode.NEW) {
+            if (this.editMode == EditMode.NEW || this.editMode == EditMode.CLONE) {
                 String action = String.format("New scheduled job created [%s].", this.scheduleProcessAggregateConfiguration);
                 this.systemEventLogger.logEvent(SystemEventConstants.NEW_SCHEDULED_JOB_CREATED, action, authentication.getName());
             }
@@ -260,7 +260,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setId("jobNameTf");
         this.jobNameTf.setRequired(true);
-        this.jobNameTf.setEnabled(this.editMode == EditMode.NEW);
+        this.jobNameTf.setEnabled(this.editMode == EditMode.NEW || this.editMode == EditMode.CLONE);
         formBinder.forField(this.jobNameTf)
             .withValidator(jobName -> !jobName.isEmpty(), getTranslation("error.missing-job-name", UI.getCurrent().getLocale()))
             .bind(ScheduledProcessAggregateConfiguration::getJobName, ScheduledProcessAggregateConfiguration::setJobName);
@@ -544,7 +544,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
             logger.debug("Module Configuration: " + moduleConfiguration);
 
-            if (this.editMode == EditMode.NEW) {
+            if (this.editMode == EditMode.NEW || this.editMode == EditMode.CLONE) {
                 // Get the flowDefinitions from the configuration metadata.
                 moduleConfiguration.getParameters().stream()
                     .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
@@ -794,7 +794,7 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
 
         this.timezoneCb.setEnabled(enabled);
 
-        this.jobNameTf.setEnabled(this.editMode == EditMode.NEW);
+        this.jobNameTf.setEnabled(this.editMode == EditMode.NEW || this.editMode == EditMode.CLONE);
         this.jobGroupTf.setEnabled(enabled);
         this.jobDescriptionTa.setEnabled(enabled);
         this.cronExpressionTf.setEnabled(enabled);
@@ -863,7 +863,10 @@ public class ScheduledJobDialog extends AbstractCloseableResizableDialog {
      * @param editMode
      */
     public void setScheduleProcessAggregateConfiguration(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration, EditMode editMode) {
-        this.enabled = editMode == EditMode.NEW || editMode == EditMode.EDIT ? true : false;
+        this.enabled = editMode == EditMode.NEW || editMode == EditMode.EDIT || editMode == EditMode.CLONE ? true : false;
+        if(editMode == EditMode.CLONE) {
+            scheduleProcessAggregateConfiguration.setJobName(null);
+        }
         this.scheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
         this.oldScheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
         this.formBinder.readBean(this.scheduleProcessAggregateConfiguration);

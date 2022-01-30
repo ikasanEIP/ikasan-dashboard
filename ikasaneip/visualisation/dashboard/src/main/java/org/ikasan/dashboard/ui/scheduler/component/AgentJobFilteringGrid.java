@@ -30,7 +30,9 @@ import org.ikasan.dashboard.ui.visualisation.util.VisualisationType;
 import org.ikasan.dashboard.ui.visualisation.view.GraphVisualisationDeepLinkView;
 import org.ikasan.scheduled.model.ScheduledProcessAggregateConfiguration;
 import org.ikasan.scheduled.model.ScheduledProcessEventSearchResults;
+import org.ikasan.scheduled.model.UpcomingScheduledProcess;
 import org.ikasan.scheduled.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.service.SolrScheduledProcessServiceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
@@ -118,20 +120,29 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
             .setHeader(getTranslation("table-header.job-name", UI.getCurrent().getLocale()))
             .setKey("jobName")
             .setTextAlign(ColumnTextAlign.START)
-            .setFlexGrow(1);
+            .setFlexGrow(1)
+            .setSortable(true);
 
         super.addColumn(TemplateRenderer.<ScheduledProcessAggregateConfiguration>of("<div style='white-space:normal'>[[item.jobGroup]]</div>")
             .withProperty("jobGroup", ScheduledProcessAggregateConfiguration::getJobGroup))
             .setHeader(getTranslation("table-header.job-group", UI.getCurrent().getLocale()))
             .setKey("jobGroup")
-            .setFlexGrow(1);
+            .setFlexGrow(1)
+            .setSortable(true);
         super.addColumn(TemplateRenderer.<ScheduledProcessAggregateConfiguration>of("<div style='white-space:normal'>[[item.description]]</div>")
             .withProperty("description", ScheduledProcessAggregateConfiguration::getJobDescription))
             .setHeader(getTranslation("table-header.job-description", UI.getCurrent().getLocale()))
             .setKey("description")
-            .setFlexGrow(5);
+            .setFlexGrow(3)
+            .setSortable(true);
+        super.addColumn(TemplateRenderer.<ScheduledProcessAggregateConfiguration>of("<div style='white-space:normal'>[[item.nextFireTime]]</div>")
+            .withProperty("nextFireTime", scheduledProcessAggregateConfiguration -> this.dateFormatter.getFormattedDate(scheduledProcessAggregateConfiguration.getNextFireTime())))
+            .setHeader(getTranslation("table-header.next-job-execution-time", UI.getCurrent().getLocale()))
+            .setKey("nextFireTime")
+            .setFlexGrow(1)
+            .setSortable(true);
         super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration -> {
-            HorizontalLayout layout = new HorizontalLayout();
+            VerticalLayout layout = new VerticalLayout();
 
             scheduledProcessAggregateConfiguration.getBusinessStreamMetaData().forEach(businessStreamMetaData -> {
                 String route = RouteConfiguration.forSessionScope()
@@ -146,7 +157,7 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
         }))
             .setHeader(getTranslation("table-header.related-business-streams", UI.getCurrent().getLocale()))
             .setKey("businessStreams")
-            .setFlexGrow(3);
+            .setFlexGrow(2);
         super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration -> {
             HorizontalLayout layout = new HorizontalLayout();
 
@@ -223,6 +234,37 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 dialog.setConfirmButtonTheme("error primary");
 
                 dialog.open();
+            });
+
+            Icon clone = VaadinIcon.COPY.create();
+            clone.setSize("14pt");
+            clone.getStyle().set("cursor", "pointer");
+            clone.getElement().setAttribute("title", getTranslation("tooltip.clone-job", UI.getCurrent().getLocale()));
+            ComponentSecurityVisibility.applySecurity(this.authentication, delete, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
+
+            layout.add(clone);
+
+            clone.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                try {
+                    ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(agent,
+                        this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+                        this.metaDataRestService, this.systemEventLogger);
+
+                    scheduledJobDialog.setScheduleProcessAggregateConfiguration(scheduledProcessAggregateConfiguration, EditMode.CLONE);
+                    scheduledJobDialog.open();
+
+                    scheduledJobDialog.addOpenedChangeListener((ComponentEventListener<GeneratedVaadinDialog.OpenedChangeEvent<Dialog>>)
+                        dialogOpenedChangeEvent -> {
+                            if(!dialogOpenedChangeEvent.isOpened()) {
+                                this.dataProvider.refreshAll();
+                                this.filteredDataProvider.refreshAll();
+                            }
+                        });
+                }
+                catch(Exception e) {
+                    e.printStackTrace();
+                    NotificationHelper.showErrorNotification(getTranslation("error.delete-scheduled-job", UI.getCurrent().getLocale()));
+                }
             });
 
             Icon chart = VaadinIcon.CHART.create();
@@ -445,8 +487,8 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
     }
 
     @Override
-    protected ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getResults(AgentJobFilter agentJobFilter, int offset, int limit) {
-        return this.scheduledProcessManagementService.getScheduleProcessAggregateConfigurations(this.agent.getName(), agentJobFilter.getFilter());
+    protected ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getResults(AgentJobFilter agentJobFilter, int offset, int limit, String sortField, String sortOrder) {
+        return ((SolrScheduledProcessServiceImpl)this.scheduledProcessManagementService).getScheduleProcessAggregateConfigurations(this.agent.getName(), agentJobFilter.getFilter(), offset, limit, sortField, sortOrder);
     }
 
     /**
