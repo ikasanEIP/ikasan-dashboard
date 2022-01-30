@@ -213,19 +213,20 @@ public class ScheduledJobStatisticsDialog extends AbstractCloseableResizableDial
     private void populateDataSeries(ScheduledProcessEventSearchResults<ScheduledProcessEvent> scheduledProcessEventSearchResults, DataSeries dataSeries) {
         scheduledProcessEventSearchResults.getResultList()
             .forEach(scheduledProcessEvent -> {
-                DataSeriesItem item = new DataSeriesItem();
-                item.setX(Instant.ofEpochMilli(scheduledProcessEvent.getFireTime() + TimeZone.getTimeZone(DateTimeUtil.getZoneOffset()).getRawOffset()));
-                item.setY(scheduledProcessEvent.getCompletionTime() - scheduledProcessEvent.getFireTime());
-                dataSeries.add(item);
+                if(scheduledProcessEvent.getCompletionTime() > scheduledProcessEvent.getFireTime()) {
+                    DataSeriesItem item = new DataSeriesItem();
+                    item.setX(Instant.ofEpochMilli(scheduledProcessEvent.getFireTime() + TimeZone.getTimeZone(DateTimeUtil.getZoneOffset()).getRawOffset()));
+                    item.setY(scheduledProcessEvent.getCompletionTime() - scheduledProcessEvent.getFireTime());
+                    dataSeries.add(item);
 
-                if(scheduledProcessEvent.isSuccessful()) {
-                    this.numSuccess++;
-                }
-                else {
-                    this.numFail++;
-                }
+                    if (scheduledProcessEvent.isSuccessful()) {
+                        this.numSuccess++;
+                    } else {
+                        this.numFail++;
+                    }
 
-                this.averageExecutionTime += (scheduledProcessEvent.getCompletionTime() - scheduledProcessEvent.getFireTime());
+                    this.averageExecutionTime += (scheduledProcessEvent.getCompletionTime() - scheduledProcessEvent.getFireTime());
+                }
             });
     }
 }
