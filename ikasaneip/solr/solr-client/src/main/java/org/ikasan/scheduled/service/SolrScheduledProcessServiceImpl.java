@@ -113,6 +113,16 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             .collect(Collectors.toList());
     }
 
+    public List<FlowMetaData> getFlowsForAgent(String agent, int offset, int limit) {
+        ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agent);
+
+
+        return moduleMetaData.getFlows().stream()
+            .skip(offset)
+            .limit(limit)
+            .collect(Collectors.toList());
+    }
+
     @Override
     public ConfigurationMetaData getConfigurationForAgentFlowComponent(String agent, String flow, String component) {
         ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agent);
@@ -337,6 +347,77 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         return searchResults;
     }
 
+    public ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getScheduleProcessAggregateConfigurations(String agent, String filter, int offset, int limit, String sortField, String sortOrder) {
+        long start = System.currentTimeMillis();
+        List<FlowMetaData> flows = this.getFlowsForAgent(agent);
+
+        List<ScheduledProcessAggregateConfiguration> results = new ArrayList<>();
+
+        flows.forEach(flowMetaData -> results.add(this.getScheduleProcessAggregateConfiguration(agent, flowMetaData.getName())));
+
+        Comparator<ScheduledProcessAggregateConfiguration> comparator
+            = Comparator.comparing(ScheduledProcessAggregateConfiguration::getJobName);
+
+        if(sortField != null && sortField.equals("jobName")) {
+            comparator
+                = Comparator.comparing(ScheduledProcessAggregateConfiguration::getJobName);
+
+        }
+        else if(sortField != null && sortField.equals("jobGroup")) {
+            comparator
+                = Comparator.comparing(ScheduledProcessAggregateConfiguration::getJobGroup);
+
+        }
+        else if(sortField != null && sortField.equals("description")) {
+            comparator
+                = Comparator.comparing(ScheduledProcessAggregateConfiguration::getJobDescription);
+        }
+        else if(sortField != null && sortField.equals("nextFireTime")) {
+            comparator
+                = Comparator.comparing(ScheduledProcessAggregateConfiguration::getNextFireTime);
+        }
+
+        if(sortOrder != null && sortOrder.equals("DESCENDING")) {
+            comparator = comparator.reversed();
+        }
+
+        List<ScheduledProcessAggregateConfiguration> filteredResults;
+
+        if(limit == 0 && offset == 0) {
+            filteredResults = results.stream().filter(scheduledProcessAggregateConfiguration -> {
+                if(filter == null || filter.isEmpty()) {
+                    return true;
+                }
+                else {
+                    return (scheduledProcessAggregateConfiguration.getJobName().toLowerCase().contains(filter.toLowerCase()) ||
+                        scheduledProcessAggregateConfiguration.getJobGroup().toLowerCase().contains(filter.toLowerCase()) ||
+                        scheduledProcessAggregateConfiguration.getJobDescription().toLowerCase().contains(filter.toLowerCase()));
+                }
+            })
+                .collect(Collectors.toList());
+        }
+        else {
+            filteredResults = results.stream().filter(scheduledProcessAggregateConfiguration -> {
+                if (filter == null || filter.isEmpty()) {
+                    return true;
+                } else {
+                    return (scheduledProcessAggregateConfiguration.getJobName().toLowerCase().contains(filter.toLowerCase()) ||
+                        scheduledProcessAggregateConfiguration.getJobGroup().toLowerCase().contains(filter.toLowerCase()) ||
+                        scheduledProcessAggregateConfiguration.getJobDescription().toLowerCase().contains(filter.toLowerCase()));
+                }
+            })
+                .skip(offset)
+                .limit(limit)
+                .sorted(comparator)
+                .collect(Collectors.toList());
+        }
+
+        ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> searchResults
+            = new ScheduledProcessEventSearchResults<>(filteredResults, filteredResults.size(), System.currentTimeMillis() - start);
+
+        return searchResults;
+    }
+
     @Override
     public ScheduledProcessAggregateConfiguration getScheduleProcessAggregateConfiguration(String agent, String flow) {
         AtomicReference<ScheduledProcessAggregateConfiguration> scheduledProcessAggregateConfiguration = new AtomicReference<>(new ScheduledProcessAggregateConfiguration());
@@ -380,6 +461,22 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
                     processExecutionBrokerConfiguration, blackoutRouterConfiguration);
 
                 scheduledProcessAggregateConfiguration.set(this.scheduledProcessAggregateConfigurationConverter.convert(bucket));
+
+                try {
+                    CronExpression cronExpression = new CronExpression(scheduledProcessAggregateConfiguration.get().getCronExpression());
+
+                    if(scheduledProcessAggregateConfiguration.get().getTimezone() != null) {
+                        cronExpression.setTimeZone(TimeZone.getTimeZone(scheduledProcessAggregateConfiguration.get().getTimezone()));
+                    }
+
+                    Date next = cronExpression.getNextValidTimeAfter(new Date(System.currentTimeMillis()));
+
+                    scheduledProcessAggregateConfiguration.get().setNextFireTime(next.getTime());
+                }
+                catch (ParseException e) {
+                   logger.warn("Could not determine next fire time for job[{}]", scheduledProcessAggregateConfiguration.get().getJobName());
+                }
+
                 scheduledProcessAggregateConfiguration.get().setAgentName(agent);
                 scheduledProcessAggregateConfiguration.get().setJobName(flow);
                 scheduledProcessAggregateConfiguration.get().setStartAutomatically(flowMetaData.getFlowStartupType().equals("AUTOMATIC"));

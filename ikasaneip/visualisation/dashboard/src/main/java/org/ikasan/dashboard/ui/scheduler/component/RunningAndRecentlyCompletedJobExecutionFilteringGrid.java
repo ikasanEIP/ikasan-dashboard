@@ -302,7 +302,7 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
     }
 
     @Override
-    protected ScheduledProcessEventSearchResults<ScheduledProcessEvent> getResults(ScheduledProcessFilter scheduledProcessFilter, int offset, int limit) {
+    protected ScheduledProcessEventSearchResults<ScheduledProcessEvent> getResults(ScheduledProcessFilter scheduledProcessFilter, int offset, int limit, String sortField, String sortOrder) {
         agentJobBusinessStreams = new HashMap<>();
 
         if(this.authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) || this.authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ADMIN)) {
