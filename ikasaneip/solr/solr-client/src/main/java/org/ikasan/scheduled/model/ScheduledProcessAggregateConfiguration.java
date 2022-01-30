@@ -31,6 +31,7 @@ public class ScheduledProcessAggregateConfiguration {
     private Long secondsToWaitForProcessStart = 10L;
     private List<String> blackoutCronExpressions = new ArrayList<>();
     private Map<String, String> blackoutDateTimeRanges = new HashMap<>();
+    private long nextFireTime;
 
     public String getJobName() {
         return jobName;
@@ -210,6 +211,14 @@ public class ScheduledProcessAggregateConfiguration {
 
     public void setBlackoutDateTimeRanges(Map<String, String> blackoutDateTimeRanges) {
         this.blackoutDateTimeRanges = blackoutDateTimeRanges;
+    }
+
+    public long getNextFireTime() {
+        return nextFireTime;
+    }
+
+    public void setNextFireTime(long nextFireTime) {
+        this.nextFireTime = nextFireTime;
     }
 
     @Override
