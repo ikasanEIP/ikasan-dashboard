@@ -406,7 +406,8 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
                 });
             }
 
-            layout.setSizeFull();
+            layout.setWidthFull();
+            layout.setHeight("40px");
             return layout;
         }))
         .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
