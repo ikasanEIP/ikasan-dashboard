@@ -360,7 +360,7 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
 
 
     @Override
-    protected ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getResults(ScheduledProcessFilter scheduledProcessFilter, int offset, int limit) {
+    protected ScheduledProcessEventSearchResults<UpcomingScheduledProcess> getResults(ScheduledProcessFilter scheduledProcessFilter, int offset, int limit, String sortField, String sortOrder) {
         this.agentJobBusinessStreams = new HashMap<>();
         this.agents = new HashMap<>();
 

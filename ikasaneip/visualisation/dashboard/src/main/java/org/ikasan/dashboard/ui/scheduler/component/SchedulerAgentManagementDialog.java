@@ -112,25 +112,34 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
 
-        this.filterTf = new TextField();
-        this.filterTf.setPrefixComponent(icon);
-        HorizontalLayout filterLayout = new HorizontalLayout();
-        filterLayout.setWidthFull();
-        filterLayout.add(this.filterTf);
-        filterLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, this.filterTf);
-
-        this.filterTf.getElement().getStyle().set("margin-left", "auto");
-
         AgentJobFilter agentJobFiler = new AgentJobFilter();
         AgentJobFilteringGrid filteringGrid = new AgentJobFilteringGrid(this.agent, this.scheduledProcessManagementService
             , agentJobFiler, new DateFormatter(), this.configurationRestService, this.moduleControlRestService,
             this.metaDataRestService, this.moduleMetaDataService, this.systemEventLogger, this.schedulerService);
         filteringGrid.setSizeFull();
+
+        this.filterTf = new TextField();
+        this.filterTf.setPrefixComponent(icon);
+        HorizontalLayout filterLayout = new HorizontalLayout();
+
+        this.filterTf.getElement().getStyle().set("margin-left", "auto");
+
+        Button refreshButton = new Button();
+        refreshButton.addClickListener(buttonClickEvent -> {
+            filteringGrid.refresh();
+        });
+        refreshButton.getElement().appendChild(VaadinIcon.REFRESH.create().getElement());
+        refreshButton.getElement().getStyle().set("margin-left", "auto");
+
+        filterLayout.add(this.filterTf, refreshButton);
+        filterLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, this.filterTf);
+        filterLayout.getElement().getStyle().set("margin-left", "auto");
+
         filteringGrid.addGridFiltering(this.filterTf, agentJobFiler::setFilter);
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
-        layout.add(agentDetails, addButton, formLayout, scheduledJobsLabel,     filterLayout, filteringGrid);
+        layout.add(agentDetails, addButton, formLayout, scheduledJobsLabel, filterLayout, filteringGrid);
         super.content.add(layout);
     }
 }

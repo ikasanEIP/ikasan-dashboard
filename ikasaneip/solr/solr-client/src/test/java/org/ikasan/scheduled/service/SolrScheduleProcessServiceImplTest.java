@@ -151,6 +151,36 @@ public class SolrScheduleProcessServiceImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
+    public void test_get_flows_for_agent_with_limit_and_offset() throws Exception {
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "scheduler-agent");
+            doc.addField("moduleName", "scheduler-agent");
+            doc.addField("type", "moduleMetaData");
+            doc.addField("payload", this.loadDataFile("/data/scheduler-agent-module-metadata-large-number-of-jobs.json"));
+            doc.addField("timestamp", 100l);
+
+            server.add("ikasan", doc);
+            server.commit();
+
+            List<FlowMetaData> flowMetaData = this.solrScheduledProcessService.getFlowsForAgent("scheduler-agent", 0, 50);
+
+            Assert.assertEquals(   50, flowMetaData.size());
+
+            flowMetaData = this.solrScheduledProcessService.getFlowsForAgent("scheduler-agent", 49, 50);
+
+            Assert.assertEquals(   50, flowMetaData.size());
+
+            flowMetaData = this.solrScheduledProcessService.getFlowsForAgent("scheduler-agent", 99, 50);
+
+            Assert.assertEquals(   14, flowMetaData.size());
+        }
+    }
+
+    @Test
     public void test_get_configuration_for_agent_flow_component() throws Exception {
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
         {

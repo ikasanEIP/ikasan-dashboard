@@ -104,13 +104,21 @@ public abstract class FilteringGrid<DATA, FILTER, RESULTS extends SearchResults>
 
             RESULTS results;
 
+            String sortField = null;
+            String sortOrder = null;
+
+            if(query.getSortOrders() != null && !query.getSortOrders().isEmpty()) {
+                sortField = query.getSortOrders().get(0).getSorted();
+                sortOrder = query.getSortOrders().get(0).getDirection().name();
+            }
+
             if(filter.isPresent())
             {
-                results = this.getResults(filter.get(), offset, limit);
+                results = this.getResults(filter.get(), offset, limit, sortField, sortOrder);
             }
             else
             {
-                results = this.getResults(null, offset, limit);
+                results = this.getResults(null, offset, limit, sortField, sortOrder);
             }
 
             return results.getResultList().stream();
@@ -122,11 +130,11 @@ public abstract class FilteringGrid<DATA, FILTER, RESULTS extends SearchResults>
 
             if(filter.isPresent())
             {
-                results = this.getResults(filter.get(), 0, 0);
+                results = this.getResults(filter.get(), 0, 0, null, null);
             }
             else
             {
-                results = this.getResults(null, 0, 0);
+                results = this.getResults(null, 0, 0, null, null);
             }
 
             this.resultSize = results.getTotalNumberOfResults();
@@ -150,7 +158,7 @@ public abstract class FilteringGrid<DATA, FILTER, RESULTS extends SearchResults>
         });
     }
 
-    protected abstract RESULTS getResults(FILTER filter, int offset, int limit);
+    protected abstract RESULTS getResults(FILTER filter, int offset, int limit, String sortField, String sortOrder);
 
     public long getResultSize()
     {
