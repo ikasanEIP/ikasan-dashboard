@@ -49,7 +49,7 @@
 
     <groupId>org.ikasan</groupId>
     <artifactId>ikasan-dashboard-build</artifactId>
-    <version>3.3.0-SNAPSHOT</version>
+    <version>3.3.0-scheduler-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Ikasan Parent Project</name>
     <description>Ikasan Parent Project</description>
