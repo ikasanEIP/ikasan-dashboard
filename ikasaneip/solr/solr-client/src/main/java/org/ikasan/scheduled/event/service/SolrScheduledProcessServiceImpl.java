@@ -356,7 +356,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
     @Override
     public ScheduledProcessEventSearchResults<ScheduledProcessAggregateConfiguration> getScheduleProcessAggregateConfigurations(String agent, String filter, int offset, int limit) {
         long start = System.currentTimeMillis();
-        List<FlowMetaData> flows = this.getFlowsForAgent(agent, filter);
+        List<FlowMetaData> flows = this.getFlowsForAgent(agent);
 
         if(offset == 0 && limit == 0) {
             return new ScheduledProcessEventSearchResults<>(new ArrayList(), flows.size(), System.currentTimeMillis() - start);
