@@ -9,7 +9,6 @@ import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.NodeConfig;
-import org.apache.solr.core.SolrResourceLoader;
 import org.ikasan.business.stream.metadata.dao.SolrBusinessStreamMetadataDao;
 import org.ikasan.business.stream.metadata.service.SolrBusinessStreamMetaDataServiceImpl;
 import org.ikasan.dashboard.notification.business.stream.model.BusinessStreamExclusions;
@@ -30,7 +29,8 @@ import java.util.Optional;
 
 public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
 
-    public static final String BUSINESS_STREAM_PAYLOAD = "/data/graph/wriggle3.json";
+    public static final String LEGACY_BUSINESS_STREAM_PAYLOAD = "/data/graph/wriggle3.json";
+    public static final String NEW_BUSINESS_STREAM_PAYLOAD = "/data/businessStream/sample-business-stream.json";
 
     private SolrGeneralDaoImpl dao;
 
@@ -61,6 +61,25 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
 
     @Test
     @DirtiesContext
+    public void test_business_stream_no_exclusions_legacy() throws Exception {
+
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            this.initialiseDataBusinessStream(server, LEGACY_BUSINESS_STREAM_PAYLOAD);
+
+            BusinessStreamNotificationService businessStreamNotificationService = this.initialiseService(server);
+            Optional<BusinessStreamExclusions> businessStreamExclusions
+                = businessStreamNotificationService.getBusinessStreamExclusions("wriggle", 0L, 100);
+
+            Assert.assertFalse("Business Stream Exclusions not found!", businessStreamExclusions.isPresent());
+        }
+    }
+
+    @Test
+    @DirtiesContext
     public void test_business_stream_no_exclusions() throws Exception {
 
 
@@ -68,7 +87,7 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
         {
             init(server);
 
-            this.initialiseDataBusinessStream(server);
+            this.initialiseDataBusinessStream(server, NEW_BUSINESS_STREAM_PAYLOAD);
 
             BusinessStreamNotificationService businessStreamNotificationService = this.initialiseService(server);
             Optional<BusinessStreamExclusions> businessStreamExclusions
@@ -87,8 +106,30 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
         {
             init(server);
 
-            this.initialiseDataBusinessStream(server);
-            this.initialiseDataExclusionsAndErrors(server);
+            this.initialiseDataBusinessStream(server, NEW_BUSINESS_STREAM_PAYLOAD);
+            this.initialiseDataExclusionsAndErrors(server, "murex-position", "FX Position Producer Flow");
+
+            BusinessStreamNotificationService businessStreamNotificationService = this.initialiseService(server);
+            Optional<BusinessStreamExclusions> businessStreamExclusions
+                = businessStreamNotificationService.getBusinessStreamExclusions("wriggle", 0L, 100);
+
+            Assert.assertTrue("Business Stream Exclusions found!", businessStreamExclusions.isPresent());
+            Assert.assertEquals("Exclusions found!", 1
+                , businessStreamExclusions.get().getBusinessStreamExclusions().size());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_business_stream_exclusions_legacy() throws Exception {
+
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            this.initialiseDataBusinessStream(server, LEGACY_BUSINESS_STREAM_PAYLOAD);
+            this.initialiseDataExclusionsAndErrors(server, "wriggle-im", "Wriggle Customer HTTP Request Flow");
 
             BusinessStreamNotificationService businessStreamNotificationService = this.initialiseService(server);
             Optional<BusinessStreamExclusions> businessStreamExclusions
@@ -109,8 +150,29 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
         {
             init(server);
 
-            this.initialiseDataBusinessStream(server);
-            this.initialiseDataExclusionNoError(server);
+            this.initialiseDataBusinessStream(server, NEW_BUSINESS_STREAM_PAYLOAD);
+            this.initialiseDataExclusionNoError(server, "murex-position", "FX Position Producer Flow");
+
+            BusinessStreamNotificationService businessStreamNotificationService = this.initialiseService(server);
+            Optional<BusinessStreamExclusions> businessStreamExclusions
+                = businessStreamNotificationService.getBusinessStreamExclusions("wriggle", 0L, 100);
+
+            Assert.assertTrue("Business Stream Exclusions found!", businessStreamExclusions.isPresent());
+            Assert.assertEquals("Exclusions found!", 1, businessStreamExclusions.get().getBusinessStreamExclusions().size());
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_business_stream_exclusion_no_error_legacy() throws Exception {
+
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            this.initialiseDataBusinessStream(server, LEGACY_BUSINESS_STREAM_PAYLOAD);
+            this.initialiseDataExclusionNoError(server, "wriggle-im", "Wriggle Customer HTTP Request Flow");
 
             BusinessStreamNotificationService businessStreamNotificationService = this.initialiseService(server);
             Optional<BusinessStreamExclusions> businessStreamExclusions
@@ -130,7 +192,7 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
         {
             init(server);
 
-            this.initialiseDataBusinessStream(server);
+            this.initialiseDataBusinessStream(server, NEW_BUSINESS_STREAM_PAYLOAD);
 
             BusinessStreamNotificationService businessStreamNotificationService = this.initialiseService(server);
             Optional<BusinessStreamExclusions> businessStreamExclusions = businessStreamNotificationService
@@ -158,24 +220,24 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
             solrGeneralService);
     }
 
-    private void initialiseDataBusinessStream(EmbeddedSolrServer server) throws IOException, SolrServerException {
+    private void initialiseDataBusinessStream(EmbeddedSolrServer server, String filePath) throws IOException, SolrServerException {
         SolrInputDocument doc = new SolrInputDocument();
         doc.addField("id", "businessStream-wriggle");
         doc.addField("type", "businessStreamMetaData");
         doc.addField("moduleName", "wriggle");
-        doc.addField("payload", this.loadDataFile(BUSINESS_STREAM_PAYLOAD));
+        doc.addField("payload", this.loadDataFile(filePath));
         doc.addField("expiry", System.currentTimeMillis() + 10000000l);
         server.add("ikasan", doc);
         server.commit();
     }
 
-    private void initialiseDataExclusionsAndErrors(EmbeddedSolrServer server) throws IOException, SolrServerException {
+    private void initialiseDataExclusionsAndErrors(EmbeddedSolrServer server, String moduleName, String flowName) throws IOException, SolrServerException {
         SolrInputDocument doc = new SolrInputDocument();
         doc.addField("id", "error-1");
         doc.addField("type", "error");
-        doc.addField("moduleName", "wriggle-im");
+        doc.addField("moduleName", moduleName);
         doc.addField("errorUri", "1234");
-        doc.addField("flowName", "Wriggle Customer HTTP Request Flow");
+        doc.addField("flowName", flowName);
         doc.addField("payload", "this is the error payload");
         doc.addField("expiry", System.currentTimeMillis() + 10000000l);
         doc.addField("timestamp", System.currentTimeMillis() - 10000000l);
@@ -184,8 +246,8 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
         doc = new SolrInputDocument();
         doc.addField("id", "1234");
         doc.addField("type", "exclusion");
-        doc.addField("moduleName", "wriggle-im");
-        doc.addField("flowName", "Wriggle Customer HTTP Request Flow");
+        doc.addField("moduleName", moduleName);
+        doc.addField("flowName", flowName);
         doc.addField("payload", "this is the exclusion payload");
         doc.addField("expiry", System.currentTimeMillis() + 10000000l);
         doc.addField("timestamp", System.currentTimeMillis() - 10000000l);
@@ -194,12 +256,12 @@ public class BusinessStreamNotificationServiceTest extends SolrTestCaseJ4 {
         server.commit();
     }
 
-    private void initialiseDataExclusionNoError(EmbeddedSolrServer server) throws IOException, SolrServerException {
+    private void initialiseDataExclusionNoError(EmbeddedSolrServer server, String moduleName, String flowName) throws IOException, SolrServerException {
         SolrInputDocument doc = new SolrInputDocument();
         doc.addField("id", "exclusion-1");
         doc.addField("type", "exclusion");
-        doc.addField("moduleName", "wriggle-im");
-        doc.addField("flowName", "Wriggle Customer HTTP Request Flow");
+        doc.addField("moduleName", moduleName);
+        doc.addField("flowName", flowName);
         doc.addField("payload", "this is the exclusion payload");
         doc.addField("expiry", System.currentTimeMillis() + 10000000l);
         doc.addField("timestamp", System.currentTimeMillis() - 10000000l);
