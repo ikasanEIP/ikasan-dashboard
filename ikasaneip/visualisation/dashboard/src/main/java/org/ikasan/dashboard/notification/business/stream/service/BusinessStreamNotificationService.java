@@ -9,6 +9,8 @@ import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.solr.SolrGeneralService;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.*;
 import java.util.function.Function;
@@ -32,17 +34,40 @@ public class BusinessStreamNotificationService {
             return Optional.empty();
         }
 
-        Set<String> moduleNames = businessStreamMetaData.getBusinessStream().getFlows()
-            .stream()
-            .map(Flow::getModuleName)
-            .collect(Collectors.toSet());
+        var ref = new Object() {
+            Set<String> moduleNames = new HashSet<>();
+            Set<String> flowNames = new HashSet<>();
+        };
 
-        Set<String> flowNames = businessStreamMetaData.getBusinessStream().getFlows()
-            .stream()
-            .map(Flow::getFlowName)
-            .collect(Collectors.toSet());
+        if(businessStreamMetaData.getJson().contains("draw2d")) {
+            JSONArray jsonArray = new JSONArray(businessStreamMetaData.getJson());
 
-        IkasanSolrDocumentSearchResults results = this.solrGeneralService.search(moduleNames, flowNames
+            jsonArray.iterator().forEachRemaining(item -> {
+                if (((JSONObject) item).getString("type").equals("draw2d.shape.basic.Image")) {
+                    if (((JSONObject) item).getString("id").startsWith("FLOW:")) {
+                        String id = ((JSONObject) item).getString("id");
+                        String moduleName = id.substring(id.indexOf("FLOW:") + "FLOW:".length(), id.indexOf("."));
+                        String flowName = id.substring(id.indexOf(".") + 1, id.indexOf(":", id.indexOf(".")));
+
+                        ref.moduleNames.add(moduleName);
+                        ref.flowNames.add(flowName);
+                    }
+                }
+            });
+        }
+        else {
+            ref.moduleNames = businessStreamMetaData.getBusinessStream().getFlows()
+                .stream()
+                .map(Flow::getModuleName)
+                .collect(Collectors.toSet());
+
+            ref.flowNames = businessStreamMetaData.getBusinessStream().getFlows()
+                .stream()
+                .map(Flow::getFlowName)
+                .collect(Collectors.toSet());
+        }
+
+        IkasanSolrDocumentSearchResults results = this.solrGeneralService.search(ref.moduleNames, ref.flowNames
             , null, startTimestamp, System.currentTimeMillis(), resultSize, List.of("exclusion")
             ,false, null, null);
 
