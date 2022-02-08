@@ -47,12 +47,12 @@ public class JobProvisionRestServiceImplTest {
     @Test
     public void test_large_number_of_jobs() throws IOException {
 
-        when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
-        when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
-        when(environment.getProperty("ikasan.dashboard.extract.password")).thenReturn("admin");
-        when(environment.getProperty("module.name")).thenReturn("useragent");
-        when(environment.getProperty("ikasan.dashboard.extract.base.url")).thenReturn("http://localhost:9090");
-        when(environment.getProperty("ikasan.dashboard.extract.exceptions", "false")).thenReturn("true");
+            when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
+            when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
+            when(environment.getProperty("ikasan.dashboard.extract.password")).thenReturn("admin");
+            when(environment.getProperty("module.name")).thenReturn("useragent");
+            when(environment.getProperty("ikasan.dashboard.extract.base.url")).thenReturn("http://localhost:9090");
+            when(environment.getProperty("ikasan.dashboard.extract.exceptions", "false")).thenReturn("true");
 
 
 
@@ -61,13 +61,13 @@ public class JobProvisionRestServiceImplTest {
 
         List<SchedulerJob> schedulerJobs = new ArrayList<>();
 
-        IntStream.range(0, 3420).forEach(i -> schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+        IntStream.range(0, 34).forEach(i -> schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
             , "scheduler-agent", "contextId", "description", "jobName"+i, getContextParameters(), List.of("1"))));
 
-        IntStream.range(0, 3320).forEach(i -> schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
+        IntStream.range(0, 33).forEach(i -> schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
             , "scheduler-agent-2", "contextId", "description", "jobName"+i, getContextParameters(), List.of("1"))));
 
-        IntStream.range(0, 80).forEach(i -> schedulerJobs.add(this.createQuartzScheduleDrivenJob("scheduler-agent", "contextId", "description"
+        IntStream.range(0, 8).forEach(i -> schedulerJobs.add(this.createQuartzScheduleDrivenJob("scheduler-agent", "contextId", "description"
             , "quartz-jobName"+i, "jobGroup", "* 0/15 * ? * * *", "timezone")));
 
         IntStream.range(0, 20).forEach(i -> schedulerJobs.add(this.createQuartzScheduleDrivenJob("scheduler-agent-2", "contextId", "description"
@@ -113,9 +113,12 @@ public class JobProvisionRestServiceImplTest {
         , String cronExpression, String timezone) {
         QuartzScheduleDrivenJobBuilder quartzScheduleDrivenJobBuilder = new QuartzScheduleDrivenJobBuilder();
 
+        Map<String, String> passthrough = new HashMap<>();
+        passthrough.put("test", "test");
         quartzScheduleDrivenJobBuilder.withCronExpression(cronExpression)
             .withTimeZone(timezone)
             .withJobGroup(jobGroup)
+            .withPassthroughProperties(passthrough)
             .withDescription(description)
             .withJobName(jobName)
             .withContextId(contextId)
@@ -132,12 +135,16 @@ public class JobProvisionRestServiceImplTest {
         ArrayList files = new ArrayList();
         files.add("./some-file.txt");
 
+        Map<String, String> passthrough = new HashMap<>();
+        passthrough.put("test", "test");
+
         fileEventDrivenJobBuilder
             .withFilePath("./some-file.txt")
             .withFilenames(files)
             .withCronExpression(cronExpression)
             .withTimeZone(timezone)
             .withJobGroup(jobGroup)
+            .withPassthroughProperties(passthrough)
             .withDescription(description)
             .withJobName(jobName)
             .withContextId(contextId)
