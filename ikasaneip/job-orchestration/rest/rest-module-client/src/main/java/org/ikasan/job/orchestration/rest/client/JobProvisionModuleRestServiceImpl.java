@@ -33,6 +33,7 @@ public class JobProvisionModuleRestServiceImpl extends ModuleRestService {
             .allowIfSubType("org.ikasan.job.orchestration.model.job")
             .allowIfSubType("org.ikasan.job.orchestration.model.context")
             .allowIfSubType("java.util.ArrayList")
+            .allowIfSubType("java.util.HashMap")
             .build();
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
         objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);

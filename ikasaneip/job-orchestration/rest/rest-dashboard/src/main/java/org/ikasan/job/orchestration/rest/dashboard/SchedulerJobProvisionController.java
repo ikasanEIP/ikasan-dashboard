@@ -60,7 +60,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Module application implementing the REST contract
+ * Dashboard application implementing the REST contract
  */
 @RequestMapping("/rest")
 @RestController
@@ -85,6 +85,7 @@ public class SchedulerJobProvisionController
             .allowIfSubType("org.ikasan.job.orchestration.model.job")
             .allowIfSubType("org.ikasan.job.orchestration.model.context")
             .allowIfSubType("java.util.ArrayList")
+            .allowIfSubType("java.util.HashMap")
             .build();
         this.mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -97,14 +98,20 @@ public class SchedulerJobProvisionController
     {
         try
         {
-            logger.info(schedulerJobs);
+            logger.debug(schedulerJobs);
+
             SchedulerJobWrapper schedulerJobWrapper = this.mapper.readValue(schedulerJobs
-                , SchedulerJobWrapperImpl.class);
+                , SchedulerJobWrapper.class);
+
+            logger.info("Attempting to provision {} scheduler jobs.", schedulerJobWrapper.getJobs().size());
 
             this.jobProvisionService.provisionJobs(schedulerJobWrapper.getJobs());
+
+            logger.info("Successfully provisioned {} scheduler jobs.", schedulerJobWrapper.getJobs().size());
         }
         catch (Exception e)
         {
+            logger.error(e.getMessage());
             e.printStackTrace();
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to provision scheduler jobs! Error message ["
