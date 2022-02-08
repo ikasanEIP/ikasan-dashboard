@@ -55,6 +55,25 @@ public class JobProvisionServiceImpl implements JobProvisionService {
         ModuleMetadataSearchResults agents = this.moduleMetaDataService
             .find(uniqueAgentNames, ModuleType.SCHEDULER_AGENT, -1, -1);
 
+        if(uniqueAgentNames.size() != agents.getResultList().size()) {
+            StringBuffer missingAgents = new StringBuffer();
+
+            uniqueAgentNames.forEach(agentName -> {
+                if(agents.getResultList().stream()
+                    .filter(moduleMetaData -> moduleMetaData.getName().equals(agentName))
+                    .collect(Collectors.toList()).size() == 0) {
+                    missingAgents.append(agentName).append(", ");
+                }
+            });
+
+            String missingAgentFinal = missingAgents.toString().trim();
+            if(missingAgentFinal.length() > 0 && missingAgentFinal.endsWith(",")) {
+                missingAgentFinal = missingAgentFinal.substring(0, missingAgentFinal.length()-1);
+            }
+
+            throw new JobProvisionException(String.format("An attempt to provision jobs has failed. The following unknown agents were encountered - %s", missingAgentFinal));
+        }
+
         // As it is possible to provision multiple agents as part of the job
         // provisioning process, we will collect exceptions and report issues
         // once attempts to provision all agents are complete.
@@ -65,9 +84,10 @@ public class JobProvisionServiceImpl implements JobProvisionService {
                 SchedulerJobWrapper schedulerJobWrapper = new SchedulerJobWrapperImpl();
                 schedulerJobWrapper.setJobs(getJobsForAgent(agent.getName(), jobs));
 
+                logger.info(String.format("Attempting to provision %s jobs on agent[%s]", jobs.size(), agent.getUrl()));
                 this.jobProvisionModuleRestService.provisionJobs(agent.getUrl(), schedulerJobWrapper);
-
                 persistJobs(agent.getName(), jobs);
+                logger.info(String.format("Successfully provisioned %s jobs on agent[%s]", jobs.size(), agent.getUrl()));
             }
             catch (JobProvisionException e) {
                 e.printStackTrace();
