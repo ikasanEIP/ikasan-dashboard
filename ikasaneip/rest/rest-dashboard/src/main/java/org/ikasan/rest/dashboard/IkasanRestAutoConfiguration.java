@@ -138,11 +138,11 @@ public class IkasanRestAutoConfiguration
         return new SystemEventController(this.systemEventBatchInsert);
     }
 
-    @Bean
-    public ScheduledProcessEventController scheduledProcessEventController()
-    {
-        return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert, this.inboundQueue);
-    }
+//    @Bean
+//    public ScheduledProcessEventController scheduledProcessEventController()
+//    {
+//        return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert, this.inboundQueue);
+//    }
 
     @Bean
     public ModulesController modulesController( )
@@ -167,9 +167,9 @@ public class IkasanRestAutoConfiguration
         return new NotifierController(this.cacheAdapter);
     }
 
-    @Bean SchedulerJobProvisionController schedulerJobProvisionController() {
-        return new SchedulerJobProvisionController(this.jobProvisionService);
-    }
+//    @Bean SchedulerJobProvisionController schedulerJobProvisionController() {
+//        return new SchedulerJobProvisionController(this.jobProvisionService);
+//    }
 
     @Bean
     public JwtAuthenticationController jwtAuthenticationController(AuthenticationManager authenticationManager,
