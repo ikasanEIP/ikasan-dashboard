@@ -302,7 +302,7 @@ public class ContextMachine {
         List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();
 
         events.forEach(event -> {
-            try {
+            if(event.getInternalEventDrivenJob() != null) {
                 SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(contextInstance, event.getInternalEventDrivenJob().getIdentifier());
 
                 if (schedulerJobInstance != null && schedulerJobInstance.isHeld()) {
@@ -311,8 +311,9 @@ public class ContextMachine {
                     finalEvents.add(event);
                 }
             }
-            catch (Exception e) {
-                throw e;
+            else {
+                logger.warn(String.format("Could not load internal event driven job for initiation event JobName[%s], SchedulerJobInitiationEvent[%s]"
+                    , event.getJobName(), event.toString()));
             }
         });
 
