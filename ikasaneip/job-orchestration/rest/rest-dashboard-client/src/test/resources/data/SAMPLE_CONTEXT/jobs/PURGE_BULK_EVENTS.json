@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "PURGE_BULK_EVENTS",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n#\n. ~/.profile\n\nisql -U$FinDBUser -S$FinDBServer -D$FinDBName -i$MXROOT/scripts/env_maint/purge_bulk_event.sql -P$FinDBPasswordCleartext | tee $MXROOT/logs/purge_bulk_events.log",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-PURGE_BULK_EVENTS",
+  "jobDescription" : "PURGE_BULK_EVENTS"
+}

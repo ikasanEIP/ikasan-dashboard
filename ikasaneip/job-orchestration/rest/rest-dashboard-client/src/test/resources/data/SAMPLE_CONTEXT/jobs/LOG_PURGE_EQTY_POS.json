@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "LOG_PURGE_EQTY_POS",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n. ~/.profile\n\n/opt/murex/prod/scripts/invoke_proc_script.sh LOG_PURGE_EQTY_POS MXPROCESSINGSCRIPT",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-LOG_PURGE_EQTY_POS",
+  "jobDescription" : "LOG_PURGE_EQTY_POS"
+}

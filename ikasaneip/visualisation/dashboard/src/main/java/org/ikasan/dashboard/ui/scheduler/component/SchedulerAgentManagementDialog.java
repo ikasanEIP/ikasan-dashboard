@@ -24,6 +24,7 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.SchedulerService;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 
 public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDialog {
@@ -39,6 +40,8 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
     private SchedulerService schedulerService;
 
     private SystemEventLogger systemEventLogger;
+
+    private SchedulerJobService<SchedulerJobRecord> schedulerJobService;
 
     /**
      * Constructor
@@ -64,6 +67,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         this.moduleMetaDataService = moduleMetaDataService;
         this.systemEventLogger = systemEventLogger;
         this.schedulerService = schedulerService;
+        this.schedulerJobService = schedulerJobService;
         super.showResize(false);
         super.title.setText(getTranslation("header.scheduler-agent-management", UI.getCurrent().getLocale()));
 
@@ -150,9 +154,9 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         icon.setSize("12pt");
 
         AgentJobFilter agentJobFiler = new AgentJobFilter();
-        AgentJobFilteringGrid filteringGrid = new AgentJobFilteringGrid(this.agent, this.scheduledProcessManagementService
+        AgentJobFilteringGrid2 filteringGrid = new AgentJobFilteringGrid2(this.agent, this.scheduledProcessManagementService
             , agentJobFiler, new DateFormatter(), this.configurationRestService, this.moduleControlRestService,
-            this.metaDataRestService, this.moduleMetaDataService, this.systemEventLogger, this.schedulerService);
+            this.metaDataRestService, this.moduleMetaDataService, this.systemEventLogger, this.schedulerService, this.schedulerJobService);
         filteringGrid.setSizeFull();
 
         this.filterTf = new TextField();
