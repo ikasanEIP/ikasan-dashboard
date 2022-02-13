@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -65,8 +66,9 @@ public class ContextInstanceRecoveryManager {
                     .map(internalEventDrivenJobRecord -> internalEventDrivenJobRecord.getInternalEventDrivenJob())
                     .collect(Collectors.toMap(InternalEventDrivenJob::getIdentifier, Function.identity()));
 
+                // todo sort out agents
                 ContextMachine contextMachine = new ContextMachine(contextRecord.getContext(), contextInstanceRecord.getContextInstance(),
-                    this.scheduledContextInstanceService, internalEventDrivenJobMap, this.queueDirectory);
+                    this.scheduledContextInstanceService, internalEventDrivenJobMap, this.queueDirectory, new HashMap<>());
 
                 ContextMachineCache.instance().put(contextMachine);
             }

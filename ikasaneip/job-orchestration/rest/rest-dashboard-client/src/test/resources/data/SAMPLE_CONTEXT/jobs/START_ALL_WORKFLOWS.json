@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "START_ALL_WORKFLOWS",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n. ~/.profile\n\ncd $MXROOT\nscripts/groovy/src/launchers.groovy -run -these WORKFLOWS",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-START_ALL_WORKFLOWS",
+  "jobDescription" : "START_ALL_WORKFLOWS"
+}

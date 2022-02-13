@@ -1,0 +1,292 @@
+{
+  "name" : "test-context",
+  "description" : "Context Template Description",
+  "jobDependencies" : [ {
+    "jobIdentifier" : "scheduler-agent-File Arrive Job"
+  }, {
+    "jobIdentifier" : "scheduler-agent-2-job-0",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-File Arrive Job"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-job-0",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-2-job-0"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-2-job-1",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-job-0"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-job-1",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-2-job-1"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-2-job-2",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-job-1"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-job-2",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-2-job-2"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-2-job-3",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-job-2"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-job-3",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-2-job-3"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-2-job-4",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-job-3"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-job-4",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-2-job-4"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-2-job-5",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-job-4"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-job-5",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-2-job-5"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-2-job-6",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-job-5"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-job-6",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-2-job-6"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-2-job-7",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-job-6"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-job-7",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-2-job-7"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-2-job-8",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-job-7"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-job-8",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-2-job-8"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-2-job-9",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-job-8"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-job-9",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-2-job-9"
+      } ]
+    }
+  } ],
+  "contextParameters" : [ {
+    "name" : "param1",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "param2",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "param3",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "param4",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "param5",
+    "type" : "java.lang.String"
+  } ],
+  "scheduledJobs" : [ {
+    "agentName" : "scheduler-agent",
+    "jobName" : "File Arrive Job",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-File Arrive Job",
+    "jobDescription" : "Job1 Description"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-0",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-job-0",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-1",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-job-1",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-2",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-job-2",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-3",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-job-3",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-4",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-job-4",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-5",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-job-5",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-6",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-job-6",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-7",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-job-7",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-8",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-job-8",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-9",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-job-9",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-0",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-2-job-0",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-1",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-2-job-1",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-2",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-2-job-2",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-3",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-2-job-3",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-4",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-2-job-4",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-5",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-2-job-5",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-6",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-2-job-6",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-7",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-2-job-7",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-8",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-2-job-8",
+    "jobDescription" : "A simple internal job!"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-9",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-2-job-9",
+    "jobDescription" : "A simple internal job!"
+  } ],
+  "timeWindowStart" : "* * 6 ? * * *",
+  "timeWindowEnd" : "* * 15 ? * * *"
+}

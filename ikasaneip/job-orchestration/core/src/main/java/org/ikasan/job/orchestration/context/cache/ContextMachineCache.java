@@ -76,6 +76,7 @@ public class ContextMachineCache
     public Set contextNames() {
         return this.contextInstanceByContextNameCache.keySet();
     }
+
     public Set contextInstanceIdentifiers() {
         return this.contextInstanceByContextInstanceIdCache.keySet();
     }

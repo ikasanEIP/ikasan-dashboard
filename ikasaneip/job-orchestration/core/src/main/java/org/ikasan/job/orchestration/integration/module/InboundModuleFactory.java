@@ -90,7 +90,7 @@ public class InboundModuleFactory
         // get the module builder
         return builderFactory.getModuleBuilder(moduleName)
                 .withDescription("Scheduler Agent Integration Module.")
-                .withType(ModuleType.SCHEDULER_AGENT)
+                .withType(ModuleType.INTEGRATION_MODULE)
                 .addFlow(this.scheduledProcessEventInboundFlow)
 //                .addFlow(this.jobInitiationEventFlow)
                 .setConfiguration(configuration)

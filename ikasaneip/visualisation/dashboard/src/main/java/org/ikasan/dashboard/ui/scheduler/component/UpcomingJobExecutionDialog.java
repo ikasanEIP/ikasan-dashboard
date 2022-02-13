@@ -79,10 +79,10 @@ public class UpcomingJobExecutionDialog extends AbstractCloseableResizableDialog
         this.commandLineTf = new TextArea(getTranslation("label.command-line", UI.getCurrent().getLocale()));
         this.commandLineTf.setEnabled(false);
         commandLineTf.getStyle().set("minHeight", "100px");
-        upcomingScheduledProcess.getProcessExecutionBrokerConfigurationMetaData().getParameters().stream()
-            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("commandLine"))
-            .findFirst().ifPresent(configurationParameterMetaData -> commandLineTf.setValue((String)configurationParameterMetaData.getValue()));
-        formLayout.add(commandLineTf, 2);
+//        upcomingScheduledProcess.getProcessExecutionBrokerConfigurationMetaData().getParameters().stream()
+//            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("commandLine"))
+//            .findFirst().ifPresent(configurationParameterMetaData -> commandLineTf.setValue((String)configurationParameterMetaData.getValue()));
+//        formLayout.add(commandLineTf, 2);
 
         DateFormatter dateFormatter = new DateFormatter();
 

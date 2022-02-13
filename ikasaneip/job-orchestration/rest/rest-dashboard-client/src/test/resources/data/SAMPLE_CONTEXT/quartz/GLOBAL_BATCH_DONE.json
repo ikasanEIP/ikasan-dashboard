@@ -1,0 +1,13 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "STPMUR.GLOBAL_BATCH_DONE",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "MANUAL",
+  "cronExpression" : "0 0/1 * ? * * *",
+  "jobGroup" : "jobGroup",
+  "timeZone" : "",
+  "ignoreMisfire" : true,
+  "eager" : false,
+  "identifier" : "scheduler-agent-STPMUR.GLOBAL_BATCH_DONE",
+  "jobDescription" : "description"
+}

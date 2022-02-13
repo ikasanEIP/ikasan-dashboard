@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "WH_REBUILD_PARALLEL",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n#\nset -x\nid\nhostname\ndate\necho \"echoing parameters\"\n\n/opt/murex/prod/scripts/invoke_proc_script.sh WH_RBD_PARALLEL   MXPROCESSINGSCRIPT",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-WH_REBUILD_PARALLEL",
+  "jobDescription" : "WH_REBUILD_PARALLEL"
+}

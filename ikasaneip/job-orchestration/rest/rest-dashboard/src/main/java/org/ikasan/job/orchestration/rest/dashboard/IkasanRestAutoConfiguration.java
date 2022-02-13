@@ -67,8 +67,7 @@ public class IkasanRestAutoConfiguration {
     private JobProvisionService jobProvisionService;
 
     @Bean
-    public ScheduledProcessEventController scheduledProcessEventController()
-    {
+    public ScheduledProcessEventController scheduledProcessEventController() {
         return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert, this.inboundQueue);
     }
 

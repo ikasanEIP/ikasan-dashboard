@@ -21,6 +21,7 @@ import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -102,8 +103,9 @@ public class ContextInstanceRegisterJob implements DashboardJob {
                 .map(internalEventDrivenJobRecord -> internalEventDrivenJobRecord.getInternalEventDrivenJob())
                 .collect(Collectors.toMap(InternalEventDrivenJob::getIdentifier, Function.identity()));
 
+            // todo sort out agents
             ContextMachine contextMachine = new ContextMachine(context, contextInstance, this.scheduledContextInstanceService, internalEventDrivenJobMap,
-                this.queueDirectory);
+                this.queueDirectory, new HashMap<>());
             contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
                 this.schedulerService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event);
             });

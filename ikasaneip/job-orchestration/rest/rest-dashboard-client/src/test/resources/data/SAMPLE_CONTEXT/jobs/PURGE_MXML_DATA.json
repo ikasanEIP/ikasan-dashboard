@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "PURGE_MXML_DATA",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n. ~/.profile\n\ncd $MXROOT/mxmlexchange \n./purge_launch.sh false || exit 1\n./purge_launch.sh false purge_descriptor_18months.xml\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-PURGE_MXML_DATA",
+  "jobDescription" : "PURGE_MXML_DATA"
+}
