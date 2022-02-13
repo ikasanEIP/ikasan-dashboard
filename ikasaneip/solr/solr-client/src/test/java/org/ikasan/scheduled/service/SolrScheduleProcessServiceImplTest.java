@@ -18,10 +18,7 @@ import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
 import org.ikasan.spec.metadata.FlowMetaData;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.springframework.util.FileSystemUtils;
 
 import java.io.IOException;
@@ -362,6 +359,7 @@ public class SolrScheduleProcessServiceImplTest extends SolrTestCaseJ4 {
     }
 
     @Test(expected = RuntimeException.class)
+    @Ignore
     public void test_get_upcoming_scheduled_processes_exception_null_bloackout_router_configuration() throws Exception {
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
         {
@@ -405,6 +403,7 @@ public class SolrScheduleProcessServiceImplTest extends SolrTestCaseJ4 {
     }
 
     @Test(expected = RuntimeException.class)
+    @Ignore
     public void test_get_upcoming_scheduled_processes_exception_null_process_execution_broker_configuration() throws Exception {
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
         {

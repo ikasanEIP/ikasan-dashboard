@@ -4,14 +4,26 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.configuration.metadata.model.SolrConfigurationMetaData;
 import org.ikasan.configuration.metadata.model.SolrConfigurationParameterMetaData;
+import org.ikasan.configurationService.metadata.JsonConfigurationMetaDataProvider;
 import org.ikasan.job.orchestration.builder.context.ContextParameterBuilder;
 import org.ikasan.job.orchestration.builder.job.FileEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.InternalEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.QuartzScheduleDrivenJobBuilder;
+import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
 import org.ikasan.job.orchestration.rest.client.JobProvisionRestServiceImpl;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.module.metadata.dao.SolrModuleMetadataDao;
 import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
+import org.ikasan.module.metadata.service.SolrModuleMetadataServiceImpl;
+import org.ikasan.rest.client.ConfigurationRestServiceImpl;
+import org.ikasan.rest.client.MetaDataRestServiceImpl;
+import org.ikasan.rest.client.ModuleControlRestServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.module.client.ConfigurationService;
+import org.ikasan.spec.module.client.MetaDataService;
+import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.junit.Ignore;
@@ -23,6 +35,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +47,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 @Ignore
-public class JobProvisionRestServiceImplTest {
+public class JobProvisionRestServiceImplTest extends AbstractTest{
     @Mock
     Environment environment;
 
@@ -47,12 +61,12 @@ public class JobProvisionRestServiceImplTest {
     @Test
     public void test_large_number_of_jobs() throws IOException {
 
-            when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
-            when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
-            when(environment.getProperty("ikasan.dashboard.extract.password")).thenReturn("admin");
-            when(environment.getProperty("module.name")).thenReturn("useragent");
-            when(environment.getProperty("ikasan.dashboard.extract.base.url")).thenReturn("http://localhost:9090");
-            when(environment.getProperty("ikasan.dashboard.extract.exceptions", "false")).thenReturn("true");
+        when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
+        when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
+        when(environment.getProperty("ikasan.dashboard.extract.password")).thenReturn("admin");
+        when(environment.getProperty("module.name")).thenReturn("useragent");
+        when(environment.getProperty("ikasan.dashboard.extract.base.url")).thenReturn("http://localhost:9090");
+        when(environment.getProperty("ikasan.dashboard.extract.exceptions", "false")).thenReturn("true");
 
 
 
@@ -83,6 +97,79 @@ public class JobProvisionRestServiceImplTest {
 
         SchedulerJobWrapper wrapper = new SchedulerJobWrapperImpl();
         wrapper.setJobs(schedulerJobs);
+        jobProvisionService.provisionJobs(wrapper);
+    }
+
+    @Test
+    public void test_jobs() throws IOException {
+
+        when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
+        when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
+        when(environment.getProperty("ikasan.dashboard.extract.password")).thenReturn("admin");
+        when(environment.getProperty("module.name")).thenReturn("useragent");
+        when(environment.getProperty("ikasan.dashboard.extract.base.url")).thenReturn("http://localhost:9090");
+        when(environment.getProperty("ikasan.dashboard.extract.exceptions", "false")).thenReturn("true");
+
+        JobProvisionRestServiceImpl jobProvisionService = new JobProvisionRestServiceImpl(environment,
+            new HttpComponentsClientHttpRequestFactory(), "/rest/provision/jobs");
+
+        List<SchedulerJob> schedulerJobs = new ArrayList<>();
+
+        IntStream.range(0, 1).forEach(i -> schedulerJobs.add(this.createFileEventDrivenJob("scheduler-agent", "test-context", "Detects the arrival of a file every minute."
+            , "File Arrive Job", "jobGroup", "0 0/1 * ? * * *", "")));
+
+        IntStream.range(0, 10).forEach(i -> schedulerJobs.add(this.createInternalEventDrivenJob("ls -la", "."
+            , "scheduler-agent", "test-context", "Simple job to perform a directory listing.", "job-"+i, getContextParameters(), List.of())));
+
+        IntStream.range(0, 10).forEach(i -> schedulerJobs.add(this.createInternalEventDrivenJob("pwd", "."
+            , "scheduler-agent-2", "test-context", "Simple job to discover the present working directory.", "job-"+i, getContextParameters(), List.of())));
+
+        SchedulerJobWrapper wrapper = new SchedulerJobWrapperImpl();
+        wrapper.setJobs(schedulerJobs);
+        jobProvisionService.provisionJobs(wrapper);
+    }
+
+    @Test
+    public void sample_provision() throws IOException {
+        when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
+        when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
+        when(environment.getProperty("ikasan.dashboard.extract.password")).thenReturn("admin");
+        when(environment.getProperty("module.name")).thenReturn("useragent");
+        when(environment.getProperty("ikasan.dashboard.extract.base.url")).thenReturn("http://localhost:9090");
+        when(environment.getProperty("ikasan.dashboard.extract.exceptions", "false")).thenReturn("true");
+
+        JobProvisionRestServiceImpl jobProvisionService = new JobProvisionRestServiceImpl(environment,
+            new HttpComponentsClientHttpRequestFactory(), "/rest/provision/jobs");
+
+
+        ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+
+        List<SchedulerJob> jobs = new ArrayList<>();
+
+        Files.list(Path.of("./src/test/resources/data/SAMPLE_CONTEXT/jobs"))
+            .forEach(dir -> {
+                try {
+                    jobs.add(objectMapper
+                        .readValue(super.loadDataFile("/data/SAMPLE_CONTEXT/jobs/"+dir.getFileName()), InternalEventDrivenJobImpl.class));
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+        Files.list(Path.of("./src/test/resources/data/SAMPLE_CONTEXT/quartz"))
+            .forEach(dir -> {
+                try {
+                    jobs.add(objectMapper
+                        .readValue(super.loadDataFile("/data/SAMPLE_CONTEXT/quartz/"+dir.getFileName()), QuartzScheduleDrivenJobImpl.class));
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+        SchedulerJobWrapper wrapper = new SchedulerJobWrapperImpl();
+        wrapper.setJobs(jobs);
         jobProvisionService.provisionJobs(wrapper);
     }
 
@@ -133,13 +220,13 @@ public class JobProvisionRestServiceImplTest {
         FileEventDrivenJobBuilder fileEventDrivenJobBuilder = new FileEventDrivenJobBuilder();
 
         ArrayList files = new ArrayList();
-        files.add("./some-file.txt");
+        files.add("/sandbox/mick/test.txt");
 
         Map<String, String> passthrough = new HashMap<>();
         passthrough.put("test", "test");
 
         fileEventDrivenJobBuilder
-            .withFilePath("./some-file.txt")
+            .withFilePath("/sandbox/mick/test.txt")
             .withFilenames(files)
             .withCronExpression(cronExpression)
             .withTimeZone(timezone)

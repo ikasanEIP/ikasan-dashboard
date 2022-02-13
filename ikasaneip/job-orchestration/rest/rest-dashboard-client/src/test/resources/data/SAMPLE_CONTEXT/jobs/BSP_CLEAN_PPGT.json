@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "BSP_CLEAN_PPGT",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n#\n. ~/.profile\n\n/opt/murex/prod/scripts/invoke_proc_script.sh BSP_CLEAN_PPGT MXPROCESSINGSCRIPT",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-BSP_CLEAN_PPGT",
+  "jobDescription" : "BSP_CLEAN_PPGT"
+}

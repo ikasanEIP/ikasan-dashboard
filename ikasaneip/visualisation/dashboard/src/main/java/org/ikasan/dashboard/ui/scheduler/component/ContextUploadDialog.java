@@ -15,20 +15,34 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
+import org.ikasan.job.orchestration.context.validation.ContextTemplateValidator;
+import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateException;
+import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
+import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.search.SearchResults;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ContextUploadDialog extends AbstractCloseableResizableDialog
 {
@@ -37,17 +51,24 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerService schedulerService;
     private ScheduledContextService scheduledContextService;
+    private InternalEventDrivenJobService internalEventDrivenJobService;
+    private String queueDir;
+    private ModuleMetaDataService moduleMetaDataService;
 
     /**
      * Constructor
      *
      */
     public ContextUploadDialog(ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
-                               ScheduledContextService scheduledContextService)
+                               ScheduledContextService scheduledContextService, InternalEventDrivenJobService internalEventDrivenJobService,
+                               String queueDir, ModuleMetaDataService moduleMetaDataService)
     {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.schedulerService = schedulerService;
         this.scheduledContextService = scheduledContextService;
+        this.internalEventDrivenJobService = internalEventDrivenJobService;
+        this.queueDir = queueDir;
+        this.moduleMetaDataService = moduleMetaDataService;
         this.init();
     }
 
@@ -98,6 +119,10 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
             ContextService contextService = new ContextService();
             try {
                 ContextTemplate contextTemplate = contextService.getContextTemplate(new String(contextFile));
+
+//                ContextTemplateValidator contextTemplateValidator = new ContextTemplateValidator();
+//                contextTemplateValidator.validate(contextTemplate);
+
                 ScheduledContextRecord scheduledContextRecord = new SolrScheduledContextRecordImpl();
                 scheduledContextRecord.setContextName(contextTemplate.getName());
                 scheduledContextRecord.setContext(contextTemplate);
@@ -106,16 +131,30 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
 
                 ContextInstance contextInstance = contextService.getContextInstance(new String(contextFile));
                 contextInstance.setId(UUID.randomUUID().toString());
-                // todo sort out the internal jobs and the queue dir.
+
+                SearchResults<InternalEventDrivenJobRecord> internalEventDrivenJobRecordSearchResults
+                    = this.internalEventDrivenJobService.findByContext(scheduledContextRecord.getContextName(), -1, -1);
+
+                Map<String, InternalEventDrivenJob> internalEventDrivenJobMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
+                    .map(internalEventDrivenJobRecord -> internalEventDrivenJobRecord.getInternalEventDrivenJob())
+                    .collect(Collectors.toMap(InternalEventDrivenJob::getIdentifier, Function.identity()));
+
+                HashMap<String, ModuleMetaData> agents = new HashMap<>();
+                internalEventDrivenJobMap.values().forEach(job -> {
+                    if(!agents.containsKey(job.getAgentName())) {
+                        agents.put(job.getAgentName(), moduleMetaDataService.findById(job.getAgentName()));
+                    }
+                });
+
                 ContextMachine contextMachine = new ContextMachine(contextTemplate, contextInstance, scheduledContextInstanceService
-                    , null, "/sandbox/mick/bigquque");
+                    , internalEventDrivenJobMap, this.queueDir, agents);
                 contextMachine.init();
                 contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
                     schedulerService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event);
                 });
 
-//                DryRunParameters dryRunParameters = new DryRunParametersImpl();
-//                contextMachine.setDryRunParameters(dryRunParameters);
+                DryRunParameters dryRunParameters = new DryRunParametersImpl();
+                contextMachine.setDryRunParameters(dryRunParameters);
 
                 ContextMachineCache.instance().put(contextMachine);
             }
@@ -125,6 +164,9 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
             catch (IOException e) {
                 e.printStackTrace();
             }
+//            catch (InvalidContextTemplateException e) {
+//                e.printStackTrace();
+//            }
 
             this.close();
         });

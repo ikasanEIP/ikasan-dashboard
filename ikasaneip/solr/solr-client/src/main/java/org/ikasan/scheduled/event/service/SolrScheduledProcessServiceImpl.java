@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -123,6 +124,17 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             .collect(Collectors.toList());
     }
 
+    public ConfigurationMetaData getConfigurationForAgentFlowConsumer(String agent, String flow) {
+        ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agent);
+
+        String configurationId =  moduleMetaData.getFlows().stream()
+            .filter(flowMetaData -> flowMetaData.getName().equals(flow))
+            .findFirst().get()
+            .getConsumer().getConfigurationId();
+
+        return this.solrComponentConfigurationMetadataDao.findById(configurationId);
+    }
+
     @Override
     public ConfigurationMetaData getConfigurationForAgentFlowComponent(String agent, String flow, String component) {
         ModuleMetaData moduleMetaData = this.solrModuleMetadataDao.findById(agent);
@@ -145,25 +157,25 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         }
 
         ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfigurationMetaData
-            = this.getConfigurationForAgentFlowComponent(agent, flow, "Scheduled Consumer");
+            = this.getConfigurationForAgentFlowConsumer(agent, flow);
 
         if(scheduledConsumerConfigurationMetaData == null) {
             throw new RuntimeException(String.format("Could not load scheduled consumer configuration for agent[%s], job[%s]", agent, flow));
         }
 
-        ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfigurationMetaData
-            = this.getConfigurationForAgentFlowComponent(agent, flow, "Process Execution Broker");
-
-        if(processExecutionBrokerConfigurationMetaData == null) {
-            throw new RuntimeException(String.format("Could not load process execution broker configuration for agent[%s], job[%s]", agent, flow));
-        }
-
-        ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfigurationMetaData
-            = this.getConfigurationForAgentFlowComponent(agent, flow, "Blackout Router");
-
-        if(blackoutRouterConfigurationMetaData == null) {
-            throw new RuntimeException(String.format("Could not load blackout router configuration for agent[%s], job[%s]", agent, flow));
-        }
+//        ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfigurationMetaData
+//            = this.getConfigurationForAgentFlowComponent(agent, flow, "Process Execution Broker");
+//
+//        if(processExecutionBrokerConfigurationMetaData == null) {
+//            throw new RuntimeException(String.format("Could not load process execution broker configuration for agent[%s], job[%s]", agent, flow));
+//        }
+//
+//        ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfigurationMetaData
+//            = this.getConfigurationForAgentFlowComponent(agent, flow, "Blackout Router");
+//
+//        if(blackoutRouterConfigurationMetaData == null) {
+//            throw new RuntimeException(String.format("Could not load blackout router configuration for agent[%s], job[%s]", agent, flow));
+//        }
 
         List<UpcomingScheduledProcess> results = new ArrayList<>();
 
@@ -195,11 +207,11 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("description"))
             .findFirst().ifPresent(value -> jobDescription.set((String)value.getValue()));
 
-        AtomicReference<String> commandLine = new AtomicReference<>();
-
-        processExecutionBrokerConfigurationMetaData.getParameters().stream()
-            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("commandLine"))
-            .findFirst().ifPresent(value -> commandLine.set((String)value.getValue()));
+//        AtomicReference<String> commandLine = new AtomicReference<>();
+//
+//        processExecutionBrokerConfigurationMetaData.getParameters().stream()
+//            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("commandLine"))
+//            .findFirst().ifPresent(value -> commandLine.set((String)value.getValue()));
 
         if(startTime < System.currentTimeMillis()) {
             startTime = System.currentTimeMillis();
@@ -224,8 +236,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             while (next != null && next.before(new Date(endTime))) {
                 if(offsetCounter >= offset && offsetCounter <= offset+limit) {
                     results.add(new UpcomingScheduledProcess(agent, agentMetaData.getHost(), jobName.get(),
-                        jobGroup.get(), jobDescription.get(), next.getTime(), scheduledConsumerConfigurationMetaData,
-                        processExecutionBrokerConfigurationMetaData, blackoutRouterConfigurationMetaData, cronExpression.getTimeZone().getID()));
+                        jobGroup.get(), jobDescription.get(), next.getTime(), scheduledConsumerConfigurationMetaData, cronExpression.getTimeZone().getID()));
                 }
 
                 next = cronExpression.getNextValidTimeAfter(next);
@@ -458,6 +469,7 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
 
     @Override
     public ScheduledProcessAggregateConfiguration getScheduleProcessAggregateConfiguration(String agent, String flow) {
+        if(true) return new ScheduledProcessAggregateConfiguration();
         if(flow.equals("Scheduled Process Event Outbound Flow")){
             // todo sort out when model complete
             return null;

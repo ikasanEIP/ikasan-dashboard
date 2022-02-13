@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "BSP_BSK_PURGE",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n#\nset -x\nid\nhostname\ndate\necho \"echoing parameters\"\n\n/opt/murex/prod/scripts/invoke_proc_script.sh BSP_BSK_PURGE MXPROCESSINGSCRIPT",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-BSP_BSK_PURGE",
+  "jobDescription" : "BSP_BSK_PURGE"
+}

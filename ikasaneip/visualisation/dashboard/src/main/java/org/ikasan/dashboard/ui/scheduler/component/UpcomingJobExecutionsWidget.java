@@ -38,6 +38,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @CssImport("./styles/dashboard-view.css")
@@ -215,6 +216,11 @@ public class UpcomingJobExecutionsWidget extends Div {
 
 
             if(flowMetaData.size() > 0) {
+                flowMetaData = flowMetaData.stream()
+                    .filter(flow -> flow.getConsumer().getComponentName().equals("Scheduled Consumer")
+                        || flow.getConsumer().getComponentName().equals("File Consumer"))
+                    .collect(Collectors.toList());
+
                 jobSelect.setItems(flowMetaData);
                 if(selectedFlowMetaData != null && flowMetaData.contains(selectedFlowMetaData)) {
                     jobSelect.setValue(flowMetaData.stream().filter(e -> e.equals(selectedFlowMetaData)).findFirst().get());
@@ -245,6 +251,10 @@ public class UpcomingJobExecutionsWidget extends Div {
                     List<FlowMetaData> flowMetaData = this.scheduledProcessManagementService.getFlowsForAgent(event.getValue());
 
                     if (flowMetaData.size() > 0) {
+                        flowMetaData = flowMetaData.stream()
+                            .filter(flow -> flow.getConsumer().getComponentName().equals("Scheduled Consumer")
+                                || flow.getConsumer().getComponentName().equals("File Consumer"))
+                            .collect(Collectors.toList());
                         jobSelect.setItems(flowMetaData);
                         if (this.selectedFlowMetaData != null && flowMetaData.contains(this.selectedFlowMetaData)) {
                             jobSelect.setValue(flowMetaData.stream().filter(e -> e.equals(selectedFlowMetaData)).findFirst().get());

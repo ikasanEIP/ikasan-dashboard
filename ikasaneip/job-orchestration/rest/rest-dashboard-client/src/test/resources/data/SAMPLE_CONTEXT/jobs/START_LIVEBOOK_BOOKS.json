@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "START_LIVEBOOK_BOOKS",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n#\n#set -x\nid\nhostname\ndate\n. ~/.profile\n\ncd $MXROOT/scripts/groovy/src\n./launchers.groovy -run -these LB_BOOKS",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-START_LIVEBOOK_BOOKS",
+  "jobDescription" : "START_LIVEBOOK_BOOKS"
+}

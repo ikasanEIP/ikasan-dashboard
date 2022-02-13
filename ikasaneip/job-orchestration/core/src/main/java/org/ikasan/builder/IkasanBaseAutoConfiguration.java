@@ -100,6 +100,7 @@ public class IkasanBaseAutoConfiguration
     public ExceptionConfig exceptionConfig(){
         return new ExceptionConfig();
     }
+
     @Bean
     public ExceptionResolver exceptionResolver(BuilderFactory builderFactory, ExceptionConfig exceptionConfig)
     {
