@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "STOP_ALL_WORKFLOWS",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n#\n#set -x\n. ~/.profile\nid\nhostname\ndate\necho \"echoing parameters\"\n\ncd $MXROOT\nscripts/groovy/src/launchers.groovy -kill -these WORKFLOWS\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-STOP_ALL_WORKFLOWS",
+  "jobDescription" : "STOP_ALL_WORKFLOWS"
+}

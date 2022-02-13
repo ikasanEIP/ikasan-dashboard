@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -18,9 +19,11 @@ import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,18 +47,24 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
 
     private StringBuffer events = new StringBuffer();
 
+    private InternalEventDrivenJobService internalEventDrivenJobService;
+    private String queueDir;
+
     private UI ui;
 
     /**
      * Constructor
      */
     public ContextDebugWidget(ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
-                              ScheduledContextService scheduledContextService, SystemEventLogger systemEventLogger) {
+                              ScheduledContextService scheduledContextService, SystemEventLogger systemEventLogger,
+                              InternalEventDrivenJobService internalEventDrivenJobService, String queueDir, ModuleMetaDataService moduleMetaDataService) {
         Div div = new Div();
         div.addClassNames("card-counter");
         div.setHeight("100%");
 
         this.scheduledContextService = scheduledContextService;
+        this.internalEventDrivenJobService = internalEventDrivenJobService;
+        this.queueDir = queueDir;
 
         this.initialiseEditor();
 
@@ -90,7 +99,7 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
         Button addContextButton = new Button("Add Context");
         addContextButton.addClickListener(buttonClickEvent -> {
             ContextUploadDialog contextUploadDialog = new ContextUploadDialog(scheduledContextInstanceService,
-                schedulerService, this.scheduledContextService);
+                schedulerService, this.scheduledContextService, this.internalEventDrivenJobService, this.queueDir, moduleMetaDataService);
             contextUploadDialog.open();
 
             contextUploadDialog.addOpenedChangeListener(event -> {
@@ -147,6 +156,7 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
                 e.printStackTrace();
             }
         });
+
 
         HorizontalLayout controlsLayout = new HorizontalLayout();
         controlsLayout.add(this.contextInstances, newContextButton, addContextButton, resetContextButton);

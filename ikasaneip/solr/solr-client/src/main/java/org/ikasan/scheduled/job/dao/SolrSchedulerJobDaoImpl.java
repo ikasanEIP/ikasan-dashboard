@@ -95,6 +95,10 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
             solrQuery.setRows((int)this.findByQuery(solrQuery
                 , SolrSchedulerJobRecordImpl.class).getTotalNumberOfResults());
         }
+        else {
+            solrQuery.setRows(limit);
+            solrQuery.setStart(offset);
+        }
 
         logger.debug("query: " + solrQuery);
 

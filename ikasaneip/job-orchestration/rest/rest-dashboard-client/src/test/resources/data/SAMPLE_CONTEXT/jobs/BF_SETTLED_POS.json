@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "BF_SETTLED_POS",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n#\n\nid\nhostname\ndate\necho \"echoing parameters\"\n\n/opt/murex/prod/scripts/invoke_proc_script.sh BF_SETTLED_POS MXPROCESSINGSCRIPT",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-BF_SETTLED_POS",
+  "jobDescription" : "BF_SETTLED_POS"
+}
