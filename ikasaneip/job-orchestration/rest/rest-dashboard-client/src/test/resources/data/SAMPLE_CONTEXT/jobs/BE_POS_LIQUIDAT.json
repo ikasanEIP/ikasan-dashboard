@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "BE_POS_LIQUIDAT",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n. ~/.profile\nid\nhostname\ndate\n\n/opt/murex/prod/scripts/invoke_proc_script.sh BE_POS_LIQUIDAT MXPROCEXTRACT ",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-BE_POS_LIQUIDAT",
+  "jobDescription" : "BE_POS_LIQUIDAT"
+}

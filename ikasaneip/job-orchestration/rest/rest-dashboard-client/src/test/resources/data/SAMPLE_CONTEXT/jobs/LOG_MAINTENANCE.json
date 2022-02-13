@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "LOG_MAINTENANCE",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n#\n. ~/.profile\nid\nhostname\ndate\necho \"echoing parameters\"\n\n/opt/murex/prod/scripts/env_maint/clean_int_Tools.sh ${FORCE}\n\nexit 0",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-LOG_MAINTENANCE",
+  "jobDescription" : "LOG_MAINTENANCE"
+}

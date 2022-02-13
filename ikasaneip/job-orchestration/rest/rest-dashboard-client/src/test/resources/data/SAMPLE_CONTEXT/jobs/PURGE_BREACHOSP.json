@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "PURGE_BREACHOSP",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n. ~/.profile\n\ncd /opt/murex/prod/mxmlexchange\n./purge_launch_BreachOSP.sh false",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-PURGE_BREACHOSP",
+  "jobDescription" : "PURGE_BREACHOSP"
+}

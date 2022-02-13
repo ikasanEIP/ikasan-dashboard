@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "UPDATE_UNIQUEIDs",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n#\nid\nhostname\ndate\necho \"echoing parameters\"\n. ~/.profile\n\n$MXROOT/scripts/UniqueID/UpdateUniqueIDs.sh",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-UPDATE_UNIQUEIDs",
+  "jobDescription" : "UPDATE_UNIQUEIDs"
+}

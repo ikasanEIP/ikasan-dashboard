@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "STARTSTOP_LIVEBOOK(STPMUR.STARTSTOP_LIVEBOOK.RUN_KILL=kill)",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n#\n#set -x\nid\nhostname\ndate\n. ~/.profile\n\ncd $MXROOT/scripts/groovy/src\n./launchers.groovy -${RUN_KILL} -these LB",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-STARTSTOP_LIVEBOOK(STPMUR.STARTSTOP_LIVEBOOK.RUN_KILL=kill)",
+  "jobDescription" : "STARTSTOP_LIVEBOOK"
+}

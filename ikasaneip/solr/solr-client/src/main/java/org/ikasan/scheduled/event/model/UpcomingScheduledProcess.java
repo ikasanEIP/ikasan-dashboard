@@ -14,13 +14,12 @@ public class UpcomingScheduledProcess {
     private String timezone;
     private long fireTime;
     private ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfigurationMetaData;
-    private ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfigurationMetaData;
-    private ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfigurationMetaData;
+//    private ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfigurationMetaData;
+//    private ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfigurationMetaData;
 
     public UpcomingScheduledProcess(String agentName, String agentHostname, String jobName, String jobGroup, String jobDescription, long fireTime
         , ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfigurationMetaData
-        , ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfigurationMetaData
-        ,ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfigurationMetaData, String timezone) {
+        , String timezone) {
         this.agentName = agentName;
         this.agentHostname = agentHostname;
         this.jobName = jobName;
@@ -28,8 +27,8 @@ public class UpcomingScheduledProcess {
         this.jobDescription = jobDescription;
         this.fireTime = fireTime;
         this.scheduledConsumerConfigurationMetaData = scheduledConsumerConfigurationMetaData;
-        this.processExecutionBrokerConfigurationMetaData = processExecutionBrokerConfigurationMetaData;
-        this.blackoutRouterConfigurationMetaData = blackoutRouterConfigurationMetaData;
+//        this.processExecutionBrokerConfigurationMetaData = processExecutionBrokerConfigurationMetaData;
+//        this.blackoutRouterConfigurationMetaData = blackoutRouterConfigurationMetaData;
         this.timezone = timezone;
     }
 
@@ -64,13 +63,13 @@ public class UpcomingScheduledProcess {
         return scheduledConsumerConfigurationMetaData;
     }
 
-    public ConfigurationMetaData<List<ConfigurationParameterMetaData>> getProcessExecutionBrokerConfigurationMetaData() {
-        return processExecutionBrokerConfigurationMetaData;
-    }
-
-    public ConfigurationMetaData<List<ConfigurationParameterMetaData>> getBlackoutRouterConfigurationMetaData() {
-        return blackoutRouterConfigurationMetaData;
-    }
+//    public ConfigurationMetaData<List<ConfigurationParameterMetaData>> getProcessExecutionBrokerConfigurationMetaData() {
+//        return processExecutionBrokerConfigurationMetaData;
+//    }
+//
+//    public ConfigurationMetaData<List<ConfigurationParameterMetaData>> getBlackoutRouterConfigurationMetaData() {
+//        return blackoutRouterConfigurationMetaData;
+//    }
 
     public void setAgentName(String agentName) {
         this.agentName = agentName;
@@ -101,8 +100,8 @@ public class UpcomingScheduledProcess {
         sb.append(", jobDescription='").append(jobDescription).append('\'');
         sb.append(", fireTime=").append(fireTime);
         sb.append(", scheduledConsumerConfigurationMetaData=").append(scheduledConsumerConfigurationMetaData);
-        sb.append(", processExecutionBrokerConfigurationMetaData=").append(processExecutionBrokerConfigurationMetaData);
-        sb.append(", blackoutRouterConfigurationMetaData=").append(blackoutRouterConfigurationMetaData);
+//        sb.append(", processExecutionBrokerConfigurationMetaData=").append(processExecutionBrokerConfigurationMetaData);
+//        sb.append(", blackoutRouterConfigurationMetaData=").append(blackoutRouterConfigurationMetaData);
         sb.append('}');
         return sb.toString();
     }

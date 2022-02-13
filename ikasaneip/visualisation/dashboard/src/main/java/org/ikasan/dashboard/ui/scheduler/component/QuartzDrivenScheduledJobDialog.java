@@ -85,12 +85,9 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
 
-//    private ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration = new ScheduledProcessAggregateConfiguration();
-//    private ScheduledProcessAggregateConfiguration oldScheduleProcessAggregateConfiguration;
+    private QuartzScheduleDrivenJob quartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
 
-    private SolrQuartzScheduleDrivenJobImpl quartzScheduleDrivenJob;
-
-    private Binder<SolrQuartzScheduleDrivenJobImpl> formBinder;
+    private Binder<QuartzScheduleDrivenJob> formBinder;
 
     private EditMode editMode = EditMode.NEW;
 
@@ -132,7 +129,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
 
 
         this.formBinder
-            = new Binder<>(SolrQuartzScheduleDrivenJobImpl.class);
+            = new Binder<>(QuartzScheduleDrivenJob.class);
 
 
 
@@ -207,7 +204,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         }
         formBinder.forField(this.agentCb)
             .withValidator(agentValue -> !agentValue.isEmpty(), getTranslation("error.missing-agent", UI.getCurrent().getLocale()))
-            .bind(SolrQuartzScheduleDrivenJobImpl::getAgentName, SolrQuartzScheduleDrivenJobImpl::setAgentName);
+            .bind(QuartzScheduleDrivenJob::getAgentName, QuartzScheduleDrivenJob::setAgentName);
         formLayout.add(agentCb, 2);
 
 //        this.startAutomaticCb = new Checkbox(getTranslation("label.start-automatically", UI.getCurrent().getLocale()));
@@ -227,7 +224,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         this.jobNameTf.setEnabled(this.editMode == EditMode.NEW);
         formBinder.forField(this.jobNameTf)
             .withValidator(jobName -> !jobName.isEmpty(), getTranslation("error.missing-job-name", UI.getCurrent().getLocale()))
-            .bind(SolrQuartzScheduleDrivenJobImpl::getJobName, SolrQuartzScheduleDrivenJobImpl::setJobName);
+            .bind(QuartzScheduleDrivenJob::getJobName, QuartzScheduleDrivenJob::setJobName);
         formLayout.add(jobNameTf);
 
 
@@ -236,7 +233,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         this.jobGroupTf.setId("jobGroupTf");
         formBinder.forField(this.jobGroupTf)
             .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-group", UI.getCurrent().getLocale()))
-            .bind(SolrQuartzScheduleDrivenJobImpl::getJobGroup, SolrQuartzScheduleDrivenJobImpl::setJobGroup);
+            .bind(QuartzScheduleDrivenJob::getJobGroup, QuartzScheduleDrivenJob::setJobGroup);
         formLayout.add(jobGroupTf);
 
 
@@ -246,7 +243,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         jobDescriptionTa.getStyle().set("minHeight", "100px");
         formBinder.forField(this.jobDescriptionTa)
             .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
-            .bind(SolrQuartzScheduleDrivenJobImpl::getJobDescription, SolrQuartzScheduleDrivenJobImpl::setJobDescription);
+            .bind(QuartzScheduleDrivenJob::getJobDescription, QuartzScheduleDrivenJob::setJobDescription);
         formLayout.add(jobDescriptionTa, 2);
 
 
@@ -270,7 +267,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         formBinder.forField(this.cronExpressionTf)
             .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
             .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
-            .bind(SolrQuartzScheduleDrivenJobImpl::getCronExpression, SolrQuartzScheduleDrivenJobImpl::setCronExpression);
+            .bind(QuartzScheduleDrivenJob::getCronExpression, QuartzScheduleDrivenJob::setCronExpression);
         formLayout.add(cronExpressionTf);
 
 
@@ -294,7 +291,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
      * @param quartzScheduleDrivenJob
      * @return
      */
-    private boolean performFormValidation(SolrQuartzScheduleDrivenJobImpl quartzScheduleDrivenJob) {
+    private boolean performFormValidation(QuartzScheduleDrivenJob quartzScheduleDrivenJob) {
 
         try {
             AtomicBoolean isValid = new AtomicBoolean(true);
@@ -322,7 +319,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
      *
      * @param solrQuartzScheduleDrivenJob
      */
-    public void createOrUpdateScheduledJob(SolrQuartzScheduleDrivenJobImpl solrQuartzScheduleDrivenJob) throws JsonProcessingException {
+    public void createOrUpdateScheduledJob(QuartzScheduleDrivenJob solrQuartzScheduleDrivenJob) throws JsonProcessingException {
 
         QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
         quartzScheduleDrivenJobRecord.setAgentName(solrQuartzScheduleDrivenJob.getAgentName());
@@ -332,129 +329,6 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         quartzScheduleDrivenJobRecord.setTimestamp(System.currentTimeMillis());
         quartzScheduleDrivenJobRecord.setQuartzScheduleDrivenJob(solrQuartzScheduleDrivenJob);
         this.schedulerJobService.saveQuartzScheduledJobRecord(quartzScheduleDrivenJobRecord);
-        // Get the module configuration from the module.
-//        ConfigurationMetaData<List<ConfigurationParameterMetaData>> moduleConfiguration
-//            = this.configurationRestService.getModuleConfiguration(this.agent.getUrl());
-//
-//        try {
-//
-//            if (moduleConfiguration == null) {
-//                throw new RuntimeException(String.format("Could not find module configuration for agent[%s]", agent));
-//            }
-//
-//            logger.debug("Module Configuration: " + moduleConfiguration);
-//
-//            if (this.editMode == EditMode.NEW) {
-//                // Get the flowDefinitions from the configuration metadata.
-//                moduleConfiguration.getParameters().stream()
-//                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
-//                    .findFirst().ifPresentOrElse(flowDefinitions -> {
-//                    // Add the new job flow to the map.
-//                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
-//                    configurationMap.put(scheduleProcessAggregateConfiguration.getJobName(), "MANUAL");
-//                    flowDefinitions.setValue(configurationMap);
-//
-//                    logger.info("Module Configuration: " + moduleConfiguration);
-//                    // update the configuration back onto the module.
-//                    this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
-//                }, () -> {
-//                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
-//                });
-//
-//
-//                // We need to deactivate and activate the module so the new flow is initialised
-//                this.changeActivation("deactivate");
-//                this.changeActivation("activate");
-//            }
-//
-//            /// Load the required configurations for a scheduled job.
-//            Optional<ModuleMetaData> moduleMetaData = this.metaDataRestService.getModuleMetadata(agent.getUrl(), agent.getName());
-//
-//            ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration = this.getConfigurationForAgentFlowComponent(moduleMetaData,
-//                this.jobNameTf.getValue(), ScheduledProcessConstants.SCHEDULED_CONSUMER);
-//            ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfiguration = this.getConfigurationForAgentFlowComponent(moduleMetaData,
-//                this.jobNameTf.getValue(), ScheduledProcessConstants.BLACKOUT_ROUTER);
-//            ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfiguration = this.getConfigurationForAgentFlowComponent(moduleMetaData,
-//                this.jobNameTf.getValue(), ScheduledProcessConstants.PROCESS_EXECUTION_BROKER);
-//
-//            // Update all the configurations with the configurations provided in the form.
-//            this.updateScheduleConsumerConfiguration(scheduledConsumerConfiguration, scheduleProcessAggregateConfiguration);
-//            this.updateBlackoutRouterConfiguration(blackoutRouterConfiguration, scheduleProcessAggregateConfiguration);
-//            this.updateProcessExecutionBrokerConfiguration(processExecutionBrokerConfiguration, scheduleProcessAggregateConfiguration);
-//
-//            // Save all the configurations back to the agent.
-//            logger.debug(scheduledConsumerConfiguration.toString());
-//            if(!this.configurationRestService.storeConfiguration(this.agent.getUrl(), scheduledConsumerConfiguration)) {
-//                throw new RuntimeException(String.format("Could not store scheduled consumer configuration [%s]", scheduledConsumerConfiguration));
-//            }
-//            this.scheduledProcessManagementService.saveConfiguration(scheduledConsumerConfiguration);
-//
-//            logger.debug(blackoutRouterConfiguration.toString());
-//            if(!this.configurationRestService.storeConfiguration(this.agent.getUrl(), blackoutRouterConfiguration)) {
-//                throw new RuntimeException(String.format("Could not store blackout router configuration [%s]", blackoutRouterConfiguration));
-//            }
-//            this.scheduledProcessManagementService.saveConfiguration(blackoutRouterConfiguration);
-//
-//            logger.debug(processExecutionBrokerConfiguration.toString());
-//            if(!this.configurationRestService.storeConfiguration(this.agent.getUrl(), processExecutionBrokerConfiguration)) {
-//                throw new RuntimeException(String.format("Could not store process execution configuration [%s]", blackoutRouterConfiguration));
-//            }
-//            this.scheduledProcessManagementService.saveConfiguration(processExecutionBrokerConfiguration);
-//
-//
-//            if(this.startAutomaticCb.getValue()) {
-//                // Now that all configurations are applied we need to set up the startup type and restart the flow
-//                String startupType = this.startAutomaticCb.getValue() ? "AUTOMATIC" : "MANUAL";
-//                moduleConfiguration.getParameters().stream()
-//                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
-//                    .findFirst().ifPresentOrElse(flowDefinitions -> {
-//                    // Add the new job flow to the map.
-//                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
-//                    configurationMap.replace(scheduleProcessAggregateConfiguration.getJobName(), startupType);
-//                    flowDefinitions.setValue(configurationMap);
-//
-//                    logger.info("Module Configuration: " + moduleConfiguration);
-//                    // update the configuration back onto the module.
-//                    this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
-//                }, () -> {
-//                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s] " +
-//                        "when attempting to update start up control.", agent));
-//                });
-//
-//                this.moduleControlRestService.changeFlowStartupType(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName()
-//                    , startupType, "Scheduler flow requires automatic startup.");
-//            }
-//
-//            // In order for the configuration to be applied the flow must be stopped and started.
-//            this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName(), "stop");
-//            this.moduleControlRestService.changeFlowState(this.agent.getUrl(), this.agent.getName(), scheduleProcessAggregateConfiguration.getJobName(), "start");
-//        }
-//        catch (Exception e) {
-//            // If any exceptions occur we are going to remove the job that we attempted to create.
-//            if(moduleConfiguration != null) {
-//                moduleConfiguration.getParameters().stream()
-//                    .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("flowDefinitions"))
-//                    .findFirst().ifPresentOrElse(flowDefinitions -> {
-//                    // Add the new job flow to the map.
-//                    Map<String, String> configurationMap = (Map<String, String>) flowDefinitions.getValue();
-//                    configurationMap.remove(scheduleProcessAggregateConfiguration.getJobName());
-//                    flowDefinitions.setValue(configurationMap);
-//
-//                    logger.info("Module Configuration: " + moduleConfiguration);
-//                    // update the configuration back onto the module.
-//                    this.configurationRestService.storeConfiguration(this.agent.getUrl(), moduleConfiguration);
-//                }, () -> {
-//                    throw new RuntimeException(String.format("Could not find flow definitions from module configuration for agent[%s]", agent));
-//                });
-//
-//
-//                // We need to deactivate and activate the module so the new flow is removed when initialisation occurs.
-//                this.changeActivation("deactivate");
-//                this.changeActivation("activate");
-//            }
-//
-//            throw e;
-//        }
      }
 
     /**
@@ -467,68 +341,6 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         if (!success) {
             throw new RuntimeException(String.format("Could not %s agent[%s]", action, agent));
         }
-    }
-
-    /**
-     * Update the scheduled consumer configuration.
-     *
-     * @param scheduledConsumerConfiguration
-     * @param scheduleProcessAggregateConfiguration
-     */
-    private void updateScheduleConsumerConfiguration(ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration
-        , ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.JOB_NAME,
-            scheduleProcessAggregateConfiguration.getJobName());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.JOB_GROUP_NAME,
-            scheduleProcessAggregateConfiguration.getJobGroup());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.JOB_DESCRIPTION,
-            scheduleProcessAggregateConfiguration.getJobDescription());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.CRON_EXPRESSION,
-            scheduleProcessAggregateConfiguration.getCronExpression());
-        if(scheduleProcessAggregateConfiguration.getTimezone() != null) {
-            this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.TIMEZONE,
-                scheduleProcessAggregateConfiguration.getTimezone());
-        }
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.PASS_THROUGH_PROPERTIES,
-            scheduleProcessAggregateConfiguration.getPassthroughProperties());
-    }
-
-    /**
-     * Update the execution broker configuration.
-     *
-     * @param scheduledConsumerConfiguration
-     * @param scheduleProcessAggregateConfiguration
-     */
-    private void updateProcessExecutionBrokerConfiguration(ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration
-        , ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.COMMAND_LINE,
-            scheduleProcessAggregateConfiguration.getCommandLine());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.WORKING_DIRECTORY,
-            scheduleProcessAggregateConfiguration.getWorkingDirectory());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.SUCCESSFUL_RETURN_CODES,
-            scheduleProcessAggregateConfiguration.getSuccessfulReturnCodes());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.SECONDS_TO_WAIT_FOR_PROCESS_TO_START,
-            scheduleProcessAggregateConfiguration.getSecondsToWaitForProcessStart());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.STD_ERR,
-            scheduleProcessAggregateConfiguration.getStdErr());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.STD_OUT,
-            scheduleProcessAggregateConfiguration.getStdOut());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.RETRY_ON_FAIL,
-            scheduleProcessAggregateConfiguration.isRetryOnFail());
-    }
-
-    /**
-     * Update the blackout router configuration.
-     *
-     * @param scheduledConsumerConfiguration
-     * @param scheduleProcessAggregateConfiguration
-     */
-    private void updateBlackoutRouterConfiguration(ConfigurationMetaData<List<ConfigurationParameterMetaData>> scheduledConsumerConfiguration
-        , ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration) {
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.CRON_EXPRESSIONS,
-            scheduleProcessAggregateConfiguration.getBlackoutCronExpressions());
-        this.setConfigurationParameterMetaDataValue(scheduledConsumerConfiguration, ScheduledProcessConfigurationConstants.DATE_TIME_RANGES,
-            scheduleProcessAggregateConfiguration.getBlackoutDateTimeRanges());
     }
 
     /**
@@ -547,41 +359,6 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
                 ", value[%s], configuration[%s]", paramName, value, params)));
     }
 
-    /**
-     * Helper method to get a specific component configuration from the module.
-     *
-     * @param moduleMetaData
-     * @param flow
-     * @param component
-     * @return
-     */
-    private ConfigurationMetaData getConfigurationForAgentFlowComponent(Optional<ModuleMetaData> moduleMetaData, String flow, String component) {
-        AtomicReference<ConfigurationMetaData> configurationMetaData = new AtomicReference<>();
-
-        moduleMetaData.ifPresentOrElse(metaData -> {
-            metaData.getFlows().stream()
-                .filter(flowMetaData -> flowMetaData.getName().equals(flow))
-                .findFirst().ifPresentOrElse(flowMetaData -> {
-                flowMetaData.getFlowElements().stream()
-                    .filter(flowElementMetaData -> flowElementMetaData.getComponentName().equals(component))
-                    .findFirst().ifPresentOrElse(id -> configurationMetaData.set(configurationRestService
-                        .getConfiguredResourceConfiguration(agent.getUrl(), agent.getName(), flow, component))
-                    , () -> {
-                        throw new RuntimeException(String.format("Could not load configuration metadata for agent[%s], flow[%s], component[%s] at url[%s]!"
-                            , agent.getName(), flow, component, agent.getUrl()));
-                    });
-            }, () -> {
-                throw new RuntimeException(String.format("Could not load flow for agent[%s], flow[%s], component[%s] at url[%s]!"
-                    , agent.getName(), flow, component, agent.getUrl()));
-            });
-
-        }, () -> {
-            throw new RuntimeException(String.format("Could not load module metadata for agent[%s] at url[%s]!", agent.getName(), agent.getUrl()));
-        });
-
-
-        return configurationMetaData.get();
-    }
 
     /**
      * Helper method to set controls on the form elements if the form is read only
@@ -607,15 +384,14 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
     /**
      * Set the underlying pojo for the form along with the edit mode.
      *
-     * @param scheduleProcessAggregateConfiguration
+     * @param quartzScheduleDrivenJob
      * @param editMode
      */
-    public void setScheduleProcessAggregateConfiguration(ScheduledProcessAggregateConfiguration scheduleProcessAggregateConfiguration, EditMode editMode) {
+    public void setJob(QuartzScheduleDrivenJob quartzScheduleDrivenJob, EditMode editMode) {
         this.enabled = editMode == EditMode.NEW || editMode == EditMode.EDIT ? true : false;
-//        this.scheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
-//        this.oldScheduleProcessAggregateConfiguration = scheduleProcessAggregateConfiguration;
-//        this.formBinder.readBean(this.scheduleProcessAggregateConfiguration);
-        this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(scheduleProcessAggregateConfiguration.getTimezone()));
+        this.quartzScheduleDrivenJob = quartzScheduleDrivenJob;
+        this.formBinder.readBean(this.quartzScheduleDrivenJob);
+        this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(quartzScheduleDrivenJob.getTimeZone()));
         this.editMode = editMode;
 
         // make sure all value are bound before calling set enabled

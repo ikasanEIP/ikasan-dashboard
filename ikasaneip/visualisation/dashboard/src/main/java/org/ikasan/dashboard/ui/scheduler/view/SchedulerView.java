@@ -22,17 +22,21 @@ import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.spec.flow.Flow;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.module.Module;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -81,6 +85,15 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     @Resource
     private SchedulerJobService schedulerJobService;
+
+    @Resource(name = "moduleMetadataService")
+    private ModuleMetaDataService moduleMetaDataService;
+
+    @Value("${scheduled.job.context.queue.directory}")
+    private String queueDirectory;
+
+    @Resource
+    private InternalEventDrivenJobService internalEventDrivenJobService;
 
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
@@ -175,7 +188,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             scheduledJobsBoard.addRow(this.upcomingJobExecutionsWidget);
             scheduledJobsBoard.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
-            this.contextDebugBoard.addRow(new ContextDebugWidget(this.scheduledContextInstanceService, this.schedulerService, this.scheduledContextService, this.systemEventLogger));
+            this.contextDebugBoard.addRow(new ContextDebugWidget(this.scheduledContextInstanceService, this.schedulerService
+                , this.scheduledContextService, this.systemEventLogger, this.internalEventDrivenJobService, this.queueDirectory, this.moduleMetaDataService));
             initialised = true;
         }
     }

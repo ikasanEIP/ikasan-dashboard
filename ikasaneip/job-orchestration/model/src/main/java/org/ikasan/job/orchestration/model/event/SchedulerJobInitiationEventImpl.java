@@ -3,14 +3,15 @@ package org.ikasan.job.orchestration.model.event;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 
 import java.util.List;
 
-public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEvent<ContextParameterInstanceImpl, InternalEventDrivenJobImpl, DryRunParametersImpl> {
+public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEvent<ContextParameterInstanceImpl, InternalEventDrivenJob, DryRunParametersImpl> {
     private String agentName;
     private String agentUrl;
     private String jobName;
-    private InternalEventDrivenJobImpl internalEventDrivenJob;
+    private InternalEventDrivenJob internalEventDrivenJob;
     private String contextId;
     private String contextInstanceId;
     private List<ContextParameterInstanceImpl> contextParameters;
@@ -49,12 +50,12 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
     }
 
     @Override
-    public InternalEventDrivenJobImpl getInternalEventDrivenJob() {
+    public InternalEventDrivenJob getInternalEventDrivenJob() {
         return internalEventDrivenJob;
     }
 
     @Override
-    public void setInternalEventDrivenJob(InternalEventDrivenJobImpl internalEventDrivenJob) {
+    public void setInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob) {
         this.internalEventDrivenJob = internalEventDrivenJob;
     }
 

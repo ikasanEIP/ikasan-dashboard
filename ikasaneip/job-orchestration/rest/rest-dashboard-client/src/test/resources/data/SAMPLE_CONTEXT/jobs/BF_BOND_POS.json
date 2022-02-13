@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "BF_BOND_POS",
+  "contextId" : "MUREX3_WEEKEND",
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : ".",
+  "commandLine" : "#!/bin/bash\n. ~/.profile\n\n/opt/murex/prod/scripts/invoke_proc_script.sh BF_BOND_POS MXPROCESSINGSCRIPT",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-BF_BOND_POS",
+  "jobDescription" : "BF_BOND_POS"
+}

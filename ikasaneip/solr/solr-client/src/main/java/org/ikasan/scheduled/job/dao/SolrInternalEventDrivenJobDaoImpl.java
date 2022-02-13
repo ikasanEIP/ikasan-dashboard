@@ -79,6 +79,7 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
         queryBuffer.append("\"").append(contextId).append("\" ");
 
         SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(queryBuffer.toString());
         logger.debug("query: " + solrQuery);
 
         return this.findByQuery(solrQuery, SolrInternalEventDrivenJobRecordImpl.class, offset, limit);

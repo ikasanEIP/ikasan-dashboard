@@ -5,7 +5,7 @@ import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 public class DryRunParametersImpl implements DryRunParameters {
 
     private long minExecutionTimeMillis = 1000L;
-    private long maxExecutionTimeMillis = 20000L;
+    private long maxExecutionTimeMillis = 2000L;
     private long fixedExecutionTimeMillis = -1;
     private double jobErrorPercentage = 0.0;
     private boolean error = false;

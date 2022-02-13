@@ -1,6 +1,7 @@
 package org.ikasan.scheduled.event.model;
 
-import org.ikasan.spec.solr.SearchResults;
+
+import org.ikasan.spec.search.SearchResults;
 
 import java.util.List;
 

@@ -15,6 +15,7 @@ import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
@@ -63,18 +64,20 @@ public class ContextMachine {
     private long maxWait;
     private DryRunParameters dryRunParameters;
     private Map<String, InternalEventDrivenJob> internalEventDrivenJobs;
+    private Map<String, ModuleMetaData> agents;
     private String queueDir;
 
     // todo clean up the transient queues once a context is complete.
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
-                          Map<String, InternalEventDrivenJob> internalEventDrivenJobs, String queueDir) {
+                          Map<String, InternalEventDrivenJob> internalEventDrivenJobs, String queueDir,  Map<String, ModuleMetaData> agents) {
         this.internalEventDrivenJobs = internalEventDrivenJobs;
         this.context = context;
 
         this.contextInstance = contextInstance;
         this.internalEventDrivenJobs = internalEventDrivenJobs;
+        this.agents = agents;
         this.queueDir = queueDir;
-        this.jobLogicMachine = new JobLogicMachine();
+        this.jobLogicMachine = new JobLogicMachine(this.agents);
         this.statusConverter = new ContextInstanceToContextInstanceStatusConverter();
         this.contextInstanceStateChangeEventListeners = new ArrayList<>();
         this.statusListenerExecutor = Executors.newSingleThreadExecutor();
@@ -299,13 +302,17 @@ public class ContextMachine {
         List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();
 
         events.forEach(event -> {
-            SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(contextInstance, event.getInternalEventDrivenJob().getIdentifier());
+            try {
+                SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(contextInstance, event.getInternalEventDrivenJob().getIdentifier());
 
-            if(schedulerJobInstance != null && schedulerJobInstance.isHeld()) {
-                this.contextInstance.getHeldJobs().put(schedulerJobInstance.getIdentifier(), event);
+                if (schedulerJobInstance != null && schedulerJobInstance.isHeld()) {
+                    this.contextInstance.getHeldJobs().put(schedulerJobInstance.getIdentifier(), event);
+                } else {
+                    finalEvents.add(event);
+                }
             }
-            else {
-                finalEvents.add(event);
+            catch (Exception e) {
+                throw e;
             }
         });
 
@@ -322,28 +329,35 @@ public class ContextMachine {
      * @return
      */
     private List<SchedulerJobInitiationEvent> getInitiationEvents(ContextInstance contextInstance, ScheduledProcessEvent scheduledProcessEvent) {
-         if(!contextInstance.getStatus().equals(InstanceStatus.COMPLETE)
+        List<SchedulerJobInitiationEvent> results = new ArrayList<>();
+
+        if(!contextInstance.getStatus().equals(InstanceStatus.COMPLETE)
              && contextInstance.getScheduledJobsMap().containsKey(scheduledProcessEvent.getAgentName()
                 + "-" + scheduledProcessEvent.getJobName())) {
 
              // Delegate to the JobLogicMachine to determine if any any SchedulerJobInitiationEvents are
              // required to be raised.
              List<SchedulerJobInitiationEvent> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
-                 , contextInstance, this.dryRunParameters, this.internalEventDrivenJobs, this.contextInstance.getContextParameters());
+                 , contextInstance, this.dryRunParameters, this.internalEventDrivenJobs, this.contextInstance.getContextParameters()
+                 , this.contextInstance);
 
              // Update the context status after event received and attached
              // to the job instance.
              this.setContextStatus(contextInstance);
 
-             return events;
+             if(contextInstance.getContexts() == null || contextInstance.getContexts().isEmpty()) {
+                 return events;
+             }
+             else {
+                 results.addAll(events);
+             }
         }
 
-        List<SchedulerJobInitiationEvent> results = new ArrayList<>();
 
         if (contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()){
             for(ContextInstance instance: contextInstance.getContexts()) {
                 // Recursively work our way through all nested contexts to determine if any job initiation events need to be raised.
-                results.addAll(this.getInitiationEvents((ContextInstanceImpl) instance, scheduledProcessEvent));
+                results.addAll(this.getInitiationEvents(instance, scheduledProcessEvent));
                 this.setContextStatus(contextInstance);
             }
         }
@@ -384,11 +398,16 @@ public class ContextMachine {
     private void setContextStatus(ContextInstance contextInstance) {
         if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
             AtomicBoolean allJobsComplete = new AtomicBoolean(true);
+            AtomicBoolean anyRunningOrCompletedJobs = new AtomicBoolean(false);
             AtomicBoolean anyErrorJobs = new AtomicBoolean(false);
 
             contextInstance.getScheduledJobs().forEach(job -> {
                 if (!job.getStatus().equals(InstanceStatus.COMPLETE)) {
                     allJobsComplete.set(false);
+                }
+                if (job.getStatus().equals(InstanceStatus.RUNNING)
+                    || job.getStatus().equals(InstanceStatus.COMPLETE)) {
+                    anyRunningOrCompletedJobs.set(true);
                 }
                 if (job.getStatus().equals(InstanceStatus.ERROR)) {
                     anyErrorJobs.set(true);
@@ -400,10 +419,10 @@ public class ContextMachine {
             if (anyErrorJobs.get()) {
                 contextInstance.setStatus(InstanceStatus.ERROR);
                 contextInstance.setUpdatedDateTime(System.currentTimeMillis());
-            } else if (allJobsComplete.get()) {
+            } else if(allJobsComplete.get()) {
                 contextInstance.setStatus(InstanceStatus.COMPLETE);
                 contextInstance.setUpdatedDateTime(System.currentTimeMillis());
-            } else {
+            } else if(anyRunningOrCompletedJobs.get()){
                 contextInstance.setStatus(InstanceStatus.RUNNING);
                 contextInstance.setUpdatedDateTime(System.currentTimeMillis());
             }
@@ -416,11 +435,16 @@ public class ContextMachine {
         }
         else if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
             AtomicBoolean allContextsComplete = new AtomicBoolean(true);
+            AtomicBoolean anyRunningOrCompletedContexts = new AtomicBoolean(false);
             AtomicBoolean anyErrorContexts = new AtomicBoolean(false);
 
             contextInstance.getContexts().forEach(context -> {
                 if (!context.getStatus().equals(InstanceStatus.COMPLETE)) {
                     allContextsComplete.set(false);
+                }
+                if (context.getStatus().equals(InstanceStatus.RUNNING)
+                    || context.getStatus().equals(InstanceStatus.COMPLETE)) {
+                    anyRunningOrCompletedContexts.set(true);
                 }
                 if (context.getStatus().equals(InstanceStatus.ERROR)) {
                     anyErrorContexts.set(true);
@@ -433,7 +457,7 @@ public class ContextMachine {
             } else if (allContextsComplete.get()) {
                 contextInstance.setStatus(InstanceStatus.COMPLETE);
                 contextInstance.setUpdatedDateTime(System.currentTimeMillis());
-            } else {
+            } else if(anyRunningOrCompletedContexts.get()){
                 contextInstance.setStatus(InstanceStatus.RUNNING);
                 contextInstance.setUpdatedDateTime(System.currentTimeMillis());
             }

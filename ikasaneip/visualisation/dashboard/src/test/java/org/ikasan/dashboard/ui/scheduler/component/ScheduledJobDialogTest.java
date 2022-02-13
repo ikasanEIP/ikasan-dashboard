@@ -582,7 +582,7 @@ public class ScheduledJobDialogTest extends UITest {
         IntStream.range(0, size).forEach(i -> {
             UpcomingScheduledProcess document = new UpcomingScheduledProcess("agentName", "hostname",   "jobName",
                 "job group", "job description", System.currentTimeMillis(), null
-                , null, null, "UTC");
+                ,  "UTC");
 
 
             ikasanSolrDocuments.add(document);

@@ -1,0 +1,851 @@
+{
+  "name" : "MUREX3_WEEKEND_CONTEXT",
+  "description" : "Context Template Description",
+  "jobDependencies" : [ {
+    "jobIdentifier" : "scheduler-agent-STPMUR.GLOBAL_BATCH_DONE"
+  }, {
+    "jobIdentifier" : "scheduler-agent-BO_DLV_FIX_EOD",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-WH_START_ENGINES"
+      } ]
+    }
+  }, {
+    "jobIdentifier" : "scheduler-agent-MXHC",
+    "logicalGrouping" : {
+      "and" : [ {
+        "identifier" : "scheduler-agent-BE_POS_LIQUIDAT"
+      } ]
+    }
+  } ],
+  "contexts" : [ {
+    "name" : "MUREX_RESTART",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "scheduler-agent-STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=kill)",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-STPMUR.GLOBAL_BATCH_DONE"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-LOG_MAINTENANCE",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=kill)"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-UPDATE_UNIQUEIDs",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-LOG_MAINTENANCE"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=run)",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-UPDATE_UNIQUEIDs"
+        } ]
+      }
+    } ],
+    "scheduledJobs" : [ {
+      "agentName" : "scheduler-agent",
+      "jobName" : "STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=kill)",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=kill)"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "STPMUR.GLOBAL_BATCH_DONE",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-STPMUR.GLOBAL_BATCH_DONE"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "LOG_MAINTENANCE",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-LOG_MAINTENANCE"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "UPDATE_UNIQUEIDs",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-UPDATE_UNIQUEIDs"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=run)",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=run)"
+    } ]
+  }, {
+    "name" : "WEEKLY_PURGES",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "scheduler-agent-STOP_ALL_WORKFLOWS",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=run)"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-BSP_CLEAN_FBS",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-STOP_ALL_WORKFLOWS"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-BSP_CLEAN_PPGT",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-BSP_CLEAN_FBS"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-ACG_HISTORY_PURGE",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-BSP_CLEAN_PPGT"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-PURGE_BULK_EVENTS",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-ACG_HISTORY_PURGE"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-PURGE_JOB_LIST",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-PURGE_BULK_EVENTS"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-PURGE_DM_AUDIT",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-PURGE_JOB_LIST"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-MARKETDATA_PURGE",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-PURGE_DM_AUDIT"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-PURGE_MXML_DATA",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-MARKETDATA_PURGE"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-PURGE_BREACHOSP",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-PURGE_MXML_DATA"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-PURGE_LOSTDATA",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-PURGE_BREACHOSP"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-START_ALL_WORKFLOWS",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-LOG_PURGE_FUT_MAT"
+        } ]
+      }
+    } ],
+    "contexts" : [ {
+      "name" : "ETF_BSKT_PURGE",
+      "jobDependencies" : [ {
+        "jobIdentifier" : "scheduler-agent-BF_MHI_PURGE_DT",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-PURGE_LOSTDATA"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-BSP_BSK_PURGE",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-BF_MHI_PURGE_DT"
+          } ]
+        }
+      } ],
+      "scheduledJobs" : [ {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BF_MHI_PURGE_DT",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BF_MHI_PURGE_DT"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "PURGE_LOSTDATA",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-PURGE_LOSTDATA"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BSP_BSK_PURGE",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BSP_BSK_PURGE"
+      } ]
+    }, {
+      "name" : "LOGICAL_PURGES",
+      "jobDependencies" : [ {
+        "jobIdentifier" : "scheduler-agent-BF_BOND_POS",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-BSP_BSK_PURGE"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-BF_EQUITY_POS",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-BF_BOND_POS"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-TRADES_LOGICAL_PURGE",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-BF_EQUITY_POS"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-LOG_PURGE_EQTY_POS",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-TRADES_LOGICAL_PURGE"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-LOG_PURGE_BOND_MAT",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-LOG_PURGE_EQTY_POS"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-LOG_PURGE_FUT_MAT",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-LOG_PURGE_BOND_MAT"
+          } ]
+        }
+      } ],
+      "scheduledJobs" : [ {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BF_BOND_POS",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BF_BOND_POS"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BSP_BSK_PURGE",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BSP_BSK_PURGE"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BF_EQUITY_POS",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BF_EQUITY_POS"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "TRADES_LOGICAL_PURGE",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-TRADES_LOGICAL_PURGE"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "LOG_PURGE_EQTY_POS",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-LOG_PURGE_EQTY_POS"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "LOG_PURGE_BOND_MAT",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-LOG_PURGE_BOND_MAT"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "LOG_PURGE_FUT_MAT",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-LOG_PURGE_FUT_MAT"
+      } ]
+    } ],
+    "scheduledJobs" : [ {
+      "agentName" : "scheduler-agent",
+      "jobName" : "STOP_ALL_WORKFLOWS",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-STOP_ALL_WORKFLOWS"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=run)",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=run)"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "BSP_CLEAN_FBS",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-BSP_CLEAN_FBS"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "BSP_CLEAN_PPGT",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-BSP_CLEAN_PPGT"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "ACG_HISTORY_PURGE",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-ACG_HISTORY_PURGE"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "PURGE_BULK_EVENTS",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-PURGE_BULK_EVENTS"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "PURGE_JOB_LIST",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-PURGE_JOB_LIST"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "PURGE_DM_AUDIT",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-PURGE_DM_AUDIT"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "MARKETDATA_PURGE",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-MARKETDATA_PURGE"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "PURGE_MXML_DATA",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-PURGE_MXML_DATA"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "PURGE_BREACHOSP",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-PURGE_BREACHOSP"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "PURGE_LOSTDATA",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-PURGE_LOSTDATA"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "START_ALL_WORKFLOWS",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-START_ALL_WORKFLOWS"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "LOG_PURGE_FUT_MAT",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-LOG_PURGE_FUT_MAT"
+    } ]
+  }, {
+    "name" : "WAREHOUSE_REBUILD",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "scheduler-agent-BSP_REM_PTF_NDE",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-START_ALL_WORKFLOWS"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-WH_CLEANUP",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-BSP_REM_PTF_NDE"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-WH_STOP_ENGINES",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-WH_CLEANUP"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-WH_REBUILD_PARALLEL",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-WH_STOP_ENGINES"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-WH_MAINTENANCE_PAR",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-WH_REBUILD_PARALLEL"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-WH_START_ENGINES",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-WH_MAINTENANCE_PAR"
+        } ]
+      }
+    } ],
+    "scheduledJobs" : [ {
+      "agentName" : "scheduler-agent",
+      "jobName" : "BSP_REM_PTF_NDE",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-BSP_REM_PTF_NDE"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "START_ALL_WORKFLOWS",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-START_ALL_WORKFLOWS"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "WH_CLEANUP",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-WH_CLEANUP"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "WH_STOP_ENGINES",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-WH_STOP_ENGINES"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "WH_REBUILD_PARALLEL",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-WH_REBUILD_PARALLEL"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "WH_MAINTENANCE_PAR",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-WH_MAINTENANCE_PAR"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "WH_START_ENGINES",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-WH_START_ENGINES"
+    } ]
+  }, {
+    "name" : "WEEKEND_LIVEBOOKS",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "scheduler-agent-STARTSTOP_LIVEBOOK(STPMUR.STARTSTOP_LIVEBOOK.RUN_KILL=kill)",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-BO_DLV_FIX_EOD"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-START_LIVEBOOK_CORE",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-STARTSTOP_LIVEBOOK(STPMUR.STARTSTOP_LIVEBOOK.RUN_KILL=kill)"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-START_LIVEBOOK_BOOKS",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-NEWRUN_RBPL_XCCY"
+        } ]
+      }
+    } ],
+    "contexts" : [ {
+      "name" : "CLEAN_RBPL",
+      "jobDependencies" : [ {
+        "jobIdentifier" : "scheduler-agent-CLEAN_RBPL_USD_T",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-START_LIVEBOOK_CORE"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-CLEAN_RBPL_EUR_T",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-CLEAN_RBPL_USD_T"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-CLEAN_RBPL_GBP_T",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-CLEAN_RBPL_EUR_T"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-CLEAN_RBPL_XCCY_T",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-CLEAN_RBPL_GBP_T"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-CLEAN_RBPL_MGMT_T",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-CLEAN_RBPL_XCCY_T"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-CLEAN_RBPL_FL_USD_T",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-CLEAN_RBPL_MGMT_T"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-CLEAN_RBPL_FL_EUR_T",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-CLEAN_RBPL_FL_USD_T"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-CLEAN_RBPL_FL_GBP_T",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-CLEAN_RBPL_FL_EUR_T"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-CLEAN_RBPL_FL_XCC_T",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-CLEAN_RBPL_FL_GBP_T"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-CLEAN_RBPL_FL_MGM_T",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-CLEAN_RBPL_FL_XCC_T"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-CLEAN_RBPL_USD_NY_T",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-CLEAN_RBPL_FL_MGM_T"
+          } ]
+        }
+      } ],
+      "scheduledJobs" : [ {
+        "agentName" : "scheduler-agent",
+        "jobName" : "CLEAN_RBPL_USD_T",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-CLEAN_RBPL_USD_T"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "START_LIVEBOOK_CORE",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-START_LIVEBOOK_CORE"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "CLEAN_RBPL_EUR_T",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-CLEAN_RBPL_EUR_T"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "CLEAN_RBPL_GBP_T",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-CLEAN_RBPL_GBP_T"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "CLEAN_RBPL_XCCY_T",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-CLEAN_RBPL_XCCY_T"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "CLEAN_RBPL_MGMT_T",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-CLEAN_RBPL_MGMT_T"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "CLEAN_RBPL_FL_USD_T",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-CLEAN_RBPL_FL_USD_T"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "CLEAN_RBPL_FL_EUR_T",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-CLEAN_RBPL_FL_EUR_T"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "CLEAN_RBPL_FL_GBP_T",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-CLEAN_RBPL_FL_GBP_T"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "CLEAN_RBPL_FL_XCC_T",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-CLEAN_RBPL_FL_XCC_T"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "CLEAN_RBPL_FL_MGM_T",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-CLEAN_RBPL_FL_MGM_T"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "CLEAN_RBPL_USD_NY_T",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-CLEAN_RBPL_USD_NY_T"
+      } ]
+    }, {
+      "name" : "NEWRUN_RBPL",
+      "jobDependencies" : [ {
+        "jobIdentifier" : "scheduler-agent-NEWRUN_RBPL_EUR",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-CLEAN_RBPL_USD_NY_T"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-NEWRUN_RBPL_FlashMGM",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-NEWRUN_RBPL_EUR"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-NEWRUN_RBPL_FlashUSD",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-NEWRUN_RBPL_FlashMGM"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-NEWRUN_RBPL_FlashXCC",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-NEWRUN_RBPL_FlashUSD"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-NEWRUN_RBPL_Flash_EU",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-NEWRUN_RBPL_FlashXCC"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-NEWRUN_RBPL_Flash_GBP",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-NEWRUN_RBPL_Flash_EU"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-NEWRUN_RBPL_GBP",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-NEWRUN_RBPL_Flash_GBP"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-NEWRUN_RBPL_MGMT",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-NEWRUN_RBPL_GBP"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-NEWRUN_RBPL_USD",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-NEWRUN_RBPL_MGMT"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-NEWRUN_RBPL_USD_NY",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-NEWRUN_RBPL_USD"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-NEWRUN_RBPL_XCCY",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-NEWRUN_RBPL_USD_NY"
+          } ]
+        }
+      } ],
+      "scheduledJobs" : [ {
+        "agentName" : "scheduler-agent",
+        "jobName" : "NEWRUN_RBPL_EUR",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-NEWRUN_RBPL_EUR"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "CLEAN_RBPL_USD_NY_T",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-CLEAN_RBPL_USD_NY_T"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "NEWRUN_RBPL_FlashMGM",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-NEWRUN_RBPL_FlashMGM"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "NEWRUN_RBPL_FlashUSD",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-NEWRUN_RBPL_FlashUSD"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "NEWRUN_RBPL_FlashXCC",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-NEWRUN_RBPL_FlashXCC"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "NEWRUN_RBPL_Flash_EU",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-NEWRUN_RBPL_Flash_EU"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "NEWRUN_RBPL_Flash_GBP",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-NEWRUN_RBPL_Flash_GBP"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "NEWRUN_RBPL_GBP",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-NEWRUN_RBPL_GBP"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "NEWRUN_RBPL_MGMT",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-NEWRUN_RBPL_MGMT"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "NEWRUN_RBPL_USD",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-NEWRUN_RBPL_USD"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "NEWRUN_RBPL_USD_NY",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-NEWRUN_RBPL_USD_NY"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "NEWRUN_RBPL_XCCY",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-NEWRUN_RBPL_XCCY"
+      } ]
+    } ],
+    "scheduledJobs" : [ {
+      "agentName" : "scheduler-agent",
+      "jobName" : "STARTSTOP_LIVEBOOK(STPMUR.STARTSTOP_LIVEBOOK.RUN_KILL=kill)",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-STARTSTOP_LIVEBOOK(STPMUR.STARTSTOP_LIVEBOOK.RUN_KILL=kill)"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "BO_DLV_FIX_EOD",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-BO_DLV_FIX_EOD"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "START_LIVEBOOK_CORE",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-START_LIVEBOOK_CORE"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "START_LIVEBOOK_BOOKS",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-START_LIVEBOOK_BOOKS"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "NEWRUN_RBPL_XCCY",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-NEWRUN_RBPL_XCCY"
+    } ]
+  }, {
+    "name" : "LIQ_MUREX_REC",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "scheduler-agent-BF_SETTLED_POS",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-START_LIVEBOOK_BOOKS"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-BF_MHI_LIQUIDATION",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-BF_SETTLED_POS"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-BF_POS_LIQUIDAT",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-BF_MHI_LIQUIDATION"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-BE_POS_LIQUIDAT",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-BF_POS_LIQUIDAT"
+        } ]
+      }
+    } ],
+    "scheduledJobs" : [ {
+      "agentName" : "scheduler-agent",
+      "jobName" : "BF_SETTLED_POS",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-BF_SETTLED_POS"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "START_LIVEBOOK_BOOKS",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-START_LIVEBOOK_BOOKS"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "BF_MHI_LIQUIDATION",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-BF_MHI_LIQUIDATION"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "BF_POS_LIQUIDAT",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-BF_POS_LIQUIDAT"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "BE_POS_LIQUIDAT",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-BE_POS_LIQUIDAT"
+    } ]
+  } ],
+  "scheduledJobs" : [ {
+    "agentName" : "scheduler-agent",
+    "jobName" : "STPMUR.GLOBAL_BATCH_DONE",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-STPMUR.GLOBAL_BATCH_DONE"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "BO_DLV_FIX_EOD",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-BO_DLV_FIX_EOD"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "WH_START_ENGINES",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-WH_START_ENGINES"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "MXHC",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-MXHC"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "BE_POS_LIQUIDAT",
+    "startupControlType" : "AUTOMATIC",
+    "identifier" : "scheduler-agent-BE_POS_LIQUIDAT"
+  } ],
+  "timeWindowStart" : "* * 6 ? * * *",
+  "timeWindowEnd" : "* * 15 ? * * *"
+}
