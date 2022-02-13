@@ -17,6 +17,7 @@ import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -77,6 +78,7 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
+    @Ignore
     public void test_complex_sample_context() throws IOException, InvalidContextTemplateException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/SAMPLE_CONTEXT/context/SAMPLE_CONTEXT.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/SAMPLE_CONTEXT/context/SAMPLE_CONTEXT.json"));
