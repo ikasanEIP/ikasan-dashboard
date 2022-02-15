@@ -79,7 +79,8 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
         this.scheduledJobs = scheduledJobs;
         if(scheduledJobs != null) {
             this.scheduledJobsMap = this.scheduledJobs.stream()
-                .collect(Collectors.toMap(item -> item.getIdentifier()   , item -> item));
+                .collect(Collectors.toMap(item -> item.getIdentifier()   , item -> item
+                    , (a1, a2) -> a1));
         }
     }
 
