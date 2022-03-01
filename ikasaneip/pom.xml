@@ -371,6 +371,11 @@
         <version.big.queue>0.7.2</version.big.queue>
         <version.logback>1.2.3</version.logback>
         <ikasan.core.version>3.3.0-scheduler-SNAPSHOT</ikasan.core.version>
+        <version.spring.webflux>5.3.10</version.spring.webflux>
+        <version.reactor.test>3.4.10</version.reactor.test>
+        <version.reactor.netty.http>1.0.11</version.reactor.netty.http>
+        <version.okhttp3>3.7.0</version.okhttp3>
+
     </properties>
 
     <!-- Distribution for releases -->

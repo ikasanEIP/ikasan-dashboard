@@ -75,4 +75,10 @@ public class ModuleRestClientAutoConfiguration
         return new SchedulerRestServiceImpl(environment, httpComponentsClientHttpRequestFactory);
     }
 
+    @Bean
+    public LogStreamingService logStreamingService(Environment environment
+        ,HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory){
+        return new LogStreamingServiceRestImpl(environment, httpComponentsClientHttpRequestFactory);
+    }
+
 }
