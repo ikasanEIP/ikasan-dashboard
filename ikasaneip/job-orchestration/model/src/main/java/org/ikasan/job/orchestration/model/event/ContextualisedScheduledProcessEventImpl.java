@@ -3,6 +3,8 @@ package org.ikasan.job.orchestration.model.event;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 
+import java.util.List;
+
 public class ContextualisedScheduledProcessEventImpl implements ContextualisedScheduledProcessEvent<String, DryRunParametersImpl> {
     private Long id;
     private String agentName;
@@ -23,6 +25,7 @@ public class ContextualisedScheduledProcessEventImpl implements ContextualisedSc
     private long completionTime;
     private boolean dryRun = false;
     private String contextId;
+    private List<String> childContextIds;
     private String contextInstanceId;
     private boolean jobStarting = false;
     private DryRunParametersImpl dryRunParameters;
@@ -39,7 +42,6 @@ public class ContextualisedScheduledProcessEventImpl implements ContextualisedSc
     {
         this.id = id;
     }
-
 
     @Override
     public String getAgentName() {
@@ -227,6 +229,16 @@ public class ContextualisedScheduledProcessEventImpl implements ContextualisedSc
     @Override
     public void setContextId(String contextId) {
         this.contextId = contextId;
+    }
+
+    @Override
+    public List<String> getChildContextIds() {
+        return childContextIds;
+    }
+
+    @Override
+    public void setChildContextIds(List<String> childContextIds) {
+        this.childContextIds = childContextIds;
     }
 
     @Override

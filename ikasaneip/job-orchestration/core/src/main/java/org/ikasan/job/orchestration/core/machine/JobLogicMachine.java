@@ -6,6 +6,7 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.context.model.JobDependency;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
+import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
@@ -47,14 +48,15 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      *
      * @return
      */
-    public List<SchedulerJobInitiationEvent> getJobInitiationEvents(ScheduledProcessEvent scheduledProcessEvent
+    public List<SchedulerJobInitiationEvent> getJobInitiationEvents(ContextualisedScheduledProcessEvent scheduledProcessEvent
         , ContextInstance contextInstance, DryRunParameters dryRunParameters, Map<String, InternalEventDrivenJob> internalEventDrivenJobs
         , List<ContextParameterInstance> contextParameters, ContextInstance parentContextInstance) {
         SchedulerJobInstance schedulerJobInstance = contextInstance.getScheduledJobsMap()
             .get(scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName());
 
         // Firstly the status of the job is set on the instance.
-        if(schedulerJobInstance != null) {
+        if(schedulerJobInstance != null && (scheduledProcessEvent.getChildContextIds() == null
+            || scheduledProcessEvent.getChildContextIds().contains(contextInstance.getName()))) {
             // we update the job result with the event if it is relevant in this context.
             InstanceStatus currentJobState = schedulerJobInstance.getStatus();
 

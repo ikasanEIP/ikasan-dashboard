@@ -7,6 +7,7 @@ import org.ikasan.spec.scheduled.context.model.ContextParameter;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 public class AbstractTest
 {
@@ -29,6 +30,31 @@ public class AbstractTest
 
         return eventInstance;
     }
+
+    protected ContextualisedScheduledProcessEventImpl scheduledProcessEventInstance(String contextId, String childContextId
+        , String jobName, String agentName, boolean isSuccessful) {
+        ContextualisedScheduledProcessEventImpl eventInstance = new ContextualisedScheduledProcessEventImpl();
+        eventInstance.setContextId(contextId);
+        eventInstance.setChildContextIds(List.of(childContextId));
+        eventInstance.setJobName(jobName);
+        eventInstance.setAgentName(agentName);
+        eventInstance.setSuccessful(isSuccessful);
+
+        return eventInstance;
+    }
+
+    protected ContextualisedScheduledProcessEventImpl scheduledProcessEventInstance(String contextId, List<String> childContextIds
+        , String jobName, String agentName, boolean isSuccessful) {
+        ContextualisedScheduledProcessEventImpl eventInstance = new ContextualisedScheduledProcessEventImpl();
+        eventInstance.setContextId(contextId);
+        eventInstance.setChildContextIds(childContextIds);
+        eventInstance.setJobName(jobName);
+        eventInstance.setAgentName(agentName);
+        eventInstance.setSuccessful(isSuccessful);
+
+        return eventInstance;
+    }
+
 
     protected ContextParameter getContextParameter(String name, String type) {
         ContextParameterImpl contextParameter = new ContextParameterImpl();
