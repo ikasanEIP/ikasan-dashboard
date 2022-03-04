@@ -25,6 +25,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ContextMachineTest extends AbstractTest {
@@ -56,32 +57,14 @@ public class ContextMachineTest extends AbstractTest {
         internalEventDrivenJobs.put("agentName14-jobName14", this.newInternalEventDrivenJob("agentName14-jobName14"));
         internalEventDrivenJobs.put("agentName15-jobName15", this.newInternalEventDrivenJob("agentName15-jobName15"));
         internalEventDrivenJobs.put("agentName16-jobName16", this.newInternalEventDrivenJob("agentName16-jobName16"));
-        internalEventDrivenJobs.put("scheduler-agent-STPMUR.GLOBAL_BATCH_DONE", this.newInternalEventDrivenJob("scheduler-agent-STPMUR.GLOBAL_BATCH_DONE"));
-        internalEventDrivenJobs.put("scheduler-agent-STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=kill)"
-            , this.newInternalEventDrivenJob("scheduler-agent-STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=kill)"));
-        internalEventDrivenJobs.put("scheduler-agent-LOG_MAINTENANCE"
-            , this.newInternalEventDrivenJob("scheduler-agent-LOG_MAINTENANCE"));
-        internalEventDrivenJobs.put("scheduler-agent-UPDATE_UNIQUEIDs"
-            , this.newInternalEventDrivenJob("scheduler-agent-UPDATE_UNIQUEIDs"));
-        internalEventDrivenJobs.put("scheduler-agent-STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=run)"
-            , this.newInternalEventDrivenJob("scheduler-agent-STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=run)"));
-
-        internalEventDrivenJobs.put("scheduler-agent-STOP_ALL_WORKFLOWS"
-            , this.newInternalEventDrivenJob("scheduler-agent-STOP_ALL_WORKFLOWS"));
-
-        internalEventDrivenJobs.put("scheduler-agent-ETF_BSKT_PURGE"
-            , this.newInternalEventDrivenJob("scheduler-agent-ETF_BSKT_PURGE"));
-
-        internalEventDrivenJobs.put("scheduler-agent-BSP_CLEAN_PPGT"
-            , this.newInternalEventDrivenJob("scheduler-agent-BSP_CLEAN_PPGT"));
 
     }
 
     @Test
     @Ignore
     public void test_complex_sample_context() throws IOException, InvalidContextTemplateException {
-        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/SAMPLE_CONTEXT/context/SAMPLE_CONTEXT.json"));
-        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/SAMPLE_CONTEXT/context/SAMPLE_CONTEXT.json"));
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/context/SAMPLE_CONTEXT.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/context/SAMPLE_CONTEXT.json"));
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance
             , new ScheduledContextInstanceServiceTestImpl(), internalEventDrivenJobs, this.queueDir, new HashMap<>());
@@ -1654,5 +1637,1842 @@ public class ContextMachineTest extends AbstractTest {
         contextInstance = contextMachine.getContext("NonExistentContext");
 
         Assert.assertNull(contextInstance);
+    }
+
+    /**
+     * This test performs a complex batch based on file /data/contexts/CONTEXT-1436221681.json
+     *
+     * The format of the test is to firee ContextualisedScheduledProcessEventImpl at the ContextMachine
+     * and monitor for JobInitiationEvents that are raised by the context machine.
+     *
+     * At key intervals within the context orchestration, the state of all the internal contexts
+     * are validated in order to make sure that the appropriate state transitions are occurring
+     * when events are raised.
+     *
+     * JSON snippets accompany areas of the code exercising that part of the file.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void test_complex_context_with_scheduled_and_file_jobs() throws IOException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/CONTEXT-1436221681.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/CONTEXT-1436221681.json"));
+
+        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>());
+
+        /**
+         * name" : "CONTEXT-1616645609",
+         *     "jobDependencies" : [ {
+         *       "jobIdentifier" : "scheduler-agent-1799613995",
+         *       "logicalGrouping" : {
+         *         "and" : [ {
+         *           "identifier" : "scheduler-agent-1799613995_ScheduledJob_06:00"
+         *         } ]
+         *       }
+         *     }, {
+         *       "jobIdentifier" : "scheduler-agent--1352045846",
+         *       "logicalGrouping" : {
+         *         "and" : [ {
+         *           "identifier" : "scheduler-agent--1352045846_ScheduledJob_06:00"
+         *         } ]
+         *       }
+         *     } ],
+         *     "scheduledJobs" : [ {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "1799613995",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent-1799613995"
+         *     }, {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "1799613995_ScheduledJob_06:00",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent-1799613995_ScheduledJob_06:00"
+         *     }, {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "-1352045846",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent--1352045846"
+         *     }, {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "-1352045846_ScheduledJob_06:00",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent--1352045846_ScheduledJob_06:00"
+         *     } ]
+         *   }
+         */
+        // Execute the first scheduled job that fires based on a cron expression.
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT-1616645609"
+                ,"scheduler-agent", "1799613995_ScheduledJob_06:00", true).size());
+
+        // Now check that the appropriate contexts are in the state that we expect.
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        // Send the subsequent events in the initial context.
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT-1616645609"
+                , "scheduler-agent", "1799613995", true).size());
+
+        Assert. assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT-1616645609"
+                , "scheduler-agent", "-1352045846_ScheduledJob_06:00", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT-1616645609"
+                , "scheduler-agent", "-1352045846", true).size());
+
+        // Now confirm that the initial context is complete but the parent still running as some of its children are waiting.
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+
+        /**
+         * {
+         *     "name" : "CONTEXT-1848727981",
+         *     "contexts" : [ {
+         *       "name" : "CONTEXT--1209755884",
+         *       "jobDependencies" : [ {
+         *         "jobIdentifier" : "scheduler-agent-1164721449",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent-515125013"
+         *           }, {
+         *             "identifier" : "scheduler-agent-515125014"
+         *           }, {
+         *             "identifier" : "scheduler-agent--2127221002"
+         *           }, {
+         *             "identifier" : "scheduler-agent--2127221001"
+         *           }, {
+         *             "identifier" : "scheduler-agent--1423328214"
+         *           }, {
+         *             "identifier" : "scheduler-agent--1423328213"
+         *           }, {
+         *             "identifier" : "scheduler-agent-1634692843"
+         *           }, {
+         *             "identifier" : "scheduler-agent-1634692844"
+         *           } ]
+         *         }
+         *       } ],
+         *       "scheduledJobs" : [ {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "1164721449",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent-1164721449"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "515125013",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent-515125013"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "515125014",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent-515125014"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "-2127221002",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent--2127221002"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "-2127221001",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent--2127221001"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "-1423328214",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent--1423328214"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "-1423328213",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent--1423328213"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "1634692843",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent-1634692843"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "1634692844",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent-1634692844"
+         *       } ]
+         *     }
+         */
+        // Now waiting on a bunch of file received jobs
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine,  "CONTEXT-1436221681", "CONTEXT--1209755884",
+                "scheduler-agent", "515125013", true).size());
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT--1209755884",
+                "scheduler-agent", "515125014", true).size());
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT--1209755884",
+                "scheduler-agent", "-2127221002", true).size());
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT--1209755884",
+                "scheduler-agent", "-2127221001", true).size());
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine,  "CONTEXT-1436221681", "CONTEXT--1209755884",
+                "scheduler-agent", "-1423328214", true).size());
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine,  "CONTEXT-1436221681", "CONTEXT--1209755884",
+                "scheduler-agent", "-1423328213", true).size());
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine,  "CONTEXT-1436221681", "CONTEXT--1209755884",
+                "scheduler-agent", "1634692843", true).size());
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine,  "CONTEXT-1436221681", "CONTEXT--1209755884",
+                "scheduler-agent", "1634692844", true).size());
+
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        // Now the event that occurred due to all the file events
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT--1209755884"
+                , "scheduler-agent", "1164721449", true).size());
+
+        // confirm that context 1209755884 is now complete
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *       "name" : "CONTEXT-774294372",
+         *       "jobDependencies" : [ {
+         *         "jobIdentifier" : "scheduler-agent--505061472",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent--940759996"
+         *           }, {
+         *             "identifier" : "scheduler-agent-1998299171"
+         *           }, {
+         *             "identifier" : "scheduler-agent-707845497"
+         *           }, {
+         *             "identifier" : "scheduler-agent--1874104712"
+         *           } ]
+         *         }
+         *       } ],
+         *       "scheduledJobs" : [ {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "-505061472",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent--505061472"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "-940759996",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent--940759996"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "1998299171",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent-1998299171"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "707845497",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent-707845497"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "-1874104712",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent--1874104712"
+         *       } ]
+         *     }
+         */
+        // Now waiting on a bunch more file received jobs
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine,  "CONTEXT-1436221681", "CONTEXT-774294372",
+                "scheduler-agent", "-940759996", true).size());
+
+        // confirm the context now running
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.RUNNING);
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT-774294372",
+                "scheduler-agent", "1998299171", true).size());
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT-774294372",
+                "scheduler-agent", "707845497", true).size());
+
+        // once all 4 file events are received an event is raised
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT-774294372",
+                "scheduler-agent", "-1874104712", true).size());
+
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-774294372", "CONTEXT--2036736597"),
+                "scheduler-agent", "-505061472", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT--2036736597",
+                "scheduler-agent", "-502413013", true).size());
+
+        // confirm that context 1209755884 is now complete
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *     "name" : "CONTEXT-1590773100",
+         *     "contexts" : [ {
+         *       "name" : "CONTEXT--129403053",
+         *       "jobDependencies" : [ {
+         *         "jobIdentifier" : "scheduler-agent-1164721449",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent-1178974128"
+         *           }, {
+         *             "identifier" : "scheduler-agent-1178974129"
+         *           } ]
+         *         }
+         *       } ],
+         *       "scheduledJobs" : [ {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "1164721449",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent-1164721449"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "1178974128",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent-1178974128"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "1178974129",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent-1178974129"
+         *       } ]
+         *     }
+         */
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT--129403053",
+                "scheduler-agent", "1178974129", true).size());
+
+        // once all 4 file events are received an event is raised
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT--129403053",
+                "scheduler-agent", "1178974128", true).size());
+
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT--129403053",
+                "scheduler-agent", "1164721449", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *       "name" : "CONTEXT-1589183395",
+         *       "jobDependencies" : [ {
+         *         "jobIdentifier" : "scheduler-agent-744167903",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent--1692626050"
+         *           } ]
+         *         }
+         *       }
+         */
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", "CONTEXT-1589183395",
+                "scheduler-agent", "-1692626050", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1589183395", "CONTEXT-1195088490"),
+                "scheduler-agent", "744167903", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *       "name" : "CONTEXT-1195088490",
+         *       "jobDependencies" : [ {
+         *         "jobIdentifier" : "scheduler-agent--1479686678",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent-744167903"
+         *           } ]
+         *         }
+         *       } ],
+         *       "scheduledJobs" : [ {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "-1479686678",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent--1479686678"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "744167903",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent-744167903"
+         *       } ]
+         *     }
+         */
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1195088490"),
+                "scheduler-agent", "-1479686678", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *     "name" : "CONTEXT-1182789380",
+         *     "jobDependencies" : [ {
+         *       "jobIdentifier" : "scheduler-agent-97656185",
+         *       "logicalGrouping" : {
+         *         "and" : [ {
+         *           "identifier" : "scheduler-agent--857357080"
+         *         } ]
+         *       }
+         *     }
+         */
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789380"),
+                "scheduler-agent", "-857357080", true).size());
+
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789380", "CONTEXT--663833459"),
+                "scheduler-agent", "97656185", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *       "name" : "CONTEXT--663833459",
+         *       "jobDependencies" : [ {
+         *         "jobIdentifier" : "scheduler-agent--131863702",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent-97656185"
+         *           } ]
+         *         }
+         *       }, {
+         *         "jobIdentifier" : "scheduler-agent-239208485",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent--131863702"
+         *           } ]
+         *         }
+         *       }, {
+         *         "jobIdentifier" : "scheduler-agent--742746991",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent-239208485"
+         *           } ]
+         *         }
+         *       } ],
+         *       "scheduledJobs" : [ {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "-131863702",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent--131863702"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "97656185",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent-97656185"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "239208485",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent-239208485"
+         *       }, {
+         *         "agentName" : "scheduler-agent",
+         *         "jobName" : "-742746991",
+         *         "startupControlType" : "AUTOMATIC",
+         *         "identifier" : "scheduler-agent--742746991"
+         *       } ]
+         *     }
+         */
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--663833459"),
+                "scheduler-agent", "-131863702", true).size());
+
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--663833459"),
+                "scheduler-agent", "239208485", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--663833459"),
+                "scheduler-agent", "-742746991", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *     "name" : "CONTEXT-1616674532",
+         *     "jobDependencies" : [ {
+         *       "jobIdentifier" : "scheduler-agent--764230802",
+         *       "logicalGrouping" : {
+         *         "and" : [ {
+         *           "identifier" : "scheduler-agent--764230802_ScheduledJob_15:25:00"
+         *         } ]
+         *       }
+         *     }, {
+         *       "jobIdentifier" : "scheduler-agent-2090738162",
+         *       "logicalGrouping" : {
+         *         "and" : [ {
+         *           "identifier" : "scheduler-agent-2090738162_ScheduledJob_16:30:00"
+         *         } ]
+         *       }
+         *     }, {
+         *       "jobIdentifier" : "scheduler-agent-241430090",
+         *       "logicalGrouping" : {
+         *         "and" : [ {
+         *           "identifier" : "scheduler-agent-241430090_ScheduledJob_16:30:00"
+         *         } ]
+         *       }
+         *     } ],
+         *     "scheduledJobs" : [ {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "-764230802",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent--764230802"
+         *     }, {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "-764230802_ScheduledJob_15:25:00",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent--764230802_ScheduledJob_15:25:00"
+         *     }, {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "2090738162",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent-2090738162"
+         *     }, {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "2090738162_ScheduledJob_16:30:00",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent-2090738162_ScheduledJob_16:30:00"
+         *     }, {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "241430090",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent-241430090"
+         *     }, {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "241430090_ScheduledJob_16:30:00",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent-241430090_ScheduledJob_16:30:00"
+         *     } ]
+         *   }
+         */
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1616674532"),
+                "scheduler-agent", "-764230802_ScheduledJob_15:25:00", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1616674532"),
+                "scheduler-agent", "-764230802", true).size());
+
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1616674532"),
+                "scheduler-agent", "2090738162_ScheduledJob_16:30:00", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1616674532"),
+                "scheduler-agent", "2090738162", true).size());
+
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1616674532"),
+                "scheduler-agent", "241430090_ScheduledJob_16:30:00", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1616674532"),
+                "scheduler-agent", "241430090", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *     "name" : "CONTEXT-1182789416",
+         *     "jobDependencies" : [ {
+         *       "jobIdentifier" : "scheduler-agent-97656185",
+         *       "logicalGrouping" : {
+         *         "and" : [ {
+         *           "identifier" : "scheduler-agent-210659119"
+         *         }, {
+         *           "identifier" : "scheduler-agent-2014644399"
+         *         }, {
+         *           "identifier" : "scheduler-agent--1758465897"
+         *         }, {
+         *           "identifier" : "scheduler-agent--148873498"
+         *         } ]
+         *       }
+         *     }
+         */
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789416"),
+                "scheduler-agent", "-148873498", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789416"),
+                "scheduler-agent", "-1758465897", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789416"),
+                "scheduler-agent", "2014644399", true).size());
+
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789416"),
+                "scheduler-agent", "210659119", true).size());
+
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789416", "CONTEXT-613708632"),
+                "scheduler-agent", "97656185", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *       "name" : "CONTEXT-613708632",
+         *       "jobDependencies" : [ {
+         *         "jobIdentifier" : "scheduler-agent--131863702",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent-97656185"
+         *           } ]
+         *         }
+         *       }, {
+         *         "jobIdentifier" : "scheduler-agent-1720807104",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent--131863702"
+         *           } ]
+         *         }
+         *       }, {
+         *         "jobIdentifier" : "scheduler-agent-1836346836",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent-1720807104"
+         *           } ]
+         *         }
+         *       }
+         */
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-613708632"),
+                "scheduler-agent", "-131863702", true).size());
+
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-613708632"),
+                "scheduler-agent", "1720807104", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-613708632"),
+                "scheduler-agent", "1836346836", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+
+        /**
+         * {
+         *       "name" : "CONTEXT-521366615",
+         *       "jobDependencies" : [ {
+         *         "jobIdentifier" : "scheduler-agent-1164721449",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent-290005873"
+         *           }, {
+         *             "identifier" : "scheduler-agent-290005874"
+         *           }, {
+         *             "identifier" : "scheduler-agent-1581813691"
+         *           }, {
+         *             "identifier" : "scheduler-agent-1581813692"
+         *           }, {
+         *             "identifier" : "scheduler-agent-748080832"
+         *           }, {
+         *             "identifier" : "scheduler-agent-748080833"
+         *           }, {
+         *             "identifier" : "scheduler-agent-340732842"
+         *           }, {
+         *             "identifier" : "scheduler-agent-340732843"
+         *           } ]
+         *         }
+         *       }
+         */
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
+                "scheduler-agent", "290005873", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
+                "scheduler-agent", "290005874", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
+                "scheduler-agent", "1581813691", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
+                "scheduler-agent", "1581813692", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
+                "scheduler-agent", "748080832", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
+                "scheduler-agent", "748080833", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
+                "scheduler-agent", "340732842", true).size());
+
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
+                "scheduler-agent", "340732843", true).size());
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
+                "scheduler-agent", "1164721449", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *         "jobIdentifier" : "scheduler-agent-1226061027",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent--1613104257"
+         *           }, {
+         *             "identifier" : "scheduler-agent--847515063"
+         *           }, {
+         *             "identifier" : "scheduler-agent--1157186056"
+         *           }, {
+         *             "identifier" : "scheduler-agent-99102350"
+         *           } ]
+         *         }
+         *       }
+         */
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1789550425"),
+                "scheduler-agent", "99102350", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1789550425"),
+                "scheduler-agent", "-1157186056", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1789550425"),
+                "scheduler-agent", "-847515063", true).size());
+
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1789550425"),
+                "scheduler-agent", "-1613104257", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1789550425"),
+                "scheduler-agent", "1226061027", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+        
+        /**
+         * {
+         *       "name" : "CONTEXT--305614098",
+         *       "jobDependencies" : [ {
+         *         "jobIdentifier" : "scheduler-agent-1228709486",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent-1226061027"
+         *           } ]
+         *         }
+         *       }
+         */
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--305614098"),
+                "scheduler-agent", "1226061027", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--305614098"),
+                "scheduler-agent", "1228709486", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *       "name" : "CONTEXT--918631717",
+         *       "jobDependencies" : [ {
+         *         "jobIdentifier" : "scheduler-agent-1164721449",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent--1349296895"
+         *           }, {
+         *             "identifier" : "scheduler-agent--1349296894"
+         *           }, {
+         *             "identifier" : "scheduler-agent--1028088288"
+         *           }, {
+         *             "identifier" : "scheduler-agent--1028088287"
+         *           } ]
+         *         }
+         */
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--918631717"),
+                "scheduler-agent", "-1349296895", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--918631717"),
+                "scheduler-agent", "-1349296894", true).size());
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--918631717"),
+                "scheduler-agent", "-1028088288", true).size());
+
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--918631717"),
+                "scheduler-agent", "-1028088287", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--918631717"),
+                "scheduler-agent", "1164721449", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *       "name" : "CONTEXT-1065418539",
+         *       "jobDependencies" : [ {
+         *         "jobIdentifier" : "scheduler-agent--213937305",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent-2072336655"
+         *           }, {
+         *             "identifier" : "scheduler-agent--1493805586"
+         *           } ]
+         *         }
+         *       }
+         */
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1065418539"),
+                "scheduler-agent", "2072336655", true).size());
+
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1065418539"),
+                "scheduler-agent", "-1493805586", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *       "name" : "CONTEXT--1745612430",
+         *       "jobDependencies" : [ {
+         *         "jobIdentifier" : "scheduler-agent--211288846",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent--213937305"
+         *           } ]
+         *         }
+         *       }
+         */
+
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1065418539", "CONTEXT--1745612430"),
+                "scheduler-agent", "-213937305", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1745612430"),
+                "scheduler-agent", "-211288846", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *     "contexts" : [ {
+         *       "name" : "CONTEXT--1250033421",
+         *       "jobDependencies" : [ {
+         *         "jobIdentifier" : "scheduler-agent-1164721449",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent--254494704"
+         *           }, {
+         *             "identifier" : "scheduler-agent--254494703"
+         *           } ]
+         *         }
+         */
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1250033421"),
+                "scheduler-agent", "-254494704", true).size());
+
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1250033421"),
+                "scheduler-agent", "-254494703", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1250033421"),
+                "scheduler-agent", "1164721449", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *       "name" : "CONTEXT--1543216829",
+         *       "jobDependencies" : [ {
+         *         "jobIdentifier" : "scheduler-agent-1651431039",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent-1009789918"
+         *           } ]
+         *         }
+         *       }
+         */
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1543216829"),
+                "scheduler-agent", "1009789918", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1543216829"),
+                "scheduler-agent", "1651431039", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        /**
+         * {
+         *       "name" : "CONTEXT--1409548854",
+         *       "jobDependencies" : [ {
+         *         "jobIdentifier" : "scheduler-agent--98367158",
+         *         "logicalGrouping" : {
+         *           "and" : [ {
+         *             "identifier" : "scheduler-agent-1651431039"
+         *           } ]
+         *         }
+         *       }
+         */
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1409548854"),
+                "scheduler-agent", "1651431039", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.RUNNING);
+
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+            (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1409548854"),
+                "scheduler-agent", "-98367158", true).size());
+
+        // confirm that context context states as expected
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1195088490", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.COMPLETE);
+
+        /**
+         * The orchestration is now complete!
+         */
+    }
+
+    private List<SchedulerJobInitiationEvent> sendScheduledEventToContextMachine(ContextMachine contextMachine, String agentName, String jobName, boolean eventSuccessful) {
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance(jobName, agentName, eventSuccessful);
+
+        return contextMachine.eventReceived(eventInstance);
+    }
+
+    private List<SchedulerJobInitiationEvent> sendScheduledEventToContextMachine(ContextMachine contextMachine, String contextId, List<String> childContextIds
+        , String agentName, String jobName, boolean eventSuccessful) {
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance(contextId, childContextIds, jobName, agentName, eventSuccessful);
+
+        return contextMachine.eventReceived(eventInstance);
+    }
+
+    private List<SchedulerJobInitiationEvent> sendScheduledEventToContextMachine(ContextMachine contextMachine, String contextId, String childContextId
+        , String agentName, String jobName, boolean eventSuccessful) {
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance(contextId, childContextId, jobName, agentName, eventSuccessful);
+
+        return contextMachine.eventReceived(eventInstance);
+    }
+
+    private void assertContextStatus(ContextMachine contextMachine, String context, InstanceStatus expected) {
+        InstanceStatus status = contextMachine.getContextStatus(context);
+        Assert.assertEquals(expected, status);
+    }
+
+    private Map<String, InternalEventDrivenJob> createInternalJobsMap(ContextTemplate contextTemplate) {
+        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
+
+        contextTemplate.getScheduledJobs().forEach(job -> internalEventDrivenJobs.put(job.getIdentifier(),
+            new InternalEventDrivenJobImpl()));
+
+        if(contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
+            contextTemplate.getContexts().forEach(template -> this.addInternalJobs(template, internalEventDrivenJobs));
+        }
+
+        return internalEventDrivenJobs;
+    }
+
+    private void addInternalJobs(ContextTemplate contextTemplate, Map<String, InternalEventDrivenJob> internalEventDrivenJobs) {
+        if(contextTemplate.getContexts() == null || contextTemplate.getContexts().isEmpty()) {
+            contextTemplate.getScheduledJobs().forEach(job -> internalEventDrivenJobs.put(job.getIdentifier(),
+                new InternalEventDrivenJobImpl()));
+        }
+        else {
+            contextTemplate.getContexts().forEach(template -> this.addInternalJobs(template, internalEventDrivenJobs));
+        }
     }
 }
