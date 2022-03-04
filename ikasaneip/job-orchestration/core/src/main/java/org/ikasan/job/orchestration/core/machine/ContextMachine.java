@@ -20,10 +20,7 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
-import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.model.DryRunParameters;
-import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
-import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
+import org.ikasan.spec.scheduled.event.model.*;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
@@ -296,7 +293,7 @@ public class ContextMachine {
      * @param scheduledProcessEvent
      * @return
      */
-    protected List<SchedulerJobInitiationEvent> eventReceived(ScheduledProcessEvent scheduledProcessEvent) {
+    protected List<SchedulerJobInitiationEvent> eventReceived(ContextualisedScheduledProcessEvent scheduledProcessEvent) {
         List<SchedulerJobInitiationEvent> events = this.getInitiationEvents(this.contextInstance, scheduledProcessEvent);
 
         List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();
@@ -329,7 +326,7 @@ public class ContextMachine {
      * @param scheduledProcessEvent
      * @return
      */
-    private List<SchedulerJobInitiationEvent> getInitiationEvents(ContextInstance contextInstance, ScheduledProcessEvent scheduledProcessEvent) {
+    private List<SchedulerJobInitiationEvent> getInitiationEvents(ContextInstance contextInstance, ContextualisedScheduledProcessEvent scheduledProcessEvent) {
         List<SchedulerJobInitiationEvent> results = new ArrayList<>();
 
         if(!contextInstance.getStatus().equals(InstanceStatus.COMPLETE)
@@ -434,7 +431,8 @@ public class ContextMachine {
                 this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl(contextInstance, previousStatus, newStatus));
             }
         }
-        else if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
+
+        if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
             AtomicBoolean allContextsComplete = new AtomicBoolean(true);
             AtomicBoolean anyRunningOrCompletedContexts = new AtomicBoolean(false);
             AtomicBoolean anyErrorContexts = new AtomicBoolean(false);
@@ -511,7 +509,7 @@ public class ContextMachine {
                     return;
                 }
 
-                ScheduledProcessEvent scheduledProcessEvent
+                ContextualisedScheduledProcessEvent scheduledProcessEvent
                     = objectMapper.readValue(event, ContextualisedScheduledProcessEventImpl.class);
 
                 List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents = eventReceived(scheduledProcessEvent);
