@@ -13,6 +13,7 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
     private String jobName;
     private InternalEventDrivenJob internalEventDrivenJob;
     private String contextId;
+    private List<String> childContextIds;
     private String contextInstanceId;
     private List<ContextParameterInstanceImpl> contextParameters;
     private boolean dryRun = false;
@@ -67,6 +68,16 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
     @Override
     public void setContextId(String contextId) {
         this.contextId = contextId;
+    }
+
+    @Override
+    public List<String> getChildContextIds() {
+        return childContextIds;
+    }
+
+    @Override
+    public void setChildContextIds(List<String> childContextIds) {
+        this.childContextIds = childContextIds;
     }
 
     @Override
