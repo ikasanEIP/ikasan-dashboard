@@ -60,43 +60,6 @@ public class ContextMachineTest extends AbstractTest {
 
     }
 
-    @Test
-    @Ignore
-    public void test_complex_sample_context() throws IOException, InvalidContextTemplateException {
-        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/context/SAMPLE_CONTEXT.json"));
-        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/context/SAMPLE_CONTEXT.json"));
-
-        ContextMachine contextMachine  = new ContextMachine(context, contextInstance
-            , new ScheduledContextInstanceServiceTestImpl(), internalEventDrivenJobs, this.queueDir, new HashMap<>());
-
-        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("STPMUR.GLOBAL_BATCH_DONE",
-            "scheduler-agent", true);
-        contextMachine.eventReceived(eventInstance);
-
-        eventInstance = scheduledProcessEventInstance("STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=kill)",
-            "scheduler-agent", true);
-        contextMachine.eventReceived(eventInstance);
-
-        eventInstance = scheduledProcessEventInstance("LOG_MAINTENANCE",
-            "scheduler-agent", true);
-        contextMachine.eventReceived(eventInstance);
-
-        eventInstance = scheduledProcessEventInstance("UPDATE_UNIQUEIDs",
-            "scheduler-agent", true);
-        contextMachine.eventReceived(eventInstance);
-
-        eventInstance = scheduledProcessEventInstance("STARTSTOP_ALL_MUREX(STPMUR.STARTSTOP_ALL_MUREX.RUN_KILL=run)",
-            "scheduler-agent", true);
-        contextMachine.eventReceived(eventInstance);
-
-        eventInstance = scheduledProcessEventInstance("BSP_CLEAN_FBS",
-            "scheduler-agent", true);
-        contextMachine.eventReceived(eventInstance);
-
-        System.out.println(this.objectMapper.writerWithDefaultPrettyPrinter()
-            .writeValueAsString(contextMachine.getContextInstanceStatus()));
-    }
-
     private InternalEventDrivenJob newInternalEventDrivenJob(String jobIdentifier) {
         InternalEventDrivenJob job = new InternalEventDrivenJobImpl();
         job.setIdentifier(jobIdentifier);
