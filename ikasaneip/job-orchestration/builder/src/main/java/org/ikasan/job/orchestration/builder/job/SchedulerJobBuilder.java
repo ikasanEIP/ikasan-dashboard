@@ -4,10 +4,14 @@ import org.ikasan.job.orchestration.builder.context.ContextBuilderException;
 import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SchedulerJobBuilder {
     protected String agentName;
     protected String jobName;
     protected String contextId;
+    protected List<String> childContextIds;
     protected String description;
     protected String startupControlType = "AUTOMATIC";
 
@@ -46,6 +50,22 @@ public class SchedulerJobBuilder {
      */
     public SchedulerJobBuilder withContextId(String contextId) {
         this.contextId = contextId;
+
+        return this;
+    }
+
+    /**
+     * Add a child context id.
+     *
+     * @param childContextId
+     * @return
+     */
+    public SchedulerJobBuilder addChildContextId(String childContextId) {
+        if(this.childContextIds == null) {
+            this.childContextIds = new ArrayList<>();
+        }
+
+        this.childContextIds.add(childContextId);
 
         return this;
     }

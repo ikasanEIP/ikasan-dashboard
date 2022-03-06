@@ -3,12 +3,15 @@ package org.ikasan.scheduled.job.model;
 
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
+import java.util.List;
+
 public class SolrSchedulerJobImpl implements SchedulerJob {
     protected String jobIdentifier;
     protected String agentName;
     protected String jobName;
     protected String jobDescription;
     protected String contextId;
+    protected List<String> childContextIds;
     protected String startupControlType = "AUTOMATIC";
 
     @Override
@@ -19,6 +22,16 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
     @Override
     public void setContextId(String contextId) {
         this.contextId = contextId;
+    }
+
+    @Override
+    public List<String> getChildContextIds() {
+        return childContextIds;
+    }
+
+    @Override
+    public void setChildContextIds(List<String> childContextIds) {
+        this.childContextIds = childContextIds;
     }
 
     @Override
