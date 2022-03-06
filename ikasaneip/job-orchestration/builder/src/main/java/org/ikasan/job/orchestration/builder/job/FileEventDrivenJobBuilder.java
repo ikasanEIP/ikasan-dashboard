@@ -88,6 +88,7 @@ public class FileEventDrivenJobBuilder extends QuartzScheduleDrivenJobBuilder {
         fileEventDrivenJob.setJobDescription(super.description);
         fileEventDrivenJob.setJobName(super.jobName);
         fileEventDrivenJob.setContextId(super.contextId);
+        fileEventDrivenJob.setChildContextIds(super.childContextIds);
         fileEventDrivenJob.setCronExpression(super.cronExpression);
         fileEventDrivenJob.setPassthroughProperties(this.passthroughProperties);
         fileEventDrivenJob.setTimeZone(super.timeZone);

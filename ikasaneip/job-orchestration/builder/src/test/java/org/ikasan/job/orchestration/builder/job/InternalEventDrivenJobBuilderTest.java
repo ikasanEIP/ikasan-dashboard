@@ -33,6 +33,7 @@ public class InternalEventDrivenJobBuilderTest extends AbstractTest {
             .withContextId("contextId")
             .withAgentName("agentName")
             .withContextId("contextId")
+            .addChildContextId("childContextId")
             .withDescription("description")
             .withJobName("jobName");
 

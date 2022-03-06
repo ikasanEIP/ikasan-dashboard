@@ -2,6 +2,7 @@
   "agentName" : "agentName",
   "jobName" : "jobName",
   "contextId" : "contextId",
+  "childContextIds" : [ "childContextId" ],
   "startupControlType" : "MANUAL",
   "cronExpression" : "cronExpression",
   "jobGroup" : "jobGroup",

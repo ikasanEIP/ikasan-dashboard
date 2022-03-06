@@ -59,7 +59,6 @@
 
     <dependencies>
 
-
         <dependency>
             <groupId>org.ikasan</groupId>
             <artifactId>ikasan-rest-dashboard-client</artifactId>
