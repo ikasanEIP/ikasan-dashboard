@@ -81,6 +81,7 @@ public class InternalEventDrivenJobBuilder extends SchedulerJobBuilder {
         internalEventDrivenJob.setMaxExecutionTime(this.maxExecutionTime);
         internalEventDrivenJob.setStartupControlType(super.startupControlType);
         internalEventDrivenJob.setContextId(super.contextId);
+        internalEventDrivenJob.setChildContextIds(super.childContextIds);
 
         return internalEventDrivenJob;
     }
