@@ -2,6 +2,7 @@
   "agentName" : "agentName",
   "jobName" : "jobName",
   "contextId" : "contextId",
+  "childContextIds" : [ "childContextId" ],
   "startupControlType" : "AUTOMATIC",
   "successfulReturnCodes" : [ "0" ],
   "workingDirectory" : "working directory",
@@ -15,6 +16,6 @@
     "name" : "name2",
     "type" : "java.lang.String"
   } ],
-  "identifier" : "agentName-jobName",
-  "jobDescription" : "description"
+  "jobDescription" : "description",
+  "identifier" : "agentName-jobName"
 }

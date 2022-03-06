@@ -48,6 +48,7 @@ public class FileEventDrivenJobBuilderTest extends AbstractTest {
             .withRecoveryTolerance(100L)
             .withAgentName("agentName")
             .withContextId("contextId")
+            .addChildContextId("childContextId")
             .withDescription("description")
             .withJobName("jobName")
             .withStartupControlType("MANUAL");
