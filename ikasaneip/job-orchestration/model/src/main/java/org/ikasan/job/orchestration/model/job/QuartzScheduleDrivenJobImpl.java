@@ -119,5 +119,27 @@ public class QuartzScheduleDrivenJobImpl extends SchedulerJobImpl implements Qua
         this.recoveryTolerance = recoveryTolerance;
     }
 
-
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("QuartzScheduleDrivenJobImpl{");
+        sb.append("cronExpression='").append(cronExpression).append('\'');
+        sb.append(", jobGroup='").append(jobGroup).append('\'');
+        sb.append(", timeZone='").append(timeZone).append('\'');
+        sb.append(", ignoreMisfire=").append(ignoreMisfire);
+        sb.append(", eager=").append(eager);
+        sb.append(", maxEagerCallbacks=").append(maxEagerCallbacks);
+        sb.append(", passthroughProperties=").append(passthroughProperties);
+        sb.append(", persistentRecovery=").append(persistentRecovery);
+        sb.append(", recoveryTolerance=").append(recoveryTolerance);
+        sb.append(", jobIdentifier='").append(jobIdentifier).append('\'');
+        sb.append(", agentName='").append(agentName).append('\'');
+        sb.append(", jobName='").append(jobName).append('\'');
+        sb.append(", contextId='").append(contextId).append('\'');
+        sb.append(", childContextIds=[ ");
+        childContextIds.forEach(id -> sb.append("[").append(id).append("] "));
+        sb.append("], description='").append(description).append('\'');
+        sb.append(", startupControlType='").append(startupControlType).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

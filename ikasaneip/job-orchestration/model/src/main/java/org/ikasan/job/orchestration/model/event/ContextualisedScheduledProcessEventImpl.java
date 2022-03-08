@@ -293,16 +293,17 @@ public class ContextualisedScheduledProcessEventImpl implements ContextualisedSc
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("ScheduledProcessEventImpl{");
+        final StringBuffer sb = new StringBuffer("ContextualisedScheduledProcessEventImpl{");
         sb.append("id=").append(id);
         sb.append(", agentName='").append(agentName).append('\'');
+        sb.append(", agentHostname='").append(agentHostname).append('\'');
         sb.append(", jobName='").append(jobName).append('\'');
         sb.append(", jobGroup='").append(jobGroup).append('\'');
         sb.append(", jobDescription='").append(jobDescription).append('\'');
         sb.append(", commandLine='").append(commandLine).append('\'');
         sb.append(", returnCode=").append(returnCode);
         sb.append(", successful=").append(successful);
-        sb.append(", outcome=").append(outcome);
+        sb.append(", outcome='").append(outcome).append('\'');
         sb.append(", resultOutput='").append(resultOutput).append('\'');
         sb.append(", resultError='").append(resultError).append('\'');
         sb.append(", pid=").append(pid);
@@ -312,8 +313,13 @@ public class ContextualisedScheduledProcessEventImpl implements ContextualisedSc
         sb.append(", completionTime=").append(completionTime);
         sb.append(", dryRun=").append(dryRun);
         sb.append(", contextId='").append(contextId).append('\'');
-        sb.append(", contextInstanceId='").append(contextInstanceId).append('\'');
+        sb.append(", childContextIds=[ ");
+        childContextIds.forEach(id -> sb.append("[").append(id).append("] "));
+        sb.append("], contextInstanceId='").append(contextInstanceId).append('\'');
         sb.append(", jobStarting=").append(jobStarting);
+        sb.append(", dryRunParameters=").append(dryRunParameters);
+        sb.append(", skipped=").append(skipped);
+        sb.append(", internalEventDrivenJob=").append(internalEventDrivenJob);
         sb.append('}');
         return sb.toString();
     }

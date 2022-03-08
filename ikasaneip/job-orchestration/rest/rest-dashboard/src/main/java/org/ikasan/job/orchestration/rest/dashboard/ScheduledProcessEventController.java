@@ -119,7 +119,7 @@ public class ScheduledProcessEventController
     {
         try
         {
-            logger.debug(scheduledProcessEventPayload);
+            logger.info("Received - {}", scheduledProcessEventPayload);
             this.inboundQueue.enqueue(scheduledProcessEventPayload.getBytes());
         }
         catch (Exception e)
