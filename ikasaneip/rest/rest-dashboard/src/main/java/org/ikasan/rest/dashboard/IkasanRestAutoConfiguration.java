@@ -40,14 +40,11 @@
  */
 package org.ikasan.rest.dashboard;
 
-import com.leansoft.bigqueue.IBigQueue;
 import org.ikasan.security.service.UserService;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.persistence.BatchInsert;
-import org.ikasan.spec.scheduled.provision.JobProvisionService;
-import org.ikasan.spec.solr.SolrGeneralService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -95,12 +92,6 @@ public class IkasanRestAutoConfiguration
     @Resource
     private FlowStateCacheAdapter cacheAdapter;
 
-    @Resource
-    private IBigQueue inboundQueue;
-
-    @Resource
-    private JobProvisionService jobProvisionService;
-
     @Bean
     public ReplayController replayApplication()
     {
@@ -138,12 +129,6 @@ public class IkasanRestAutoConfiguration
         return new SystemEventController(this.systemEventBatchInsert);
     }
 
-//    @Bean
-//    public ScheduledProcessEventController scheduledProcessEventController()
-//    {
-//        return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert, this.inboundQueue);
-//    }
-
     @Bean
     public ModulesController modulesController( )
     {
@@ -166,10 +151,6 @@ public class IkasanRestAutoConfiguration
     {
         return new NotifierController(this.cacheAdapter);
     }
-
-//    @Bean SchedulerJobProvisionController schedulerJobProvisionController() {
-//        return new SchedulerJobProvisionController(this.jobProvisionService);
-//    }
 
     @Bean
     public JwtAuthenticationController jwtAuthenticationController(AuthenticationManager authenticationManager,

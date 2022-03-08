@@ -134,10 +134,13 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
     public String toString() {
         final StringBuffer sb = new StringBuffer("SchedulerJobInitiationEventImpl{");
         sb.append("agentName='").append(agentName).append('\'');
+        sb.append(", agentUrl='").append(agentUrl).append('\'');
         sb.append(", jobName='").append(jobName).append('\'');
         sb.append(", internalEventDrivenJob=").append(internalEventDrivenJob);
         sb.append(", contextId='").append(contextId).append('\'');
-        sb.append(", contextInstanceId='").append(contextInstanceId).append('\'');
+        sb.append(", childContextIds=[ ");
+        childContextIds.forEach(id -> sb.append("[").append(id).append("] "));
+        sb.append("], contextInstanceId='").append(contextInstanceId).append('\'');
         sb.append(", contextParameters=").append(contextParameters);
         sb.append(", dryRun=").append(dryRun);
         sb.append(", dryRunParameters=").append(dryRunParameters);
