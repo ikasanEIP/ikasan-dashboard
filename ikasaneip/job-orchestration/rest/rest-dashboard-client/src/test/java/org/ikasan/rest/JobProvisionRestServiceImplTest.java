@@ -1,10 +1,7 @@
 package org.ikasan.rest;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.ikasan.configuration.metadata.model.SolrConfigurationMetaData;
 import org.ikasan.configuration.metadata.model.SolrConfigurationParameterMetaData;
-import org.ikasan.configurationService.metadata.JsonConfigurationMetaDataProvider;
 import org.ikasan.job.orchestration.builder.context.ContextParameterBuilder;
 import org.ikasan.job.orchestration.builder.job.FileEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.InternalEventDrivenJobBuilder;
@@ -14,16 +11,6 @@ import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
 import org.ikasan.job.orchestration.rest.client.JobProvisionRestServiceImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.module.metadata.dao.SolrModuleMetadataDao;
-import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
-import org.ikasan.module.metadata.service.SolrModuleMetadataServiceImpl;
-import org.ikasan.rest.client.ConfigurationRestServiceImpl;
-import org.ikasan.rest.client.MetaDataRestServiceImpl;
-import org.ikasan.rest.client.ModuleControlRestServiceImpl;
-import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.module.client.ConfigurationService;
-import org.ikasan.spec.module.client.MetaDataService;
-import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.junit.Ignore;
@@ -47,6 +34,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 @Ignore
+// todo fix test
 public class JobProvisionRestServiceImplTest extends AbstractTest{
     @Mock
     Environment environment;
@@ -252,17 +240,6 @@ public class JobProvisionRestServiceImplTest extends AbstractTest{
         });
 
         return contextParameters;
-    }
-
-    private ModuleMetaData getModuleMetaData(String moduleMetaData) throws JsonProcessingException {
-        return this.objectMapper.readValue(moduleMetaData, SolrModuleMetaDataImpl.class);
-    }
-
-    private SolrConfigurationMetaData getConfigurarationMetaData() {
-        SolrConfigurationMetaData solrConfigurationMetaData = new SolrConfigurationMetaData();
-        solrConfigurationMetaData.setParameters(this.getConfigurationParameterMetaDataList());
-
-        return solrConfigurationMetaData;
     }
 
     private List<SolrConfigurationParameterMetaData> getConfigurationParameterMetaDataList() {

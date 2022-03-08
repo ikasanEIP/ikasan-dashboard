@@ -91,7 +91,10 @@ public class SchedulerJobImpl implements SchedulerJob {
         sb.append(", agentName='").append(agentName).append('\'');
         sb.append(", jobName='").append(jobName).append('\'');
         sb.append(", contextId='").append(contextId).append('\'');
-        sb.append(", description='").append(description).append('\'');
+        sb.append(", childContextIds=[ ");
+        childContextIds.forEach(id -> sb.append("[").append(id).append("] "));
+        sb.append("], description='").append(description).append('\'');
+        sb.append(", startupControlType='").append(startupControlType).append('\'');
         sb.append('}');
         return sb.toString();
     }
