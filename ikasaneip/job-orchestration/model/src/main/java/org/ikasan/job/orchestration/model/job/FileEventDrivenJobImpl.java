@@ -139,6 +139,15 @@ public class FileEventDrivenJobImpl extends QuartzScheduleDrivenJobImpl implemen
     public String toString() {
         final StringBuffer sb = new StringBuffer("FileEventDrivenJobImpl{");
         sb.append("filePath='").append(filePath).append('\'');
+        sb.append(", filenames=").append(filenames);
+        sb.append(", encoding='").append(encoding).append('\'');
+        sb.append(", includeHeader=").append(includeHeader);
+        sb.append(", includeTrailer=").append(includeTrailer);
+        sb.append(", sortByModifiedDateTime=").append(sortByModifiedDateTime);
+        sb.append(", sortAscending=").append(sortAscending);
+        sb.append(", directoryDepth=").append(directoryDepth);
+        sb.append(", logMatchedFilenames=").append(logMatchedFilenames);
+        sb.append(", ignoreFileRenameWhilstScanning=").append(ignoreFileRenameWhilstScanning);
         sb.append(", cronExpression='").append(cronExpression).append('\'');
         sb.append(", jobGroup='").append(jobGroup).append('\'');
         sb.append(", timeZone='").append(timeZone).append('\'');
@@ -146,7 +155,10 @@ public class FileEventDrivenJobImpl extends QuartzScheduleDrivenJobImpl implemen
         sb.append(", agentName='").append(agentName).append('\'');
         sb.append(", jobName='").append(jobName).append('\'');
         sb.append(", contextId='").append(contextId).append('\'');
-        sb.append(", description='").append(description).append('\'');
+        sb.append(", childContextIds=[ ");
+        childContextIds.forEach(id -> sb.append("[").append(id).append("] "));
+        sb.append("], description='").append(description).append('\'');
+        sb.append(", startupControlType='").append(startupControlType).append('\'');
         sb.append('}');
         return sb.toString();
     }
