@@ -171,7 +171,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             schedulerJobInitiationEvent.setChildContextIds(scheduledProcessEvent.getChildContextIds());
         }
         else {
-            scheduledProcessEvent.setChildContextIds(schedulerJobInstance.getChildContextIds());
+            scheduledProcessEvent.setChildContextIds(internalEventDrivenJob.getChildContextIds());
         }
 
         if(this.agents.containsKey(schedulerJobInstance.getAgentName())) {
