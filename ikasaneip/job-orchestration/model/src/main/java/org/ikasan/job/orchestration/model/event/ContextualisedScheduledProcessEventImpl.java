@@ -313,8 +313,13 @@ public class ContextualisedScheduledProcessEventImpl implements ContextualisedSc
         sb.append(", completionTime=").append(completionTime);
         sb.append(", dryRun=").append(dryRun);
         sb.append(", contextId='").append(contextId).append('\'');
-        sb.append(", childContextIds=[ ");
-        childContextIds.forEach(id -> sb.append("[").append(id).append("] "));
+        if(childContextIds != null) {
+            sb.append(", childContextIds=[ ");
+            childContextIds.forEach(id -> sb.append("[").append(id).append("] "));
+        }
+        else {
+            sb.append(", childContextIds='").append(this.childContextIds).append('\'');
+        }
         sb.append("], contextInstanceId='").append(contextInstanceId).append('\'');
         sb.append(", jobStarting=").append(jobStarting);
         sb.append(", dryRunParameters=").append(dryRunParameters);
