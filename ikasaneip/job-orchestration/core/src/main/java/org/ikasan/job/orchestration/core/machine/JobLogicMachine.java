@@ -167,7 +167,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         }
         schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
 
-        if(schedulerJobInstance.getChildContextIds().contains(PASS_THROUGH)) {
+        if(internalEventDrivenJob.getChildContextIds() != null && internalEventDrivenJob.getChildContextIds().contains(PASS_THROUGH)) {
             schedulerJobInitiationEvent.setChildContextIds(scheduledProcessEvent.getChildContextIds());
         }
         else {
