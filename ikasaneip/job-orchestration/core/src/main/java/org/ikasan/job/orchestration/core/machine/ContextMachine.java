@@ -7,20 +7,22 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
-import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
-import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
+import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
-import org.ikasan.spec.scheduled.event.model.*;
+import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.model.DryRunParameters;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
@@ -155,6 +157,24 @@ public class ContextMachine {
 
         if(instance != null) {
             return instance.getStatus();
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the job status by context name and job name.
+     *
+     * @param contextName
+     * @return
+     */
+    public InstanceStatus geJobStatus(String contextName, String jobIdentifier) {
+        ContextInstance instance = this.getContextInstanceByName(contextName, this.contextInstance);
+
+        SchedulerJobInstance schedulerJobInstance = instance.getScheduledJobsMap().get(jobIdentifier);
+
+        if(schedulerJobInstance != null) {
+            return schedulerJobInstance.getStatus();
         }
 
         return null;
