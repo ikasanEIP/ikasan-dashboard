@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 
 public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> {
 
+    private static final String PASS_THROUGH = "PASS_THROUGH";
+
     private Logger logger = LoggerFactory.getLogger(JobLogicMachine.class);
 
     private List<SchedulerJobInstanceStateChangeEventListener> schedulerJobInstanceStateChangeEventListeners;
@@ -154,7 +156,6 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         schedulerJobInitiationEvent.setDryRun(dryRunParameters != null);
         schedulerJobInitiationEvent.setDryRunParameters(dryRunParameters);
         schedulerJobInitiationEvent.setSkipped(schedulerJobInstance.isSkip());
-        schedulerJobInitiationEvent.setChildContextIds(scheduledProcessEvent.getChildContextIds());
         if(contextParameters != null) {
             schedulerJobInitiationEvent.setContextParameters(contextParameters.stream()
                 .filter(contextParameterInstance -> internalEventDrivenJob
@@ -165,6 +166,13 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 .collect(Collectors.toList()));
         }
         schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
+
+        if(schedulerJobInstance.getChildContextIds().contains(PASS_THROUGH)) {
+            schedulerJobInitiationEvent.setChildContextIds(scheduledProcessEvent.getChildContextIds());
+        }
+        else {
+            scheduledProcessEvent.setChildContextIds(schedulerJobInstance.getChildContextIds());
+        }
 
         if(this.agents.containsKey(schedulerJobInstance.getAgentName())) {
             schedulerJobInitiationEvent.setAgentUrl(this.agents.get(schedulerJobInstance.getAgentName()).getUrl());
