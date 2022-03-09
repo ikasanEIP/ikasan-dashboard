@@ -35,13 +35,6 @@ public class ContextMachineTest extends AbstractTest {
 
     private ContextTemplateValidator contextTemplateValidator = new ContextTemplateValidator();
 
-    private InternalEventDrivenJob newInternalEventDrivenJob(String jobIdentifier) {
-        InternalEventDrivenJob job = new InternalEventDrivenJobImpl();
-        job.setIdentifier(jobIdentifier);
-
-        return job;
-    }
-
 
     @Test
     public void test_context_machine_full_nested_context_success() throws IOException, JSONException, InvalidContextTemplateException {
@@ -3470,5 +3463,13 @@ public class ContextMachineTest extends AbstractTest {
         else {
             contextTemplate.getContexts().forEach(template -> this.addInternalJobs(template, internalEventDrivenJobs));
         }
+    }
+
+    private InternalEventDrivenJob newInternalEventDrivenJob(String jobIdentifier) {
+        InternalEventDrivenJob job = new InternalEventDrivenJobImpl();
+        job.setIdentifier(jobIdentifier);
+        job.setChildContextIds(List.of("PASS_THROUGH"));
+
+        return job;
     }
 }
