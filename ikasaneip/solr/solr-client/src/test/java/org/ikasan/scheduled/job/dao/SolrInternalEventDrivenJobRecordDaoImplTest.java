@@ -61,17 +61,18 @@ public class SolrInternalEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 
             init(server);
 
             SolrInternalEventDrivenJobImpl solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
-            SolrInternalEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
-            solrFileEventDrivenJobRecord.setAgentName("agentName");
-            solrFileEventDrivenJobRecord.setJobName("jobName");
-            solrFileEventDrivenJobRecord.setTimestamp(1000000L);
-            solrFileEventDrivenJobRecord.setInternalEventDrivenJob(solrInternalEventDrivenJob);
+            solrInternalEventDrivenJob.setContextId("contextId");
+            SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
+            solrInternalEventDrivenJobRecord.setAgentName("agentName");
+            solrInternalEventDrivenJobRecord.setJobName("jobName");
+            solrInternalEventDrivenJobRecord.setTimestamp(1000000L);
+            solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(solrInternalEventDrivenJob);
 
-            this.dao.save(solrFileEventDrivenJobRecord);
+            this.dao.save(solrInternalEventDrivenJobRecord);
 
-            InternalEventDrivenJobRecord found = this.dao.findById("internalEventDrivenJob_agentName_jobName");
+            InternalEventDrivenJobRecord found = this.dao.findById("internalEventDrivenJob_agentName_jobName_contextId");
 
-            Assert.assertEquals("internalEventDrivenJob_agentName_jobName", found.getId());
+            Assert.assertEquals("internalEventDrivenJob_agentName_jobName_contextId", found.getId());
             Assert.assertEquals("agentName", found.getAgentName());
             Assert.assertEquals("jobName", found.getJobName());
             Assert.assertEquals(1000000L, found.getTimestamp());
