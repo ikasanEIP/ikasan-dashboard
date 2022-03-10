@@ -127,17 +127,17 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             this.insertInternalEventDrivenRecords("iddi", 1000, "context2Id");
             this.insertInternalEventDrivenRecords("idddi", 267, "context3Id");
 
-            SchedulerJobRecord solrSchedulerJobRecord = this.dao.findById("fileEventDrivenJob_iddagentName100_jobName100");
+            SchedulerJobRecord solrSchedulerJobRecord = this.dao.findById("fileEventDrivenJob_iddagentName100_jobName100_context2Id");
             SchedulerJob job = solrSchedulerJobRecord.getJob();
 
             Assert.assertTrue(job instanceof SolrFileEventDrivenJobImpl);
 
-            solrSchedulerJobRecord = this.dao.findById("quartzScheduleDrivenJob_iddqagentName100_jobName100");
+            solrSchedulerJobRecord = this.dao.findById("quartzScheduleDrivenJob_iddqagentName100_jobName100_context2Id");
             job = solrSchedulerJobRecord.getJob();
 
             Assert.assertTrue(job instanceof SolrQuartzScheduleDrivenJobImpl);
 
-            solrSchedulerJobRecord = this.dao.findById("internalEventDrivenJob_iddiagentName100_jobName100");
+            solrSchedulerJobRecord = this.dao.findById("internalEventDrivenJob_iddiagentName100_jobName100_context2Id");
             job = solrSchedulerJobRecord.getJob();
 
             Assert.assertTrue(job instanceof SolrInternalEventDrivenJobImpl);
