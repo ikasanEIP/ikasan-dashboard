@@ -5,12 +5,45 @@ import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.json.JSONException;
+import org.junit.Assert;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.io.IOException;
 
 public class ContextTemplateBuilderTest extends AbstractTest {
+
+    @Test
+    public void test_job_only_added_once() {
+        ContextTemplateBuilder contextTemplateBuilder = new ContextTemplateBuilder();
+
+        ContextTemplate contextTemplate = contextTemplateBuilder.withName("Context Template Name")
+            .withDescription("Context Template Description")
+            .withTimeWindowStartCronExpression("* * 6 ? * * *")
+            .withTimeWindowEndCronExpression("* * 15 ? * * *")
+
+            // add some context parameters
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withType("java.lang.String").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param2").withType("java.lang.String").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param3").withType("java.lang.String").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param4").withType("java.lang.String").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param5").withType("java.lang.String").build())
+
+            // add the scheduler jobs that will be orchestrated
+            .addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
+                .withJobName("Job1")
+                .withAgentName("AgentName")
+                .withDescription("Job1 Description")
+                .build())
+            .addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
+                .withJobName("Job1")
+                .withAgentName("AgentName")
+                .withDescription("Job1 Description")
+                .build())
+            .build();
+
+        Assert.assertEquals(1, contextTemplate.getScheduledJobs().size());
+    }
 
     @Test
     public void test_builder_success() throws IOException, JSONException {
@@ -129,7 +162,7 @@ public class ContextTemplateBuilderTest extends AbstractTest {
     }
 
     @Test
-    public void test_builder_success_2() throws IOException, JSONException {
+    public void test_builder_success_complex() throws IOException, JSONException {
             ContextTemplateBuilder contextTemplateBuilder = new ContextTemplateBuilder();
 
         ContextTemplate contextTemplate1 = contextTemplateBuilder.withName("test-context")
