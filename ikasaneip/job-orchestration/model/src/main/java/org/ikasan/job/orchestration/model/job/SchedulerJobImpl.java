@@ -4,6 +4,7 @@ package org.ikasan.job.orchestration.model.job;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.List;
+import java.util.Objects;
 
 public class SchedulerJobImpl implements SchedulerJob {
     protected String jobIdentifier;
@@ -102,5 +103,18 @@ public class SchedulerJobImpl implements SchedulerJob {
         sb.append(", startupControlType='").append(startupControlType).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SchedulerJobImpl that = (SchedulerJobImpl) o;
+        return Objects.equals(jobIdentifier, that.jobIdentifier);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(jobIdentifier);
     }
 }

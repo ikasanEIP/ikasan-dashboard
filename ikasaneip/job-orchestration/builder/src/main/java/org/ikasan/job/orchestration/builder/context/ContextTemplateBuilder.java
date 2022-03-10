@@ -77,7 +77,9 @@ public class ContextTemplateBuilder {
         if(this.scheduledJobs == null) {
             this.scheduledJobs = new ArrayList<>();
         }
-        this.scheduledJobs.add(schedulerJob);
+        if(!scheduledJobs.contains(schedulerJob)) {
+            this.scheduledJobs.add(schedulerJob);
+        }
         return this;
     }
 
