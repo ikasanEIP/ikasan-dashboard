@@ -61,6 +61,7 @@ public class SolrQuartzScheduleEventDrivenJobRecordDaoImplTest extends SolrTestC
             init(server);
 
             SolrQuartzScheduleDrivenJobImpl solrQuartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
+            solrQuartzScheduleDrivenJob.setContextId("contextId");
             SolrQuartzScheduleDrivenJobRecordImpl solrQuartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
             solrQuartzScheduleDrivenJobRecord.setAgentName("agentName");
             solrQuartzScheduleDrivenJobRecord.setJobName("jobName");
@@ -69,9 +70,9 @@ public class SolrQuartzScheduleEventDrivenJobRecordDaoImplTest extends SolrTestC
 
             this.dao.save(solrQuartzScheduleDrivenJobRecord);
 
-            QuartzScheduleDrivenJobRecord found = this.dao.findById("quartzScheduleDrivenJob_agentName_jobName");
+            QuartzScheduleDrivenJobRecord found = this.dao.findById("quartzScheduleDrivenJob_agentName_jobName_contextId");
 
-            Assert.assertEquals("quartzScheduleDrivenJob_agentName_jobName", found.getId());
+            Assert.assertEquals("quartzScheduleDrivenJob_agentName_jobName_contextId", found.getId());
             Assert.assertEquals("agentName", found.getAgentName());
             Assert.assertEquals("jobName", found.getJobName());
             Assert.assertEquals(1000000L, found.getTimestamp());
@@ -80,26 +81,6 @@ public class SolrQuartzScheduleEventDrivenJobRecordDaoImplTest extends SolrTestC
         }
     }
 
-//    @Test
-//    public void test_find_all() throws Exception {
-//
-//        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
-//        {
-//            init(server);
-//
-//            SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl("id"
-//                , "contextName", "context", 1000000L);
-//            this.dao.save(scheduledContextRecord);
-//
-//            scheduledContextRecord = new SolrScheduledContextRecordImpl("id2"
-//                , "contextName", "context", 1000000L);
-//            this.dao.save(scheduledContextRecord);
-//
-//            List<ScheduledContextRecord> found = (List<ScheduledContextRecord>) this.dao.findAll();
-//
-//            Assert.assertEquals(2, found.size());
-//        }
-//    }
 
     public static String TEST_HOME() {
         return getFile("solr/ikasan").getParent();
