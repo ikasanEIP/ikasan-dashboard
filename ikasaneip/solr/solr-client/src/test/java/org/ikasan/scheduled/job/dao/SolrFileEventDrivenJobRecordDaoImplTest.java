@@ -63,9 +63,9 @@ public class SolrFileEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 {
 
             this.insertRecords("id", 1, "contextId");
 
-            FileEventDrivenJobRecord found = this.dao.findById("fileEventDrivenJob_idagentName0_jobName0");
+            FileEventDrivenJobRecord found = this.dao.findById("fileEventDrivenJob_idagentName0_jobName0_contextId");
 
-            Assert.assertEquals("fileEventDrivenJob_idagentName0_jobName0", found.getId());
+            Assert.assertEquals("fileEventDrivenJob_idagentName0_jobName0_contextId", found.getId());
             Assert.assertEquals("idagentName0", found.getAgentName());
             Assert.assertEquals("jobName0", found.getJobName());
             Assert.assertEquals("contextId", found.getContextId());
