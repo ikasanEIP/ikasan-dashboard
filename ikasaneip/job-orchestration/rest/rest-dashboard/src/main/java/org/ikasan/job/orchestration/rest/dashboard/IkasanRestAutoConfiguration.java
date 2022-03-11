@@ -40,19 +40,22 @@
  */
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import com.leansoft.bigqueue.IBigQueue;
+import javax.annotation.Resource;
+
+import org.ikasan.job.orchestration.rest.dashboard.status.ContextStatusServiceController;
 import org.ikasan.rest.dashboard.JwtAuthenticationController;
 import org.ikasan.rest.dashboard.JwtAuthenticationEntryPoint;
 import org.ikasan.rest.dashboard.JwtRequestFilter;
 import org.ikasan.rest.dashboard.JwtTokenUtil;
 import org.ikasan.security.service.UserService;
 import org.ikasan.spec.persistence.BatchInsert;
+import org.ikasan.spec.scheduled.context.service.ContextStatusService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 
-import javax.annotation.Resource;
+import com.leansoft.bigqueue.IBigQueue;
 
 @Configuration
 public class IkasanRestAutoConfiguration {
@@ -66,13 +69,22 @@ public class IkasanRestAutoConfiguration {
     @Resource
     private JobProvisionService jobProvisionService;
 
+    @Resource
+    private ContextStatusService contextStatusService;
+
     @Bean
     public ScheduledProcessEventController scheduledProcessEventController() {
         return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert, this.inboundQueue);
     }
 
-    @Bean SchedulerJobProvisionController schedulerJobProvisionController() {
+    @Bean
+    SchedulerJobProvisionController schedulerJobProvisionController() {
         return new SchedulerJobProvisionController(this.jobProvisionService);
+    }
+
+    @Bean
+    public ContextStatusServiceController contextStatusServiceController() {
+        return new ContextStatusServiceController(this.contextStatusService);
     }
 
     @Bean
