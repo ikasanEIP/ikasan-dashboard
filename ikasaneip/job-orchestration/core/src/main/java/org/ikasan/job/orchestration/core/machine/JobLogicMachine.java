@@ -57,9 +57,11 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             .get(scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName());
 
         // Firstly the status of the job is set on the instance.
-        if(schedulerJobInstance != null && (scheduledProcessEvent.getChildContextIds() == null
+        if(schedulerJobInstance != null &&
+            (scheduledProcessEvent.getChildContextIds() == null || scheduledProcessEvent.getChildContextIds().isEmpty()
             || scheduledProcessEvent.getChildContextIds().contains(contextInstance.getName()))) {
-            // we update the job result with the event if it is relevant in this context.
+            // we update the job result with the event if it is relevant in this context. A null or empty
+            // collection of child contexts means the event is valid for all contexts.
             InstanceStatus currentJobState = schedulerJobInstance.getStatus();
 
             if(scheduledProcessEvent.isJobStarting()) {
