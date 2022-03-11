@@ -57,6 +57,7 @@
         <module>model</module>
         <module>provision</module>
         <module>rest</module>
+        <module>service</module>
     </modules>
 
 </project>
