@@ -2053,7 +2053,7 @@ public class ContextMachineTest extends AbstractTest {
             (contextMachine, "CONTEXT-1436221681", "CONTEXT-774294372",
                 "scheduler-agent", "-1874104712", true).size());
 
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-774294372", "CONTEXT--2036736597"),
                 "scheduler-agent", "-505061472", true).size());
 
@@ -2238,7 +2238,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
 
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1589183395", "CONTEXT-1195088490"),
                 "scheduler-agent", "744167903", true).size());
 
@@ -2295,7 +2295,7 @@ public class ContextMachineTest extends AbstractTest {
          *       } ]
          *     }
          */
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1195088490"),
                 "scheduler-agent", "-1479686678", true).size());
 
@@ -2340,11 +2340,11 @@ public class ContextMachineTest extends AbstractTest {
          *       }
          *     }
          */
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789380"),
                 "scheduler-agent", "-857357080", true).size());
 
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789380", "CONTEXT--663833459"),
                 "scheduler-agent", "97656185", true).size());
 
@@ -2425,15 +2425,15 @@ public class ContextMachineTest extends AbstractTest {
          *       } ]
          *     }
          */
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--663833459"),
                 "scheduler-agent", "-131863702", true).size());
 
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--663833459"),
                 "scheduler-agent", "239208485", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--663833459"),
                 "scheduler-agent", "-742746991", true).size());
 
@@ -2524,27 +2524,27 @@ public class ContextMachineTest extends AbstractTest {
          *     } ]
          *   }
          */
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1616674532"),
                 "scheduler-agent", "-764230802_ScheduledJob_15:25:00", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1616674532"),
                 "scheduler-agent", "-764230802", true).size());
 
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1616674532"),
                 "scheduler-agent", "2090738162_ScheduledJob_16:30:00", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1616674532"),
                 "scheduler-agent", "2090738162", true).size());
 
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1616674532"),
                 "scheduler-agent", "241430090_ScheduledJob_16:30:00", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1616674532"),
                 "scheduler-agent", "241430090", true).size());
 
@@ -2595,23 +2595,23 @@ public class ContextMachineTest extends AbstractTest {
          *       }
          *     }
          */
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789416"),
                 "scheduler-agent", "-148873498", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789416"),
                 "scheduler-agent", "-1758465897", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789416"),
                 "scheduler-agent", "2014644399", true).size());
 
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789416"),
                 "scheduler-agent", "210659119", true).size());
 
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789416", "CONTEXT-613708632"),
                 "scheduler-agent", "97656185", true).size());
 
@@ -2670,15 +2670,15 @@ public class ContextMachineTest extends AbstractTest {
          *         }
          *       }
          */
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-613708632"),
                 "scheduler-agent", "-131863702", true).size());
 
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-613708632"),
                 "scheduler-agent", "1720807104", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-613708632"),
                 "scheduler-agent", "1836346836", true).size());
 
@@ -2739,35 +2739,35 @@ public class ContextMachineTest extends AbstractTest {
          *       }
          */
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
                 "scheduler-agent", "290005873", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
                 "scheduler-agent", "290005874", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
                 "scheduler-agent", "1581813691", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
                 "scheduler-agent", "1581813692", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
                 "scheduler-agent", "748080832", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
                 "scheduler-agent", "748080833", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
                 "scheduler-agent", "340732842", true).size());
 
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
                 "scheduler-agent", "340732843", true).size());
         // confirm that context context states as expected
@@ -2799,7 +2799,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
                 "scheduler-agent", "1164721449", true).size());
 
@@ -2848,19 +2848,19 @@ public class ContextMachineTest extends AbstractTest {
          *         }
          *       }
          */
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1789550425"),
                 "scheduler-agent", "99102350", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1789550425"),
                 "scheduler-agent", "-1157186056", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1789550425"),
                 "scheduler-agent", "-847515063", true).size());
 
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1789550425"),
                 "scheduler-agent", "-1613104257", true).size());
 
@@ -2893,7 +2893,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1789550425"),
                 "scheduler-agent", "1226061027", true).size());
 
@@ -2938,7 +2938,7 @@ public class ContextMachineTest extends AbstractTest {
          *         }
          *       }
          */
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--305614098"),
                 "scheduler-agent", "1226061027", true).size());
 
@@ -2971,7 +2971,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--305614098"),
                 "scheduler-agent", "1228709486", true).size());
 
@@ -3021,19 +3021,19 @@ public class ContextMachineTest extends AbstractTest {
          *           } ]
          *         }
          */
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--918631717"),
                 "scheduler-agent", "-1349296895", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--918631717"),
                 "scheduler-agent", "-1349296894", true).size());
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--918631717"),
                 "scheduler-agent", "-1028088288", true).size());
 
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--918631717"),
                 "scheduler-agent", "-1028088287", true).size());
 
@@ -3066,7 +3066,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--918631717"),
                 "scheduler-agent", "1164721449", true).size());
 
@@ -3113,11 +3113,11 @@ public class ContextMachineTest extends AbstractTest {
          *         }
          *       }
          */
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1065418539"),
                 "scheduler-agent", "2072336655", true).size());
 
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1065418539"),
                 "scheduler-agent", "-1493805586", true).size());
 
@@ -3163,7 +3163,7 @@ public class ContextMachineTest extends AbstractTest {
          *       }
          */
 
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1065418539", "CONTEXT--1745612430"),
                 "scheduler-agent", "-213937305", true).size());
 
@@ -3196,7 +3196,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1745612430"),
                 "scheduler-agent", "-211288846", true).size());
 
@@ -3243,11 +3243,11 @@ public class ContextMachineTest extends AbstractTest {
          *           } ]
          *         }
          */
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1250033421"),
                 "scheduler-agent", "-254494704", true).size());
 
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1250033421"),
                 "scheduler-agent", "-254494703", true).size());
 
@@ -3280,7 +3280,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1250033421"),
                 "scheduler-agent", "1164721449", true).size());
 
@@ -3325,7 +3325,7 @@ public class ContextMachineTest extends AbstractTest {
          *         }
          *       }
          */
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1543216829"),
                 "scheduler-agent", "1009789918", true).size());
 
@@ -3358,7 +3358,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1543216829"),
                 "scheduler-agent", "1651431039", true).size());
 
@@ -3403,7 +3403,7 @@ public class ContextMachineTest extends AbstractTest {
          *         }
          *       }
          */
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1409548854"),
                 "scheduler-agent", "1651431039", true).size());
 
@@ -3436,7 +3436,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.RUNNING);
 
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1409548854"),
                 "scheduler-agent", "-98367158", true).size());
 
@@ -3474,14 +3474,182 @@ public class ContextMachineTest extends AbstractTest {
          */
     }
 
-    private List<SchedulerJobInitiationEvent> sendScheduledEventToContextMachine(ContextMachine contextMachine, String agentName, String jobName, boolean eventSuccessful) {
+    @Test
+    public void test_job_fires_with_empty_child_context() throws IOException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/CONTEXT-1436221681.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/CONTEXT-1436221681.json"));
+
+        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>());
+
+        /**
+         * name" : "CONTEXT-1616645609",
+         *     "jobDependencies" : [ {
+         *       "jobIdentifier" : "scheduler-agent-1799613995",
+         *       "logicalGrouping" : {
+         *         "and" : [ {
+         *           "identifier" : "scheduler-agent-1799613995_ScheduledJob_06:00"
+         *         } ]
+         *       }
+         *     }, {
+         *       "jobIdentifier" : "scheduler-agent--1352045846",
+         *       "logicalGrouping" : {
+         *         "and" : [ {
+         *           "identifier" : "scheduler-agent--1352045846_ScheduledJob_06:00"
+         *         } ]
+         *       }
+         *     } ],
+         *     "scheduledJobs" : [ {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "1799613995",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent-1799613995"
+         *     }, {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "1799613995_ScheduledJob_06:00",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent-1799613995_ScheduledJob_06:00"
+         *     }, {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "-1352045846",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent--1352045846"
+         *     }, {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "-1352045846_ScheduledJob_06:00",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent--1352045846_ScheduledJob_06:00"
+         *     } ]
+         *   }
+         */
+        // Execute the first scheduled job that fires based on a cron expression.
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "CONTEXT-1436221681", List.of()
+                ,"scheduler-agent", "1799613995_ScheduledJob_06:00", true).size());
+
+        // Now check that the appropriate contexts are in the state that we expect.
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+    }
+
+    @Test
+    public void test_job_fires_with_null_child_context() throws IOException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/CONTEXT-1436221681.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/CONTEXT-1436221681.json"));
+
+        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>());
+
+        /**
+         * name" : "CONTEXT-1616645609",
+         *     "jobDependencies" : [ {
+         *       "jobIdentifier" : "scheduler-agent-1799613995",
+         *       "logicalGrouping" : {
+         *         "and" : [ {
+         *           "identifier" : "scheduler-agent-1799613995_ScheduledJob_06:00"
+         *         } ]
+         *       }
+         *     }, {
+         *       "jobIdentifier" : "scheduler-agent--1352045846",
+         *       "logicalGrouping" : {
+         *         "and" : [ {
+         *           "identifier" : "scheduler-agent--1352045846_ScheduledJob_06:00"
+         *         } ]
+         *       }
+         *     } ],
+         *     "scheduledJobs" : [ {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "1799613995",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent-1799613995"
+         *     }, {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "1799613995_ScheduledJob_06:00",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent-1799613995_ScheduledJob_06:00"
+         *     }, {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "-1352045846",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent--1352045846"
+         *     }, {
+         *       "agentName" : "scheduler-agent",
+         *       "jobName" : "-1352045846_ScheduledJob_06:00",
+         *       "startupControlType" : "AUTOMATIC",
+         *       "identifier" : "scheduler-agent--1352045846_ScheduledJob_06:00"
+         *     } ]
+         *   }
+         */
+        // Execute the first scheduled job that fires based on a cron expression.
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
+            (contextMachine, "CONTEXT-1436221681", null
+                ,"scheduler-agent", "1799613995_ScheduledJob_06:00", true).size());
+
+        // Now check that the appropriate contexts are in the state that we expect.
+        this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--2036736597", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1590773100", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--129403053", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1589183395", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--663833459", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1616674532", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1182789416", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-613708632", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--715116816", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-521366615", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1789550425", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--305614098", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-2139852148", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--918631717", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-1065418539", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1745612430", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT-195330380", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
+        this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+    }
+
+    private List<SchedulerJobInitiationEvent> sendScheduledEventToContextMachineWithChildContextId(ContextMachine contextMachine, String agentName, String jobName, boolean eventSuccessful) {
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance(jobName, agentName, eventSuccessful);
 
         return contextMachine.eventReceived(eventInstance);
     }
 
-    private List<SchedulerJobInitiationEvent> sendScheduledEventToContextMachine(ContextMachine contextMachine, String contextId, List<String> childContextIds
+    private List<SchedulerJobInitiationEvent> sendScheduledEventToContextMachineWithChildContextId(ContextMachine contextMachine, String contextId, List<String> childContextIds
         , String agentName, String jobName, boolean eventSuccessful) {
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance(contextId, childContextIds, jobName, agentName, eventSuccessful);
