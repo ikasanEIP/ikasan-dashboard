@@ -4,7 +4,6 @@ public class ContextStatusJobDto {
 
     private String instanceName;
     private String contextName;
-    private String agentName;
     private String jobIdentifier;
 
     public String getInstanceName() {
@@ -21,14 +20,6 @@ public class ContextStatusJobDto {
 
     public void setContextName(String contextName) {
         this.contextName = contextName;
-    }
-
-    public String getAgentName() {
-        return agentName;
-    }
-
-    public void setAgentName(String agentName) {
-        this.agentName = agentName;
     }
 
     public String getJobIdentifier() {
