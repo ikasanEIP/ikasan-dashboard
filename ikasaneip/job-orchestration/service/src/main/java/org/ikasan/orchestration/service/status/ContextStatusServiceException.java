@@ -9,4 +9,5 @@ public class ContextStatusServiceException extends RuntimeException {
     public ContextStatusServiceException(String message, Throwable cause) {
         super(message, cause);
     }
+
 }
