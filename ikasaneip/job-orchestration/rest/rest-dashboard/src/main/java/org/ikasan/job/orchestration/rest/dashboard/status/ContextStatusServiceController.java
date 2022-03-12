@@ -83,10 +83,11 @@ public class ContextStatusServiceController {
             contextNameStatus = contextStatusService.getContextStatus(dto.getInstanceName(), dto.getContextName());
         } catch (Exception e) {
             LOG.error(e.getMessage());
-            String errorMessage = String.format("An error has occurred attempting to get status for instance %s and context %s", dto.getInstanceName(), dto.getContextName());
+            String errorMessage =
+                String.format("An error has occurred attempting to get status for instance %s and context %s", dto.getInstanceName(), dto.getContextName());
             return new ResponseEntity(
                 new ErrorDto(errorMessage + "! Error message ["
-                    + e.getMessage() + "]"), HttpStatus.INTERNAL_SERVER_ERROR);
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
         }
 
         String infoMessage = String.format("Got status %s for instance %s and context %s", contextNameStatus, dto.getInstanceName(), dto.getContextName());
@@ -102,18 +103,18 @@ public class ContextStatusServiceController {
         String contextNameStatus;
 
         try {
-            contextNameStatus = contextStatusService.getContextStatusForJob(dto.getInstanceName(), dto.getContextName(), dto.getAgentName(), dto.getJobIdentifier());
+            contextNameStatus = contextStatusService.getContextStatusForJob(dto.getInstanceName(), dto.getContextName(), dto.getJobIdentifier());
         } catch (Exception e) {
             LOG.error(e.getMessage());
-            String errorMessage = String.format("An error has occurred attempting to get status for instance %s, context %s, agent %s, job-id %s!",
-                dto.getInstanceName(), dto.getContextName(), dto.getAgentName(), dto.getJobIdentifier());
+            String errorMessage = String.format("An error has occurred attempting to get status for instance %s, context %s, jobIdentifier %s!",
+                dto.getInstanceName(), dto.getContextName(), dto.getJobIdentifier());
             return new ResponseEntity(
                 new ErrorDto(errorMessage + " Error message ["
-                    + e.getMessage() + "]"), HttpStatus.INTERNAL_SERVER_ERROR);
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
         }
 
-        String infoMessage = String.format("Got status %s for instance %s and context %s and agent %s and job-id %s",
-            contextNameStatus, dto.getInstanceName(), dto.getContextName(), dto.getAgentName(), dto.getJobIdentifier());
+        String infoMessage = String.format("Got status %s for instance %s and context %s and jobIdentifier %s",
+            contextNameStatus, dto.getInstanceName(), dto.getContextName(), dto.getJobIdentifier());
         LOG.info(infoMessage);
 
         return new ResponseEntity(contextNameStatus, HttpStatus.OK);

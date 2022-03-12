@@ -1481,35 +1481,35 @@ public class ContextMachineTest extends AbstractTest {
             "agentName2", true);
         contextMachine.eventReceived(eventInstance);
 
-        status = contextMachine.geJobStatus("Context3", "agentName2-jobName2");
+        status = contextMachine.getJobStatus("Context3", "agentName2-jobName2");
         Assert.assertEquals(InstanceStatus.COMPLETE, status);
 
         eventInstance = scheduledProcessEventInstance("jobName3",
             "agentName3", true);
         contextMachine.eventReceived(eventInstance);
 
-        status = contextMachine.geJobStatus("Context3", "agentName3-jobName3");
+        status = contextMachine.getJobStatus("Context3", "agentName3-jobName3");
         Assert.assertEquals(InstanceStatus.COMPLETE, status);
 
         eventInstance = scheduledProcessEventInstance("jobName4",
             "agentName4", true);
         contextMachine.eventReceived(eventInstance);
 
-        status = contextMachine.geJobStatus("Context3", "agentName4-jobName4");
+        status = contextMachine.getJobStatus("Context3", "agentName4-jobName4");
         Assert.assertEquals(InstanceStatus.COMPLETE, status);
 
         eventInstance = scheduledProcessEventInstance("jobName5",
             "agentName5", true);
         contextMachine.eventReceived(eventInstance);
 
-        status = contextMachine.geJobStatus("Context3", "agentName5-jobName5");
+        status = contextMachine.getJobStatus("Context3", "agentName5-jobName5");
         Assert.assertEquals(InstanceStatus.COMPLETE, status);
 
         eventInstance = scheduledProcessEventInstance("jobName6",
             "agentName6", true);
         contextMachine.eventReceived(eventInstance);
 
-        status = contextMachine.geJobStatus("Context3", "agentName6-jobName6");
+        status = contextMachine.getJobStatus("Context3", "agentName6-jobName6");
         Assert.assertEquals(InstanceStatus.COMPLETE, status);
 
         status = contextMachine.getContextStatus("Context3");
