@@ -76,13 +76,13 @@ public class ContextStatusServiceControllerTest {
         dto.setInstanceName("Instance_Name");
         dto.setContextName("Context_Name");
 
-        when(contextStatusService.getContextStatus("Instance_Name", "Context_Name")).thenThrow(new IllegalArgumentException("expected exception"));
+        when(contextStatusService.getContextStatus("Instance_Name", "Context_Name")).thenThrow(new RuntimeException("expected exception"));
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status")
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .content(mapper.writeValueAsString(dto))).andReturn();
 
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), mvcResult.getResponse().getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
         String content = mvcResult.getResponse().getContentAsString();
         assertThat(content,
             containsString("An error has occurred attempting to get status for instance Instance_Name and context Context_Name!"));
@@ -93,11 +93,9 @@ public class ContextStatusServiceControllerTest {
         ContextStatusJobDto dto = new ContextStatusJobDto();
         dto.setInstanceName("instance-name");
         dto.setContextName("context-name");
-        dto.setAgentName("agent-name");
         dto.setJobIdentifier("job-identifier");
 
-        when(contextStatusService.getContextStatusForJob("instance-name", "context-name", "agent-name", "job-identifier"))
-            .thenReturn("COMPLETE");
+        when(contextStatusService.getContextStatusForJob("instance-name", "context-name", "job-identifier")).thenReturn("COMPLETE");
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/job")
             .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -112,19 +110,17 @@ public class ContextStatusServiceControllerTest {
         ContextStatusJobDto dto = new ContextStatusJobDto();
         dto.setInstanceName("instance-name");
         dto.setContextName("context-name");
-        dto.setAgentName("agent-name");
         dto.setJobIdentifier("job-identifier");
 
-        when(contextStatusService.getContextStatusForJob("instance-name", "context-name", "agent-name", "job-identifier"))
-            .thenThrow(new IllegalArgumentException("expected exception"));
+        when(contextStatusService.getContextStatusForJob("instance-name", "context-name", "job-identifier")).thenThrow(new RuntimeException("expected exception"));
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/job")
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .content(mapper.writeValueAsString(dto))).andReturn();
 
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), mvcResult.getResponse().getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
         String content = mvcResult.getResponse().getContentAsString();
         assertThat(content,
-            containsString("An error has occurred attempting to get status for instance instance-name, context context-name, agent agent-name, job-id job-identifier!"));
+            containsString("An error has occurred attempting to get status for instance instance-name, context context-name, jobIdentifier job-identifier!"));
     }
 }

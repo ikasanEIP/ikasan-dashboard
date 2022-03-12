@@ -168,7 +168,7 @@ public class ContextMachine {
      * @param contextName
      * @return
      */
-    public InstanceStatus geJobStatus(String contextName, String jobIdentifier) {
+    public InstanceStatus getJobStatus(String contextName, String jobIdentifier) {
         ContextInstance instance = this.getContextInstanceByName(contextName, this.contextInstance);
 
         SchedulerJobInstance schedulerJobInstance = instance.getScheduledJobsMap().get(jobIdentifier);
