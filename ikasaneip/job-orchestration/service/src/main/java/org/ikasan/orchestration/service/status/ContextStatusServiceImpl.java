@@ -44,19 +44,44 @@ package org.ikasan.orchestration.service.status;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
 public class ContextStatusServiceImpl implements ContextStatusService {
 
     @Override
     public String getContextStatus(String instanceName, String contextName) {
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(instanceName);
-        return contextMachine.getContextStatus(contextName).name();
+        validateContextMachine(contextMachine, instanceName);
+
+        InstanceStatus instanceStatus = contextMachine.getContextStatus(contextName);
+        validateInstance(instanceStatus, instanceName, contextName, null);
+
+        return instanceStatus.name();
     }
 
     @Override
-    public String getContextStatusForJob(String instanceName, String contextName, String agentName, String jobName) {
+    public String getContextStatusForJob(String instanceName, String contextName, String jobIdentifier) {
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(instanceName);
-        String jobIdentifier = agentName + "-" + jobName;
-        return contextMachine.geJobStatus(contextName, jobIdentifier).name();
+        validateContextMachine(contextMachine, instanceName);
+
+        InstanceStatus instanceStatus = contextMachine.getJobStatus(contextName, jobIdentifier);
+        validateInstance(instanceStatus, instanceName, contextName, jobIdentifier);
+
+        return instanceStatus.name();
+    }
+
+    private void validateInstance(InstanceStatus instanceStatus, String instanceName, String contextName, String jobIdentifier) {
+        if (instanceStatus == null) {
+            String errorMessage = jobIdentifier == null
+                ? String.format("Could not find context %s in context machine %s", contextName, instanceName)
+                : String.format("Could not find job identifier %s for context %s in context machine %s", jobIdentifier, contextName, instanceName);
+            throw new ContextStatusServiceException(errorMessage);
+        }
+    }
+
+    private void validateContextMachine(ContextMachine contextMachine, String instanceName) {
+        if (contextMachine == null) {
+            throw new ContextStatusServiceException(String.format("Could not find context machine for instance %s", instanceName));
+        }
     }
 }
