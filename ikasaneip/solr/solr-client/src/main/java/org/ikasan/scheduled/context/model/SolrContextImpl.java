@@ -79,7 +79,7 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
         this.scheduledJobs = scheduledJobs;
         if(scheduledJobs != null) {
             this.scheduledJobsMap = this.scheduledJobs.stream()
-                .collect(Collectors.toMap(item -> item.getIdentifier() , item -> item));
+                .collect(Collectors.toMap(item -> item.getIdentifier() , item -> item, (a1, a2) -> a1));
         }
     }
 
@@ -103,7 +103,7 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
         this.contexts = contexts;
         if(this.contexts != null) {
             this.contextsMap = this.contexts.stream()
-                .collect(Collectors.toMap(item -> item.getName(), item -> item));
+                .collect(Collectors.toMap(item -> item.getName(), item -> item, (a1, a2) -> a1));
         }
     }
 
