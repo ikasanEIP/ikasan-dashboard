@@ -41,18 +41,18 @@
 
 package org.ikasan.job.orchestration.rest.dashboard.status;
 
+import java.util.Map;
+
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.ErrorDto;
-import org.ikasan.job.orchestration.rest.dashboard.status.model.ContextStatusJobDto;
-import org.ikasan.job.orchestration.rest.dashboard.status.model.ContextStatusNameDto;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequestMapping("/rest/context/status")
@@ -73,48 +73,53 @@ public class ContextStatusServiceController {
     }
 
 
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(method = RequestMethod.GET)
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity getContextStatus(@RequestBody ContextStatusNameDto dto) {
+    public ResponseEntity getContextStatus(@RequestParam Map<String, String> params) {
+        String instanceName = params.get("instanceName");
+        String contextName = params.get("contextName");
 
         String contextNameStatus;
 
         try {
-            contextNameStatus = contextStatusService.getContextStatus(dto.getInstanceName(), dto.getContextName());
+            contextNameStatus = contextStatusService.getContextStatus(instanceName, contextName);
         } catch (Exception e) {
             LOG.error(e.getMessage());
             String errorMessage =
-                String.format("An error has occurred attempting to get status for instance %s and context %s", dto.getInstanceName(), dto.getContextName());
+                String.format("An error has occurred attempting to get status for instance %s and context %s", instanceName, contextName);
             return new ResponseEntity(
                 new ErrorDto(errorMessage + "! Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
         }
 
-        String infoMessage = String.format("Got status %s for instance %s and context %s", contextNameStatus, dto.getInstanceName(), dto.getContextName());
+        String infoMessage = String.format("Got status %s for instance %s and context %s", contextNameStatus, instanceName, contextName);
         LOG.info(infoMessage);
 
         return new ResponseEntity(contextNameStatus, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/job")
+    @RequestMapping(method = RequestMethod.GET, path = "/job")
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity getContextStatusForJob(@RequestBody ContextStatusJobDto dto) {
+    public ResponseEntity getContextStatusForJob(@RequestParam Map<String, String> params) {
+        String instanceName = params.get("instanceName");
+        String contextName = params.get("contextName");
+        String jobIdentifier = params.get("jobIdentifier");
 
         String contextNameStatus;
 
         try {
-            contextNameStatus = contextStatusService.getContextStatusForJob(dto.getInstanceName(), dto.getContextName(), dto.getJobIdentifier());
+            contextNameStatus = contextStatusService.getContextStatusForJob(instanceName, contextName, jobIdentifier);
         } catch (Exception e) {
             LOG.error(e.getMessage());
             String errorMessage = String.format("An error has occurred attempting to get status for instance %s, context %s, jobIdentifier %s!",
-                dto.getInstanceName(), dto.getContextName(), dto.getJobIdentifier());
+                instanceName, contextName, jobIdentifier);
             return new ResponseEntity(
                 new ErrorDto(errorMessage + " Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
         }
 
         String infoMessage = String.format("Got status %s for instance %s and context %s and jobIdentifier %s",
-            contextNameStatus, dto.getInstanceName(), dto.getContextName(), dto.getJobIdentifier());
+            contextNameStatus, instanceName, contextName, jobIdentifier);
         LOG.info(infoMessage);
 
         return new ResponseEntity(contextNameStatus, HttpStatus.OK);
