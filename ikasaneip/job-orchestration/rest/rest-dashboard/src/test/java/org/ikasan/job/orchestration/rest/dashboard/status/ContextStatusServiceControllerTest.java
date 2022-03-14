@@ -62,7 +62,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getContextStatus("Instance_Name", "Context_Name")).thenReturn("RUNNING");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.post("/rest/context/status")
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .content(mapper.writeValueAsString(dto))).andReturn();
 
@@ -78,7 +78,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getContextStatus("Instance_Name", "Context_Name")).thenThrow(new RuntimeException("expected exception"));
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.post("/rest/context/status")
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .content(mapper.writeValueAsString(dto))).andReturn();
 
@@ -97,7 +97,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getContextStatusForJob("instance-name", "context-name", "job-identifier")).thenReturn("COMPLETE");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/job")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.post("/rest/context/status/job")
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .content(mapper.writeValueAsString(dto))).andReturn();
 
@@ -114,7 +114,7 @@ public class ContextStatusServiceControllerTest {
 
         when(contextStatusService.getContextStatusForJob("instance-name", "context-name", "job-identifier")).thenThrow(new RuntimeException("expected exception"));
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/job")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.post("/rest/context/status/job")
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .content(mapper.writeValueAsString(dto))).andReturn();
 

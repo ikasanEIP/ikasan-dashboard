@@ -73,7 +73,7 @@ public class ContextStatusServiceController {
     }
 
 
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.POST)
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
     public ResponseEntity getContextStatus(@RequestBody ContextStatusNameDto dto) {
 
@@ -96,7 +96,7 @@ public class ContextStatusServiceController {
         return new ResponseEntity(contextNameStatus, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/job")
+    @RequestMapping(method = RequestMethod.POST, path = "/job")
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
     public ResponseEntity getContextStatusForJob(@RequestBody ContextStatusJobDto dto) {
 
