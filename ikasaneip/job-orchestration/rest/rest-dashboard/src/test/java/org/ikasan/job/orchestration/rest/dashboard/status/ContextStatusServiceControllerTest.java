@@ -21,12 +21,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = ContextStatusServiceController.class)
@@ -47,8 +43,6 @@ public class ContextStatusServiceControllerTest {
     @MockBean
     private ContextStatusService contextStatusService;
 
-    private ObjectMapper mapper = new ObjectMapper();
-
     @Before
     public void setUp() {
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
@@ -56,15 +50,10 @@ public class ContextStatusServiceControllerTest {
 
     @Test
     public void should_return_response_entity_correctly_context_status() throws Exception {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("instanceName", "Instance_Name");
-        params.add("contextName", "Context_Name");
-
         when(contextStatusService.getContextStatus("Instance_Name", "Context_Name")).thenReturn("RUNNING");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status")
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .params(params)).andReturn();
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/Instance_Name/Context_Name")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
         assertEquals("RUNNING", mvcResult.getResponse().getContentAsString());
@@ -72,34 +61,23 @@ public class ContextStatusServiceControllerTest {
 
     @Test
     public void should_return_response_entity_error_context_status() throws Exception {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("instanceName", "Instance_Name");
-        params.add("contextName", "Context_Name");
-
         when(contextStatusService.getContextStatus("Instance_Name", "Context_Name")).thenThrow(new RuntimeException("expected exception"));
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status")
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .params(params)).andReturn();
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/Instance_Name/Context_Name")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
         String content = mvcResult.getResponse().getContentAsString();
         assertThat(content,
-            containsString("An error has occurred attempting to get status for instance Instance_Name and context Context_Name!"));
+            containsString("An error has occurred attempting to get status for instance Instance_Name, context Context_Name, jobIdentifier null!"));
     }
 
     @Test
     public void should_return_response_entity_correctly_context_status_job() throws Exception {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("instanceName", "instance-name");
-        params.add("contextName", "context-name");
-        params.add("jobIdentifier", "job-identifier");
-
         when(contextStatusService.getContextStatusForJob("instance-name", "context-name", "job-identifier")).thenReturn("COMPLETE");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/job")
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .params(params)).andReturn();
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/instance-name/context-name/job-identifier")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
         assertEquals("COMPLETE", mvcResult.getResponse().getContentAsString());
@@ -107,16 +85,11 @@ public class ContextStatusServiceControllerTest {
 
     @Test
     public void should_return_response_entity_error_context_status_job() throws Exception {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("instanceName", "instance-name");
-        params.add("contextName", "context-name");
-        params.add("jobIdentifier", "job-identifier");
 
         when(contextStatusService.getContextStatusForJob("instance-name", "context-name", "job-identifier")).thenThrow(new RuntimeException("expected exception"));
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/job")
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .params(params)).andReturn();
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/instance-name/context-name/job-identifier")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
         String content = mvcResult.getResponse().getContentAsString();
