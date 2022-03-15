@@ -415,10 +415,14 @@ public class ContextMachine {
      * @param contextInstance
      */
     private void setContextStatus(ContextInstance contextInstance) {
+        AtomicBoolean allJobsComplete = new AtomicBoolean(true);
+        AtomicBoolean anyRunningOrCompletedJobs = new AtomicBoolean(false);
+        AtomicBoolean anyErrorJobs = new AtomicBoolean(false);
+        AtomicBoolean allContextsComplete = new AtomicBoolean(true);
+        AtomicBoolean anyRunningOrCompletedContexts = new AtomicBoolean(false);
+        AtomicBoolean anyErrorContexts = new AtomicBoolean(false);
+
         if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
-            AtomicBoolean allJobsComplete = new AtomicBoolean(true);
-            AtomicBoolean anyRunningOrCompletedJobs = new AtomicBoolean(false);
-            AtomicBoolean anyErrorJobs = new AtomicBoolean(false);
 
             contextInstance.getScheduledJobs().forEach(job -> {
                 if (!job.getStatus().equals(InstanceStatus.COMPLETE)) {
@@ -432,31 +436,9 @@ public class ContextMachine {
                     anyErrorJobs.set(true);
                 }
             });
-
-            InstanceStatus previousStatus = contextInstance.getStatus();
-
-            if (anyErrorJobs.get()) {
-                contextInstance.setStatus(InstanceStatus.ERROR);
-                contextInstance.setUpdatedDateTime(System.currentTimeMillis());
-            } else if(allJobsComplete.get()) {
-                contextInstance.setStatus(InstanceStatus.COMPLETE);
-                contextInstance.setUpdatedDateTime(System.currentTimeMillis());
-            } else if(anyRunningOrCompletedJobs.get()){
-                contextInstance.setStatus(InstanceStatus.RUNNING);
-                contextInstance.setUpdatedDateTime(System.currentTimeMillis());
-            }
-
-            InstanceStatus newStatus = contextInstance.getStatus();
-
-            if(!previousStatus.equals(newStatus)) {
-                this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl(contextInstance, previousStatus, newStatus));
-            }
         }
 
         if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
-            AtomicBoolean allContextsComplete = new AtomicBoolean(true);
-            AtomicBoolean anyRunningOrCompletedContexts = new AtomicBoolean(false);
-            AtomicBoolean anyErrorContexts = new AtomicBoolean(false);
 
             contextInstance.getContexts().forEach(context -> {
                 if (!context.getStatus().equals(InstanceStatus.COMPLETE)) {
@@ -470,17 +452,25 @@ public class ContextMachine {
                     anyErrorContexts.set(true);
                 }
             });
+        }
 
-            if (anyErrorContexts.get()) {
-                contextInstance.setStatus(InstanceStatus.ERROR);
-                contextInstance.setUpdatedDateTime(System.currentTimeMillis());
-            } else if (allContextsComplete.get()) {
-                contextInstance.setStatus(InstanceStatus.COMPLETE);
-                contextInstance.setUpdatedDateTime(System.currentTimeMillis());
-            } else if(anyRunningOrCompletedContexts.get()){
-                contextInstance.setStatus(InstanceStatus.RUNNING);
-                contextInstance.setUpdatedDateTime(System.currentTimeMillis());
-            }
+        InstanceStatus previousStatus = contextInstance.getStatus();
+
+        if (anyErrorJobs.get() || anyErrorContexts.get()) {
+            contextInstance.setStatus(InstanceStatus.ERROR);
+            contextInstance.setUpdatedDateTime(System.currentTimeMillis());
+        } else if(allJobsComplete.get() && allContextsComplete.get()) {
+            contextInstance.setStatus(InstanceStatus.COMPLETE);
+            contextInstance.setUpdatedDateTime(System.currentTimeMillis());
+        } else if(anyRunningOrCompletedJobs.get() || anyRunningOrCompletedContexts.get()){
+            contextInstance.setStatus(InstanceStatus.RUNNING);
+            contextInstance.setUpdatedDateTime(System.currentTimeMillis());
+        }
+
+        InstanceStatus newStatus = contextInstance.getStatus();
+
+        if(!previousStatus.equals(newStatus)) {
+            this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl(contextInstance, previousStatus, newStatus));
         }
     }
 
