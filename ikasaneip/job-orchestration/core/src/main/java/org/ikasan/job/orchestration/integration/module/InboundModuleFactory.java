@@ -79,9 +79,6 @@ public class InboundModuleFactory
     @Resource
     Flow scheduledProcessEventInboundFlow;
 
-    @Resource
-    Flow jobInitiationEventFlow;
-
     @Bean
     public Module inboundFlowModule()
     {
@@ -92,7 +89,6 @@ public class InboundModuleFactory
                 .withDescription("Scheduler Agent Integration Module.")
                 .withType(ModuleType.INTEGRATION_MODULE)
                 .addFlow(this.scheduledProcessEventInboundFlow)
-//                .addFlow(this.jobInitiationEventFlow)
                 .setConfiguration(configuration)
             .build();
     }
