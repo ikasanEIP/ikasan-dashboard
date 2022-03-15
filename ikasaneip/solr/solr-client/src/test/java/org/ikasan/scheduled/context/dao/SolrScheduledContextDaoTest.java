@@ -74,7 +74,7 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
 
             this.dao.save(scheduledContextRecord);
 
-            ScheduledContextRecord found = this.dao.findById("contextName-" + SCHEDULED_CONTEXT);
+            ScheduledContextRecord found = this.dao.findById("contextName");
 
             Assert.assertEquals("contextName-" + SCHEDULED_CONTEXT, found.getId());
             Assert.assertEquals("contextName", found.getContextName());
