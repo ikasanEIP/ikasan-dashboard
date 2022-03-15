@@ -314,6 +314,7 @@ public class ContextMachine {
      * @return
      */
     protected List<SchedulerJobInitiationEvent> eventReceived(ContextualisedScheduledProcessEvent scheduledProcessEvent) {
+        logger.info("Context Machine Received Event [{}]", scheduledProcessEvent);
         List<SchedulerJobInitiationEvent> events = this.getInitiationEvents(this.contextInstance, scheduledProcessEvent);
 
         List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();

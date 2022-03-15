@@ -56,6 +56,20 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         SchedulerJobInstance schedulerJobInstance = contextInstance.getScheduledJobsMap()
             .get(scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName());
 
+        if(schedulerJobInstance == null) {
+            logger.warn("Scheduler job instance is null! Attempted lookup using job identifier[{}]"
+                , scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName());
+        }
+
+        if(scheduledProcessEvent.getChildContextIds() != null) {
+            StringBuffer childIds = new StringBuffer("[ ");
+            scheduledProcessEvent.getChildContextIds().forEach(id -> childIds.append("{").append(id).append("}"));
+            childIds.append("]");
+
+            logger.info("Processing Schedule Process Event [{}], for Context Instance [{}], with Child Ids {}", scheduledProcessEvent.getJobName()
+                , contextInstance.getName(), childIds.toString());
+        }
+
         // Firstly the status of the job is set on the instance.
         if(schedulerJobInstance != null &&
             (scheduledProcessEvent.getChildContextIds() == null || scheduledProcessEvent.getChildContextIds().isEmpty()
