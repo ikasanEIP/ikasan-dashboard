@@ -3442,7 +3442,7 @@ public class ContextMachineTest extends AbstractTest {
 
         // confirm that context context states as expected
         this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
-        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.COMPLETE);
+        this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
         this.assertContextStatus(contextMachine, "CONTEXT-1848727981", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "CONTEXT--1209755884", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "CONTEXT-774294372", InstanceStatus.COMPLETE);
