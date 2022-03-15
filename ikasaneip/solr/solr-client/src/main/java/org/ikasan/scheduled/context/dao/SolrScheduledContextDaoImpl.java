@@ -66,7 +66,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
 
     @Override
     public ScheduledContextRecord findById(String id) {
-        SolrQuery query = super.buildIdQuery(id, SCHEDULED_CONTEXT);
+        SolrQuery query = super.buildIdQuery(id + "-" + SCHEDULED_CONTEXT, SCHEDULED_CONTEXT);
 
         logger.debug("query: " + query);
 
