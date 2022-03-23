@@ -105,19 +105,46 @@
   } ],
   "timeWindowStart" : "* * 6 ? * * *",
   "timeWindowEnd" : "* * 15 ? * * *",
-  "jobLocks" : {
-    "TEST-LOCK" : [ {
-      "agentName" : "AgentName",
-      "jobName" : "Job1",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "AgentName-Job1",
-      "jobDescription" : "Job1 Description"
-    }, {
-      "agentName" : "AgentName",
-      "jobName" : "Job2",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "AgentName-Job2",
-      "jobDescription" : "Job2 Description"
-    } ]
-  }
+  "jobLocks": [
+    {
+      "name": "TEST-LOCK-1",
+      "lockCount": 1,
+      "jobs": [
+        {
+          "agentName": "AgentName",
+          "jobName": "Job1",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "AgentName-Job1",
+          "jobDescription": "Job1 Description"
+        },
+        {
+          "agentName": "AgentName",
+          "jobName": "Job2",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "AgentName-Job2",
+          "jobDescription": "Job2 Description"
+        }
+      ]
+    },
+    {
+      "name": "TEST-LOCK-2",
+      "lockCount": 1,
+      "jobs": [
+        {
+          "agentName": "AgentName",
+          "jobName": "Job3",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "AgentName-Job3",
+          "jobDescription": "Job3 Description"
+        },
+        {
+          "agentName": "AgentName",
+          "jobName": "Job4",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "AgentName-Job4",
+          "jobDescription": "Job4 Description"
+        }
+      ]
+    }
+  ]
 }

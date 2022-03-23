@@ -97,19 +97,28 @@
   } ],
   "timeWindowStart" : "* * 6 ? * * *",
   "timeWindowEnd" : "* * 15 ? * * *",
-  "jobLocks" : {
-    "TEST-LOCK" : [ {
-      "agentName" : "AgentName",
-      "jobName" : "Job1",
-      "identifier" : "AgentName-Job1",
-      "jobDescription" : "Job1 Description"
-    }, {
-      "agentName" : "AgentName",
-      "jobName" : "Job2",
-      "identifier" : "AgentName-Job2",
-      "jobDescription" : "Job2 Description"
-    } ]
-  },
+  "jobLocks": [
+    {
+      "name": "TEST-LOCK",
+      "lockCount": 1,
+      "jobs": [
+        {
+          "agentName": "AgentName",
+          "jobName": "Job1",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "AgentName-Job1",
+          "jobDescription": "Job1 Description"
+        },
+        {
+          "agentName": "AgentName",
+          "jobName": "Job2",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "AgentName-Job2",
+          "jobDescription": "Job2 Description"
+        }
+      ]
+    }
+  ],
   "timeWindowStart" : "* * 6 ? * * *",
   "timeWindowEnd" : "* * 15 ? * * *"
 }
