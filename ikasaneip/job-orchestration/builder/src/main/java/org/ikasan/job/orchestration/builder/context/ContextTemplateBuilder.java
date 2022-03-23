@@ -6,6 +6,7 @@ import org.ikasan.spec.scheduled.context.model.ContextDependency;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobDependency;
+import org.ikasan.spec.scheduled.job.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public class ContextTemplateBuilder {
     protected List<SchedulerJob> scheduledJobs;
     protected String timeWindowStartCronExpression;
     protected String timeWindowEndCronExpression;
-    protected Map<String, List<SchedulerJob>> jobLocks;
+    protected List<JobLock> jobLocks;
 
     public ContextTemplateBuilder withName(String name) {
         this.name = name;
@@ -83,12 +84,12 @@ public class ContextTemplateBuilder {
         return this;
     }
 
-    public ContextTemplateBuilder addJobLocks(Map<String, List<SchedulerJob>> jobLocks) {
+    public ContextTemplateBuilder addJobLocks(List<JobLock> jobLocks) {
         if(this.jobLocks == null) {
-            this.jobLocks = new HashMap<>();
+            this.jobLocks = new ArrayList<>();
         }
 
-        this.jobLocks.putAll(jobLocks);
+        this.jobLocks.addAll(jobLocks);
 
         return this;
     }

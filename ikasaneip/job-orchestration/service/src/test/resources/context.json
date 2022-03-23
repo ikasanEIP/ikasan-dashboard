@@ -783,80 +783,102 @@
   } ],
   "timeWindowStart" : "* * 6 ? * * *",
   "timeWindowEnd" : "* * 15 ? * * *",
-  "jobLocks" : {
-    "AC_DEV4.AC_BB_LK" : [ {
-      "agentName" : "scheduler-agent",
-      "jobName" : "1164721449",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent-1164721449"
+  "jobLocks": [
+    {
+      "name": "AC_DEV4.AC_BB_LK",
+      "lockCount": 1,
+      "jobs": [
+        {
+          "agentName" : "scheduler-agent",
+          "jobName" : "1164721449",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-1164721449"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "1164721449",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-1164721449"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "1164721449",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-1164721449"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "1164721449",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-1164721449"
+        },
+        {
+          "agentName": "scheduler-agent",
+          "jobName": "1164721449",
+          "startupControlType": "AUTOMATIC",
+          "identifier": "scheduler-agent-1164721449"
+        }
+      ]
     }, {
-      "agentName" : "scheduler-agent",
-      "jobName" : "1164721449",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent-1164721449"
+      "name": "AC_DEV4.AC_PriceConsolidation_LK",
+      "lockCount": 1,
+      "jobs": [
+        {
+          "agentName" : "scheduler-agent",
+          "jobName" : "-505061472",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent--505061472"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "744167903",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-744167903"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "1226061027",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-1226061027"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "-213937305",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent--213937305"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "1651431039",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-1651431039"
+        }
+      ]
     }, {
-      "agentName" : "scheduler-agent",
-      "jobName" : "1164721449",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent-1164721449"
+      "name": "AC_DEV4.AC_CDW_LK",
+      "lockCount": 1,
+      "jobs": [
+        {
+          "agentName" : "scheduler-agent",
+          "jobName" : "-131863702",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent--131863702"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "-131863702",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent--131863702"
+        }
+      ]
     }, {
-      "agentName" : "scheduler-agent",
-      "jobName" : "1164721449",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent-1164721449"
-    }, {
-      "agentName" : "scheduler-agent",
-      "jobName" : "1164721449",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent-1164721449"
-    } ],
-    "AC_DEV4.AC_PriceConsolidation_LK" : [ {
-      "agentName" : "scheduler-agent",
-      "jobName" : "-505061472",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent--505061472"
-    }, {
-      "agentName" : "scheduler-agent",
-      "jobName" : "744167903",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent-744167903"
-    }, {
-      "agentName" : "scheduler-agent",
-      "jobName" : "1226061027",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent-1226061027"
-    }, {
-      "agentName" : "scheduler-agent",
-      "jobName" : "-213937305",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent--213937305"
-    }, {
-      "agentName" : "scheduler-agent",
-      "jobName" : "1651431039",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent-1651431039"
-    } ],
-    "AC_DEV4.AC_CDW_LK" : [ {
-      "agentName" : "scheduler-agent",
-      "jobName" : "-131863702",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent--131863702"
-    }, {
-      "agentName" : "scheduler-agent",
-      "jobName" : "-131863702",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent--131863702"
-    } ],
-    "AC_DEV4.AC_ANVIL_LK" : [ {
-      "agentName" : "scheduler-agent",
-      "jobName" : "97656185",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent-97656185"
-    }, {
-      "agentName" : "scheduler-agent",
-      "jobName" : "97656185",
-      "startupControlType" : "AUTOMATIC",
-      "identifier" : "scheduler-agent-97656185"
-    } ]
-  }
+      "name": "AC_DEV4.AC_ANVIL_LK",
+      "lockCount": 1,
+      "jobs": [
+        {
+          "agentName" : "scheduler-agent",
+          "jobName" : "97656185",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-97656185"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "97656185",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-97656185"
+        }
+      ]
+    }
+  ]
 }
