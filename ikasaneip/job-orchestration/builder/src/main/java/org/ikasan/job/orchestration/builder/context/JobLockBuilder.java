@@ -1,19 +1,21 @@
 package org.ikasan.job.orchestration.builder.context;
 
 
+import org.ikasan.job.orchestration.model.job.JobLockImpl;
+import org.ikasan.spec.scheduled.job.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class JobLockBuilder {
 
     private String lockName;
     private List<SchedulerJob> schedulerJobs;
+    private JobLock jobLock;
+    private Long lockCount;
 
-    protected JobLockBuilder() {
+    public JobLockBuilder() {
     }
 
     public JobLockBuilder withLockName(String lockName) {
@@ -27,14 +29,19 @@ public class JobLockBuilder {
         }
 
         schedulerJobs.add(job);
-
         return this;
     }
 
-    public Map<String, List<SchedulerJob>> build() {
-        Map<String, List<SchedulerJob>> jobLocks =  new HashMap<>();
-        jobLocks.put(this.lockName, this.schedulerJobs);
+    public JobLockBuilder withLockCount(Long lockCount) {
+        this.lockCount = lockCount;
+        return this;
+    }
 
-        return jobLocks;
+    public List<JobLock> build() {
+        jobLock = new JobLockImpl();
+        jobLock.setName(lockName);
+        jobLock.setJobs(schedulerJobs);
+        jobLock.setLockCount(lockCount);
+        return List.of(jobLock);
     }
 }

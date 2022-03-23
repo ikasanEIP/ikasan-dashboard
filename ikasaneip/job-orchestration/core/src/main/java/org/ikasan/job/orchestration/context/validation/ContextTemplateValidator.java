@@ -72,7 +72,7 @@ public class ContextTemplateValidator {
      */
     private void assertThatContextsJobLocksCannotBeAtTheSameLevel(ContextTemplate contextTemplate) {
         if(contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()
-            && contextTemplate.getJobLocks() != null && !contextTemplate.getJobLocks().isEmpty()) {
+            && contextTemplate.getJobLocksMap() != null && !contextTemplate.getJobLocksMap().isEmpty()) {
             this.inError = true;
             this.errorReport.append("Context[").append(contextTemplate.getName()).append("] contains both jobs locks and contexts.")
                 .append(" A context cannot contain contexts and job locks.\n");
@@ -86,15 +86,15 @@ public class ContextTemplateValidator {
      * @param contextTemplate
      */
     private void assertJobLocksContainOnlyJobsAssociatedWithTheContext(ContextTemplate contextTemplate) {
-        if(contextTemplate.getJobLocks() != null) {
-            contextTemplate.getJobLocks().entrySet().forEach(entry -> {
-                boolean jobExists = entry.getValue().stream()
+        if(contextTemplate.getJobLocksMap() != null) {
+            contextTemplate.getJobLocksMap().entrySet().forEach(entry -> {
+                boolean jobExists = entry.getValue().getJobs().stream()
                     .filter(job -> contextTemplate.getScheduledJobs().stream()
                         .filter(schedulerJob -> job.getIdentifier().equals(schedulerJob.getIdentifier()))
                         .findFirst()
                         .isPresent())
                     .collect(Collectors.toList())
-                    .size() == entry.getValue().size();
+                    .size() == entry.getValue().getJobs().size();
 
                 if(!jobExists) {
                     this.inError = true;
