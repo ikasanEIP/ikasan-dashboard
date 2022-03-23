@@ -1,5 +1,6 @@
 package org.ikasan.job.orchestration.core.machine;
 
+import org.ikasan.job.orchestration.context.cache.JobLockCache;
 import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateException;
 import org.ikasan.job.orchestration.core.AbstractTest;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
@@ -17,9 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class JobLogicMachineTest extends AbstractTest {
-
     private ContextService contextService = new ContextService();
-    private JobLogicMachine jobLogicMachine = new JobLogicMachine(new HashMap<>());
+    private JobLogicMachine jobLogicMachine = new JobLogicMachine(new HashMap<>(), JobLockCache.instance());
 
     /**
      * This test evaluates a simple dependency:

@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance>
+public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance, JobLockInstance>
     implements StatefulEntity, ContextInstance {
     private String id;
     private long createdDateTime;
@@ -17,7 +17,6 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
     private long endTime;
     private String timezone;
     private InstanceStatus status;
-    private Map<String, String> lockHolders;
     private Map<String, SchedulerJobInitiationEvent> heldJobs;
 
     public ContextInstanceImpl() {
@@ -25,7 +24,6 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
         status = InstanceStatus.WAITING;
         createdDateTime = System.currentTimeMillis();
         updatedDateTime = System.currentTimeMillis();
-        this.lockHolders = new HashMap<>();
         this.heldJobs = new HashMap<>();
     }
 
@@ -97,16 +95,6 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
     @Override
     public void setStatus(InstanceStatus status) {
         if(status!= null)this.status = status;
-    }
-
-    @Override
-    public Map<String, String> getLockHolders() {
-        return lockHolders;
-    }
-
-    @Override
-    public void setLockHolders(Map<String, String> lockHolders) {
-        this.lockHolders = lockHolders;
     }
 
     @Override
