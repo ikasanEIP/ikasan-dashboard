@@ -65,19 +65,26 @@
     "agentName" : "agentName4",
     "jobName" : "jobName4"
   }],
-  "jobLocks" : {
-    "TEST-LOCK" : [ {
-      "agentName" : "agentName2",
-      "jobName" : "jobName2",
-      "identifier" : "agentName2-jobName2",
-      "jobDescription" : "Job2 Description"
-    }, {
-      "agentName" : "agentName3",
-      "jobName" : "jobName3",
-      "identifier" : "agentName3-jobName3",
-      "jobDescription" : "Job3 Description"
-    } ]
-  },
+  "jobLocks": [
+    {
+      "name": "TEST-LOCK",
+      "lockCount": 1,
+      "jobs": [
+        {
+          "agentName": "agentName2",
+          "jobName": "jobName2",
+          "identifier": "agentName2-jobName2",
+          "jobDescription": "Job2 Description"
+        },
+        {
+          "agentName": "agentName3",
+          "jobName": "jobName3",
+          "identifier": "agentName3-jobName3",
+          "jobDescription": "Job3 Description"
+        }
+      ]
+    }
+  ],
   "timeWindowStart" : "* * 6 ? * * *",
   "timeWindowEnd" : "* * 15 ? * * *"
 }

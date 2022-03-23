@@ -535,6 +535,18 @@ public class ContextTemplateBuilderTest extends AbstractTest {
             .withDescription("Job2 Description")
             .build();
 
+        SchedulerJob job3 = contextTemplateBuilder.getSchedulerJobBuilder()
+            .withJobName("Job3")
+            .withAgentName("AgentName")
+            .withDescription("Job3 Description")
+            .build();
+
+        SchedulerJob job4 = contextTemplateBuilder.getSchedulerJobBuilder()
+            .withJobName("Job4")
+            .withAgentName("AgentName")
+            .withDescription("Job4 Description")
+            .build();
+
         ContextTemplate contextTemplate1 = contextTemplateBuilder.withName("Context Template Name")
             .withDescription("Context Template Description")
             .withTimeWindowStartCronExpression("* * 6 ? * * *")
@@ -550,17 +562,12 @@ public class ContextTemplateBuilderTest extends AbstractTest {
             // add the scheduler jobs that will be orchestrated
             .addSchedulerJob(job1)
             .addSchedulerJob(job2)
-            .addJobLocks(contextTemplateBuilder.getJobLockBuilder().withLockName("TEST-LOCK").withJob(job1).withJob(job2).build())
-            .addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
-                .withJobName("Job3")
-                .withAgentName("AgentName")
-                .withDescription("Job3 Description")
-                .build())
-            .addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
-                .withJobName("Job4")
-                .withAgentName("AgentName")
-                .withDescription("Job4 Description")
-                .build())
+            .addSchedulerJob(job3)
+            .addSchedulerJob(job4)
+            // job locks
+            .addJobLocks(contextTemplateBuilder.getJobLockBuilder().withLockName("TEST-LOCK-1").withJob(job1).withJob(job2).withLockCount(1L).build())
+            .addJobLocks(contextTemplateBuilder.getJobLockBuilder().withLockName("TEST-LOCK-2").withJob(job3).withJob(job4).withLockCount(1L).build())
+            // scheduler jobs
             .addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
                 .withJobName("Job5")
                 .withAgentName("AgentName")
@@ -636,8 +643,9 @@ public class ContextTemplateBuilderTest extends AbstractTest {
 
         ContextService contextService = new ContextService();
 
-        JSONAssert.assertEquals(super.loadDataFile("/data/context-builder-result-with-job-locks.json"),
-            contextService.getContextTemplateString(contextTemplate1), false);
+        String expectedStr = super.loadDataFile("/data/context-builder-result-with-job-locks.json");
+        String actualContextTemplateStr = contextService.getContextTemplateString(contextTemplate1);
+        JSONAssert.assertEquals(expectedStr, actualContextTemplateStr, false);
     }
 
     @Test

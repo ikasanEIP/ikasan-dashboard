@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
+
+import org.ikasan.job.orchestration.context.cache.JobLockCache;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
@@ -29,6 +31,7 @@ import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.JobLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +69,8 @@ public class ContextMachine {
     private Map<String, ModuleMetaData> agents;
     private String queueDir;
 
+    private JobLockCache jobLockCache;
+
     // todo clean up the transient queues once a context is complete.
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
                           Map<String, InternalEventDrivenJob> internalEventDrivenJobs, String queueDir,  Map<String, ModuleMetaData> agents) {
@@ -76,7 +81,6 @@ public class ContextMachine {
         this.internalEventDrivenJobs = internalEventDrivenJobs;
         this.agents = agents;
         this.queueDir = queueDir;
-        this.jobLogicMachine = new JobLogicMachine(this.agents);
         this.statusConverter = new ContextInstanceToContextInstanceStatusConverter();
         this.contextInstanceStateChangeEventListeners = new ArrayList<>();
         this.statusListenerExecutor = Executors.newSingleThreadExecutor();
@@ -86,6 +90,11 @@ public class ContextMachine {
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
+
+        this.jobLockCache = JobLockCache.instance();
+        // need to recursively get all job locks for all contexts
+        this.jobLockCache.addLocks(this.getJobLocks(context, new ArrayList<>()));
+        this.jobLogicMachine = new JobLogicMachine(this.agents, this.jobLockCache);
     }
 
     /**
@@ -314,7 +323,7 @@ public class ContextMachine {
      * @return
      */
     protected List<SchedulerJobInitiationEvent> eventReceived(ContextualisedScheduledProcessEvent scheduledProcessEvent) {
-        logger.info("Context Machine Received Event [{}]", scheduledProcessEvent);
+        logger.debug("Context Machine Received Event [{}]", scheduledProcessEvent);
         List<SchedulerJobInitiationEvent> events = this.getInitiationEvents(this.contextInstance, scheduledProcessEvent);
 
         List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();
@@ -354,7 +363,7 @@ public class ContextMachine {
              && contextInstance.getScheduledJobsMap().containsKey(scheduledProcessEvent.getAgentName()
                 + "-" + scheduledProcessEvent.getJobName())) {
 
-             // Delegate to the JobLogicMachine to determine if any any SchedulerJobInitiationEvents are
+             // Delegate to the JobLogicMachine to determine if any SchedulerJobInitiationEvents are
              // required to be raised.
              List<SchedulerJobInitiationEvent> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
                  , contextInstance, this.dryRunParameters, this.internalEventDrivenJobs, this.contextInstance.getContextParameters()
@@ -613,5 +622,17 @@ public class ContextMachine {
     protected void addOutboundListener() {
         outboundListenableFuture = outboundQueue.peekAsync();
         outboundListenableFuture.addListener(new OutboundQueueMessageRunner(), schedulerInitiatorEventRaisedListenerExecutor);
+    }
+
+    private List<JobLock> getJobLocks(ContextTemplate context, ArrayList<JobLock> jobLocks) {
+        if (context != null) {
+            if (context.getJobLocks() != null) {
+                jobLocks.addAll(context.getJobLocks());
+            }
+            if (context.getContexts() != null) {
+                context.getContexts().forEach(c -> getJobLocks(c, jobLocks));
+            }
+        }
+        return jobLocks;
     }
 }
