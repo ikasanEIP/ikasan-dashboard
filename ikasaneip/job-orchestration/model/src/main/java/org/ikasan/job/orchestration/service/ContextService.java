@@ -4,17 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
-import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
+import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.*;
 
 public class ContextService {
     private ObjectMapper objectMapper;
@@ -41,6 +35,10 @@ public class ContextService {
 
     public SchedulerJob getSchedulerJob(String schedulerJob) throws JsonProcessingException {
         return objectMapper.readValue(schedulerJob, SchedulerJobImpl.class);
+    }
+
+    public JobLock getJobLock(String jobLock) throws JsonProcessingException {
+        return objectMapper.readValue(jobLock, JobLockImpl.class);
     }
 
     public String getSchedulerJobString(SchedulerJob schedulerJob) throws JsonProcessingException {

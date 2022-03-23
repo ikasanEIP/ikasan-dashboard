@@ -77,29 +77,38 @@
     "agentName" : "agentName5",
     "jobName" : "jobName5"
   }],
-  "jobLocks" : {
-    "TEST-LOCK" : [ {
-      "agentName" : "agentName2",
-      "jobName" : "jobName2",
-      "identifier" : "agentName2-jobName2",
-      "jobDescription" : "Job2 Description"
-    }, {
-      "agentName" : "agentName3",
-      "jobName" : "jobName3",
-      "identifier" : "agentName3-jobName3",
-      "jobDescription" : "Job3 Description"
-    } , {
-      "agentName" : "agentName4",
-      "jobName" : "jobName4",
-      "identifier" : "agentName4-jobName4",
-      "jobDescription" : "Job5 Description"
-    } , {
-      "agentName" : "agentName5",
-      "jobName" : "jobName5",
-      "identifier" : "agentName5-jobName5",
-      "jobDescription" : "Job5 Description"
-    } ]
-  },
+  "jobLocks": [
+    {
+      "name": "TEST-LOCK",
+      "lockCount": 1,
+      "jobs": [
+        {
+          "agentName": "agentName2",
+          "jobName": "jobName2",
+          "identifier": "agentName2-jobName2",
+          "jobDescription": "Job2 Description"
+        },
+        {
+          "agentName": "agentName3",
+          "jobName": "jobName3",
+          "identifier": "agentName3-jobName3",
+          "jobDescription": "Job3 Description"
+        },
+        {
+          "agentName": "agentName4",
+          "jobName": "jobName4",
+          "identifier": "agentName4-jobName4",
+          "jobDescription": "Job5 Description"
+        },
+        {
+          "agentName": "agentName5",
+          "jobName": "jobName5",
+          "identifier": "agentName5-jobName5",
+          "jobDescription": "Job5 Description"
+        }
+      ]
+    }
+  ],
   "timeWindowStart" : "* * 6 ? * * *",
   "timeWindowEnd" : "* * 15 ? * * *"
 }
