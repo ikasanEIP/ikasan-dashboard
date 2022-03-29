@@ -65,7 +65,6 @@ public class ContextMachine {
     private Map<String, InternalEventDrivenJob> internalEventDrivenJobs;
     private Map<String, ModuleMetaData> agents;
     private String queueDir;
-
     private JobLockCache jobLockCache;
 
     // todo clean up the transient queues once a context is complete.
