@@ -36,10 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -74,9 +71,7 @@ public class ContextMachine {
     // todo clean up the transient queues once a context is complete.
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
                           Map<String, InternalEventDrivenJob> internalEventDrivenJobs, String queueDir,  Map<String, ModuleMetaData> agents) {
-        this.internalEventDrivenJobs = internalEventDrivenJobs;
         this.context = context;
-
         this.contextInstance = contextInstance;
         this.internalEventDrivenJobs = internalEventDrivenJobs;
         this.agents = agents;
@@ -92,8 +87,7 @@ public class ContextMachine {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
 
         this.jobLockCache = JobLockCache.instance();
-        // need to recursively get all job locks for all contexts
-        this.jobLockCache.addLocks(this.getJobLocks(context, new ArrayList<>()));
+        this.jobLockCache.addLocks(context != null ? context.getAllNestedJobLocks() : Collections.emptyList());
         this.jobLogicMachine = new JobLogicMachine(this.agents, this.jobLockCache);
     }
 
@@ -323,7 +317,7 @@ public class ContextMachine {
      * @return
      */
     protected List<SchedulerJobInitiationEvent> eventReceived(ContextualisedScheduledProcessEvent scheduledProcessEvent) {
-        logger.debug("Context Machine Received Event [{}]", scheduledProcessEvent);
+        logger.info("Context Machine Received Event [{}]", scheduledProcessEvent);
         List<SchedulerJobInitiationEvent> events = this.getInitiationEvents(this.contextInstance, scheduledProcessEvent);
 
         List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();
@@ -622,17 +616,5 @@ public class ContextMachine {
     protected void addOutboundListener() {
         outboundListenableFuture = outboundQueue.peekAsync();
         outboundListenableFuture.addListener(new OutboundQueueMessageRunner(), schedulerInitiatorEventRaisedListenerExecutor);
-    }
-
-    private List<JobLock> getJobLocks(ContextTemplate context, ArrayList<JobLock> jobLocks) {
-        if (context != null) {
-            if (context.getJobLocks() != null) {
-                jobLocks.addAll(context.getJobLocks());
-            }
-            if (context.getContexts() != null) {
-                context.getContexts().forEach(c -> getJobLocks(c, jobLocks));
-            }
-        }
-        return jobLocks;
     }
 }

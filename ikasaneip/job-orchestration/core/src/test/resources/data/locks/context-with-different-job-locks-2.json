@@ -1,0 +1,90 @@
+{
+  "name" : "Context-Locks-2",
+  "jobDependencies" : [ {
+    "jobIdentifier" : "agentName5-jobName5",
+    "logicalGrouping" : null
+  }, {
+    "jobIdentifier" : "agentName6-jobName6",
+    "logicalGrouping" : {
+      "logicalGrouping" : null,
+      "and" : [ {
+        "identifier" : "agentName5-jobName5"
+      }],
+      "or" : null,
+      "not" : null
+    }
+  }, {
+    "jobIdentifier" : "agentName7-jobName7",
+    "logicalGrouping" : {
+      "logicalGrouping" : null,
+      "and" : [ {
+        "identifier" : "agentName5-jobName5"
+      }],
+      "or" : null,
+      "not" : null
+    }
+  }, {
+      "jobIdentifier" : "agentName8-jobName8",
+      "logicalGrouping" : {
+        "logicalGrouping" : null,
+        "and" : [ {
+          "identifier" : "agentName6-jobName6"
+        }, {
+          "identifier" : "agentName7-jobName7"
+        }],
+        "or" : null,
+        "not" : null
+      }
+    }],
+  "contexts" : [ ],
+  "contextDependencies" : [ ],
+  "contextParameters" : [ {
+    "name" : "name",
+    "type" : "type"
+  }, {
+    "name" : "name",
+    "type" : "type"
+  }, {
+    "name" : "name",
+    "type" : "type"
+  } ],
+  "scheduledJobs" : [ {
+    "identifier" : "agentName5-jobName5",
+    "agentName" : "agentName5",
+    "jobName" : "jobName5"
+  }, {
+    "identifier" : "agentName6-jobName6",
+    "agentName" : "agentName6",
+    "jobName" : "jobName6"
+  }, {
+    "identifier" : "agentName7-jobName7",
+    "agentName" : "agentName7",
+    "jobName" : "jobName7"
+  }, {
+    "identifier" : "agentName8-jobName8",
+    "agentName" : "agentName8",
+    "jobName" : "jobName8"
+  }],
+  "jobLocks": [
+    {
+      "name": "TEST-LOCK-DIFF-2",
+      "lockCount": 1,
+      "jobs": [
+        {
+          "agentName": "agentName6",
+          "jobName": "jobName6",
+          "identifier": "agentName6-jobName6",
+          "jobDescription": "Job6 Description"
+        },
+        {
+          "agentName": "agentName7",
+          "jobName": "jobName7",
+          "identifier": "agentName7-jobName7",
+          "jobDescription": "Job7 Description"
+        }
+      ]
+    }
+  ],
+  "timeWindowStart" : "* * 6 ? * * *",
+  "timeWindowEnd" : "* * 15 ? * * *"
+}
