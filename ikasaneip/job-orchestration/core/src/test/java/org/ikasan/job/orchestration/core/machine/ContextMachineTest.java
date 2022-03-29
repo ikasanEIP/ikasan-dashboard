@@ -1,5 +1,7 @@
 package org.ikasan.job.orchestration.core.machine;
 
+import static org.ikasan.job.orchestration.core.machine.ContextMachineTestHelper.createInternalJobsMap;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.ikasan.job.orchestration.context.cache.JobLockCache;
@@ -19,7 +21,6 @@ import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.json.JSONException;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -806,7 +807,6 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_context_machine_with_job_locks_containing_four_jobs() throws IOException, InvalidContextTemplateException {
-        //here
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/locks/context-with-four-jobs-in-job-locks.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/locks/context-with-four-jobs-in-job-locks.json"));
 
@@ -897,7 +897,6 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_context_machine_with_job_locks_containing_four_jobs_in_two_separate_job_locks() throws IOException, InvalidContextTemplateException {
-        // here
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/locks/context-with-four-jobs-in-two-separate-job-locks.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/locks/context-with-four-jobs-in-two-separate-job-locks.json"));
 
@@ -1184,9 +1183,7 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    @Ignore
     public void test_context_machine_full_nested_context_with_job_locks_at_different_levels_success() throws IOException, JSONException, InvalidContextTemplateException {
-        // todo ? this test
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/locks/nested-contexts-with-locks-at-different-levels.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/locks/nested-contexts-with-locks-at-different-levels.json"));
 
@@ -1257,7 +1254,6 @@ public class ContextMachineTest extends AbstractTest {
             "agentName7", true);
 
         events = contextMachine.eventReceived(eventInstance);
-        // todo question this test 2 different levels of locks with the same name i.e. should this be across all contexts ?
         Assert.assertEquals(1, events.size());
 
         eventInstance = scheduledProcessEventInstance("jobName8",
@@ -1287,7 +1283,6 @@ public class ContextMachineTest extends AbstractTest {
             "agentName10", true);
 
         events = contextMachine.eventReceived(eventInstance);
-        // todo same question as above
         Assert.assertEquals(1, events.size());
 
         JSONAssert.assertEquals(loadDataFile("/data/machine/result/job10-success-context-status.json")
@@ -1704,7 +1699,6 @@ public class ContextMachineTest extends AbstractTest {
      */
     @Test
     public void test_complex_context_with_scheduled_and_file_jobs() throws IOException {
-        // todo ? this test changes made
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/CONTEXT-1436221681.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/CONTEXT-1436221681.json"));
 
@@ -2133,9 +2127,8 @@ public class ContextMachineTest extends AbstractTest {
             (contextMachine, "CONTEXT-1436221681", "CONTEXT--129403053",
                 "scheduler-agent", "1178974129", true).size());
 
-        // todo ?? or understand this
         // once all 4 file events are received an event is raised
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
             (contextMachine, "CONTEXT-1436221681", "CONTEXT--129403053",
                 "scheduler-agent", "1178974128", true).size());
 
@@ -2168,9 +2161,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
 
-
-        // todo ?? or understand this
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachine
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachine
             (contextMachine, "CONTEXT-1436221681", "CONTEXT--129403053",
                 "scheduler-agent", "1164721449", true).size());
 
@@ -2620,8 +2611,7 @@ public class ContextMachineTest extends AbstractTest {
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789416"),
                 "scheduler-agent", "210659119", true).size());
 
-        // todo ?? or understand this
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-1182789416", "CONTEXT-613708632"),
                 "scheduler-agent", "97656185", true).size());
 
@@ -2681,8 +2671,7 @@ public class ContextMachineTest extends AbstractTest {
          *       }
          */
 
-        // todo ?? or understand this
-        Assert.assertEquals(2, this.sendScheduledEventToContextMachineWithChildContextId
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-613708632"),
                 "scheduler-agent", "-131863702", true).size());
 
@@ -2779,8 +2768,7 @@ public class ContextMachineTest extends AbstractTest {
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
                 "scheduler-agent", "340732842", true).size());
 
-        // todo ?? or understand this
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
                 "scheduler-agent", "340732843", true).size());
 
@@ -2814,8 +2802,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
 
 
-        // todo ?? or understand this
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT-521366615"),
                 "scheduler-agent", "1164721449", true).size());
 
@@ -3050,8 +3037,7 @@ public class ContextMachineTest extends AbstractTest {
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--918631717"),
                 "scheduler-agent", "-1028088288", true).size());
 
-        // todo ?? or understand this
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--918631717"),
                 "scheduler-agent", "-1028088287", true).size());
 
@@ -3084,8 +3070,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
 
-        // todo ?? or understand this
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--918631717"),
                 "scheduler-agent", "1164721449", true).size());
 
@@ -3266,8 +3251,7 @@ public class ContextMachineTest extends AbstractTest {
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1250033421"),
                 "scheduler-agent", "-254494704", true).size());
 
-        // todo ?? or understand this
-        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
+        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1250033421"),
                 "scheduler-agent", "-254494703", true).size());
 
@@ -3300,8 +3284,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
 
-        // todo ?? or understand this
-        Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
+        Assert.assertEquals(0, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "CONTEXT-1436221681", List.of("CONTEXT--1250033421"),
                 "scheduler-agent", "1164721449", true).size());
 
@@ -3682,36 +3665,5 @@ public class ContextMachineTest extends AbstractTest {
     private void assertContextStatus(ContextMachine contextMachine, String context, InstanceStatus expected) {
         InstanceStatus status = contextMachine.getContextStatus(context);
         Assert.assertEquals(expected, status);
-    }
-
-    private Map<String, InternalEventDrivenJob> createInternalJobsMap(ContextTemplate contextTemplate) {
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-
-        contextTemplate.getScheduledJobs().forEach(job -> internalEventDrivenJobs.put(job.getIdentifier(),
-            this.newInternalEventDrivenJob(job.getIdentifier())));
-
-        if(contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
-            contextTemplate.getContexts().forEach(template -> this.addInternalJobs(template, internalEventDrivenJobs));
-        }
-
-        return internalEventDrivenJobs;
-    }
-
-    private void addInternalJobs(ContextTemplate contextTemplate, Map<String, InternalEventDrivenJob> internalEventDrivenJobs) {
-        if(contextTemplate.getContexts() == null || contextTemplate.getContexts().isEmpty()) {
-            contextTemplate.getScheduledJobs().forEach(job -> internalEventDrivenJobs.put(job.getIdentifier(),
-                this.newInternalEventDrivenJob(job.getIdentifier())));
-        }
-        else {
-            contextTemplate.getContexts().forEach(template -> this.addInternalJobs(template, internalEventDrivenJobs));
-        }
-    }
-
-    private InternalEventDrivenJob newInternalEventDrivenJob(String jobIdentifier) {
-        InternalEventDrivenJob job = new InternalEventDrivenJobImpl();
-        job.setIdentifier(jobIdentifier);
-        job.setChildContextIds(List.of("PASS_THROUGH"));
-
-        return job;
     }
 }
