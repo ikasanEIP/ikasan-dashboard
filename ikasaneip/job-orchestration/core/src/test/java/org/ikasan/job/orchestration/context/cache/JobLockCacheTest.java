@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.ikasan.job.orchestration.builder.context.JobLockBuilder;
 import org.ikasan.job.orchestration.builder.job.SchedulerJobBuilder;
@@ -71,13 +70,13 @@ public class JobLockCacheTest {
 
         jlc.addLock(makeJobLock("TEST-LOCK", 2, 1));
 
-        assertFalse(jlc.jobLockExists(null));
-        assertTrue(jlc.jobLockExists("TEST-LOCK"));
+        assertFalse(jlc.existsByJobLockName(null));
+        assertTrue(jlc.existsByJobLockName("TEST-LOCK"));
 
-        assertFalse(jlc.exists(null));
-        assertTrue(jlc.exists("AgentName0-TEST-LOCK-JobName0"));
-        assertTrue(jlc.exists("AgentName1-TEST-LOCK-JobName1"));
-        assertFalse(jlc.exists("AgentName2-TEST-LOCK-JobName2"));
+        assertFalse(jlc.existsByIdentifier(null));
+        assertTrue(jlc.existsByIdentifier("AgentName0-TEST-LOCK-JobName0"));
+        assertTrue(jlc.existsByIdentifier("AgentName1-TEST-LOCK-JobName1"));
+        assertFalse(jlc.existsByIdentifier("AgentName2-TEST-LOCK-JobName2"));
     }
 
     @Test
@@ -85,17 +84,17 @@ public class JobLockCacheTest {
         JobLockCache jlc = JobLockCache.instance();
 
         jlc.addLock(makeJobLock("TEST-LOCK", 2, 1));
-        assertTrue(jlc.jobLockExists("TEST-LOCK"));
-        assertTrue(jlc.exists("AgentName0-TEST-LOCK-JobName0"));
-        assertTrue(jlc.exists("AgentName1-TEST-LOCK-JobName1"));
-        assertFalse(jlc.exists("AgentName2-TEST-LOCK-JobName2"));
+        assertTrue(jlc.existsByJobLockName("TEST-LOCK"));
+        assertTrue(jlc.existsByIdentifier("AgentName0-TEST-LOCK-JobName0"));
+        assertTrue(jlc.existsByIdentifier("AgentName1-TEST-LOCK-JobName1"));
+        assertFalse(jlc.existsByIdentifier("AgentName2-TEST-LOCK-JobName2"));
 
         jlc.reset();
 
-        assertFalse(jlc.jobLockExists("TEST-LOCK"));
-        assertFalse(jlc.exists("AgentName0-TEST-LOCK-JobName0"));
-        assertFalse(jlc.exists("AgentName1-TEST-LOCK-JobName1"));
-        assertFalse(jlc.exists("AgentName2-TEST-LOCK-JobName2"));
+        assertFalse(jlc.existsByJobLockName("TEST-LOCK"));
+        assertFalse(jlc.existsByIdentifier("AgentName0-TEST-LOCK-JobName0"));
+        assertFalse(jlc.existsByIdentifier("AgentName1-TEST-LOCK-JobName1"));
+        assertFalse(jlc.existsByIdentifier("AgentName2-TEST-LOCK-JobName2"));
     }
 
     @Test
@@ -178,16 +177,28 @@ public class JobLockCacheTest {
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0"));
 
         assertTrue(jlc.locked("AgentName0-TEST-LOCK-JobName0"));
+        assertTrue(jlc.hasLock("AgentName0-TEST-LOCK-JobName0"));
+        assertTrue(jlc.locked("AgentName1-TEST-LOCK-JobName1"));
+        assertFalse(jlc.hasLock("AgentName1-TEST-LOCK-JobName1"));
+        assertTrue(jlc.locked("AgentName2-TEST-LOCK-JobName2"));
+        assertFalse(jlc.hasLock("AgentName2-TEST-LOCK-JobName2"));
+
+        // release the lock - only the lock holder can release the lock
+        assertFalse(jlc.release("AgentName1-TEST-LOCK-JobName1"));
+        assertFalse(jlc.release("AgentName2-TEST-LOCK-JobName2"));
+
+        assertTrue(jlc.locked("AgentName0-TEST-LOCK-JobName0"));
         assertTrue(jlc.locked("AgentName1-TEST-LOCK-JobName1"));
         assertTrue(jlc.locked("AgentName2-TEST-LOCK-JobName2"));
 
-        // release the lock
-        assertFalse(jlc.release("jobIdentifier"));
-        assertTrue(jlc.release("AgentName1-TEST-LOCK-JobName1"));
+        assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0"));
 
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0"));
+        assertFalse(jlc.hasLock("AgentName0-TEST-LOCK-JobName0"));
         assertFalse(jlc.locked("AgentName1-TEST-LOCK-JobName1"));
+        assertFalse(jlc.hasLock("AgentName1-TEST-LOCK-JobName1"));
         assertFalse(jlc.locked("AgentName2-TEST-LOCK-JobName2"));
+        assertFalse(jlc.hasLock("AgentName2-TEST-LOCK-JobName2"));
     }
 
     @Test
@@ -227,7 +238,6 @@ public class JobLockCacheTest {
         JobLockHolder jobLockHolder = jobLocksByLockName.get("TEST-LOCK");
         assertEquals("TEST-LOCK", jobLockHolder.getLockName());
         assertEquals(2, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
         validate(jobLockHolder.getSchedulerJobs(), "TEST-LOCK");
 
@@ -238,21 +248,18 @@ public class JobLockCacheTest {
         jobLockHolder = jobLocksByIdentifier.get("AgentName0-TEST-LOCK-JobName0");
         assertEquals("TEST-LOCK", jobLockHolder.getLockName());
         assertEquals(2, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
         validate(jobLockHolder.getSchedulerJobs(), "TEST-LOCK");
 
         jobLockHolder = jobLocksByIdentifier.get("AgentName1-TEST-LOCK-JobName1");
         assertEquals("TEST-LOCK", jobLockHolder.getLockName());
         assertEquals(2, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
         validate(jobLockHolder.getSchedulerJobs(), "TEST-LOCK");
 
         jobLockHolder = jobLocksByIdentifier.get("AgentName2-TEST-LOCK-JobName2");
         assertEquals("TEST-LOCK", jobLockHolder.getLockName());
         assertEquals(2, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
         validate(jobLockHolder.getSchedulerJobs(), "TEST-LOCK");
     }
@@ -271,14 +278,12 @@ public class JobLockCacheTest {
         JobLockHolder jobLockHolder = jobLocksByLockName.get("TEST-LOCK-3");
         assertEquals("TEST-LOCK-3", jobLockHolder.getLockName());
         assertEquals(3, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
         validate(jobLockHolder.getSchedulerJobs(), "TEST-LOCK-3");
 
         jobLockHolder = jobLocksByLockName.get("TEST-LOCK-4");
         assertEquals("TEST-LOCK-4", jobLockHolder.getLockName());
         assertEquals(4, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(4, jobLockHolder.getSchedulerJobs().size());
         validate(jobLockHolder.getSchedulerJobs(), "TEST-LOCK-4");
 
@@ -303,14 +308,12 @@ public class JobLockCacheTest {
         JobLockHolder jobLockHolder = jobLocksByLockName.get("TEST-LOCK-3");
         assertEquals("TEST-LOCK-3", jobLockHolder.getLockName());
         assertEquals(3, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
         validate(jobLockHolder.getSchedulerJobs(), "TEST-LOCK-3");
 
         jobLockHolder = jobLocksByLockName.get("TEST-LOCK-4");
         assertEquals("TEST-LOCK-4", jobLockHolder.getLockName());
         assertEquals(4, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(4, jobLockHolder.getSchedulerJobs().size());
         validate(jobLockHolder.getSchedulerJobs(), "TEST-LOCK-4");
 
@@ -385,49 +388,42 @@ public class JobLockCacheTest {
         jobLockHolder = jobLocksByIdentifier.get("AgentName0-TEST-LOCK-3-JobName0");
         assertEquals("TEST-LOCK-3", jobLockHolder.getLockName());
         assertEquals(3, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
         validate(jobLockHolder.getSchedulerJobs(), "TEST-LOCK-3");
 
         jobLockHolder = jobLocksByIdentifier.get("AgentName1-TEST-LOCK-3-JobName1");
         assertEquals("TEST-LOCK-3", jobLockHolder.getLockName());
         assertEquals(3, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
         validate(jobLockHolder.getSchedulerJobs(), "TEST-LOCK-3");
 
         jobLockHolder = jobLocksByIdentifier.get("AgentName2-TEST-LOCK-3-JobName2");
         assertEquals("TEST-LOCK-3", jobLockHolder.getLockName());
         assertEquals(3, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
         validate(jobLockHolder.getSchedulerJobs(), "TEST-LOCK-3");
 
         jobLockHolder = jobLocksByIdentifier.get("AgentName0-TEST-LOCK-4-JobName0");
         assertEquals("TEST-LOCK-4", jobLockHolder.getLockName());
         assertEquals(4, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(4, jobLockHolder.getSchedulerJobs().size());
         validate(jobLockHolder.getSchedulerJobs(), "TEST-LOCK-4");
 
         jobLockHolder = jobLocksByIdentifier.get("AgentName1-TEST-LOCK-4-JobName1");
         assertEquals("TEST-LOCK-4", jobLockHolder.getLockName());
         assertEquals(4, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(4, jobLockHolder.getSchedulerJobs().size());
         validate(jobLockHolder.getSchedulerJobs(), "TEST-LOCK-4");
 
         jobLockHolder = jobLocksByIdentifier.get("AgentName2-TEST-LOCK-4-JobName2");
         assertEquals("TEST-LOCK-4", jobLockHolder.getLockName());
         assertEquals(4, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(4, jobLockHolder.getSchedulerJobs().size());
         validate(jobLockHolder.getSchedulerJobs(), "TEST-LOCK-4");
 
         jobLockHolder = jobLocksByIdentifier.get("AgentName3-TEST-LOCK-4-JobName3");
         assertEquals("TEST-LOCK-4", jobLockHolder.getLockName());
         assertEquals(4, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(4, jobLockHolder.getSchedulerJobs().size());
         validate(jobLockHolder.getSchedulerJobs(), "TEST-LOCK-4");
     }
@@ -440,7 +436,6 @@ public class JobLockCacheTest {
         JobLockHolder jobLockHolder = jobLocksByLockName.get("TEST-LOCK-1");
         assertEquals("TEST-LOCK-1", jobLockHolder.getLockName());
         assertEquals(1, jobLockHolder.getLockCount());
-        assertEquals(new AtomicLong(0).get(), jobLockHolder.getWorkingCount().get());
         assertEquals(5, jobLockHolder.getSchedulerJobs().size());
         List<SchedulerJob> schedulerJobs = jobLockHolder.getSchedulerJobs();
 

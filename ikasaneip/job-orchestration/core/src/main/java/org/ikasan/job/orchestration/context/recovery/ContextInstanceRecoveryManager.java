@@ -71,6 +71,8 @@ public class ContextInstanceRecoveryManager {
                     this.scheduledContextInstanceService, internalEventDrivenJobMap, this.queueDirectory, new HashMap<>());
 
                 ContextMachineCache.instance().put(contextMachine);
+
+                // todo sort out adding JobLockCache instance and lock holders
             }
             catch (Exception e) {
                 // todo probably want to send a notification here.
