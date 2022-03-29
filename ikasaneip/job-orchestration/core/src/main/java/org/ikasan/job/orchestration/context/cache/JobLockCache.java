@@ -1,10 +1,7 @@
 package org.ikasan.job.orchestration.context.cache;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.ikasan.spec.scheduled.job.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -57,11 +54,7 @@ public final class JobLockCache {
     public synchronized boolean lock(String jobIdentifier) {
         if (jobIdentifier != null) {
             JobLockHolder jobLockHolder = jobLocksByIdentifier.get(jobIdentifier);
-            if (jobLockHolder != null) {
-                if (jobLockHolder.getWorkingCount().get() >= jobLockHolder.getLockCount()) {
-                    return false;
-                }
-                jobLockHolder.getWorkingCount().incrementAndGet();
+            if (jobLockHolder != null && !locked(jobIdentifier)) {
                 jobLockHolder.addLockHolder(jobIdentifier);
                 return true;
             }
@@ -73,38 +66,32 @@ public final class JobLockCache {
         if (jobIdentifier != null) {
             JobLockHolder jobLockHolder = jobLocksByIdentifier.get(jobIdentifier);
             if (jobLockHolder != null) {
-                if (jobLockHolder.getWorkingCount().get() <= 0) {
-                    return false;
-                }
-                jobLockHolder.getWorkingCount().decrementAndGet();
-                jobLockHolder.removeLockHolder(jobIdentifier);
-                return true;
+                return jobLockHolder.removeLockHolder(jobIdentifier);
             }
         }
         return false;
     }
 
     public synchronized boolean locked(String jobIdentifier) {
-        JobLockHolder jlh = null;
-        if (jobIdentifier != null) {
-            jlh = jobLocksByIdentifier.get(jobIdentifier);
-        }
-        return jlh != null && jlh.getWorkingCount().get() >= jlh.getLockCount();
+        JobLockHolder jlh = getJobLockHolderForJobIdentifier(jobIdentifier);
+        return jlh != null && workingCountIsGreaterThanOrEqualToLockCount(jlh);
     }
 
-    public synchronized boolean exists(String jobIdentifier) {
+    public synchronized boolean hasLock(String jobIdentifier) {
+        JobLockHolder jlh = getJobLockHolderForJobIdentifier(jobIdentifier);
+        return jlh != null && jlh.getLockHolders().contains(jobIdentifier);
+    }
+
+    public synchronized boolean existsByIdentifier(String jobIdentifier) {
         return jobIdentifier != null && jobLocksByIdentifier.get(jobIdentifier) != null;
     }
 
-    public synchronized boolean jobLockExists(String jobLockName) {
+    public synchronized boolean existsByJobLockName(String jobLockName) {
         return jobLockName != null && jobLocksByLockName.get(jobLockName) != null;
     }
 
     public synchronized List<SchedulerJob> getJobsForIdentifier(String jobIdentifier) {
-        JobLockHolder jlh = null;
-        if (jobIdentifier != null) {
-            jlh = jobLocksByIdentifier.get(jobIdentifier);
-        }
+        JobLockHolder jlh = getJobLockHolderForJobIdentifier(jobIdentifier);
         return jlh == null ? Collections.emptyList() : jlh.getSchedulerJobs();
     }
 
@@ -113,12 +100,23 @@ public final class JobLockCache {
         jobLocksByIdentifier.clear();
     }
 
+    private JobLockHolder getJobLockHolderForJobIdentifier(String jobIdentifier) {
+        JobLockHolder jlh = null;
+        if (jobIdentifier != null) {
+            jlh = jobLocksByIdentifier.get(jobIdentifier);
+        }
+        return jlh;
+    }
+
+    private boolean workingCountIsGreaterThanOrEqualToLockCount(JobLockHolder jlh) {
+        return jlh.getLockHolders().size() >= jlh.getLockCount();
+    }
+
     protected static class JobLockHolder {
         private String lockName;
         private long lockCount = 1;
-        private AtomicLong workingCount = new AtomicLong(0);
         private List<SchedulerJob> schedulerJobs = new ArrayList<>();
-        private List<String> lockHolders = new ArrayList<>();
+        private Set<String> lockHolders = new HashSet<>();
 
         public String getLockName() {
             return lockName;
@@ -136,10 +134,6 @@ public final class JobLockCache {
             this.lockCount = lockCount;
         }
 
-        public AtomicLong getWorkingCount() {
-            return workingCount;
-        }
-
         public List<SchedulerJob> getSchedulerJobs() {
             return schedulerJobs;
         }
@@ -148,16 +142,16 @@ public final class JobLockCache {
             this.schedulerJobs.addAll(jobs);
         }
 
-        public List<String> getLockHolders() {
+        public Set<String> getLockHolders() {
             return lockHolders;
         }
 
         public void addLockHolder(String jobIdentifier) {
-            this.lockHolders.add(jobIdentifier);
+            lockHolders.add(jobIdentifier);
         }
 
-        public void removeLockHolder(String jobIdentifier) {
-            this.lockHolders.remove(jobIdentifier);
+        public boolean removeLockHolder(String jobIdentifier) {
+            return lockHolders.remove(jobIdentifier);
         }
     }
 }

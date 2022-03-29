@@ -12,7 +12,6 @@ public class JobLockBuilder {
 
     private String lockName;
     private List<SchedulerJob> schedulerJobs;
-    private JobLock jobLock;
     private Long lockCount;
 
     public JobLockBuilder() {
@@ -38,7 +37,7 @@ public class JobLockBuilder {
     }
 
     public List<JobLock> build() {
-        jobLock = new JobLockImpl();
+        JobLock jobLock = new JobLockImpl();
         jobLock.setName(lockName);
         jobLock.setJobs(schedulerJobs);
         jobLock.setLockCount(lockCount);
