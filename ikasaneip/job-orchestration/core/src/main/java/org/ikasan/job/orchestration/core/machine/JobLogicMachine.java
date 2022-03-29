@@ -67,7 +67,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             scheduledProcessEvent.getChildContextIds().forEach(id -> childIds.append("{").append(id).append("}"));
             childIds.append("]");
 
-            logger.debug("Processing Schedule Process Event [{}], for Context Instance [{}], with Child Ids {}", scheduledProcessEvent.getJobName()
+            logger.info("Processing Schedule Process Event [{}], for Context Instance [{}], with Child Ids {}", scheduledProcessEvent.getJobName()
                 , contextInstance.getName(), childIds.toString());
         }
 
@@ -115,12 +115,12 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
         if (schedulerJobInstance != null && schedulerJobInstance.getStatus().equals(InstanceStatus.COMPLETE)) {
             String identifier = schedulerJobInstance.getIdentifier();
-            if (jobLockCache.locked(identifier)) {
+            if (jobLockCache.locked(identifier) && jobLockCache.hasLock(identifier)) {
                 jobLockCache.release(identifier);
                 for (SchedulerJob job : jobLockCache.getJobsForIdentifier(identifier)) {
                     SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(job.getIdentifier());
                     InternalEventDrivenJob internalEventDrivenJob = internalEventDrivenJobs.get(job.getIdentifier());
-                    if (jobInstance != null && jobInstance.getStatus().equals(InstanceStatus.WAITING)) {
+                    if (jobInstance != null && jobInstance.getStatus().equals(InstanceStatus.WAITING) && !jobLockCache.hasLock(jobInstance.getIdentifier())) {
                         jobLockCache.lock(jobInstance.getIdentifier());
                         results.add(this.createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters, contextParameters
                             , parentContextInstance, scheduledProcessEvent));
@@ -147,14 +147,12 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
                 InternalEventDrivenJob internalEventDrivenJob = internalEventDrivenJobs.get(jobDependency.getJobIdentifier());
 
-                boolean raiseEventDueToLock = true;
-
-                String jobIdentifier = jobDependency.getJobIdentifier();
-
-                if (jobLockCache.locked(jobIdentifier)) {
-                    raiseEventDueToLock = false;
-                } else {
+                boolean raiseEventDueToLock = false;
+                if (!jobLockCache.locked(jobDependency.getJobIdentifier()) && jobInstance.getStatus() != InstanceStatus.COMPLETE) {
+                    // adding the lock here will only add it if it's not already added and exists in the cache
+                    // hence we try and add it every time regardless of whether it exists or not or has the lock as faster to do so
                     jobLockCache.lock(jobInstance.getIdentifier());
+                    raiseEventDueToLock = true;
                 }
 
                 // We only want to raise the job initiation event once!
