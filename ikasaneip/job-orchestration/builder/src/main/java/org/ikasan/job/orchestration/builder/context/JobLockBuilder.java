@@ -1,8 +1,7 @@
 package org.ikasan.job.orchestration.builder.context;
 
-
-import org.ikasan.job.orchestration.model.job.JobLockImpl;
-import org.ikasan.spec.scheduled.job.model.JobLock;
+import org.ikasan.job.orchestration.model.context.JobLockImpl;
+import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.ArrayList;
