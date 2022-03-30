@@ -35,7 +35,7 @@ deploy:
     on:
       branch: 3.3.x
   - provider: script
-    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Pall -B  -V --settings .settings.xml
+    script: mvn -U --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Pall -B  -V --settings .settings.xml
     on:
       branch: 3.3.x-scheduler-working-branch
   # Push release to oss
