@@ -2,17 +2,11 @@ package org.ikasan.job.orchestration.builder.context;
 
 import org.ikasan.job.orchestration.builder.job.SchedulerJobBuilder;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
-import org.ikasan.spec.scheduled.context.model.ContextDependency;
-import org.ikasan.spec.scheduled.context.model.ContextParameter;
-import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.context.model.JobDependency;
-import org.ikasan.spec.scheduled.job.model.JobLock;
+import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ContextTemplateBuilder {
     protected String name;

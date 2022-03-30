@@ -10,7 +10,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.job.orchestration.builder.context.JobLockBuilder;
 import org.ikasan.job.orchestration.builder.job.SchedulerJobBuilder;
 import org.ikasan.job.orchestration.context.cache.JobLockCache.JobLockHolder;
-import org.ikasan.spec.scheduled.job.model.JobLock;
+import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.junit.After;
 import org.junit.Test;

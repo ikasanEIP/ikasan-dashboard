@@ -7,7 +7,9 @@ import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
 import org.ikasan.scheduled.context.model.SolrContextTemplateImpl;
+import org.ikasan.scheduled.context.model.SolrJobLockImpl;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
+import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
@@ -20,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static org.ikasan.scheduled.context.dao.SolrScheduledContextDaoImpl.SCHEDULED_CONTEXT;
 
@@ -67,6 +70,7 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
 
             SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
             solrContextTemplate.setName("contextName");
+            solrContextTemplate.setJobLocks(List.of(new SolrJobLockImpl()));
             SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
             scheduledContextRecord.setContextName("contextName");
             scheduledContextRecord.setTimestamp(1000000L);
@@ -92,8 +96,10 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
         {
             init(server);
 
-            SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
-            solrContextTemplate.setName("contextName1");
+            SolrContextTemplateImpl solrContextTemplate
+                = ScheduledObjectMapperFactory.newInstance()
+                .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
+
             SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
             scheduledContextRecord.setContextName("contextName1");
             scheduledContextRecord.setTimestamp(1000000L);
@@ -121,15 +127,19 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
         {
             init(server);
 
-            SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
-            solrContextTemplate.setName("contextName1");
+            SolrContextTemplateImpl solrContextTemplate
+                = ScheduledObjectMapperFactory.newInstance()
+                .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
+
             SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
-            scheduledContextRecord.setContextName("contextName1");
+            scheduledContextRecord.setContextName("Context-Locks-1");
             scheduledContextRecord.setTimestamp(1000000L);
             scheduledContextRecord.setContext(solrContextTemplate);
             this.dao.save(scheduledContextRecord);
 
-            solrContextTemplate = new SolrContextTemplateImpl();
+            solrContextTemplate
+                = ScheduledObjectMapperFactory.newInstance()
+                .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
             solrContextTemplate.setName("contextName2");
             scheduledContextRecord = new SolrScheduledContextRecordImpl();
             scheduledContextRecord.setContextName("contextName2");
@@ -137,9 +147,10 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setContext(solrContextTemplate);
             this.dao.save(scheduledContextRecord);
 
-            ScheduledContextRecord found = this.dao.findByName("contextName1");
+            ScheduledContextRecord found = this.dao.findByName("Context-Locks-1");
 
-            Assert.assertEquals("contextName1", found.getContextName());
+            Assert.assertEquals("Context-Locks-1", found.getContextName());
+            Assert.assertEquals("Context-Locks-1", found.getContext().getName());
         }
     }
 
