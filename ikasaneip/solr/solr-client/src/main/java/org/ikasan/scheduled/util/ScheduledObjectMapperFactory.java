@@ -39,7 +39,8 @@ public class ScheduledObjectMapperFactory {
             .addAbstractTypeMapping(LogicalOperator.class, SolrLogicalOperatorImpl.class)
             .addAbstractTypeMapping(ContextInstance.class, SolrContextInstanceImpl.class)
             .addAbstractTypeMapping(SchedulerJobInstance.class, SolrSchedulerJobInstanceImpl.class)
-            .addAbstractTypeMapping(ContextParameterInstance.class, SolrContextParameterInstanceImpl.class);
+            .addAbstractTypeMapping(ContextParameterInstance.class, SolrContextParameterInstanceImpl.class)
+            .addAbstractTypeMapping(JobLock.class, SolrJobLockImpl.class);
 
         objectMapper.registerModule(simpleModule);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
