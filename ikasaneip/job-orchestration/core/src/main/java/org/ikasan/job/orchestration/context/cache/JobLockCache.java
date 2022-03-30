@@ -3,7 +3,7 @@ package org.ikasan.job.orchestration.context.cache;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.ikasan.spec.scheduled.job.model.JobLock;
+import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 public final class JobLockCache {
