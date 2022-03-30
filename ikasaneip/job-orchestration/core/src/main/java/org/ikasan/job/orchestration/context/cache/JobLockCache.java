@@ -100,6 +100,14 @@ public final class JobLockCache {
         jobLocksByIdentifier.clear();
     }
 
+    public synchronized boolean resetLock(String lockName) {
+        if (existsByJobLockName(lockName)) {
+            jobLocksByLockName.get(lockName).getLockHolders().clear();
+            return true;
+        }
+        return false;
+    }
+
     private JobLockHolder getJobLockHolderForJobIdentifier(String jobIdentifier) {
         JobLockHolder jlh = null;
         if (jobIdentifier != null) {
