@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.job.orchestration.builder.context.JobLockBuilder;
 import org.ikasan.job.orchestration.builder.job.SchedulerJobBuilder;
 import org.ikasan.job.orchestration.context.cache.JobLockCache.JobLockHolder;
@@ -95,6 +96,50 @@ public class JobLockCacheTest {
         assertFalse(jlc.existsByIdentifier("AgentName0-TEST-LOCK-JobName0"));
         assertFalse(jlc.existsByIdentifier("AgentName1-TEST-LOCK-JobName1"));
         assertFalse(jlc.existsByIdentifier("AgentName2-TEST-LOCK-JobName2"));
+    }
+
+    @Test
+    public void resetLock() {
+        JobLockCache jlc = JobLockCache.instance();
+        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 3), makeJobLock("TEST-LOCK-1", 2, 2)));
+
+        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0"));
+        assertTrue(jlc.lock("AgentName1-TEST-LOCK-JobName1"));
+        assertTrue(jlc.lock("AgentName2-TEST-LOCK-JobName2"));
+
+        assertTrue(jlc.lock("AgentName0-TEST-LOCK-1-JobName0"));
+        assertTrue(jlc.lock("AgentName1-TEST-LOCK-1-JobName1"));
+
+        assertTrue(jlc.locked("AgentName0-TEST-LOCK-JobName0"));
+        assertTrue(jlc.locked("AgentName1-TEST-LOCK-JobName1"));
+        assertTrue(jlc.locked("AgentName2-TEST-LOCK-JobName2"));
+
+        assertTrue(jlc.locked("AgentName0-TEST-LOCK-1-JobName0"));
+        assertTrue(jlc.locked("AgentName1-TEST-LOCK-1-JobName1"));
+
+        // reset TEST-LOCK
+        assertTrue(jlc.resetLock("TEST-LOCK"));
+
+        assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0"));
+        assertFalse(jlc.locked("AgentName1-TEST-LOCK-JobName1"));
+        assertFalse(jlc.locked("AgentName2-TEST-LOCK-JobName2"));
+
+        assertTrue(jlc.locked("AgentName0-TEST-LOCK-1-JobName0"));
+        assertTrue(jlc.locked("AgentName1-TEST-LOCK-1-JobName1"));
+
+        // reset TEST-LOCK-1
+        assertTrue(jlc.resetLock("TEST-LOCK-1"));
+
+        assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0"));
+        assertFalse(jlc.locked("AgentName1-TEST-LOCK-JobName1"));
+        assertFalse(jlc.locked("AgentName2-TEST-LOCK-JobName2"));
+
+        assertFalse(jlc.locked("AgentName0-TEST-LOCK-1-JobName0"));
+        assertFalse(jlc.locked("AgentName1-TEST-LOCK-1-JobName1"));
+
+        // should not fail null or unknown
+        assertFalse(jlc.resetLock(null));
+        assertFalse(jlc.resetLock(RandomStringUtils.randomAlphanumeric(6)));
     }
 
     @Test
