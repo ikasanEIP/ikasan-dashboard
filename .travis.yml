@@ -15,7 +15,7 @@ before_install:
   - nvm install 10.17.0
 
 install:
-  - mvn --file ikasaneip/pom.xml --settings .settings.xml test -Dmaven.javadoc.skip=true -Djava.security.egd=file:/dev/./urandom -Pall -B -V
+  - mvn -U  --file ikasaneip/pom.xml --settings .settings.xml test -Dmaven.javadoc.skip=true -Djava.security.egd=file:/dev/./urandom -Pall -B -V
 #  - if [[ $TRAVIS_BRANCH == "feature/travis-release-IKASAN-1758" ]]; then  mvn --file ikasaneip/pom.xml  clean deploy -Djava.security.egd=file:/dev/./urandom -Pall,release-sign-artifacts -B  -V --settings .settings.xml; fi
 
 ## Build and release to maven central
@@ -35,7 +35,7 @@ deploy:
     on:
       branch: 3.3.x
   - provider: script
-    script: mvn -U --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Pall -B  -V --settings .settings.xml
+    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Pall -B  -V --settings .settings.xml
     on:
       branch: 3.3.x-scheduler-working-branch
   # Push release to oss
