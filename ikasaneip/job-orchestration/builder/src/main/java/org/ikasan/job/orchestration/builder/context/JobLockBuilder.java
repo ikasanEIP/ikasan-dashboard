@@ -12,7 +12,7 @@ public class JobLockBuilder {
 
     private String lockName;
     private List<SchedulerJob> schedulerJobs;
-    private Long lockCount;
+    private long lockCount = 1;
 
     public JobLockBuilder() {
     }
