@@ -35,6 +35,8 @@ public class SolrFileEventDrivenJobImpl extends SolrQuartzScheduleDrivenJobImpl 
 
     private boolean ignoreFileRenameWhilstScanning = true;
 
+    private int minFileAgeSeconds;
+
     @Override
     public String getFilePath() {
         return this.filePath;
@@ -133,6 +135,16 @@ public class SolrFileEventDrivenJobImpl extends SolrQuartzScheduleDrivenJobImpl 
     @Override
     public void setIgnoreFileRenameWhilstScanning(boolean ignoreFileRenameWhilstScanning) {
         this.ignoreFileRenameWhilstScanning = ignoreFileRenameWhilstScanning;
+    }
+
+    @Override
+    public int getMinFileAgeSeconds() {
+        return this.minFileAgeSeconds;
+    }
+
+    @Override
+    public void setMinFileAgeSeconds(int minFileAgeSeconds) {
+        this.minFileAgeSeconds = minFileAgeSeconds;
     }
 
     @Override
