@@ -14,7 +14,7 @@ public class InternalEventDrivenJobImpl extends SchedulerJobImpl implements Inte
     private long minExecutionTime;
     private long maxExecutionTime;
     private List<ContextParameter> contextParameters = new ArrayList<>();
-
+    private List<Integer> daysOfWeekToRun;
 
     @Override
     public List<String> getSuccessfulReturnCodes() {
@@ -74,6 +74,16 @@ public class InternalEventDrivenJobImpl extends SchedulerJobImpl implements Inte
     @Override
     public void setContextParameters(List<ContextParameter> contextParameters) {
         this.contextParameters = contextParameters;
+    }
+
+    @Override
+    public List<Integer> getDaysOfWeekToRun() {
+        return this.daysOfWeekToRun;
+    }
+
+    @Override
+    public void setDaysOfWeekToRun(List<Integer> daysOfWeekToRun) {
+        this.daysOfWeekToRun = daysOfWeekToRun;
     }
 
     @Override
