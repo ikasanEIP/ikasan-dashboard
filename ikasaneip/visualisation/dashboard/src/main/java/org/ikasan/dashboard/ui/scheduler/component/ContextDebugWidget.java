@@ -24,6 +24,7 @@ import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,7 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
     Logger logger = LoggerFactory.getLogger(ContextDebugWidget.class);
 
     private ScheduledContextService scheduledContextService;
+    private JobLockCacheService jobLockCacheService;
 
     protected AceEditor aceEditor;
 
@@ -57,12 +59,14 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
      */
     public ContextDebugWidget(ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
                               ScheduledContextService scheduledContextService, SystemEventLogger systemEventLogger,
-                              InternalEventDrivenJobService internalEventDrivenJobService, String queueDir, ModuleMetaDataService moduleMetaDataService) {
+                              InternalEventDrivenJobService internalEventDrivenJobService, String queueDir,
+                              ModuleMetaDataService moduleMetaDataService, JobLockCacheService jobLockCacheService) {
         Div div = new Div();
         div.addClassNames("card-counter");
         div.setHeight("100%");
 
         this.scheduledContextService = scheduledContextService;
+        this.jobLockCacheService = jobLockCacheService;
         this.internalEventDrivenJobService = internalEventDrivenJobService;
         this.queueDir = queueDir;
 
@@ -99,7 +103,7 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
         Button addContextButton = new Button("Add Context");
         addContextButton.addClickListener(buttonClickEvent -> {
             ContextUploadDialog contextUploadDialog = new ContextUploadDialog(scheduledContextInstanceService,
-                schedulerService, this.scheduledContextService, this.internalEventDrivenJobService, this.queueDir, moduleMetaDataService);
+                schedulerService, this.scheduledContextService, this.internalEventDrivenJobService, this.queueDir, moduleMetaDataService, this.jobLockCacheService);
             contextUploadDialog.open();
 
             contextUploadDialog.addOpenedChangeListener(event -> {

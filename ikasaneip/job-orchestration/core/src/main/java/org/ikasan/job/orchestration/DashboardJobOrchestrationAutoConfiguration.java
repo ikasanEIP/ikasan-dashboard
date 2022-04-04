@@ -17,6 +17,7 @@ import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,17 +48,18 @@ public class DashboardJobOrchestrationAutoConfiguration {
 
     @Bean
     public ContextInstanceRecoveryManager contextInstanceRecoveryManager(ScheduledContextInstanceService scheduledContextInstanceService
-        , ScheduledContextService scheduledContextService, InternalEventDrivenJobService internalEventDrivenJobRecordService) {
+        , ScheduledContextService scheduledContextService, InternalEventDrivenJobService internalEventDrivenJobRecordService,
+                                                                         JobLockCacheService jobLockCacheService) {
         return new ContextInstanceRecoveryManager(scheduledContextInstanceService, scheduledContextService, internalEventDrivenJobRecordService,
-            queueDirectory);
+            queueDirectory, jobLockCacheService);
     }
 
     @Bean
     public ContextInstanceSchedulerService contextInstanceSchedulerService(ScheduledContextService scheduledContextService
-        , ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService) {
+        , ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService, JobLockCacheService jobLockCacheService) {
         return new ContextInstanceSchedulerService(SchedulerFactory.getInstance().getScheduler()
             , CachingScheduledJobFactory.getInstance(), scheduledContextService, scheduledContextInstanceService, schedulerService
-            , this.internalEventDrivenJobService, this.queueDirectory);
+            , this.internalEventDrivenJobService, this.queueDirectory, jobLockCacheService);
     }
 
     @Bean
