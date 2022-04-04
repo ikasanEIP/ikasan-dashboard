@@ -1,14 +1,13 @@
 package org.ikasan.job.orchestration.context.register;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.quartz.AbstractDashboardSchedulerService;
 import org.ikasan.scheduler.ScheduledJobFactory;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
@@ -28,15 +27,16 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
      */
     private ScheduledContextService scheduledContextService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
-    private ObjectMapper objectMapper;
     private SchedulerService schedulerService;
     private InternalEventDrivenJobService internalEventDrivenJobService;
     private String queueDirectory;
+    private JobLockCacheService jobLockCacheService;
 
 
     public ContextInstanceSchedulerService(Scheduler scheduler, ScheduledJobFactory scheduledJobFactory
         , ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService
-        , SchedulerService schedulerService, InternalEventDrivenJobService internalEventDrivenJobService, String queueDirectory) {
+        , SchedulerService schedulerService, InternalEventDrivenJobService internalEventDrivenJobService, String queueDirectory
+        , JobLockCacheService jobLockCacheService) {
         super(scheduler, scheduledJobFactory);
 
         this.scheduledContextService = scheduledContextService;
@@ -59,8 +59,10 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
         if(this.queueDirectory == null) {
             throw new IllegalArgumentException("queueDirectory cannot be null!");
         }
-
-        this.objectMapper = ObjectMapperFactory.newInstance();;
+        this.jobLockCacheService = jobLockCacheService;
+        if (this.jobLockCacheService == null) {
+            throw new IllegalArgumentException("jobLockCacheService cannot be null!");
+        }
     }
 
     @PostConstruct
@@ -74,7 +76,7 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
                 ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(scheduledContextRecord.getContextName(),
                     scheduledContextRecord.getContext().getTimeWindowStart(), this.scheduledContextService
                     , this.scheduledContextInstanceService, this.schedulerService, this.internalEventDrivenJobService
-                    , this.queueDirectory);
+                    , this.queueDirectory, this.jobLockCacheService);
                 JobDetail jobDetail = this.scheduledJobFactory.createJobDetail
                     (job, ContextInstanceRegisterJob.class, job.getJobName(), "context");
 

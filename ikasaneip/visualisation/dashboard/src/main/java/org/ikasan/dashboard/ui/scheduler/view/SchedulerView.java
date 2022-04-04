@@ -33,6 +33,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +83,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     @Resource
     private ScheduledContextService scheduledContextService;
+
+    @Resource
+    private JobLockCacheService jobLockCacheService;
 
     @Resource
     private SchedulerJobService schedulerJobService;
@@ -189,7 +193,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             scheduledJobsBoard.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
             this.contextDebugBoard.addRow(new ContextDebugWidget(this.scheduledContextInstanceService, this.schedulerService
-                , this.scheduledContextService, this.systemEventLogger, this.internalEventDrivenJobService, this.queueDirectory, this.moduleMetaDataService));
+                , this.scheduledContextService, this.systemEventLogger, this.internalEventDrivenJobService, this.queueDirectory
+                , this.moduleMetaDataService, this.jobLockCacheService));
             initialised = true;
         }
     }

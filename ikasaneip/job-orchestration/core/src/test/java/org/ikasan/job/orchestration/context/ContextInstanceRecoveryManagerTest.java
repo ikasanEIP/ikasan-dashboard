@@ -10,6 +10,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,13 +29,16 @@ import static org.mockito.Mockito.*;
 public class ContextInstanceRecoveryManagerTest {
 
     @Mock
-    ScheduledContextInstanceService scheduledContextInstanceService;
+    private ScheduledContextInstanceService scheduledContextInstanceService;
 
     @Mock
-    ScheduledContextService scheduledContextService;
+    private JobLockCacheService jobLockCacheService;
 
     @Mock
-    InternalEventDrivenJobService internalEventDrivenJobService;
+    private ScheduledContextService scheduledContextService;
+
+    @Mock
+    private InternalEventDrivenJobService internalEventDrivenJobService;
 
     @Test
     public void test() {
@@ -75,7 +79,7 @@ public class ContextInstanceRecoveryManagerTest {
         when(internalEventDrivenJob.getIdentifier()).thenReturn("identifier");
 
         ContextInstanceRecoveryManager contextInstanceRecoveryManager = new ContextInstanceRecoveryManager(scheduledContextInstanceService,
-            scheduledContextService, internalEventDrivenJobService, "queueDir");
+            scheduledContextService, internalEventDrivenJobService, "queueDir", jobLockCacheService);
 
         contextInstanceRecoveryManager.recoverContextInstances();
 
