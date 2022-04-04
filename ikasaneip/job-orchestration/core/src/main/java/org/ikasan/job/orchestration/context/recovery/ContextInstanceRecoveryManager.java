@@ -10,6 +10,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +29,11 @@ public class ContextInstanceRecoveryManager {
     private ScheduledContextService scheduledContextService;
     private InternalEventDrivenJobService internalEventDrivenJobRecordService;
     private String queueDirectory;
+    private JobLockCacheService jobLockCacheService;
 
     public ContextInstanceRecoveryManager(ScheduledContextInstanceService scheduledContextInstanceService, ScheduledContextService scheduledContextService,
-                                          InternalEventDrivenJobService internalEventDrivenJobRecordService, String queueDirectory) {
+                                          InternalEventDrivenJobService internalEventDrivenJobRecordService, String queueDirectory,
+                                          JobLockCacheService jobLockCacheService) {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if(this.scheduledContextInstanceService == null) {
             throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
@@ -46,6 +49,10 @@ public class ContextInstanceRecoveryManager {
         this.queueDirectory = queueDirectory;
         if(this.queueDirectory == null) {
             throw new IllegalArgumentException("queueDirectory cannot be null!");
+        }
+        this.jobLockCacheService = jobLockCacheService;
+        if (this.jobLockCacheService == null) {
+            throw new IllegalArgumentException("jobLockCacheService cannot be null!");
         }
     }
 
@@ -68,7 +75,7 @@ public class ContextInstanceRecoveryManager {
 
                 // todo sort out agents
                 ContextMachine contextMachine = new ContextMachine(contextRecord.getContext(), contextInstanceRecord.getContextInstance(),
-                    this.scheduledContextInstanceService, internalEventDrivenJobMap, this.queueDirectory, new HashMap<>());
+                    this.scheduledContextInstanceService, internalEventDrivenJobMap, this.queueDirectory, new HashMap<>(), this.jobLockCacheService);
 
                 ContextMachineCache.instance().put(contextMachine);
 

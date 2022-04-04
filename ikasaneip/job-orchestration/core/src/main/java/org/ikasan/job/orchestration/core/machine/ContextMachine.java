@@ -7,7 +7,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
 
-import org.ikasan.job.orchestration.context.cache.JobLockCache;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheMachine;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
@@ -19,6 +19,7 @@ import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
+import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
@@ -32,6 +33,7 @@ import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +71,8 @@ public class ContextMachine {
 
     // todo clean up the transient queues once a context is complete.
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
-                          Map<String, InternalEventDrivenJob> internalEventDrivenJobs, String queueDir,  Map<String, ModuleMetaData> agents) {
+                          Map<String, InternalEventDrivenJob> internalEventDrivenJobs, String queueDir,
+                          Map<String, ModuleMetaData> agents, JobLockCacheService jobLockCacheService) {
         this.context = context;
         this.contextInstance = contextInstance;
         this.internalEventDrivenJobs = internalEventDrivenJobs;
@@ -85,7 +88,8 @@ public class ContextMachine {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
 
-        this.jobLockCache = JobLockCache.instance();
+        this.jobLockCache = JobLockCacheMachine.instance();
+        this.jobLockCache.setJobLockCacheService(jobLockCacheService);
         this.jobLockCache.addLocks(context != null ? context.getAllNestedJobLocks() : Collections.emptyList());
         this.jobLogicMachine = new JobLogicMachine(this.agents, this.jobLockCache);
     }

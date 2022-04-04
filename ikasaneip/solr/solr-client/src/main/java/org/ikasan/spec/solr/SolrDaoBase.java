@@ -10,9 +10,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SearchResultsImpl;
-import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
 import org.ikasan.solr.util.SolrTokenizerQueryBuilder;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJobRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -595,7 +593,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         }
         catch (Exception e)
         {
-            throw new RuntimeException("An exception has occurred attempting to write an exclusion to Solr", e);
+            throw new RuntimeException("An exception has occurred attempting to write a document list to Solr", e);
         }
     }
 
@@ -675,7 +673,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
                 , rsp.getResults().getNumFound(), rsp.getElapsedTime());
         }
         catch (Exception e) {
-            throw new RuntimeException("Error resolving FileEventDrivenJobRecord by query [" + query + "] from the ikasan solr index!", e);
+            throw new RuntimeException("Error resolving " + clazz.getTypeName() + " by query [" + query + "] from the ikasan solr index!", e);
         }
     }
 
@@ -722,7 +720,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Error resolving " + clazz.getName() + " record data by query [" + query
+            throw new RuntimeException("Error resolving " + clazz.getTypeName() + " record data by query [" + query
                 + "] from the ikasan solr index!", e);
         }
     }

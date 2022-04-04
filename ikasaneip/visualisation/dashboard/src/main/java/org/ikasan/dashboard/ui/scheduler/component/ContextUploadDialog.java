@@ -34,6 +34,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 
 import java.io.IOException;
@@ -54,6 +55,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
     private InternalEventDrivenJobService internalEventDrivenJobService;
     private String queueDir;
     private ModuleMetaDataService moduleMetaDataService;
+    private JobLockCacheService jobLockCacheService;
 
     /**
      * Constructor
@@ -61,7 +63,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
      */
     public ContextUploadDialog(ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
                                ScheduledContextService scheduledContextService, InternalEventDrivenJobService internalEventDrivenJobService,
-                               String queueDir, ModuleMetaDataService moduleMetaDataService)
+                               String queueDir, ModuleMetaDataService moduleMetaDataService, JobLockCacheService jobLockCacheService)
     {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.schedulerService = schedulerService;
@@ -69,6 +71,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
         this.internalEventDrivenJobService = internalEventDrivenJobService;
         this.queueDir = queueDir;
         this.moduleMetaDataService = moduleMetaDataService;
+        this.jobLockCacheService = jobLockCacheService;
         this.init();
     }
 
@@ -147,7 +150,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
                 });
 
                 ContextMachine contextMachine = new ContextMachine(contextTemplate, contextInstance, scheduledContextInstanceService
-                    , internalEventDrivenJobMap, this.queueDir, agents);
+                    , internalEventDrivenJobMap, this.queueDir, agents, jobLockCacheService);
                 contextMachine.init();
                 contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
                     schedulerService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event);
