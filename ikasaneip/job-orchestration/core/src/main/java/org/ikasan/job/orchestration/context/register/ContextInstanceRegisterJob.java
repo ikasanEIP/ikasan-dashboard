@@ -14,6 +14,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.scheduler.DashboardJob;
 import org.ikasan.spec.search.SearchResults;
 import org.quartz.JobExecutionContext;
@@ -41,20 +42,22 @@ public class ContextInstanceRegisterJob implements DashboardJob {
     private SchedulerService schedulerService;
     private InternalEventDrivenJobService internalEventDrivenJobService;
     private String queueDirectory;
+    private JobLockCacheService jobLockCacheService;
 
     public ContextInstanceRegisterJob(String jobName, String cronExpression, ScheduledContextService scheduledContextService,
                                       ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
-                                      InternalEventDrivenJobService internalEventDrivenJobService, String queueDirectory) {
+                                      InternalEventDrivenJobService internalEventDrivenJobService, String queueDirectory,
+                                      JobLockCacheService jobLockCacheService) {
         this.jobName = jobName;
         if(this.jobName == null) {
             throw new IllegalArgumentException("jobName cannot be null!");
         }
         this.cronExpression = cronExpression;
-        if(this.jobName == null) {
+        if(this.cronExpression == null) {
             throw new IllegalArgumentException("cronExpression cannot be null!");
         }
         this.scheduledContextService = scheduledContextService;
-        if(this.jobName == null) {
+        if(this.scheduledContextService == null) {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
         }
         this.scheduledContextInstanceService = scheduledContextInstanceService;
@@ -72,6 +75,10 @@ public class ContextInstanceRegisterJob implements DashboardJob {
         this.queueDirectory = queueDirectory;
         if(this.queueDirectory == null) {
             throw new IllegalArgumentException("queueDirectory cannot be null!");
+        }
+        this.jobLockCacheService = jobLockCacheService;
+        if (this.jobLockCacheService == null) {
+            throw new IllegalArgumentException("jobLockCacheService cannot be null!");
         }
 
         this.objectMapper = ObjectMapperFactory.newInstance();;
@@ -105,7 +112,7 @@ public class ContextInstanceRegisterJob implements DashboardJob {
 
             // todo sort out agents
             ContextMachine contextMachine = new ContextMachine(context, contextInstance, this.scheduledContextInstanceService, internalEventDrivenJobMap,
-                this.queueDirectory, new HashMap<>());
+                this.queueDirectory, new HashMap<>(), this.jobLockCacheService);
             contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
                 this.schedulerService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event);
             });
