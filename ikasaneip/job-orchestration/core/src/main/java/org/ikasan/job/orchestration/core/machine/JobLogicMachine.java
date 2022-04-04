@@ -7,11 +7,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-import org.ikasan.job.orchestration.context.cache.JobLockCache;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.context.model.JobDependency;
+import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
