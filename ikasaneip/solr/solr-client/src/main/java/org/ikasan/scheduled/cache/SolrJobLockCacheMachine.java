@@ -1,26 +1,35 @@
-package org.ikasan.job.orchestration.context.cache;
+package org.ikasan.scheduled.cache;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.ikasan.scheduled.job.model.SolrJobLockHolderImpl;
 import org.ikasan.spec.scheduled.context.model.JobLock;
+import org.ikasan.spec.scheduled.context.model.JobLockCache;
+import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 
-public final class JobLockCache {
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+public class SolrJobLockCacheMachine implements JobLockCache {
+
+    @JsonProperty
     private final ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName;
+    @JsonProperty
     private final ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier;
 
-    private JobLockCache() {
+    private SolrJobLockCacheMachine() {
         jobLocksByLockName = new ConcurrentHashMap<>();
         jobLocksByIdentifier = new ConcurrentHashMap<>();
     }
 
     private static final class JobLockMachineHolder {
-        public final static JobLockCache INSTANCE = new JobLockCache();
+        public final static SolrJobLockCacheMachine INSTANCE = new SolrJobLockCacheMachine();
     }
 
-    public static JobLockCache instance() {
+    public static SolrJobLockCacheMachine instance() {
         return JobLockMachineHolder.INSTANCE;
     }
 
@@ -29,7 +38,7 @@ public final class JobLockCache {
             // we need jobLocksByLockName to create the global lock holder added later in jobLocksByIdentifier
             JobLockHolder jobLockHolder = jobLocksByLockName.get(jobLock.getName());
             if (jobLockHolder == null) {
-                jobLockHolder = new JobLockHolder();
+                jobLockHolder = new SolrJobLockHolderImpl();
                 jobLockHolder.setLockName(jobLock.getName());
                 jobLockHolder.setLockCount(jobLock.getLockCount());
                 jobLockHolder.addSchedulerJobs(jobLock.getJobs());
@@ -108,6 +117,19 @@ public final class JobLockCache {
         return false;
     }
 
+    @Override
+    public void setJobLockCacheService(JobLockCacheService jobLockCacheService) {
+        // do nothing in solr implementation
+    }
+
+    public ConcurrentHashMap<String, JobLockHolder> getJobLocksByLockName() {
+        return jobLocksByLockName;
+    }
+
+    public ConcurrentHashMap<String, JobLockHolder> getJobLocksByIdentifier() {
+        return jobLocksByIdentifier;
+    }
+
     private JobLockHolder getJobLockHolderForJobIdentifier(String jobIdentifier) {
         JobLockHolder jlh = null;
         if (jobIdentifier != null) {
@@ -118,48 +140,5 @@ public final class JobLockCache {
 
     private boolean workingCountIsGreaterThanOrEqualToLockCount(JobLockHolder jlh) {
         return jlh.getLockHolders().size() >= jlh.getLockCount();
-    }
-
-    protected static class JobLockHolder {
-        private String lockName;
-        private long lockCount = 1;
-        private List<SchedulerJob> schedulerJobs = new ArrayList<>();
-        private Set<String> lockHolders = new HashSet<>();
-
-        public String getLockName() {
-            return lockName;
-        }
-
-        public void setLockName(String lockName) {
-            this.lockName = lockName;
-        }
-
-        public long getLockCount() {
-            return lockCount;
-        }
-
-        public void setLockCount(long lockCount) {
-            this.lockCount = lockCount;
-        }
-
-        public List<SchedulerJob> getSchedulerJobs() {
-            return schedulerJobs;
-        }
-
-        public void addSchedulerJobs(List<SchedulerJob> jobs) {
-            this.schedulerJobs.addAll(jobs);
-        }
-
-        public Set<String> getLockHolders() {
-            return lockHolders;
-        }
-
-        public void addLockHolder(String jobIdentifier) {
-            lockHolders.add(jobIdentifier);
-        }
-
-        public boolean removeLockHolder(String jobIdentifier) {
-            return lockHolders.remove(jobIdentifier);
-        }
     }
 }
