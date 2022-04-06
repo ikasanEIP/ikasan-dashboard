@@ -9,6 +9,8 @@ public class SolrFileEventDrivenJobImpl extends SolrQuartzScheduleDrivenJobImpl 
 
     private String filePath;
 
+    private String moveDirectory;
+
     /** filenames to be processed */
     private List<String> filenames = new ArrayList<String>();
 
@@ -45,6 +47,16 @@ public class SolrFileEventDrivenJobImpl extends SolrQuartzScheduleDrivenJobImpl 
     @Override
     public void setFilePath(String path) {
         this.filePath = path;
+    }
+
+    @Override
+    public String getMoveDirectory() {
+        return moveDirectory;
+    }
+
+    @Override
+    public void setMoveDirectory(String moveDirectory) {
+        this.moveDirectory = moveDirectory;
     }
 
     @Override
