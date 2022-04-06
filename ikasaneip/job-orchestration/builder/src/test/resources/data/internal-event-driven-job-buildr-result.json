@@ -16,6 +16,7 @@
     "name" : "name2",
     "type" : "java.lang.String"
   } ],
-  "jobDescription" : "description",
-  "identifier" : "agentName-jobName"
+  "daysOfWeekToRun" : [ 2, 3 ],
+  "identifier" : "agentName-jobName",
+  "jobDescription" : "description"
 }

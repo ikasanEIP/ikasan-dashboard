@@ -8,6 +8,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.io.IOException;
+import java.util.Calendar;
 
 public class InternalEventDrivenJobBuilderTest extends AbstractTest {
 
@@ -15,17 +16,18 @@ public class InternalEventDrivenJobBuilderTest extends AbstractTest {
 
     @Test
     public void test_builder_success() throws IOException, JSONException {
-        InternalEventDrivenJobBuilder fileEventDrivenJobBuilder = new InternalEventDrivenJobBuilder();
-        fileEventDrivenJobBuilder
+        InternalEventDrivenJobBuilder internalEventDrivenJobBuilder = new InternalEventDrivenJobBuilder();
+        internalEventDrivenJobBuilder
             .withCommandLine("commandLine")
             .withMaxExecutionTime(100000L)
             .withMinExecutionTime(1000L)
             .withWorkingDirectory("working directory")
-            .addContextParameter(fileEventDrivenJobBuilder.getContextParameterBuilder()
+            .addDayOfWeekToRun(Calendar.MONDAY).addDayOfWeekToRun(Calendar.TUESDAY)
+            .addContextParameter(internalEventDrivenJobBuilder.getContextParameterBuilder()
                 .withName("name1")
                 .withType("java.lang.String")
                 .build())
-            .addContextParameter(fileEventDrivenJobBuilder.getContextParameterBuilder()
+            .addContextParameter(internalEventDrivenJobBuilder.getContextParameterBuilder()
                 .withName("name2")
                 .withType("java.lang.String")
                 .build())
@@ -38,6 +40,6 @@ public class InternalEventDrivenJobBuilderTest extends AbstractTest {
             .withJobName("jobName");
 
         JSONAssert.assertEquals(super.loadDataFile("/data/internal-event-driven-job-buildr-result.json"),
-            service.getInternalEventDrivenJobString(fileEventDrivenJobBuilder.build()), JSONCompareMode.STRICT);
+            service.getInternalEventDrivenJobString(internalEventDrivenJobBuilder.build()), JSONCompareMode.STRICT);
     }
 }
