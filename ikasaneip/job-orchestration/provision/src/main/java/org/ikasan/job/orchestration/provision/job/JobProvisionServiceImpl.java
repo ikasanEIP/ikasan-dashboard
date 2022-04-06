@@ -121,7 +121,7 @@ public class JobProvisionServiceImpl implements JobProvisionService {
         List<InternalEventDrivenJob> internalEventDrivenJobs = new ArrayList<>();
         List<FileEventDrivenJob> fileEventDrivenJobs = new ArrayList<>();
         List<QuartzScheduleDrivenJob> quartzScheduleDrivenJobs = new ArrayList<>();
-        jobs.forEach(job ->{
+        jobs.forEach(job -> {
             if(job instanceof InternalEventDrivenJob) {
                 internalEventDrivenJobs.add((InternalEventDrivenJob)job);
             }

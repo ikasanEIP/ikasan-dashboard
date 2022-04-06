@@ -9,6 +9,7 @@ import java.util.List;
 public class FileEventDrivenJobBuilder extends QuartzScheduleDrivenJobBuilder {
 
     private String filePath;
+    private String moveDirectory;
     private List<String> filenames;
     private String encoding;
     private boolean includeHeader;
@@ -22,6 +23,12 @@ public class FileEventDrivenJobBuilder extends QuartzScheduleDrivenJobBuilder {
 
     public FileEventDrivenJobBuilder withFilePath(String filePath) {
         this.filePath = filePath;
+
+        return this;
+    }
+
+    public FileEventDrivenJobBuilder withMoveDirectory(String moveDirectory) {
+        this.moveDirectory = moveDirectory;
 
         return this;
     }
@@ -89,6 +96,7 @@ public class FileEventDrivenJobBuilder extends QuartzScheduleDrivenJobBuilder {
     public FileEventDrivenJob build() {
         FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
         fileEventDrivenJob.setFilePath(this.filePath);
+        fileEventDrivenJob.setMoveDirectory(this.moveDirectory);
         fileEventDrivenJob.setFilenames(this.filenames);
         fileEventDrivenJob.setAgentName(super.agentName);
         fileEventDrivenJob.setIdentifier(super.agentName+"-"+super.jobName);
