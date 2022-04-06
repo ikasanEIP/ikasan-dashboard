@@ -19,7 +19,6 @@ public class FileEventDrivenJobBuilderTest extends AbstractTest {
     private ContextService service = new ContextService();
 
     @Test
-    @Ignore
     public void test_builder_success() throws IOException, JSONException {
         FileEventDrivenJobBuilder fileEventDrivenJobBuilder = new FileEventDrivenJobBuilder();
         Map<String, String> passthroughProperties = new HashMap<>();
@@ -33,6 +32,7 @@ public class FileEventDrivenJobBuilderTest extends AbstractTest {
             .withFilenames(filenames)
             .withDirectoryDepth(5)
             .withEncoding("encoding")
+            .withMinFileAgeSeconds(180)
             .withIgnoreFileRenameWhilstScanning(false)
             .withIncludeHeader(true)
             .withIncludeTrailer(true)
