@@ -25,6 +25,7 @@
   "directoryDepth" : 5,
   "logMatchedFilenames" : true,
   "ignoreFileRenameWhilstScanning" : false,
+  "minFileAgeSeconds" : 180,
   "identifier" : "agentName-jobName",
   "jobDescription" : "description"
 }

@@ -18,6 +18,7 @@ public class FileEventDrivenJobBuilder extends QuartzScheduleDrivenJobBuilder {
     private int directoryDepth = 1;
     private boolean logMatchedFilenames = false;
     private boolean ignoreFileRenameWhilstScanning = true;
+    private int minFileAgeSeconds;
 
     public FileEventDrivenJobBuilder withFilePath(String filePath) {
         this.filePath = filePath;
@@ -79,6 +80,12 @@ public class FileEventDrivenJobBuilder extends QuartzScheduleDrivenJobBuilder {
         return this;
     }
 
+    public FileEventDrivenJobBuilder withMinFileAgeSeconds(int minFileAgeSeconds) {
+        this.minFileAgeSeconds = minFileAgeSeconds;
+
+        return this;
+    }
+
     public FileEventDrivenJob build() {
         FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
         fileEventDrivenJob.setFilePath(this.filePath);
@@ -102,6 +109,7 @@ public class FileEventDrivenJobBuilder extends QuartzScheduleDrivenJobBuilder {
         fileEventDrivenJob.setDirectoryDepth(this.directoryDepth);
         fileEventDrivenJob.setLogMatchedFilenames(this.logMatchedFilenames);
         fileEventDrivenJob.setIgnoreFileRenameWhilstScanning(this.ignoreFileRenameWhilstScanning);
+        fileEventDrivenJob.setMinFileAgeSeconds(this.minFileAgeSeconds);
 
         return fileEventDrivenJob;
     }
