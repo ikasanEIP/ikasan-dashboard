@@ -16,6 +16,7 @@
   "persistentRecovery" : true,
   "recoveryTolerance" : 1800000,
   "filePath" : "filePath",
+  "moveDirectory" : "moveDirectory",
   "filenames" : [ "file1", "file2" ],
   "encoding" : "encoding",
   "includeHeader" : true,
