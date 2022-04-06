@@ -29,6 +29,7 @@ public class FileEventDrivenJobBuilderTest extends AbstractTest {
         filenames.add("file2");
 
         fileEventDrivenJobBuilder.withFilePath("filePath")
+            .withMoveDirectory("moveDirectory")
             .withFilenames(filenames)
             .withDirectoryDepth(5)
             .withEncoding("encoding")
