@@ -169,6 +169,7 @@ public class SolrFileEventDrivenJobImpl extends SolrQuartzScheduleDrivenJobImpl 
         sb.append(", jobDescription='").append(jobDescription).append('\'');
         sb.append(", contextId='").append(contextId).append('\'');
         sb.append(", startupControlType='").append(startupControlType).append('\'');
+        sb.append(", minFileAgeSeconds='").append(minFileAgeSeconds).append('\'');
         sb.append('}');
         return sb.toString();
     }
