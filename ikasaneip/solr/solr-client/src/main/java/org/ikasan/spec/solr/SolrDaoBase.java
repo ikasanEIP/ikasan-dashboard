@@ -660,7 +660,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
      *
      * @param query
      */
-    protected SearchResults findByQuery(SolrQuery query, Class clazz) {
+    protected SearchResults<T> findByQuery(SolrQuery query, Class clazz) {
         logger.debug("queryString: " + query);
 
         try {

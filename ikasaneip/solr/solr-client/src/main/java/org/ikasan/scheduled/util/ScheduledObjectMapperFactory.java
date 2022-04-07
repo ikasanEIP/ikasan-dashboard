@@ -4,14 +4,20 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.ikasan.scheduled.context.model.*;
+import org.ikasan.scheduled.event.model.SolrContextualisedScheduledProcessEventImpl;
+import org.ikasan.scheduled.event.model.SolrSchedulerJobInitiationEventImpl;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceImpl;
 import org.ikasan.scheduled.instance.model.SolrContextParameterInstanceImpl;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceImpl;
+import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
 import org.ikasan.spec.scheduled.context.model.*;
+import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 public class ScheduledObjectMapperFactory {
@@ -40,7 +46,10 @@ public class ScheduledObjectMapperFactory {
             .addAbstractTypeMapping(ContextInstance.class, SolrContextInstanceImpl.class)
             .addAbstractTypeMapping(SchedulerJobInstance.class, SolrSchedulerJobInstanceImpl.class)
             .addAbstractTypeMapping(ContextParameterInstance.class, SolrContextParameterInstanceImpl.class)
-            .addAbstractTypeMapping(JobLock.class, SolrJobLockImpl.class);
+            .addAbstractTypeMapping(JobLock.class, SolrJobLockImpl.class)
+            .addAbstractTypeMapping(ContextualisedScheduledProcessEvent.class, SolrContextualisedScheduledProcessEventImpl.class)
+            .addAbstractTypeMapping(SchedulerJobInitiationEvent.class, SolrSchedulerJobInitiationEventImpl.class)
+            .addAbstractTypeMapping(InternalEventDrivenJob.class, SolrInternalEventDrivenJobImpl.class);
 
         objectMapper.registerModule(simpleModule);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
