@@ -1,7 +1,8 @@
 package org.ikasan.scheduled.instance.dao;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
@@ -14,8 +15,8 @@ import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledContextInstanceRecord> implements ScheduledContextInstanceDao {
 
@@ -37,15 +38,12 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         document.addField(TYPE, SCHEDULED_CONTEXT_INSTANCE);
         try {
             document.addField(PAYLOAD_CONTENT, this.getPayloadContents(scheduledContextInstanceRecord.getContextInstance()));
-        }
-        catch (JsonProcessingException e) {
-            throw new RuntimeException(String.format("Cannot convert FileEventDrivenJob to string! [%s]"
-                , scheduledContextInstanceRecord.getContextInstance()));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(String.format("Cannot convert FileEventDrivenJob to string! [%s]", scheduledContextInstanceRecord.getContextInstance()));
         }
         document.addField(STATUS, scheduledContextInstanceRecord.getStatus());
         document.addField(MODULE_NAME, scheduledContextInstanceRecord.getContextName());
         document.addField(CREATED_DATE_TIME, scheduledContextInstanceRecord.getTimestamp());
-
         document.setField(EXPIRY, expiry);
 
         logger.debug(String.format("Converted scheduled context instance to SolrDocument[%s]", document));
@@ -62,30 +60,22 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
 
         logger.debug("query: " + query);
 
-        SearchResults<ScheduledContextInstanceRecord> searchResults
-            = this.findByQuery(query, SolrScheduledContextInstanceRecordImpl.class, 0, 1);
-
-        if(searchResults.getResultList().size() > 0)
-        {
-            return searchResults.getResultList().get(0);
-        }
-        else
-        {
-            return null;
-        }
+        SearchResults<ScheduledContextInstanceRecord> searchResults = this.findByQuery(query, SolrScheduledContextInstanceRecordImpl.class, 0, 1);
+        return searchResults.getResultList().size() > 0 ? searchResults.getResultList().get(0) : null;
     }
 
     @Override
     public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByStatus(List<InstanceStatus> instanceStatuses) {
-        SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery(super.buildStringListQueryPart(instanceStatuses
+        String listOfStatus = super.buildStringListQueryPart(instanceStatuses
             .stream()
-            .map(instanceStatus -> instanceStatus.toString())
-            .collect(Collectors.toList()), STATUS).toString());
+            .map(Enum::toString)
+            .collect(Collectors.toList()), STATUS).toString();
 
+        String queryString = TYPE + COLON + SCHEDULED_CONTEXT_INSTANCE + AND + listOfStatus;
+
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(queryString);
 
         return this.findByQuery(solrQuery, SolrScheduledContextInstanceRecordImpl.class, -1, -1);
     }
-
-
 }

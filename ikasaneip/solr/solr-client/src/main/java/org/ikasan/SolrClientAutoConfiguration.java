@@ -2,6 +2,7 @@ package org.ikasan;
 
 import org.ikasan.scheduled.context.dao.SolrScheduledContextDaoImpl;
 import org.ikasan.scheduled.context.service.SolrScheduledContextServiceImpl;
+import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceAuditDaoImpl;
 import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl;
 import org.ikasan.scheduled.instance.service.SolrScheduledContextInstanceServiceImpl;
 import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobDaoImpl;
@@ -41,6 +42,12 @@ public class SolrClientAutoConfiguration {
     @Value("${solr.retention.days:30}")
     private int solrRetentionDays;
 
+    @Value("${solr.save.context.instance.audits:true}")
+    private boolean saveContextInstanceAuditRecords;
+
+    @Value("${solr.save.joblockcache.audits:true}")
+    private boolean saveJobLockCacheAudits;
+
     @Bean
     public JobLockCacheService jobLockCacheService() {
         SolrJobLockCacheDaoImpl solrJobLockCacheDao = new SolrJobLockCacheDaoImpl();
@@ -53,7 +60,7 @@ public class SolrClientAutoConfiguration {
         solrJobLockCacheAuditDao.setSolrUsername(solrUsername);
         solrJobLockCacheAuditDao.setSolrPassword(solrPassword);
 
-        return new SolrJobLockCacheServiceImpl(solrJobLockCacheDao, solrJobLockCacheAuditDao);
+        return new SolrJobLockCacheServiceImpl(solrJobLockCacheDao, solrJobLockCacheAuditDao, saveJobLockCacheAudits);
     }
 
     @Bean
@@ -67,11 +74,17 @@ public class SolrClientAutoConfiguration {
 
     @Bean
     public ScheduledContextInstanceService scheduledContextInstanceService() {
-        SolrScheduledContextInstanceDaoImpl dao = new SolrScheduledContextInstanceDaoImpl();
-        dao.initStandalone(solrUrl, solrRetentionDays);
-        dao.setSolrUsername(solrUsername);
-        dao.setSolrPassword(solrPassword);
-        return new SolrScheduledContextInstanceServiceImpl(dao);
+        SolrScheduledContextInstanceDaoImpl scheduledContextInstanceDao = new SolrScheduledContextInstanceDaoImpl();
+        scheduledContextInstanceDao.initStandalone(solrUrl, solrRetentionDays);
+        scheduledContextInstanceDao.setSolrUsername(solrUsername);
+        scheduledContextInstanceDao.setSolrPassword(solrPassword);
+
+        SolrScheduledContextInstanceAuditDaoImpl scheduledContextInstanceAuditDao = new SolrScheduledContextInstanceAuditDaoImpl();
+        scheduledContextInstanceAuditDao.initStandalone(solrUrl, solrRetentionDays);
+        scheduledContextInstanceAuditDao.setSolrUsername(solrUsername);
+        scheduledContextInstanceAuditDao.setSolrPassword(solrPassword);
+
+        return new SolrScheduledContextInstanceServiceImpl(scheduledContextInstanceDao, scheduledContextInstanceAuditDao, saveContextInstanceAuditRecords);
     }
 
     @Bean

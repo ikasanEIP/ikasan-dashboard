@@ -19,7 +19,7 @@ public class SolrJobLockCacheAuditDaoImpl extends SolrDaoBase<JobLockCacheAuditR
     private static final String JOB_LOCK_AUDIT_CACHE_TYPE = "jockLockCacheRecordAudit";
     private static final String JOB_LOCK_AUDIT_CACHE_TYPE_ID = "jockLockCacheRecordAuditID";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final Logger LOGGER = LoggerFactory.getLogger(SolrJobLockCacheDaoImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SolrJobLockCacheDaoImpl.class);
 
     @Override
     public SearchResults<JobLockCacheAuditRecord> findAll(int limit, int offset) {
@@ -28,7 +28,7 @@ public class SolrJobLockCacheAuditDaoImpl extends SolrDaoBase<JobLockCacheAuditR
         solrQuery.setRows(limit);
         solrQuery.setStart(offset);
 
-        LOGGER.debug("query: " + solrQuery);
+        LOG.debug("query: " + solrQuery);
 
         return this.findByQuery(solrQuery, SolrJobLockCacheAuditRecordImpl.class);
     }
@@ -43,11 +43,10 @@ public class SolrJobLockCacheAuditDaoImpl extends SolrDaoBase<JobLockCacheAuditR
         } catch (JsonProcessingException e) {
             throw new RuntimeException(String.format("Cannot convert JobLockCacheAuditRecord lockHolders to string! [%s]", record));
         }
-        document.addField(CREATED_DATE_TIME, record.getTimestamp());
-
+        document.addField(CREATED_DATE_TIME, System.currentTimeMillis());
         document.setField(EXPIRY, expiry);
 
-        LOGGER.debug(String.format("Converted JobLockCacheAuditRecord to SolrDocument[%s]", document));
+        LOG.debug(String.format("Converted JobLockCacheAuditRecord to SolrDocument[%s]", document));
         return document;
     }
 
