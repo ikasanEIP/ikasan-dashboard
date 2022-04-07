@@ -10,11 +10,7 @@ import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 
 public class ScheduledContextInstanceRecordImpl implements ScheduledContextInstanceRecord {
 
-    private static ObjectMapper objectMapper;
-
-    static {
-        objectMapper = ObjectMapperFactory.newInstance();
-    }
+    private static final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     private String id;
     private String contextName;
@@ -24,7 +20,7 @@ public class ScheduledContextInstanceRecordImpl implements ScheduledContextInsta
 
     @Override
     public void setContextName(String contextName) {
-
+        this.contextName = contextName;
     }
 
     @Override
@@ -49,7 +45,7 @@ public class ScheduledContextInstanceRecordImpl implements ScheduledContextInsta
 
     @Override
     public void setTimestamp(long timestamp) {
-
+        this.timestamp = timestamp;
     }
 
     @Override

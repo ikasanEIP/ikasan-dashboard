@@ -1,5 +1,4 @@
-package org.ikasan.job.orchestration.core;
-
+package org.ikasan.orchestration.service.status;
 
 import java.util.List;
 

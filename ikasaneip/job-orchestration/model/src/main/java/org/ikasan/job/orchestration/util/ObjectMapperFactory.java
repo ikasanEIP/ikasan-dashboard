@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.ikasan.job.orchestration.model.context.*;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.JobLockInstanceImpl;
@@ -14,7 +15,9 @@ import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
 import org.ikasan.spec.scheduled.context.model.*;
+import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.JobLockInstance;
@@ -54,6 +57,8 @@ public class ObjectMapperFactory {
             .addAbstractTypeMapping(SchedulerJobInstance.class, SchedulerJobInstanceImpl.class)
             .addAbstractTypeMapping(ContextParameterInstance.class, ContextParameterInstanceImpl.class)
             .addAbstractTypeMapping(ScheduledProcessEvent.class, ContextualisedScheduledProcessEventImpl.class)
+            .addAbstractTypeMapping(ContextualisedScheduledProcessEvent.class, ContextualisedScheduledProcessEventImpl.class)
+            .addAbstractTypeMapping(SchedulerJobInitiationEvent.class, SchedulerJobInitiationEventImpl.class)
             .addAbstractTypeMapping(InternalEventDrivenJob.class, InternalEventDrivenJobImpl.class)
             .addAbstractTypeMapping(JobLock.class, JobLockImpl.class)
             .addAbstractTypeMapping(JobLockInstance.class, JobLockInstanceImpl.class)

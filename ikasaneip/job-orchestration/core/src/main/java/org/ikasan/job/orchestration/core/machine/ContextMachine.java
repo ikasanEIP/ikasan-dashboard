@@ -7,11 +7,13 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
 
-import org.ikasan.job.orchestration.context.cache.JobLockCacheMachine;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
+import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditImpl;
+import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditRecordImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.job.orchestration.service.ContextService;
@@ -27,10 +29,7 @@ import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
@@ -88,9 +87,10 @@ public class ContextMachine {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
 
-        this.jobLockCache = JobLockCacheMachine.instance();
+        this.jobLockCache = JobLockCacheImpl.instance();
         this.jobLockCache.setJobLockCacheService(jobLockCacheService);
         this.jobLockCache.addLocks(context != null ? context.getAllNestedJobLocks() : Collections.emptyList());
+
         this.jobLogicMachine = new JobLogicMachine(this.agents, this.jobLockCache);
     }
 
@@ -326,6 +326,9 @@ public class ContextMachine {
      */
     protected List<SchedulerJobInitiationEvent> eventReceived(ContextualisedScheduledProcessEvent scheduledProcessEvent) {
         logger.info("Context Machine Received Event [{}]", scheduledProcessEvent);
+
+        ContextInstance previousContextInstance = this.contextInstance;
+
         List<SchedulerJobInitiationEvent> events = this.getInitiationEvents(this.contextInstance, scheduledProcessEvent);
 
         List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();
@@ -346,7 +349,25 @@ public class ContextMachine {
             }
         });
 
+        saveInstanceAuditRecord(scheduledProcessEvent, finalEvents, previousContextInstance, this.contextInstance);
+
         return finalEvents;
+    }
+
+    private void saveInstanceAuditRecord(ContextualisedScheduledProcessEvent scheduledProcessEvent,
+                                         List<SchedulerJobInitiationEvent> finalEvents,
+                                         ContextInstance previousContextInstance,
+                                         ContextInstance updatedContextInstance) {
+        ScheduledContextInstanceAudit contextInstanceAudit = new ScheduledContextInstanceAuditImpl();
+        contextInstanceAudit.setPreviousContextInstance(previousContextInstance);
+        contextInstanceAudit.setUpdatedContextInstance(updatedContextInstance);
+        contextInstanceAudit.setProcessEvent(scheduledProcessEvent);
+        contextInstanceAudit.setSchedulerJobInitiationEvents(finalEvents);
+
+        ScheduledContextInstanceAuditRecord auditRecord = new ScheduledContextInstanceAuditRecordImpl();
+        auditRecord.setContextName(this.contextInstance.getName());
+        auditRecord.setScheduledContextInstanceAudit(contextInstanceAudit);
+        scheduledContextInstanceService.saveAudit(auditRecord);
     }
 
     /**

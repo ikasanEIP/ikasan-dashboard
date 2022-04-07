@@ -17,9 +17,9 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public final class JobLockCacheMachine implements JobLockCache {
+public final class JobLockCacheImpl implements JobLockCache {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobLockCacheMachine.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobLockCacheImpl.class);
 
     @JsonProperty
     private final ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName;
@@ -28,16 +28,16 @@ public final class JobLockCacheMachine implements JobLockCache {
     @JsonIgnore
     private JobLockCacheService jobLockCacheService;
 
-    private JobLockCacheMachine() {
+    private JobLockCacheImpl() {
         jobLocksByLockName = new ConcurrentHashMap<>();
         jobLocksByIdentifier = new ConcurrentHashMap<>();
     }
 
     private static final class JobLockMachineHolder {
-        public final static JobLockCacheMachine INSTANCE = new JobLockCacheMachine();
+        public final static JobLockCacheImpl INSTANCE = new JobLockCacheImpl();
     }
 
-    public static JobLockCacheMachine instance() {
+    public static JobLockCacheImpl instance() {
         return JobLockMachineHolder.INSTANCE;
     }
 
@@ -164,7 +164,6 @@ public final class JobLockCacheMachine implements JobLockCache {
 
     private void saveJobLockCacheRecord() {
         JobLockCacheRecord record = new JobLockCacheRecordImpl();
-        record.setTimestamp(System.currentTimeMillis());
         record.setJobLockCache(this);
         jobLockCacheService.save(record);
     }
