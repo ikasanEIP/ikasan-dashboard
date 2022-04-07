@@ -1,5 +1,9 @@
 package org.ikasan.scheduled.event.model;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 
 public class SolrDryRunParameters implements DryRunParameters {
@@ -58,5 +62,20 @@ public class SolrDryRunParameters implements DryRunParameters {
     @Override
     public void setError(boolean error) {
         this.error = error;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }
