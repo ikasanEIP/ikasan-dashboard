@@ -5,7 +5,7 @@ import static org.ikasan.job.orchestration.core.machine.ContextMachineTestHelper
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.ikasan.job.orchestration.JobLockCacheServiceTestImpl;
-import org.ikasan.job.orchestration.context.cache.JobLockCacheMachine;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.validation.ContextTemplateValidator;
 import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateException;
 import org.ikasan.job.orchestration.core.AbstractTest;
@@ -42,7 +42,7 @@ public class ContextMachineTest extends AbstractTest {
 
     @After
     public void tearDown() {
-        JobLockCacheMachine.instance().reset();
+        JobLockCacheImpl.instance().reset();
     }
 
     @Test

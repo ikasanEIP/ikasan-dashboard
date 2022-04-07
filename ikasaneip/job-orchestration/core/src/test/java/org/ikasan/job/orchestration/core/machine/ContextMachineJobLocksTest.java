@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.ikasan.job.orchestration.JobLockCacheServiceTestImpl;
-import org.ikasan.job.orchestration.context.cache.JobLockCacheMachine;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.validation.ContextTemplateValidator;
 import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateException;
 import org.ikasan.job.orchestration.core.AbstractTest;
@@ -32,7 +32,7 @@ public class ContextMachineJobLocksTest extends AbstractTest {
 
     @After
     public void tearDown() {
-        JobLockCacheMachine.instance().reset();
+        JobLockCacheImpl.instance().reset();
     }
 
     @Test

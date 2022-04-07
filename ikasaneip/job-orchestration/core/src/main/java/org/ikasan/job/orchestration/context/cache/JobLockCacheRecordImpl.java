@@ -1,5 +1,9 @@
 package org.ikasan.job.orchestration.context.cache;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.model.context.JobLockHolderImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
@@ -28,7 +32,6 @@ public class JobLockCacheRecordImpl implements JobLockCacheRecord {
     private String jobLockCache;
     private long timestamp;
 
-
     @Override
     public String getId() {
         return this.id;
@@ -46,7 +49,7 @@ public class JobLockCacheRecordImpl implements JobLockCacheRecord {
     @Override
     public JobLockCache getJobLockCache() {
         try {
-            return objectMapper.readValue(jobLockCache, JobLockCacheMachine.class);
+            return objectMapper.readValue(jobLockCache, JobLockCacheImpl.class);
         } catch (JsonProcessingException e) {
             throw new EntityConversionException("Could not convert string to entity: " + jobLockCache, e);
         }
@@ -59,7 +62,17 @@ public class JobLockCacheRecordImpl implements JobLockCacheRecord {
     }
 
     @Override
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+    public boolean equals(Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }
