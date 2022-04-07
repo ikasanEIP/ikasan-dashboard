@@ -63,9 +63,4 @@ public class SolrJobLockCacheRecordImpl implements JobLockCacheRecord {
     public long getTimestamp() {
         return this.timestamp;
     }
-
-    @Override
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
 }

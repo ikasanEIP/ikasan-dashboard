@@ -27,30 +27,31 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @RunWith(MockitoJUnitRunner.class)
-public class JobLockCacheMachineTest {
+public class JobLockCacheImplTest {
 
     @Mock
     private JobLockCacheService jobLockCacheService;
 
     @After
     public void tearDown() {
-        JobLockCacheMachine.instance().reset();
+        JobLockCacheImpl.instance().reset();
     }
 
     @Test
     public void shouldCallSaveWhenAddingLocksOrLockHolderIsAddedOrRemoved() {
         ArgumentCaptor<JobLockCacheRecord> captor = ArgumentCaptor.forClass(JobLockCacheRecord.class);
-        JobLockCacheMachine jlc = JobLockCacheMachine.instance();
+        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
         ReflectionTestUtils.setField(jlc, "jobLockCacheService", null);
         jlc.setJobLockCacheService(jobLockCacheService);
 
         doNothing().when(jobLockCacheService).save(captor.capture());
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK-SAVE", 3, 1)));
         verify(jobLockCacheService, times(1)).save(any(JobLockCacheRecordImpl.class));
-        JobLockCacheRecord value = captor.getValue();
-        // make sure the timestamp is within the last second
-        assertTrue(value.getTimestamp() >= System.currentTimeMillis() - 1000 && value.getTimestamp() <= System.currentTimeMillis());
-        assertNotNull(value.getJobLockCache());
+        JobLockCacheRecord actual = captor.getValue();
+        assertNotNull(actual.getJobLockCache());
+        JobLockCacheRecordImpl expected = new JobLockCacheRecordImpl();
+        expected.setJobLockCache(jlc);
+        assertEquals(expected, actual);
         verifyNoMoreInteractions(jobLockCacheService);
 
         Mockito.reset(jobLockCacheService);
@@ -58,10 +59,11 @@ public class JobLockCacheMachineTest {
 
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-SAVE-JobName0"));
         verify(jobLockCacheService, times(1)).save(any(JobLockCacheRecordImpl.class));
-        value = captor.getValue();
-        // make sure the timestamp is within the last second
-        assertTrue(value.getTimestamp() >= System.currentTimeMillis() - 1000 && value.getTimestamp() <= System.currentTimeMillis());
-        assertNotNull(value.getJobLockCache());
+        actual = captor.getValue();
+        assertNotNull(actual.getJobLockCache());
+        expected = new JobLockCacheRecordImpl();
+        expected.setJobLockCache(jlc);
+        assertEquals(expected, actual);
         verifyNoMoreInteractions(jobLockCacheService);
 
         Mockito.reset(jobLockCacheService);
@@ -69,16 +71,17 @@ public class JobLockCacheMachineTest {
         doNothing().when(jobLockCacheService).save(captor.capture());
         assertTrue(jlc.release("AgentName0-TEST-LOCK-SAVE-JobName0"));
         verify(jobLockCacheService, times(1)).save(any(JobLockCacheRecordImpl.class));
-        value = captor.getValue();
-        // make sure the timestamp is within the last second
-        assertTrue(value.getTimestamp() >= System.currentTimeMillis() - 1000 && value.getTimestamp() <= System.currentTimeMillis());
-        assertNotNull(value.getJobLockCache());
+        actual = captor.getValue();
+        assertNotNull(actual.getJobLockCache());
+        expected = new JobLockCacheRecordImpl();
+        expected.setJobLockCache(jlc);
+        assertEquals(expected, actual);
         verifyNoMoreInteractions(jobLockCacheService);
     }
 
     @Test
     public void getJobsForIdentifier() {
-        JobLockCacheMachine jlc = JobLockCacheMachine.instance();
+        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 1), makeJobLock("TEST-LOCK-1", 1, 1)));
 
@@ -120,7 +123,7 @@ public class JobLockCacheMachineTest {
 
     @Test
     public void exists() {
-        JobLockCacheMachine jlc = JobLockCacheMachine.instance();
+        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLock(makeJobLock("TEST-LOCK", 2, 1));
 
@@ -135,7 +138,7 @@ public class JobLockCacheMachineTest {
 
     @Test
     public void reset() {
-        JobLockCacheMachine jlc = JobLockCacheMachine.instance();
+        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLock(makeJobLock("TEST-LOCK", 2, 1));
         assertTrue(jlc.existsByJobLockName("TEST-LOCK"));
@@ -153,7 +156,7 @@ public class JobLockCacheMachineTest {
 
     @Test
     public void resetLock() {
-        JobLockCacheMachine jlc = JobLockCacheMachine.instance();
+        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 3, 3), makeJobLock("TEST-LOCK-1", 2, 2)));
 
@@ -198,7 +201,7 @@ public class JobLockCacheMachineTest {
 
     @Test
     public void JobLockCache_lock_shouldNotGoAboveExistingLockCount_release_shouldNotGoBelowExistingLockCount() {
-        JobLockCacheMachine jlc = JobLockCacheMachine.instance();
+        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         // 3 jobs lock count 2
         jlc.addLock(makeJobLock("TEST-LOCK", 3, 2));
@@ -263,7 +266,7 @@ public class JobLockCacheMachineTest {
 
     @Test
     public void JobLockCache_isLocked_lock_and_release() {
-        JobLockCacheMachine jlc = JobLockCacheMachine.instance();
+        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
 
         assertFalse(jlc.locked("jobIdentifier"));
@@ -303,9 +306,9 @@ public class JobLockCacheMachineTest {
 
     @Test
     public void shouldOnlyCreate_JobLockCache_Once() {
-        JobLockCache jobLockCache1 = JobLockCacheMachine.instance();
+        JobLockCache jobLockCache1 = JobLockCacheImpl.instance();
         jobLockCache1.setJobLockCacheService(jobLockCacheService);
-        JobLockCache jobLockCache2 = JobLockCacheMachine.instance();
+        JobLockCache jobLockCache2 = JobLockCacheImpl.instance();
         jobLockCache2.setJobLockCacheService(jobLockCacheService);
 
         assertNotNull(jobLockCache1);
@@ -315,7 +318,7 @@ public class JobLockCacheMachineTest {
 
     @Test
     public void shouldNotNPEAddNewJobs_AddLock_ToJobLockCache_NewLockIsNull() {
-        JobLockCacheMachine jlc = JobLockCacheMachine.instance();
+        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLock(null);
 
@@ -331,7 +334,7 @@ public class JobLockCacheMachineTest {
 
     @Test
     public void shouldAddNewJobs_AddLock_ToJobLockCache_NewLock() {
-        JobLockCacheMachine jlc = JobLockCacheMachine.instance();
+        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLock(makeJobLock("TEST-LOCK", 3, 2));
 
@@ -370,7 +373,7 @@ public class JobLockCacheMachineTest {
 
     @Test
     public void shouldAddNewJobs_AddLock_DifferentLocks() {
-        JobLockCacheMachine jlc = JobLockCacheMachine.instance();
+        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLock(makeJobLock("TEST-LOCK-3", 3, 3));
         jlc.addLock(makeJobLock("TEST-LOCK-4", 4, 4));
@@ -400,7 +403,7 @@ public class JobLockCacheMachineTest {
 
     @Test
     public void shouldAddNewJobs_AddLocks_DifferentLocks() {
-        JobLockCacheMachine jlc = JobLockCacheMachine.instance();
+        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         JobLock jobLock1 = makeJobLock("TEST-LOCK-3", 3, 3);
         JobLock jobLock2 = makeJobLock("TEST-LOCK-4", 4, 4);
@@ -431,10 +434,10 @@ public class JobLockCacheMachineTest {
 
     @Test
     public void shouldAddNewJobs_AddLock_ToJobLockCache_ExistingLock() {
-        JobLockCache jlc1 = JobLockCacheMachine.instance();
+        JobLockCache jlc1 = JobLockCacheImpl.instance();
         jlc1.setJobLockCacheService(jobLockCacheService);
 
-        JobLockCache jlc2 = JobLockCacheMachine.instance();
+        JobLockCache jlc2 = JobLockCacheImpl.instance();
         jlc2.setJobLockCacheService(jobLockCacheService);
 
         jlc1.addLock(makeJobLock("TEST-LOCK-1", 3, 1));
@@ -451,7 +454,7 @@ public class JobLockCacheMachineTest {
 
     @Test
     public void shouldAddNewJobs_AddLocks_ToJobLockCache_ExistingLock() {
-        JobLockCacheMachine jlc = JobLockCacheMachine.instance();
+        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         JobLock jobLock1 = makeJobLock("TEST-LOCK-1", 3, 1);
         JobLock jobLock2 = makeJobLock("TEST-LOCK-1", 2, 1, "New");
@@ -467,7 +470,7 @@ public class JobLockCacheMachineTest {
 
     @Test
     public void shouldNotNPEAddNewJobs_AddLocks_ToJobLockCache() {
-        JobLockCacheMachine jlc = JobLockCacheMachine.instance();
+        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(null);
 
@@ -482,7 +485,7 @@ public class JobLockCacheMachineTest {
 
     @Test
     public void addNewJobs_AddLocks_ToJobLockCache_EmptyList() {
-        JobLockCacheMachine jlc = JobLockCacheMachine.instance();
+        JobLockCacheImpl jlc = JobLockCacheImpl.instance();
         jlc.setJobLockCacheService(jobLockCacheService);
         jlc.addLocks(Collections.emptyList());
 

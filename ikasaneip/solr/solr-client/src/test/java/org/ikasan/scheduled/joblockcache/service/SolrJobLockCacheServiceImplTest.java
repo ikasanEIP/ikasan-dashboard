@@ -23,27 +23,27 @@ import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheAuditRecord;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.FileSystemUtils;
 
 public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
 
-    private SolrJobLockCacheDaoImpl solrJobLockCacheDao;
-    private SolrJobLockCacheAuditDaoImpl solrJobLockCacheAuditDao;
-    private SolrJobLockCacheServiceImpl service;
+    private SolrJobLockCacheDaoImpl jobLockCacheDao;
+    private SolrJobLockCacheAuditDaoImpl jobLockCacheAuditDao;
+    private JobLockCacheService service;
 
-    private NodeConfig config;
     private Path tmpPath;
-
     private EmbeddedSolrServer server;
 
     @Before
     public void setup() throws SolrServerException, IOException {
         tmpPath = createTempDir();
-        config = new NodeConfig
+        NodeConfig config = new NodeConfig
             .NodeConfigBuilder("testnode", tmpPath)
             .setConfigSetBaseDirectory(Paths.get(getFile("solr/ikasan").getParent())
                 .resolve("configsets").toString())
@@ -55,13 +55,13 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
         createRequest.setConfigSet("minimal");
         server.request(createRequest);
 
-        solrJobLockCacheDao = new SolrJobLockCacheDaoImpl();
-        solrJobLockCacheDao.setSolrClient(server);
+        jobLockCacheDao = new SolrJobLockCacheDaoImpl();
+        jobLockCacheDao.setSolrClient(server);
 
-        solrJobLockCacheAuditDao = new SolrJobLockCacheAuditDaoImpl();
-        solrJobLockCacheAuditDao.setSolrClient(server);
+        jobLockCacheAuditDao = new SolrJobLockCacheAuditDaoImpl();
+        jobLockCacheAuditDao.setSolrClient(server);
 
-        service = new SolrJobLockCacheServiceImpl(solrJobLockCacheDao, solrJobLockCacheAuditDao);
+        service = new SolrJobLockCacheServiceImpl(jobLockCacheDao, jobLockCacheAuditDao, true);
     }
 
     @After
@@ -72,35 +72,42 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfJobLockCacheDaoIsNull() {
-        service = new SolrJobLockCacheServiceImpl(null, solrJobLockCacheAuditDao);
+        service = new SolrJobLockCacheServiceImpl(null, jobLockCacheAuditDao, true);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfJobLockCacheAuditDaoIsNull() {
-        service = new SolrJobLockCacheServiceImpl(solrJobLockCacheDao, null);
+        service = new SolrJobLockCacheServiceImpl(jobLockCacheDao, null, true);
     }
 
     @Test
-    public void testSaveAndGetJobCacheInstanceAnfAuditHistory() {
+    public void testSaveAndGetJobCacheInstanceAndAuditHistory() {
+        // set the flag to false for save audit records
+        ReflectionTestUtils.setField(service, "saveJobLockCacheAudits", Boolean.FALSE);
+
+        SearchResults<JobLockCacheAuditRecord> audits = service.findAll(25, 0);
+        assertEquals(0, audits.getResultList().size());
+
         JobLockCache jlc = SolrJobLockCacheMachine.instance();
         List<JobLock> jobLocks = List.of(makeJobLock("TEST-LOCK", 3, 3), makeJobLock("TEST-LOCK-1", 2, 2));
         jlc.addLocks(jobLocks);
         jlc.lock("AgentName1-TEST-LOCK-JobName1");
         jlc.lock("AgentName1-TEST-LOCK-1-JobName1");
 
-        long timestamp1 = System.currentTimeMillis() - 3000;
         JobLockCacheRecord record1 = new SolrJobLockCacheRecordImpl();
         record1.setJobLockCache(jlc);
-        record1.setTimestamp(timestamp1);
 
         service.save(record1);
         validatedSavedRecord(record1, service.get(), true, true, "jockLockCacheRecordInstanceID");
+        audits = service.findAll(25, 0);
+        assertEquals(0, audits.getResultList().size());
+
+        // set the flag to true to save audit records
+        ReflectionTestUtils.setField(service, "saveJobLockCacheAudits", Boolean.TRUE);
 
         jlc.release("AgentName1-TEST-LOCK-JobName1");
         JobLockCacheRecord record2 = new SolrJobLockCacheRecordImpl();
         record2.setJobLockCache(jlc);
-        long timestamp2 = System.currentTimeMillis() - 2000;
-        record2.setTimestamp(timestamp2);
 
         service.save(record2);
         validatedSavedRecord(record2, service.get(), false, true, "jockLockCacheRecordInstanceID");
@@ -109,26 +116,21 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
 
         JobLockCacheRecord record3 = new SolrJobLockCacheRecordImpl();
         record3.setJobLockCache(jlc);
-        long timestamp3 = System.currentTimeMillis() - 1000;
-        record3.setTimestamp(timestamp3);
 
         service.save(record3);
         validatedSavedRecord(record3, service.get(), false, false, "jockLockCacheRecordInstanceID");
 
-        SearchResults<JobLockCacheAuditRecord> audits = service.findAll(25, 0);
-        assertEquals(3, audits.getResultList().size());
-        validatedSavedRecord(record1, audits.getResultList().get(0), true, true, "jockLockCacheRecordAuditID_");
-        validatedSavedRecord(record2, audits.getResultList().get(1), false, true, "jockLockCacheRecordAuditID_");
-        validatedSavedRecord(record3, audits.getResultList().get(2), false, false, "jockLockCacheRecordAuditID_");
-
-        audits = service.findAll(25, 1);
+        audits = service.findAll(25, 0);
         assertEquals(2, audits.getResultList().size());
         validatedSavedRecord(record2, audits.getResultList().get(0), false, true, "jockLockCacheRecordAuditID_");
         validatedSavedRecord(record3, audits.getResultList().get(1), false, false, "jockLockCacheRecordAuditID_");
 
-        audits = service.findAll(25, 2);
+        audits = service.findAll(25, 1);
         assertEquals(1, audits.getResultList().size());
-        validatedSavedRecord(record3, audits.getResultList().get(0), false, false, "jockLockCacheRecordAuditID_");
+        validatedSavedRecord(record2, audits.getResultList().get(0), false, false, "jockLockCacheRecordAuditID_");
+
+        audits = service.findAll(25, 2);
+        assertEquals(0, audits.getResultList().size());
 
         audits = service.findAll(25, 3);
         assertEquals(0, audits.getResultList().size());
@@ -140,8 +142,12 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
             assertEquals(id, savedRecord.getId());
         } else {
             assertTrue(savedRecord.getId().startsWith(id));
+            // make sure we have an uuid length afterwards
+            assertEquals(36, savedRecord.getId().substring(id.length()).length());
         }
-        assertEquals(record.getTimestamp(), savedRecord.getTimestamp());
+        // make sure the timestamp is within the last couple of seconds
+        assertTrue(savedRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && savedRecord.getTimestamp() <= System.currentTimeMillis());
+
         SolrJobLockCacheMachine savedJlc = (SolrJobLockCacheMachine) savedRecord.getJobLockCache();
         assertEquals(2, savedJlc.getJobLocksByLockName().size());
         assertEquals(5, savedJlc.getJobLocksByIdentifier().size());
