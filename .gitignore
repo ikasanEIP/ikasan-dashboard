@@ -11,6 +11,11 @@ target
 **/.attach_pid*
 **/trace.db
 **/ObjectStore
+**/node_modules
+**/package.json
+**/package-lock.json
+**/webpack.config.js
+**/webpack.generated.js
 
 ikasaneip/dashboard/war/src/main/webapp/VAADIN/widgetsets/org.ikasan.dashboard.ui.AppWidgetSet/
 ikasaneip/dashboard/war/src/main/webapp/VAADIN/gwt-unitCache/gwt-unitCache-e5070b9c4fbf0d0244bc4158f6bcfd674417fbc9-0000014CAEC9193E
