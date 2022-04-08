@@ -15,9 +15,4 @@ public class IkasanErrorController implements ErrorController
         //do something like logging
         return "login";
     }
-
-    @Override
-    public String getErrorPath() {
-        return "/error";
-    }
 }
