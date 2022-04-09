@@ -15,7 +15,7 @@ public class ContextLogicMachineTest extends AbstractTest {
     private ContextLogicMachine contextLogicMachine = new ContextLogicMachine();
 
     @Test
-        public void test_context_machine() throws IOException {
+    public void test_context_machine() throws IOException {
         ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
         Assert.assertFalse(contextLogicMachine.contextLogicSatisfied(context.getContextsMap(), context.getContextDependencies()));
