@@ -1,8 +1,8 @@
-package org.ikasan.dashboard.ui.visualisation.model.general;
+package org.ikasan.designer.model;
 
 import java.util.List;
 
-public class Rectangle extends PositionedItem {
+public class Group extends PositionedItem {
     private List<Port> ports;
     private String bgColor;
     private String color;

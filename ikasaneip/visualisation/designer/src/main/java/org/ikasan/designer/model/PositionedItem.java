@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.ui.visualisation.model.general;
+package org.ikasan.designer.model;
 
 public abstract class PositionedItem extends Item {
     protected double x;
