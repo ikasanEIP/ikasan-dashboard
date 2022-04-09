@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.ui.visualisation.model.general;
+package org.ikasan.designer.model;
 
 public class Port extends Item {
     private int width;
@@ -92,5 +92,4 @@ public class Port extends Item {
         this.locator = locator;
     }
 
-    //        "locatorAttr": {}
 }
