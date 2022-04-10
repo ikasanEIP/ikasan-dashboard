@@ -5,15 +5,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mxgraph.layout.mxCompactTreeLayout;
 import com.mxgraph.model.mxCell;
-import com.mxgraph.util.mxCellRenderer;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.designer.builder.ConnectionBuilder;
 import org.ikasan.designer.builder.DiagramBuilder;
 import org.ikasan.designer.builder.LabelBuilder;
 import org.ikasan.designer.builder.RectangleBuilder;
-import org.ikasan.designer.model.Image;
-import org.ikasan.designer.model.Label;
-import org.ikasan.designer.model.Rectangle;
 import org.ikasan.designer.model.*;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.jgrapht.ext.JGraphXAdapter;
@@ -21,9 +17,7 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,12 +38,7 @@ public class ScheduledContextDraw2dAdapter {
         rectangleBuilder.withId(contextInstance.getName())
             .withBgColor(StatusColours.getInstanceStatusColour(contextInstance.getStatus()));
 
-//        ImageBuilder rectangleBuilder = diagramBuilder.getImageBuilder();
-//        rectangleBuilder.withId(contextInstance.getName());
-
         Rectangle root = rectangleBuilder.build();
-//        Image root = rectangleBuilder.build();
-
         diagramBuilder.addItem(root);
 
         contextInstance.getContexts().forEach(c -> {
@@ -59,11 +48,7 @@ public class ScheduledContextDraw2dAdapter {
             RectangleBuilder rb = diagramBuilder.getRectangleBuilder();
             rb.withId(c.getName()).withBgColor(StatusColours.getInstanceStatusColour(c.getStatus()));
 
-//            ImageBuilder rb = diagramBuilder.getImageBuilder();
-//            rb.withId(c.getName());
-
             Rectangle branch = rb.build();
-//            Image branch = rb.build();
 
             diagramBuilder.addItem(branch);
 
@@ -111,7 +96,7 @@ public class ScheduledContextDraw2dAdapter {
                     ((PositionedItem) item).setX(cell.getGeometry().getX() + 600);
                     ((PositionedItem) item).setY(cell.getGeometry().getY() + 600);
 
-                    labels.add(new LabelBuilder().withText(((PositionedItem)item).getId() + " whitespace test!")
+                    labels.add(new LabelBuilder().withText(((PositionedItem)item).getId())
                         .withX(((PositionedItem)item).getX() - 15)
                         .withY(((PositionedItem)item).getY() + 80)
                         .build());
@@ -121,12 +106,12 @@ public class ScheduledContextDraw2dAdapter {
 
         items.addAll(labels);
 
-        Document image = mxCellRenderer.createSvgDocument(jGraphXAdapter, null, 4, Color.WHITE, null);
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
 
         String result = null;
+        // todo clean this up. still a hack.
         try {
             result = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
             logger.info(result);
@@ -135,25 +120,11 @@ public class ScheduledContextDraw2dAdapter {
             e.printStackTrace();
         }
 
-//
-//        try {
-//            mxUtils.writeFile(mxXmlUtils.getXml(image), "/sandbox/mick/test.svg");
-//        }
-//        catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
         return result;
     }
 
     private void manageContext(ContextInstance contextInstance, DefaultDirectedGraph<Object, DefaultEdge> graph,
                                DiagramBuilder diagramBuilder) {
-        if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
-//            contextInstance.getScheduledJobs().forEach(job -> {
-//                graph.addVertex(contextInstance.getName() + job.getJobName());
-//                graph.addEdge(contextInstance.getName(), contextInstance.getName() + job.getJobName());
-//            });
-        }
 
         if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
             contextInstance.getContexts().forEach(c -> {
@@ -164,11 +135,7 @@ public class ScheduledContextDraw2dAdapter {
                 rectangleBuilder.withId(c.getName())
                 .withBgColor(StatusColours.getInstanceStatusColour(c.getStatus()));
 
-//                ImageBuilder rectangleBuilder = diagramBuilder.getImageBuilder();
-//                rectangleBuilder.withId(c.getName());
-
                 Rectangle branch = rectangleBuilder.build();
-//                Image branch = rectangleBuilder.build();
 
                 diagramBuilder.addItem(branch);
 
