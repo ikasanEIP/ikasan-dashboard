@@ -13,8 +13,8 @@ public class ConnectionBuilder {
     protected String type = "draw2d.Connection";
     protected String id = UUID.randomUUID().toString();
     protected int alpha = 1;
-    protected boolean selectable = false;
-    protected boolean draggable = false;
+    protected boolean selectable = true;
+    protected boolean draggable = true;
     protected int angle = 0;
     protected String cssClass = "draw2d_Connection";
     protected String composite;
@@ -24,7 +24,7 @@ public class ConnectionBuilder {
     private int outlineStroke;
     private String outlineColor = "rgba(255,255,255,1)";
     private String policy = "draw2d.policy.line.LineSelectionFeedbackPolicy";
-    private List<Vertex> vertex;
+    private List<Vertex> vertex = new ArrayList<>();
     private String router = "draw2d.layout.connection.ManhattanConnectionRouter";
     private int radius = 5;
     private ConnectionDetails source;
@@ -114,13 +114,16 @@ public class ConnectionBuilder {
     }
 
     public ConnectionBuilder withTarget(ConnectionDetails target) {
-        this.source = target;
+        this.target = target;
         return this;
     }
 
     public Connection build() {
         Connection connection = new Connection();
         connection.setId(this.id);
+        connection.setRouter(this.router);
+        connection.setRadius(this.radius);
+        connection.setType(this.type);
         connection.setAlpha(this.alpha);
         connection.setSelectable(this.selectable);
         connection.setDraggable(this.draggable);
@@ -129,6 +132,8 @@ public class ConnectionBuilder {
         connection.setComposite(this.composite);
         connection.setColor(this.color);
         connection.setStroke(this.stroke);
+        connection.setSource(this.source);
+        connection.setTarget(this.target);
 
         return connection;
     }

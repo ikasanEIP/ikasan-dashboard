@@ -188,7 +188,6 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
             this.designerCanvas = new DesignerCanvas("canvas-viewport", this.dynamicImagePath, true);
             this.designerCanvas.setCanvasJson(businessStreamMetaData.getJson());
-            this.designerCanvas.importJson();
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
 

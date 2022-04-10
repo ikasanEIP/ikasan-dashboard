@@ -406,6 +406,14 @@
             });
         }
 
+        designer.$connector.setBackgroundColorOnFigure = function (figureIdentifier, color) {
+            _this.getFigures().each((i, figure)=>{
+                if(figure.id === figureIdentifier) {
+                    figure.setBackgroundColor(color);
+                }
+            });
+        }
+
         designer.$connector.setLineType = function (pattern) {
             debugger;
             _this.getSelection().each((i, figure)=>{
@@ -488,12 +496,13 @@
         }
 
         designer.$connector.importJson = function (jsonDocument) {
-            debugger
             let reader = new draw2d.io.json.Reader();
+
+            console.log("before unmarshal " + performance.now());
             reader.unmarshal(designer.$connector.designer, jsonDocument);
+            console.log("after unmarshal " + performance.now());
 
             _this.getFigures().each((i, figure)=>{
-                console.log(i + " init " +figure.getId());
                 if(figure.NAME === 'draw2d.shape.basic.Image') {
                     figure.setKeepAspectRatio(true);
                     // We want to bring images to the front so that
@@ -509,7 +518,6 @@
                 xCoords.push(b.x, b.x+b.w);
                 yCoords.push(b.y, b.y+b.h);
             });
-            debugger;
 
             let minX   = Math.min.apply(Math, xCoords);
             let minY   = Math.min.apply(Math, yCoords);
@@ -535,6 +543,7 @@
 
             designer.$connector.designer.setZoom(zoomFactor)
             designer.$connector.designer.scrollTo((minY/zoomFactor)-((800-(height/zoomFactor))/4), (minX-100)/zoomFactor);
+            console.log("finished import json " + performance.now());
         }
 
         designer.$connector.manageClickableItems = function () {

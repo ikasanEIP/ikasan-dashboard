@@ -22,7 +22,7 @@ public class DiagramBuilder {
         return new ConnectionBuilder();
     }
 
-    private ConnectionDetailsBuilder getConnectionDetailsBuilder() {
+    public ConnectionDetailsBuilder getConnectionDetailsBuilder() {
         return new ConnectionDetailsBuilder();
     }
 

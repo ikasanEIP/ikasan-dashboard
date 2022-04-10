@@ -311,6 +311,12 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.saved = false;
     }
 
+    public void setBackgroundColor(String identifier, String color) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.setBackgroundColorOnFigure", identifier, color));
+        this.saved = false;
+    }
+
     public void setLineType(String pattern) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setLineType", pattern));
