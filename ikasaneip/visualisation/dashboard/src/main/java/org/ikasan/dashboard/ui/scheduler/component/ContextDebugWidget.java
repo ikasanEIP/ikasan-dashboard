@@ -17,6 +17,7 @@ import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -28,6 +29,8 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 
 @CssImport("./styles/dashboard-view.css")
 public class ContextDebugWidget extends Div implements BeforeEnterListener {
@@ -38,10 +41,12 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
     private JobLockCacheService jobLockCacheService;
 
     protected AceEditor aceEditor;
+    protected SchedulerVisualisation schedulerVisualisation;
 
     private Tab fullContextInstance;
     private Tab contextStatus;
     private Tab contextEvents;
+    private Tab visualisation;
     private Tabs tabs;
 
     private Select<String> contextInstances;
@@ -70,6 +75,11 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
         this.internalEventDrivenJobService = internalEventDrivenJobService;
         this.queueDir = queueDir;
 
+        this.schedulerVisualisation = new SchedulerVisualisation(".");
+        this.schedulerVisualisation.setWidthFull();
+        this.schedulerVisualisation.setHeight("1000px");
+        this.schedulerVisualisation.setVisible(false);
+
         this.initialiseEditor();
 
         this.objectMapper = new ObjectMapper();
@@ -82,6 +92,7 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
             try {
                 ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
                 if(contextMachine != null) {
+                    this.schedulerVisualisation.createSchedulerVisualisation(contextMachine.getContext());
                 }
                 else {
                     return;
@@ -96,6 +107,9 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
                 }
             }
             catch (JsonProcessingException e){
+                e.printStackTrace();
+            }
+            catch (IOException e) {
                 e.printStackTrace();
             }
         });
@@ -141,6 +155,7 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
                     else {
                         this.aceEditor.setValue("");
                     }
+                    this.aceEditor.setVisible(true);
                 }
                 else if(tabs.getSelectedTab().equals(this.contextStatus)) {
                     if(this.contextInstances.getValue() != null && !this.contextInstances.getValue().isEmpty()){
@@ -155,6 +170,9 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
                 else if(tabs.getSelectedTab().equals(this.contextEvents)) {
                     this.aceEditor.setValue(this.events.toString());
                 }
+                else if(tabs.getSelectedTab().equals(this.visualisation)) {
+                   // do something
+                }
             }
             catch (JsonProcessingException e) {
                 e.printStackTrace();
@@ -168,7 +186,8 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
         this.fullContextInstance = new Tab("Full Context Instance");
         this.contextStatus = new Tab("Context Instance Status");
         this.contextEvents = new Tab("Context Instance Events");
-        this.tabs = new Tabs(fullContextInstance, contextStatus, contextEvents);
+        this.visualisation = new Tab("Context Instance Visualisation");
+        this.tabs = new Tabs(fullContextInstance, contextStatus, contextEvents, visualisation);
 
         tabs.addSelectedChangeListener(event -> {
             try {
@@ -191,6 +210,8 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
                     else {
                         this.aceEditor.setValue("");
                     }
+                    this.aceEditor.setVisible(true);
+                    this.schedulerVisualisation.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.contextStatus)) {
                     if(this.contextInstances.getValue() != null && !this.contextInstances.getValue().isEmpty()){
@@ -211,9 +232,17 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
                     else {
                         this.aceEditor.setValue("");
                     }
+                    this.aceEditor.setVisible(true);
+                    this.schedulerVisualisation.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.contextEvents)) {
                     this.aceEditor.setValue(this.events.toString());
+                    this.aceEditor.setVisible(true);
+                    this.schedulerVisualisation.setVisible(false);
+                }
+                else if(tabs.getSelectedTab().equals(this.visualisation)) {
+                    this.aceEditor.setVisible(false);
+                    this.schedulerVisualisation.setVisible(true);
                 }
             }
             catch (JsonProcessingException e){
@@ -224,7 +253,7 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(tabs);
 
-        div.add(controlsLayout, tabLayout, this.aceEditor);
+        div.add(controlsLayout, tabLayout, this.aceEditor, this.schedulerVisualisation);
 
         this.setSizeFull();
         this.add(div);

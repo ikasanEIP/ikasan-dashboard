@@ -13,15 +13,15 @@ public class ImageBuilder {
     protected String id = UUID.randomUUID().toString();
     protected double x;
     protected double y;
-    protected double width;
-    protected double height;
-    protected int alpha;
-    protected boolean selectable;
-    protected boolean draggable;
-    protected int angle;
+    protected double width= 95;
+    protected double height = 63;
+    protected int alpha = 1;
+    protected boolean selectable = true;
+    protected boolean draggable = true;
+    protected int angle = 0;
     protected String cssClass = "draw2d_shape_basic_Image";
-    private List<Port> ports;
-    private String path;
+    private List<Port> ports = new ArrayList<>();
+    private String path = "frontend/images/flow.png";
 
     protected ImageBuilder() {
 
@@ -87,8 +87,20 @@ public class ImageBuilder {
     }
 
     public Image build() {
+        PortBuilder bottomPortBuilder = new PortBuilder();
+        bottomPortBuilder.witLocator("draw2d.layout.locator.BottomLocator")
+            .withName("hybridSource");
+
+        PortBuilder topPortBuilder = new PortBuilder();
+        topPortBuilder.witLocator("draw2d.layout.locator.TopLocator")
+            .withName("hybridTarget");
+
+        this.addPort(bottomPortBuilder.build())
+            .addPort(topPortBuilder.build());
+
         Image image = new Image();
         image.setId(this.id);
+        image.setType(this.type);
         image.setAlpha(this.alpha);
         image.setSelectable(this.selectable);
         image.setDraggable(this.draggable);
