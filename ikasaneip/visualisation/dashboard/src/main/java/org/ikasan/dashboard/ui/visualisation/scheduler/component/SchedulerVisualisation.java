@@ -45,6 +45,10 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.*;
 import org.ikasan.spec.persistence.BatchInsert;
+import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
+import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
+import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.solr.SolrGeneralService;
@@ -57,12 +61,10 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class SchedulerVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener, CanvasItemDoubleClickEventListener {
+public class SchedulerVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener
+    , CanvasItemDoubleClickEventListener, ContextInstanceStateChangeEventListener, SchedulerJobInstanceStateChangeEventListener {
     private Logger logger = LoggerFactory.getLogger(SchedulerVisualisation.class);
     private DesignerCanvas designerCanvas;
-
-    private Registration flowStateBroadcasterRegistration;
-    private Registration cacheStateBroadcasterRegistration;
 
     private String dynamicImagePath;
 
@@ -110,10 +112,6 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             this.add(initCanvasActions(), designerCanvas);
 
             this.initialised = true;
-
-            this.designerCanvas.setBackgroundColor("CONTEXT-1616645609", StatusColours.getInstanceStatusColour(InstanceStatus.RUNNING));
-            this.designerCanvas.setBackgroundColor("CONTEXT--2036736597", StatusColours.getInstanceStatusColour(InstanceStatus.COMPLETE));
-            this.designerCanvas.setBackgroundColor("CONTEXT-1590773100", StatusColours.getInstanceStatusColour(InstanceStatus.ERROR));
         }
     }
 
@@ -146,183 +144,26 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         actions.add(download, downloadTooltip);
         download.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-//            this.exportPng();
+            this.exportPng();
         });
 
         return actions;
     }
 
-//    private void drawFlowStatus(FlowState state) {
-//        if (this.flowMap != null && flowMap.containsKey(state.getModuleName() + "." + state.getFlowName())) {
-//            Flow flow = flowMap.get(state.getModuleName() + "." + state.getFlowName());
-//
-//            this.designerCanvas.removeFigure(flow.getStatusIdentifier());
-//
-//            this.designerCanvas.addBoundary(flow.getStatusIdentifier(), flow.getId().toString(), flow.getX() - 5
-//                , flow.getY() - 5, flow.getHeight() + 10, flow.getWidth() + 10, state.getState().getStateColour());
-//        }
-//    }
+    @Override
+    public void onContextInstanceStateChangeEvent(ContextInstanceStateChangeEvent contextInstanceStateChangeEvent) {
+        // update the colour of the relevant context node on the visualisation
+        if(contextInstanceStateChangeEvent.getContextInstance() != null) {
+            this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getId()
+                , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
 
-    public void search(List<String> entityTypes, String searchTerm, long startTime, long endTime) {
-//        this.stringSearchFoundStatusMap.values().forEach(searchFoundStatus -> {
-//            searchFoundStatus.setSearchTerm(searchTerm);
-//            searchFoundStatus.setStartTime(startTime);
-//            searchFoundStatus.setEndTime(endTime);
-//        });
-
-        HashMap<String, Long> errorMap = new HashMap<>();
-        HashMap<String, Long> wiretapMap = new HashMap<>();
-        HashMap<String, Long> exclusionMap = new HashMap<>();
-        HashMap<String, Long> replayMap = new HashMap<>();
-
-//        this.flowMap.values().forEach(flow -> {
-//            entityTypes.forEach(entityType -> {
-//                IkasanSolrDocumentSearchResults results = this.solrSearchService.search(Set.of(flow.getModuleName()), Set.of(flow.getFlowName()), searchTerm, startTime
-//                    , endTime, 0, Arrays.asList(entityType), false, null, null);
-//
-//                if (entityType.equals("wiretap")) {
-//                    wiretapMap.put(flow.getId().getName(), results.getTotalNumberOfResults());
-//                }
-//                else if (entityType.equals("error")) {
-//                    errorMap.put(flow.getId().getName(), results.getTotalNumberOfResults());
-//                }
-//                else if (entityType.equals("exclusion")) {
-//                    exclusionMap.put(flow.getId().getName(), results.getTotalNumberOfResults());
-//                }
-//                else if (entityType.equals("replay")) {
-//                    replayMap.put(flow.getId().getName(), results.getTotalNumberOfResults());
-//                }
-//            });
-//        });
-
-//        this.drawFoundStatus(errorMap, wiretapMap, exclusionMap, replayMap);
+        }
     }
 
-//    public void drawFoundStatus(HashMap<String, Long> errorMap, HashMap<String, Long> wiretapMap
-//        , HashMap<String, Long> exclusionMap, HashMap<String, Long> replayMap) {
-//
-//        stringSearchFoundStatusMap.values().forEach(status -> {
-//            status.setErrorFound(false);
-//            status.setExclusionFound(false);
-//            status.setWiretapFound(false);
-//            status.setReplayFound(false);
-//        });
-//
-//        this.flows.forEach(flow -> {
-//            flow.setWiretapFoundCount(0L);
-//            flow.setErrorFoundCount(0L);
-//            flow.setExclusionFoundCount(0L);
-//            flow.setReplayFoundCount(0L);
-//        });
-//
-//        this.flows = this.flows.stream().map(flow -> {
-//            SearchFoundStatus searchFoundStatus = this.stringSearchFoundStatusMap.get(flow.getId().getName());
-//
-//            if(searchFoundStatus != null) {
-//                int numFound = 0;
-//
-//                if (wiretapMap.get(flow.getId().getName()) != null && wiretapMap.get(flow.getId().getName()) > 0) {
-//                    flow.setWiretapFoundCount(wiretapMap.get(flow.getId().getName()));
-//                    searchFoundStatus.setWiretapFound(true);
-//                    numFound++;
-//                }
-//
-//                if (errorMap.get(flow.getId().getName()) != null && errorMap.get(flow.getId().getName()) > 0) {
-//                    flow.setErrorFoundCount(errorMap.get(flow.getId().getName()));
-//                    searchFoundStatus.setErrorFound(true);
-//                    numFound++;
-//                }
-//
-//                if (exclusionMap.get(flow.getId().getName()) != null && exclusionMap.get(flow.getId().getName()) > 0) {
-//                    flow.setExclusionFoundCount(exclusionMap.get(flow.getId().getName()));
-//                    searchFoundStatus.setExclusionFound(true);
-//                    numFound++;
-//                }
-//
-//                if (replayMap.get(flow.getId().getName()) != null && replayMap.get(flow.getId().getName()) > 0) {
-//                    flow.setReplayFoundCount(replayMap.get(flow.getId().getName()));
-//                    searchFoundStatus.setReplayFound(true);
-//                    numFound++;
-//                }
-//
-//                this.addSearchFoundIconToFlow(flow, this.getSearchIconCoordinates(flow, numFound));
-//
-//                this.stringSearchFoundStatusMap.put(flow.getModuleName() + flow.getFlowName()
-//                    , searchFoundStatus);
-//            }
-//
-//            return flow;
-//        }).collect(Collectors.toList());
-//    }
-
-//    private void addSearchFoundIconToFlow(Flow flow, List<Double> xCoordinates) {
-//        int offset = 0;
-//
-//        this.designerCanvas.removeFigure(flow.getErrorIdentifier().toString());
-//        this.designerCanvas.removeFigure(flow.getWiretapIdentifier().toString());
-//        this.designerCanvas.removeFigure(flow.getExclusionIdentifier().toString());
-//        this.designerCanvas.removeFigure(flow.getReplayIdentifier().toString());
-//        this.designerCanvas.removeFigure(flow.getErrorCountLabelIdentifier().toString());
-//        this.designerCanvas.removeFigure(flow.getWiretapCountLabelIdentifier().toString());
-//        this.designerCanvas.removeFigure(flow.getExclusionCountLabelIdentifier().toString());
-//        this.designerCanvas.removeFigure(flow.getReplayCountLabelIdentifier().toString());
-//
-//        if(flow.getErrorFoundCount() > 0) {
-//            this.designerCanvas.addLabel(String.valueOf(flow.getErrorFoundCount()), xCoordinates.get(offset), flow.getY() - 70);
-//            this.designerCanvas.addIcon(flow.getErrorIdentifier().toString(), "frontend/images/error-service.png"
-//                , xCoordinates.get(offset++), flow.getY() - 45, 35, 35, false, true);
-//        }
-//
-//        if(flow.getWiretapFoundCount() > 0) {
-//            this.designerCanvas.addLabel(String.valueOf(flow.getWiretapFoundCount()), xCoordinates.get(offset) , flow.getY() - 70);
-//            this.designerCanvas.addIcon(flow.getWiretapIdentifier().toString(),"frontend/images/wiretap-service.png"
-//                , xCoordinates.get(offset++), flow.getY()-45, 35, 35, false, true);
-//        }
-//
-//        if(flow.getExclusionFoundCount() > 0) {
-//            this.designerCanvas.addLabel(String.valueOf(flow.getErrorFoundCount()), xCoordinates.get(offset) , flow.getY() - 70);
-//            this.designerCanvas.addIcon(flow.getExclusionIdentifier().toString(),"frontend/images/hospital-service.png"
-//                , xCoordinates.get(offset++), flow.getY()-45, 35, 35, false, true);
-//        }
-//
-//        if(flow.getReplayFoundCount() > 0) {
-//            this.designerCanvas.addLabel(String.valueOf(flow.getReplayFoundCount()), xCoordinates.get(offset) , flow.getY() - 70);
-//            this.designerCanvas.addIcon(flow.getReplayIdentifier().toString(),"frontend/images/replay-service.png"
-//                , xCoordinates.get(offset++), flow.getY()-45, 35, 35, false, true);
-//        }
-//    }
-//
-//    private List<Double> getSearchIconCoordinates(Flow flow, int numFound) {
-//        int centreX = flow.getX() + (flow.getWidth() / 2);
-//
-//        ArrayList<Double> xCoordinates = new ArrayList();
-//        if(numFound == 1){
-//            xCoordinates.add(centreX-17.5);
-//            xCoordinates.add(0d);
-//            xCoordinates.add(0d);
-//            xCoordinates.add(0d);
-//        }
-//        else if(numFound == 2){
-//            xCoordinates.add(centreX-40d);
-//            xCoordinates.add(centreX+5d);
-//            xCoordinates.add(0d);
-//            xCoordinates.add(0d);
-//        }
-//        else if(numFound == 3){
-//            xCoordinates.add(centreX-62.5);
-//            xCoordinates.add(centreX-17.5);
-//            xCoordinates.add(centreX+27.5);
-//            xCoordinates.add(0d);
-//        }
-//        else if(numFound == 4){
-//            xCoordinates.add(centreX-84d);
-//            xCoordinates.add(centreX-40d);
-//            xCoordinates.add(centreX+5d);
-//            xCoordinates.add(centreX+50d);
-//        }
-//
-//        return xCoordinates;
-//    }
+    @Override
+    public void onSchedulerJobInstanceStateChangeEvent(SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent) {
+        // todo when we pull jobs in there'll be something interesting to do here!
+    }
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
@@ -336,20 +177,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     }
 
     public void redraw() {
-//        for (String key : this.flowMap.keySet()) {
-//            if (key.contains(".")) {
-//                ModuleMetaData module = this.moduleMetaDataService
-//                    .findById(key.substring(0, key.indexOf(".")));
-//
-//                if (module != null) {
-//                    FlowState flowState = FlowStateCache.instance().get(module, key.substring(key.indexOf(".") + 1));
-//
-//                    if (flowState != null) {
-//                        this.drawFlowStatus(flowState);
-//                    }
-//                }
-//            }
-//        }
+
     }
 
     @Override
@@ -357,68 +185,18 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
         if(this.designerCanvas != null){
             this.redraw();
         }
-
-        UI ui = attachEvent.getUI();
-        flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState ->
-        {
-            logger.debug("Received flow state: " + flowState);
-//            this.drawFlowStatus(ui, flowState);
-        });
-
-        cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState ->
-        {
-            logger.debug("Received flow state: " + flowState);
-//            this.drawFlowStatus(ui, flowState);
-        });
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        this.flowStateBroadcasterRegistration.remove();
-        this.flowStateBroadcasterRegistration = null;
-        this.cacheStateBroadcasterRegistration.remove();
-        this.cacheStateBroadcasterRegistration = null;
+
     }
 
-//    protected void drawFlowStatus(UI ui, FlowState flowState) {
-//        ui.access(() ->
-//        {
-//            if (this.flowMap != null && this.flowMap.containsKey(flowState.getModuleName() + "." + flowState.getFlowName())) {
-//                this.drawFlowStatus(flowState);
-//            }
-//        });
-//    }
-//
-//    private void populateFlowMap(BusinessStreamMetaData businessStreamMetaData) {
-//        List<JSONObject> flows = DesignerJsonHelper.getIdentifierTypeItems(BusinessStreamItemTypes.FLOW.name(),
-//            businessStreamMetaData.getJson());
-//
-//        this.flowMap = new HashMap<>();
-//        this.stringSearchFoundStatusMap = new HashMap<>();
-//
-//        flows.forEach(flowJson -> {
-//            DesignerItemIdentifier identifier
-//                = DesignerItemIdentifier.getIdentifier(flowJson.getString("id"));
-//            Flow flow = new Flow(identifier.toString(), identifier.getName().substring(0, identifier.getName().indexOf(".")),
-//                identifier.getName().substring(identifier.getName().indexOf(".") + 1),
-//                flowJson.getNumber("x").intValue(), flowJson.getNumber("y").intValue(),
-//                flowJson.getNumber("width").intValue(), flowJson.getNumber("height").intValue());
-//
-//            this.flowMap.put(flow.getId().getName(), flow);
-//            this.flows.add(flow);
-//            this.stringSearchFoundStatusMap
-//                .put(flow.getId().getName(), new SearchFoundStatus());
-//        });
-//
-//    }
-//
-//    public List<Flow> getFlows() {
-//        return this.flows;
-//    }
 
     @Override
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
 
+        // there'll be stuff to do here!
         DesignerItemIdentifier identifier;
 
         try {
@@ -429,73 +207,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             // we ignore any events that we cannot parse the identifier for.
             return;
         }
-
-        if(identifier.getType().equals(BusinessStreamItemTypes.FLOW.name())) {
-//            this.openFlowVisualisation(identifier);
-        }
-        else if(identifier.getType().equals(BusinessStreamItemTypes.ERROR.name()) ||
-            identifier.getType().equals(BusinessStreamItemTypes.EXCLUSION.name()) ||
-            identifier.getType().equals(BusinessStreamItemTypes.WIRETAP.name()) ||
-            identifier.getType().equals(BusinessStreamItemTypes.REPLAY.name())) {
-//            this.openSearchResultsDialog(identifier);
-        }
     }
-
-//    private void openSearchResultsDialog(DesignerItemIdentifier identifier) {
-//        SearchFoundStatus searchFoundStatus = this.stringSearchFoundStatusMap.get(identifier.getName());
-//
-//        Flow flow =  this.flowMap.get(identifier.getName());
-//        logger.debug("error clicked: " + flow.getModuleName() + " " + flow.getFlowName());
-//        SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
-//            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService, dateFormatter);
-//        searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), identifier.getType().toLowerCase(), false
-//            , flow.getModuleName(), flow.getFlowName());
-//        searchResultsDialog.open();
-//    }
-//
-//    private void openFlowVisualisation(DesignerItemIdentifier identifier) {
-//        String nodeId = identifier.getName();
-//
-//        if (this.flowMap.get(nodeId) != null) {
-//            ModuleMetaData moduleMetaData = this.moduleMetaDataService
-//                .findById(nodeId.substring(0, nodeId.indexOf(".")));
-//
-//            logger.debug("ModuleMetaData + " + moduleMetaData);
-//
-//            IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
-//
-//            Set<String> accessibleModules = SecurityUtils.getAccessibleModules(authentication);
-//
-//            if(moduleMetaData == null || moduleMetaData.getFlows().stream()
-//                .filter(flow -> this.flowMap.get(nodeId).getFlowName().equals(flow.getName()))
-//                .findFirst()
-//                .isEmpty()) {
-//                ConfirmDialog dialog = new ConfirmDialog(getTranslation("confirm.header.flow-not-found", UI.getCurrent().getLocale()),
-//                    getTranslation("confirm.body.flow-not-found", UI.getCurrent().getLocale()), getTranslation("button.ok", UI.getCurrent().getLocale()),
-//                    (ComponentEventListener<ConfirmDialog.ConfirmEvent>) confirmEvent -> {});
-//
-//                dialog.open();
-//            }
-//            else if(accessibleModules.contains(moduleMetaData.getName()) || authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)) {
-//                FlowVisualisationDialog flowVisualisationDialog
-//                    = new FlowVisualisationDialog(this.moduleControlRestService, this.configurationRestService,
-//                    this.triggerRestService, this.configurationMetadataService, moduleMetaData
-//                    , this.flowMap.get(nodeId), this.solrSearchService
-//                    , this.stringSearchFoundStatusMap.get(nodeId), this.hospitalAuditService
-//                    , this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService
-//                    , this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert, this.dateFormatter);
-//
-//                flowVisualisationDialog.open();
-//            }
-//            else {
-//                ConfirmDialog dialog = new ConfirmDialog(getTranslation("confirm.header.no-flow-access", UI.getCurrent().getLocale()),
-//                    getTranslation("confirm.body.no-flow-access", UI.getCurrent().getLocale()), getTranslation("button.ok", UI.getCurrent().getLocale()),
-//                    (ComponentEventListener<ConfirmDialog.ConfirmEvent>) confirmEvent -> {});
-//
-//                dialog.open();
-//            }
-//        }
-//    }
 
     @Override
     public void rightClickEvent(CanvasItemRightClickEvent canvasItemRightClickEvent) {
@@ -507,9 +219,9 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
         }
     }
 
-//    public void exportPng(){
-//        this.designerCanvas.exportPng();
-//    }
+    public void exportPng(){
+        this.designerCanvas.exportPng();
+    }
 
     public static Tooltip getTooltip(Component component, String message, TooltipPosition position, TooltipAlignment alignment)
     {
