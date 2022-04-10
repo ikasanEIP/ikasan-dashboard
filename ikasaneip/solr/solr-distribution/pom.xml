@@ -112,7 +112,7 @@
 
                                 <copy file="${basedir}/src/main/resources/security.json" tofile="${project.build.directory}/solr-${version.org.apache.solr}/server/solr/security.json" />
 
-                                <zip destfile="${project.build.directory}/ikasan-solr-distribution-${version}.zip">
+                                <zip destfile="${project.build.directory}/ikasan-solr-distribution-${project.version}.zip">
                                     <zipfileset filemode="755" dir="${project.build.directory}/solr-${version.org.apache.solr}/" />
                                 </zip>
 
