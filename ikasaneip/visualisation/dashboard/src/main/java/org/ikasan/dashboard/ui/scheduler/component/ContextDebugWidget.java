@@ -92,6 +92,8 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
             try {
                 ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
                 if(contextMachine != null) {
+                    contextMachine.addContextInstanceStateChangeEventListener(this.schedulerVisualisation);
+                    contextMachine.addSchedulerJobStateChangeEventListener(this.schedulerVisualisation);
                     this.schedulerVisualisation.createSchedulerVisualisation(contextMachine.getContext());
                 }
                 else {
