@@ -10,19 +10,19 @@ import java.util.UUID;
 public class PortBuilder {
     protected String type = "draw2d.HybridPort";
     protected String id = UUID.randomUUID().toString();
-    protected int alpha;
-    protected boolean selectable;
-    protected boolean draggable;
-    protected int angle;
+    protected int alpha = 1;
+    protected boolean selectable = false;
+    protected boolean draggable = false;
+    protected int angle = 0;
     protected String cssClass = "draw2d_HybridPort";
     protected String composite;
 
-    private int width;
-    private int height;
-    private String bgColor;
-    private String color;
-    private int stroke;
-    private long maxFanOut;
+    private int width = 5;
+    private int height = 5;
+    private String bgColor = "rgba(79,104,112,1)";
+    private String color = "rgba(27,27,27,1)";
+    private int stroke = 1;
+    private long maxFanOut = 9007199254740991L;
     private String name;
     private String semanticGroup = "global";
     private String port = "draw2d.HybridPort";
@@ -98,9 +98,15 @@ public class PortBuilder {
         return this;
     }
 
+    public PortBuilder witLocator(String locator) {
+        this.locator = locator;
+        return this;
+    }
+
     public Port build() {
         Port port = new Port();
         port.setId(this.id);
+        port.setType(this.type);
         port.setAlpha(this.alpha);
         port.setSelectable(this.selectable);
         port.setDraggable(this.draggable);

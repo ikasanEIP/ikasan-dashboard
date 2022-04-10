@@ -20955,9 +20955,11 @@ _packages2.default.io.json.Reader = _packages2.default.io.Reader.extend(
 
     var result = new _packages2.default.util.ArrayList();
 
+    console.log("parsing json " + performance.now());
     if (typeof json === "string") {
       json = JSON.parse(json);
     }
+    console.log("finished parsing json " + performance.now());
 
     var node = null;
     json.forEach(function (element) {
@@ -21004,6 +21006,7 @@ _packages2.default.io.json.Reader = _packages2.default.io.Reader.extend(
       }
     });
 
+    console.log("restore group assignment " + performance.now());
     // restore group assignment
     //
     json.forEach(function (element) {
@@ -21019,15 +21022,18 @@ _packages2.default.io.json.Reader = _packages2.default.io.Reader.extend(
 
     // recalculate all crossings and repaint the connections with
     // possible crossing decoration
-    canvas.calculateConnectionIntersection();
-    canvas.getLines().each(function (i, line) {
-      line.svgPathString = null;
-      line.repaint();
-    });
+    // canvas.calculateConnectionIntersection();
+    // canvas.getLines().each(function (i, line) {
+    //   line.svgPathString = null;
+    //   line.repaint();
+    // });
+      console.log("linesToRepaintAfterDragDrop " + performance.now());
     canvas.linesToRepaintAfterDragDrop = canvas.getLines().clone();
 
+      console.log("canvas.showDecoration() " + performance.now());
     canvas.showDecoration();
 
+      console.log("return result " + performance.now());
     return result;
   },
 

@@ -27,7 +27,7 @@ public class RectangleBuilder {
     private String color = "rgba(27,27,27,1)";
     private int stroke = 2;
     private int radius = 5;
-    private String dasharray = "--";
+    private String dasharray = null;
 
     public RectangleBuilder withId(String id) {
         this.id = id;
@@ -114,6 +114,17 @@ public class RectangleBuilder {
     }
 
     public Rectangle build() {
+        PortBuilder bottomPortBuilder = new PortBuilder();
+        bottomPortBuilder.witLocator("draw2d.layout.locator.BottomLocator")
+        .withName("hybridSource");
+
+        PortBuilder topPortBuilder = new PortBuilder();
+        topPortBuilder.witLocator("draw2d.layout.locator.TopLocator")
+            .withName("hybridTarget");
+
+        this.addPort(bottomPortBuilder.build())
+            .addPort(topPortBuilder.build());
+
         Rectangle rectangle = new Rectangle();
         rectangle.setId(this.id);
         rectangle.setType(this.type);

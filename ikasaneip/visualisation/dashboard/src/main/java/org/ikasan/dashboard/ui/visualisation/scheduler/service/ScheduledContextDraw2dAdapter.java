@@ -6,12 +6,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mxgraph.layout.mxCompactTreeLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.util.mxCellRenderer;
-import com.mxgraph.util.mxUtils;
-import com.mxgraph.util.mxXmlUtils;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
+import org.ikasan.designer.builder.ConnectionBuilder;
 import org.ikasan.designer.builder.DiagramBuilder;
+import org.ikasan.designer.builder.LabelBuilder;
 import org.ikasan.designer.builder.RectangleBuilder;
-import org.ikasan.designer.model.Item;
-import org.ikasan.designer.model.PositionedItem;
+import org.ikasan.designer.model.Image;
+import org.ikasan.designer.model.Label;
+import org.ikasan.designer.model.Rectangle;
+import org.ikasan.designer.model.*;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.jgrapht.ext.JGraphXAdapter;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -21,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 import java.awt.*;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,18 +41,49 @@ public class ScheduledContextDraw2dAdapter {
         graph.addVertex(contextInstance.getName());
 
         RectangleBuilder rectangleBuilder = diagramBuilder.getRectangleBuilder();
-        rectangleBuilder.withId(contextInstance.getName());
+        rectangleBuilder.withId(contextInstance.getName())
+            .withBgColor(StatusColours.getInstanceStatusColour(contextInstance.getStatus()));
 
-        diagramBuilder.addItem(rectangleBuilder.build());
+//        ImageBuilder rectangleBuilder = diagramBuilder.getImageBuilder();
+//        rectangleBuilder.withId(contextInstance.getName());
+
+        Rectangle root = rectangleBuilder.build();
+//        Image root = rectangleBuilder.build();
+
+        diagramBuilder.addItem(root);
 
         contextInstance.getContexts().forEach(c -> {
             graph.addVertex(c.getName());
             graph.addEdge(contextInstance.getName(), c.getName());
 
             RectangleBuilder rb = diagramBuilder.getRectangleBuilder();
-            rb.withId(c.getName());
+            rb.withId(c.getName()).withBgColor(StatusColours.getInstanceStatusColour(c.getStatus()));
 
-            diagramBuilder.addItem(rb.build());
+//            ImageBuilder rb = diagramBuilder.getImageBuilder();
+//            rb.withId(c.getName());
+
+            Rectangle branch = rb.build();
+//            Image branch = rb.build();
+
+            diagramBuilder.addItem(branch);
+
+            ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
+            connectionBuilder.withSource(
+                diagramBuilder.getConnectionDetailsBuilder()
+                .withNode(root.getId())
+                .withPort("hybridSource")
+                .build()
+            );
+
+            connectionBuilder.withTarget(
+                diagramBuilder.getConnectionDetailsBuilder()
+                    .withNode(branch.getId())
+                    .withPort("hybridTarget")
+                    .withDecoration("draw2d.decoration.connection.ArrowDecorator")
+                    .build()
+            );
+
+            diagramBuilder.addItem(connectionBuilder.build());
 
             this.manageContext(c, graph, diagramBuilder);
         });
@@ -68,37 +101,49 @@ public class ScheduledContextDraw2dAdapter {
         Map<String, mxCell> cellMap = this.getCellMap(jGraphXAdapter);
 
         ArrayList<Object> items = diagramBuilder.build();
+        ArrayList<Label> labels = new ArrayList<>();
 
         items.forEach(item -> {
-            if(item instanceof PositionedItem) {
+            if(item instanceof Rectangle || item instanceof Image) {
                 mxCell cell = cellMap.get(((Item)item).getId());
 
-                ((PositionedItem)item).setX(cell.getGeometry().getX() + 600);
-                ((PositionedItem)item).setY(cell.getGeometry().getY() + 600);
+                if(cell != null) {
+                    ((PositionedItem) item).setX(cell.getGeometry().getX() + 600);
+                    ((PositionedItem) item).setY(cell.getGeometry().getY() + 600);
+
+                    labels.add(new LabelBuilder().withText(((PositionedItem)item).getId() + " whitespace test!")
+                        .withX(((PositionedItem)item).getX() - 15)
+                        .withY(((PositionedItem)item).getY() + 80)
+                        .build());
+                }
             }
         });
+
+        items.addAll(labels);
 
         Document image = mxCellRenderer.createSvgDocument(jGraphXAdapter, null, 4, Color.WHITE, null);
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
 
+        String result = null;
         try {
-            logger.info(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items));
+            result = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
+            logger.info(result);
         }
         catch (JsonProcessingException e) {
             e.printStackTrace();
         }
 
+//
+//        try {
+//            mxUtils.writeFile(mxXmlUtils.getXml(image), "/sandbox/mick/test.svg");
+//        }
+//        catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
-        try {
-            mxUtils.writeFile(mxXmlUtils.getXml(image), "/sandbox/mick/test.svg");
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return "";
+        return result;
     }
 
     private void manageContext(ContextInstance contextInstance, DefaultDirectedGraph<Object, DefaultEdge> graph,
@@ -116,8 +161,34 @@ public class ScheduledContextDraw2dAdapter {
                 graph.addEdge(contextInstance.getName(), c.getName());
 
                 RectangleBuilder rectangleBuilder = diagramBuilder.getRectangleBuilder();
-                rectangleBuilder.withId(c.getName());
-                diagramBuilder.addItem(rectangleBuilder.build());
+                rectangleBuilder.withId(c.getName())
+                .withBgColor(StatusColours.getInstanceStatusColour(c.getStatus()));
+
+//                ImageBuilder rectangleBuilder = diagramBuilder.getImageBuilder();
+//                rectangleBuilder.withId(c.getName());
+
+                Rectangle branch = rectangleBuilder.build();
+//                Image branch = rectangleBuilder.build();
+
+                diagramBuilder.addItem(branch);
+
+                ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
+                connectionBuilder.withSource(
+                    diagramBuilder.getConnectionDetailsBuilder()
+                        .withNode(contextInstance.getName())
+                        .withPort("hybridSource")
+                        .build()
+                );
+
+                connectionBuilder.withTarget(
+                    diagramBuilder.getConnectionDetailsBuilder()
+                        .withNode(branch.getId())
+                        .withPort("hybridTarget")
+                        .withDecoration("draw2d.decoration.connection.ArrowDecorator")
+                        .build()
+                );
+
+                diagramBuilder.addItem(connectionBuilder.build());
 
                 this.manageContext(c, graph, diagramBuilder);
             });
