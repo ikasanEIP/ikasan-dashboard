@@ -74,6 +74,8 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
     private ScheduledContextDraw2dAdapter adapter = new ScheduledContextDraw2dAdapter();
 
+    private UI ui;
+
     public SchedulerVisualisation(String dynamicImagePath) {
 
         this.dynamicImagePath = dynamicImagePath;
@@ -97,6 +99,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
     private void init() throws IOException{
         if(!initialised) {
+            this.ui = UI.getCurrent();
             if (this.designerCanvas != null) {
                 this.removeAll();
             }
@@ -154,8 +157,9 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     public void onContextInstanceStateChangeEvent(ContextInstanceStateChangeEvent contextInstanceStateChangeEvent) {
         // update the colour of the relevant context node on the visualisation
         if(contextInstanceStateChangeEvent.getContextInstance() != null) {
-            this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getId()
-                , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
+            ui.access(() ->
+                this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getId()
+                    , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus())));
 
         }
     }
