@@ -11,8 +11,10 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.visualisation.component.ModuleControlContextMenu;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ScheduledContextDraw2dAdapter;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.dashboard.ui.visualisation.util.BusinessStreamItemTypes;
 import org.ikasan.designer.DesignerCanvas;
@@ -21,10 +23,6 @@ import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
 import org.ikasan.designer.pallet.DesignerItemIdentifier;
-import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
-import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
-import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +30,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 public class SchedulerVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener
-    , CanvasItemDoubleClickEventListener, ContextInstanceStateChangeEventListener, SchedulerJobInstanceStateChangeEventListener {
+    , CanvasItemDoubleClickEventListener {
     private Logger logger = LoggerFactory.getLogger(SchedulerVisualisation.class);
+
+    private Registration contextInstanceStateChangeRegistration;
+
     private DesignerCanvas designerCanvas;
 
     private String dynamicImagePath;
@@ -43,8 +44,6 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     private boolean initialised = false;
 
     private ScheduledContextDraw2dAdapter adapter = new ScheduledContextDraw2dAdapter();
-
-    private UI ui;
 
     public SchedulerVisualisation(String dynamicImagePath) {
 
@@ -69,7 +68,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
     private void init() throws IOException{
         if(!initialised) {
-            this.ui = UI.getCurrent();
+
             if (this.designerCanvas != null) {
                 this.removeAll();
             }
@@ -124,24 +123,6 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     }
 
     @Override
-    public void onContextInstanceStateChangeEvent(ContextInstanceStateChangeEvent contextInstanceStateChangeEvent) {
-        // update the colour of the relevant context node on the visualisation
-        if(contextInstanceStateChangeEvent.getContextInstance() != null) {
-            logger.info("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colout[{}]",
-                contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
-                StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
-            ui.access(() ->
-                this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName()
-                    , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus())));
-        }
-    }
-
-    @Override
-    public void onSchedulerJobInstanceStateChangeEvent(SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent) {
-        // todo when we pull jobs in there'll be something interesting to do here!
-    }
-
-    @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         try {
             this.init();
@@ -155,19 +136,6 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     public void redraw() {
 
     }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        if(this.designerCanvas != null){
-            this.redraw();
-        }
-    }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent) {
-
-    }
-
 
     @Override
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
@@ -218,5 +186,30 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
         tooltip.add(new Paragraph(message));
 
         return tooltip;
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        if(this.designerCanvas != null){
+            this.redraw();
+        }
+
+        UI ui = attachEvent.getUI();
+        contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
+            if(contextInstanceStateChangeEvent.getContextInstance() != null) {
+                logger.info("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
+                    contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
+                    StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
+                ui.access(() ->
+                    this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName()
+                        , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus())));
+            }
+        });
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        this.contextInstanceStateChangeRegistration.remove();
+        this.contextInstanceStateChangeRegistration = null;
     }
 }
