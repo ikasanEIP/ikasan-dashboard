@@ -6,25 +6,12 @@ import com.vaadin.componentfactory.TooltipAlignment;
 import com.vaadin.componentfactory.TooltipPosition;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.shared.Registration;
-import org.ikasan.dashboard.broadcast.FlowState;
-import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
-import org.ikasan.dashboard.cache.CacheStateBroadcaster;
-import org.ikasan.dashboard.cache.FlowStateCache;
-import org.ikasan.dashboard.security.SecurityUtils;
-import org.ikasan.dashboard.ui.general.component.SearchResultsDialog;
-import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.visualisation.component.FlowVisualisationDialog;
 import org.ikasan.dashboard.ui.visualisation.component.ModuleControlContextMenu;
-import org.ikasan.dashboard.ui.visualisation.component.util.SearchFoundStatus;
-import org.ikasan.dashboard.ui.visualisation.model.business.stream.Flow;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ScheduledContextDraw2dAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.dashboard.ui.visualisation.util.BusinessStreamItemTypes;
@@ -33,33 +20,16 @@ import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
-import org.ikasan.designer.json.DesignerJsonHelper;
 import org.ikasan.designer.pallet.DesignerItemIdentifier;
-import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.solr.model.IkasanSolrDocument;
-import org.ikasan.solr.model.IkasanSolrDocumentSearchResults;
-import org.ikasan.spec.hospital.service.HospitalAuditService;
-import org.ikasan.spec.metadata.BusinessStreamMetaData;
-import org.ikasan.spec.metadata.ConfigurationMetaDataService;
-import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.module.client.*;
-import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.solr.SolrGeneralService;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class SchedulerVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener
     , CanvasItemDoubleClickEventListener, ContextInstanceStateChangeEventListener, SchedulerJobInstanceStateChangeEventListener {
@@ -106,7 +76,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
 
             this.designerCanvas = new DesignerCanvas("canvas-viewport", this.dynamicImagePath, true);
-            this.designerCanvas.setCanvasJson(adapter.adapt(contextInstance));
+            this.designerCanvas.setCanvasJson(adapter.adaptContext(contextInstance));
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
 
