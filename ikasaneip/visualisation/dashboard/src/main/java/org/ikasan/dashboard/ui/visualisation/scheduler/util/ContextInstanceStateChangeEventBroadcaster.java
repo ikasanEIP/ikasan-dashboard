@@ -1,7 +1,6 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.util;
 
 import com.vaadin.flow.shared.Registration;
-import org.ikasan.dashboard.broadcast.FlowState;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 
 import java.util.LinkedList;
