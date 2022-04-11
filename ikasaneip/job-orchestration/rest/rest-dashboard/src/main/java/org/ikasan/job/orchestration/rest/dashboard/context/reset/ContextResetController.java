@@ -57,7 +57,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class ContextResetController {
 
     private static Logger LOG = LoggerFactory.getLogger(ContextResetController.class);
-
     private final ContextResetService resetService;
 
     public ContextResetController(ContextResetService resetService) {
