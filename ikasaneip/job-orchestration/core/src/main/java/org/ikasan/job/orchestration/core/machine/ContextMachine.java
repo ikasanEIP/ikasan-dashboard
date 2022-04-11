@@ -230,8 +230,28 @@ public class ContextMachine {
      *
      * @param listener
      */
+    public void removeSchedulerJobStateChangeEventListener(SchedulerJobInstanceStateChangeEventListener listener) {
+        this.jobLogicMachine.removeSchedulerJobStateChangeEventListener(listener);
+    }
+
+    /**
+     *
+     * @param listener
+     */
     public void addContextInstanceStateChangeEventListener(ContextInstanceStateChangeEventListener listener) {
-        this.contextInstanceStateChangeEventListeners.add(listener);
+        if(!contextInstanceStateChangeEventListeners.contains(listener)) {
+            this.contextInstanceStateChangeEventListeners.add(listener);
+        }
+    }
+
+    /**
+     *
+     * @param listener
+     */
+    public void removeContextInstanceStateChangeEventListener(ContextInstanceStateChangeEventListener listener) {
+        if(contextInstanceStateChangeEventListeners.contains(listener)) {
+            this.contextInstanceStateChangeEventListeners.remove(listener);
+        }
     }
 
     /**

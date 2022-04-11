@@ -166,7 +166,15 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
     }
 
     public void addSchedulerJobStateChangeEventListener(SchedulerJobInstanceStateChangeEventListener listener) {
-        this.schedulerJobInstanceStateChangeEventListeners.add(listener);
+        if(!this.schedulerJobInstanceStateChangeEventListeners.contains(listener)) {
+            this.schedulerJobInstanceStateChangeEventListeners.add(listener);
+        }
+    }
+
+    public void removeSchedulerJobStateChangeEventListener(SchedulerJobInstanceStateChangeEventListener listener) {
+        if(this.schedulerJobInstanceStateChangeEventListeners.contains(listener)) {
+            this.schedulerJobInstanceStateChangeEventListeners.remove(listener);
+        }
     }
 
     private void issueSchedulerJobStateChangeEvent(SchedulerJobInstanceStateChangeEventImpl event) {
