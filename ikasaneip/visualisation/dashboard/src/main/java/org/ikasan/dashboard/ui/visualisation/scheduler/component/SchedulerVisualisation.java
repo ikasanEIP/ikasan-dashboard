@@ -14,6 +14,7 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.visualisation.component.ModuleControlContextMenu;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ScheduledContextDraw2dAdapter;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.dashboard.ui.visualisation.util.BusinessStreamItemTypes;
@@ -22,7 +23,6 @@ import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
-import org.ikasan.designer.pallet.DesignerItemIdentifier;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +72,6 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             if (this.designerCanvas != null) {
                 this.removeAll();
             }
-
 
             this.designerCanvas = new DesignerCanvas("canvas-viewport", this.dynamicImagePath, true);
             this.designerCanvas.setCanvasJson(adapter.adaptContext(contextInstance));
@@ -140,16 +139,20 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     @Override
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
 
-        // there'll be stuff to do here!
-        DesignerItemIdentifier identifier;
+        if(canvasItemDoubleClickEvent.getFigure().getIdentifier() != null) {
+            ContextInstance contextInstance = ContextHelper.getChildContextInstance(canvasItemDoubleClickEvent.getFigure().getIdentifier(),
+                this.contextInstance);
 
-        try {
-             identifier = DesignerItemIdentifier
-                .getIdentifier(canvasItemDoubleClickEvent.getFigure().getIdentifier());
-        }
-        catch (IllegalArgumentException e){
-            // we ignore any events that we cannot parse the identifier for.
-            return;
+            if(contextInstance.getScheduledJobs() != null) {
+                try {
+                    JobVisualisationDialog jobVisualisationDialog = new JobVisualisationDialog();
+                    jobVisualisationDialog.createSchedulerVisualisation(contextInstance);
+                    jobVisualisationDialog.open();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

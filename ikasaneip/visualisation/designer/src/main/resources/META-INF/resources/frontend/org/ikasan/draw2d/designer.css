@@ -26,6 +26,21 @@ div#canvas-viewport {
     background-color: #FFFFFF;
 }
 
+div#job-viewport {
+    border:1px solid #E0E0E0;
+    padding: 0px;
+    margin: 0px;
+    position: relative;
+    top: 0px;
+    right: 0px;
+    left: 0px;
+    bottom: 0px;
+    overflow: scroll;
+    height: 100%;
+    width: 100%;
+    background-color: #FFFFFF;
+}
+
 div#canvas-palette {
     padding: 0px;
     margin: 0px;

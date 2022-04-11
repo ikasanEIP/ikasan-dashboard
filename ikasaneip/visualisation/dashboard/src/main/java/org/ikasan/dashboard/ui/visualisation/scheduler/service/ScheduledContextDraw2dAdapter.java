@@ -6,29 +6,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.layout.mxCompactTreeLayout;
 import com.mxgraph.model.mxCell;
-import com.mxgraph.util.mxCellRenderer;
-import com.mxgraph.util.mxUtils;
-import com.mxgraph.util.mxXmlUtils;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.designer.builder.ConnectionBuilder;
 import org.ikasan.designer.builder.DiagramBuilder;
 import org.ikasan.designer.builder.LabelBuilder;
 import org.ikasan.designer.builder.RectangleBuilder;
 import org.ikasan.designer.model.*;
-import org.ikasan.designer.model.Image;
-import org.ikasan.designer.model.Label;
-import org.ikasan.designer.model.Rectangle;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.jgrapht.ext.JGraphXAdapter;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 
 import javax.swing.*;
-import java.awt.*;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,15 +35,39 @@ public class ScheduledContextDraw2dAdapter {
         DiagramBuilder diagramBuilder = new DiagramBuilder();
 
         if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
-            contextInstance.getScheduledJobs().forEach(job -> graph.addVertex(job.getIdentifier()));
+            contextInstance.getScheduledJobs().forEach(job -> {
+                graph.addVertex(job.getIdentifier());
 
-            contextInstance.getJobDependencies().forEach(jobDependency -> {
-                if(jobDependency.getLogicalGrouping() != null && jobDependency.getLogicalGrouping().getAnd() != null) {
-                    jobDependency.getLogicalGrouping().getAnd().forEach(and
-                        -> graph.addEdge(and.getIdentifier(), jobDependency.getJobIdentifier()));
-                }
+                diagramBuilder.addItem(diagramBuilder.getRectangleBuilder().withId(job.getIdentifier())
+                    .withBgColor(StatusColours.getInstanceStatusColour(job.getStatus())).build());
             });
 
+            contextInstance.getJobDependencies().forEach(jobDependency -> {
+                if (jobDependency.getLogicalGrouping() != null && jobDependency.getLogicalGrouping().getAnd() != null) {
+                    jobDependency.getLogicalGrouping().getAnd().forEach(and
+                        -> {
+                        graph.addEdge(and.getIdentifier(), jobDependency.getJobIdentifier());
+
+                        ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
+                        connectionBuilder.withSource(
+                            diagramBuilder.getConnectionDetailsBuilder()
+                                .withNode(and.getIdentifier())
+                                .withPort("hybridSource")
+                                .build()
+                        );
+
+                        connectionBuilder.withTarget(
+                            diagramBuilder.getConnectionDetailsBuilder()
+                                .withNode(jobDependency.getJobIdentifier())
+                                .withPort("hybridTarget")
+                                .withDecoration("draw2d.decoration.connection.ArrowDecorator")
+                                .build()
+                        );
+
+                        diagramBuilder.addItem(connectionBuilder.build());
+                    });
+                }
+            });
 
 
             JGraphXAdapter<Object, DefaultEdge> jGraphXAdapter
@@ -68,54 +83,70 @@ public class ScheduledContextDraw2dAdapter {
 
             compactTreeLayout.execute(jGraphXAdapter.getDefaultParent());
 
-//            Map<String, mxCell> cellMap = this.getCellMap(jGraphXAdapter);
-//
-//            ArrayList<Object> items = diagramBuilder.build();
-//            ArrayList<Label> labels = new ArrayList<>();
-//
-//            items.forEach(item -> {
-//                if(item instanceof Rectangle || item instanceof Image) {
-//                    mxCell cell = cellMap.get(((Item)item).getId());
-//
-//                    if(cell != null) {
-//                        ((PositionedItem) item).setX(cell.getGeometry().getX() + 600);
-//                        ((PositionedItem) item).setY(cell.getGeometry().getY() + 600);
-//
-//                        labels.add(new LabelBuilder().withText(((PositionedItem)item).getId())
-//                            .withX(((PositionedItem)item).getX() - 15)
-//                            .withY(((PositionedItem)item).getY() + 80)
-//                            .build());
-//                    }
-//                }
-//            });
-    //
-    //        items.addAll(labels);
-    //
-            Document image = mxCellRenderer.createSvgDocument(jGraphXAdapter, null, 4, Color.WHITE, null);
-    //        ObjectMapper mapper = new ObjectMapper();
-    //        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    //
-    //
-    //        String result = null;
-    //        try {
-    //            result = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
-    //            logger.info(result);
-    //        }
-    //        catch (JsonProcessingException e) {
-    //            e.printStackTrace();
-    //        }
-    //
-    ////
+            Map<String, mxCell> cellMap = this.getCellMap(jGraphXAdapter);
+
+            ArrayList<Object> items = diagramBuilder.build();
+            ArrayList<Label> labels = new ArrayList<>();
+
+            items.forEach(item -> {
+                if (item instanceof Rectangle || item instanceof Image) {
+                    mxCell cell = cellMap.get(((Item) item).getId());
+
+                    if (cell != null) {
+                        ((PositionedItem) item).setX(cell.getGeometry().getX() + 600);
+                        ((PositionedItem) item).setY(cell.getGeometry().getY() + 600);
+
+                        labels.add(new LabelBuilder().withText(((PositionedItem) item).getId())
+                            .withX(((PositionedItem) item).getX() - 15)
+                            .withY(((PositionedItem) item).getY() + 80)
+                            .build());
+                    }
+                }
+            });
+
+            items.addAll(labels);
+            //
+//            Document image = mxCellRenderer.createSvgDocument(jGraphXAdapter, null, 4, Color.WHITE, null);
+//    //        ObjectMapper mapper = new ObjectMapper();
+//    //        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+//    //
+//    //
+//    //        String result = null;
+//    //        try {
+//    //            result = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
+//    //            logger.info(result);
+//    //        }
+//    //        catch (JsonProcessingException e) {
+//    //            e.printStackTrace();
+//    //        }
+//    //
+//    ////
+//            try {
+//                mxUtils.writeFile(mxXmlUtils.getXml(image), "/sandbox/mick/" + contextInstance.getName() + ".svg");
+//            }
+//            catch (IOException e) {
+//                e.printStackTrace();
+//            }
+
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+
+            String result = null;
+            // todo clean this up. still a hack.
             try {
-                mxUtils.writeFile(mxXmlUtils.getXml(image), "/sandbox/mick/" + contextInstance.getName() + ".svg");
+                result = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
+                logger.info(result);
             }
-            catch (IOException e) {
+            catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
+
+            logger.info(result);
+            return result;
         }
-//
-//
-//
+
         return null;
     }
 
