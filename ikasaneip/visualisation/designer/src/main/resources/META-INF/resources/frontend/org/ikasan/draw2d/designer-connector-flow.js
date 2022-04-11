@@ -410,6 +410,7 @@
             _this.getFigures().each((i, figure)=>{
                 if(figure.id === figureIdentifier) {
                     figure.setBackgroundColor(color);
+                    figure.repaint();
                 }
             });
         }
