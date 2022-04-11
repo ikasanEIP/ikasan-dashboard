@@ -1,4 +1,4 @@
-package org.ikasan.orchestration.service.status;
+package org.ikasan.orchestration.service.context.status;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -8,6 +8,8 @@ import java.io.IOException;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.orchestration.service.JobLockCacheServiceTestImpl;
+import org.ikasan.orchestration.service.status.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.junit.Before;

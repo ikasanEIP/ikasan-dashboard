@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=org.ikasan.orchestration.service.status.ContextStatusServiceAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=org.ikasan.orchestration.service.context.status.ContextServiceAutoConfiguration
