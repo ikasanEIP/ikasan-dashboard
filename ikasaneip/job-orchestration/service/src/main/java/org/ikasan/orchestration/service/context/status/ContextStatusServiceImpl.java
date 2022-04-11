@@ -39,7 +39,7 @@
  * ====================================================================
  */
 
-package org.ikasan.orchestration.service.status;
+package org.ikasan.orchestration.service.context.status;
 
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;

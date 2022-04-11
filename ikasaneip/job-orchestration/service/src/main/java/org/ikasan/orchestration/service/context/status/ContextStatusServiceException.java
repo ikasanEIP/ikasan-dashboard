@@ -1,4 +1,4 @@
-package org.ikasan.orchestration.service.status;
+package org.ikasan.orchestration.service.context.status;
 
 public class ContextStatusServiceException extends RuntimeException {
 
