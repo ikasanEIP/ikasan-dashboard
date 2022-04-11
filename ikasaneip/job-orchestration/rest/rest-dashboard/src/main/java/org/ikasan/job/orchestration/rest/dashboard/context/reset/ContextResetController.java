@@ -38,11 +38,10 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * ====================================================================
  */
-
-package org.ikasan.job.orchestration.rest.dashboard.status;
+package org.ikasan.job.orchestration.rest.dashboard.context.reset;
 
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.ErrorDto;
-import org.ikasan.spec.scheduled.context.service.ContextStatusService;
+import org.ikasan.spec.scheduled.reset.ContextResetService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -53,51 +52,35 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping("/rest/context/status")
+@RequestMapping("/rest/context/reset")
 @RestController
-public class ContextStatusServiceController {
+public class ContextResetController {
 
-    private static Logger LOG = LoggerFactory.getLogger(ContextStatusServiceController.class);
+    private static Logger LOG = LoggerFactory.getLogger(ContextResetController.class);
 
-    private ContextStatusService contextStatusService;
+    private final ContextResetService resetService;
 
-    public ContextStatusServiceController(ContextStatusService contextStatusService) {
-
-        if (contextStatusService == null) {
+    public ContextResetController(ContextResetService resetService) {
+        if (resetService == null) {
             throw new IllegalArgumentException("contextStatusService cannot be null!");
         }
-
-        this.contextStatusService = contextStatusService;
+        this.resetService = resetService;
     }
 
-
-    @RequestMapping(method = RequestMethod.GET, path = {"/{instanceName}/{contextName}", "/{instanceName}/{contextName}/{jobIdentifier}"})
+    @RequestMapping(method = RequestMethod.PUT, path = {"/{contextName}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity getContextStatusForJob(@PathVariable String instanceName,
-                                                 @PathVariable String contextName,
-                                                 @PathVariable(required = false) String jobIdentifier) {
-        String contextNameStatus;
-
+    public ResponseEntity getContextStatusForJob(@PathVariable String contextName) {
         try {
-            if (jobIdentifier == null) {
-                contextNameStatus = contextStatusService.getContextStatus(instanceName, contextName);
-            } else {
-                contextNameStatus = contextStatusService.getContextStatusForJob(instanceName, contextName, jobIdentifier);
-            }
+            resetService.resetContext(contextName);
         } catch (Exception e) {
             LOG.error(e.getMessage());
-            String errorMessage = String.format("An error has occurred attempting to get status for instance %s, context %s, jobIdentifier %s!",
-                instanceName, contextName, jobIdentifier);
+            String errorMessage = String.format("An error has occurred attempting to reset context for %s!", contextName);
             return new ResponseEntity(
                 new ErrorDto(errorMessage + " Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
         }
 
-        String infoMessage = String.format("Got status %s for instance %s and context %s and jobIdentifier %s",
-            contextNameStatus, instanceName, contextName, jobIdentifier);
-        LOG.info(infoMessage);
-
-        return new ResponseEntity(contextNameStatus, HttpStatus.OK);
+        LOG.info(String.format("Successfully reset context for %s", contextName));
+        return new ResponseEntity(HttpStatus.OK);
     }
-
 }

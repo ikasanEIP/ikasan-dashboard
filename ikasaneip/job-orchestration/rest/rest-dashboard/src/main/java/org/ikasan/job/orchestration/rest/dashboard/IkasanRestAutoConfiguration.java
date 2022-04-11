@@ -42,7 +42,8 @@ package org.ikasan.job.orchestration.rest.dashboard;
 
 import javax.annotation.Resource;
 
-import org.ikasan.job.orchestration.rest.dashboard.status.ContextStatusServiceController;
+import org.ikasan.job.orchestration.rest.dashboard.context.reset.ContextResetController;
+import org.ikasan.job.orchestration.rest.dashboard.context.status.ContextStatusServiceController;
 import org.ikasan.rest.dashboard.JwtAuthenticationController;
 import org.ikasan.rest.dashboard.JwtAuthenticationEntryPoint;
 import org.ikasan.rest.dashboard.JwtRequestFilter;
@@ -51,6 +52,7 @@ import org.ikasan.security.service.UserService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.scheduled.reset.ContextResetService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -72,6 +74,9 @@ public class IkasanRestAutoConfiguration {
     @Resource
     private ContextStatusService contextStatusService;
 
+    @Resource
+    private ContextResetService contextResetService;
+
     @Bean
     public ScheduledProcessEventController scheduledProcessEventController() {
         return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert, this.inboundQueue);
@@ -85,6 +90,11 @@ public class IkasanRestAutoConfiguration {
     @Bean
     public ContextStatusServiceController contextStatusServiceController() {
         return new ContextStatusServiceController(this.contextStatusService);
+    }
+
+    @Bean
+    public ContextResetController contextResetController() {
+        return new ContextResetController(this.contextResetService);
     }
 
     @Bean

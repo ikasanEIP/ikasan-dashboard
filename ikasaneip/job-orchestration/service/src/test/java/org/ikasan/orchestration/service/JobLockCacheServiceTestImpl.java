@@ -1,4 +1,4 @@
-package org.ikasan.orchestration.service.status;
+package org.ikasan.orchestration.service;
 
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheAuditRecord;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;

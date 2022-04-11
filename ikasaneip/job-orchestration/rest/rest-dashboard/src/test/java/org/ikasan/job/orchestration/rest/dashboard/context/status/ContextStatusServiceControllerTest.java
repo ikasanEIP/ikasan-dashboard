@@ -1,4 +1,4 @@
-package org.ikasan.job.orchestration.rest.dashboard.status;
+package org.ikasan.job.orchestration.rest.dashboard.context.status;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
