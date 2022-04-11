@@ -18,6 +18,7 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -91,9 +92,8 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
         this.contextInstances.addValueChangeListener(listener -> {
             try {
                 ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
+
                 if(contextMachine != null) {
-                    contextMachine.addContextInstanceStateChangeEventListener(this.schedulerVisualisation);
-                    contextMachine.addSchedulerJobStateChangeEventListener(this.schedulerVisualisation);
                     this.schedulerVisualisation.createSchedulerVisualisation(contextMachine.getContext());
                 }
                 else {
