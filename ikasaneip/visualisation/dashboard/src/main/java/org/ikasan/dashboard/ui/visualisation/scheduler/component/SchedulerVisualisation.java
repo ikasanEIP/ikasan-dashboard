@@ -127,10 +127,12 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     public void onContextInstanceStateChangeEvent(ContextInstanceStateChangeEvent contextInstanceStateChangeEvent) {
         // update the colour of the relevant context node on the visualisation
         if(contextInstanceStateChangeEvent.getContextInstance() != null) {
+            logger.info("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colout[{}]",
+                contextInstanceStateChangeEvent.getContextInstance().getId(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
+                StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
             ui.access(() ->
                 this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getId()
                     , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus())));
-
         }
     }
 
