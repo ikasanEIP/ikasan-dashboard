@@ -149,6 +149,7 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
             ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
             try {
                 contextMachine.resetContextInstance();
+                this.schedulerVisualisation.createSchedulerVisualisation(contextMachine.getContext());
                 if(tabs.getSelectedTab().equals(this.fullContextInstance)) {
                     if(this.contextInstances.getValue() != null && !this.contextInstances.getValue().isEmpty()){
                         this.aceEditor.setValue(this.objectMapper.writerWithDefaultPrettyPrinter()
@@ -177,6 +178,9 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
                 }
             }
             catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+            catch (IOException e) {
                 e.printStackTrace();
             }
         });
