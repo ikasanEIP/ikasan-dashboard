@@ -153,6 +153,17 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
                     e.printStackTrace();
                 }
             }
+            else {
+                try {
+                    ContextInstanceVisualisationDialog contextInstanceVisualisationDialog
+                        = new ContextInstanceVisualisationDialog();
+                    contextInstanceVisualisationDialog.createSchedulerVisualisation(contextInstance);
+                    contextInstanceVisualisationDialog.open();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
