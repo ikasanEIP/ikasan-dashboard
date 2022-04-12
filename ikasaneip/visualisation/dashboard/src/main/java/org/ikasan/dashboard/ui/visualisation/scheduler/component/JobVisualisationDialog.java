@@ -160,10 +160,10 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
             if(contextInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
                 logger.info("Updating scheduler visualisation job status. Scheduler Job Instance[{}], Status[{}], Status Colour[{}]",
-                    contextInstanceStateChangeEvent.getSchedulerJobInstance().getJobName(), contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
+                    contextInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
                     StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
                 ui.access(() ->
-                    this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
+                    this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier()
                         , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus())));
             }
         });
