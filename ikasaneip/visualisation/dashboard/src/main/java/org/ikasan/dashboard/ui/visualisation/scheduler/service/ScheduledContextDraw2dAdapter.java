@@ -38,8 +38,11 @@ public class ScheduledContextDraw2dAdapter {
             contextInstance.getScheduledJobs().forEach(job -> {
                 graph.addVertex(job.getIdentifier());
 
-                diagramBuilder.addItem(diagramBuilder.getRectangleBuilder().withId(job.getIdentifier())
-                    .withBgColor(StatusColours.getInstanceStatusColour(job.getStatus())).build());
+                diagramBuilder.addItem(diagramBuilder.getRectangleBuilder()
+                    .withId(job.getIdentifier())
+                    .withBgColor(StatusColours.getInstanceStatusColour(job.getStatus()))
+                    .withLeftAndRightPorts()
+                    .build());
             });
 
             contextInstance.getJobDependencies().forEach(jobDependency -> {
@@ -52,14 +55,14 @@ public class ScheduledContextDraw2dAdapter {
                         connectionBuilder.withSource(
                             diagramBuilder.getConnectionDetailsBuilder()
                                 .withNode(and.getIdentifier())
-                                .withPort("hybridSource")
+                                .withPort("rightHybridSource")
                                 .build()
                         );
 
                         connectionBuilder.withTarget(
                             diagramBuilder.getConnectionDetailsBuilder()
                                 .withNode(jobDependency.getJobIdentifier())
-                                .withPort("hybridTarget")
+                                .withPort("leftHybridTarget")
                                 .withDecoration("draw2d.decoration.connection.ArrowDecorator")
                                 .build()
                         );
@@ -75,11 +78,9 @@ public class ScheduledContextDraw2dAdapter {
 
             mxHierarchicalLayout compactTreeLayout = new mxHierarchicalLayout(jGraphXAdapter);
             compactTreeLayout.setOrientation(SwingConstants.WEST);
-            compactTreeLayout.setIntraCellSpacing(40);
-            compactTreeLayout.setInterHierarchySpacing(200);
-            compactTreeLayout.setInterRankCellSpacing(200);
-//            compactTreeLayout.setLevelDistance(200);
-//            compactTreeLayout.setEdgeRouting(true);true
+            compactTreeLayout.setIntraCellSpacing(120);
+            compactTreeLayout.setInterHierarchySpacing(300);
+            compactTreeLayout.setInterRankCellSpacing(300);
 
             compactTreeLayout.execute(jGraphXAdapter.getDefaultParent());
 
@@ -105,29 +106,6 @@ public class ScheduledContextDraw2dAdapter {
             });
 
             items.addAll(labels);
-            //
-//            Document image = mxCellRenderer.createSvgDocument(jGraphXAdapter, null, 4, Color.WHITE, null);
-//    //        ObjectMapper mapper = new ObjectMapper();
-//    //        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-//    //
-//    //
-//    //        String result = null;
-//    //        try {
-//    //            result = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
-//    //            logger.info(result);
-//    //        }
-//    //        catch (JsonProcessingException e) {
-//    //            e.printStackTrace();
-//    //        }
-//    //
-//    ////
-//            try {
-//                mxUtils.writeFile(mxXmlUtils.getXml(image), "/sandbox/mick/" + contextInstance.getName() + ".svg");
-//            }
-//            catch (IOException e) {
-//                e.printStackTrace();
-//            }
-
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -160,7 +138,8 @@ public class ScheduledContextDraw2dAdapter {
 
         RectangleBuilder rectangleBuilder = diagramBuilder.getRectangleBuilder();
         rectangleBuilder.withId(contextInstance.getName())
-            .withBgColor(StatusColours.getInstanceStatusColour(contextInstance.getStatus()));
+            .withBgColor(StatusColours.getInstanceStatusColour(contextInstance.getStatus()))
+            .withTopAndBottomPorts();
 
         Rectangle root = rectangleBuilder.build();
         diagramBuilder.addItem(root);
@@ -170,7 +149,9 @@ public class ScheduledContextDraw2dAdapter {
             graph.addEdge(contextInstance.getName(), c.getName());
 
             RectangleBuilder rb = diagramBuilder.getRectangleBuilder();
-            rb.withId(c.getName()).withBgColor(StatusColours.getInstanceStatusColour(c.getStatus()));
+            rb.withId(c.getName())
+                .withBgColor(StatusColours.getInstanceStatusColour(c.getStatus()))
+                .withTopAndBottomPorts();
 
             Rectangle branch = rb.build();
 
@@ -180,14 +161,14 @@ public class ScheduledContextDraw2dAdapter {
             connectionBuilder.withSource(
                 diagramBuilder.getConnectionDetailsBuilder()
                 .withNode(root.getId())
-                .withPort("hybridSource")
+                .withPort("bottomHybridSource")
                 .build()
             );
 
             connectionBuilder.withTarget(
                 diagramBuilder.getConnectionDetailsBuilder()
                     .withNode(branch.getId())
-                    .withPort("hybridTarget")
+                    .withPort("topHybridTarget")
                     .withDecoration("draw2d.decoration.connection.ArrowDecorator")
                     .build()
             );
@@ -256,8 +237,10 @@ public class ScheduledContextDraw2dAdapter {
                 graph.addEdge(contextInstance.getName(), c.getName());
 
                 RectangleBuilder rectangleBuilder = diagramBuilder.getRectangleBuilder();
-                rectangleBuilder.withId(c.getName())
-                .withBgColor(StatusColours.getInstanceStatusColour(c.getStatus()));
+                rectangleBuilder
+                    .withId(c.getName())
+                    .withBgColor(StatusColours.getInstanceStatusColour(c.getStatus()))
+                    .withTopAndBottomPorts();
 
                 Rectangle branch = rectangleBuilder.build();
 
@@ -267,14 +250,14 @@ public class ScheduledContextDraw2dAdapter {
                 connectionBuilder.withSource(
                     diagramBuilder.getConnectionDetailsBuilder()
                         .withNode(contextInstance.getName())
-                        .withPort("hybridSource")
+                        .withPort("bottomHybridSource")
                         .build()
                 );
 
                 connectionBuilder.withTarget(
                     diagramBuilder.getConnectionDetailsBuilder()
                         .withNode(branch.getId())
-                        .withPort("hybridTarget")
+                        .withPort("topHybridTarget")
                         .withDecoration("draw2d.decoration.connection.ArrowDecorator")
                         .build()
                 );

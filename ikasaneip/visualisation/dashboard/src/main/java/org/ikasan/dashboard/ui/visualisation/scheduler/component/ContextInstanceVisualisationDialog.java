@@ -12,8 +12,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ScheduledContextDraw2dAdapter;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
@@ -26,12 +26,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class JobVisualisationDialog extends AbstractCloseableResizableDialog implements CanvasItemRightClickEventListener
+public class ContextInstanceVisualisationDialog extends AbstractCloseableResizableDialog implements CanvasItemRightClickEventListener
     , CanvasItemDoubleClickEventListener {
 
-    private Logger logger = LoggerFactory.getLogger(JobVisualisationDialog.class);
+    private Logger logger = LoggerFactory.getLogger(ContextInstanceVisualisationDialog.class);
 
-    private Registration schedulerJobStateChangeRegistration;
+    private Registration contextInstanceStateChangeRegistration;
 
     private DesignerCanvas designerCanvas;
     private VerticalLayout layout;
@@ -44,7 +44,7 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
 
     private String dynamicImagePath = ".";
 
-    public JobVisualisationDialog() {
+    public ContextInstanceVisualisationDialog() {
         this.setHeight("90%");
         this.setWidth("90%");
 
@@ -69,8 +69,8 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
                 this.removeAll();
             }
 
-            this.designerCanvas = new DesignerCanvas("job-viewport", this.dynamicImagePath, true);
-            this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextInstance));
+            this.designerCanvas = new DesignerCanvas("context-viewport", this.dynamicImagePath, true);
+            this.designerCanvas.setCanvasJson(adapter.adaptContext(contextInstance));
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
 
@@ -145,8 +145,30 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
     @Override
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
         logger.info(canvasItemDoubleClickEvent.toString());
-        SchedulerJobLogFileViewerDialog dialog = new SchedulerJobLogFileViewerDialog();
-        dialog.open();
+        ContextInstance contextInstance = ContextHelper.getChildContextInstance(canvasItemDoubleClickEvent.getFigure().getIdentifier(),
+            this.contextInstance);
+
+        if(contextInstance.getScheduledJobs() != null) {
+            try {
+                JobVisualisationDialog jobVisualisationDialog = new JobVisualisationDialog();
+                jobVisualisationDialog.createSchedulerVisualisation(contextInstance);
+                jobVisualisationDialog.open();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            try {
+                ContextInstanceVisualisationDialog contextInstanceVisualisationDialog
+                    = new ContextInstanceVisualisationDialog();
+                contextInstanceVisualisationDialog.createSchedulerVisualisation(contextInstance);
+                contextInstanceVisualisationDialog.open();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -157,21 +179,21 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
-        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-            if(contextInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
-                logger.info("Updating scheduler visualisation job status. Scheduler Job Instance[{}], Status[{}], Status Colour[{}]",
-                    contextInstanceStateChangeEvent.getSchedulerJobInstance().getJobName(), contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
-                    StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
+        contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
+            if(contextInstanceStateChangeEvent.getContextInstance() != null) {
+                logger.info("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
+                    contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
+                    StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
                 ui.access(() ->
-                    this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
-                        , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus())));
+                    this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName()
+                        , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus())));
             }
         });
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        this.schedulerJobStateChangeRegistration.remove();
-        this.schedulerJobStateChangeRegistration = null;
+        this.contextInstanceStateChangeRegistration.remove();
+        this.contextInstanceStateChangeRegistration = null;
     }
 }

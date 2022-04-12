@@ -16,6 +16,7 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.validation.ContextTemplateValidator;
 import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateException;
 import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
@@ -157,6 +158,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
                     schedulerService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event);
                 });
                 contextMachine.addContextInstanceStateChangeEventListener(event -> ContextInstanceStateChangeEventBroadcaster.broadcast(event));
+                contextMachine.addSchedulerJobStateChangeEventListener(event -> SchedulerJobStateChangeEventBroadcaster.broadcast(event));
 
                 DryRunParameters dryRunParameters = new DryRunParametersImpl();
                 contextMachine.setDryRunParameters(dryRunParameters);

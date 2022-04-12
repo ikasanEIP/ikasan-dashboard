@@ -113,17 +113,39 @@ public class RectangleBuilder {
         return this;
     }
 
-    public Rectangle build() {
+    public RectangleBuilder withTopAndBottomPorts() {
         PortBuilder bottomPortBuilder = new PortBuilder();
         bottomPortBuilder.witLocator("draw2d.layout.locator.BottomLocator")
-        .withName("hybridSource");
+            .withName("bottomHybridSource");
 
         PortBuilder topPortBuilder = new PortBuilder();
         topPortBuilder.witLocator("draw2d.layout.locator.TopLocator")
-            .withName("hybridTarget");
+            .withName("topHybridTarget");
 
         this.addPort(bottomPortBuilder.build())
             .addPort(topPortBuilder.build());
+
+        return this;
+    }
+
+    public RectangleBuilder withLeftAndRightPorts() {
+        PortBuilder bottomPortBuilder = new PortBuilder();
+        bottomPortBuilder.witLocator("draw2d.layout.locator.RightLocator")
+            .withName("rightHybridSource");
+
+        PortBuilder topPortBuilder = new PortBuilder();
+        topPortBuilder.witLocator("draw2d.layout.locator.LeftLocator")
+            .withName("leftHybridTarget");
+
+        this.addPort(bottomPortBuilder.build())
+            .addPort(topPortBuilder.build());
+
+        return this;
+    }
+
+
+
+    public Rectangle build() {
 
         Rectangle rectangle = new Rectangle();
         rectangle.setId(this.id);
