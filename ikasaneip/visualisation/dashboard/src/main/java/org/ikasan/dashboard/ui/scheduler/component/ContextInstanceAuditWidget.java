@@ -15,7 +15,6 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import org.ikasan.dashboard.ui.scheduler.component.filter.ContextInstanceSearchFilter;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAudit;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
@@ -81,6 +80,16 @@ public class ContextInstanceAuditWidget extends Div {
         contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
+            Text text = new Text(scheduledContextInstanceAuditRecord.getContextInstanceId());
+
+            horizontalLayout.add(text);
+            return horizontalLayout;
+        })).setHeader("Context Instance Id");
+
+
+        contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
+            HorizontalLayout horizontalLayout = new HorizontalLayout();
+
             ScheduledContextInstanceAudit scheduledContextInstanceAudit = scheduledContextInstanceAuditRecord.getScheduledContextInstanceAudit();
             Text text = new Text(scheduledContextInstanceAudit.getProcessEvent().getJobName());
             Button button = new Button("Open");
@@ -126,6 +135,7 @@ public class ContextInstanceAuditWidget extends Div {
                 dialog.open();
             });
 
+            horizontalLayout.add(button);
             return horizontalLayout;
 
 
@@ -140,6 +150,7 @@ public class ContextInstanceAuditWidget extends Div {
                 dialog.open();
             });
 
+            horizontalLayout.add(button);
             return horizontalLayout;
         })).setHeader("Context Instance After Event Raised");
 
