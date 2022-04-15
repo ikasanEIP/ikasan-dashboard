@@ -8,6 +8,7 @@ import org.ikasan.scheduled.event.model.SolrContextualisedScheduledProcessEventI
 import org.ikasan.scheduled.event.model.SolrSchedulerJobInitiationEventImpl;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceImpl;
 import org.ikasan.scheduled.instance.model.SolrContextParameterInstanceImpl;
+import org.ikasan.scheduled.instance.model.SolrJobLockInstanceImpl;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceImpl;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
@@ -54,6 +55,7 @@ public class ScheduledObjectMapperFactory {
             .addAbstractTypeMapping(SchedulerJobInstance.class, SolrSchedulerJobInstanceImpl.class)
             .addAbstractTypeMapping(ContextParameterInstance.class, SolrContextParameterInstanceImpl.class)
             .addAbstractTypeMapping(JobLock.class, SolrJobLockImpl.class)
+            .addAbstractTypeMapping(JobLockInstance.class, SolrJobLockInstanceImpl.class)
             .addAbstractTypeMapping(ScheduledProcessEvent.class, SolrContextualisedScheduledProcessEventImpl.class)
             .addAbstractTypeMapping(ContextualisedScheduledProcessEvent.class, SolrContextualisedScheduledProcessEventImpl.class)
             .addAbstractTypeMapping(SchedulerJobInitiationEvent.class, SolrSchedulerJobInitiationEventImpl.class)
