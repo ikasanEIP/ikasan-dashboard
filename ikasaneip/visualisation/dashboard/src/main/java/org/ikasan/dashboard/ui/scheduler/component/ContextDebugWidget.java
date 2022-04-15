@@ -43,11 +43,13 @@ public class ContextDebugWidget extends Div {
 
     protected AceEditor aceEditor;
     protected SchedulerVisualisation schedulerVisualisation;
+    private ContextInstanceAuditWidget contextInstanceAuditWidget;
 
     private Tab fullContextInstance;
     private Tab contextStatus;
     private Tab contextEvents;
     private Tab visualisation;
+    private Tab contextAudit;
     private Tabs tabs;
 
     private Select<String> contextInstances;
@@ -66,7 +68,8 @@ public class ContextDebugWidget extends Div {
     public ContextDebugWidget(ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
                               ScheduledContextService scheduledContextService, SystemEventLogger systemEventLogger,
                               InternalEventDrivenJobService internalEventDrivenJobService, String queueDir,
-                              ModuleMetaDataService moduleMetaDataService, JobLockCacheService jobLockCacheService) {
+                              ModuleMetaDataService moduleMetaDataService, JobLockCacheService jobLockCacheService,
+                              ScheduledContextInstanceService contextInstanceService) {
         Div div = new Div();
         div.addClassNames("card-counter");
         div.setHeight("100%");
@@ -80,6 +83,9 @@ public class ContextDebugWidget extends Div {
         this.schedulerVisualisation.setWidthFull();
         this.schedulerVisualisation.setHeight("1000px");
         this.schedulerVisualisation.setVisible(false);
+
+        this.contextInstanceAuditWidget = new ContextInstanceAuditWidget(contextInstanceService);
+        this.contextInstanceAuditWidget.setVisible(false);
 
         this.initialiseEditor();
 
@@ -193,7 +199,8 @@ public class ContextDebugWidget extends Div {
         this.contextStatus = new Tab("Context Instance Status");
         this.contextEvents = new Tab("Context Instance Events");
         this.visualisation = new Tab("Context Instance Visualisation");
-        this.tabs = new Tabs(fullContextInstance, contextStatus, contextEvents, visualisation);
+        this.contextAudit = new Tab("Context Instance Audit");
+        this.tabs = new Tabs(fullContextInstance, contextStatus, contextEvents, visualisation, contextAudit);
 
         tabs.addSelectedChangeListener(event -> {
             try {
@@ -218,6 +225,7 @@ public class ContextDebugWidget extends Div {
                     }
                     this.aceEditor.setVisible(true);
                     this.schedulerVisualisation.setVisible(false);
+                    this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.contextStatus)) {
                     if(this.contextInstances.getValue() != null && !this.contextInstances.getValue().isEmpty()){
@@ -240,15 +248,23 @@ public class ContextDebugWidget extends Div {
                     }
                     this.aceEditor.setVisible(true);
                     this.schedulerVisualisation.setVisible(false);
+                    this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.contextEvents)) {
                     this.aceEditor.setValue(this.events.toString());
                     this.aceEditor.setVisible(true);
                     this.schedulerVisualisation.setVisible(false);
+                    this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.visualisation)) {
                     this.aceEditor.setVisible(false);
                     this.schedulerVisualisation.setVisible(true);
+                    this.contextInstanceAuditWidget.setVisible(false);
+                }
+                else if(tabs.getSelectedTab().equals(this.contextAudit)) {
+                    this.aceEditor.setVisible(false);
+                    this.schedulerVisualisation.setVisible(false);
+                    this.contextInstanceAuditWidget.setVisible(true);
                 }
             }
             catch (JsonProcessingException e){
@@ -259,7 +275,7 @@ public class ContextDebugWidget extends Div {
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(tabs);
 
-        div.add(controlsLayout, tabLayout, this.aceEditor, this.schedulerVisualisation);
+        div.add(controlsLayout, tabLayout, this.aceEditor, this.schedulerVisualisation, this.contextInstanceAuditWidget);
 
         this.setSizeFull();
         this.add(div);

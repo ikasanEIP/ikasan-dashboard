@@ -13,6 +13,15 @@ public class DateFormatter
     public static final DateTimeFormatter DATE_FORMAT_WITH_TIMEZONE = DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
     private DateTimeFormatter tableFormatter;
+    private static DateFormatter instance;
+
+    public static DateFormatter instance() {
+        if(instance == null) {
+            instance = new DateFormatter();
+        }
+
+        return instance;
+    }
 
     public DateFormatter() {
         tableFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT_TABLE_VIEWS);
