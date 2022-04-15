@@ -16,9 +16,15 @@ import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
+import org.ikasan.spec.scheduled.instance.model.JobLockInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ScheduledObjectMapperFactory {
 
@@ -49,7 +55,9 @@ public class ScheduledObjectMapperFactory {
             .addAbstractTypeMapping(JobLock.class, SolrJobLockImpl.class)
             .addAbstractTypeMapping(ContextualisedScheduledProcessEvent.class, SolrContextualisedScheduledProcessEventImpl.class)
             .addAbstractTypeMapping(SchedulerJobInitiationEvent.class, SolrSchedulerJobInitiationEventImpl.class)
-            .addAbstractTypeMapping(InternalEventDrivenJob.class, SolrInternalEventDrivenJobImpl.class);
+            .addAbstractTypeMapping(InternalEventDrivenJob.class, SolrInternalEventDrivenJobImpl.class)
+            .addAbstractTypeMapping(List.class, ArrayList.class)
+            .addAbstractTypeMapping(Map.class, HashMap.class);
 
         objectMapper.registerModule(simpleModule);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
