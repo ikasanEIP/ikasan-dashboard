@@ -91,7 +91,7 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
         // Zoom in
         Button zoomInButton = new Button();
         zoomInButton.getElement().appendChild(IronIcons.ZOOM_IN.create().getElement());
-        zoomInButton.setId("canvas_zoom_in");
+        zoomInButton.addClickListener(event -> this.designerCanvas.zoomIn());
         Tooltip zoomInButtonTooltip = getTooltip(zoomInButton, getTranslation("tooltip.zoom-in", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         actions.add(zoomInButton, zoomInButtonTooltip);
@@ -99,7 +99,7 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
         // Zoom out
         Button zoomOutButton = new Button();
         zoomOutButton.getElement().appendChild(IronIcons.ZOOM_OUT.create().getElement());
-        zoomOutButton.setId("canvas_zoom_out");
+        zoomOutButton.addClickListener(event -> this.designerCanvas.zoomOut());
         Tooltip zoomOutButtonTooltip = getTooltip(zoomOutButton, getTranslation("tooltip.zoom-out", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         actions.add(zoomOutButton, zoomOutButtonTooltip);

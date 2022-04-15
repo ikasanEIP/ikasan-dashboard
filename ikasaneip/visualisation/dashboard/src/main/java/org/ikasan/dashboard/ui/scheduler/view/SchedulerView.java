@@ -103,6 +103,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     private UpcomingJobExecutionsWidget upcomingJobExecutionsWidget;
 
+    private ContextDebugWidget contextDebugWidget;
+
     private Board scheduledJobsBoard;
     private Board contextDebugBoard;
 
@@ -167,6 +169,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             if(selectedPage.equals(this.scheduledJobsBoard)) {
                 this.upcomingJobExecutionsWidget.initialise();
             }
+            else if(selectedPage.equals(contextDebugBoard)) {
+                this.contextDebugWidget.updateContextDropdownContents();
+            }
         });
 
 
@@ -192,9 +197,12 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             scheduledJobsBoard.addRow(this.upcomingJobExecutionsWidget);
             scheduledJobsBoard.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
-            this.contextDebugBoard.addRow(new ContextDebugWidget(this.scheduledContextInstanceService, this.schedulerService
+
+            this.contextDebugWidget = new ContextDebugWidget(this.scheduledContextInstanceService, this.schedulerService
                 , this.scheduledContextService, this.systemEventLogger, this.internalEventDrivenJobService, this.queueDirectory
-                , this.moduleMetaDataService, this.jobLockCacheService));
+                , this.moduleMetaDataService, this.jobLockCacheService);
+
+            this.contextDebugBoard.addRow(this.contextDebugWidget);
             initialised = true;
         }
     }
