@@ -470,6 +470,16 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.saved = true;
     }
 
+    public void zoomIn(){
+        getElement().callJsFunction("$connector.zoomIn");
+        this.saved = true;
+    }
+
+    public void zoomOut(){
+        getElement().callJsFunction("$connector.zoomOut");
+        this.saved = true;
+    }
+
     public void setCanvasJson(String canvasJson) throws IOException {
         if(this.designerDynamicImageManager != null) {
             this.canvasJson = this.designerDynamicImageManager.parse(canvasJson);

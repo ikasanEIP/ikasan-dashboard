@@ -47,8 +47,7 @@ public class ScheduledContextDraw2dAdapter {
 
             contextInstance.getJobDependencies().forEach(jobDependency -> {
                 if (jobDependency.getLogicalGrouping() != null && jobDependency.getLogicalGrouping().getAnd() != null) {
-                    jobDependency.getLogicalGrouping().getAnd().forEach(and
-                        -> {
+                    jobDependency.getLogicalGrouping().getAnd().forEach(and -> {
                         graph.addEdge(and.getIdentifier(), jobDependency.getJobIdentifier());
 
                         ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
@@ -75,6 +74,16 @@ public class ScheduledContextDraw2dAdapter {
 
             JGraphXAdapter<Object, DefaultEdge> jGraphXAdapter
                 = new JGraphXAdapter<>(graph);
+
+            this.getCellMap(jGraphXAdapter)
+                .entrySet()
+                .forEach(entry -> {
+                    mxCell cell = entry.getValue();
+                    if(cell.isVertex()) {
+                        cell.getGeometry().setWidth(200);
+                        cell.getGeometry().setHeight(100);
+                    }
+                });
 
             mxHierarchicalLayout compactTreeLayout = new mxHierarchicalLayout(jGraphXAdapter);
             compactTreeLayout.setOrientation(SwingConstants.WEST);
@@ -180,6 +189,16 @@ public class ScheduledContextDraw2dAdapter {
 
         JGraphXAdapter<Object, DefaultEdge> jGraphXAdapter
             = new JGraphXAdapter<>(graph);
+
+        this.getCellMap(jGraphXAdapter)
+            .entrySet()
+            .forEach(entry -> {
+                mxCell cell = entry.getValue();
+                if(cell.isVertex()) {
+                    cell.getGeometry().setWidth(200);
+                    cell.getGeometry().setHeight(100);
+                }
+            });
 
         mxCompactTreeLayout compactTreeLayout = new mxCompactTreeLayout(jGraphXAdapter);
         compactTreeLayout.setHorizontal(false);

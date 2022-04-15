@@ -34,7 +34,7 @@ import java.io.IOException;
 
 
 @CssImport("./styles/dashboard-view.css")
-public class ContextDebugWidget extends Div implements BeforeEnterListener {
+public class ContextDebugWidget extends Div {
 
     Logger logger = LoggerFactory.getLogger(ContextDebugWidget.class);
 
@@ -124,25 +124,25 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
 
             contextUploadDialog.addOpenedChangeListener(event -> {
                 if(!event.isOpened()){
-                    this.contextInstances.removeAll();
                     this.contextInstances.setItems(ContextMachineCache.instance().contextNames());
+                    this.contextInstances.getDataProvider().refreshAll();
                 }
             });
         });
 
-        Button newContextButton = new Button("New Context");
-        newContextButton.addClickListener(buttonClickEvent -> {
-            ContextDialog contextUploadDialog = new ContextDialog(systemEventLogger,
-                this.scheduledContextService);
-            contextUploadDialog.open();
-
-            contextUploadDialog.addOpenedChangeListener(event -> {
-                if(!event.isOpened()){
-    //                    this.contextInstances.removeAll();
-    //                    this.contextInstances.setItems(ContextMachineCache.instance().contextNames());
-                }
-            });
-        });
+//        Button newContextButton = new Button("New Context");
+//        newContextButton.addClickListener(buttonClickEvent -> {
+//            ContextDialog contextUploadDialog = new ContextDialog(systemEventLogger,
+//                this.scheduledContextService);
+//            contextUploadDialog.open();
+//
+//            contextUploadDialog.addOpenedChangeListener(event -> {
+//                if(!event.isOpened()){
+//                    this.contextInstances.removeAll();
+//                    this.contextInstances.setItems(ContextMachineCache.instance().contextNames());
+//                }
+//            });
+//        });
 
         Button resetContextButton = new Button("Reset Context");
         resetContextButton.addClickListener(buttonClickEvent -> {
@@ -187,7 +187,7 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
 
 
         HorizontalLayout controlsLayout = new HorizontalLayout();
-        controlsLayout.add(this.contextInstances, newContextButton, addContextButton, resetContextButton);
+        controlsLayout.add(this.contextInstances, addContextButton, resetContextButton);
 
         this.fullContextInstance = new Tab("Full Context Instance");
         this.contextStatus = new Tab("Context Instance Status");
@@ -279,8 +279,7 @@ public class ContextDebugWidget extends Div implements BeforeEnterListener {
         aceEditor.setWrap(false);
     }
 
-    @Override
-    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+    public void updateContextDropdownContents() {
         this.contextInstances.setItems(ContextMachineCache.instance().contextNames());
     }
 }

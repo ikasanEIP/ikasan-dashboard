@@ -31,6 +31,17 @@ public class AbstractTest
         return eventInstance;
     }
 
+    protected ContextualisedScheduledProcessEventImpl scheduledProcessEventInstanceStarting(String jobName, String agentName
+        , boolean isSuccessful) {
+        ContextualisedScheduledProcessEventImpl eventInstance = new ContextualisedScheduledProcessEventImpl();
+        eventInstance.setJobName(jobName);
+        eventInstance.setAgentName(agentName);
+        eventInstance.setSuccessful(isSuccessful);
+        eventInstance.setJobStarting(true);
+
+        return eventInstance;
+    }
+
     protected ContextualisedScheduledProcessEventImpl scheduledProcessEventInstance(String contextId, String childContextId
         , String jobName, String agentName, boolean isSuccessful) {
         ContextualisedScheduledProcessEventImpl eventInstance = new ContextualisedScheduledProcessEventImpl();

@@ -17,7 +17,7 @@ public class ScheduledContextDraw2dAdapterTest extends AbstractTest {
 
     @Test
     public void test_context_machine() throws IOException {
-        ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/contexts/CONTEXT-1436221681.json"));
+        ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/contexts/CONTEXT-36916071.json"));
 
         ScheduledContextDraw2dAdapter adapter = new ScheduledContextDraw2dAdapter();
         String json = adapter.adaptContext(context);

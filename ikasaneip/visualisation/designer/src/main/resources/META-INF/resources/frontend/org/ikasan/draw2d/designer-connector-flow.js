@@ -132,6 +132,14 @@
             }
         }
 
+        designer.$connector.zoomIn = function () {
+            designer.$connector.designer.setZoom(designer.$connector.designer.getZoom()*0.8,true);
+        }
+
+        designer.$connector.zoomOut = function () {
+            designer.$connector.designer.setZoom(designer.$connector.designer.getZoom()*1.2,true);
+        }
+
         designer.$connector.bringToFront = function () {
             _this.getFigures().each((i, figure)=>{
                 if(figure.isSelected()) {
