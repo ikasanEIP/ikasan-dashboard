@@ -1412,6 +1412,132 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
+    public void test_complex_context() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/complex-context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/complex-context.json"));
+
+        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+
+
+        ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), new JobLockCacheServiceTestImpl());
+        InstanceStatus status = contextMachine.getContextStatus("CONTEXT-1892741766");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("1892741766_ScheduledJob_17:00:00",
+            "scheduler-agent", true);
+
+        contextMachine.eventReceived(eventInstance);
+
+        status = contextMachine.getContextStatus("CONTEXT-1892741766");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        eventInstance = scheduledProcessEventInstance("1010295672",
+            "scheduler-agent", true);
+
+        contextMachine.eventReceived(eventInstance);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1892741766_ScheduledJob_17:00:00", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1010295672", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-185916817", InstanceStatus.WAITING);
+
+        eventInstance = scheduledProcessEventInstance("1568132585",
+            "scheduler-agent", true);
+
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1010295672", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1568132585", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1892741766_ScheduledJob_17:00:00", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-185916817", InstanceStatus.WAITING);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance = scheduledProcessEventInstanceStarting(events.get(0).getJobName(),
+            events.get(0).getAgentName(), true);
+
+        contextMachine.eventReceived(eventInstance);
+
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-185916817", InstanceStatus.RUNNING);
+
+        eventInstance = scheduledProcessEventInstance(events.get(0).getJobName(),
+            events.get(0).getAgentName(), true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1010295672", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1568132585", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1892741766_ScheduledJob_17:00:00", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-185916817", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent--1515829064", InstanceStatus.WAITING);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent--532050073", InstanceStatus.WAITING);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance("-1515829064",
+            "scheduler-agent", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1010295672", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1568132585", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1892741766_ScheduledJob_17:00:00", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-185916817", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent--1515829064", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent--532050073", InstanceStatus.WAITING);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance = scheduledProcessEventInstanceStarting(events.get(0).getJobName(),
+            events.get(0).getAgentName(), true);
+
+        contextMachine.eventReceived(eventInstance);
+
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent--532050073", InstanceStatus.RUNNING);
+
+        eventInstance = scheduledProcessEventInstance(events.get(0).getJobName(),
+            events.get(0).getAgentName(), true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1010295672", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1568132585", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1892741766_ScheduledJob_17:00:00", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-185916817", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent--1515829064", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent--532050073", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-200769144", InstanceStatus.WAITING);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-131944233", InstanceStatus.WAITING);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance("200769144",
+            "scheduler-agent", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1010295672", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1568132585", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1892741766_ScheduledJob_17:00:00", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-185916817", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent--1515829064", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent--532050073", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-200769144", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-131944233", InstanceStatus.WAITING);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance = scheduledProcessEventInstance(events.get(0).getJobName(),
+            events.get(0).getAgentName(), true);
+
+        events = contextMachine.eventReceived(eventInstance);
+
+        events = contextMachine.eventReceived(eventInstance);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1010295672", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1568132585", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1892741766_ScheduledJob_17:00:00", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-185916817", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent--1515829064", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent--532050073", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-200769144", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-131944233", InstanceStatus.COMPLETE);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent--2047526486", InstanceStatus.WAITING);
+        this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-2074200534", InstanceStatus.WAITING);
+        Assert.assertEquals(0, events.size());
+
+        System.out.println(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()));
+    }
+
+    @Test
     public void test_get_context_status() throws IOException, InvalidContextTemplateException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
@@ -3666,6 +3792,11 @@ public class ContextMachineTest extends AbstractTest {
 
     private void assertContextStatus(ContextMachine contextMachine, String context, InstanceStatus expected) {
         InstanceStatus status = contextMachine.getContextStatus(context);
+        Assert.assertEquals(expected, status);
+    }
+
+    private void assertJobStatus(ContextMachine contextMachine, String context, String jobName, InstanceStatus expected) {
+        InstanceStatus status = contextMachine.getJobStatus(context, jobName);
         Assert.assertEquals(expected, status);
     }
 }
