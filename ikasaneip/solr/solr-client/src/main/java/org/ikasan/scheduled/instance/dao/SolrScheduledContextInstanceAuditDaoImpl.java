@@ -59,6 +59,7 @@ public class SolrScheduledContextInstanceAuditDaoImpl extends SolrDaoBase<Schedu
         query.setQuery(queryString);
         query.setRows(limit);
         query.setStart(offset);
+        query.addSort(CREATED_DATE_TIME, SolrQuery.ORDER.desc);
 
         LOG.debug("query: " + query);
         return this.findByQuery(query, SolrScheduledContextInstanceAuditRecordImpl.class);
