@@ -146,10 +146,10 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
 
         try {
             if(filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty()) {
-                results = this.contextInstanceService.findAllAuditRecordsByContextId(filter.getContextSearchFilter(), offset, limit);
+                results = this.contextInstanceService.findAllAuditRecordsByContextId(filter.getContextSearchFilter(), limit, offset);
             }
             else {
-                results = this.contextInstanceService.findAllAuditRecords(offset, limit);
+                results = this.contextInstanceService.findAllAuditRecords(limit, offset);
             }
         }
         catch (Exception e) {
