@@ -10,9 +10,7 @@ import java.util.stream.Collectors;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.scheduled.context.model.JobDependency;
-import org.ikasan.spec.scheduled.context.model.JobLockCache;
-import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
+import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
@@ -45,6 +43,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
     }
 
     /**
+     * The method is responsible for determining if any job initiation events can be raised based on the receipt of a
+     * ContextualisedScheduledProcessEvent. It delegates to methods to assess the logic assocaited with the job dependencies.
      *
      * @param scheduledProcessEvent
      * @param contextInstance
@@ -104,6 +104,19 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         return results;
     }
 
+    /**
+     * This method is responsible for determining if a job can be removed from the job lock cache and subsequently
+     * locking another job and publishing a job initiation event for it if it is eligible.
+     *
+     * @param scheduledProcessEvent
+     * @param contextInstance
+     * @param dryRunParameters
+     * @param internalEventDrivenJobs
+     * @param contextParameters
+     * @param parentContextInstance
+     * @param schedulerJobInstance
+     * @param results
+     */
     private void checkNextAvailableJobs(ContextualisedScheduledProcessEvent scheduledProcessEvent,
                                         ContextInstance contextInstance,
                                         DryRunParameters dryRunParameters,
@@ -117,15 +130,45 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             String identifier = schedulerJobInstance.getIdentifier();
             if (jobLockCache.locked(identifier) && jobLockCache.hasLock(identifier)) {
                 jobLockCache.release(identifier);
-                for (SchedulerJob job : jobLockCache.getJobsForIdentifier(identifier)) {
+                    for (SchedulerJob job : jobLockCache.getJobsForIdentifier(identifier)) {
                     SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(job.getIdentifier());
                     InternalEventDrivenJob internalEventDrivenJob = internalEventDrivenJobs.get(job.getIdentifier());
                     if (jobInstance != null && jobInstance.getStatus().equals(InstanceStatus.WAITING) && !jobLockCache.hasLock(jobInstance.getIdentifier())) {
                         jobLockCache.lock(jobInstance.getIdentifier());
-                        results.add(this.createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters, contextParameters
-                            , parentContextInstance, scheduledProcessEvent));
+
+                        // We need to check that it is ok to publish a job initiation event even though it is being released from the lock.
+                        // It may be the case that it is not eligible to initiate another job if the logic associated with the event
+                        // has not been satisfied.
+                        for (JobDependency jobDependency : contextInstance.getJobDependencies()) {
+                            if (jobDependency.getJobIdentifier().equals(jobInstance.getIdentifier())
+                                && this.shouldRaiseEvent(jobDependency.getLogicalGrouping(), contextInstance.getScheduledJobsMap())) {
+                                if(!jobInstance.isInitiationEventRaised()) {
+                                    results.add(this.createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters, contextParameters
+                                        , parentContextInstance, scheduledProcessEvent));
+                                }
+                            }
+                        }
 
                         break;
+                    }
+                }
+            }
+
+            // Now check if the event received received may actually be the catalyst for a locked job to run.
+            for (JobDependency jobDependency : contextInstance.getJobDependencies()) {
+                if (jobLockCache.locked(jobDependency.getJobIdentifier()) && jobLockCache.hasLock(jobDependency.getJobIdentifier())) {
+
+                    // check if the incoming event is in any of the logical dependencies of the locked job and that it should raise an event.
+                    if((this.andContainJobIdentifier(jobDependency.getLogicalGrouping().getAnd(), schedulerJobInstance.getIdentifier()) ||
+                        this.orContainJobIdentifier(jobDependency.getLogicalGrouping().getOr(), schedulerJobInstance.getIdentifier()) ||
+                        this.notContainJobIdentifier(jobDependency.getLogicalGrouping().getNot(), schedulerJobInstance.getIdentifier()))
+                        && this.shouldRaiseEvent(jobDependency.getLogicalGrouping(), contextInstance.getScheduledJobsMap())) {
+                        InternalEventDrivenJob internalEventDrivenJob = internalEventDrivenJobs.get(jobDependency.getJobIdentifier());
+                        SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(jobDependency.getJobIdentifier());
+                        if(!jobInstance.isInitiationEventRaised()) {
+                            results.add(this.createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters, contextParameters
+                                , parentContextInstance, scheduledProcessEvent));
+                        }
                     }
                 }
             }
@@ -182,6 +225,18 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             .forEach(listener -> listener.onSchedulerJobInstanceStateChangeEvent(event)));
     }
 
+    /**
+     * Helper method to create the SchedulerJobInitiationEvent that is published when the next job in a context can
+     * be initiated.
+     *
+     * @param schedulerJobInstance
+     * @param internalEventDrivenJob
+     * @param dryRunParameters
+     * @param contextParameters
+     * @param parentContextInstance
+     * @param scheduledProcessEvent
+     * @return
+     */
     private SchedulerJobInitiationEvent createSchedulerJobInitiationEvent(SchedulerJobInstance schedulerJobInstance
         , InternalEventDrivenJob internalEventDrivenJob, DryRunParameters dryRunParameters, List<ContextParameterInstance> contextParameters
         , ContextInstance parentContextInstance, ContextualisedScheduledProcessEvent scheduledProcessEvent) {
@@ -241,5 +296,26 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         }
 
         return result && this.assessBaseLogic(logicalGrouping, schedulerJobInstancesMap);
+    }
+
+    private boolean andContainJobIdentifier(List<And> ands, String jobIdentifier) {
+        if(ands == null) {
+            return false;
+        }
+        return ands.stream().filter(and -> and.getIdentifier().equals(jobIdentifier)).count() > 0;
+    }
+
+    private boolean orContainJobIdentifier(List<Or> ors, String jobIdentifier) {
+        if(ors == null) {
+            return false;
+        }
+        return ors.stream().filter(and -> and.getIdentifier().equals(jobIdentifier)).count() > 0;
+    }
+
+    private boolean notContainJobIdentifier(List<Not> nots, String jobIdentifier) {
+        if(nots == null) {
+            return false;
+        }
+        return nots.stream().filter(and -> and.getIdentifier().equals(jobIdentifier)).count() > 0;
     }
 }
