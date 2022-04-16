@@ -1413,8 +1413,8 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_complex_context() throws IOException, InvalidContextTemplateException {
-        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/complex-context.json"));
-        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/complex-context.json"));
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/CONTEXT-36916071.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/CONTEXT-36916071.json"));
 
         Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
 
