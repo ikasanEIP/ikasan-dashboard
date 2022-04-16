@@ -13,8 +13,10 @@ public final class ContextMachineTestHelper {
     public static Map<String, InternalEventDrivenJob> createInternalJobsMap(ContextTemplate contextTemplate) {
         HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
 
-        contextTemplate.getScheduledJobs().forEach(job -> internalEventDrivenJobs.put(job.getIdentifier(),
-            newInternalEventDrivenJob(job.getIdentifier())));
+        if(contextTemplate.getScheduledJobs() != null) {
+            contextTemplate.getScheduledJobs().forEach(job -> internalEventDrivenJobs.put(job.getIdentifier(),
+                newInternalEventDrivenJob(job.getIdentifier())));
+        }
 
         if (contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
             contextTemplate.getContexts().forEach(template -> addInternalJobs(template, internalEventDrivenJobs));
