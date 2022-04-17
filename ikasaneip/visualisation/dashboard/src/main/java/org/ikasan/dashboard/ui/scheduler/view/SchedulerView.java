@@ -102,6 +102,21 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private ScheduledContextInstanceService contextInstanceService;
 
+//    @Resource
+//    private ScheduledProcessManagementService scheduledProcessManagementService
+//
+//    @Resource
+//    private ConfigurationService configurationRestService;
+//
+//    @Resource
+//    private ModuleControlService moduleControlRestService;
+//
+//    @Resource
+//    private MetaDataService metaDataRestService;
+//
+//    @Resource
+//    private SchedulerJobService schedulerJobService;
+
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
     private UpcomingJobExecutionsWidget upcomingJobExecutionsWidget;
@@ -203,7 +218,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
             this.contextDebugWidget = new ContextDebugWidget(this.scheduledContextInstanceService, this.schedulerService
                 , this.scheduledContextService, this.systemEventLogger, this.internalEventDrivenJobService, this.queueDirectory
-                , this.moduleMetaDataService, this.jobLockCacheService, this.contextInstanceService);
+                , this.moduleMetaDataService, this.jobLockCacheService, this.contextInstanceService, this.scheduledProcessManagementService,
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.schedulerJobService);
 
             this.contextDebugBoard.addRow(this.contextDebugWidget);
             initialised = true;
