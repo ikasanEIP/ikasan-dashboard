@@ -124,13 +124,13 @@ public class ScheduledContextDraw2dAdapter {
             // todo clean this up. still a hack.
             try {
                 result = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
-                logger.info(result);
+                logger.debug(result);
             }
             catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
 
-            logger.info(result);
+            logger.debug(result);
             return result;
         }
 
@@ -238,7 +238,7 @@ public class ScheduledContextDraw2dAdapter {
         // todo clean this up. still a hack.
         try {
             result = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
-            logger.info(result);
+            logger.debug(result);
         }
         catch (JsonProcessingException e) {
             e.printStackTrace();

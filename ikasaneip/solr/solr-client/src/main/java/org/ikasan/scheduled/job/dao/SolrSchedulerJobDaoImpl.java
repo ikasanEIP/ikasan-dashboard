@@ -124,6 +124,39 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
     }
 
     @Override
+    public SchedulerJobRecord findByContextIdAndJobName(String contextId, String jobName) {
+        StringBuffer queryBuffer = new StringBuffer();
+        queryBuffer.append(OPEN_BRACKET);
+        queryBuffer.append(TYPE + COLON);
+        queryBuffer.append("\"").append(JobConstants.FILE_EVENT_DRIVEN_JOB).append("\" ");
+        queryBuffer.append(OR).append(" ");
+        queryBuffer.append(TYPE + COLON);
+        queryBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB).append("\" ");
+        queryBuffer.append(OR).append(" ");
+        queryBuffer.append(TYPE + COLON);
+        queryBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB).append("\" ");
+        queryBuffer.append(CLOSE_BRACKET);
+        queryBuffer.append(AND).append(" ").append(FLOW_NAME).append(COLON);
+        queryBuffer.append("\"").append(jobName).append("\" ");
+        queryBuffer.append(AND).append(" ").append(COMPONENT_NAME).append(COLON);
+        queryBuffer.append("\"").append(contextId).append("\" ");
+
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(queryBuffer.toString());
+
+        List<? extends SchedulerJobRecord> beans = this.findByQuery(solrQuery, SolrSchedulerJobRecordImpl.class).getResultList();
+
+        if(beans.size() > 0)
+        {
+            return beans.get(0);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    @Override
     public void delete(SchedulerJobRecord record) {
         super.removeById(record.getType(), record.getId());
     }

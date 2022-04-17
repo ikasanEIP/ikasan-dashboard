@@ -235,6 +235,15 @@
             element.$server.doubleClickEvent(JSON.stringify(figureLite));
         });
 
+        designer.$connector.designer.on("contextmenu", function(emitter, event){
+            let figure = event.figure;
+            debugger;
+            let figureLite = new FigureLite(figure.id, $(':hover').last().offset().left, $(':hover').last().offset().top, figure.getWidth()
+                , figure.getHeight(), figure.NAME, figure.getPersistentAttributes());
+            let element = document.getElementById(canvasName);
+            element.$server.rightClickEvent(JSON.stringify(figureLite));
+        });
+
         designer.$connector.undo = function () {
             _this.getCommandStack().undo();
         }

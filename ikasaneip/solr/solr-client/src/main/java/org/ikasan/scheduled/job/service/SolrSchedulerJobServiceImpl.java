@@ -16,7 +16,7 @@ import org.ikasan.spec.solr.SolrServiceBase;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements SchedulerJobService<SolrSchedulerJobRecordImpl> {
+public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements SchedulerJobService<SchedulerJobRecord> {
 
     private SolrFileEventDrivenJobDaoImpl fileEventDrivenJobRecordDao;
     private SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao;
@@ -55,7 +55,12 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     }
 
     @Override
-    public void delete(SolrSchedulerJobRecordImpl record) {
+    public SchedulerJobRecord findByContextIdAndJobName(String contextId, String jobName) {
+        return this.schedulerJobRecordDao.findByContextIdAndJobName(contextId, jobName);
+    }
+
+    @Override
+    public void delete(SchedulerJobRecord record) {
         this.schedulerJobRecordDao.delete(record);
     }
 
@@ -110,8 +115,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
         solrInternalEventDrivenJobRecord.setAgentName(internalEventDrivenJob.getAgentName());
         solrInternalEventDrivenJobRecord.setJobName(internalEventDrivenJob.getJobName());
-        // sort out context
-        solrInternalEventDrivenJobRecord.setContextId("TBD");
+        solrInternalEventDrivenJobRecord.setContextId(internalEventDrivenJob.getContextId());
         solrInternalEventDrivenJobRecord.setTimestamp(System.currentTimeMillis());
         solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
 
@@ -133,8 +137,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     private QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord(QuartzScheduleDrivenJob quartzScheduleDrivenJob) {
         QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
         quartzScheduleDrivenJobRecord.setAgentName(quartzScheduleDrivenJob.getAgentName());
-        // todo work out how context fits
-        quartzScheduleDrivenJobRecord.setContextId("TBD");
+        quartzScheduleDrivenJobRecord.setContextId(quartzScheduleDrivenJob.getContextId());
         quartzScheduleDrivenJobRecord.setJobName(quartzScheduleDrivenJob.getJobName());
         quartzScheduleDrivenJobRecord.setTimestamp(System.currentTimeMillis());
         quartzScheduleDrivenJobRecord.setQuartzScheduleDrivenJob(quartzScheduleDrivenJob);
@@ -158,8 +161,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
         solrFileEventDrivenJobRecord.setAgentName(fileEventDrivenJob.getAgentName());
         solrFileEventDrivenJobRecord.setJobName(fileEventDrivenJob.getJobName());
-        // todo sort out context
-        solrFileEventDrivenJobRecord.setContextId("TBD");
+        solrFileEventDrivenJobRecord.setContextId(fileEventDrivenJob.getContextId());
         solrFileEventDrivenJobRecord.setTimestamp(System.currentTimeMillis());
         solrFileEventDrivenJobRecord.setFileEventDrivenJob(fileEventDrivenJob);
 
