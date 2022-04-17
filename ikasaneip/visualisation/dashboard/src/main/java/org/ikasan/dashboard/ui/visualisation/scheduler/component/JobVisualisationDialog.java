@@ -46,6 +46,7 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
 
     private boolean initialised = false;
 
+    private ContextInstance rootContextInstance;
     private ContextInstance contextInstance;
 
     private String dynamicImagePath = ".";
@@ -107,7 +108,8 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
     /**
      * @param contextInstance
      */
-    public void createSchedulerVisualisation(ContextInstance contextInstance) throws IOException {
+    public void createSchedulerVisualisation(ContextInstance rootContextInstance, ContextInstance contextInstance) throws IOException {
+        this.rootContextInstance = rootContextInstance;
         this.contextInstance = contextInstance;
         this.initialised = false;
         init();
@@ -196,19 +198,22 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
     @Override
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
         logger.info(canvasItemDoubleClickEvent.toString());
-        SchedulerJobLogFileViewerDialog dialog = new SchedulerJobLogFileViewerDialog();
-        dialog.open();
+        JobContextMenu jobContextMenu = new JobContextMenu(canvasItemDoubleClickEvent.getClickLocationX(), canvasItemDoubleClickEvent.getClickLocationY(),
+            this.contextInstance.getScheduledJobsMap().get(canvasItemDoubleClickEvent.getFigure().getIdentifier()), this.systemEventLogger,
+            this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+            this.metaDataRestService, this.schedulerJobService, this.rootContextInstance);
+        jobContextMenu.open();
     }
 
     @Override
     public void rightClickEvent(CanvasItemRightClickEvent canvasItemRightClickEvent) {
         logger.info(canvasItemRightClickEvent.toString());
 
-        JobContextMenu jobContextMenu = new JobContextMenu(canvasItemRightClickEvent.getClickLocationX(), canvasItemRightClickEvent.getClickLocationY(),
-            this.contextInstance.getScheduledJobsMap().get(canvasItemRightClickEvent.getFigure().getIdentifier()), this.systemEventLogger,
-            this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-            this.metaDataRestService, this.schedulerJobService);
-        jobContextMenu.open();
+//        JobContextMenu jobContextMenu = new JobContextMenu(canvasItemRightClickEvent.getClickLocationX(), canvasItemRightClickEvent.getClickLocationY(),
+//            this.contextInstance.getScheduledJobsMap().get(canvasItemRightClickEvent.getFigure().getIdentifier()), this.systemEventLogger,
+//            this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
+//            this.metaDataRestService, this.schedulerJobService);
+//        jobContextMenu.open();
     }
 
     @Override

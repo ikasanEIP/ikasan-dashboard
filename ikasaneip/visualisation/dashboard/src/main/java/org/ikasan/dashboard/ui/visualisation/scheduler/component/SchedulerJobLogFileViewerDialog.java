@@ -26,8 +26,8 @@ public class SchedulerJobLogFileViewerDialog extends AbstractCloseableResizableD
     private boolean initialised = false;
 
     public SchedulerJobLogFileViewerDialog() {
-        this.setHeight("90%");
-        this.setWidth("90%");
+        this.setHeight("80%");
+        this.setWidth("80%");
 
         layout = new VerticalLayout();
         layout.setSizeFull();
