@@ -229,7 +229,7 @@
 
         designer.$connector.designer.on("dblclick", function(emitter, event){
             let figure = event.figure;
-            let figureLite = new FigureLite(figure.getId(), figure.x, figure.y, figure.getWidth()
+            let figureLite = new FigureLite(figure.id, $(':hover').last().offset().left, $(':hover').last().offset().top, figure.getWidth()
                 , figure.getHeight(), figure.NAME, figure.getPersistentAttributes());
             let element = document.getElementById(canvasName);
             element.$server.doubleClickEvent(JSON.stringify(figureLite));

@@ -3,7 +3,6 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -19,6 +18,7 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 
@@ -28,19 +28,21 @@ public class JobContextMenu extends Dialog {
 
     private ModuleMetaDataService moduleMetaDataService;
     private SchedulerJobService schedulerJobService;
+    private ContextInstance rootContextInstance;
 
     public JobContextMenu(int x, int y, SchedulerJob schedulerJob, SystemEventLogger systemEventLogger,
                           ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
-                          SchedulerJobService schedulerJobService) {
+                          SchedulerJobService schedulerJobService, ContextInstance rootContextInstance) {
         this.setWidth("200px");
-        this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "align-self", "flex-start");
-        this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "position", "absolute");
-        this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "left", x + "px");
-        this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "top", y + "px");
+//        this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "align-self", "flex-start");
+//        this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "position", "absolute");
+//        this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "left", x + "px");
+//        this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "top", y + "px");
 
         this.moduleMetaDataService = moduleMetaDataService;
         this.schedulerJobService = schedulerJobService;
+        this.rootContextInstance = rootContextInstance;
 
         layout.setWidthFull();
 
@@ -49,7 +51,7 @@ public class JobContextMenu extends Dialog {
         super.setDraggable(false);
 
         this.addItem("View Job", event -> {
-            SchedulerJob job = this.getSchedulerJob(schedulerJob.getContextId(), schedulerJob.getJobName());
+            SchedulerJob job = this.getSchedulerJob(schedulerJob.getJobName());
             if(job == null) {
                 NotificationHelper.showErrorNotification("Could not locate job to open");
             }
@@ -95,11 +97,13 @@ public class JobContextMenu extends Dialog {
             this.close();
         });
         this.addItem("View Output Log", event -> {
-            NotificationHelper.showUserNotification("Not yet implemented!");
+            SchedulerJobLogFileViewerDialog dialog = new SchedulerJobLogFileViewerDialog();
+            dialog.open();
             this.close();
         });
         this.addItem("View Error Log", event -> {
-            NotificationHelper.showUserNotification("Not yet implemented!");
+            SchedulerJobLogFileViewerDialog dialog = new SchedulerJobLogFileViewerDialog();
+            dialog.open();
             this.close();
         });
 
@@ -117,8 +121,8 @@ public class JobContextMenu extends Dialog {
         return this.moduleMetaDataService.findById(agentName);
     }
 
-    private SchedulerJob getSchedulerJob(String contextId, String jobName) {
-        SchedulerJobRecord schedulerJobRecord =  this.schedulerJobService.findByContextIdAndJobName(contextId, jobName);
+    private SchedulerJob getSchedulerJob(String jobName) {
+        SchedulerJobRecord schedulerJobRecord =  this.schedulerJobService.findByContextIdAndJobName(this.rootContextInstance.getName(), jobName);
 
         if(schedulerJobRecord != null) {
             return schedulerJobRecord.getJob();
