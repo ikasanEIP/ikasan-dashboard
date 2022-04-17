@@ -6,12 +6,16 @@ import com.vaadin.componentfactory.TooltipAlignment;
 import com.vaadin.componentfactory.TooltipPosition;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.contextmenu.ContextMenu;
+import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.shared.Registration;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.component.ModuleControlContextMenu;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ScheduledContextDraw2dAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
@@ -23,7 +27,15 @@ import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
+import org.ikasan.designer.model.Figure;
+import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.module.client.ConfigurationService;
+import org.ikasan.spec.module.client.MetaDataService;
+import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,11 +57,56 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
     private ScheduledContextDraw2dAdapter adapter = new ScheduledContextDraw2dAdapter();
 
-    public SchedulerVisualisation(String dynamicImagePath) {
+    private ModuleMetaDataService moduleMetaDataService;
+    private ScheduledProcessManagementService scheduledProcessManagementService;
+    private ConfigurationService configurationRestService;
+    private ModuleControlService moduleControlRestService;
+    private MetaDataService metaDataRestService;
+    private SystemEventLogger systemEventLogger;
+    private SchedulerJobService schedulerJobService;
+
+    public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService) {
 
         this.dynamicImagePath = dynamicImagePath;
         if (this.dynamicImagePath == null) {
             throw new IllegalArgumentException("dynamicImagePath cannot be null!");
+        }
+
+        this.moduleMetaDataService = moduleMetaDataService;
+        if(this.moduleMetaDataService == null) {
+            throw new IllegalArgumentException("agent cannot be null!");
+        }
+
+        this.scheduledProcessManagementService = scheduledProcessManagementService;
+        if(this.scheduledProcessManagementService == null) {
+            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
+        }
+
+        this.configurationRestService = configurationRestService;
+        if(this.configurationRestService == null) {
+            throw new IllegalArgumentException("configurationRestService cannot be null!");
+        }
+
+        this.moduleControlRestService = moduleControlRestService;
+        if(this.moduleControlRestService == null) {
+            throw new IllegalArgumentException("moduleControlRestService cannot be null!");
+        }
+
+        this.metaDataRestService = metaDataRestService;
+        if(this.metaDataRestService == null) {
+            throw new IllegalArgumentException("metaDataRestService cannot be null!");
+        }
+
+        this.systemEventLogger = systemEventLogger;
+        if(this.systemEventLogger == null) {
+            throw new IllegalArgumentException("systemEventLogger cannot be null!");
+        }
+
+        this.schedulerJobService = schedulerJobService;
+        if(this.schedulerJobService == null) {
+            throw new IllegalArgumentException("schedulerJobService cannot be null!");
         }
 
         this.setMargin(false);
@@ -145,7 +202,8 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
             if(contextInstance.getScheduledJobs() != null) {
                 try {
-                    JobVisualisationDialog jobVisualisationDialog = new JobVisualisationDialog();
+                    JobVisualisationDialog jobVisualisationDialog = new JobVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+                        this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
                     jobVisualisationDialog.createSchedulerVisualisation(contextInstance);
                     jobVisualisationDialog.open();
                 }
@@ -169,12 +227,8 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
     @Override
     public void rightClickEvent(CanvasItemRightClickEvent canvasItemRightClickEvent) {
-        if(canvasItemRightClickEvent.getFigure().getType().equals(BusinessStreamItemTypes.FLOW.name())) {
-            ModuleControlContextMenu moduleControlContextMenu = new ModuleControlContextMenu(canvasItemRightClickEvent.getClickLocationX(),
-                canvasItemRightClickEvent.getClickLocationY());
-
-            moduleControlContextMenu.open();
-        }
+//        JobContextMenu jobContextMenu = new JobContextMenu(canvasItemRightClickEvent.getClickLocationX(), canvasItemRightClickEvent.getClickLocationY());
+//        jobContextMenu.open();
     }
 
     public void exportPng(){

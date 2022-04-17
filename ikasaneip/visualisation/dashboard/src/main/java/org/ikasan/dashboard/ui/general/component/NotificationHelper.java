@@ -19,8 +19,9 @@ public class NotificationHelper
     public static void showErrorNotification(String errorMessage)
     {
         Notification notification = new Notification(errorMessage);
-        notification.setPosition(Notification.Position.MIDDLE);
         notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        notification.setPosition(Notification.Position.MIDDLE);
+        notification.getElement().getStyle().set("background-color", "#ef5350");
         notification.setDuration(errorNotificationDuration);
         notification.setOpened(true);
     }

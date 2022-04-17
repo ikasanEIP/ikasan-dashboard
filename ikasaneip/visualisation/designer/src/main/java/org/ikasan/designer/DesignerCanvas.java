@@ -379,12 +379,12 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     }
 
     @ClientCallable
-    private void rightClickEvent(String figure, int pageX, int pageY){
+    private void rightClickEvent(String figure){
         try {
             Figure figureObj = mapper.readValue(figure, Figure.class);
 
             CanvasItemRightClickEvent event = new CanvasItemRightClickEvent(this.designerPalletItemMap.get(figureObj.getIdentifier()),
-                pageX, pageY, figureObj);
+                figureObj.getX(), figureObj.getY(), figureObj);
 
             this.canvasItemRightClickEventListeners.forEach(listener -> listener.rightClickEvent(event));
 

@@ -149,14 +149,14 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
             this.contextInstance);
 
         if(contextInstance.getScheduledJobs() != null) {
-            try {
-                JobVisualisationDialog jobVisualisationDialog = new JobVisualisationDialog();
-                jobVisualisationDialog.createSchedulerVisualisation(contextInstance);
-                jobVisualisationDialog.open();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                JobVisualisationDialog jobVisualisationDialog = new JobVisualisationDialog();
+//                jobVisualisationDialog.createSchedulerVisualisation(contextInstance);
+//                jobVisualisationDialog.open();
+//            }
+//            catch (IOException e) {
+//                e.printStackTrace();
+//            }
         }
         else {
             try {

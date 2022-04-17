@@ -144,6 +144,41 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
         }
     }
 
+    @Test
+    public void test_find_by_context_and_job_name() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
+            init(server);
+
+            this.insertFileEventRecords("id", 100, "contextIdf");
+            this.insertFileEventRecords("idd", 1000, "context2Idf");
+            this.insertFileEventRecords("iddd", 267, "context3Idf");
+
+            this.insertQuartzScheduleEventRecords("idq", 100, "contextIdq");
+            this.insertQuartzScheduleEventRecords("iddq", 1000, "context2Idq");
+            this.insertQuartzScheduleEventRecords("idddq", 267, "context3Idq");
+
+            this.insertInternalEventDrivenRecords("idi", 100, "contextIdi");
+            this.insertInternalEventDrivenRecords("iddi", 1000, "context2Idi");
+            this.insertInternalEventDrivenRecords("idddi", 267, "context3Idi");
+
+            SchedulerJobRecord solrSchedulerJobRecord = this.dao.findByContextIdAndJobName("context2Idf", "jobName100");
+            SchedulerJob job = solrSchedulerJobRecord.getJob();
+
+            Assert.assertTrue(job instanceof SolrFileEventDrivenJobImpl);
+
+            solrSchedulerJobRecord = this.dao.findByContextIdAndJobName("context2Idq", "jobName100");
+            job = solrSchedulerJobRecord.getJob();
+
+            Assert.assertTrue(job instanceof SolrQuartzScheduleDrivenJobImpl);
+
+            solrSchedulerJobRecord = this.dao.findByContextIdAndJobName("context2Idi", "jobName100");
+            job = solrSchedulerJobRecord.getJob();
+
+            Assert.assertTrue(job instanceof SolrInternalEventDrivenJobImpl);
+        }
+    }
+
 
     private void insertFileEventRecords(String idPrefix, int num, String contextId) {
         IntStream.range(0, num).forEach(i -> {

@@ -21,11 +21,16 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisual
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.module.client.ConfigurationService;
+import org.ikasan.spec.module.client.MetaDataService;
+import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +74,9 @@ public class ContextDebugWidget extends Div {
                               ScheduledContextService scheduledContextService, SystemEventLogger systemEventLogger,
                               InternalEventDrivenJobService internalEventDrivenJobService, String queueDir,
                               ModuleMetaDataService moduleMetaDataService, JobLockCacheService jobLockCacheService,
-                              ScheduledContextInstanceService contextInstanceService) {
+                              ScheduledContextInstanceService contextInstanceService, ScheduledProcessManagementService scheduledProcessManagementService,
+                              ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
+                              SchedulerJobService schedulerJobService) {
         Div div = new Div();
         div.addClassNames("card-counter");
         div.setHeight("100%");
@@ -79,7 +86,10 @@ public class ContextDebugWidget extends Div {
         this.internalEventDrivenJobService = internalEventDrivenJobService;
         this.queueDir = queueDir;
 
-        this.schedulerVisualisation = new SchedulerVisualisation(".");
+        this.schedulerVisualisation = new SchedulerVisualisation(".", moduleMetaDataService, scheduledProcessManagementService, configurationRestService,
+            moduleControlRestService,  metaDataRestService, systemEventLogger, schedulerJobService);
+
+
         this.schedulerVisualisation.setWidthFull();
         this.schedulerVisualisation.setHeight("1000px");
         this.schedulerVisualisation.setVisible(false);
