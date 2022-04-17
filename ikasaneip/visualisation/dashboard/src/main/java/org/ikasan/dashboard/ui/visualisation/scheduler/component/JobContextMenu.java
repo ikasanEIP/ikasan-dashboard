@@ -59,19 +59,25 @@ public class JobContextMenu extends Dialog {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog
                     = new InternalEventDrivenJobDialog(null, scheduledProcessManagementService, configurationRestService,
                     moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService);
-                internalEventDrivenJobDialog.setJob((InternalEventDrivenJob)schedulerJob, EditMode.READONLY);
+                internalEventDrivenJobDialog.setJob((InternalEventDrivenJob)job, EditMode.READONLY);
+                internalEventDrivenJobDialog.open();
             }
             else if(job instanceof FileEventDrivenJob) {
-                FileEventJobDialog internalEventDrivenJobDialog
+                FileEventJobDialog fileEventJobDialog
                     = new FileEventJobDialog(null, scheduledProcessManagementService, configurationRestService,
                     moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService);
-                internalEventDrivenJobDialog.setJob((FileEventDrivenJob) schedulerJob, EditMode.READONLY);
+                fileEventJobDialog.setJob((FileEventDrivenJob) job, EditMode.READONLY);
+                fileEventJobDialog.open();
             }
             else if(job instanceof QuartzScheduleDrivenJob) {
-                QuartzDrivenScheduledJobDialog internalEventDrivenJobDialog
+                QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog
                     = new QuartzDrivenScheduledJobDialog(null, scheduledProcessManagementService, configurationRestService,
                     moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService);
-                internalEventDrivenJobDialog.setJob((QuartzScheduleDrivenJob) schedulerJob, EditMode.READONLY);
+                quartzDrivenScheduledJobDialog.setJob((QuartzScheduleDrivenJob) job, EditMode.READONLY);
+                quartzDrivenScheduledJobDialog.open();
+            }
+            else {
+                NotificationHelper.showErrorNotification("Unknown job type - " + job.getClass().getName());
             }
 
             this.close();
