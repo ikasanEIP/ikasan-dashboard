@@ -23,6 +23,7 @@ import org.ikasan.designer.event.CanvasItemRightClickEventListener;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
+import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -58,10 +59,12 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
     private MetaDataService metaDataRestService;
     private SystemEventLogger systemEventLogger;
     private SchedulerJobService schedulerJobService;
+    private LogStreamingService logStreamingService;
 
     public JobVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService) {
+                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
+                                  SchedulerJobService schedulerJobService, LogStreamingService logStreamingService) {
         this.setHeight("90%");
         this.setWidth("90%");
 
@@ -98,6 +101,11 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
         this.schedulerJobService = schedulerJobService;
         if(this.schedulerJobService == null) {
             throw new IllegalArgumentException("schedulerJobService cannot be null!");
+        }
+
+        this.logStreamingService = logStreamingService;
+        if(this.logStreamingService == null) {
+            throw new IllegalArgumentException("logStreamingService cannot be null!");
         }
 
         layout = new VerticalLayout();
@@ -198,10 +206,10 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
     @Override
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
         logger.info(canvasItemDoubleClickEvent.toString());
-        JobContextMenu jobContextMenu = new JobContextMenu(canvasItemDoubleClickEvent.getClickLocationX(), canvasItemDoubleClickEvent.getClickLocationY(),
-            this.contextInstance.getScheduledJobsMap().get(canvasItemDoubleClickEvent.getFigure().getIdentifier()), this.systemEventLogger,
-            this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-            this.metaDataRestService, this.schedulerJobService, this.rootContextInstance);
+        JobContextMenu jobContextMenu = new JobContextMenu(this.contextInstance.getScheduledJobsMap().get(canvasItemDoubleClickEvent.getFigure().getIdentifier()),
+            this.systemEventLogger, this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService,
+            this.moduleControlRestService, this.metaDataRestService, this.schedulerJobService, this.rootContextInstance, this.contextInstance,
+            this.logStreamingService);
         jobContextMenu.open();
     }
 
