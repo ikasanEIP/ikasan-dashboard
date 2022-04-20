@@ -24,6 +24,7 @@ import org.ikasan.designer.event.CanvasItemRightClickEventListener;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
+import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -49,6 +50,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
 
     private ContextInstance rootContextInstance;
     private ContextInstance contextInstance;
+    private LogStreamingService logStreamingService;
 
     private String dynamicImagePath = ".";
 
@@ -62,7 +64,8 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
 
     public ContextInstanceVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                              MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService) {
+                                              MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
+                                              LogStreamingService logStreamingService) {
         this.setHeight("90%");
         this.setWidth("90%");
 
@@ -99,6 +102,11 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
         this.schedulerJobService = schedulerJobService;
         if(this.schedulerJobService == null) {
             throw new IllegalArgumentException("schedulerJobService cannot be null!");
+        }
+
+        this.logStreamingService = logStreamingService;
+        if(this.logStreamingService == null) {
+            throw new IllegalArgumentException("logStreamingService cannot be null!");
         }
 
         layout = new VerticalLayout();
@@ -206,7 +214,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
             try {
                 JobVisualisationDialog jobVisualisationDialog = new JobVisualisationDialog(this.moduleMetaDataService,
                     this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                    this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+                    this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService);
                 jobVisualisationDialog.createSchedulerVisualisation(rootContextInstance, contextInstance);
                 jobVisualisationDialog.open();
             }
@@ -219,7 +227,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
                 ContextInstanceVisualisationDialog contextInstanceVisualisationDialog
                     = new ContextInstanceVisualisationDialog(this.moduleMetaDataService,
                     this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                    this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+                    this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService);
                 contextInstanceVisualisationDialog.createSchedulerVisualisation(this.rootContextInstance, contextInstance);
                 contextInstanceVisualisationDialog.open();
             }

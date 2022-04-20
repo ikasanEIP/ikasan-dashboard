@@ -25,6 +25,7 @@ import org.ikasan.designer.event.CanvasItemRightClickEventListener;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
+import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -57,10 +58,12 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     private MetaDataService metaDataRestService;
     private SystemEventLogger systemEventLogger;
     private SchedulerJobService schedulerJobService;
+    private LogStreamingService logStreamingService;
 
     public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService) {
+                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
+                                  LogStreamingService logStreamingService) {
 
         this.dynamicImagePath = dynamicImagePath;
         if (this.dynamicImagePath == null) {
@@ -100,6 +103,11 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
         this.schedulerJobService = schedulerJobService;
         if(this.schedulerJobService == null) {
             throw new IllegalArgumentException("schedulerJobService cannot be null!");
+        }
+
+        this.logStreamingService = logStreamingService;
+        if(this.logStreamingService == null) {
+            throw new IllegalArgumentException("logStreamingService cannot be null!");
         }
 
         this.setMargin(false);
@@ -196,7 +204,8 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             if(contextInstance.getScheduledJobs() != null) {
                 try {
                     JobVisualisationDialog jobVisualisationDialog = new JobVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
-                        this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+                        this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
+                        this.schedulerJobService, this.logStreamingService);
                     jobVisualisationDialog.createSchedulerVisualisation(this.contextInstance, contextInstance);
                     jobVisualisationDialog.open();
                 }
@@ -208,7 +217,8 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
                 try {
                     ContextInstanceVisualisationDialog contextInstanceVisualisationDialog
                         = new ContextInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
-                        this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+                        this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
+                        this.schedulerJobService, this.logStreamingService);
                     contextInstanceVisualisationDialog.createSchedulerVisualisation(this.contextInstance, contextInstance);
                     contextInstanceVisualisationDialog.open();
                 }

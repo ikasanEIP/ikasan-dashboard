@@ -264,9 +264,12 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.commandLineTa.setMode(AceMode.batchfile);
         this.commandLineTa.setTheme(AceTheme.dracula);
         this.commandLineTa.setId("commandLineTa");
-        formBinder.forField(this.commandLineTa)
-            .withValidator(value -> !value.isEmpty(), getTranslation("error.command-line-missing", UI.getCurrent().getLocale()))
-            .bind(InternalEventDrivenJob::getCommandLine, InternalEventDrivenJob::setCommandLine);
+
+        // todo figure how to get form binder working here
+//        formBinder.forField(this.commandLineTa)
+//            .withValidator(value -> !value.isEmpty(), getTranslation("error.command-line-missing", UI.getCurrent().getLocale()))
+//            .bind(InternalEventDrivenJob::getCommandLine, InternalEventDrivenJob::setCommandLine);
+
         formLayout.add(commandLineTa, 2);
         commandLineTa.getStyle().set("minHeight", "100px");
 
@@ -380,6 +383,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.enabled = editMode == EditMode.NEW || editMode == EditMode.EDIT ? true : false;
         this.internalEventDrivenJob = internalEventDrivenJob;
         this.formBinder.readBean(this.internalEventDrivenJob);
+        this.commandLineTa.setValue(internalEventDrivenJob.getCommandLine());
         this.bindCollections(internalEventDrivenJob);
         this.editMode = editMode;
 
