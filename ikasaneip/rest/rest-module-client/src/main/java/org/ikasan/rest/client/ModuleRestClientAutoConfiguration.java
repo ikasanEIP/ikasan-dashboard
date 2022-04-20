@@ -77,7 +77,7 @@ public class ModuleRestClientAutoConfiguration
 
     @Bean
     public LogStreamingService logStreamingService(Environment environment
-        ,HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory){
+        , HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
         return new LogStreamingServiceRestImpl(environment, httpComponentsClientHttpRequestFactory);
     }
 
