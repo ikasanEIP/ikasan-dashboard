@@ -78,7 +78,7 @@ public class LogStreamingServiceRestImplTest {
         assertEquals(contextBaseUrl + "logs?fullFilePath=src/test/resources/log.sample", recordedRequest.getRequestUrl().toString());
     }
 
-    private class DataConsumer {
+    private static class DataConsumer {
         private final Logger log = LoggerFactory.getLogger(DataConsumer.class);
 
         public void dataConsumer(ServerSentEvent<String> sse) {

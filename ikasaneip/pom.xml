@@ -353,7 +353,7 @@
         <version.vtd.xml>2.13.4</version.vtd.xml>
         <version.json.assert>1.5.0</version.json.assert>
         <version.org.junit.jupiter>5.7.0</version.org.junit.jupiter>
-        <version.ace.editor>1.3.4</version.ace.editor>
+        <version.ace.editor>2.1.1</version.ace.editor>
         <version.thymeleaf>3.0.11.RELEASE</version.thymeleaf>
         <version.jacoco>0.8.1</version.jacoco>
         <version.junit.platform.commons>1.7.0</version.junit.platform.commons>
@@ -368,7 +368,7 @@
         <version.fullcalendar2>3.0.0</version.fullcalendar2>
         <version.iron-icons>2.0.1</version.iron-icons>
         <version.font-awesome-iron-iconset>2.2.0</version.font-awesome-iron-iconset>
-        <version.ace.editor>1.3.4</version.ace.editor>
+        <version.ace.editor>2.1.1</version.ace.editor>
         <version.big.queue>0.7.2</version.big.queue>
         <version.logback>1.2.3</version.logback>
         <ikasan.core.version>3.3.0-scheduler-SNAPSHOT</ikasan.core.version>
