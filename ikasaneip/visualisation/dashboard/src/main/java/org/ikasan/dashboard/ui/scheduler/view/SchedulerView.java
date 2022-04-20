@@ -22,10 +22,9 @@ import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.spec.flow.Flow;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.module.Module;
 import org.ikasan.spec.module.client.ConfigurationService;
+import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.SchedulerService;
@@ -101,6 +100,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     @Resource
     private ScheduledContextInstanceService contextInstanceService;
+
+    @Resource
+    private LogStreamingService logStreamingService;
 
 //    @Resource
 //    private ScheduledProcessManagementService scheduledProcessManagementService
@@ -219,12 +221,12 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.contextDebugWidget = new ContextDebugWidget(this.scheduledContextInstanceService, this.schedulerService
                 , this.scheduledContextService, this.systemEventLogger, this.internalEventDrivenJobService, this.queueDirectory
                 , this.moduleMetaDataService, this.jobLockCacheService, this.contextInstanceService, this.scheduledProcessManagementService,
-                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.schedulerJobService);
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.schedulerJobService,
+                this.logStreamingService);
 
             this.contextDebugBoard.addRow(this.contextDebugWidget);
             initialised = true;
         }
     }
-
 }
 

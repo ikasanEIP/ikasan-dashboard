@@ -1,11 +1,8 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import java.util.List;
+
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.EditMode;
 import org.ikasan.dashboard.ui.scheduler.component.FileEventJobDialog;
@@ -16,24 +13,42 @@ import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
+import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 
 public class JobContextMenu extends Dialog {
+    private static final Logger LOG = LoggerFactory.getLogger(JobContextMenu.class);
+
     private VerticalLayout layout = new VerticalLayout();
 
     private ModuleMetaDataService moduleMetaDataService;
     private SchedulerJobService schedulerJobService;
     private ContextInstance rootContextInstance;
+    private LogStreamingService logStreamingService;
+    private ContextInstance currentInstance;
 
-    public JobContextMenu(int x, int y, SchedulerJob schedulerJob, SystemEventLogger systemEventLogger,
+    public JobContextMenu(SchedulerJob schedulerJob, SystemEventLogger systemEventLogger,
                           ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
-                          SchedulerJobService schedulerJobService, ContextInstance rootContextInstance) {
+                          SchedulerJobService schedulerJobService, ContextInstance rootContextInstance, ContextInstance currentInstance,
+                          LogStreamingService logStreamingService) {
+
         this.setWidth("200px");
 //        this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "align-self", "flex-start");
 //        this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "position", "absolute");
@@ -43,6 +58,8 @@ public class JobContextMenu extends Dialog {
         this.moduleMetaDataService = moduleMetaDataService;
         this.schedulerJobService = schedulerJobService;
         this.rootContextInstance = rootContextInstance;
+        this.currentInstance = currentInstance;
+        this.logStreamingService = logStreamingService;
 
         layout.setWidthFull();
 
@@ -103,17 +120,42 @@ public class JobContextMenu extends Dialog {
             this.close();
         });
         this.addItem("View Output Log", event -> {
-            SchedulerJobLogFileViewerDialog dialog = new SchedulerJobLogFileViewerDialog();
-            dialog.open();
-            this.close();
+            streamLog(schedulerJob, false);
         });
         this.addItem("View Error Log", event -> {
-            SchedulerJobLogFileViewerDialog dialog = new SchedulerJobLogFileViewerDialog();
-            dialog.open();
-            this.close();
+            streamLog(schedulerJob, true);
         });
 
         this.add(layout);
+    }
+
+    private void streamLog(SchedulerJob schedulerJob, boolean getErrorLog) {
+        // TODO remove all the log info when happy this is working
+        List<InstanceStatus> allowedStatuses = List.of(InstanceStatus.COMPLETE, InstanceStatus.RUNNING, InstanceStatus.ERROR);
+        InstanceStatus status = this.currentInstance.getStatus();
+        LOG.info("Current Instance status: " + status);
+        if (allowedStatuses.contains(status)) {
+            SchedulerJobInstance schedulerJobInstance = this.currentInstance.getScheduledJobsMap().get(schedulerJob.getIdentifier());
+            LOG.info("schedulerJobInstance is " + schedulerJobInstance + " for job identifier " + schedulerJob.getIdentifier());
+            ModuleMetaData agent = this.getAgent(schedulerJob.getAgentName());
+            LOG.info("agent is " + agent + " for name " + schedulerJob.getAgentName());
+            if (schedulerJobInstance != null && schedulerJobInstance.getScheduledProcessEvent() != null && agent != null) {
+                ScheduledProcessEvent scheduledProcessEvent = schedulerJobInstance.getScheduledProcessEvent();
+                String host = agent.getUrl();
+                String endPoint = "/rest/logs";
+                String outputLog = getErrorLog ? scheduledProcessEvent.getResultError() : scheduledProcessEvent.getResultOutput();
+
+                LOG.info(String.format("Streaming lof for host %s, endPoint %s, log %s", host, endPoint, outputLog));
+
+                SchedulerJobLogFileViewerDialog dialog = new SchedulerJobLogFileViewerDialog(this.logStreamingService, host, endPoint, outputLog);
+                dialog.open();
+                this.close();
+            }
+        } else {
+            String message = "There currently is no " + (getErrorLog ? "error" : "output") + " log for the job";
+            NotificationHelper.showUserNotification(message);
+            this.close();
+        }
     }
 
     public void addItem(String label, ComponentEventListener<ClickEvent<Button>> listener) {
@@ -128,12 +170,11 @@ public class JobContextMenu extends Dialog {
     }
 
     private SchedulerJob getSchedulerJob(String jobName) {
-        SchedulerJobRecord schedulerJobRecord =  this.schedulerJobService.findByContextIdAndJobName(this.rootContextInstance.getName(), jobName);
+        SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextIdAndJobName(this.rootContextInstance.getName(), jobName);
 
-        if(schedulerJobRecord != null) {
+        if (schedulerJobRecord != null) {
             return schedulerJobRecord.getJob();
-        }
-        else {
+        } else {
             return null;
         }
     }
