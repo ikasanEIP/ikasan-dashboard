@@ -172,4 +172,10 @@ public class IkasanRestAutoConfiguration
     public JwtTokenUtil jwtTokenUtil() {
         return new JwtTokenUtil();
     }
+
+    @Bean
+    public JobContextController jobContextController( )
+    {
+        return new JobContextController();
+    }
 }
