@@ -84,23 +84,23 @@ public class ContextInstanceAuditWidget extends Div {
 
             horizontalLayout.add(text);
             return horizontalLayout;
-        })).setHeader("Context Instance Id");
+        })).setHeader("Context Instance Id")
+        .setFlexGrow(3);
 
 
         contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
             ScheduledContextInstanceAudit scheduledContextInstanceAudit = scheduledContextInstanceAuditRecord.getScheduledContextInstanceAudit();
-            Text text = new Text(scheduledContextInstanceAudit.getProcessEvent().getJobName());
-            Button button = new Button("Open");
+            Button button = new Button(scheduledContextInstanceAudit.getProcessEvent().getJobName());
             button.addClickListener(event -> {
                 JsonViewerDialog dialog = new JsonViewerDialog(scheduledContextInstanceAudit.getProcessEvent());
                 dialog.open();
             });
 
-            horizontalLayout.add(text, button);
+            horizontalLayout.add(button);
             return horizontalLayout;
-        })).setHeader("Source Event");
+        })).setHeader("Source Event").setFlexGrow(6);
 
         contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
             VerticalLayout verticalLayout = new VerticalLayout();
@@ -110,21 +110,20 @@ public class ContextInstanceAuditWidget extends Div {
                 && !scheduledContextInstanceAudit.getSchedulerJobInitiationEvents().isEmpty()) {
                 scheduledContextInstanceAudit.getSchedulerJobInitiationEvents().forEach(schedulerJobInitiationEvent -> {
                     HorizontalLayout horizontalLayout = new HorizontalLayout();
-                    Text text = new Text(schedulerJobInitiationEvent.getJobName());
-                    Button button = new Button("Open");
+                    Button button = new Button(schedulerJobInitiationEvent.getJobName());
                     button.addClickListener(event -> {
                         JsonViewerDialog dialog = new JsonViewerDialog(schedulerJobInitiationEvent);
                         dialog.open();
                     });
 
-                    horizontalLayout.add(text, button);
+                    horizontalLayout.add(button);
                     verticalLayout.add(horizontalLayout);
                 });
 
             }
 
             return verticalLayout;
-        })).setHeader("Job Raise Event/s");
+        })).setHeader("Job Raise Event/s").setFlexGrow(6);
 
         contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -139,7 +138,7 @@ public class ContextInstanceAuditWidget extends Div {
             return horizontalLayout;
 
 
-        })).setHeader("Context Instance Before Event Raised");
+        })).setHeader("Instance Before").setFlexGrow(1);
 
         contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -152,7 +151,7 @@ public class ContextInstanceAuditWidget extends Div {
 
             horizontalLayout.add(button);
             return horizontalLayout;
-        })).setHeader("Context Instance After Event Raised");
+        })).setHeader("Instance After").setFlexGrow(1);
 
         this.contextInstanceAuditFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceAuditRecord>of(
             "<div>[[item.date]]</div>")
@@ -160,7 +159,7 @@ public class ContextInstanceAuditWidget extends Div {
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
             .setHeader(getTranslation("table-header.timestamp", UI.getCurrent().getLocale()))
             .setKey("timestamp")
-            .setResizable(true);
+            .setResizable(true).setFlexGrow(3);
 
         this.contextInstanceAuditFilteringGrid.addGridFiltering(textField, moduleSearchFilter::setContextSearchFilter);
     }

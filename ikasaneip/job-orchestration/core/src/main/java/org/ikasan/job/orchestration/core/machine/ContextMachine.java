@@ -264,6 +264,14 @@ public class ContextMachine {
 
     /**
      *
+     * @return
+     */
+    public boolean isDryRun() {
+        return this.dryRunParameters != null;
+    }
+
+    /**
+     *
      * @param jobIdentifier
      */
     public void holdJob(String jobIdentifier) {

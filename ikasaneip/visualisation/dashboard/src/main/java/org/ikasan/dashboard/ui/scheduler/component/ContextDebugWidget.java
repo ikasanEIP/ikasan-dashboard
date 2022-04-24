@@ -4,8 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.tabs.Tab;
@@ -17,6 +19,7 @@ import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -64,6 +67,10 @@ public class ContextDebugWidget extends Div {
 
     private UI ui;
 
+    private Checkbox dryRunModeCheckBox = new Checkbox("Dry run mode");
+    private boolean contextChanged = false;
+
+
     /**
      * Constructor
      */
@@ -98,26 +105,47 @@ public class ContextDebugWidget extends Div {
         this.objectMapper = new ObjectMapper();
 
         this.ui = UI.getCurrent();
+        HorizontalLayout controlsLayout = new HorizontalLayout();
 
         this.contextInstances = new Select<>();
         this.contextInstances.setLabel("Context Instance");
-        this.contextInstances.addValueChangeListener(listener -> {
+        this.contextInstances.setVisible(false);
+        this.contextInstances.addValueChangeListener(event -> {
             try {
-                ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
+                if(this.contextInstances.getValue() != null ) {
+                    ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
 
-                if(contextMachine != null) {
-                    this.schedulerVisualisation.createSchedulerVisualisation(contextMachine.getContext());
-                }
-                else {
-                    return;
-                }
-                if(tabs.getSelectedTab().equals(this.fullContextInstance)) {
+                    if (contextMachine != null) {
+                        this.schedulerVisualisation.createSchedulerVisualisation(contextMachine.getContext());
+                        controlsLayout.remove(this.dryRunModeCheckBox);
+                        this.dryRunModeCheckBox = new Checkbox("Dry run mode");
+                        controlsLayout.add(this.dryRunModeCheckBox);
+                        controlsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.dryRunModeCheckBox);
+                        this.dryRunModeCheckBox.addValueChangeListener(changeEvent -> {
+                            if(this.contextInstances.getValue() != null) {
+                                ContextMachine machine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
+                                if (machine != null) {
+                                    if(changeEvent.getValue()) {
+                                        contextMachine.setDryRunParameters(new DryRunParametersImpl());
+                                    }
+                                    else {
+                                        contextMachine.setDryRunParameters(null);
+                                    }
+                                }
+                            }
+                            contextChanged = false;
+                        });
+                        this.setDryRunCheckbox(contextMachine.getContext().getName());
+                    } else {
+                        return;
+                    }
+                    if (tabs.getSelectedTab().equals(this.fullContextInstance)) {
                         this.aceEditor.setValue(this.objectMapper.writerWithDefaultPrettyPrinter()
                             .writeValueAsString(contextMachine.getContext()));
-                }
-                else if(tabs.getSelectedTab().equals(this.contextStatus)) {
-                    this.aceEditor.setValue(this.objectMapper.writerWithDefaultPrettyPrinter()
+                    } else if (tabs.getSelectedTab().equals(this.contextStatus)) {
+                        this.aceEditor.setValue(this.objectMapper.writerWithDefaultPrettyPrinter()
                             .writeValueAsString(contextMachine.getContextInstanceStatus()));
+                    }
                 }
             }
             catch (JsonProcessingException e){
@@ -128,33 +156,29 @@ public class ContextDebugWidget extends Div {
             }
         });
 
+
         Button addContextButton = new Button("Add Context");
         addContextButton.addClickListener(buttonClickEvent -> {
             ContextUploadDialog contextUploadDialog = new ContextUploadDialog(scheduledContextInstanceService,
-                schedulerService, this.scheduledContextService, this.internalEventDrivenJobService, this.queueDir, moduleMetaDataService, this.jobLockCacheService);
+                schedulerService, this.scheduledContextService, this.internalEventDrivenJobService, this.queueDir, moduleMetaDataService
+                , this.jobLockCacheService);
             contextUploadDialog.open();
 
             contextUploadDialog.addOpenedChangeListener(event -> {
-                if(!event.isOpened()){
-                    this.contextInstances.setItems(ContextMachineCache.instance().contextNames());
-                    this.contextInstances.getDataProvider().refreshAll();
+                if(!ContextMachineCache.instance().contextNames().isEmpty()) {
+                    this.contextInstances.setVisible(true);
+                    if(!event.isOpened()) {
+                        String currentValue = this.contextInstances.getValue();
+                        this.contextInstances.setItems(ContextMachineCache.instance().contextNames());
+                        this.contextInstances.getDataProvider().refreshAll();
+                        if (currentValue != null) {
+                            this.contextInstances.setValue(currentValue);
+                            this.setDryRunCheckbox(currentValue);
+                        }
+                    }
                 }
             });
         });
-
-//        Button newContextButton = new Button("New Context");
-//        newContextButton.addClickListener(buttonClickEvent -> {
-//            ContextDialog contextUploadDialog = new ContextDialog(systemEventLogger,
-//                this.scheduledContextService);
-//            contextUploadDialog.open();
-//
-//            contextUploadDialog.addOpenedChangeListener(event -> {
-//                if(!event.isOpened()){
-//                    this.contextInstances.removeAll();
-//                    this.contextInstances.setItems(ContextMachineCache.instance().contextNames());
-//                }
-//            });
-//        });
 
         Button resetContextButton = new Button("Reset Context");
         resetContextButton.addClickListener(buttonClickEvent -> {
@@ -198,8 +222,9 @@ public class ContextDebugWidget extends Div {
         });
 
 
-        HorizontalLayout controlsLayout = new HorizontalLayout();
         controlsLayout.add(this.contextInstances, addContextButton, resetContextButton);
+        controlsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.contextInstances);
+
 
         this.fullContextInstance = new Tab("Full Context Instance");
         this.contextStatus = new Tab("Context Instance Status");
@@ -303,5 +328,16 @@ public class ContextDebugWidget extends Div {
 
     public void updateContextDropdownContents() {
         this.contextInstances.setItems(ContextMachineCache.instance().contextNames());
+    }
+
+
+    private void setDryRunCheckbox(String contextName) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        if(contextMachine.isDryRun()) {
+            this.dryRunModeCheckBox.setValue(true);
+        }
+        else {
+            this.dryRunModeCheckBox.setValue(false);
+        }
     }
 }

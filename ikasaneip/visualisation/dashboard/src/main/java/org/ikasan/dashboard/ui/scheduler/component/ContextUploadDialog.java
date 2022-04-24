@@ -97,9 +97,6 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
         verticalLayout.add(header);
         verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, header);
 
-        TextField contextNameTextfield = new TextField("Context Instance Name");
-        contextNameTextfield.setWidthFull();
-
 
         MemoryBuffer fileBuffer = new MemoryBuffer();
         Upload upload = new Upload(fileBuffer);
@@ -157,6 +154,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
                 contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
                     schedulerService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event);
                 });
+
                 contextMachine.addContextInstanceStateChangeEventListener(event -> ContextInstanceStateChangeEventBroadcaster.broadcast(event));
                 contextMachine.addSchedulerJobStateChangeEventListener(event -> SchedulerJobStateChangeEventBroadcaster.broadcast(event));
 
@@ -171,9 +169,6 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
             catch (IOException e) {
                 e.printStackTrace();
             }
-//            catch (InvalidContextTemplateException e) {
-//                e.printStackTrace();
-//            }
 
             this.close();
         });
@@ -184,7 +179,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.add(saveButton, cancelButton);
 
-        verticalLayout.add(contextNameTextfield, upload, buttonLayout);
+        verticalLayout.add(upload, buttonLayout);
         verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, upload, buttonLayout);
         this.content.add(verticalLayout);
         super.setWidth("600px");
