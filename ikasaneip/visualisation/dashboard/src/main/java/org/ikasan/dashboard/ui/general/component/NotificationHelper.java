@@ -1,7 +1,15 @@
 package org.ikasan.dashboard.ui.general.component;
 
+import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -18,12 +26,22 @@ public class NotificationHelper
 
     public static void showErrorNotification(String errorMessage)
     {
-        Notification notification = new Notification(errorMessage);
-        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        Notification notification = new Notification();
         notification.setPosition(Notification.Position.MIDDLE);
-        notification.getElement().getStyle().set("background-color", "#ef5350");
+        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         notification.setDuration(errorNotificationDuration);
-        notification.setOpened(true);
+        Icon closeIcon = new Icon("lumo", "cross");
+        closeIcon.getStyle().set("color", "white");
+
+        Button closeButton = new Button(closeIcon, click -> notification.close());
+        closeButton.addClickListener(event -> {
+            notification.close();
+        });
+
+        notification.add(closeButton);
+        notification.add(new Text(errorMessage));
+
+        notification.open();
     }
 
     public static void showUserNotification(String message)
