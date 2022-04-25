@@ -124,7 +124,7 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
     }
 
     private void init() throws IOException{
-        if(!initialised) {
+        if(!initialised && this.contextInstance != null) {
 
             if (this.designerCanvas != null) {
                 this.removeAll();

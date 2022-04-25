@@ -108,8 +108,16 @@ public class ContextDebugWidget extends Div {
         HorizontalLayout controlsLayout = new HorizontalLayout();
 
         this.contextInstances = new Select<>();
+        this.contextInstances.setWidth("350px");
         this.contextInstances.setLabel("Context Instance");
         this.contextInstances.setVisible(false);
+
+        if(!ContextMachineCache.instance().contextNames().isEmpty()) {
+            this.contextInstances.setItems(ContextMachineCache.instance().contextNames());
+            this.contextInstances.getDataProvider().refreshAll();
+            this.contextInstances.setVisible(true);
+        }
+
         this.contextInstances.addValueChangeListener(event -> {
             try {
                 if(this.contextInstances.getValue() != null ) {
