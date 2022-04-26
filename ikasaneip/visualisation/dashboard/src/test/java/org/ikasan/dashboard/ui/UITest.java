@@ -62,7 +62,7 @@ public abstract class UITest
     protected SolrGeneralServiceImpl solrSearchService;
 
     @MockBean
-    protected ModuleMetaDataService moduleMetadataService;
+    public ModuleMetaDataService moduleMetadataService;
 
     @MockBean
     protected ContextInstanceRecoveryManager contextInstanceRecoveryManager;
