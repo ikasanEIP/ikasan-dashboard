@@ -5,10 +5,10 @@ import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import java.util.HashMap;
 
 public class StatusColours {
-    public static final String WAITING = "rgba(210, 215, 211, 0.5)";
-    public static final String RUNNING = "rgba(133,181,225, 0.5)";
-    public static final String ERROR = "rgba(239, 83, 80, 0.5)";
-    public static final String COMPLETE = "rgba(102, 187, 106, 0.5)";
+    public static final String WAITING = "rgba(210, 215, 211, 1.0)";
+    public static final String RUNNING = "rgba(133,181,225, 1.0)";
+    public static final String ERROR = "rgba(239, 83, 80, 1.0)";
+    public static final String COMPLETE = "rgba(102, 187, 106, 1.0)";
 
     private static HashMap<InstanceStatus, String> STATUS_COLOURS = new HashMap<>();
 

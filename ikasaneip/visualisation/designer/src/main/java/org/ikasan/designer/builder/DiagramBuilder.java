@@ -10,6 +10,10 @@ public class DiagramBuilder {
         return new ImageBuilder();
     }
 
+    public CircleBuilder getCircleBuilder() {
+        return new CircleBuilder();
+    }
+
     public PortBuilder getPortBuilder() {
         return new PortBuilder();
     }

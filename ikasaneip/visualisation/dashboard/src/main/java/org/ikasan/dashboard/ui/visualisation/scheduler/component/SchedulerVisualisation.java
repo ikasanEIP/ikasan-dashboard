@@ -273,7 +273,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
                     contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
                     StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
                 ui.access(() ->
-                    this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName()
+                    this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName()+"_status"
                         , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus())));
             }
         });

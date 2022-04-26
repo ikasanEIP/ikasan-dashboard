@@ -86,6 +86,36 @@ public class ImageBuilder {
         return this;
     }
 
+    public ImageBuilder withTopAndBottomPorts() {
+        PortBuilder bottomPortBuilder = new PortBuilder();
+        bottomPortBuilder.witLocator("draw2d.layout.locator.BottomLocator")
+            .withName("bottomHybridSource");
+
+        PortBuilder topPortBuilder = new PortBuilder();
+        topPortBuilder.witLocator("draw2d.layout.locator.TopLocator")
+            .withName("topHybridTarget");
+
+        this.addPort(bottomPortBuilder.build())
+            .addPort(topPortBuilder.build());
+
+        return this;
+    }
+
+    public ImageBuilder withLeftAndRightPorts() {
+        PortBuilder bottomPortBuilder = new PortBuilder();
+        bottomPortBuilder.witLocator("draw2d.layout.locator.RightLocator")
+            .withName("rightHybridSource");
+
+        PortBuilder topPortBuilder = new PortBuilder();
+        topPortBuilder.witLocator("draw2d.layout.locator.LeftLocator")
+            .withName("leftHybridTarget");
+
+        this.addPort(bottomPortBuilder.build())
+            .addPort(topPortBuilder.build());
+
+        return this;
+    }
+
     public Image build() {
         PortBuilder bottomPortBuilder = new PortBuilder();
         bottomPortBuilder.witLocator("draw2d.layout.locator.BottomLocator")

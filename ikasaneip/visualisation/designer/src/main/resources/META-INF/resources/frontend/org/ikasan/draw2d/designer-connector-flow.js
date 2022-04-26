@@ -521,11 +521,15 @@
             console.log("after unmarshal " + performance.now());
 
             _this.getFigures().each((i, figure)=>{
+                debugger;
                 if(figure.NAME === 'draw2d.shape.basic.Image') {
                     figure.setKeepAspectRatio(true);
                     // We want to bring images to the front so that
                     // they can be double clicked!
                     figure.toFront();
+                }
+                else {
+                    figure.toBack();
                 }
             });
 

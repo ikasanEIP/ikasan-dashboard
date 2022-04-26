@@ -233,7 +233,7 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
                     contextInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
                     StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
                 ui.access(() ->
-                    this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier()
+                    this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier() + "_status"
                         , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus())));
             }
         });
