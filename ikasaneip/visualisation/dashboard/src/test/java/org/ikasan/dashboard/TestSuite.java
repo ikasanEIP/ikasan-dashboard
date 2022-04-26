@@ -26,6 +26,8 @@ import org.ikasan.dashboard.ui.visualisation.component.ModuleFilteringGridTest;
 import org.ikasan.dashboard.ui.visualisation.dao.ModuleMetaDataDaoImplTest;
 import org.ikasan.dashboard.ui.visualisation.layout.IkasanFlowLayoutManagerTest;
 import org.ikasan.dashboard.ui.visualisation.layout.IkasanModuleLayoutManagerTest;
+import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobContextMenuTest;
+import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialogTest;
 import org.ikasan.dashboard.ui.visualisation.view.BusinessStreamViewTest;
 import org.ikasan.dashboard.ui.visualisation.view.ModuleVisualisationViewTest;
 import org.junit.runner.RunWith;
@@ -73,7 +75,9 @@ import org.junit.runners.Suite;
     IkasanAppLayoutTest.class,
     SchedulerViewTest.class,
     ConfigurationChangedSystemEventFormatterTest.class,
-    ScheduledJobDialogTest.class
+    ScheduledJobDialogTest.class,
+    JobContextMenuTest.class,
+    SchedulerJobLogFileViewerDialogTest.class
 })
 public class TestSuite {
 }

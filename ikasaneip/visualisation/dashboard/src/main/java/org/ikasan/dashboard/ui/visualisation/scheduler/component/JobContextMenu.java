@@ -43,6 +43,12 @@ public class JobContextMenu extends Dialog {
     private LogStreamingService logStreamingService;
     private ContextInstance currentInstance;
 
+    private final Button viewErrorLogButton;
+    private final Button viewOutputLogButton;
+
+    // note this a local variable so we can test it
+    private SchedulerJobLogFileViewerDialog schedulerJobLogFileViewerDialog;
+
     public JobContextMenu(SchedulerJob schedulerJob, SystemEventLogger systemEventLogger,
                           ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
@@ -119,18 +125,24 @@ public class JobContextMenu extends Dialog {
             NotificationHelper.showUserNotification("Not yet implemented!");
             this.close();
         });
-        this.addItem("View Output Log", event -> {
-            streamLog(schedulerJob, false);
-        });
-        this.addItem("View Error Log", event -> {
-            streamLog(schedulerJob, true);
-        });
+
+        viewOutputLogButton = new Button("View Output Log");
+        viewOutputLogButton.addClickListener(e -> streamLog(schedulerJob, false));
+        layout.add(viewOutputLogButton);
+
+        viewErrorLogButton = new Button("View Error Log");
+        viewErrorLogButton.addClickListener(e -> streamLog(schedulerJob, true));
+        layout.add(viewErrorLogButton);
 
         this.add(layout);
     }
 
     private void streamLog(SchedulerJob schedulerJob, boolean getErrorLog) {
-        // TODO remove all the log info when happy this is working
+        // TODO remove all the log info when happy this is working correctly
+        boolean displayLog = false;
+        String host = null;
+        String endPoint = null;
+        String outputLog = null;
         List<InstanceStatus> allowedStatuses = List.of(InstanceStatus.COMPLETE, InstanceStatus.RUNNING, InstanceStatus.ERROR);
         InstanceStatus status = this.currentInstance.getStatus();
         LOG.info("Current Instance status: " + status);
@@ -141,18 +153,22 @@ public class JobContextMenu extends Dialog {
             LOG.info("agent is " + agent + " for name " + schedulerJob.getAgentName());
             if (schedulerJobInstance != null && schedulerJobInstance.getScheduledProcessEvent() != null && agent != null) {
                 ScheduledProcessEvent scheduledProcessEvent = schedulerJobInstance.getScheduledProcessEvent();
-                String host = agent.getUrl();
-                String endPoint = "/rest/logs";
-                String outputLog = getErrorLog ? scheduledProcessEvent.getResultError() : scheduledProcessEvent.getResultOutput();
-
-                LOG.info(String.format("Streaming lof for host %s, endPoint %s, log %s", host, endPoint, outputLog));
-
-                SchedulerJobLogFileViewerDialog dialog = new SchedulerJobLogFileViewerDialog(this.logStreamingService, host, endPoint, outputLog);
-                dialog.open();
-                this.close();
+                host = agent.getUrl();
+                endPoint = "/rest/logs";
+                outputLog = getErrorLog ? scheduledProcessEvent.getResultError() : scheduledProcessEvent.getResultOutput();
+                LOG.info(String.format("Streaming log for host %s, endPoint %s, log %s", host, endPoint, outputLog));
+                if (outputLog != null && host != null) {
+                    displayLog = true;
+                }
             }
+        }
+
+        if (displayLog) {
+            schedulerJobLogFileViewerDialog = new SchedulerJobLogFileViewerDialog(this.logStreamingService, host, endPoint, outputLog);
+            schedulerJobLogFileViewerDialog.open();
+            this.close();
         } else {
-            String message = "There currently is no " + (getErrorLog ? "error" : "output") + " log for the job";
+            String message = "There is no " + (getErrorLog ? "error" : "output") + " log for the job";
             NotificationHelper.showUserNotification(message);
             this.close();
         }
