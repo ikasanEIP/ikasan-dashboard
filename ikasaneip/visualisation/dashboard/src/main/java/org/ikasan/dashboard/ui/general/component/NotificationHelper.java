@@ -2,14 +2,9 @@ package org.ikasan.dashboard.ui.general.component;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +12,8 @@ import org.springframework.stereotype.Component;
 public class NotificationHelper
 {
     private static Integer errorNotificationDuration = 1000;
+
+    private static String lastMessage;
 
     @Value("${error.notification.duration}")
     public void setErrorNotificationDuration(Integer duration)
@@ -42,6 +39,7 @@ public class NotificationHelper
         notification.add(new Text(errorMessage));
 
         notification.open();
+        lastMessage = errorMessage;
     }
 
     public static void showUserNotification(String message)
@@ -50,5 +48,15 @@ public class NotificationHelper
         notification.setPosition(Notification.Position.MIDDLE);
         notification.setDuration(errorNotificationDuration);
         notification.setOpened(true);
+
+        lastMessage = message;
+    }
+
+    public String getLastMessage() {
+        return lastMessage;
+    }
+
+    public void resetLastMessage() {
+        lastMessage = null;
     }
 }
