@@ -120,13 +120,7 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
 
             SearchResults results;
 
-            // The index of the first item to load
-            int offset = query.getOffset();
-
-            // The number of items to load
-            int limit = query.getLimit();
-
-            results = this.getResults(filter.get(), offset, limit);
+            results = this.getResults(filter.get(), 0, 0);
 
             this.resultSize = results.getTotalNumberOfResults();
 
