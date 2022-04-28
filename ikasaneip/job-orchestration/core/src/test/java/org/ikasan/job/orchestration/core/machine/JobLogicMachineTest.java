@@ -4,6 +4,7 @@ import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateException;
 import org.ikasan.job.orchestration.core.AbstractTest;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -1663,6 +1664,141 @@ public class JobLogicMachineTest extends AbstractTest {
         Assert.assertEquals("agentName8", events.get(0).getAgentName());
         Assert.assertEquals("jobName8", events.get(0).getJobName());
         Assert.assertEquals(4, events.get(0).getContextParameters().size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName8", "agentName8", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters(), context);
+
+        Assert.assertEquals(0, events.size());
+    }
+
+    @Test
+    //TODO delete this test when no longer hard coding for the numerix test 28/04/2022
+    public void test_hack_hard_coding_context_params() throws IOException {
+        String json = loadDataFile("/data/logic/simple-context-chained-jobs-with-context-parameters.json");
+        String replace = json.replace("\"name\": \"test1\"", "\"name\" : \"BusinessDate\"")
+            .replace("\"name\": \"test2\"", "\"name\" : \"ErrorSearch\"")
+            .replace("\"name\": \"test3\"", "\"name\" : \"UseBusinessDate\"")
+            .replace("\"jobName\": \"jobName5\"", "\"jobName\" : \"AC_SCRIPT_Interface_SOII\"");
+
+        ContextInstance context = this.contextService.getContextInstance(replace);
+
+        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
+        InternalEventDrivenJobImpl job5 = new InternalEventDrivenJobImpl();
+        job5.setContextParameters(List.of(getContextParameter("BusinessDate", "String"), getContextParameter("ErrorSearch", "String")));
+        internalEventDrivenJobs.put("agentName5-jobName5", job5);
+        InternalEventDrivenJobImpl job6 = new InternalEventDrivenJobImpl();
+        job6.setContextParameters(List.of(getContextParameter("UseBusinessDate", "String")
+            , getContextParameter("test4", "String")
+            , getContextParameter("test5", "String")));
+        internalEventDrivenJobs.put("agentName6-jobName6", job6);
+        internalEventDrivenJobs.put("agentName7-jobName7", new InternalEventDrivenJobImpl());
+        InternalEventDrivenJobImpl job8 = new InternalEventDrivenJobImpl();
+        job8.setContextParameters(List.of(getContextParameter("test4", "String")
+            , getContextParameter("test5", "String")
+            , getContextParameter("test6", "String")
+            , getContextParameter("test7", "String")));
+        internalEventDrivenJobs.put("agentName8-jobName8", job8);
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters(), context);
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName2", "agentName2", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters(), context);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName5", events.get(0).getAgentName());
+        Assert.assertEquals("AC_SCRIPT_Interface_SOII", events.get(0).getJobName());
+        Assert.assertEquals(2, events.get(0).getContextParameters().size());
+        Assert.assertTrue(events.get(0).isSkipped());
+        ContextParameterInstanceImpl param = (ContextParameterInstanceImpl) events.get(0).getContextParameters().get(0);
+        Assert.assertEquals("BusinessDate", param.getName());
+        Assert.assertEquals("20220428", param.getValue());
+        param = (ContextParameterInstanceImpl) events.get(0).getContextParameters().get(1);
+        Assert.assertEquals("ErrorSearch", param.getName());
+        Assert.assertEquals("blah", param.getValue());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName3", "agentName3", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters(), context);
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName4", "agentName4", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, new HashMap<>(), context.getContextParameters(), context);
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName5", "agentName5", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters(), context);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName6", events.get(0).getAgentName());
+        Assert.assertEquals("jobName6", events.get(0).getJobName());
+        Assert.assertFalse(events.get(0).isSkipped());
+        Assert.assertEquals(3, events.get(0).getContextParameters().size());
+        param = (ContextParameterInstanceImpl) events.get(0).getContextParameters().get(0);
+        Assert.assertEquals("UseBusinessDate", param.getName());
+        Assert.assertEquals("1", param.getValue());
+        param = (ContextParameterInstanceImpl) events.get(0).getContextParameters().get(1);
+        Assert.assertEquals("test4", param.getName());
+        Assert.assertEquals("test4", param.getValue());
+        param = (ContextParameterInstanceImpl) events.get(0).getContextParameters().get(2);
+        Assert.assertEquals("test5", param.getName());
+        Assert.assertEquals("test5", param.getValue());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName6", "agentName6", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters(), context);
+
+        Assert.assertEquals(0, events.size());
+
+        eventInstance
+            = scheduledProcessEventInstance("jobName7", "agentName7", true);
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters(), context);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName8", events.get(0).getAgentName());
+        Assert.assertEquals("jobName8", events.get(0).getJobName());
+        Assert.assertFalse(events.get(0).isSkipped());
+        Assert.assertEquals(4, events.get(0).getContextParameters().size());
+        param = (ContextParameterInstanceImpl) events.get(0).getContextParameters().get(0);
+        Assert.assertEquals("test4", param.getName());
+        Assert.assertEquals("test4", param.getValue());
+        param = (ContextParameterInstanceImpl) events.get(0).getContextParameters().get(1);
+        Assert.assertEquals("test5", param.getName());
+        Assert.assertEquals("test5", param.getValue());
+        param = (ContextParameterInstanceImpl) events.get(0).getContextParameters().get(2);
+        Assert.assertEquals("test6", param.getName());
+        Assert.assertEquals("test6", param.getValue());
+        param = (ContextParameterInstanceImpl) events.get(0).getContextParameters().get(3);
+        Assert.assertEquals("test7", param.getName());
+        Assert.assertEquals("test7", param.getValue());
 
         eventInstance
             = scheduledProcessEventInstance("jobName8", "agentName8", true);
