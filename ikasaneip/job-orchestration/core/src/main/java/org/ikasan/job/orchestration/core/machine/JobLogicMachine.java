@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -34,12 +35,14 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
     private ExecutorService executor;
     private Map<String, ModuleMetaData> agents;
     private JobLockCache jobLockCache;
+    private SchedulerOverrider schedulerOverrider;
 
-    public JobLogicMachine(Map<String, ModuleMetaData> agents, JobLockCache jobLockCache) {
+    public JobLogicMachine(Map<String, ModuleMetaData> agents, JobLockCache jobLockCache, SchedulerOverrider schedulerOverrider) {
         this.agents = agents;
         this.schedulerJobInstanceStateChangeEventListeners = new ArrayList<>();
         executor = Executors.newSingleThreadExecutor();
         this.jobLockCache = jobLockCache;
+        this.schedulerOverrider = schedulerOverrider;
     }
 
     /**
@@ -248,8 +251,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         schedulerJobInitiationEvent.setDryRun(dryRunParameters != null);
         schedulerJobInitiationEvent.setDryRunParameters(dryRunParameters);
 
-        // TODO remove this hack after numerix test
-        boolean shouldSkip = schedulerJobInstance.getJobName().equals("AC_SCRIPT_Interface_SOII") || schedulerJobInstance.isSkip();
+        boolean shouldSkip = schedulerOverrider.isSkipped(schedulerJobInstance.getJobName());
         schedulerJobInitiationEvent.setSkipped(shouldSkip);
 
         if(contextParameters != null) {
@@ -258,8 +260,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                     .getContextParameters()
                     .stream()
                     .filter(contextParameter -> contextParameterInstance.getName().equals(contextParameter.getName()))
-                    // TODO remove this hack after numerix test
-                    .map(instance -> numerixTestHackReplacement(contextParameterInstance))
+                    .map(instance -> replaceParamIfSet(contextParameterInstance))
                     .collect(Collectors.toList()).size() > 0)
                 .collect(Collectors.toList()));
         }
@@ -279,13 +280,10 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         return schedulerJobInitiationEvent;
     }
 
-    private ContextParameterInstance numerixTestHackReplacement(ContextParameterInstance instance) {
-        if (instance.getName().equalsIgnoreCase("BusinessDate")) {
-            instance.setValue("20220428");
-        } else if (instance.getName().equalsIgnoreCase("ErrorSearch")) {
-            instance.setValue("blah");
-        } else if (instance.getName().equalsIgnoreCase("UseBusinessDate")) {
-            instance.setValue("1");
+    private ContextParameterInstance replaceParamIfSet(ContextParameterInstance instance) {
+        String replacementForContextParamName = schedulerOverrider.getReplacementForContextParamName(instance.getName());
+        if (replacementForContextParamName != null) {
+            instance.setValue(replacementForContextParamName);
         }
         return instance;
     }
