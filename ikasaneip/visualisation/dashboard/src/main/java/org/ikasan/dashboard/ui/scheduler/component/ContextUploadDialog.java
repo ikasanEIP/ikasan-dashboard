@@ -11,14 +11,12 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
-import org.ikasan.job.orchestration.context.validation.ContextTemplateValidator;
-import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateException;
+import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
@@ -58,6 +56,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
     private String queueDir;
     private ModuleMetaDataService moduleMetaDataService;
     private JobLockCacheService jobLockCacheService;
+    private SchedulerOverrider schedulerOverrider;
 
     /**
      * Constructor
@@ -65,7 +64,8 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
      */
     public ContextUploadDialog(ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
                                ScheduledContextService scheduledContextService, InternalEventDrivenJobService internalEventDrivenJobService,
-                               String queueDir, ModuleMetaDataService moduleMetaDataService, JobLockCacheService jobLockCacheService)
+                               String queueDir, ModuleMetaDataService moduleMetaDataService, JobLockCacheService jobLockCacheService,
+                               SchedulerOverrider schedulerOverrider)
     {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.schedulerService = schedulerService;
@@ -74,6 +74,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
         this.queueDir = queueDir;
         this.moduleMetaDataService = moduleMetaDataService;
         this.jobLockCacheService = jobLockCacheService;
+        this.schedulerOverrider = schedulerOverrider;
         this.init();
     }
 
@@ -149,7 +150,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
                 });
 
                 ContextMachine contextMachine = new ContextMachine(contextTemplate, contextInstance, scheduledContextInstanceService
-                    , internalEventDrivenJobMap, this.queueDir, agents, jobLockCacheService);
+                    , internalEventDrivenJobMap, this.queueDir, agents, jobLockCacheService, this.schedulerOverrider);
                 contextMachine.init();
                 contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
                     schedulerService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event);

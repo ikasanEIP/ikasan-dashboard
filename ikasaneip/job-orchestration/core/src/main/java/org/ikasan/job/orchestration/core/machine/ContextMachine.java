@@ -8,6 +8,7 @@ import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
 
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
@@ -71,7 +72,7 @@ public class ContextMachine {
     // todo clean up the transient queues once a context is complete.
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
                           Map<String, InternalEventDrivenJob> internalEventDrivenJobs, String queueDir,
-                          Map<String, ModuleMetaData> agents, JobLockCacheService jobLockCacheService) {
+                          Map<String, ModuleMetaData> agents, JobLockCacheService jobLockCacheService, SchedulerOverrider schedulerOverrider) {
         this.context = context;
         this.contextInstance = contextInstance;
         this.internalEventDrivenJobs = internalEventDrivenJobs;
@@ -91,7 +92,7 @@ public class ContextMachine {
         this.jobLockCache.setJobLockCacheService(jobLockCacheService);
         this.jobLockCache.addLocks(context != null ? context.getAllNestedJobLocks() : Collections.emptyList());
 
-        this.jobLogicMachine = new JobLogicMachine(this.agents, this.jobLockCache);
+        this.jobLogicMachine = new JobLogicMachine(this.agents, this.jobLockCache, schedulerOverrider);
     }
 
     /**

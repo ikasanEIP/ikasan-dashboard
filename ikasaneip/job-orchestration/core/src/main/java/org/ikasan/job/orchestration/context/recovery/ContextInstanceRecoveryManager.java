@@ -1,6 +1,7 @@
 package org.ikasan.job.orchestration.context.recovery;
 
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -30,10 +31,11 @@ public class ContextInstanceRecoveryManager {
     private InternalEventDrivenJobService internalEventDrivenJobRecordService;
     private String queueDirectory;
     private JobLockCacheService jobLockCacheService;
+    private SchedulerOverrider schedulerOverrider;
 
     public ContextInstanceRecoveryManager(ScheduledContextInstanceService scheduledContextInstanceService, ScheduledContextService scheduledContextService,
                                           InternalEventDrivenJobService internalEventDrivenJobRecordService, String queueDirectory,
-                                          JobLockCacheService jobLockCacheService) {
+                                          JobLockCacheService jobLockCacheService, SchedulerOverrider schedulerOverrider) {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if(this.scheduledContextInstanceService == null) {
             throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
@@ -53,6 +55,10 @@ public class ContextInstanceRecoveryManager {
         this.jobLockCacheService = jobLockCacheService;
         if (this.jobLockCacheService == null) {
             throw new IllegalArgumentException("jobLockCacheService cannot be null!");
+        }
+        this.schedulerOverrider = schedulerOverrider;
+        if (this.schedulerOverrider == null) {
+            throw new IllegalArgumentException("schedulerOverrider cannot be null!");
         }
     }
 
@@ -75,7 +81,8 @@ public class ContextInstanceRecoveryManager {
 
                 // todo sort out agents
                 ContextMachine contextMachine = new ContextMachine(contextRecord.getContext(), contextInstanceRecord.getContextInstance(),
-                    this.scheduledContextInstanceService, internalEventDrivenJobMap, this.queueDirectory, new HashMap<>(), this.jobLockCacheService);
+                    this.scheduledContextInstanceService, internalEventDrivenJobMap, this.queueDirectory, new HashMap<>(),
+                    this.jobLockCacheService, this.schedulerOverrider);
 
                 ContextMachineCache.instance().put(contextMachine);
 
