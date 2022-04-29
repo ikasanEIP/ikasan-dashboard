@@ -21,6 +21,7 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -103,6 +104,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     @Resource
     private LogStreamingService logStreamingService;
+
+    @Resource
+    private SchedulerOverrider schedulerOverrider;
 
 //    @Resource
 //    private ScheduledProcessManagementService scheduledProcessManagementService
@@ -222,7 +226,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
                 , this.scheduledContextService, this.systemEventLogger, this.internalEventDrivenJobService, this.queueDirectory
                 , this.moduleMetaDataService, this.jobLockCacheService, this.contextInstanceService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.schedulerJobService,
-                this.logStreamingService);
+                this.logStreamingService, this.schedulerOverrider);
 
             this.contextDebugBoard.addRow(this.contextDebugWidget);
             initialised = true;

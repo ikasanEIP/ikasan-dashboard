@@ -18,6 +18,7 @@ import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -45,6 +46,7 @@ public class ContextDebugWidget extends Div {
 
     private ScheduledContextService scheduledContextService;
     private JobLockCacheService jobLockCacheService;
+    private SchedulerOverrider schedulerOverrider;
 
     protected AceEditor aceEditor;
     protected SchedulerVisualisation schedulerVisualisation;
@@ -80,13 +82,14 @@ public class ContextDebugWidget extends Div {
                               ModuleMetaDataService moduleMetaDataService, JobLockCacheService jobLockCacheService,
                               ScheduledContextInstanceService contextInstanceService, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
-                              SchedulerJobService schedulerJobService, LogStreamingService logStreamingService) {
+                              SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, SchedulerOverrider schedulerOverrider) {
         Div div = new Div();
         div.addClassNames("card-counter");
         div.setHeight("100%");
 
         this.scheduledContextService = scheduledContextService;
         this.jobLockCacheService = jobLockCacheService;
+        this.schedulerOverrider = schedulerOverrider;
         this.internalEventDrivenJobService = internalEventDrivenJobService;
         this.queueDir = queueDir;
 
@@ -169,7 +172,7 @@ public class ContextDebugWidget extends Div {
         addContextButton.addClickListener(buttonClickEvent -> {
             ContextUploadDialog contextUploadDialog = new ContextUploadDialog(scheduledContextInstanceService,
                 schedulerService, this.scheduledContextService, this.internalEventDrivenJobService, this.queueDir, moduleMetaDataService
-                , this.jobLockCacheService);
+                , this.jobLockCacheService, this.schedulerOverrider);
             contextUploadDialog.open();
 
             contextUploadDialog.addOpenedChangeListener(event -> {

@@ -1,5 +1,6 @@
 package org.ikasan.job.orchestration.context.register;
 
+import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.quartz.AbstractDashboardSchedulerService;
 import org.ikasan.scheduler.ScheduledJobFactory;
 import org.ikasan.spec.scheduled.SchedulerService;
@@ -31,12 +32,13 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
     private InternalEventDrivenJobService internalEventDrivenJobService;
     private String queueDirectory;
     private JobLockCacheService jobLockCacheService;
+    private SchedulerOverrider schedulerOverrider;
 
 
     public ContextInstanceSchedulerService(Scheduler scheduler, ScheduledJobFactory scheduledJobFactory
         , ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService
         , SchedulerService schedulerService, InternalEventDrivenJobService internalEventDrivenJobService, String queueDirectory
-        , JobLockCacheService jobLockCacheService) {
+        , JobLockCacheService jobLockCacheService, SchedulerOverrider schedulerOverrider) {
         super(scheduler, scheduledJobFactory);
 
         this.scheduledContextService = scheduledContextService;
@@ -63,6 +65,10 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
         if (this.jobLockCacheService == null) {
             throw new IllegalArgumentException("jobLockCacheService cannot be null!");
         }
+        this.schedulerOverrider = schedulerOverrider;
+        if (this.schedulerOverrider == null) {
+            throw new IllegalArgumentException("schedulerOverrider cannot be null!");
+        }
     }
 
     @PostConstruct
@@ -76,7 +82,7 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
                 ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(scheduledContextRecord.getContextName(),
                     scheduledContextRecord.getContext().getTimeWindowStart(), this.scheduledContextService
                     , this.scheduledContextInstanceService, this.schedulerService, this.internalEventDrivenJobService
-                    , this.queueDirectory, this.jobLockCacheService);
+                    , this.queueDirectory, this.jobLockCacheService, this.schedulerOverrider);
                 JobDetail jobDetail = this.scheduledJobFactory.createJobDetail
                     (job, ContextInstanceRegisterJob.class, job.getJobName(), "context");
 

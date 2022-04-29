@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.context.register;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
@@ -43,11 +44,12 @@ public class ContextInstanceRegisterJob implements DashboardJob {
     private InternalEventDrivenJobService internalEventDrivenJobService;
     private String queueDirectory;
     private JobLockCacheService jobLockCacheService;
+    private SchedulerOverrider schedulerOverrider;
 
     public ContextInstanceRegisterJob(String jobName, String cronExpression, ScheduledContextService scheduledContextService,
                                       ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
                                       InternalEventDrivenJobService internalEventDrivenJobService, String queueDirectory,
-                                      JobLockCacheService jobLockCacheService) {
+                                      JobLockCacheService jobLockCacheService, SchedulerOverrider schedulerOverrider) {
         this.jobName = jobName;
         if(this.jobName == null) {
             throw new IllegalArgumentException("jobName cannot be null!");
@@ -79,6 +81,10 @@ public class ContextInstanceRegisterJob implements DashboardJob {
         this.jobLockCacheService = jobLockCacheService;
         if (this.jobLockCacheService == null) {
             throw new IllegalArgumentException("jobLockCacheService cannot be null!");
+        }
+        this.schedulerOverrider = schedulerOverrider;
+        if (this.schedulerOverrider == null) {
+            throw new IllegalArgumentException("schedulerOverrider cannot be null!");
         }
 
         this.objectMapper = ObjectMapperFactory.newInstance();;
@@ -112,7 +118,7 @@ public class ContextInstanceRegisterJob implements DashboardJob {
 
             // todo sort out agents
             ContextMachine contextMachine = new ContextMachine(context, contextInstance, this.scheduledContextInstanceService, internalEventDrivenJobMap,
-                this.queueDirectory, new HashMap<>(), this.jobLockCacheService);
+                this.queueDirectory, new HashMap<>(), this.jobLockCacheService, this.schedulerOverrider);
             contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
                 this.schedulerService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event);
             });
