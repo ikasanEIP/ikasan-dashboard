@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.context;
 
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.recovery.ContextInstanceRecoveryManager;
+import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -39,6 +40,9 @@ public class ContextInstanceRecoveryManagerTest {
 
     @Mock
     private InternalEventDrivenJobService internalEventDrivenJobService;
+    
+    @Mock
+    private SchedulerOverrider schedulerOverrider;
 
     @Test
     public void test() {
@@ -79,7 +83,7 @@ public class ContextInstanceRecoveryManagerTest {
         when(internalEventDrivenJob.getIdentifier()).thenReturn("identifier");
 
         ContextInstanceRecoveryManager contextInstanceRecoveryManager = new ContextInstanceRecoveryManager(scheduledContextInstanceService,
-            scheduledContextService, internalEventDrivenJobService, "queueDir", jobLockCacheService);
+            scheduledContextService, internalEventDrivenJobService, "queueDir", jobLockCacheService, schedulerOverrider);
 
         contextInstanceRecoveryManager.recoverContextInstances();
 
