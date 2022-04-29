@@ -1,13 +1,13 @@
 package org.ikasan.job.orchestration.core.machine;
 
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateException;
 import org.ikasan.job.orchestration.core.AbstractTest;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
-import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
@@ -17,10 +17,11 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class JobLogicMachineTest extends AbstractTest {
     private ContextService contextService = new ContextService();
-    private JobLogicMachine jobLogicMachine = new JobLogicMachine(new HashMap<>(), JobLockCacheImpl.instance());
+    private JobLogicMachine jobLogicMachine = new JobLogicMachine(new HashMap<>(), JobLockCacheImpl.instance(), new SchedulerOverrider(false, null, false, null));
 
     /**
      * This test evaluates a simple dependency:
@@ -1827,8 +1828,14 @@ public class JobLogicMachineTest extends AbstractTest {
     }
 
     @Test
-    //TODO delete this test when no longer hard coding for the numerix test 28/04/2022
     public void test_hack_hard_coding_context_params() throws IOException {
+
+        Map<String, Boolean> jobsToSkip = Map.of("AC_SCRIPT_Interface_SOII", true);
+        Map<String, String> paramsToReplace = Map.of("BusinessDate", "20220428", "ErrorSearch", "blah", "UseBusinessDate", "1");
+
+        SchedulerOverrider schedulerOverrider = new SchedulerOverrider(true, jobsToSkip, true, paramsToReplace);
+        jobLogicMachine = new JobLogicMachine(new HashMap<>(), JobLockCacheImpl.instance(), schedulerOverrider);
+
         String json = loadDataFile("/data/logic/simple-context-chained-jobs-with-context-parameters.json");
         String replace = json.replace("\"name\": \"test1\"", "\"name\" : \"BusinessDate\"")
             .replace("\"name\": \"test2\"", "\"name\" : \"ErrorSearch\"")
@@ -1963,9 +1970,5 @@ public class JobLogicMachineTest extends AbstractTest {
 
     private ContextInstance context(String filename) throws IOException {
         return this.contextService.getContextInstance(loadDataFile(filename));
-    }
-
-    private ContextTemplate contextTemplate(String filename) throws IOException {
-        return this.contextService.getContextTemplate(loadDataFile(filename));
     }
 }

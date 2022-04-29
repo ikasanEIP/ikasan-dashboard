@@ -1,5 +1,8 @@
 package org.ikasan.job.orchestration;
 
+import java.util.Map;
+
+import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.module.service.ModuleActivatorDefaultImpl;
 import org.ikasan.module.startup.dao.StartupControlDao;
 import org.ikasan.job.orchestration.context.recovery.ContextInstanceRecoveryManager;
@@ -46,20 +49,38 @@ public class DashboardJobOrchestrationAutoConfiguration {
     @Resource
     InternalEventDrivenJobService internalEventDrivenJobService;
 
+    @Value("${use.skip.jobs.flag:false}")
+    private boolean useSkipJobs;
+
+    @Value("#{${jobs.to.skip:{T(java.util.Collections).emptyMap()}}}")
+    private Map<String, Boolean> jobsToSkip;
+
+    @Value("${use.replace.context.params.flag:false}")
+    private boolean replaceContextParams;
+
+    @Value("#{${job.context.params.to.replace:{T(java.util.Collections).emptyMap()}}}")
+    private Map<String, String> paramsToReplace;
+
+    @Bean
+    public SchedulerOverrider schedulerOverrider() {
+        return new SchedulerOverrider(useSkipJobs, jobsToSkip, replaceContextParams, paramsToReplace);
+    }
+
     @Bean
     public ContextInstanceRecoveryManager contextInstanceRecoveryManager(ScheduledContextInstanceService scheduledContextInstanceService
-        , ScheduledContextService scheduledContextService, InternalEventDrivenJobService internalEventDrivenJobRecordService,
-                                                                         JobLockCacheService jobLockCacheService) {
+        , ScheduledContextService scheduledContextService, InternalEventDrivenJobService internalEventDrivenJobRecordService
+        , JobLockCacheService jobLockCacheService, SchedulerOverrider schedulerOverrider) {
         return new ContextInstanceRecoveryManager(scheduledContextInstanceService, scheduledContextService, internalEventDrivenJobRecordService,
-            queueDirectory, jobLockCacheService);
+            queueDirectory, jobLockCacheService, schedulerOverrider);
     }
 
     @Bean
     public ContextInstanceSchedulerService contextInstanceSchedulerService(ScheduledContextService scheduledContextService
-        , ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService, JobLockCacheService jobLockCacheService) {
+        , ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService
+        , JobLockCacheService jobLockCacheService, SchedulerOverrider schedulerOverrider) {
         return new ContextInstanceSchedulerService(SchedulerFactory.getInstance().getScheduler()
             , CachingScheduledJobFactory.getInstance(), scheduledContextService, scheduledContextInstanceService, schedulerService
-            , this.internalEventDrivenJobService, this.queueDirectory, jobLockCacheService);
+            , this.internalEventDrivenJobService, this.queueDirectory, jobLockCacheService, schedulerOverrider);
     }
 
     @Bean

@@ -35,7 +35,7 @@ public class ContextResetServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, new JobLockCacheServiceTestImpl());
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, new JobLockCacheServiceTestImpl(), null);
         ContextMachineCache.instance().put(contextMachine);
 
         try {
@@ -51,7 +51,7 @@ public class ContextResetServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, new JobLockCacheServiceTestImpl());
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, new JobLockCacheServiceTestImpl(), null);
         ContextMachineCache.instance().put(contextMachine);
 
         contextResetService.resetContext("CONTEXT-1436221681");
