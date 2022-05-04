@@ -81,6 +81,30 @@ public class ScheduledContextDraw2dAdapter {
                         diagramBuilder.addItem(connectionBuilder.build());
                     });
                 }
+                else if (jobDependency.getLogicalGrouping() != null && jobDependency.getLogicalGrouping().getLogicalGrouping() != null
+                    && jobDependency.getLogicalGrouping().getLogicalGrouping().getOr() != null) {
+                    jobDependency.getLogicalGrouping().getLogicalGrouping().getOr().forEach(or -> {
+                        graph.addEdge(or.getIdentifier(), jobDependency.getJobIdentifier());
+
+                        ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
+                        connectionBuilder.withSource(
+                            diagramBuilder.getConnectionDetailsBuilder()
+                                .withNode(or.getIdentifier())
+                                .withPort("rightHybridSource")
+                                .build()
+                        );
+
+                        connectionBuilder.withTarget(
+                            diagramBuilder.getConnectionDetailsBuilder()
+                                .withNode(jobDependency.getJobIdentifier())
+                                .withPort("leftHybridTarget")
+                                .withDecoration("draw2d.decoration.connection.ArrowDecorator")
+                                .build()
+                        );
+
+                        diagramBuilder.addItem(connectionBuilder.build());
+                    });
+                }
             });
 
 
