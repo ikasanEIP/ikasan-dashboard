@@ -81,7 +81,8 @@ public class ScheduledContextDraw2dAdapter {
                         diagramBuilder.addItem(connectionBuilder.build());
                     });
                 }
-                else if (jobDependency.getLogicalGrouping() != null && jobDependency.getLogicalGrouping().getLogicalGrouping() != null
+
+                if (jobDependency.getLogicalGrouping() != null && jobDependency.getLogicalGrouping().getLogicalGrouping() != null
                     && jobDependency.getLogicalGrouping().getLogicalGrouping().getOr() != null) {
                     jobDependency.getLogicalGrouping().getLogicalGrouping().getOr().forEach(or -> {
                         graph.addEdge(or.getIdentifier(), jobDependency.getJobIdentifier());
