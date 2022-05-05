@@ -43,16 +43,22 @@ public class SolrMetricsServiceImpl extends SolrServiceBase implements SolrServi
 
     @Override
     public List<FlowInvocationMetric> getMetrics(long startTime, long endTime) {
+        this.solrMetricsDao.setSolrUsername(this.solrUsername);
+        this.solrMetricsDao.setSolrPassword(this.solrPassword);
         return this.solrMetricsDao.getMetrics(startTime, endTime);
     }
 
     @Override
     public List<FlowInvocationMetric> getMetrics(String moduleName, long startTime, long endTime) {
+        this.solrMetricsDao.setSolrUsername(this.solrUsername);
+        this.solrMetricsDao.setSolrPassword(this.solrPassword);
         return this.solrMetricsDao.getMetrics(moduleName, startTime, endTime);
     }
 
     @Override
     public List<FlowInvocationMetric> getMetrics(String moduleName, String flowName, long startTime, long endTime) {
+        this.solrMetricsDao.setSolrUsername(this.solrUsername);
+        this.solrMetricsDao.setSolrPassword(this.solrPassword);
         return this.solrMetricsDao.getMetrics(moduleName, flowName, startTime, endTime);
     }
 }
