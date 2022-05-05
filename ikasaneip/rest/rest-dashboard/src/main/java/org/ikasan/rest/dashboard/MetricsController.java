@@ -113,10 +113,17 @@ public class MetricsController
     public ResponseEntity getMetrics(@PathVariable("startTime") long startTime,
                                      @PathVariable("endTime") long endTime)
     {
-        List<FlowInvocationMetric> dtos = this.metricsService.getMetrics(startTime, endTime);
+        try {
+            List<FlowInvocationMetric> dtos = this.metricsService.getMetrics(startTime, endTime);
 
-        return new ResponseEntity(dtos, HttpStatus.OK);
-
+            return new ResponseEntity(dtos, HttpStatus.OK);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity(
+                new ErrorDto("An error has occurred attempting to get metrics events! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @RequestMapping(method = RequestMethod.GET,
@@ -126,9 +133,17 @@ public class MetricsController
                                      @PathVariable("startTime") long startTime,
                                      @PathVariable("endTime") long endTime)
     {
-        List<FlowInvocationMetric> dtos = this.metricsService.getMetrics(moduleName, startTime, endTime);
+        try {
+            List<FlowInvocationMetric> dtos = this.metricsService.getMetrics(moduleName, startTime, endTime);
 
-        return new ResponseEntity(dtos, HttpStatus.OK);
+            return new ResponseEntity(dtos, HttpStatus.OK);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity(
+                new ErrorDto("An error has occurred attempting to get metrics events! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
 
     }
 
@@ -140,9 +155,17 @@ public class MetricsController
                                      @PathVariable("startTime") long startTime,
                                      @PathVariable("endTime") long endTime)
     {
-        List<FlowInvocationMetric> dtos = this.metricsService.getMetrics(moduleName, flowName, startTime, endTime);
+        try {
+            List<FlowInvocationMetric> dtos = this.metricsService.getMetrics(moduleName, flowName, startTime, endTime);
 
-        return new ResponseEntity(dtos, HttpStatus.OK);
+            return new ResponseEntity(dtos, HttpStatus.OK);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity(
+                new ErrorDto("An error has occurred attempting to get metrics events! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
 
     }
 }
