@@ -43,6 +43,7 @@ public class MetricsControllerTest extends  AbstractRestMvcTest
     public static final String METRICS_JSON = "/data/metrics.json";
 
     protected MockMvc mvc;
+
     @Autowired
     WebApplicationContext webApplicationContext;
 
@@ -101,6 +102,17 @@ public class MetricsControllerTest extends  AbstractRestMvcTest
     }
 
     @Test
+    public void get_metrics_within_timeframe_success_exception_bad_time() throws Exception
+    {
+        String uri = "/rest/metrics/0/badtime";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.BAD_REQUEST.value(), status);
+    }
+
+    @Test
     public void get_metrics_for_module_within_timeframe_success() throws Exception
     {
         String uri = "/rest/metrics/my-module/0/100000000";
@@ -116,6 +128,17 @@ public class MetricsControllerTest extends  AbstractRestMvcTest
     }
 
     @Test
+    public void get_metrics_for_module_within_timeframe_exception_bad_time() throws Exception
+    {
+        String uri = "/rest/metrics/my-module/0/badtime";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.BAD_REQUEST.value(), status);
+    }
+
+    @Test
     public void get_metrics_for_module_and_flow_within_timeframe_success() throws Exception
     {
         String uri = "/rest/metrics/my-module/my-flow/0/100000000";
@@ -128,5 +151,16 @@ public class MetricsControllerTest extends  AbstractRestMvcTest
         JSONAssert.assertEquals(objectMapper.writeValueAsString(objectMapper.readValue(loadDataFile(METRICS_JSON)
             , objectMapper.getTypeFactory().constructCollectionType(List.class, FlowInvocationMetricImpl.class)))
             , mvcResult.getResponse().getContentAsString(), false);
+    }
+
+    @Test
+    public void get_metrics_for_module_and_flow_within_timeframe_excrption_bad_time() throws Exception
+    {
+        String uri = "/rest/metrics/my-module/my-flow/0/badtime";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.BAD_REQUEST.value(), status);
     }
 }
