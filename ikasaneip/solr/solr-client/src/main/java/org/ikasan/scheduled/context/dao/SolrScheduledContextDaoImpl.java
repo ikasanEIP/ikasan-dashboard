@@ -52,16 +52,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
 
     @Override
     public SearchResults<ScheduledContextRecord> findAll() {
-        StringBuffer typeBuffer = new StringBuffer();
-        typeBuffer.append(TYPE + COLON);
-        typeBuffer.append("\"").append(SCHEDULED_CONTEXT).append("\" ");
-
-        SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery(typeBuffer.toString());
-
-        logger.debug("query: " + solrQuery);
-
-        return this.findByQuery(solrQuery, SolrScheduledContextRecordImpl.class,-1, -1);
+        return this.findAll(-1, -1);
     }
 
     @Override
@@ -81,6 +72,39 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
         {
             return null;
         }
+    }
+
+    @Override
+    public SearchResults<ScheduledContextRecord> findAll(int limit, int offset) {
+        StringBuffer typeBuffer = new StringBuffer();
+        typeBuffer.append(TYPE + COLON);
+        typeBuffer.append("\"").append(SCHEDULED_CONTEXT).append("\" ");
+
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(typeBuffer.toString());
+
+        logger.debug("query: " + solrQuery);
+
+        return this.findByQuery(solrQuery, SolrScheduledContextRecordImpl.class, offset, limit);
+    }
+
+    @Override
+    public SearchResults<ScheduledContextRecord> findByKeyword(String keyword, int limit, int offset) {
+        StringBuffer typeBuffer = new StringBuffer();
+        typeBuffer.append(TYPE + COLON);
+        typeBuffer.append("\"").append(SCHEDULED_CONTEXT).append("\" ");
+        typeBuffer.append(AND).append(OPEN_BRACKET);
+        typeBuffer.append(MODULE_NAME).append(COLON).append(keyword).append(OR);
+        typeBuffer.append(MODULE_NAME).append(COLON).append(WILDCARD).append(keyword).append(WILDCARD).append(OR);
+        typeBuffer.append(PAYLOAD_CONTENT).append(COLON).append(WILDCARD).append(keyword).append(WILDCARD).append(CLOSE_BRACKET);
+
+
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(typeBuffer.toString());
+
+        logger.debug("query: " + solrQuery);
+
+        return this.findByQuery(solrQuery, SolrScheduledContextRecordImpl.class,offset, limit);
     }
 
     @Override
