@@ -60,6 +60,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     public static final String CLOSE_BRACKET = ")";
 
     public static final String COLON = ":";
+    public static final String WILDCARD = "*";
 
     protected SolrClient solrClient = null;
     protected int daysToKeep = 7;
