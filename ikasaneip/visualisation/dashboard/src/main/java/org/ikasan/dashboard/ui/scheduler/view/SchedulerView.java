@@ -135,7 +135,10 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     private boolean initialised = false;
 
     private Tab schedulerDashboardTab;
+    private Tab contextTemplateTab;
+    private Tab contextTemplateInstanceTab;
     private Tab schedulerJobTab;
+    private Tab maintenanceTab;
     private Tab contextDebugTab;
     private Tabs tabs;
 
