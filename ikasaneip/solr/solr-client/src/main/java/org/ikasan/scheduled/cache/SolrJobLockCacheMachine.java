@@ -20,6 +20,8 @@ public class SolrJobLockCacheMachine implements JobLockCache {
     @JsonProperty
     private final ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier;
 
+    private static final String CONTEXT_ID = ":context-id:";
+
     private SolrJobLockCacheMachine() {
         jobLocksByLockName = new ConcurrentHashMap<>();
         jobLocksByIdentifier = new ConcurrentHashMap<>();
@@ -33,7 +35,14 @@ public class SolrJobLockCacheMachine implements JobLockCache {
         return JobLockMachineHolder.INSTANCE;
     }
 
-    public synchronized void addLock(JobLock jobLock) {
+    @Override
+    public synchronized void addLocks(List<JobLock> jobLocks) {
+        if (jobLocks != null) {
+            jobLocks.forEach(this::addLock);
+        }
+    }
+
+    private synchronized void addLock(JobLock jobLock) {
         if (jobLock != null) {
             // we need jobLocksByLockName to create the global lock holder added later in jobLocksByIdentifier
             JobLockHolder jobLockHolder = jobLocksByLockName.get(jobLock.getName());
@@ -54,56 +63,44 @@ public class SolrJobLockCacheMachine implements JobLockCache {
         }
     }
 
-    public synchronized void addLocks(List<JobLock> jobLocks) {
-        if (jobLocks != null) {
-            jobLocks.forEach(this::addLock);
-        }
-    }
-
-    public synchronized boolean lock(String jobIdentifier) {
-        if (jobIdentifier != null) {
+    @Override
+    public synchronized boolean lock(String jobIdentifier, String contextId) {
+        boolean locked = false;
+        if (jobIdentifier != null && contextId != null) {
             JobLockHolder jobLockHolder = jobLocksByIdentifier.get(jobIdentifier);
             if (jobLockHolder != null && !locked(jobIdentifier)) {
-                jobLockHolder.addLockHolder(jobIdentifier);
-                return true;
+                jobLockHolder.addLockHolder(jobIdentifier + CONTEXT_ID + contextId);
+                locked = true;
             }
         }
-        return false;
+        return locked;
     }
 
-    public synchronized boolean release(String jobIdentifier) {
-        if (jobIdentifier != null) {
+    @Override
+    public synchronized boolean release(String jobIdentifier, String contextId) {
+        boolean removed = false;
+        if (jobIdentifier != null && contextId != null) {
             JobLockHolder jobLockHolder = jobLocksByIdentifier.get(jobIdentifier);
             if (jobLockHolder != null) {
-                return jobLockHolder.removeLockHolder(jobIdentifier);
+                removed = jobLockHolder.removeLockHolder(jobIdentifier + CONTEXT_ID + contextId);
             }
         }
-        return false;
+        return removed;
     }
 
+    @Override
     public synchronized boolean locked(String jobIdentifier) {
         JobLockHolder jlh = getJobLockHolderForJobIdentifier(jobIdentifier);
         return jlh != null && workingCountIsGreaterThanOrEqualToLockCount(jlh);
     }
 
-    public synchronized boolean hasLock(String jobIdentifier) {
+    @Override
+    public synchronized boolean hasLock(String jobIdentifier, String contextId) {
         JobLockHolder jlh = getJobLockHolderForJobIdentifier(jobIdentifier);
-        return jlh != null && jlh.getLockHolders().contains(jobIdentifier);
+        return jlh != null && jlh.getLockHolders().contains(jobIdentifier + CONTEXT_ID + contextId);
     }
 
-    public synchronized boolean existsByIdentifier(String jobIdentifier) {
-        return jobIdentifier != null && jobLocksByIdentifier.get(jobIdentifier) != null;
-    }
-
-    public synchronized boolean existsByJobLockName(String jobLockName) {
-        return jobLockName != null && jobLocksByLockName.get(jobLockName) != null;
-    }
-
-    public synchronized List<SchedulerJob> getJobsForIdentifier(String jobIdentifier) {
-        JobLockHolder jlh = getJobLockHolderForJobIdentifier(jobIdentifier);
-        return jlh == null ? Collections.emptyList() : jlh.getSchedulerJobs();
-    }
-
+    @Override
     public synchronized void reset() {
         jobLocksByLockName.clear();
         jobLocksByIdentifier.clear();
@@ -120,6 +117,10 @@ public class SolrJobLockCacheMachine implements JobLockCache {
     @Override
     public void setJobLockCacheService(JobLockCacheService jobLockCacheService) {
         // do nothing in solr implementation
+    }
+
+    private synchronized boolean existsByJobLockName(String jobLockName) {
+        return jobLockName != null && jobLocksByLockName.get(jobLockName) != null;
     }
 
     public ConcurrentHashMap<String, JobLockHolder> getJobLocksByLockName() {
