@@ -805,6 +805,8 @@ public class ContextMachineTest extends AbstractTest {
 
         InstanceStatus status = contextMachine.getContextStatus("Context3");
         Assert.assertEquals(InstanceStatus.COMPLETE, status);
+
+        validateAllLocksCleared();
     }
 
     @Test
@@ -895,6 +897,8 @@ public class ContextMachineTest extends AbstractTest {
 
         InstanceStatus status = contextMachine.getContextStatus("Context3");
         Assert.assertEquals(InstanceStatus.COMPLETE, status);
+
+        validateAllLocksCleared();
     }
 
     @Test
@@ -984,6 +988,8 @@ public class ContextMachineTest extends AbstractTest {
 
         InstanceStatus status = contextMachine.getContextStatus("Context3");
         Assert.assertEquals(InstanceStatus.COMPLETE, status);
+
+        validateAllLocksCleared();
     }
 
     @Test
@@ -1182,6 +1188,8 @@ public class ContextMachineTest extends AbstractTest {
         Assert.assertEquals(InstanceStatus.COMPLETE, status);
         status = contextMachine.getContextStatus("Context1");
         Assert.assertEquals(InstanceStatus.COMPLETE, status);
+
+        validateAllLocksCleared();
     }
 
     @Test
@@ -1368,6 +1376,8 @@ public class ContextMachineTest extends AbstractTest {
         Assert.assertEquals(InstanceStatus.COMPLETE, status);
         status = contextMachine.getContextStatus("Context1");
         Assert.assertEquals(InstanceStatus.COMPLETE, status);
+
+        validateAllLocksCleared();
     }
 
     @Test
@@ -1521,8 +1531,6 @@ public class ContextMachineTest extends AbstractTest {
             events.get(0).getAgentName(), true);
 
         events = contextMachine.eventReceived(eventInstance);
-
-        events = contextMachine.eventReceived(eventInstance);
         this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1010295672", InstanceStatus.COMPLETE);
         this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1568132585", InstanceStatus.COMPLETE);
         this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-1892741766_ScheduledJob_17:00:00", InstanceStatus.COMPLETE);
@@ -1535,7 +1543,7 @@ public class ContextMachineTest extends AbstractTest {
         this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-2074200534", InstanceStatus.WAITING);
         Assert.assertEquals(0, events.size());
 
-        System.out.println(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()));
+//        printContext(contextMachine);
     }
 
     @Test
@@ -3605,6 +3613,8 @@ public class ContextMachineTest extends AbstractTest {
         /**
          * The orchestration is now complete!
          */
+
+        validateAllLocksCleared();
     }
 
     @Test
@@ -3689,6 +3699,8 @@ public class ContextMachineTest extends AbstractTest {
         this.assertContextStatus(contextMachine, "CONTEXT--1250033421", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--1543216829", InstanceStatus.WAITING);
         this.assertContextStatus(contextMachine, "CONTEXT--1409548854", InstanceStatus.WAITING);
+
+        validateAllLocksCleared();
     }
 
     @Test

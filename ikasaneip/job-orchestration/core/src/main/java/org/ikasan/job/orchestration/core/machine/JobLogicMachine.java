@@ -131,13 +131,18 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
         if (schedulerJobInstance != null && schedulerJobInstance.getStatus().equals(InstanceStatus.COMPLETE)) {
             String identifier = schedulerJobInstance.getIdentifier();
-            if (jobLockCache.locked(identifier) && jobLockCache.hasLock(identifier)) {
-                jobLockCache.release(identifier);
-                    for (SchedulerJob job : jobLockCache.getJobsForIdentifier(identifier)) {
+            String contextId = contextInstance.getId();
+            // release the lock as job completed
+            if (jobLockCache.hasLock(identifier, contextId)) {
+                jobLockCache.release(identifier, contextId);
+            }
+            // if not locked then try and raise events
+            if (!jobLockCache.locked(identifier)) {
+                for (SchedulerJob job : contextInstance.getScheduledJobs()) {
                     SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(job.getIdentifier());
                     InternalEventDrivenJob internalEventDrivenJob = internalEventDrivenJobs.get(job.getIdentifier());
-                    if (jobInstance != null && jobInstance.getStatus().equals(InstanceStatus.WAITING) && !jobLockCache.hasLock(jobInstance.getIdentifier())) {
-                        jobLockCache.lock(jobInstance.getIdentifier());
+                    if (jobInstance != null && jobInstance.getStatus().equals(InstanceStatus.WAITING) && !jobLockCache.locked(jobInstance.getIdentifier())) {
+                        jobLockCache.lock(jobInstance.getIdentifier(), contextId);
 
                         // We need to check that it is ok to publish a job initiation event even though it is being released from the lock.
                         // It may be the case that it is not eligible to initiate another job if the logic associated with the event
@@ -146,6 +151,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                             if (jobDependency.getJobIdentifier().equals(jobInstance.getIdentifier())
                                 && this.shouldRaiseEvent(jobDependency.getLogicalGrouping(), contextInstance.getScheduledJobsMap())) {
                                 if(!jobInstance.isInitiationEventRaised()) {
+                                    jobInstance.setInitiationEventRaised(true);
                                     results.add(this.createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters, contextParameters
                                         , parentContextInstance, scheduledProcessEvent));
                                 }
@@ -159,7 +165,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
             // Now check if the event received received may actually be the catalyst for a locked job to run.
             for (JobDependency jobDependency : contextInstance.getJobDependencies()) {
-                if (jobLockCache.locked(jobDependency.getJobIdentifier()) && jobLockCache.hasLock(jobDependency.getJobIdentifier())) {
+                if (jobLockCache.locked(jobDependency.getJobIdentifier()) && jobLockCache.hasLock(jobDependency.getJobIdentifier(), contextInstance.getId())) {
 
                     // check if the incoming event is in any of the logical dependencies of the locked job and that it should raise an event.
                     if((this.andContainJobIdentifier(jobDependency.getLogicalGrouping().getAnd(), schedulerJobInstance.getIdentifier()) ||
@@ -169,6 +175,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                         InternalEventDrivenJob internalEventDrivenJob = internalEventDrivenJobs.get(jobDependency.getJobIdentifier());
                         SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(jobDependency.getJobIdentifier());
                         if(!jobInstance.isInitiationEventRaised()) {
+                            jobInstance.setInitiationEventRaised(true);
                             results.add(this.createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters, contextParameters
                                 , parentContextInstance, scheduledProcessEvent));
                         }
@@ -197,7 +204,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 if (!jobLockCache.locked(jobDependency.getJobIdentifier()) && jobInstance.getStatus() != InstanceStatus.COMPLETE) {
                     // adding the lock here will only add it if it's not already added and exists in the cache
                     // hence we try and add it every time regardless of whether it exists or not or has the lock as faster to do so
-                    jobLockCache.lock(jobInstance.getIdentifier());
+                    jobLockCache.lock(jobInstance.getIdentifier(), contextInstance.getId());
                     raiseEventDueToLock = true;
                 }
 

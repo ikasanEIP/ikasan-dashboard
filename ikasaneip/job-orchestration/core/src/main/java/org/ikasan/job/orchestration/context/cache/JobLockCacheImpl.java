@@ -1,6 +1,5 @@
 package org.ikasan.job.orchestration.context.cache;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public final class JobLockCacheImpl implements JobLockCache {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobLockCacheImpl.class);
+    private static final String CONTEXT_ID = ":context-id:";
 
     @JsonProperty
     private final ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName;
@@ -41,7 +41,14 @@ public final class JobLockCacheImpl implements JobLockCache {
         return JobLockMachineHolder.INSTANCE;
     }
 
-    public synchronized void addLock(JobLock jobLock) {
+    @Override
+    public synchronized void addLocks(List<JobLock> jobLocks) {
+        if (jobLocks != null) {
+            jobLocks.forEach(this::addLock);
+        }
+    }
+
+    private synchronized void addLock(JobLock jobLock) {
         if (jobLock != null) {
             // we need jobLocksByLockName to create the global lock holder added later in jobLocksByIdentifier
             JobLockHolder jobLockHolder = jobLocksByLockName.get(jobLock.getName());
@@ -65,77 +72,64 @@ public final class JobLockCacheImpl implements JobLockCache {
         }
     }
 
-    public synchronized void addLocks(List<JobLock> jobLocks) {
-        if (jobLocks != null) {
-            jobLocks.forEach(this::addLock);
-        }
-    }
-
-    public synchronized boolean lock(String jobIdentifier) {
+    @Override
+    public synchronized boolean lock(String jobIdentifier, String contextId) {
         boolean locked = false;
-        LOGGER.debug(String.format("Locking jobIdentifier: %s", jobIdentifier));
-        if (jobIdentifier != null) {
+        LOGGER.debug(String.format("Locking jobIdentifier: %s contextId: %s", jobIdentifier, contextId));
+        if (jobIdentifier != null && contextId != null) {
             JobLockHolder jobLockHolder = jobLocksByIdentifier.get(jobIdentifier);
             if (jobLockHolder != null && !locked(jobIdentifier)) {
-                jobLockHolder.addLockHolder(jobIdentifier);
+                jobLockHolder.addLockHolder(jobIdentifier + CONTEXT_ID + contextId);
                 saveJobLockCacheRecord();
                 locked = true;
             }
         }
         String message = locked ? "Successfully locked " : "Failed to lock ";
-        LOGGER.debug(String.format("%s jobIdentifier: %s", message, jobIdentifier));
+        LOGGER.debug(String.format("%s jobIdentifier: %s contextId %s", message, jobIdentifier, contextId));
         return locked;
     }
 
-    public synchronized boolean release(String jobIdentifier) {
+    @Override
+    public synchronized boolean release(String jobIdentifier, String contextId) {
         boolean removed = false;
-        LOGGER.debug(String.format("Releasing lock for jobIdentifier: %s", jobIdentifier));
-        if (jobIdentifier != null) {
+        LOGGER.debug(String.format("Releasing lock for jobIdentifier: %s  contextId %s", jobIdentifier, contextId));
+        if (jobIdentifier != null && contextId != null) {
             JobLockHolder jobLockHolder = jobLocksByIdentifier.get(jobIdentifier);
             if (jobLockHolder != null) {
-                removed = jobLockHolder.removeLockHolder(jobIdentifier);
+                removed = jobLockHolder.removeLockHolder(jobIdentifier + CONTEXT_ID + contextId);
                 if (removed) {
                     saveJobLockCacheRecord();
                 }
             }
         }
         String message = removed ? "Successfully released " : "Failed to release ";
-        LOGGER.debug(String.format("%s jobIdentifier: %s", message, jobIdentifier));
+        LOGGER.debug(String.format("%s jobIdentifier: %s  contextId %s", message, jobIdentifier, contextId));
         return removed;
     }
 
+    @Override
     public synchronized boolean locked(String jobIdentifier) {
         JobLockHolder jlh = getJobLockHolderForJobIdentifier(jobIdentifier);
         return jlh != null && workingCountIsGreaterThanOrEqualToLockCount(jlh);
     }
 
-    public synchronized boolean hasLock(String jobIdentifier) {
+    @Override
+    public synchronized boolean hasLock(String jobIdentifier, String contextId) {
         JobLockHolder jlh = getJobLockHolderForJobIdentifier(jobIdentifier);
-        return jlh != null && jlh.getLockHolders().contains(jobIdentifier);
+        return jlh != null && jlh.getLockHolders().contains(jobIdentifier + CONTEXT_ID + contextId);
     }
 
-    public synchronized boolean existsByIdentifier(String jobIdentifier) {
-        return jobIdentifier != null && jobLocksByIdentifier.get(jobIdentifier) != null;
-    }
-
-    public synchronized boolean existsByJobLockName(String jobLockName) {
-        return jobLockName != null && jobLocksByLockName.get(jobLockName) != null;
-    }
-
-    public synchronized List<SchedulerJob> getJobsForIdentifier(String jobIdentifier) {
-        JobLockHolder jlh = getJobLockHolderForJobIdentifier(jobIdentifier);
-        return jlh == null ? Collections.emptyList() : jlh.getSchedulerJobs();
-    }
-
+    @Override
     public synchronized void reset() {
         LOGGER.debug("Clearing all locks");
         jobLocksByLockName.clear();
         jobLocksByIdentifier.clear();
     }
 
+    @Override
     public synchronized boolean resetLock(String lockName) {
         LOGGER.debug(String.format("Clearing lock for lock name: %s", lockName));
-        if (existsByJobLockName(lockName)) {
+        if (lockName != null && jobLocksByLockName.get(lockName) != null) {
             jobLocksByLockName.get(lockName).getLockHolders().clear();
             return true;
         }
