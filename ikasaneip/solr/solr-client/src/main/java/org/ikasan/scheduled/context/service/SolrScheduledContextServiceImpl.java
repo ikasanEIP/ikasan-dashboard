@@ -22,6 +22,16 @@ public class SolrScheduledContextServiceImpl implements ScheduledContextService 
     }
 
     @Override
+    public SearchResults<? extends ScheduledContextRecord> findAll(int limit, int offset) {
+        return this.dao.findAll(limit, offset);
+    }
+
+    @Override
+    public SearchResults<? extends ScheduledContextRecord> findByKeyword(String keyword, int limit, int offset) {
+        return this.dao.findByKeyword(keyword, limit, offset);
+    }
+
+    @Override
     public ScheduledContextRecord findById(String id) {
         return this.dao.findById(id);
     }
