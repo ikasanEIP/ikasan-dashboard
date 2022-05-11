@@ -1,5 +1,6 @@
 package org.ikasan.job.orchestration.context.cache;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -142,6 +143,12 @@ public final class JobLockCacheImpl implements JobLockCache {
         if (this.jobLockCacheService == null) {
             this.jobLockCacheService = jobLockCacheService;
         }
+    }
+
+    @Override
+    public synchronized List<SchedulerJob> getJobsForIdentifier(String jobIdentifier) {
+        JobLockHolder jlh = getJobLockHolderForJobIdentifier(jobIdentifier);
+        return jlh == null ? Collections.emptyList() : jlh.getSchedulerJobs();
     }
 
     private JobLockHolder getJobLockHolderForJobIdentifier(String jobIdentifier) {
