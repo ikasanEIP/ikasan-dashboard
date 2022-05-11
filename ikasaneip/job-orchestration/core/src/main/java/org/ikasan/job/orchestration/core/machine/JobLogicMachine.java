@@ -138,7 +138,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             }
             // if not locked then try and raise events
             if (!jobLockCache.locked(identifier)) {
-                for (SchedulerJob job : contextInstance.getScheduledJobs()) {
+                for (SchedulerJob job : jobLockCache.getJobsForIdentifier(identifier)) {
                     SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(job.getIdentifier());
                     InternalEventDrivenJob internalEventDrivenJob = internalEventDrivenJobs.get(job.getIdentifier());
                     if (jobInstance != null && jobInstance.getStatus().equals(InstanceStatus.WAITING) && !jobLockCache.locked(jobInstance.getIdentifier())) {
