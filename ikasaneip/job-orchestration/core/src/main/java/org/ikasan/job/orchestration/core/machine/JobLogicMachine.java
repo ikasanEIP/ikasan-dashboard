@@ -131,7 +131,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
         if (schedulerJobInstance != null && schedulerJobInstance.getStatus().equals(InstanceStatus.COMPLETE)) {
             String identifier = schedulerJobInstance.getIdentifier();
-            String contextId = contextInstance.getId();
+            String contextId = contextInstance.getName();
             // release the lock as job completed
             if (jobLockCache.hasLock(identifier, contextId)) {
                 jobLockCache.release(identifier, contextId);
@@ -165,7 +165,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
             // Now check if the event received received may actually be the catalyst for a locked job to run.
             for (JobDependency jobDependency : contextInstance.getJobDependencies()) {
-                if (jobLockCache.locked(jobDependency.getJobIdentifier()) && jobLockCache.hasLock(jobDependency.getJobIdentifier(), contextInstance.getId())) {
+                if (jobLockCache.locked(jobDependency.getJobIdentifier()) && jobLockCache.hasLock(jobDependency.getJobIdentifier(), contextInstance.getName())) {
 
                     // check if the incoming event is in any of the logical dependencies of the locked job and that it should raise an event.
                     if((this.andContainJobIdentifier(jobDependency.getLogicalGrouping().getAnd(), schedulerJobInstance.getIdentifier()) ||
@@ -204,7 +204,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 if (!jobLockCache.locked(jobDependency.getJobIdentifier()) && jobInstance.getStatus() != InstanceStatus.COMPLETE) {
                     // adding the lock here will only add it if it's not already added and exists in the cache
                     // hence we try and add it every time regardless of whether it exists or not or has the lock as faster to do so
-                    jobLockCache.lock(jobInstance.getIdentifier(), contextInstance.getId());
+                    jobLockCache.lock(jobInstance.getIdentifier(), contextInstance.getName());
                     raiseEventDueToLock = true;
                 }
 
