@@ -115,6 +115,12 @@ public class SolrJobLockCacheMachine implements JobLockCache {
     }
 
     @Override
+    public synchronized List<SchedulerJob> getJobsForIdentifier(String jobIdentifier) {
+        JobLockHolder jlh = getJobLockHolderForJobIdentifier(jobIdentifier);
+        return jlh == null ? Collections.emptyList() : jlh.getSchedulerJobs();
+    }
+
+    @Override
     public void setJobLockCacheService(JobLockCacheService jobLockCacheService) {
         // do nothing in solr implementation
     }
