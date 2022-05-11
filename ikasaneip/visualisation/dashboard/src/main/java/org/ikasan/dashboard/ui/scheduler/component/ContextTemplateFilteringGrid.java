@@ -132,7 +132,7 @@ public class ContextTemplateFilteringGrid extends Grid<ScheduledContextRecord> {
 
         try {
             if(filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty()) {
-//                results = this.scheduledContextService.findAllAuditRecordsByContextId(filter.getContextSearchFilter(), limit, offset);
+                results = this.scheduledContextService.findByKeyword(filter.getContextSearchFilter(), limit, offset);
             }
             else {
                 results = this.scheduledContextService.findAll(limit, offset);
