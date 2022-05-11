@@ -171,6 +171,7 @@ public class ContextTemplateManagementWidget extends Div {
         aceEditor.setHeight("75vh");
         aceEditor.setReadOnly(true);
         aceEditor.setWrap(false);
+        aceEditor.setVisible(false);
     }
 
     protected void initialiseVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
