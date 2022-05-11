@@ -121,6 +121,45 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
     }
 
     @Test
+    public void test_find_all_limit_offset() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrContextTemplateImpl solrContextTemplate
+                = ScheduledObjectMapperFactory.newInstance()
+                .readValue(loadDataFile("/data/context-with-different-job-locks-1.json").getBytes(), SolrContextTemplateImpl.class);
+
+            SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
+            scheduledContextRecord.setContextName("contextName1");
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setContext(solrContextTemplate);
+            this.dao.save(scheduledContextRecord);
+
+            solrContextTemplate = new SolrContextTemplateImpl();
+            solrContextTemplate.setName("contextName2");
+            scheduledContextRecord = new SolrScheduledContextRecordImpl();
+            scheduledContextRecord.setContextName("contextName2");
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setContext(solrContextTemplate);
+            this.dao.save(scheduledContextRecord);
+
+            SearchResults<ScheduledContextRecord> found =  this.dao.findAll(100, 0);
+
+            Assert.assertEquals(2, found.getResultList().size());
+
+            found =  this.dao.findAll(-1, -1);
+
+            Assert.assertEquals(2, found.getResultList().size());
+
+            found =  this.dao.findAll(0, 0);
+
+            Assert.assertEquals(0, found.getResultList().size());
+        }
+    }
+
+    @Test
     public void test_find_by_name() throws Exception {
 
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
@@ -183,8 +222,26 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
 
             SearchResults<ScheduledContextRecord> found = this.dao.findByKeyword("Context-Locks-1", 100, 0);
 
+            Assert.assertEquals(1, found.getResultList().size());
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
+
+            found = this.dao.findByKeyword("Context-Loc", 100, 0);
+
+            Assert.assertEquals(1, found.getResultList().size());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
+
+            found = this.dao.findByKeyword("xt-Locks-1", 100, 0);
+
+            Assert.assertEquals(1, found.getResultList().size());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
+
+
+            found = this.dao.findByKeyword("agent", 100, 0);
+
+            Assert.assertEquals(2, found.getResultList().size());
         }
     }
 
