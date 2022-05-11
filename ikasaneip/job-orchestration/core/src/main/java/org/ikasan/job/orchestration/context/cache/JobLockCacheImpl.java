@@ -78,7 +78,7 @@ public final class JobLockCacheImpl implements JobLockCache {
         LOGGER.debug(String.format("Locking jobIdentifier: %s contextId: %s", jobIdentifier, contextId));
         if (jobIdentifier != null && contextId != null) {
             JobLockHolder jobLockHolder = jobLocksByIdentifier.get(jobIdentifier);
-            if (jobLockHolder != null && !locked(jobIdentifier)) {
+            if (jobLockHolder != null && !locked(jobIdentifier) && !jobLockHolder.getLockHolders().contains(jobIdentifier + CONTEXT_ID + contextId)) {
                 jobLockHolder.addLockHolder(jobIdentifier + CONTEXT_ID + contextId);
                 saveJobLockCacheRecord();
                 locked = true;

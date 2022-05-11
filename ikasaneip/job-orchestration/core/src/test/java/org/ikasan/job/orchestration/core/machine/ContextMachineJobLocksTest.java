@@ -630,7 +630,7 @@ public class ContextMachineJobLocksTest extends AbstractTest {
     }
 
     @Test
-    public void test_context_machine_full_locks_one_lock_multi_same_name_jobs_1() throws Exception {
+    public void test_context_machine_full_locks_one_lock_multi_same_name_jobs() throws Exception {
         String agentName = "asset-control-scheduler-agent";
         Map<String, InstanceStatus> workingStatuses = createInitialStatuses();
 
@@ -682,12 +682,15 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         workingStatuses.put("CONTEXT-369160711", InstanceStatus.RUNNING);
         workingStatuses.put("CONTEXT-769949213", InstanceStatus.RUNNING);
         workingStatuses.put("CONTEXT-140537370", InstanceStatus.RUNNING);
+        // asset-control-scheduler-agent-97656185 has raised a lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-97656185", contextMachine.getContext("CONTEXT-140537370").getId());
         assertContextStatuses(contextMachine, workingStatuses);
 
         assertEquals(0, this.sendScheduledEventToContextMachine(contextMachine,
             "CONTEXT-369160711", "CONTEXT-140537370", agentName, "97656185", true).size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-140537370", "asset-control-scheduler-agent-97656185"));
-
+        // lock cleared by running asset-control-scheduler-agent-97656185
+        validateAllLocksCleared();
         assertContextStatuses(contextMachine, workingStatuses);
 
         assertEquals(0, this.sendScheduledEventToContextMachine(contextMachine,
@@ -697,6 +700,7 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         // CONTEXT-140537370 completes
         workingStatuses.put("CONTEXT-140537370", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         /**
          *       "name" : "CONTEXT-1167353422",
@@ -841,59 +845,70 @@ public class ContextMachineJobLocksTest extends AbstractTest {
 
         workingStatuses.put("CONTEXT-1167353422", InstanceStatus.RUNNING);
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1167353422", agentName, "-854506457", true);
         assertEquals(1, events.size());
         assertEquals("-457154928", events.get(0).getJobName());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1167353422", "asset-control-scheduler-agent--854506457"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1167353422", agentName, "1666702606", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1167353422", "asset-control-scheduler-agent-1666702606"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1167353422", agentName, "-457154928", true);
         assertEquals(1, events.size());
         assertEquals("1483324359", events.get(0).getJobName());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1167353422", "asset-control-scheduler-agent--457154928"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1167353422", agentName, "-1222568013", true);
         assertEquals(1, events.size());
         assertEquals("-259049314", events.get(0).getJobName());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1167353422", "asset-control-scheduler-agent--1222568013"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1167353422", agentName, "1483324359", true);
         assertEquals(1, events.size());
         assertEquals("199248836", events.get(0).getJobName());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1167353422", "asset-control-scheduler-agent-1483324359"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1167353422", agentName, "991999604", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1167353422", "asset-control-scheduler-agent-991999604"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1167353422", agentName, "-259049314", true);
         assertEquals(1, events.size());
         assertEquals("812176495", events.get(0).getJobName());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1167353422", "asset-control-scheduler-agent--259049314"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1167353422", agentName, "812176495", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1167353422", "asset-control-scheduler-agent-812176495"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1167353422", agentName, "199248836", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1167353422", "asset-control-scheduler-agent-199248836"));
+        validateAllLocksCleared();
 
         // CONTEXT-1167353422 now complete
         workingStatuses.put("CONTEXT-1167353422", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         /**
          * {
@@ -945,16 +960,22 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         workingStatuses.put("CONTEXT--2125239559", InstanceStatus.RUNNING);
         workingStatuses.put("CONTEXT-1724676333", InstanceStatus.RUNNING);
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-1164721449 has raised a lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT--2125239559").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--2125239559", agentName, "-391607565", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--2125239559", "asset-control-scheduler-agent--391607565"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-1164721449 still has lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT--2125239559").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--2125239559", agentName, "1164721449", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--2125239559", "asset-control-scheduler-agent-1164721449"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // running asset-control-scheduler-agent-1164721449 clears the lock
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--2125239559", agentName, "-391607564", true);
         assertEquals(0, events.size());
@@ -962,7 +983,7 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         // CONTEXT--2125239559 now complete
         workingStatuses.put("CONTEXT--2125239559", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
-
+        validateAllLocksCleared();
 
         /**
          *         "name" : "CONTEXT-1208521119",
@@ -1007,28 +1028,38 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1208521119", agentName, "1724676333_ScheduledJob_17:00:00", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1208521119", "asset-control-scheduler-agent-1724676333_ScheduledJob_17:00:00"));
+        // lock has been has raised by asset-control-scheduler-agent-1164721449
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT-1208521119").getId());
 
         // CONTEXT-1208521119 now running
         workingStatuses.put("CONTEXT-1208521119", InstanceStatus.RUNNING);
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-1164721449 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT-1208521119").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1208521119", agentName, "761640318", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1208521119", "asset-control-scheduler-agent-761640318"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-1164721449 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT-1208521119").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1208521119", agentName, "1164721449", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1208521119", "asset-control-scheduler-agent-1164721449"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // running asset-control-scheduler-agent-1164721449 clears the lock
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1208521119", agentName, "761640319", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1208521119", "asset-control-scheduler-agent-761640319"));
+        validateAllLocksCleared();
 
         // CONTEXT-1208521119 now complete
         workingStatuses.put("CONTEXT-1208521119", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         /**
          *         "name" : "CONTEXT-1034431901",
@@ -1073,20 +1104,27 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1034431901", agentName, "1724676333_ScheduledJob_17:00:00", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1034431901", "asset-control-scheduler-agent-1724676333_ScheduledJob_17:00:00"));
+        // asset-control-scheduler-agent-1164721449 has raised a lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT-1034431901").getId());
 
         // CONTEXT-1208521119 now running
         workingStatuses.put("CONTEXT-1034431901", InstanceStatus.RUNNING);
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-1164721449 still has lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT-1034431901").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1034431901", agentName, "1164721449", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1034431901", "asset-control-scheduler-agent-1164721449"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // running asset-control-scheduler-agent-1164721449 clears the lock
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1034431901", agentName, "-167881790", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1034431901", "asset-control-scheduler-agent--167881790"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1034431901", agentName, "-167881789", true);
         assertEquals(0, events.size());
@@ -1094,6 +1132,7 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         // CONTEXT-1034431901 now complete
         workingStatuses.put("CONTEXT-1034431901", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         /**
          *         "name" : "CONTEXT--1405621029",
@@ -1138,6 +1177,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1405621029", agentName, "1781592066", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1405621029", "asset-control-scheduler-agent-1781592066"));
+        // asset-control-scheduler-agent-1164721449 has raised lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT--1405621029").getId());
 
         workingStatuses.put("CONTEXT--1405621029", InstanceStatus.RUNNING);
         assertContextStatuses(contextMachine, workingStatuses);
@@ -1147,19 +1188,25 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         assertEquals("1164721449", events.get(0).getJobName());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1405621029", "asset-control-scheduler-agent-1724676333_ScheduledJob_17:00:00"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-1164721449 still has lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT--1405621029").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1405621029", agentName, "1164721449", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1405621029", "asset-control-scheduler-agent-1164721449"));
+        // running asset-control-scheduler-agent-1164721449 clears the lock
+        validateAllLocksCleared();
         assertContextStatuses(contextMachine, workingStatuses);
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1405621029", agentName, "1781592067", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1405621029", "asset-control-scheduler-agent-1781592067"));
+        validateAllLocksCleared();
 
         // CONTEXT--1405621029 now complete
         workingStatuses.put("CONTEXT--1405621029", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         /**
          *         "name" : "CONTEXT--1596119798",
@@ -1206,10 +1253,14 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1596119798", "asset-control-scheduler-agent-1724676333_ScheduledJob_17:00:00"));
         workingStatuses.put("CONTEXT--1596119798", InstanceStatus.RUNNING);
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-1164721449 has raised lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT--1596119798").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1596119798", agentName, "1685894165", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1596119798", "asset-control-scheduler-agent-1685894165"));
+        // asset-control-scheduler-agent-1164721449 still has lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT--1596119798").getId());
 
         assertContextStatuses(contextMachine, workingStatuses);
 
@@ -1217,6 +1268,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1596119798", "asset-control-scheduler-agent-1164721449"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // running asset-control-scheduler-agent-1164721449 clears the lock
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1596119798", agentName, "1685894164", true);
         assertEquals(0, events.size());
@@ -1225,6 +1278,7 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         // CONTEXT--1596119798 now complete
         workingStatuses.put("CONTEXT--1596119798", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         /**
          *         "name" : "CONTEXT-1967431808",
@@ -1271,20 +1325,27 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1967431808", "asset-control-scheduler-agent-1724676333_ScheduledJob_17:00:00"));
         workingStatuses.put("CONTEXT-1967431808", InstanceStatus.RUNNING);
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-1164721449 has raised lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT-1967431808").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1967431808", agentName, "1779796514", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1967431808", "asset-control-scheduler-agent-1779796514"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // 1164721449 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT-1967431808").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1967431808", agentName, "1164721449", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1967431808", "asset-control-scheduler-agent-1164721449"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // running asset-control-scheduler-agent-1164721449 clears the lock
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1967431808", agentName, "1779796515", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1967431808", "asset-control-scheduler-agent-1779796515"));
+        validateAllLocksCleared();
 
         // CONTEXT-1967431808 now complete
         workingStatuses.put("CONTEXT-1967431808", InstanceStatus.COMPLETE);
@@ -1333,6 +1394,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1589044962", agentName, "-1178291131", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1589044962", "asset-control-scheduler-agent--1178291131"));
+        // asset-control-scheduler-agent-1164721449 has raised lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT-1589044962").getId());
 
         workingStatuses.put("CONTEXT-1589044962", InstanceStatus.RUNNING);
         assertContextStatuses(contextMachine, workingStatuses);
@@ -1342,15 +1405,21 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         assertEquals("1164721449", events.get(0).getJobName());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1589044962", "asset-control-scheduler-agent-1724676333_ScheduledJob_17:00:00"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-1164721449 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT-1589044962").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1589044962", agentName, "-1178291132", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1589044962", "asset-control-scheduler-agent--1178291132"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-1164721449 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT-1589044962").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1589044962", agentName, "1164721449", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1589044962", "asset-control-scheduler-agent-1164721449"));
+        // running asset-control-scheduler-agent-1164721449 clears the lock
+        validateAllLocksCleared();
 
         // CONTEXT-1589044962 now complete
         workingStatuses.put("CONTEXT-1589044962", InstanceStatus.COMPLETE);
@@ -1399,6 +1468,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1872161100", agentName, "-1244387358", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1872161100", "asset-control-scheduler-agent--1244387358"));
+        // asset-control-scheduler-agent-1164721449 has raised the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT--1872161100").getId());
 
         workingStatuses.put("CONTEXT--1872161100", InstanceStatus.RUNNING);
         assertContextStatuses(contextMachine, workingStatuses);
@@ -1407,16 +1478,22 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1872161100", "asset-control-scheduler-agent--1244387357"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-1164721449 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT--1872161100").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1872161100", agentName, "1724676333_ScheduledJob_17:00:00", true);
         assertEquals(1, events.size());
         assertEquals("1164721449", events.get(0).getJobName());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1872161100", "asset-control-scheduler-agent-1724676333_ScheduledJob_17:00:00"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-1164721449 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT--1872161100").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1872161100", agentName, "1164721449", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1872161100", "asset-control-scheduler-agent-1164721449"));
+        // asset-control-scheduler-agent-1164721449 has cleared the lock
+        validateAllLocksCleared();
 
         // CONTEXT--1872161100 now complete
         workingStatuses.put("CONTEXT--1872161100", InstanceStatus.COMPLETE);
@@ -1743,87 +1820,113 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1281498017", "asset-control-scheduler-agent--1352189442"));
         workingStatuses.put("CONTEXT--1281498017", InstanceStatus.RUNNING);
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "1892741766_ScheduledJob_17:00:00", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent-1892741766_ScheduledJob_17:00:00"));
         workingStatuses.put("CONTEXT-1892741766", InstanceStatus.RUNNING);
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-185916817 has raised the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-185916817", contextMachine.getContext("CONTEXT-1892741766").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1281498017", agentName, "959606163", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1281498017", "asset-control-scheduler-agent-959606163"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-185916817 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-185916817", contextMachine.getContext("CONTEXT-1892741766").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "185916817", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent-185916817"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // running asset-control-scheduler-agent-185916817 has cleared the lock
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1281498017", agentName, "-144197246", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1281498017", "asset-control-scheduler-agent--144197246"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "1010295672", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent-1010295672"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1281498017", agentName, "2074200534", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1281498017", "asset-control-scheduler-agent-2074200534"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "-532050073", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent--532050073"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1281498017", agentName, "-532050073", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1281498017", "asset-control-scheduler-agent--532050073"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "-1515829064", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent--1515829064"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1281498017", agentName, "131944233", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1281498017", "asset-control-scheduler-agent-131944233"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "1568132585", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent-1568132585"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-131944233 has raised the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-131944233", contextMachine.getContext("CONTEXT-1892741766").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1281498017", agentName, "-958075417", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1281498017", "asset-control-scheduler-agent--958075417"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-131944233 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-131944233", contextMachine.getContext("CONTEXT-1892741766").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "200769144", true);
         assertEquals(1, events.size());
         assertEquals("131944233", events.get(0).getJobName());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent-200769144"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-131944233 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-131944233", contextMachine.getContext("CONTEXT-1892741766").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1281498017", agentName, "-1281498017_ScheduledJob_17:00:00", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1281498017", "asset-control-scheduler-agent--1281498017_ScheduledJob_17:00:00"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-131944233 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-131944233", contextMachine.getContext("CONTEXT-1892741766").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "-2047526486", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent--2047526486"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-131944233 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-131944233", contextMachine.getContext("CONTEXT-1892741766").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1281498017", agentName, "185916817", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1281498017", "asset-control-scheduler-agent-185916817"));
+        // asset-control-scheduler-agent-131944233 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-131944233", contextMachine.getContext("CONTEXT-1892741766").getId());
 
         // CONTEXT--1281498017 now complete
         workingStatuses.put("CONTEXT--1281498017", InstanceStatus.COMPLETE);
@@ -1833,76 +1936,101 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent-200769144"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-131944233 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-131944233", contextMachine.getContext("CONTEXT-1892741766").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "2074200534", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent-2074200534"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-131944233 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-131944233", contextMachine.getContext("CONTEXT-1892741766").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "959606163", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent-959606163"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-131944233 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-131944233", contextMachine.getContext("CONTEXT-1892741766").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "131944233", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent-131944233"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-131944233 has cleared the lock
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "-2047526486", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent--2047526486"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "-1657966748", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent--1657966748"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent--144197246 has raised the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent--144197246", contextMachine.getContext("CONTEXT-1892741766").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "-144197246", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent--144197246"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent--144197246 has cleated the lock
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "-1487547688", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent--1487547688"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "581199512", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent-581199512"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "1951960644", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent-1951960644"));
         assertContextStatuses(contextMachine, workingStatuses);
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "-598161030", true);
         assertEquals(1, events.size());
         assertEquals("-1352189442", events.get(0).getJobName());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent--598161030"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent--1352189442 has raised the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent--1352189442", contextMachine.getContext("CONTEXT-1892741766").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "-716901243", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent--716901243"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent--1352189442 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent--1352189442", contextMachine.getContext("CONTEXT-1892741766").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "-375330452", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent--375330452"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent--1352189442 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent--1352189442", contextMachine.getContext("CONTEXT-1892741766").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "-1352189442", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent--1352189442"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent--1352189442 has cleared the lock
+        validateAllLocksCleared();
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1892741766", agentName, "-605707438", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1892741766", "asset-control-scheduler-agent--605707438"));
+        validateAllLocksCleared();
 
         // CONTEXT-1892741766 now complete
         workingStatuses.put("CONTEXT-1892741766", InstanceStatus.COMPLETE);
@@ -1955,21 +2083,29 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--2017369407", "asset-control-scheduler-agent--928291134"));
         workingStatuses.put("CONTEXT--2017369407", InstanceStatus.RUNNING);
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-1164721449 has raised lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT--2017369407").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--2017369407", agentName, "1724676333_ScheduledJob_17:00:00", true);
         assertEquals(1, events.size());
         assertEquals("1164721449", events.get(0).getJobName());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--2017369407", "asset-control-scheduler-agent-1724676333_ScheduledJob_17:00:00"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-1164721449 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT--2017369407").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--2017369407", agentName, "-928291133", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--2017369407", "asset-control-scheduler-agent--928291133"));
         assertContextStatuses(contextMachine, workingStatuses);
+        // asset-control-scheduler-agent-1164721449 still has the lock
+        validateLockedAndHasLock("asset-control-scheduler-agent-1164721449", contextMachine.getContext("CONTEXT--2017369407").getId());
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--2017369407", agentName, "1164721449", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--2017369407", "asset-control-scheduler-agent-1164721449"));
+        // asset-control-scheduler-agent-1164721449 has cleared the lock
+        validateAllLocksCleared();
 
         // CONTEXT--2017369407 now complete
         // CONTEXT-1724676333 now complete

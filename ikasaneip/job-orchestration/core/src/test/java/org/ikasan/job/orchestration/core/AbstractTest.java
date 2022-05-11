@@ -113,6 +113,11 @@ public class AbstractTest
         }
     }
 
+    protected void validateLockedAndHasLock(String jobIdentifier, String contextId) {
+        assertTrue(JobLockCacheImpl.instance().locked(jobIdentifier));
+        assertTrue(JobLockCacheImpl.instance().hasLock(jobIdentifier, contextId));
+    }
+
     protected void printContext(ContextMachine contextMachine) throws JsonProcessingException {
         System.out.println(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()));
     }

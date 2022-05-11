@@ -170,6 +170,8 @@ public class JobLockCacheImplTest {
         String contextId1 = UUID.randomUUID().toString();
         String contextId2 = UUID.randomUUID().toString();
         assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0));
+        // try and lock again should be false as already has the lock
+        assertFalse(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0));
 
         ConcurrentHashMap<String, JobLockHolderImpl> jobLocksByIdentifier
             = (ConcurrentHashMap<String, JobLockHolderImpl>) ReflectionTestUtils.getField(jlc, "jobLocksByIdentifier");
@@ -180,9 +182,12 @@ public class JobLockCacheImplTest {
 
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0"));
         assertFalse(jlc.locked("AgentName1-TEST-LOCK-JobName1"));
-        assertFalse(jlc.locked("AgentName3-TEST-LOCK-JobName2"));
+        assertFalse(jlc.locked("AgentName2-TEST-LOCK-JobName2"));
 
         assertTrue(jlc.lock("AgentName2-TEST-LOCK-JobName2", contextId2));
+        // try and lock again should be false as already has the lock
+        assertFalse(jlc.lock("AgentName2-TEST-LOCK-JobName2", contextId2));
+
         jobLockHolder = jobLocksByIdentifier.get("AgentName2-TEST-LOCK-JobName2");
         assertEquals(2, jobLockHolder.getLockHolders().size());
 
