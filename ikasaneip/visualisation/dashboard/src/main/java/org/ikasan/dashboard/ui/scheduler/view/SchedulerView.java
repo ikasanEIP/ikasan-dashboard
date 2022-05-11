@@ -13,10 +13,7 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
-import org.ikasan.dashboard.ui.scheduler.component.ContextDebugWidget;
-import org.ikasan.dashboard.ui.scheduler.component.RunningAndRecentlyCompletedJobExecutionsWidget;
-import org.ikasan.dashboard.ui.scheduler.component.SchedulerAgentDashboardView;
-import org.ikasan.dashboard.ui.scheduler.component.UpcomingJobExecutionsWidget;
+import org.ikasan.dashboard.ui.scheduler.component.*;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
@@ -127,6 +124,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     private UpcomingJobExecutionsWidget upcomingJobExecutionsWidget;
 
+    private ContextTemplateWidget contextTemplateWidget;
+
     private ContextDebugWidget contextDebugWidget;
 
     private Board scheduledJobsBoard;
@@ -174,19 +173,26 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.contextDebugBoard.setVisible(false);
         this.contextDebugBoard.setId("contextDebugBoard");
 
+        this.contextTemplateWidget = new ContextTemplateWidget(this.scheduledContextService, ".", this.moduleMetaDataService, this.scheduledProcessManagementService,
+            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService);
+        this.contextTemplateWidget.setVisible(false);
+
 
         this.schedulerDashboardTab = new Tab(getTranslation("tab.label.scheduler-dashboard", UI.getCurrent().getLocale()));
         this.schedulerDashboardTab.setId("schedulerDashboardTab");
+        this.contextTemplateTab = new Tab("Context Templates");
+        this.contextTemplateTab.setId("contextTemplateTab");
         this.schedulerJobTab = new Tab(getTranslation("tab.label.scheduled-jobs", UI.getCurrent().getLocale()));
         this.schedulerJobTab.setId("scheduledJobsTab");
         this.contextDebugTab = new Tab("Context Debug");
         this.contextDebugTab.setId("contextDebugTab");
-        this.tabs = new Tabs(schedulerDashboardTab, schedulerJobTab, contextDebugTab);
+        this.tabs = new Tabs(schedulerDashboardTab, this.contextTemplateTab, schedulerJobTab, contextDebugTab);
 
         Map<Tab, com.vaadin.flow.component.Component> tabsToPages = new HashMap<>();
         tabsToPages.put(this.schedulerDashboardTab, this.schedulerAgentDashboardView);
         tabsToPages.put(this.schedulerJobTab, this.scheduledJobsBoard);
         tabsToPages.put(this.contextDebugTab, this.contextDebugBoard);
+        tabsToPages.put(this.contextTemplateTab, this.contextTemplateWidget);
 
         tabs.addSelectedChangeListener(event -> {
             tabsToPages.values().forEach(page -> page.setVisible(false));
@@ -205,7 +211,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         IronIcon addIcon = IronIcons.ADD.create();
         addIcon.setSize("16pt");
 
-        this.add(tabs, this.schedulerAgentDashboardView, scheduledJobsBoard, contextDebugBoard);
+        this.add(tabs, this.schedulerAgentDashboardView, this.contextTemplateWidget, scheduledJobsBoard, contextDebugBoard);
     }
 
     @Override
