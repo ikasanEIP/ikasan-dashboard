@@ -6,6 +6,7 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 
 import java.util.List;
+import java.util.Objects;
 
 public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEvent<ContextParameterInstanceImpl, InternalEventDrivenJob, DryRunParametersImpl> {
     private String agentName;
@@ -152,5 +153,29 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
         sb.append(", skipped=").append(skipped);
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SchedulerJobInitiationEventImpl that = (SchedulerJobInitiationEventImpl) o;
+        return dryRun == that.dryRun &&
+            skipped == that.skipped &&
+            Objects.equals(agentName, that.agentName) &&
+            Objects.equals(agentUrl, that.agentUrl) &&
+            Objects.equals(jobName, that.jobName) &&
+            Objects.equals(internalEventDrivenJob, that.internalEventDrivenJob) &&
+            Objects.equals(contextId, that.contextId) &&
+            Objects.equals(childContextIds, that.childContextIds) &&
+            Objects.equals(contextInstanceId, that.contextInstanceId) &&
+            Objects.equals(contextParameters, that.contextParameters) &&
+            Objects.equals(dryRunParameters, that.dryRunParameters);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(agentName, agentUrl, jobName, internalEventDrivenJob, contextId, childContextIds
+            , contextInstanceId, contextParameters, dryRun, dryRunParameters, skipped);
     }
 }
