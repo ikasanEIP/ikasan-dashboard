@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
@@ -152,8 +154,12 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                                 && this.shouldRaiseEvent(jobDependency.getLogicalGrouping(), contextInstance.getScheduledJobsMap())) {
                                 if(!jobInstance.isInitiationEventRaised()) {
                                     jobInstance.setInitiationEventRaised(true);
-                                    results.add(this.createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters, contextParameters
-                                        , parentContextInstance, scheduledProcessEvent));
+                                    SchedulerJobInitiationEvent event = this.createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters, contextParameters
+                                        , parentContextInstance, scheduledProcessEvent, contextInstance);
+
+                                    if(event != null) {
+                                        results.add(event);
+                                    }
                                 }
                             }
                         }
@@ -176,8 +182,13 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                         SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(jobDependency.getJobIdentifier());
                         if(!jobInstance.isInitiationEventRaised()) {
                             jobInstance.setInitiationEventRaised(true);
-                            results.add(this.createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters, contextParameters
-                                , parentContextInstance, scheduledProcessEvent));
+
+                            SchedulerJobInitiationEvent event = this.createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters, contextParameters
+                                , parentContextInstance, scheduledProcessEvent, contextInstance);
+
+                            if(event != null) {
+                                results.add(event);
+                            }
                         }
                     }
                 }
@@ -211,8 +222,13 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 // We only want to raise the job initiation event once!
                 if (!jobInstance.isInitiationEventRaised() && raiseEventDueToLock) {
                     jobInstance.setInitiationEventRaised(true);
-                    results.add(createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters, contextParameters
-                        , parentContextInstance, scheduledProcessEvent));
+
+                    SchedulerJobInitiationEvent event = createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters, contextParameters
+                        , parentContextInstance, scheduledProcessEvent, contextInstance);
+
+                    if(event != null) {
+                        results.add(event);
+                    }
                 }
             }
         }
@@ -249,7 +265,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      */
     private SchedulerJobInitiationEvent createSchedulerJobInitiationEvent(SchedulerJobInstance schedulerJobInstance
         , InternalEventDrivenJob internalEventDrivenJob, DryRunParameters dryRunParameters, List<ContextParameterInstance> contextParameters
-        , ContextInstance parentContextInstance, ContextualisedScheduledProcessEvent scheduledProcessEvent) {
+        , ContextInstance parentContextInstance, ContextualisedScheduledProcessEvent scheduledProcessEvent, ContextInstance contextInstance) {
         SchedulerJobInitiationEvent schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
         schedulerJobInitiationEvent.setAgentName(schedulerJobInstance.getAgentName());
         schedulerJobInitiationEvent.setJobName(schedulerJobInstance.getJobName());
@@ -274,7 +290,14 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
 
         if(internalEventDrivenJob.getChildContextIds() != null && internalEventDrivenJob.getChildContextIds().contains(PASS_THROUGH)) {
-            schedulerJobInitiationEvent.setChildContextIds(scheduledProcessEvent.getChildContextIds());
+            if(this.isAlreadyComplete(parentContextInstance, schedulerJobInstance.getAgentName()
+                , schedulerJobInstance.getJobName(), scheduledProcessEvent.getChildContextIds())) {
+
+                schedulerJobInitiationEvent.setChildContextIds(List.of(contextInstance.getName()));
+            }
+            else {
+                schedulerJobInitiationEvent.setChildContextIds(scheduledProcessEvent.getChildContextIds());
+            }
         }
         else {
             schedulerJobInitiationEvent.setChildContextIds(internalEventDrivenJob.getChildContextIds());
@@ -339,5 +362,49 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             return false;
         }
         return nots.stream().filter(and -> and.getIdentifier().equals(jobIdentifier)).count() > 0;
+    }
+
+    /**
+     * This method is used to determine if a job is already complete.
+     *
+     * @param contextInstance
+     * @param agentName
+     * @param jobName
+     * @param childContextIds
+     * @return
+     */
+    private boolean isAlreadyComplete(ContextInstance contextInstance, String agentName, String jobName, List<String> childContextIds) {
+        if(contextInstance.getScheduledJobsMap() != null && !contextInstance.getScheduledJobsMap().isEmpty()) {
+            SchedulerJobInstance schedulerJob = contextInstance.getScheduledJobsMap().get(agentName+"-"+jobName);
+            if(schedulerJob != null && (schedulerJob.getStatus().equals(InstanceStatus.COMPLETE)
+                || schedulerJob.getStatus().equals(InstanceStatus.ERROR))
+                && ((ContextualisedScheduledProcessEvent)schedulerJob.getScheduledProcessEvent())
+                    .getChildContextIds().equals(childContextIds)) {
+                return true;
+            }
+        }
+
+        AtomicReference<Boolean> contextId = new AtomicReference<>(false);
+        if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
+            contextInstance.getContexts().forEach(c -> {
+                if(isAlreadyComplete(c, agentName, jobName, childContextIds)) {
+                    contextId.set(true);
+                }
+            });
+        }
+
+        return contextId.get();
+    }
+
+    private boolean isJobDependantOnOthers(List<JobDependency> jobDependencies, String jobIdentifier) {
+        AtomicBoolean isDependant = new AtomicBoolean(false);
+
+        jobDependencies.forEach(jobDependency -> {
+            if(jobDependency.getJobIdentifier().equals(jobIdentifier)) {
+                isDependant.set(true);
+            }
+        });
+
+        return isDependant.get();
     }
 }

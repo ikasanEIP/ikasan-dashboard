@@ -1,13 +1,16 @@
 package org.ikasan.job.orchestration.context.cache;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.ikasan.job.orchestration.model.context.JobLockHolderImpl;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
@@ -28,10 +31,13 @@ public final class JobLockCacheImpl implements JobLockCache {
     private final ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier;
     @JsonIgnore
     private JobLockCacheService jobLockCacheService;
+    @JsonIgnore
+    private ConcurrentHashMap<String, List<SchedulerJobInitiationEvent>> queuedSchedulerJobInitiationEvents;
 
     private JobLockCacheImpl() {
         jobLocksByLockName = new ConcurrentHashMap<>();
         jobLocksByIdentifier = new ConcurrentHashMap<>();
+        queuedSchedulerJobInitiationEvents = new ConcurrentHashMap<>();
     }
 
     private static final class JobLockMachineHolder {
@@ -167,5 +173,33 @@ public final class JobLockCacheImpl implements JobLockCache {
         JobLockCacheRecord record = new JobLockCacheRecordImpl();
         record.setJobLockCache(this);
         jobLockCacheService.save(record);
+    }
+
+    @Override
+    public void addQueuedSchedulerJobInitiationEvent(String jobIdentifier, SchedulerJobInitiationEvent event) {
+        if(!this.queuedSchedulerJobInitiationEvents.containsKey(jobIdentifier)) {
+            List<SchedulerJobInitiationEvent> events = new ArrayList<>();
+            events.add(event);
+            this.queuedSchedulerJobInitiationEvents.put(jobIdentifier, events);
+        }
+        else {
+            if(!this.queuedSchedulerJobInitiationEvents.get(jobIdentifier).contains(event)) {
+                this.queuedSchedulerJobInitiationEvents.get(jobIdentifier).add(event);
+            }
+        }
+    }
+
+    @Override
+    public SchedulerJobInitiationEvent getNextQueuedSchedulerJobInitiationEvent(String jobIdentifier) {
+        if(this.queuedSchedulerJobInitiationEvents.containsKey(jobIdentifier)) {
+            if(!this.queuedSchedulerJobInitiationEvents.get(jobIdentifier).isEmpty()) {
+                return this.queuedSchedulerJobInitiationEvents.get(jobIdentifier).remove(0);
+            }
+            else {
+                return null;
+            }
+        }
+
+        return null;
     }
 }
