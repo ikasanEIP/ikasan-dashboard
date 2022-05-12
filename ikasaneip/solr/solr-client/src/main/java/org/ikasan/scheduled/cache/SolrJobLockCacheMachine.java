@@ -8,6 +8,7 @@ import org.ikasan.scheduled.job.model.SolrJobLockHolderImpl;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 
@@ -147,5 +148,15 @@ public class SolrJobLockCacheMachine implements JobLockCache {
 
     private boolean workingCountIsGreaterThanOrEqualToLockCount(JobLockHolder jlh) {
         return jlh.getLockHolders().size() >= jlh.getLockCount();
+    }
+
+    @Override
+    public void addQueuedSchedulerJobInitiationEvent(String jobIdentifier, SchedulerJobInitiationEvent event) {
+
+    }
+
+    @Override
+    public SchedulerJobInitiationEvent getNextQueuedSchedulerJobInitiationEvent(String jobIdentifierß) {
+        return null;
     }
 }
