@@ -126,8 +126,7 @@ public class IkasanBaseAutoConfiguration
         if( exceptionConfig.getScheduledRetryConfigs() !=null)
         {
             exceptionConfig.getScheduledRetryConfigs().stream().forEach(r -> builder.addExceptionToAction(r.getClassName(),
-                new ScheduledRetryAction(r.getCronExpression(), r.getMaxRetries())
-                                                                                    ));
+                new ScheduledRetryAction(r.getCronExpression(), r.getMaxRetries())));
         }
         return builder.build();
     }

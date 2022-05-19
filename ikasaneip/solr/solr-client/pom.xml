@@ -265,6 +265,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-job-orchestration-model</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

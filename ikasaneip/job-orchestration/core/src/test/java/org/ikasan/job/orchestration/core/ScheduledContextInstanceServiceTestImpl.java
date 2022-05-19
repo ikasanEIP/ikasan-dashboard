@@ -38,4 +38,19 @@ public class ScheduledContextInstanceServiceTestImpl implements ScheduledContext
     public SearchResults<ScheduledContextInstanceAuditRecord> findAllAuditRecordsByContextId(String contextId, int limit, int offset) {
         return null;
     }
+
+    @Override
+    public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByStatus(List<InstanceStatus> instanceStatuses, int limit, int offset) {
+        return null;
+    }
+
+    @Override
+    public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByContextName(String contextName, int limit, int offset, String sortField, String sortDirection) {
+        return null;
+    }
+
+    @Override
+    public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByContextName(String contextName, long startTimestamp, long endTimestamp, int limit, int offset, String sortField, String sortDirection) {
+        return null;
+    }
 }

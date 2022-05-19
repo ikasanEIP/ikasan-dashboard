@@ -8,19 +8,10 @@ import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
-import org.apache.solr.client.solrj.util.ClientUtils;
-import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.scheduler.component.filter.ContextInstanceSearchFilter;
-import org.ikasan.dashboard.ui.util.SearchConstants;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.visualisation.component.filter.ModuleSearchFilter;
+import org.ikasan.dashboard.ui.scheduler.component.filter.ContextInstanceSearchFilterImpl;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
-import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.search.SearchResults;
@@ -36,10 +27,10 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
 
     private ScheduledContextInstanceService contextInstanceService;
 
-    private DataProvider<ScheduledContextInstanceAuditRecord, ContextInstanceSearchFilter> dataProvider;
-    private ConfigurableFilterDataProvider<ScheduledContextInstanceAuditRecord, Void, ContextInstanceSearchFilter> filteredDataProvider;
+    private DataProvider<ScheduledContextInstanceAuditRecord, ContextInstanceSearchFilterImpl> dataProvider;
+    private ConfigurableFilterDataProvider<ScheduledContextInstanceAuditRecord, Void, ContextInstanceSearchFilterImpl> filteredDataProvider;
 
-    private ContextInstanceSearchFilter searchFilter;
+    private ContextInstanceSearchFilterImpl searchFilter;
 
     private long resultSize = 0;
 
@@ -50,7 +41,7 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
      * @param searchFilter
      */
     public ContextInstanceAuditFilteringGrid(ScheduledContextInstanceService solrSearchService,
-                                             ContextInstanceSearchFilter searchFilter) {
+                                             ContextInstanceSearchFilterImpl searchFilter) {
         this.contextInstanceService = solrSearchService;
         if(this.contextInstanceService ==  null) {
             throw new IllegalArgumentException("contextInstanceService cannot be null!");
@@ -102,7 +93,7 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
      */
     public void init() {
         dataProvider = DataProvider.fromFilteringCallbacks(query -> {
-            Optional<ContextInstanceSearchFilter> filter = query.getFilter();
+            Optional<ContextInstanceSearchFilterImpl> filter = query.getFilter();
 
             // The index of the first item to load
             int offset = query.getOffset();
@@ -116,7 +107,7 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
 
             return results.getResultList().stream();
         }, query -> {
-            Optional<ContextInstanceSearchFilter> filter = query.getFilter();
+            Optional<ContextInstanceSearchFilterImpl> filter = query.getFilter();
 
             SearchResults results;
 
@@ -133,7 +124,7 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
         this.setDataProvider(filteredDataProvider);
     }
 
-    private SearchResults getResults(ContextInstanceSearchFilter filter, int offset, int limit) {
+    private SearchResults getResults(ContextInstanceSearchFilterImpl filter, int offset, int limit) {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         SearchResults results;
