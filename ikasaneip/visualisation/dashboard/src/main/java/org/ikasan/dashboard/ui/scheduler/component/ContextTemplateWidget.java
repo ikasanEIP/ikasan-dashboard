@@ -5,21 +5,18 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.dialog.GeneratedVaadinDialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
-import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.scheduler.component.filter.ContextInstanceSearchFilter;
+import com.vaadin.flow.router.RouteConfiguration;
+import org.ikasan.dashboard.ui.scheduler.component.filter.ContextInstanceSearchFilterImpl;
+import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -28,10 +25,11 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAudit;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditRecord;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -50,13 +48,13 @@ public class ContextTemplateWidget extends Div {
     public ContextTemplateWidget(ScheduledContextService scheduledContextService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                 LogStreamingService logStreamingService) {
+                                 LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService) {
 
         this.scheduledContextService = scheduledContextService;
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService);
+            , schedulerJobService, logStreamingService, scheduledContextInstanceService);
 
         Div div = new Div();
         div.setSizeFull();
@@ -93,9 +91,9 @@ public class ContextTemplateWidget extends Div {
     private void createGrid(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                              LogStreamingService logStreamingService) {
+                              LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService) {
         // Create a modulesGrid bound to the list
-        ContextInstanceSearchFilter moduleSearchFilter = new ContextInstanceSearchFilter();
+        ContextInstanceSearchFilterImpl moduleSearchFilter = new ContextInstanceSearchFilterImpl();
         contextTemplateFilteringGrid = new ContextTemplateFilteringGrid(this.scheduledContextService, moduleSearchFilter);
         contextTemplateFilteringGrid.removeAllColumns();
         contextTemplateFilteringGrid.setVisible(true);
@@ -103,10 +101,10 @@ public class ContextTemplateWidget extends Div {
         contextTemplateFilteringGrid.setHeight("1000px");
 
 
-        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
+        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-                Text text = new Text(scheduledContextInstanceAuditRecord.getContextName());
+                Text text = new Text(scheduledContextRecord.getContextName());
 
                 horizontalLayout.add(text);
                 return horizontalLayout;
@@ -115,10 +113,10 @@ public class ContextTemplateWidget extends Div {
             .setSortable(true)
             .setFlexGrow(2);
 
-        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
+        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Text text = new Text(scheduledContextInstanceAuditRecord.getContext().getDescription());
+            Text text = new Text(scheduledContextRecord.getContext().getDescription());
 
             horizontalLayout.add(text);
             return horizontalLayout;
@@ -127,7 +125,7 @@ public class ContextTemplateWidget extends Div {
             .setFlexGrow(5);
 
 
-        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
+        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
             Icon edit = VaadinIcon.EDIT.create();
@@ -139,9 +137,9 @@ public class ContextTemplateWidget extends Div {
 
             edit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 ContextTemplateManagementDialog contextTemplateManagementDialog
-                    = new ContextTemplateManagementDialog(this.scheduledContextService, dynamicImagePath, moduleMetaDataService
+                    = new ContextTemplateManagementDialog(this.scheduledContextService, scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-                    , schedulerJobService, logStreamingService);
+                    , schedulerJobService, logStreamingService, scheduledContextRecord.getContext());
                 contextTemplateManagementDialog.open();
             });
 
@@ -208,7 +206,10 @@ public class ContextTemplateWidget extends Div {
             newWindow.getStyle().set("cursor", "pointer");
             newWindow.getElement().setAttribute("title", "Open in New Window");
             newWindow.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                String route = RouteConfiguration.forSessionScope()
+                    .getUrl(ContextTemplateManagementView.class, scheduledContextRecord.getContextName());
 
+                getUI().ifPresent(ui -> ui.getPage().open(route));
             });
 
             layout.add(newWindow);
@@ -223,40 +224,34 @@ public class ContextTemplateWidget extends Div {
             "<div>[[item.date]]</div>")
             .withProperty("date",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
-            .setHeader(getTranslation("Created Date/Time", UI.getCurrent().getLocale()))
-            .setKey("created")
+            .setHeader(getTranslation("table-header.created-date-time", UI.getCurrent().getLocale()))
+            .setKey("timestamp")
             .setResizable(true)
-            .setSortable(true)
-            .setFlexGrow(3);
-
-        this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextRecord>of(
-            "<div>[[item.date]]</div>")
-            .withProperty("date",
-                ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
-            .setHeader(getTranslation("Modified Date/Time", UI.getCurrent().getLocale()))
-            .setKey("modified")
-            .setResizable(true)
-            .setSortable(true)
-            .setFlexGrow(3);
-
-        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
-                HorizontalLayout horizontalLayout = new HorizontalLayout();
-        //            Button button = new Button("Open");
-        //            button.addClickListener(event -> {
-        //                JsonViewerDialog dialog = new JsonViewerDialog(scheduledContextInstanceAuditRecord
-        //                    .getScheduledContextInstanceAudit().getPreviousContextInstance());
-        //                dialog.open();
-        //            });
-        //
-        //            horizontalLayout.add(button);
-                return horizontalLayout;
-
-
-            }))
-            .setResizable(true)
-            .setHeader("Modified By")
             .setSortable(true)
             .setFlexGrow(2);
+
+        this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextRecord>of(
+            "<div>[[item.modified]]</div>")
+            .withProperty("modified",
+                ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
+            .setHeader(getTranslation("table-header.modified-date-time", UI.getCurrent().getLocale()))
+            .setKey("modifiedTimestamp")
+            .setResizable(true)
+            .setSortable(true)
+            .setFlexGrow(2);
+
+        this.contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
+            HorizontalLayout horizontalLayout = new HorizontalLayout();
+
+            Text text = new Text(scheduledContextRecord.getModifiedBy());
+
+            horizontalLayout.add(text);
+            return horizontalLayout;
+        }))
+            .setResizable(true)
+            .setHeader(getTranslation("table-header.modified-by", UI.getCurrent().getLocale()))
+            .setSortable(true)
+            .setFlexGrow(1);
 
 
         this.contextTemplateFilteringGrid.addGridFiltering(textField, moduleSearchFilter::setContextSearchFilter);

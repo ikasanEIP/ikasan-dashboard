@@ -9,7 +9,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.scheduler.component.filter.ContextInstanceSearchFilter;
+import org.ikasan.dashboard.ui.scheduler.component.filter.ContextInstanceSearchFilterImpl;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -28,10 +28,10 @@ public class ContextTemplateFilteringGrid extends Grid<ScheduledContextRecord> {
 
     private ScheduledContextService scheduledContextService;
 
-    private DataProvider<ScheduledContextRecord, ContextInstanceSearchFilter> dataProvider;
-    private ConfigurableFilterDataProvider<ScheduledContextRecord, Void, ContextInstanceSearchFilter> filteredDataProvider;
+    private DataProvider<ScheduledContextRecord, ContextInstanceSearchFilterImpl> dataProvider;
+    private ConfigurableFilterDataProvider<ScheduledContextRecord, Void, ContextInstanceSearchFilterImpl> filteredDataProvider;
 
-    private ContextInstanceSearchFilter searchFilter;
+    private ContextInstanceSearchFilterImpl searchFilter;
 
     private long resultSize = 0;
 
@@ -42,7 +42,7 @@ public class ContextTemplateFilteringGrid extends Grid<ScheduledContextRecord> {
      * @param searchFilter
      */
     public ContextTemplateFilteringGrid(ScheduledContextService solrSearchService,
-                                        ContextInstanceSearchFilter searchFilter) {
+                                        ContextInstanceSearchFilterImpl searchFilter) {
         this.scheduledContextService = solrSearchService;
         if(this.scheduledContextService ==  null) {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
@@ -94,7 +94,7 @@ public class ContextTemplateFilteringGrid extends Grid<ScheduledContextRecord> {
      */
     public void init() {
         dataProvider = DataProvider.fromFilteringCallbacks(query -> {
-            Optional<ContextInstanceSearchFilter> filter = query.getFilter();
+            Optional<ContextInstanceSearchFilterImpl> filter = query.getFilter();
 
             // The index of the first item to load
             int offset = query.getOffset();
@@ -108,7 +108,7 @@ public class ContextTemplateFilteringGrid extends Grid<ScheduledContextRecord> {
 
             return results.getResultList().stream();
         }, query -> {
-            Optional<ContextInstanceSearchFilter> filter = query.getFilter();
+            Optional<ContextInstanceSearchFilterImpl> filter = query.getFilter();
 
             SearchResults results;
 
@@ -125,7 +125,7 @@ public class ContextTemplateFilteringGrid extends Grid<ScheduledContextRecord> {
         this.setDataProvider(filteredDataProvider);
     }
 
-    private SearchResults getResults(ContextInstanceSearchFilter filter, int offset, int limit) {
+    private SearchResults getResults(ContextInstanceSearchFilterImpl filter, int offset, int limit) {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         SearchResults results = null;

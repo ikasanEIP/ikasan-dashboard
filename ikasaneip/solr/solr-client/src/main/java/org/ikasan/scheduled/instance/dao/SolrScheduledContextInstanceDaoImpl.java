@@ -1,5 +1,7 @@
 package org.ikasan.scheduled.instance.dao;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -8,6 +10,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.search.SearchResults;
@@ -43,7 +46,10 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         }
         document.addField(STATUS, scheduledContextInstanceRecord.getStatus());
         document.addField(MODULE_NAME, scheduledContextInstanceRecord.getContextName());
+        document.addField(COMPONENT_NAME, scheduledContextInstanceRecord.getContextInstance().getId());
         document.addField(CREATED_DATE_TIME, scheduledContextInstanceRecord.getTimestamp());
+        document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
+        document.addField(MODIFIED_BY, scheduledContextInstanceRecord.getModifiedBy());
         document.setField(EXPIRY, expiry);
 
         logger.debug(String.format("Converted scheduled context instance to SolrDocument[%s]", document));
@@ -66,6 +72,11 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
 
     @Override
     public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByStatus(List<InstanceStatus> instanceStatuses) {
+        return this.getScheduledContextInstancesByStatus(instanceStatuses, -1, -1);
+    }
+
+    @Override
+    public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByStatus(List<InstanceStatus> instanceStatuses, int limit, int offset) {
         String listOfStatus = super.buildStringListQueryPart(instanceStatuses
             .stream()
             .map(Enum::toString)
@@ -76,6 +87,108 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(queryString);
 
-        return this.findByQuery(solrQuery, SolrScheduledContextInstanceRecordImpl.class, -1, -1);
+        return this.findByQuery(solrQuery, SolrScheduledContextInstanceRecordImpl.class, offset, limit);
+    }
+
+    @Override
+    public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByContextName(String contextName, int limit, int offset
+        , String sortField, String sortDirection) {
+        StringBuffer queryString = new StringBuffer();
+        queryString.append(TYPE).append(COLON).append(SCHEDULED_CONTEXT_INSTANCE)
+            .append(AND)
+            .append(MODULE_NAME).append(COLON).append(contextName);
+
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(queryString.toString());
+
+        if(sortField != null && !sortField.isEmpty()) {
+            solrQuery.addSort(sortField, sortDirection != null && sortDirection.toLowerCase().equals("asc") ? SolrQuery.ORDER.asc : SolrQuery.ORDER.desc);
+        }
+
+        return this.findByQuery(solrQuery, SolrScheduledContextInstanceRecordImpl.class, offset, limit);
+    }
+
+    @Override
+    public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByContextName(String contextName, long startTimestamp, long endTimestamp
+        , int limit, int offset, String sortField, String sortDirection) {
+        StringBuffer queryString = new StringBuffer();
+        queryString.append(TYPE).append(COLON).append(SCHEDULED_CONTEXT_INSTANCE)
+            .append(AND)
+            .append(MODULE_NAME).append(COLON).append(contextName);
+
+        if(startTimestamp > 0 || endTimestamp > 0) {
+            queryString.append(AND).append(CREATED_DATE_TIME).append(COLON).append("[").append(startTimestamp)
+                .append(TO).append(endTimestamp).append("]");
+        }
+
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(queryString.toString());
+
+        if(sortField != null && !sortField.isEmpty()) {
+            solrQuery.addSort(sortField, sortDirection != null && sortDirection.toLowerCase().equals("asc") ? SolrQuery.ORDER.asc : SolrQuery.ORDER.desc);
+        }
+
+        return this.findByQuery(solrQuery, SolrScheduledContextInstanceRecordImpl.class, offset, limit);
+    }
+
+    @Override
+    public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByFilter(ContextInstanceSearchFilter filter, int limit, int offset, String sortField, String sortDirection) {
+        StringBuffer queryString = new StringBuffer();
+        queryString.append(TYPE).append(COLON).append(SCHEDULED_CONTEXT_INSTANCE)
+            .append(AND)
+            .append(MODULE_NAME).append(COLON)
+            .append(filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty() ? filter.getContextSearchFilter() : "*");
+
+        if(filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty()) {
+            queryString.append(AND)
+                .append(COMPONENT_NAME)
+                .append(COLON)
+                .append(WILDCARD)
+                .append(filter.getContextInstanceId())
+                .append(WILDCARD);
+        }
+
+        if(filter.getCreatedTimestamp() > 0) {
+            queryString.append(AND).append(CREATED_DATE_TIME).append(COLON).append("[").append(this.atStartOfDay(new Date(filter.getCreatedTimestamp())))
+                .append(TO).append(this.atEndOfDay(new Date(filter.getCreatedTimestamp()))).append("]");
+        }
+
+        if(filter.getModifiedTimestamp() > 0) {
+            queryString.append(AND).append(UPDATED_DATE_TIME).append(COLON).append("[").append(this.atStartOfDay(new Date(filter.getModifiedTimestamp())))
+                .append(TO).append(this.atEndOfDay(new Date(filter.getModifiedTimestamp()))).append("]");
+        }
+
+        if(filter.getStatus() != null && !filter.getStatus().isEmpty()) {
+            queryString.append(AND).append(STATUS).append(COLON).append(filter.getStatus());
+        }
+
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(queryString.toString());
+
+        if(sortField != null && !sortField.isEmpty()) {
+            solrQuery.addSort(sortField, sortDirection != null && sortDirection.equals("ASCENDING") ? SolrQuery.ORDER.asc : SolrQuery.ORDER.desc);
+        }
+
+        return this.findByQuery(solrQuery, SolrScheduledContextInstanceRecordImpl.class, offset, limit);
+    }
+
+    public long atEndOfDay(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        return calendar.getTime().getTime();
+    }
+
+    public long atStartOfDay(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime().getTime();
     }
 }
