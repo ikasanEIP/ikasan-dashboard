@@ -4,17 +4,14 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
-import org.ikasan.dashboard.ui.scheduler.component.filter.ContextInstanceSearchFilter;
+import org.ikasan.dashboard.ui.scheduler.component.filter.ContextInstanceSearchFilterImpl;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
@@ -26,33 +23,35 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
-import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class ContextInstanceGridWidget extends Div {
 
-    private ContextTemplateFilteringGrid contextTemplateFilteringGrid;
-    private ScheduledContextService scheduledContextService;
-    private TextField textField = new TextField();
+    private ContextInstanceFilteringGrid contextTemplateFilteringGrid;
+    private ScheduledContextInstanceService scheduledContextInstanceService;
     private IkasanAuthentication authentication;
 
     /**
      * Constructor
-     *
-     * @param scheduledContextService
      */
-    public ContextTemplateWidget(ScheduledContextService scheduledContextService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public ContextInstanceGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                 LogStreamingService logStreamingService) {
+                                 LogStreamingService logStreamingService, ContextTemplate contextTemplate) {
 
-        this.scheduledContextService = scheduledContextService;
+        this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService);
+            , schedulerJobService, logStreamingService, contextTemplate);
 
         Div div = new Div();
         div.setSizeFull();
@@ -61,24 +60,8 @@ public class ContextInstanceGridWidget extends Div {
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
 
-        textField.setPrefixComponent(icon);
-        textField.setWidth("300px");
-        HorizontalLayout headerLayout = new HorizontalLayout();
-        H4 contextTemplates = new H4("Context Templates");
-        headerLayout.add(contextTemplates);
 
-        HorizontalLayout layout = new HorizontalLayout();
-        textField.getElement().getStyle().set("margin-left", "auto");
-
-        Button refresh = new Button("Search");
-        refresh.addClickListener(event -> this.contextTemplateFilteringGrid.init());
-        refresh.getElement().getStyle().set("margin-right", "auto");
-
-        layout.add(textField, refresh);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, textField);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, refresh);
-
-        div.add(headerLayout, layout, this.contextTemplateFilteringGrid);
+        div.add(this.contextTemplateFilteringGrid);
 
         this.contextTemplateFilteringGrid.init();
 
@@ -89,95 +72,44 @@ public class ContextInstanceGridWidget extends Div {
     private void createGrid(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                             ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                             MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                            LogStreamingService logStreamingService) {
+                            LogStreamingService logStreamingService, ContextTemplate contextTemplate) {
         // Create a modulesGrid bound to the list
-        ContextInstanceSearchFilter moduleSearchFilter = new ContextInstanceSearchFilter();
-        contextTemplateFilteringGrid = new ContextTemplateFilteringGrid(this.scheduledContextService, moduleSearchFilter);
+        ContextInstanceSearchFilterImpl contextInstanceSearchFilter = new ContextInstanceSearchFilterImpl();
+        contextTemplateFilteringGrid = new ContextInstanceFilteringGrid(this.scheduledContextInstanceService, contextInstanceSearchFilter);
         contextTemplateFilteringGrid.removeAllColumns();
         contextTemplateFilteringGrid.setVisible(true);
         contextTemplateFilteringGrid.setWidthFull();
         contextTemplateFilteringGrid.setHeight("1000px");
+        contextTemplateFilteringGrid.setContextName(contextTemplate.getName());
 
 
-        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
+        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Text text = new Text(scheduledContextInstanceAuditRecord.getContextName());
+            Text text = new Text(scheduledContextInstanceRecord.getContextInstanceId());
 
             horizontalLayout.add(text);
             return horizontalLayout;
         })).setHeader("Context Instance Id")
             .setResizable(true)
             .setSortable(true)
+            .setKey("componentName")
             .setFlexGrow(2);
-
-//        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
-//            HorizontalLayout horizontalLayout = new HorizontalLayout();
-//
-//            Text text = new Text(scheduledContextInstanceAuditRecord.getContext().getDescription());
-//
-//            horizontalLayout.add(text);
-//            return horizontalLayout;
-//        })).setHeader("Description")
-//            .setResizable(true)
-//            .setFlexGrow(5);
-
 
         contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
-
-            Icon edit = VaadinIcon.EDIT.create();
-            edit.setId("editScheduledJob");
-            edit.setSize("14pt");
-            edit.getStyle().set("cursor", "pointer");
-            edit.getElement().setAttribute("title", getTranslation("tooltip.edit-job", UI.getCurrent().getLocale()));
-            ComponentSecurityVisibility.applySecurity(this.authentication,  edit, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
-
-            edit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                ContextTemplateManagementDialog contextTemplateManagementDialog
-                    = new ContextTemplateManagementDialog(this.scheduledContextService, dynamicImagePath, moduleMetaDataService
-                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-                    , schedulerJobService, logStreamingService);
-                contextTemplateManagementDialog.open();
-            });
-
-            layout.add(edit);
 
             Icon view = VaadinIcon.EYE.create();
             view.setSize("14pt");
             view.getStyle().set("cursor", "pointer");
             view.getElement().setAttribute("title", getTranslation("tooltip.view-job", UI.getCurrent().getLocale()));
-            ComponentSecurityVisibility.applySecurity(this.authentication, view, SecurityConstants.SCHEDULER_READ);
+            ComponentSecurityVisibility.applySecurity(this.authentication, view, SecurityConstants.SCHEDULER_READ, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
             view.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
 
             });
 
             layout.add(view);
-
-            Icon delete = VaadinIcon.TRASH.create();
-            delete.setSize("14pt");
-            delete.getStyle().set("cursor", "pointer");
-            delete.getElement().setAttribute("title", getTranslation("tooltip.delete-job", UI.getCurrent().getLocale()));
-            ComponentSecurityVisibility.applySecurity(this.authentication, delete, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
-
-            layout.add(delete);
-
-            delete.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-
-            });
-
-            Icon clone = VaadinIcon.COPY.create();
-            clone.setSize("14pt");
-            clone.getStyle().set("cursor", "pointer");
-            clone.getElement().setAttribute("title", getTranslation("tooltip.clone-job", UI.getCurrent().getLocale()));
-            ComponentSecurityVisibility.applySecurity(this.authentication, delete, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
-
-            layout.add(clone);
-
-            clone.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-
-            });
 
             Icon chart = VaadinIcon.CHART.create();
             chart.setSize("14pt");
@@ -215,46 +147,65 @@ public class ContextInstanceGridWidget extends Div {
             .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
             .setFlexGrow(2);
 
-        this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextRecord>of(
+        this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
             "<div>[[item.date]]</div>")
             .withProperty("date",
-                ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
-            .setHeader(getTranslation("Created Date/Time", UI.getCurrent().getLocale()))
-            .setKey("created")
+                ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getContextInstance().getStartTime())))
+            .setHeader(getTranslation("table-header.start-date-time", UI.getCurrent().getLocale()))
+            .setKey("startTime")
             .setResizable(true)
             .setSortable(true)
             .setFlexGrow(3);
 
-        this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextRecord>of(
+        this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
             "<div>[[item.date]]</div>")
             .withProperty("date",
-                ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
-            .setHeader(getTranslation("Modified Date/Time", UI.getCurrent().getLocale()))
-            .setKey("modified")
+                ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getContextInstance().getEndTime())))
+            .setHeader(getTranslation("table-header.end-date-time", UI.getCurrent().getLocale()))
+            .setKey("endTime")
             .setResizable(true)
             .setSortable(true)
             .setFlexGrow(3);
 
-        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
+        this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
+            "<div>[[item.date]]</div>")
+            .withProperty("date",
+                ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
+            .setHeader(getTranslation("table-header.created-date-time", UI.getCurrent().getLocale()))
+            .setKey("timestamp")
+            .setResizable(true)
+            .setSortable(true)
+            .setFlexGrow(3);
+
+        this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
+            "<div>[[item.date]]</div>")
+            .withProperty("date",
+                ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
+            .setHeader(getTranslation("table-header.modified-date-time", UI.getCurrent().getLocale()))
+            .setKey("modifiedTimestamp")
+            .setResizable(true)
+            .setSortable(true)
+            .setFlexGrow(3);
+
+        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
-            //            Button button = new Button("Open");
-            //            button.addClickListener(event -> {
-            //                JsonViewerDialog dialog = new JsonViewerDialog(scheduledContextInstanceAuditRecord
-            //                    .getScheduledContextInstanceAudit().getPreviousContextInstance());
-            //                dialog.open();
-            //            });
-            //
-            //            horizontalLayout.add(button);
+
+            Text text = new Text(scheduledContextInstanceRecord.getStatus());
+
+            horizontalLayout.add(text);
             return horizontalLayout;
-
-
-        }))
+        })).setHeader("Context Status")
             .setResizable(true)
-            .setHeader("Modified By")
             .setSortable(true)
+            .setKey("status")
             .setFlexGrow(2);
 
-
-        this.contextTemplateFilteringGrid.addGridFiltering(textField, moduleSearchFilter::setContextSearchFilter);
+        // Add filtering to the relevant columns.
+        HeaderRow hr = contextTemplateFilteringGrid.appendHeaderRow();
+        this.contextTemplateFilteringGrid.addGridFiltering(hr, contextInstanceSearchFilter::setContextInstanceId, "componentName");
+        this.contextTemplateFilteringGrid.addDateGridFiltering(hr, contextInstanceSearchFilter::setCreatedTimestamp, "timestamp");
+        this.contextTemplateFilteringGrid.addDateGridFiltering(hr, contextInstanceSearchFilter::setModifiedTimestamp, "modifiedTimestamp");
+        this.contextTemplateFilteringGrid.addSelectGridFiltering(hr, contextInstanceSearchFilter::setStatus
+            , Arrays.asList(InstanceStatus.values()).stream().map(instanceStatus -> instanceStatus.name()).collect(Collectors.toList()), "status");
     }
 }

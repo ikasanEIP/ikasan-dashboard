@@ -50,6 +50,11 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     }
 
     @Override
+    public SchedulerJobRecord findById(String id) {
+        return this.schedulerJobRecordDao.findById(id);
+    }
+
+    @Override
     public SearchResults findByAgent(String agent, int limit, int offset) {
         return this.schedulerJobRecordDao.findByAgent(agent, limit, offset);
     }
@@ -57,6 +62,16 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     @Override
     public SchedulerJobRecord findByContextIdAndJobName(String contextId, String jobName) {
         return this.schedulerJobRecordDao.findByContextIdAndJobName(contextId, jobName);
+    }
+
+    @Override
+    public SearchResults<? extends SchedulerJobRecord> findByContext(String contextId, int limit, int offset) {
+        return this.schedulerJobRecordDao.findByContext(contextId, limit, offset);
+    }
+
+    @Override
+    public SearchResults<? extends SchedulerJobRecord> findByFilter(SchedulerJobSearchFilter filter, int limit, int offset, String sortColumn, String sortDirection) {
+        return this.schedulerJobRecordDao.findByFilter(filter, limit, offset, sortColumn, sortDirection);
     }
 
     @Override

@@ -105,21 +105,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private SchedulerOverrider schedulerOverrider;
 
-//    @Resource
-//    private ScheduledProcessManagementService scheduledProcessManagementService
-//
-//    @Resource
-//    private ConfigurationService configurationRestService;
-//
-//    @Resource
-//    private ModuleControlService moduleControlRestService;
-//
-//    @Resource
-//    private MetaDataService metaDataRestService;
-//
-//    @Resource
-//    private SchedulerJobService schedulerJobService;
-
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
     private UpcomingJobExecutionsWidget upcomingJobExecutionsWidget;
@@ -174,7 +159,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.contextDebugBoard.setId("contextDebugBoard");
 
         this.contextTemplateWidget = new ContextTemplateWidget(this.scheduledContextService, ".", this.moduleMetaDataService, this.scheduledProcessManagementService,
-            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService);
+            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
+            this.scheduledContextInstanceService);
         this.contextTemplateWidget.setVisible(false);
 
 
