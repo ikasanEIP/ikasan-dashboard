@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditDao;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao;
+import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditRecord;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
@@ -63,4 +64,26 @@ public class SolrScheduledContextInstanceServiceImpl implements ScheduledContext
         return this.scheduledContextInstanceAuditDao.findAllAuditRecordsByContextId(contextId, limit, offset);
     }
 
+    @Override
+    public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByStatus(List<InstanceStatus> instanceStatuses, int limit, int offset) {
+        return this.scheduledContextInstanceDao.getScheduledContextInstancesByStatus(instanceStatuses, limit, offset);
+    }
+
+    @Override
+    public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByContextName(String contextName, int limit, int offset
+        , String sortField, String sortDirection) {
+        return this.scheduledContextInstanceDao.getScheduledContextInstancesByContextName(contextName, limit, offset, sortField, sortDirection);
+    }
+
+    @Override
+    public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByContextName(String contextName, long startTimestamp, long endTimestamp
+        , int limit, int offset, String sortField, String sortDirection) {
+        return this.scheduledContextInstanceDao.getScheduledContextInstancesByContextName(contextName, startTimestamp
+            , endTimestamp, limit, offset, sortField, sortDirection);
+    }
+
+    @Override
+    public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByFilter(ContextInstanceSearchFilter filter, int limit, int offset, String sortField, String sortDirection) {
+        return this.scheduledContextInstanceDao.getScheduledContextInstancesByFilter(filter, limit, offset, sortField, sortDirection);
+    }
 }

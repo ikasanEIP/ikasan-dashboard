@@ -6,6 +6,7 @@ import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobRecordImpl;
 import org.ikasan.spec.scheduled.job.dao.SchedulerJobDao;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
@@ -89,20 +90,71 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(queryBuffer.toString());
-        if(limit == -1 && offset == -1) {
-            solrQuery.setRows(0);
-            solrQuery.setStart(0);
-            solrQuery.setRows((int)this.findByQuery(solrQuery
-                , SolrSchedulerJobRecordImpl.class).getTotalNumberOfResults());
+
+        logger.debug("query: " + solrQuery);
+
+        return this.findByQuery(solrQuery, SolrSchedulerJobRecordImpl.class, offset, limit);
+    }
+
+    @Override
+    public SearchResults<? extends SchedulerJobRecord> findByFilter(SchedulerJobSearchFilter filter, int limit, int offset, String sortColumn, String sortDirection) {
+        StringBuffer queryBuffer = new StringBuffer();
+
+        if(filter.getJobTypeFilter() == null || filter.getJobTypeFilter().isEmpty()) {
+            queryBuffer.append(OPEN_BRACKET);
+            queryBuffer.append(TYPE + COLON);
+            queryBuffer.append("\"").append(JobConstants.FILE_EVENT_DRIVEN_JOB).append("\" ");
+            queryBuffer.append(OR).append(" ");
+            queryBuffer.append(TYPE + COLON);
+            queryBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB).append("\" ");
+            queryBuffer.append(OR).append(" ");
+            queryBuffer.append(TYPE + COLON);
+            queryBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB).append("\" ");
+            queryBuffer.append(CLOSE_BRACKET);
         }
         else {
-            solrQuery.setRows(limit);
-            solrQuery.setStart(offset);
+            if(filter.getJobTypeFilter().equals(JobConstants.FILE_EVENT_DRIVEN_JOB)) {
+                queryBuffer.append(TYPE + COLON);
+                queryBuffer.append("\"").append(JobConstants.FILE_EVENT_DRIVEN_JOB).append("\" ");
+            }
+            else if(filter.getJobTypeFilter().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB)) {
+                queryBuffer.append(TYPE + COLON);
+                queryBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB).append("\" ");
+            }
+            else if(filter.getJobTypeFilter().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)) {
+                queryBuffer.append(TYPE + COLON);
+                queryBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB).append("\" ");
+            }
+        }
+
+        if(filter.getJobNameFilter() != null && !filter.getJobNameFilter().isEmpty()) {
+            queryBuffer.append(AND)
+                .append(FLOW_NAME)
+                .append(COLON)
+                .append(WILDCARD)
+                .append(filter.getJobNameFilter())
+                .append(WILDCARD);
+        }
+
+        if(filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty()) {
+            queryBuffer.append(AND)
+                .append(COMPONENT_NAME)
+                .append(COLON)
+                .append(WILDCARD)
+                .append(filter.getContextSearchFilter())
+                .append(WILDCARD);
+        }
+
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(queryBuffer.toString());
+
+        if(sortColumn != null && !sortColumn.isEmpty() && sortDirection != null && !sortDirection.isEmpty()) {
+            solrQuery.addSort(sortColumn, sortDirection.equals("ASCENDING") ? SolrQuery.ORDER.asc : SolrQuery.ORDER.desc);
         }
 
         logger.debug("query: " + solrQuery);
 
-        return this.findByQuery(solrQuery, SolrSchedulerJobRecordImpl.class);
+        return this.findByQuery(solrQuery, SolrSchedulerJobRecordImpl.class, offset, limit);
     }
 
     @Override

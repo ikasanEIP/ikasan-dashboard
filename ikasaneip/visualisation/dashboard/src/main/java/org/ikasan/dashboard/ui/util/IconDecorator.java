@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.util;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.icon.Icon;
 
 public class IconDecorator {

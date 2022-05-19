@@ -151,29 +151,6 @@ public class AgentJobFilteringGrid2 extends FilteringGrid<SchedulerJobRecord, Ag
             .setKey("description")
             .setFlexGrow(3)
             .setSortable(true);
-//        super.addColumn(TemplateRenderer.<ScheduledProcessAggregateConfiguration>of("<div style='white-space:normal'>[[item.nextFireTime]]</div>")
-//            .withProperty("nextFireTime", scheduledProcessAggregateConfiguration -> this.dateFormatter.getFormattedDate(scheduledProcessAggregateConfiguration.getNextFireTime())))
-//            .setHeader(getTranslation("table-header.next-job-execution-time", UI.getCurrent().getLocale()))
-//            .setKey("nextFireTime")
-//            .setFlexGrow(1)
-//            .setSortable(true);
-//        super.addColumn(new ComponentRenderer<>(scheduledProcessAggregateConfiguration -> {
-//            VerticalLayout layout = new VerticalLayout();
-//
-//            scheduledProcessAggregateConfiguration.getBusinessStreamMetaData().forEach(businessStreamMetaData -> {
-//                String route = RouteConfiguration.forSessionScope()
-//                    .getUrl(GraphVisualisationDeepLinkView.class, VisualisationType.BUSINESS_STREAM.name() + ":" + businessStreamMetaData.getName());
-//                Anchor link = new Anchor(route, businessStreamMetaData.getName());
-//                link.setTarget("_blank");
-//                layout.add(link);
-//                link.getStyle().set("color", "blue");
-//            });
-//
-//            return layout;
-//        }))
-//            .setHeader(getTranslation("table-header.related-business-streams", UI.getCurrent().getLocale()))
-//            .setKey("businessStreams")
-//            .setFlexGrow(2);
         super.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
@@ -200,6 +177,7 @@ public class AgentJobFilteringGrid2 extends FilteringGrid<SchedulerJobRecord, Ag
                                 this.filteredDataProvider.refreshAll();
                             }
                         });
+
                 }
                 else if(schedulerJobRecord.getJob() instanceof FileEventDrivenJob) {
                     FileEventJobDialog scheduledJobDialog = new FileEventJobDialog(agent,

@@ -1,7 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.icon.Icon;
@@ -15,29 +14,30 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.scheduler.component.filter.ContextInstanceSearchFilterImpl;
+import org.ikasan.dashboard.ui.scheduler.component.filter.SchedulerJobSearchFilterImpl;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
-import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceRecord> {
-    private Logger logger = LoggerFactory.getLogger(ContextInstanceFilteringGrid.class);
+public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
+    private Logger logger = LoggerFactory.getLogger(SchedulerJobFilteringGrid.class);
 
-    private ScheduledContextInstanceService scheduledContextInstanceService;
+    private SchedulerJobService schedulerJobService;
 
-    private DataProvider<ScheduledContextInstanceRecord, ContextInstanceSearchFilterImpl> dataProvider;
-    private ConfigurableFilterDataProvider<ScheduledContextInstanceRecord, Void, ContextInstanceSearchFilterImpl> filteredDataProvider;
+    private DataProvider<SchedulerJobRecord, SchedulerJobSearchFilterImpl> dataProvider;
+    private ConfigurableFilterDataProvider<SchedulerJobRecord, Void, SchedulerJobSearchFilterImpl> filteredDataProvider;
 
-    private ContextInstanceSearchFilterImpl searchFilter;
+    private SchedulerJobSearchFilterImpl searchFilter;
 
     private long resultSize = 0;
 
@@ -46,14 +46,14 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
     /**
      * Constructor
      *
-     * @param scheduledContextInstanceService
+     * @param schedulerJobService
      * @param searchFilter
      */
-    public ContextInstanceFilteringGrid(ScheduledContextInstanceService scheduledContextInstanceService,
-                                        ContextInstanceSearchFilterImpl searchFilter) {
-        this.scheduledContextInstanceService = scheduledContextInstanceService;
-        if(this.scheduledContextInstanceService ==  null) {
-            throw new IllegalArgumentException("scheduledContextService cannot be null!");
+    public SchedulerJobFilteringGrid(SchedulerJobService schedulerJobService,
+                                     SchedulerJobSearchFilterImpl searchFilter) {
+        this.schedulerJobService = schedulerJobService;
+        if(this.schedulerJobService ==  null) {
+            throw new IllegalArgumentException("schedulerJobService cannot be null!");
         }
         this.searchFilter = searchFilter;
         if(this.searchFilter ==  null) {
@@ -70,11 +70,10 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
      */
     public void addGridFiltering(HeaderRow hr, Consumer<String> setFilter, String columnKey) {
         TextField textField = new TextField();
-        textField.setWidthFull();
-
         Icon filterIcon = VaadinIcon.FILTER.create();
         filterIcon.setSize("12pt");
         textField.setSuffixComponent(filterIcon);
+        textField.setWidthFull();
 
         textField.addValueChangeListener(ev->{
 
@@ -93,34 +92,8 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
      * @param setFilter
      * @param columnKey
      */
-    public void addDateGridFiltering(HeaderRow hr, Consumer<Long> setFilter, String columnKey) {
-        DatePicker datePicker = new DatePicker();
-        datePicker.setWidthFull();
-
-        datePicker.addValueChangeListener(ev->{
-
-            setFilter.accept(ev.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
-
-            filteredDataProvider.refreshAll();
-        });
-
-        Icon filterIcon = VaadinIcon.FILTER.create();
-        filterIcon.setSize("12pt");
-
-        HorizontalLayout layout = new HorizontalLayout(datePicker, filterIcon);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, filterIcon);
-        hr.getCell(getColumnByKey(columnKey)).setComponent(layout);
-    }
-
-    /**
-     * Add filtering to a column.
-     *
-     * @param hr
-     * @param setFilter
-     * @param columnKey
-     */
-    public void addSelectGridFiltering(HeaderRow hr, Consumer<String> setFilter, List<String> options, String columnKey) {
-        Select<String> select = new Select<>();
+    public void addSelectGridFiltering(HeaderRow hr, Consumer<String> setFilter, Set<Map.Entry<String, String>> options, String columnKey) {
+        Select<Map.Entry<String, String>> select = new Select<>();
         select.setItems(options);
         select.setWidthFull();
         select.setEmptySelectionAllowed(true);
@@ -129,12 +102,12 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
                 return "";
             }
 
-            return entry;
+            return entry.getKey();
         });
 
         select.addValueChangeListener(ev-> {
 
-            setFilter.accept(ev.getValue());
+            setFilter.accept(ev.getValue().getValue());
 
             filteredDataProvider.refreshAll();
         });
@@ -158,6 +131,7 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
         Icon filterIcon = VaadinIcon.FILTER.create();
         filterIcon.setSize("12pt");
         textField.setSuffixComponent(filterIcon);
+        textField.setSuffixComponent(filterIcon);
         textField.addValueChangeListener(ev->{
 
             setFilter.accept(ev.getValue());
@@ -171,7 +145,7 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
      */
     public void init() {
         dataProvider = DataProvider.fromFilteringCallbacks(query -> {
-            Optional<ContextInstanceSearchFilterImpl> filter = query.getFilter();
+            Optional<SchedulerJobSearchFilterImpl> filter = query.getFilter();
 
             // The index of the first item to load
             int offset = query.getOffset();
@@ -191,7 +165,7 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
 
             return results.getResultList().stream();
         }, query -> {
-            Optional<ContextInstanceSearchFilterImpl> filter = query.getFilter();
+            Optional<SchedulerJobSearchFilterImpl> filter = query.getFilter();
 
             SearchResults results;
 
@@ -208,13 +182,13 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
         this.setDataProvider(filteredDataProvider);
     }
 
-    private SearchResults getResults(ContextInstanceSearchFilterImpl filter, int offset, int limit, String sortField, String sortDirection) {
+    private SearchResults getResults(SchedulerJobSearchFilterImpl filter, int offset, int limit, String sortColumn, String sortDirection) {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-        SearchResults results = null;
+        SearchResults results;
 
         try {
-            results = this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(filter, limit, offset, sortField, sortDirection);
+            results = this.schedulerJobService.findByFilter(filter, limit, offset, sortColumn, sortDirection);
         }
         catch (Exception e) {
             final UI current = UI.getCurrent();
@@ -235,5 +209,11 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
 
     public void setContextName(String contextName) {
         this.contextName = contextName;
+        this.searchFilter.setContextSearchFilter(contextName);
+    }
+
+    public void refreshItem(SchedulerJobRecord schedulerJobRecord) {
+        this.dataProvider.refreshAll();
+        this.filteredDataProvider.refreshAll();
     }
 }
