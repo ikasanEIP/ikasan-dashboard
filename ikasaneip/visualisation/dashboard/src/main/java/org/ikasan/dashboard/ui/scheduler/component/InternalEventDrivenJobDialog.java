@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -20,44 +21,46 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.data.converter.StringToLongConverter;
+import com.vaadin.flow.server.StreamResource;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.scheduler.util.ScheduledProcessConstants;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.scheduled.event.model.ScheduledProcessAggregateConfiguration;
-import org.ikasan.scheduled.event.model.ScheduledProcessConfigurationConstants;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobRecordImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
-import org.ikasan.spec.metadata.ConfigurationMetaData;
-import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.miki.superfields.dates.SuperDatePicker;
+import org.vaadin.olli.FileDownloadWrapper;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDialog {
 
     Logger logger = LoggerFactory.getLogger(InternalEventDrivenJobDialog.class);
+
+    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     private ComboBox<String> agentCb;
 
@@ -69,12 +72,8 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     // Fields to capture job execution properties.
     private AceEditor commandLineTa;
     private TextField workingDirectoryTf;
-    private List<TextField> successfulReturnCodes;
-
-    private Label successfulReturnCodesLabel;
-    private Button successfulReturnCodesButton;
-    private Div returnCodesDiv;
-    private Label noReturnCodesLabel;
+    private TextField minExecutionTimeTf;
+    private TextField maxExecutionTimeTf;
 
     private Button saveButton;
     private Button cancelButton;
@@ -85,7 +84,8 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
 
-    private InternalEventDrivenJob internalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
+    private InternalEventDrivenJob internalEventDrivenJob;
+    private SchedulerJobRecord schedulerJobRecord;
 
     private Binder<InternalEventDrivenJob> formBinder;
 
@@ -114,7 +114,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
                                         ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                         MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService) {
         super.showResize(false);
-        super.title.setText("Scheduled Job");
+        super.title.setText(getTranslation("label.command-execution-job", UI.getCurrent().getLocale()));
 
         this.agent = agent;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
@@ -125,21 +125,20 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.schedulerJobService = schedulerJobService;
 
         this.internalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
-        this.noReturnCodesLabel = new Label(getTranslation("label.no-return-codes", UI.getCurrent().getLocale()));
-        this.noReturnCodesLabel.setVisible(false);
-        this.noReturnCodesLabel.getStyle().set("color", "rgba(0, 0, 0, 0.38)");
+    }
 
-
+    private void init() {
         this.formBinder
             = new Binder<>(InternalEventDrivenJob.class);
-        this.successfulReturnCodes = new ArrayList<>();
 
-        this.setHeight("900px");
-        this.setWidth("1200px");
+        this.setHeight("85vh");
+        this.setWidth("60vw");
 
         saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
         saveButton.setId("scheduledJobSaveButton");
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->  {
+
+            IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
             if(!this.performFormValidation(this.internalEventDrivenJob)) {
                 NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-configuration", UI.getCurrent().getLocale()));
@@ -147,15 +146,13 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             }
 
             try {
-                createOrUpdateScheduledJob(this.internalEventDrivenJob);
+                createOrUpdateScheduledJob(this.internalEventDrivenJob, authentication);
             }
             catch (Exception e) {
                 e.printStackTrace();
                 NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-creation", UI.getCurrent().getLocale()));
                 return;
             }
-
-            IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
             if (this.editMode == EditMode.NEW) {
                 String action = String.format("New scheduled job created [%s].", this.internalEventDrivenJob);
@@ -194,21 +191,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
      */
     private FormLayout createConfigurationForm() {
         formLayout = new FormLayout();
-        this.agentCb = new ComboBox<>(getTranslation("label.agent", UI.getCurrent().getLocale()));
-        this.agentCb.setId("agentCb");
-        this.agentCb.setRequired(true);
-        this.agentCb.setClearButtonVisible(true);
-        this.agentCb.setItems(this.scheduledProcessManagementService.getAllAgentNames());
-        if(agent != null) {
-            this.agentCb.setValue(agent.getName());
-            this.agentCb.setEnabled(false);
-        }
-        formBinder.forField(this.agentCb)
-            .withValidator(agentValue -> !agentValue.isEmpty(), getTranslation("error.missing-agent", UI.getCurrent().getLocale()))
-            .bind(InternalEventDrivenJob::getAgentName, InternalEventDrivenJob::setAgentName);
-        formLayout.add(agentCb, 2);
-
-        H3 jobExecutionLabel = new H3(getTranslation("header.job-execution-details", UI.getCurrent().getLocale()));
+        H3 jobExecutionLabel = new H3(getTranslation("label.command-execution-job", UI.getCurrent().getLocale()));
         formLayout.add(jobExecutionLabel, 2);
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
@@ -220,6 +203,20 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             .bind(InternalEventDrivenJob::getJobName, InternalEventDrivenJob::setJobName);
         formLayout.add(jobNameTf);
 
+        this.agentCb = new ComboBox<>(getTranslation("label.agent", UI.getCurrent().getLocale()));
+        this.agentCb.setId("agentCb");
+        this.agentCb.setRequired(true);
+        this.agentCb.setClearButtonVisible(true);
+        this.agentCb.setItems(this.scheduledProcessManagementService.getAllAgentNames());
+        if(agent != null) {
+            this.agentCb.setValue(agent.getName());
+            this.agentCb.setEnabled(false);
+        }
+        formBinder.forField(this.agentCb)
+            .withValidator(agentValue -> agentValue != null && !agentValue.isEmpty(), getTranslation("error.missing-agent", UI.getCurrent().getLocale()))
+            .bind(InternalEventDrivenJob::getAgentName, InternalEventDrivenJob::setAgentName);
+        formLayout.add(agentCb);
+
         this.jobDescriptionTa = new TextArea(getTranslation("label.job-description", UI.getCurrent().getLocale()));
         this.jobDescriptionTa.setRequired(true);
         this.jobDescriptionTa.setId("jobDescriptionTa");
@@ -229,28 +226,86 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             .bind(InternalEventDrivenJob::getJobDescription, InternalEventDrivenJob::setJobDescription);
         formLayout.add(jobDescriptionTa, 2);
 
+        this.minExecutionTimeTf = new TextField("Minimum execution time");
+        formBinder.forField(this.minExecutionTimeTf)
+            .withNullRepresentation("")
+            .withConverter(
+                new StringToLongConverter("Please enter a number"))
+            .bind(InternalEventDrivenJob::getMinExecutionTime, InternalEventDrivenJob::setMinExecutionTime);
 
-        // todo translation
-        Icon parametersIcon = IconDecorator.decorate(new Icon(VaadinIcon.SLIDERS), "Job Parameters", "14pt", "rgba(241, 90, 35, 1.0)");
+        this.maxExecutionTimeTf = new TextField("Maximum execution time");
+        formBinder.forField(this.maxExecutionTimeTf)
+            .withNullRepresentation("")
+            .withConverter(
+                new StringToLongConverter("Please enter a number"))
+            .bind(InternalEventDrivenJob::getMaxExecutionTime, InternalEventDrivenJob::setMaxExecutionTime);
 
-//        Button parametersButton = new Button(parametersIcon);
-//        parametersButton.addClickListener(buttonClickEvent -> {
-////            EntityContentsViewDialog entityContentsViewDialog = new EntityContentsViewDialog("Wiretap " + wiretapEvent.getEventId());
-////            entityContentsViewDialog.populate(this.wiretapEvent);
-//        });
+        formLayout.add(minExecutionTimeTf, maxExecutionTimeTf);
 
-        // todo translation
-        Icon externalIcon = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), "Expand Text Editor", "14pt", "rgba(241, 90, 35, 1.0)");
+        this.workingDirectoryTf = new TextField(getTranslation("label.working-directory", UI.getCurrent().getLocale()));
+        formBinder.forField(this.workingDirectoryTf)
+            .withNullRepresentation("")
+            .bind(InternalEventDrivenJob::getWorkingDirectory, InternalEventDrivenJob::setWorkingDirectory);
+        formLayout.add(workingDirectoryTf, 2);
 
-//        Button newWindowButton = new Button(externalIcon);
-//        newWindowButton.addClickListener(buttonClickEvent -> {
-////            EntityContentsViewDialog entityContentsViewDialog = new EntityContentsViewDialog("Wiretap " + wiretapEvent.getEventId());
-////            entityContentsViewDialog.populate(this.wiretapEvent);
-//        });
+        Icon calendarIcon = IconDecorator.decorate(new Icon(VaadinIcon.CALENDAR), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
+        calendarIcon.addClickListener(event -> {
+            DayOfWeekJobDialog dayOfWeekJobDialog = new DayOfWeekJobDialog(this.internalEventDrivenJob.getDaysOfWeekToRun() == null
+                ? null : new ArrayList<>(this.internalEventDrivenJob.getDaysOfWeekToRun()));
+            dayOfWeekJobDialog.open();
 
+            dayOfWeekJobDialog.addOpenedChangeListener(openedChangeEvent -> {
+               if(!openedChangeEvent.isOpened() && dayOfWeekJobDialog.isSaveClose()) {
+                   this.internalEventDrivenJob.setDaysOfWeekToRun(dayOfWeekJobDialog.getDaysOfWeek());
+               }
+            });
+        });
+
+        Icon parametersIcon = IconDecorator.decorate(new Icon(VaadinIcon.SLIDERS), getTranslation("label.job-parameters", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
+        parametersIcon.addClickListener(event -> {
+            ContextParameterDialog contextParameterDialog = new ContextParameterDialog();
+            contextParameterDialog.initParams(this.internalEventDrivenJob.getContextParameters() == null ? new ArrayList<>() : this.internalEventDrivenJob.getContextParameters());
+            contextParameterDialog.open();
+
+            contextParameterDialog.addOpenedChangeListener(changeEvent -> {
+                if(!changeEvent.isOpened() && contextParameterDialog.isSaveClose()) {
+                    this.internalEventDrivenJob.setContextParameters(contextParameterDialog.getContextParameters());
+                }
+            });
+        });
+
+        Icon successfulReturnCodesIcon = IconDecorator.decorate(new Icon(VaadinIcon.CHECK), getTranslation("label.successful-return-codes", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
+        successfulReturnCodesIcon.addClickListener(event -> {
+            SuccessfulReturnCodesDialog successfulReturnCodesDialog = new SuccessfulReturnCodesDialog();
+            successfulReturnCodesDialog.initReturnCodes(this.internalEventDrivenJob.getSuccessfulReturnCodes());
+            successfulReturnCodesDialog.open();
+
+            successfulReturnCodesDialog.addOpenedChangeListener(changeEvent -> {
+                if(!changeEvent.isOpened() && successfulReturnCodesDialog.isSaveClose()) {
+                    this.internalEventDrivenJob.setSuccessfulReturnCodes(successfulReturnCodesDialog.getSuccessfulReturnCodes());
+                }
+            });
+        });
+
+        Icon downloadIcon = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD), getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
+        StreamResource streamResource = new StreamResource(this.internalEventDrivenJob.getJobName()+".json"
+            , () -> {
+            try {
+                return new ByteArrayInputStream(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(this.internalEventDrivenJob));
+            }
+            catch (JsonProcessingException e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
+
+        FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
+        buttonWrapper.wrapComponent(downloadIcon);
+
+        Icon externalIcon = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), getTranslation("label.expand-text-editor", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
 
         HorizontalLayout horizontalLayout = new HorizontalLayout();
-        horizontalLayout.add(parametersIcon, externalIcon);
+        horizontalLayout.add(calendarIcon, parametersIcon, successfulReturnCodesIcon, buttonWrapper, externalIcon);
 
         VerticalLayout newButtonLayout = new VerticalLayout();
         newButtonLayout.setWidth("100%");
@@ -260,38 +315,13 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         formLayout.add(newButtonLayout, 2);
 
         this.commandLineTa = new AceEditor();
-        this.commandLineTa.setHeight("300px");
+        this.commandLineTa.setHeight("500px");
         this.commandLineTa.setMode(AceMode.batchfile);
         this.commandLineTa.setTheme(AceTheme.dracula);
         this.commandLineTa.setId("commandLineTa");
 
-        // todo figure how to get form binder working here
-//        formBinder.forField(this.commandLineTa)
-//            .withValidator(value -> !value.isEmpty(), getTranslation("error.command-line-missing", UI.getCurrent().getLocale()))
-//            .bind(InternalEventDrivenJob::getCommandLine, InternalEventDrivenJob::setCommandLine);
-
         formLayout.add(commandLineTa, 2);
         commandLineTa.getStyle().set("minHeight", "100px");
-
-        this.workingDirectoryTf = new TextField(getTranslation("label.working-directory", UI.getCurrent().getLocale()));
-        formBinder.forField(this.workingDirectoryTf)
-            .withNullRepresentation("")
-            .bind(InternalEventDrivenJob::getWorkingDirectory, InternalEventDrivenJob::setWorkingDirectory);
-        formLayout.add(workingDirectoryTf, 2);
-
-        this.successfulReturnCodesLabel = new Label(getTranslation("label.successful-return-codes", UI.getCurrent().getLocale()));
-        this.successfulReturnCodesLabel.getStyle().set("color", "rgba(0, 0, 0, 0.54)");
-        this.successfulReturnCodesLabel.getStyle().set("margin-top", "30px");
-
-        this.successfulReturnCodesButton = new Button(VaadinIcon.PLUS.create(), e -> {
-            this.addSuccessfulReturnCodes(null);
-        });
-        this.successfulReturnCodesButton.setId("successfulReturnCodesButton");
-        this.successfulReturnCodesButton.getStyle().set("margin-top", "30px");
-
-        this.returnCodesDiv = new Div();
-        this.returnCodesDiv.setVisible(false);
-        formLayout.add(successfulReturnCodesLabel, successfulReturnCodesButton, this.noReturnCodesLabel, returnCodesDiv);
 
         return formLayout;
     }
@@ -306,7 +336,6 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
         try {
             AtomicBoolean isValid = new AtomicBoolean(true);
-
 
             formBinder.writeBean(internalEventDrivenJob);
 
@@ -327,15 +356,22 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
      *
      * @param internalEventDrivenJob
      */
-    public void createOrUpdateScheduledJob(InternalEventDrivenJob internalEventDrivenJob) throws JsonProcessingException {
+    public void createOrUpdateScheduledJob(InternalEventDrivenJob internalEventDrivenJob, IkasanAuthentication authentication) throws JsonProcessingException {
         // Get the module configuration from the module.
+        internalEventDrivenJob.setCommandLine(this.commandLineTa.getValue());
+
         SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
         solrInternalEventDrivenJobRecord.setAgentName(internalEventDrivenJob.getAgentName());
         solrInternalEventDrivenJobRecord.setJobName(internalEventDrivenJob.getJobName());
-        // sort out context
-        solrInternalEventDrivenJobRecord.setContextId("TBD");
-        solrInternalEventDrivenJobRecord.setTimestamp(System.currentTimeMillis());
+        solrInternalEventDrivenJobRecord.setContextId(internalEventDrivenJob.getContextId());
+        solrInternalEventDrivenJobRecord.setModifiedTimestamp(System.currentTimeMillis());
         solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
+
+        if(this.schedulerJobRecord != null) {
+            solrInternalEventDrivenJobRecord.setTimestamp(this.schedulerJobRecord.getTimestamp());
+        }
+
+        solrInternalEventDrivenJobRecord.setModifiedBy(authentication.getName());
 
         this.schedulerJobService.saveInternalEventDrivenJobRecord(solrInternalEventDrivenJobRecord);
      }
@@ -367,7 +403,6 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
         this.commandLineTa.setEnabled(enabled);
         this.workingDirectoryTf.setEnabled(enabled);
-        this.successfulReturnCodes.forEach(successfulReturnCode -> successfulReturnCode.setEnabled(enabled));
 
         this.saveButton.setVisible(enabled);
         this.cancelButton.setVisible(enabled);
@@ -382,59 +417,20 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     public void setJob(InternalEventDrivenJob internalEventDrivenJob, EditMode editMode) {
         this.enabled = editMode == EditMode.NEW || editMode == EditMode.EDIT ? true : false;
         this.internalEventDrivenJob = internalEventDrivenJob;
+
+        this.init();
+
         this.formBinder.readBean(this.internalEventDrivenJob);
         this.commandLineTa.setValue(internalEventDrivenJob.getCommandLine());
-        this.bindCollections(internalEventDrivenJob);
         this.editMode = editMode;
 
         // make sure all value are bound before calling set enabled
         this.setEnabled(this.enabled);
     }
 
-    /**
-     * Bind all collection fields to the form
-     *
-     * @param internalEventDrivenJob
-     */
-    private void bindCollections(InternalEventDrivenJob internalEventDrivenJob) {
-        internalEventDrivenJob.getSuccessfulReturnCodes().forEach(rc -> this.addSuccessfulReturnCodes(rc));
+    public void setJob(SchedulerJobRecord internalEventDrivenJobRecord, EditMode editMode) {
+        this.schedulerJobRecord = internalEventDrivenJobRecord;
+        this.setJob((InternalEventDrivenJob)this.schedulerJobService.findById(internalEventDrivenJobRecord.getId()).getJob(), editMode);
     }
 
-
-    /**
-     * Helper method to add the controls for the return codes
-     *
-     * @param returnCode
-     */
-    private void addSuccessfulReturnCodes(String returnCode) {
-        TextField successfulReturnCodeTf = new TextField(getTranslation("label.successful-return-code", UI.getCurrent().getLocale()));
-        successfulReturnCodeTf.setId("successfulReturnCodeTf"+this.successfulReturnCodes.size());
-        successfulReturnCodeTf.setEnabled(this.enabled);
-        this.successfulReturnCodes.add(successfulReturnCodeTf);
-        successfulReturnCodeTf.setErrorMessage(getTranslation("error.missing-return-code", UI.getCurrent().getLocale()) );
-        if(returnCode!=null)successfulReturnCodeTf.setValue(returnCode);
-
-        Button minusButton = new Button(VaadinIcon.MINUS.create(), ev -> {
-            formLayout.remove(successfulReturnCodeTf);
-            formLayout.remove(ev.getSource());
-            this.successfulReturnCodes.remove(successfulReturnCodeTf);
-        });
-        minusButton.setVisible(this.enabled);
-        formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(successfulReturnCodesLabel.getElement()) + (!this.enabled ? 4 : 3), successfulReturnCodeTf);
-        formLayout.addComponentAtIndex(formLayout.getElement().indexOfChild(successfulReturnCodesLabel.getElement()) + (!this.enabled ? 5 : 4), minusButton);
-    }
-
-
-    /** Private helper classes */
-    private class TextFieldNameValuePair {
-        public TextField nameTf;
-        public TextField valueTf;
-    }
-
-    private class DateTimeRange {
-        public SuperDatePicker startDate;
-        public TimePicker startTime;
-        public SuperDatePicker endDate;
-        public TimePicker endTime;
-    }
 }

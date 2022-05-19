@@ -47,6 +47,8 @@ public class SolrQuartzScheduleDrivenJobDaoImpl extends SolrDaoBase<QuartzSchedu
         document.addField(FLOW_NAME, event.getJobName());
         document.addField(COMPONENT_NAME, event.getQuartzScheduleDrivenJob().getContextId());
         document.addField(CREATED_DATE_TIME, event.getTimestamp());
+        document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
+        document.addField(MODIFIED_BY, event.getModifiedBy());
         document.setField(EXPIRY, expiry);
 
         logger.debug(String.format("Converted scheduled process event to SolrDocument[%s]", document));

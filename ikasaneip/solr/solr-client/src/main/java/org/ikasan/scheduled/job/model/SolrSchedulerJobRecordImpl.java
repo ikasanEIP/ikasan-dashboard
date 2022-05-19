@@ -34,6 +34,12 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
     @Field(SolrDaoBase.CREATED_DATE_TIME)
     private long timestamp;
 
+    @Field(SolrDaoBase.UPDATED_DATE_TIME)
+    private long modifiedTimestamp;
+
+    @Field(SolrDaoBase.MODIFIED_BY)
+    private String modifiedBy;
+
     @Override
     public String getId() {
         return id;
@@ -82,6 +88,26 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
     @Override
     public long getTimestamp() {
         return this.timestamp;
+    }
+
+    @Override
+    public long getModifiedTimestamp() {
+        return modifiedTimestamp;
+    }
+
+    @Override
+    public void setModifiedTimestamp(long modifiedTimestamp) {
+        this.modifiedTimestamp = modifiedTimestamp;
+    }
+
+    @Override
+    public String getModifiedBy() {
+        return modifiedBy;
+    }
+
+    @Override
+    public void setModifiedBy(String modifiedBy) {
+        this.modifiedBy = modifiedBy;
     }
 
 }
