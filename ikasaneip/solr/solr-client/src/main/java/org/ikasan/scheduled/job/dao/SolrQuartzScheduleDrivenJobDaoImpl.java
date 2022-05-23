@@ -75,7 +75,7 @@ public class SolrQuartzScheduleDrivenJobDaoImpl extends SolrDaoBase<QuartzSchedu
 
         logger.debug("query: " + query);
 
-        SearchResults<? extends QuartzScheduleDrivenJobRecord> beans = this.findByQuery(query, QuartzScheduleDrivenJobRecord.class);
+        SearchResults<? extends QuartzScheduleDrivenJobRecord> beans = this.findByQuery(query, SolrQuartzScheduleDrivenJobRecordImpl.class);
 
         if(beans.getResultList().size() > 0)
         {

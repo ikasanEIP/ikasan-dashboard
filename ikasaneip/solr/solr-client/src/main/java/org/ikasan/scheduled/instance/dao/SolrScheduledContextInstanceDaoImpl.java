@@ -125,7 +125,7 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         solrQuery.setQuery(queryString.toString());
 
         if(sortField != null && !sortField.isEmpty()) {
-            solrQuery.addSort(sortField, sortDirection != null && sortDirection.toLowerCase().equals("ASCENDING") ? SolrQuery.ORDER.asc : SolrQuery.ORDER.desc);
+            solrQuery.addSort(sortField, sortDirection != null && sortDirection.equals("ASCENDING") ? SolrQuery.ORDER.asc : SolrQuery.ORDER.desc);
         }
 
         return this.findByQuery(solrQuery, SolrScheduledContextInstanceRecordImpl.class, offset, limit);

@@ -18,6 +18,8 @@ public class ScheduledContextRecordImpl implements ScheduledContextRecord {
     private String contextName;
     private String context;
     private long timestamp;
+    private long modifiedTimestamp;
+    private String modifiedBy;
 
 
     @Override
@@ -63,5 +65,25 @@ public class ScheduledContextRecordImpl implements ScheduledContextRecord {
     @Override
     public long getTimestamp() {
         return this.timestamp;
+    }
+
+    @Override
+    public long getModifiedTimestamp() {
+        return modifiedTimestamp;
+    }
+
+    @Override
+    public void setModifiedTimestamp(long modifiedTimestamp) {
+        this.modifiedTimestamp = modifiedTimestamp;
+    }
+
+    @Override
+    public String getModifiedBy() {
+        return modifiedBy;
+    }
+
+    @Override
+    public void setModifiedBy(String modifiedBy) {
+        this.modifiedBy = modifiedBy;
     }
 }
