@@ -131,8 +131,8 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.formBinder
             = new Binder<>(InternalEventDrivenJob.class);
 
-        this.setHeight("85vh");
-        this.setWidth("60vw");
+        this.setHeight("1100px");
+        this.setWidth("1400px");
 
         saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
         saveButton.setId("scheduledJobSaveButton");
@@ -159,7 +159,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
                 this.systemEventLogger.logEvent(SystemEventConstants.NEW_SCHEDULED_JOB_CREATED, action, authentication.getName());
             }
             else if (this.editMode == EditMode.EDIT) {
-                String action = String.format("Scheduled job edited. \nBefore [%s]\nAfter [%s].", this.internalEventDrivenJob,
+                String action = String.format("Scheduled job edited. \nBefore [%s]\nAfter [%s].", this.schedulerJobRecord.getJob(),
                     this.internalEventDrivenJob);
                 this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_EDIT, action, authentication.getName());
             }
@@ -287,7 +287,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             });
         });
 
-        Icon downloadIcon = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD), getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
+        Icon downloadIcon = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
         StreamResource streamResource = new StreamResource(this.internalEventDrivenJob.getJobName()+".json"
             , () -> {
             try {
@@ -370,24 +370,14 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         if(this.schedulerJobRecord != null) {
             solrInternalEventDrivenJobRecord.setTimestamp(this.schedulerJobRecord.getTimestamp());
         }
+        else {
+            solrInternalEventDrivenJobRecord.setTimestamp(System.currentTimeMillis());
+        }
 
         solrInternalEventDrivenJobRecord.setModifiedBy(authentication.getName());
 
         this.schedulerJobService.saveInternalEventDrivenJobRecord(solrInternalEventDrivenJobRecord);
      }
-
-    /**
-     * Helper method to call activation endpoint on the scheduler agent.
-     *
-     * @param action
-     */
-    private void changeActivation(String action) {
-        boolean success = this.moduleControlRestService.changeModuleActivationState(this.agent.getUrl(), this.agent.getName(), action);
-        if (!success) {
-            throw new RuntimeException(String.format("Could not %s agent[%s]", action, agent));
-        }
-    }
-
 
     /**
      * Helper method to set controls on the form elements if the form is read only

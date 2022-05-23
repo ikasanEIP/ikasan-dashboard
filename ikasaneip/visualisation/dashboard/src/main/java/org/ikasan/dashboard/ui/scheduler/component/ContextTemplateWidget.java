@@ -5,6 +5,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
@@ -18,6 +19,7 @@ import com.vaadin.flow.router.RouteConfiguration;
 import org.ikasan.dashboard.ui.scheduler.component.filter.ContextInstanceSearchFilterImpl;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -27,6 +29,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
+import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
@@ -37,7 +40,6 @@ public class ContextTemplateWidget extends Div {
 
     private ContextTemplateFilteringGrid contextTemplateFilteringGrid;
     private ScheduledContextService scheduledContextService;
-    private TextField textField = new TextField();
     private IkasanAuthentication authentication;
 
     /**
@@ -63,24 +65,12 @@ public class ContextTemplateWidget extends Div {
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
 
-        textField.setPrefixComponent(icon);
-        textField.setWidth("300px");
         HorizontalLayout headerLayout = new HorizontalLayout();
         H4 contextTemplates = new H4("Context Templates");
         headerLayout.add(contextTemplates);
 
-        HorizontalLayout layout = new HorizontalLayout();
-        textField.getElement().getStyle().set("margin-left", "auto");
 
-        Button refresh = new Button("Search");
-        refresh.addClickListener(event -> this.contextTemplateFilteringGrid.init());
-        refresh.getElement().getStyle().set("margin-right", "auto");
-
-        layout.add(textField, refresh);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, textField);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, refresh);
-
-        div.add(headerLayout, layout, this.contextTemplateFilteringGrid);
+        div.add(headerLayout, this.contextTemplateFilteringGrid);
 
         this.contextTemplateFilteringGrid.init();
 
@@ -93,8 +83,8 @@ public class ContextTemplateWidget extends Div {
                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                               LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService) {
         // Create a modulesGrid bound to the list
-        ContextInstanceSearchFilterImpl moduleSearchFilter = new ContextInstanceSearchFilterImpl();
-        contextTemplateFilteringGrid = new ContextTemplateFilteringGrid(this.scheduledContextService, moduleSearchFilter);
+        ScheduledContextSearchFilter contextSearchFilter = new ScheduledContextSearchFilterImpl();
+        contextTemplateFilteringGrid = new ContextTemplateFilteringGrid(this.scheduledContextService, contextSearchFilter);
         contextTemplateFilteringGrid.removeAllColumns();
         contextTemplateFilteringGrid.setVisible(true);
         contextTemplateFilteringGrid.setWidthFull();
@@ -109,6 +99,7 @@ public class ContextTemplateWidget extends Div {
                 horizontalLayout.add(text);
                 return horizontalLayout;
             })).setHeader("Context Name")
+            .setKey("moduleName")
             .setResizable(true)
             .setSortable(true)
             .setFlexGrow(2);
@@ -201,7 +192,7 @@ public class ContextTemplateWidget extends Div {
 
             layout.add(export);
 
-            Icon newWindow = VaadinIcon.PLUS_SQUARE_O.create();
+            Icon newWindow = VaadinIcon.EXTERNAL_LINK.create();
             newWindow.setSize("14pt");
             newWindow.getStyle().set("cursor", "pointer");
             newWindow.getElement().setAttribute("title", "Open in New Window");
@@ -253,7 +244,7 @@ public class ContextTemplateWidget extends Div {
             .setSortable(true)
             .setFlexGrow(1);
 
-
-        this.contextTemplateFilteringGrid.addGridFiltering(textField, moduleSearchFilter::setContextSearchFilter);
+        HeaderRow hr = contextTemplateFilteringGrid.appendHeaderRow();
+        this.contextTemplateFilteringGrid.addGridFiltering(hr, contextSearchFilter::setContextName, "moduleName");
     }
 }
