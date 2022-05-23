@@ -32,10 +32,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.FileSystemUtils;
 
@@ -482,7 +479,7 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
     }
 
     @Test
-    public void test_find_by_content_name_limit_offset_sort_timestamp() {
+        public void test_find_by_content_name_limit_offset_sort_timestamp() {
 
         SolrContextInstanceImpl contextInstance = new SolrContextInstanceImpl();
         contextInstance.setName("contextInstance");
@@ -560,31 +557,32 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         Assert.assertEquals(4, service.getScheduledContextInstancesByContextName("contextName1", 0, 1200001L,-1, -1, null, null).getResultList().size());
 
         SearchResults<ScheduledContextInstanceRecord> searchResults = service.getScheduledContextInstancesByContextName
-            ("contextName1", 0, 1200001L,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "desc");
+            ("contextName1", 0, 1200001L,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "DESCENDING");
 
         Assert.assertEquals(4, searchResults.getResultList().size());
         Assert.assertEquals(1000004L, searchResults.getResultList().get(0).getTimestamp());
 
         searchResults = service.getScheduledContextInstancesByContextName
-            ("contextName1",0, 1200001L,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "asc");
+            ("contextName1",0, 1200001L,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "ASCENDING");
 
         Assert.assertEquals(4, searchResults.getResultList().size());
         Assert.assertEquals(1000001L, searchResults.getResultList().get(0).getTimestamp());
 
         searchResults = service.getScheduledContextInstancesByContextName
-            ("contextName1",1000001L, 1000003L,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "asc");
+            ("contextName1",1000001L, 1000003L,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "ASCENDING");
 
         Assert.assertEquals(3, searchResults.getResultList().size());
         Assert.assertEquals(1000001L, searchResults.getResultList().get(0).getTimestamp());
 
         searchResults = service.getScheduledContextInstancesByContextName
-            ("contextName1",1000001L, 1000003L,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "desc");
+            ("contextName1",1000001L, 1000003L,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "DESCENDING");
 
         Assert.assertEquals(3, searchResults.getResultList().size());
         Assert.assertEquals(1000003L, searchResults.getResultList().get(0).getTimestamp());
     }
 
     @Test
+    @Ignore
     public void test_save() throws IOException {
         SolrScheduledContextInstanceDaoImpl scheduledContextInstanceDao = new SolrScheduledContextInstanceDaoImpl();
         scheduledContextInstanceDao.setSolrUsername("ikasan");
