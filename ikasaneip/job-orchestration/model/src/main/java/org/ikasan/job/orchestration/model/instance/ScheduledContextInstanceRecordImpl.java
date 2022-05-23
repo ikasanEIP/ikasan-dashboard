@@ -15,8 +15,11 @@ public class ScheduledContextInstanceRecordImpl implements ScheduledContextInsta
     private String id;
     private String contextName;
     private String contextInstance;
+    private String contextInstanceId;
     private String status;
     private long timestamp;
+    private long modifiedTimestamp;
+    private String modifiedBy;
 
     @Override
     public void setContextName(String contextName) {
@@ -71,5 +74,35 @@ public class ScheduledContextInstanceRecordImpl implements ScheduledContextInsta
     @Override
     public long getTimestamp() {
         return this.timestamp;
+    }
+
+    @Override
+    public long getModifiedTimestamp() {
+        return modifiedTimestamp;
+    }
+
+    @Override
+    public void setModifiedTimestamp(long modifiedTimestamp) {
+        this.modifiedTimestamp = modifiedTimestamp;
+    }
+
+    @Override
+    public String getModifiedBy() {
+        return modifiedBy;
+    }
+
+    @Override
+    public void setModifiedBy(String modifiedBy) {
+        this.modifiedBy = modifiedBy;
+    }
+
+    @Override
+    public String getContextInstanceId() {
+        return this.contextInstanceId;
+    }
+
+    @Override
+    public void setContextInstanceId(String contextInstanceId) {
+        this.contextInstanceId = contextInstanceId;
     }
 }

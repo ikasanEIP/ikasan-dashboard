@@ -3,6 +3,7 @@ package org.ikasan.job.orchestration.core;
 
 import java.util.List;
 
+import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditRecord;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
@@ -51,6 +52,11 @@ public class ScheduledContextInstanceServiceTestImpl implements ScheduledContext
 
     @Override
     public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByContextName(String contextName, long startTimestamp, long endTimestamp, int limit, int offset, String sortField, String sortDirection) {
+        return null;
+    }
+
+    @Override
+    public SearchResults<ScheduledContextInstanceRecord> getScheduledContextInstancesByFilter(ContextInstanceSearchFilter filter, int limit, int offset, String sortField, String sortDirection) {
         return null;
     }
 }
