@@ -8,6 +8,7 @@ import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextDao;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
+import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
@@ -91,22 +92,26 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
     }
 
     @Override
-    public SearchResults<ScheduledContextRecord> findByKeyword(String keyword, int limit, int offset) {
+    public SearchResults<ScheduledContextRecord> findByFilter(ScheduledContextSearchFilter filter, int limit, int offset, String sortColumn, String sortOrder) {
         StringBuffer typeBuffer = new StringBuffer();
         typeBuffer.append(TYPE + COLON);
         typeBuffer.append("\"").append(SCHEDULED_CONTEXT).append("\" ");
-        typeBuffer.append(AND).append(OPEN_BRACKET);
-        typeBuffer.append(MODULE_NAME).append(COLON).append(keyword).append(OR);
-        typeBuffer.append(MODULE_NAME).append(COLON).append(WILDCARD).append(keyword).append(WILDCARD).append(OR);
-        typeBuffer.append(PAYLOAD_CONTENT).append(COLON).append(WILDCARD).append(keyword).append(WILDCARD).append(CLOSE_BRACKET);
 
+        if(filter.getContextName() != null && !filter.getContextName().isEmpty()) {
+            typeBuffer.append(AND);
+            typeBuffer.append(MODULE_NAME).append(COLON).append(WILDCARD).append(filter.getContextName()).append(WILDCARD);
+        }
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(typeBuffer.toString());
 
         logger.debug("query: " + solrQuery);
 
-        return this.findByQuery(solrQuery, SolrScheduledContextRecordImpl.class,offset, limit);
+        if(sortColumn != null && !sortColumn.isEmpty()) {
+            solrQuery.addSort(sortColumn, sortOrder != null && sortOrder.equals("ASCENDING") ? SolrQuery.ORDER.asc : SolrQuery.ORDER.desc);
+        }
+
+        return this.findByQuery(solrQuery, SolrScheduledContextRecordImpl.class, offset, limit);
     }
 
     @Override

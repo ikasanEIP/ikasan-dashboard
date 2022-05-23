@@ -75,36 +75,15 @@ public class SolrQuartzScheduleDrivenJobDaoImpl extends SolrDaoBase<QuartzSchedu
 
         logger.debug("query: " + query);
 
-        List<? extends QuartzScheduleDrivenJobRecord> beans = this.findByQuery(query);
+        SearchResults<? extends QuartzScheduleDrivenJobRecord> beans = this.findByQuery(query, QuartzScheduleDrivenJobRecord.class);
 
-        if(beans.size() > 0)
+        if(beans.getResultList().size() > 0)
         {
-            return beans.get(0);
+            return beans.getResultList().get(0);
         }
         else
         {
             return null;
-        }
-    }
-
-    /**
-     * Helper method to find by query.
-     *
-     * @param query
-     */
-    private List<? extends QuartzScheduleDrivenJobRecord> findByQuery(SolrQuery query) {
-        logger.debug("queryString: " + query);
-
-        try {
-            QueryRequest req = new QueryRequest(query);
-            req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
-
-            QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
-
-            return rsp.getBeans(SolrQuartzScheduleDrivenJobRecordImpl.class);
-        }
-        catch (Exception e) {
-            throw new RuntimeException("Error resolving SolrQuartzScheduleDrivenJobRecordImpl by query [" + query + "] from the ikasan solr index!", e);
         }
     }
 }
