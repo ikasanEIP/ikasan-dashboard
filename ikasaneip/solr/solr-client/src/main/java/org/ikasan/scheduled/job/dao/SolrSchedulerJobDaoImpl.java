@@ -151,6 +151,9 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
         if(sortColumn != null && !sortColumn.isEmpty() && sortDirection != null && !sortDirection.isEmpty()) {
             solrQuery.addSort(sortColumn, sortDirection.equals("ASCENDING") ? SolrQuery.ORDER.asc : SolrQuery.ORDER.desc);
         }
+        else {
+            solrQuery.addSort(FLOW_NAME, SolrQuery.ORDER.desc);
+        }
 
         logger.debug("query: " + solrQuery);
 

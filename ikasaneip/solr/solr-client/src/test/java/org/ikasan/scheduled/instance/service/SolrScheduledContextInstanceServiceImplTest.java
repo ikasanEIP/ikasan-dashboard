@@ -1,16 +1,21 @@
 package org.ikasan.scheduled.instance.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.IntStream;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
+import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.context.model.SolrContextParameterImpl;
 import org.ikasan.scheduled.event.model.SolrContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduled.event.model.SolrDryRunParameters;
@@ -26,6 +31,7 @@ import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.search.SearchResults;
+import org.ikasan.spec.solr.SolrDaoBase;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -299,6 +305,328 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
             , InstanceStatus.ERROR, InstanceStatus.COMPLETE, InstanceStatus.ON_HOLD, InstanceStatus.RUNNING, InstanceStatus.RELEASED)).getResultList().size());
     }
 
+    @Test
+    public void test_find_by_status_success_limit_offset() {
+
+        SolrContextInstanceImpl contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        SolrScheduledContextInstanceRecordImpl scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000000L);
+        scheduledContextRecord.setStatus(InstanceStatus.WAITING.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000000L);
+        scheduledContextRecord.setStatus(InstanceStatus.WAITING.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000000L);
+        scheduledContextRecord.setStatus(InstanceStatus.RUNNING.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000000L);
+        scheduledContextRecord.setStatus(InstanceStatus.ON_HOLD.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000000L);
+        scheduledContextRecord.setStatus(InstanceStatus.COMPLETE.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000000L);
+        scheduledContextRecord.setStatus(InstanceStatus.COMPLETE.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000000L);
+        scheduledContextRecord.setStatus(InstanceStatus.RELEASED.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000000L);
+        scheduledContextRecord.setStatus(InstanceStatus.ERROR.name());
+        service.save(scheduledContextRecord);
+
+        Assert.assertEquals(2, service.getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING
+            , InstanceStatus.ERROR, InstanceStatus.COMPLETE, InstanceStatus.ON_HOLD, InstanceStatus.RUNNING, InstanceStatus.RELEASED), 2, 0).getResultList().size());
+
+        Assert.assertEquals(8, service.getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING
+            , InstanceStatus.ERROR, InstanceStatus.COMPLETE, InstanceStatus.ON_HOLD, InstanceStatus.RUNNING, InstanceStatus.RELEASED), -1, -1).getResultList().size());
+
+        Assert.assertEquals(0, service.getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING
+            , InstanceStatus.ERROR, InstanceStatus.COMPLETE, InstanceStatus.ON_HOLD, InstanceStatus.RUNNING, InstanceStatus.RELEASED), 10, 10).getResultList().size());
+    }
+
+    @Test
+    public void test_find_by_content_name_limit_offset_sort() {
+
+        SolrContextInstanceImpl contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        SolrScheduledContextInstanceRecordImpl scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName1");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000001L);
+        scheduledContextRecord.setStatus(InstanceStatus.WAITING.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName1");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000002L);
+        scheduledContextRecord.setStatus(InstanceStatus.WAITING.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName1");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000003L);
+        scheduledContextRecord.setStatus(InstanceStatus.RUNNING.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName1");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000004L);
+        scheduledContextRecord.setStatus(InstanceStatus.ON_HOLD.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName2");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000005L);
+        scheduledContextRecord.setStatus(InstanceStatus.COMPLETE.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName2");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000006L);
+        scheduledContextRecord.setStatus(InstanceStatus.COMPLETE.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName2");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000007L);
+        scheduledContextRecord.setStatus(InstanceStatus.RELEASED.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName2");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000008L);
+        scheduledContextRecord.setStatus(InstanceStatus.ERROR.name());
+        service.save(scheduledContextRecord);
+
+        Assert.assertEquals(2, service.getScheduledContextInstancesByContextName("contextName1", 2, 0, null, null).getResultList().size());
+        Assert.assertEquals(4, service.getScheduledContextInstancesByContextName("contextName1", -1, -1, null, null).getResultList().size());
+
+        SearchResults<ScheduledContextInstanceRecord> searchResults = service.getScheduledContextInstancesByContextName
+            ("contextName1", -1, -1, SolrDaoBase.CREATED_DATE_TIME, "desc");
+
+        Assert.assertEquals(4, searchResults.getResultList().size());
+        Assert.assertEquals(1000004L, searchResults.getResultList().get(0).getTimestamp());
+
+        searchResults = service.getScheduledContextInstancesByContextName
+            ("contextName1", -1, -1, SolrDaoBase.CREATED_DATE_TIME, "asc");
+
+        Assert.assertEquals(4, searchResults.getResultList().size());
+        Assert.assertEquals(1000001L, searchResults.getResultList().get(0).getTimestamp());
+    }
+
+    @Test
+    public void test_find_by_content_name_limit_offset_sort_timestamp() {
+
+        SolrContextInstanceImpl contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        SolrScheduledContextInstanceRecordImpl scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName1");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000001L);
+        scheduledContextRecord.setStatus(InstanceStatus.WAITING.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName1");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000002L);
+        scheduledContextRecord.setStatus(InstanceStatus.WAITING.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName1");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000003L);
+        scheduledContextRecord.setStatus(InstanceStatus.RUNNING.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName1");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000004L);
+        scheduledContextRecord.setStatus(InstanceStatus.ON_HOLD.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName2");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000005L);
+        scheduledContextRecord.setStatus(InstanceStatus.COMPLETE.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName2");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000006L);
+        scheduledContextRecord.setStatus(InstanceStatus.COMPLETE.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName2");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000007L);
+        scheduledContextRecord.setStatus(InstanceStatus.RELEASED.name());
+        service.save(scheduledContextRecord);
+
+        contextInstance = new SolrContextInstanceImpl();
+        contextInstance.setName("contextInstance");
+        scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+        scheduledContextRecord.setContextName("contextName2");
+        scheduledContextRecord.setContextInstance(contextInstance);
+        scheduledContextRecord.setTimestamp(1000008L);
+        scheduledContextRecord.setStatus(InstanceStatus.ERROR.name());
+        service.save(scheduledContextRecord);
+
+        Assert.assertEquals(2, service.getScheduledContextInstancesByContextName("contextName1", 0, 1200001L,2, 0, null, null).getResultList().size());
+        Assert.assertEquals(4, service.getScheduledContextInstancesByContextName("contextName1", 0, 1200001L,-1, -1, null, null).getResultList().size());
+
+        SearchResults<ScheduledContextInstanceRecord> searchResults = service.getScheduledContextInstancesByContextName
+            ("contextName1", 0, 1200001L,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "desc");
+
+        Assert.assertEquals(4, searchResults.getResultList().size());
+        Assert.assertEquals(1000004L, searchResults.getResultList().get(0).getTimestamp());
+
+        searchResults = service.getScheduledContextInstancesByContextName
+            ("contextName1",0, 1200001L,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "asc");
+
+        Assert.assertEquals(4, searchResults.getResultList().size());
+        Assert.assertEquals(1000001L, searchResults.getResultList().get(0).getTimestamp());
+
+        searchResults = service.getScheduledContextInstancesByContextName
+            ("contextName1",1000001L, 1000003L,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "asc");
+
+        Assert.assertEquals(3, searchResults.getResultList().size());
+        Assert.assertEquals(1000001L, searchResults.getResultList().get(0).getTimestamp());
+
+        searchResults = service.getScheduledContextInstancesByContextName
+            ("contextName1",1000001L, 1000003L,-1, -1, SolrDaoBase.CREATED_DATE_TIME, "desc");
+
+        Assert.assertEquals(3, searchResults.getResultList().size());
+        Assert.assertEquals(1000003L, searchResults.getResultList().get(0).getTimestamp());
+    }
+
+    @Test
+    public void test_save() throws IOException {
+        SolrScheduledContextInstanceDaoImpl scheduledContextInstanceDao = new SolrScheduledContextInstanceDaoImpl();
+        scheduledContextInstanceDao.setSolrUsername("ikasan");
+        scheduledContextInstanceDao.setSolrPassword("1ka5an");
+        scheduledContextInstanceDao.initStandalone("http://localhost:8983/solr", 365);
+
+        SolrScheduledContextInstanceAuditDaoImpl scheduledContextInstanceAuditDao = new SolrScheduledContextInstanceAuditDaoImpl();
+        scheduledContextInstanceAuditDao.setSolrUsername("ikasan");
+        scheduledContextInstanceAuditDao.setSolrPassword("1ka5an");
+        scheduledContextInstanceAuditDao.initStandalone("http://localhost:8983/solr", 365);
+
+        IntStream.range(0, 1000).forEach(i -> {
+
+        SolrScheduledContextInstanceServiceImpl service = new SolrScheduledContextInstanceServiceImpl(scheduledContextInstanceDao
+            , scheduledContextInstanceAuditDao, true);
+
+            String data = null;
+            try {
+                data = loadDataFile("/data/contexts/CONTEXT-369160711-with-or-logic.json");
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            ContextService contextService = new ContextService();
+            ContextInstance contextInstance = null;
+            try {
+                contextInstance = contextService.getContextInstance(data);
+            }
+            catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+            SolrScheduledContextInstanceRecordImpl scheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
+            scheduledContextRecord.setContextName("CONTEXT-369160711");
+            scheduledContextRecord.setContextInstance(contextInstance);
+            scheduledContextRecord.setTimestamp(System.currentTimeMillis() - (i * 5000));
+            scheduledContextRecord.setStatus(InstanceStatus.COMPLETE.name());
+
+            service.save(scheduledContextRecord);
+        });
+    }
+
     private ScheduledContextInstanceAuditRecord createAuditRecord() {
         ScheduledContextInstanceAudit audit = new SolrScheduledContextInstanceAuditImpl();
 
@@ -425,4 +753,15 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         return event;
     }
 
+    protected String loadDataFile(String fileName) throws IOException
+    {
+        String contentToSend = IOUtils.toString(loadDataFileStream(fileName), "UTF-8");
+
+        return contentToSend;
+    }
+
+    protected InputStream loadDataFileStream(String fileName) throws IOException
+    {
+        return getClass().getResourceAsStream(fileName);
+    }
 }

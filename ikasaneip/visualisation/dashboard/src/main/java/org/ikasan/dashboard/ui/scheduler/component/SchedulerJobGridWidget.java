@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Text;
@@ -11,11 +13,10 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.server.StreamResource;
 import org.ikasan.dashboard.ui.scheduler.component.filter.SchedulerJobSearchFilterImpl;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -31,12 +32,16 @@ import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.vaadin.olli.FileDownloadWrapper;
+
+import java.io.ByteArrayInputStream;
 
 public class SchedulerJobGridWidget extends Div {
 
     private SchedulerJobFilteringGrid schedulerJobFilteringGrid;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private IkasanAuthentication authentication;
+    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     /**
      * Constructor
@@ -111,27 +116,36 @@ public class SchedulerJobGridWidget extends Div {
         schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
-            Icon edit = VaadinIcon.EDIT.create();
+            Icon edit = IconDecorator.decorate(new Icon(VaadinIcon.EDIT), getTranslation("tooltip.edit-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             edit.setId("editScheduledJob");
-            edit.setSize("14pt");
-            edit.getStyle().set("cursor", "pointer");
-            edit.getElement().setAttribute("title", getTranslation("tooltip.edit-job", UI.getCurrent().getLocale()));
             ComponentSecurityVisibility.applySecurity(this.authentication,  edit, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
             edit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 if(schedulerJobRecord.getType().equals(JobConstants.FILE_EVENT_DRIVEN_JOB)) {
                     FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(moduleMetaDataService.findById(schedulerJobRecord.getAgentName())
                         , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService);
-                    fileEventJobDialog.setJob((FileEventDrivenJob)schedulerJobRecord.getJob(), EditMode.EDIT);
+                    fileEventJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
 
                     fileEventJobDialog.open();
+
+                    fileEventJobDialog.addOpenedChangeListener(event -> {
+                        if(!event.isOpened()) {
+                            this.schedulerJobFilteringGrid.refreshItem(schedulerJobRecord);
+                        }
+                    });
                 }
                 else if(schedulerJobRecord.getType().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB)) {
                     QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(moduleMetaDataService.findById(schedulerJobRecord.getAgentName())
                         , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService);
-                    quartzDrivenScheduledJobDialog.setJob((QuartzScheduleDrivenJob)schedulerJobRecord.getJob(), EditMode.EDIT);
+                    quartzDrivenScheduledJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
 
                     quartzDrivenScheduledJobDialog.open();
+
+                    quartzDrivenScheduledJobDialog.addOpenedChangeListener(event -> {
+                        if(!event.isOpened()) {
+                            this.schedulerJobFilteringGrid.refreshItem(schedulerJobRecord);
+                        }
+                    });
                 }
                 else if(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)) {
                     InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(moduleMetaDataService.findById(schedulerJobRecord.getAgentName())
@@ -151,10 +165,7 @@ public class SchedulerJobGridWidget extends Div {
 
             layout.add(edit);
 
-            Icon view = VaadinIcon.EYE.create();
-            view.setSize("14pt");
-            view.getStyle().set("cursor", "pointer");
-            view.getElement().setAttribute("title", getTranslation("tooltip.view-job", UI.getCurrent().getLocale()));
+            Icon view = IconDecorator.decorate(new Icon(VaadinIcon.EYE), getTranslation("tooltip.view-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             ComponentSecurityVisibility.applySecurity(this.authentication, view, SecurityConstants.SCHEDULER_READ, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
             view.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -163,35 +174,28 @@ public class SchedulerJobGridWidget extends Div {
 
             layout.add(view);
 
-            Icon chart = VaadinIcon.CHART.create();
-            chart.setSize("14pt");
-            chart.getStyle().set("cursor", "pointer");
-            chart.getElement().setAttribute("title", getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()));
+            Icon chart = IconDecorator.decorate(new Icon(VaadinIcon.CHART), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
 
             });
 
             layout.add(chart);
 
-            Icon export = VaadinIcon.DOWNLOAD_ALT.create();
-            export.setSize("14pt");
-            export.getStyle().set("cursor", "pointer");
-            export.getElement().setAttribute("title", "Export");
-            export.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-
+            Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            StreamResource streamResource = new StreamResource(schedulerJobRecord.getJobName()+".json"
+                , () -> {
+                try {
+                    return new ByteArrayInputStream(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(schedulerJobRecord.getJob()));
+                }
+                catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                    return null;
+                }
             });
 
-            layout.add(export);
-
-            Icon newWindow = VaadinIcon.PLUS_SQUARE_O.create();
-            newWindow.setSize("14pt");
-            newWindow.getStyle().set("cursor", "pointer");
-            newWindow.getElement().setAttribute("title", "Open in New Window");
-            newWindow.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-
-            });
-
-            layout.add(newWindow);
+            FileDownloadWrapper exportWrapper = new FileDownloadWrapper(streamResource);
+            exportWrapper.wrapComponent(export);
+            layout.add(exportWrapper);
 
             return layout;
         }))

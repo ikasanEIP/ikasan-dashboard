@@ -2,6 +2,7 @@ package org.ikasan.scheduled.context.service;
 
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextDao;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
+import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.search.SearchResults;
 
@@ -27,8 +28,8 @@ public class SolrScheduledContextServiceImpl implements ScheduledContextService 
     }
 
     @Override
-    public SearchResults<? extends ScheduledContextRecord> findByKeyword(String keyword, int limit, int offset) {
-        return this.dao.findByKeyword(keyword, limit, offset);
+    public SearchResults<ScheduledContextRecord> findByFilter(ScheduledContextSearchFilter filter, int limit, int offset, String sortColumn, String sortOrder) {
+        return this.dao.findByFilter(filter, limit, offset, sortColumn, sortOrder);
     }
 
     @Override
