@@ -47,6 +47,7 @@ public class ContextTemplateManagementWidget extends Div {
     protected SchedulerVisualisation schedulerVisualisation;
     private ContextInstanceGridWidget contextInstanceGridWidget;
     private SchedulerJobGridWidget schedulerJobGridWidget;
+    private ContextTemplateStatisticsWidget contextTemplateStatisticsWidget;
 
     private TextField contextNameTf;
     private TextArea descriptionTa;
@@ -142,10 +143,12 @@ public class ContextTemplateManagementWidget extends Div {
              configurationRestService,  moduleControlRestService, metaDataRestService,  systemEventLogger,  schedulerJobService, logStreamingService);
         this.initialiseSchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService,  moduleControlRestService, metaDataRestService,  systemEventLogger,  schedulerJobService, logStreamingService);
+        this.initialiseContextTemplateStatisticsWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+            configurationRestService,  moduleControlRestService, metaDataRestService,  systemEventLogger,  schedulerJobService, logStreamingService);
         this.initialiseTabs();
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(this.tabs);
-        this.add(this.formLayout, tabLayout, this.aceEditor, this.schedulerVisualisation, this.contextInstanceGridWidget, this.schedulerJobGridWidget);
+        this.add(this.formLayout, tabLayout, this.aceEditor, this.schedulerVisualisation, this.contextInstanceGridWidget, this.schedulerJobGridWidget, this.contextTemplateStatisticsWidget);
     }
 
     private void initialiseTabs() {
@@ -166,30 +169,35 @@ public class ContextTemplateManagementWidget extends Div {
                     this.schedulerVisualisation.setVisible(false);
                     this.contextInstanceGridWidget.setVisible(true);
                     this.schedulerJobGridWidget.setVisible(false);
+                    this.contextTemplateStatisticsWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.statisticsTab)) {
                     this.aceEditor.setVisible(false);
                     this.schedulerVisualisation.setVisible(false);
                     this.contextInstanceGridWidget.setVisible(false);
                     this.schedulerJobGridWidget.setVisible(false);
+                    this.contextTemplateStatisticsWidget.setVisible(true);
                 }
                 else if(tabs.getSelectedTab().equals(this.rawContextTab)) {
                     this.aceEditor.setVisible(true);
                     this.schedulerVisualisation.setVisible(false);
                     this.contextInstanceGridWidget.setVisible(false);
                     this.schedulerJobGridWidget.setVisible(false);
+                    this.contextTemplateStatisticsWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.visualisationTab)) {
                     this.aceEditor.setVisible(false);
                     this.schedulerVisualisation.setVisible(true);
                     this.contextInstanceGridWidget.setVisible(false);
                     this.schedulerJobGridWidget.setVisible(false);
+                    this.contextTemplateStatisticsWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.jobsTab)) {
                     this.aceEditor.setVisible(false);
                     this.schedulerVisualisation.setVisible(false);
                     this.contextInstanceGridWidget.setVisible(false);
                     this.schedulerJobGridWidget.setVisible(true);
+                    this.contextTemplateStatisticsWidget.setVisible(false);
                 }
             }
             catch (Exception e){
@@ -257,6 +265,18 @@ public class ContextTemplateManagementWidget extends Div {
                                                      MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobGridWidget = new SchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate);
+        this.schedulerJobGridWidget.setWidthFull();
+        this.schedulerJobGridWidget.setHeight("75vh");
+        this.schedulerJobGridWidget.setVisible(false);
+
+    }
+
+    private void initialiseContextTemplateStatisticsWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+                                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
+                                                  LogStreamingService logStreamingService) {
+        this.contextTemplateStatisticsWidget = new ContextTemplateStatisticsWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate);
         this.schedulerJobGridWidget.setWidthFull();
         this.schedulerJobGridWidget.setHeight("75vh");

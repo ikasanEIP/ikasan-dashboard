@@ -5,6 +5,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
+import org.ikasan.scheduled.context.model.SolrContextParameterImpl;
 import org.ikasan.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
@@ -17,6 +18,7 @@ import org.springframework.util.FileSystemUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.stream.IntStream;
 
 public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
@@ -179,6 +181,92 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
         }
     }
 
+    @Test
+    public void test_save() {
+        SolrFileEventDrivenJobDaoImpl solrFileEventDrivenJobRecordDao = new SolrFileEventDrivenJobDaoImpl();
+        solrFileEventDrivenJobRecordDao.setSolrUsername("ikasan");
+        solrFileEventDrivenJobRecordDao.setSolrPassword("1ka5an");
+        solrFileEventDrivenJobRecordDao.initStandalone("http://localhost:8983/solr", 365);
+        SolrQuartzScheduleDrivenJobDaoImpl solrQuartzScheduleDrivenJobRecordDao = new SolrQuartzScheduleDrivenJobDaoImpl();
+        solrQuartzScheduleDrivenJobRecordDao.setSolrUsername("ikasan");
+        solrQuartzScheduleDrivenJobRecordDao.setSolrPassword("1ka5an");
+        solrQuartzScheduleDrivenJobRecordDao.initStandalone("http://localhost:8983/solr", 365);
+        SolrInternalEventDrivenJobDaoImpl solrInternalEventDrivenJobRecordDao = new SolrInternalEventDrivenJobDaoImpl();
+        solrInternalEventDrivenJobRecordDao.setSolrUsername("ikasan");
+        solrInternalEventDrivenJobRecordDao.setSolrPassword("1ka5an");
+        solrInternalEventDrivenJobRecordDao.initStandalone("http://localhost:8983/solr", 365);
+
+        IntStream.range(0, 500).forEach(i -> {
+            SolrFileEventDrivenJobImpl solrFileEventDrivenJob = new SolrFileEventDrivenJobImpl();
+            solrFileEventDrivenJob.setAgentName("agentName");
+            solrFileEventDrivenJob.setJobName("jobName"+i);
+            solrFileEventDrivenJob.setContextId("CONTEXT-369160711");
+            solrFileEventDrivenJob.setCronExpression("* * 6 ? * * *");
+            solrFileEventDrivenJob.setFilePath("/opt/dev/data");
+            solrFileEventDrivenJob.setFilenames(List.of("/opt/dev/data/test.txt"));
+            solrFileEventDrivenJob.setMoveDirectory("/opt/dev/archive");
+            solrFileEventDrivenJob.setJobDescription("File watcher job to wait for a file to arrive.");
+
+            SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
+            solrFileEventDrivenJobRecord.setAgentName("agentName");
+            solrFileEventDrivenJobRecord.setJobName("jobName"+i);
+            solrFileEventDrivenJobRecord.setContextId("CONTEXT-369160711");
+            solrFileEventDrivenJobRecord.setTimestamp(1000000L);
+            solrFileEventDrivenJobRecord.setFileEventDrivenJob(solrFileEventDrivenJob);
+
+            solrFileEventDrivenJobRecordDao.save(solrFileEventDrivenJobRecord);
+        });
+
+        IntStream.range(0, 300).forEach(i -> {
+            SolrQuartzScheduleDrivenJobImpl solrQuartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
+            solrQuartzScheduleDrivenJob.setAgentName("agentName"+i);
+            solrQuartzScheduleDrivenJob.setJobName("jobName"+i);
+            solrQuartzScheduleDrivenJob.setContextId("CONTEXT-369160711");
+            solrQuartzScheduleDrivenJob.setCronExpression("* * 15 ? * * *");
+
+            SolrQuartzScheduleDrivenJobRecordImpl solrQuartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
+            solrQuartzScheduleDrivenJobRecord.setAgentName("agentName"+i);
+            solrQuartzScheduleDrivenJobRecord.setJobName("jobName"+i);
+            solrQuartzScheduleDrivenJobRecord.setContextId("CONTEXT-369160711");
+            solrQuartzScheduleDrivenJobRecord.setTimestamp(1000000L);
+            solrQuartzScheduleDrivenJobRecord.setQuartzScheduleDrivenJob(solrQuartzScheduleDrivenJob);
+
+
+            solrQuartzScheduleDrivenJobRecordDao.save(solrQuartzScheduleDrivenJobRecord);
+        });
+
+        IntStream.range(0, 800).forEach(i -> {
+            SolrInternalEventDrivenJobImpl solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
+            solrInternalEventDrivenJob.setAgentName("agentName"+i);
+            solrInternalEventDrivenJob.setJobName("jobName"+i);
+            solrInternalEventDrivenJob.setContextId("CONTEXT-369160711");
+            solrInternalEventDrivenJob.setCommandLine("ls -la");
+            solrInternalEventDrivenJob.setSuccessfulReturnCodes(List.of("1", "2"));
+            solrInternalEventDrivenJob.setJobDescription("This job executes an external script and waits for the process to complete.");
+            solrInternalEventDrivenJob.setWorkingDirectory("/opt/prd/workingDir");
+
+            SolrContextParameterImpl contextParameter1 = new SolrContextParameterImpl();
+            contextParameter1.setName("businessDate");
+            contextParameter1.setType("java.lang.String");
+
+            SolrContextParameterImpl contextParameter2 = new SolrContextParameterImpl();
+            contextParameter2.setName("aNumber");
+            contextParameter2.setType("java.lang.Integer");
+
+            solrInternalEventDrivenJob.setContextParameters(List.of(contextParameter1, contextParameter2));
+
+            SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
+            solrInternalEventDrivenJobRecord.setAgentName("agentName"+i);
+            solrInternalEventDrivenJobRecord.setJobName("jobName"+i);
+            solrInternalEventDrivenJobRecord.setContextId("CONTEXT-369160711");
+            solrInternalEventDrivenJobRecord.setTimestamp(1000000L);
+            solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(solrInternalEventDrivenJob);
+
+
+            solrInternalEventDrivenJobRecordDao.save(solrInternalEventDrivenJobRecord);
+        });
+    }
+
 
     private void insertFileEventRecords(String idPrefix, int num, String contextId) {
         IntStream.range(0, num).forEach(i -> {
@@ -226,6 +314,7 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             solrInternalEventDrivenJob.setAgentName("agentName"+i);
             solrInternalEventDrivenJob.setJobName("jobName"+i);
             solrInternalEventDrivenJob.setContextId(contextId);
+            solrInternalEventDrivenJob.setCommandLine("ls -la");
 
             SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
             solrInternalEventDrivenJobRecord.setAgentName(idPrefix+"agentName"+i);

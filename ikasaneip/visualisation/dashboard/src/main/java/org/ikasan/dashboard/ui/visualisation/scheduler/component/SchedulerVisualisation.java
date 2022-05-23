@@ -125,7 +125,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     }
 
     private void init() throws IOException{
-        if(!initialised) {
+        if(!initialised && contextInstance != null) {
 
             if (this.designerCanvas != null) {
                 this.removeAll();
