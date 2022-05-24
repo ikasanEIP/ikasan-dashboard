@@ -10,6 +10,8 @@ import com.leansoft.bigqueue.IBigQueue;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
+import org.ikasan.job.orchestration.core.notification.ErrorNotificationsRunner;
+import org.ikasan.job.orchestration.core.notification.OverdueFileNotificationsRunner;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
@@ -41,6 +43,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ContextMachine {
@@ -53,6 +57,8 @@ public class ContextMachine {
     private ExecutorService statusListenerExecutor;
     private ExecutorService schedulerInitiatorEventRaisedListenerExecutor;
     private ExecutorService contextExecutor;
+    private ScheduledFuture<?> overdueFileNotificationsExecutor;
+    private ExecutorService errorNotificationExecutor;
     private IBigQueue inboundQueue;
     private IBigQueue outboundQueue;
     private ListenableFuture<byte[]> inboundListenableFuture;
@@ -83,6 +89,8 @@ public class ContextMachine {
         this.statusListenerExecutor = Executors.newSingleThreadExecutor();
         this.contextExecutor = Executors.newSingleThreadExecutor();
         this.schedulerInitiatorEventRaisedListenerExecutor = Executors.newSingleThreadExecutor();
+        this.overdueFileNotificationsExecutor = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new OverdueFileNotificationsRunner(getContext()),1,1, TimeUnit.MINUTES);
+        this.errorNotificationExecutor = Executors.newSingleThreadExecutor();
         this.objectMapper = ObjectMapperFactory.newInstance();
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -542,6 +550,12 @@ public class ContextMachine {
             .forEach(listener -> listener.onContextInstanceStateChangeEvent(event)));
     }
 
+    private void handleErrorNotifications(ContextualisedScheduledProcessEvent event) {
+        if (!event.isJobStarting() && !event.isSuccessful()) {
+            this.errorNotificationExecutor.submit(new ErrorNotificationsRunner(event));
+        }
+    }
+
     private void saveContext() {
         ScheduledContextInstanceRecord scheduledContextInstanceRecord
             = new ScheduledContextInstanceRecordImpl();
@@ -589,6 +603,7 @@ public class ContextMachine {
                 List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents = eventReceived(scheduledProcessEvent);
 
                 saveContext();
+                handleErrorNotifications(scheduledProcessEvent);
 
                 for(SchedulerJobInitiationEvent schedulerJobInitiationEvent: schedulerJobInitiationEvents) {
                     String serialised = objectMapper.writeValueAsString(schedulerJobInitiationEvent);
