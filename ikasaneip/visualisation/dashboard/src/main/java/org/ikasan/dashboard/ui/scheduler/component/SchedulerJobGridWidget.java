@@ -14,11 +14,11 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.server.StreamResource;
-import org.ikasan.dashboard.ui.scheduler.component.filter.SchedulerJobSearchFilterImpl;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.JobConstants;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -78,7 +78,7 @@ public class SchedulerJobGridWidget extends Div {
                             MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                             LogStreamingService logStreamingService, ContextTemplate contextTemplate) {
         // Create a modulesGrid bound to the list
-        SchedulerJobSearchFilterImpl schedulerJobSearchFilter = new SchedulerJobSearchFilterImpl();
+        SolrSchedulerJobSearchFilterImpl schedulerJobSearchFilter = new SolrSchedulerJobSearchFilterImpl();
         schedulerJobFilteringGrid = new SchedulerJobFilteringGrid(schedulerJobService, schedulerJobSearchFilter);
         schedulerJobFilteringGrid.removeAllColumns();
         schedulerJobFilteringGrid.setVisible(true);
@@ -103,7 +103,7 @@ public class SchedulerJobGridWidget extends Div {
         schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Text text = new Text(SchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS_INVERTED.get(schedulerJobRecord.getType()));
+            Text text = new Text(SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS_INVERTED.get(schedulerJobRecord.getType()));
 
             horizontalLayout.add(text);
             return horizontalLayout;
@@ -239,7 +239,7 @@ public class SchedulerJobGridWidget extends Div {
         HeaderRow hr = schedulerJobFilteringGrid.appendHeaderRow();
         this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter, "flowName");
         this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobTypeFilter
-            , SchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
+            , SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
 
     }
 }

@@ -15,9 +15,9 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.scheduler.component.filter.ContextInstanceSearchFilterImpl;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
+import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.search.SearchResults;
@@ -26,7 +26,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceRecord> {
@@ -34,10 +36,10 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
 
     private ScheduledContextInstanceService scheduledContextInstanceService;
 
-    private DataProvider<ScheduledContextInstanceRecord, ContextInstanceSearchFilterImpl> dataProvider;
-    private ConfigurableFilterDataProvider<ScheduledContextInstanceRecord, Void, ContextInstanceSearchFilterImpl> filteredDataProvider;
+    private DataProvider<ScheduledContextInstanceRecord, ContextInstanceSearchFilter> dataProvider;
+    private ConfigurableFilterDataProvider<ScheduledContextInstanceRecord, Void, ContextInstanceSearchFilter> filteredDataProvider;
 
-    private ContextInstanceSearchFilterImpl searchFilter;
+    private ContextInstanceSearchFilter searchFilter;
 
     private long resultSize = 0;
 
@@ -50,7 +52,7 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
      * @param searchFilter
      */
     public ContextInstanceFilteringGrid(ScheduledContextInstanceService scheduledContextInstanceService,
-                                        ContextInstanceSearchFilterImpl searchFilter) {
+                                        ContextInstanceSearchFilter searchFilter) {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if(this.scheduledContextInstanceService ==  null) {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
@@ -171,7 +173,7 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
      */
     public void init() {
         dataProvider = DataProvider.fromFilteringCallbacks(query -> {
-            Optional<ContextInstanceSearchFilterImpl> filter = query.getFilter();
+            Optional<ContextInstanceSearchFilter> filter = query.getFilter();
 
             // The index of the first item to load
             int offset = query.getOffset();
@@ -191,7 +193,7 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
 
             return results.getResultList().stream();
         }, query -> {
-            Optional<ContextInstanceSearchFilterImpl> filter = query.getFilter();
+            Optional<ContextInstanceSearchFilter> filter = query.getFilter();
 
             SearchResults results;
 
@@ -208,7 +210,7 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
         this.setDataProvider(filteredDataProvider);
     }
 
-    private SearchResults getResults(ContextInstanceSearchFilterImpl filter, int offset, int limit, String sortField, String sortDirection) {
+    private SearchResults getResults(ContextInstanceSearchFilter filter, int offset, int limit, String sortField, String sortDirection) {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         SearchResults results = null;
