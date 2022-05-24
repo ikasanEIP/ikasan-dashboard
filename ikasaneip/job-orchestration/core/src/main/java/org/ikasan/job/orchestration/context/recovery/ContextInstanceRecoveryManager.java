@@ -64,34 +64,34 @@ public class ContextInstanceRecoveryManager {
 
     @PostConstruct
     public void recoverContextInstances() {
-        logger.info("Recovering context instances!");
-
-        SearchResults<ScheduledContextInstanceRecord> contextInstanceRecords = scheduledContextInstanceService
-            .getScheduledContextInstancesByStatus(List.of(InstanceStatus.RUNNING));
-
-        for(ScheduledContextInstanceRecord contextInstanceRecord: contextInstanceRecords.getResultList()) {
-            try {
-                ScheduledContextRecord contextRecord = this.scheduledContextService.findByName(contextInstanceRecord.getContextName());
-                SearchResults<InternalEventDrivenJobRecord> internalEventDrivenJobRecordSearchResults
-                    = this.internalEventDrivenJobRecordService.findByContext(contextInstanceRecord.getContextName(), -1, -1);
-
-                Map<String, InternalEventDrivenJob> internalEventDrivenJobMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
-                    .map(internalEventDrivenJobRecord -> internalEventDrivenJobRecord.getInternalEventDrivenJob())
-                    .collect(Collectors.toMap(InternalEventDrivenJob::getIdentifier, Function.identity()));
-
-                // todo sort out agents
-                ContextMachine contextMachine = new ContextMachine(contextRecord.getContext(), contextInstanceRecord.getContextInstance(),
-                    this.scheduledContextInstanceService, internalEventDrivenJobMap, this.queueDirectory, new HashMap<>(),
-                    this.jobLockCacheService, this.schedulerOverrider);
-
-                ContextMachineCache.instance().put(contextMachine);
-
-                // todo sort out adding JobLockCache instance and lock holders
-            }
-            catch (Exception e) {
-                // todo probably want to send a notification here.
-                logger.error(String.format("An error has occurred recovering context instance[%s]!", contextInstanceRecord.getId()), e);
-            }
-        };
+//        logger.info("Recovering context instances!");
+//
+//        SearchResults<ScheduledContextInstanceRecord> contextInstanceRecords = scheduledContextInstanceService
+//            .getScheduledContextInstancesByStatus(List.of(InstanceStatus.RUNNING));
+//
+//        for(ScheduledContextInstanceRecord contextInstanceRecord: contextInstanceRecords.getResultList()) {
+//            try {
+//                ScheduledContextRecord contextRecord = this.scheduledContextService.findByName(contextInstanceRecord.getContextName());
+//                SearchResults<InternalEventDrivenJobRecord> internalEventDrivenJobRecordSearchResults
+//                    = this.internalEventDrivenJobRecordService.findByContext(contextInstanceRecord.getContextName(), -1, -1);
+//
+//                Map<String, InternalEventDrivenJob> internalEventDrivenJobMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
+//                    .map(internalEventDrivenJobRecord -> internalEventDrivenJobRecord.getInternalEventDrivenJob())
+//                    .collect(Collectors.toMap(InternalEventDrivenJob::getIdentifier, Function.identity()));
+//
+//                // todo sort out agents
+//                ContextMachine contextMachine = new ContextMachine(contextRecord.getContext(), contextInstanceRecord.getContextInstance(),
+//                    this.scheduledContextInstanceService, internalEventDrivenJobMap, this.queueDirectory, new HashMap<>(),
+//                    this.jobLockCacheService, this.schedulerOverrider);
+//
+//                ContextMachineCache.instance().put(contextMachine);
+//
+//                // todo sort out adding JobLockCache instance and lock holders
+//            }
+//            catch (Exception e) {
+//                // todo probably want to send a notification here.
+//                logger.error(String.format("An error has occurred recovering context instance[%s]!", contextInstanceRecord.getId()), e);
+//            }
+//        };
     }
 }
