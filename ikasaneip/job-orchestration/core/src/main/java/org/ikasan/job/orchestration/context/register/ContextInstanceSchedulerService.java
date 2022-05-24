@@ -73,33 +73,33 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
 
     @PostConstruct
     public void registerJobs() {
-        try {
-            SearchResults<ScheduledContextRecord> scheduledContextRecords
-                = (SearchResults<ScheduledContextRecord>) this.scheduledContextService.findAll();
-
-            for (ScheduledContextRecord scheduledContextRecord : scheduledContextRecords.getResultList()) {
-
-                ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(scheduledContextRecord.getContextName(),
-                    scheduledContextRecord.getContext().getTimeWindowStart(), this.scheduledContextService
-                    , this.scheduledContextInstanceService, this.schedulerService, this.internalEventDrivenJobService
-                    , this.queueDirectory, this.jobLockCacheService, this.schedulerOverrider);
-                JobDetail jobDetail = this.scheduledJobFactory.createJobDetail
-                    (job, ContextInstanceRegisterJob.class, job.getJobName(), "context");
-
-                super.dashboardJobDetailsMap.put(job.getJobName(), jobDetail);
-                super.dashboardJobsMap.put(jobDetail.getKey().toString(), job);
-
-            }
-
-            for (JobDetail jobDetail : super.dashboardJobDetailsMap.values()) {
-                logger.info(String.format("Registering context instance job[%s]", jobDetail.getKey().getName()));
-                this.addJob(jobDetail.getKey().getName());
-            }
-        }
-        catch (Exception ex) {
-            // todo need to add some notifications here
-            logger.error(String.format("An exception has occurred registering contexts [%s]", ex.getMessage()), ex);
-        }
+//        try {
+//            SearchResults<ScheduledContextRecord> scheduledContextRecords
+//                = (SearchResults<ScheduledContextRecord>) this.scheduledContextService.findAll();
+//
+//            for (ScheduledContextRecord scheduledContextRecord : scheduledContextRecords.getResultList()) {
+//
+//                ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(scheduledContextRecord.getContextName(),
+//                    scheduledContextRecord.getContext().getTimeWindowStart(), this.scheduledContextService
+//                    , this.scheduledContextInstanceService, this.schedulerService, this.internalEventDrivenJobService
+//                    , this.queueDirectory, this.jobLockCacheService, this.schedulerOverrider);
+//                JobDetail jobDetail = this.scheduledJobFactory.createJobDetail
+//                    (job, ContextInstanceRegisterJob.class, job.getJobName(), "context");
+//
+//                super.dashboardJobDetailsMap.put(job.getJobName(), jobDetail);
+//                super.dashboardJobsMap.put(jobDetail.getKey().toString(), job);
+//
+//            }
+//
+//            for (JobDetail jobDetail : super.dashboardJobDetailsMap.values()) {
+//                logger.info(String.format("Registering context instance job[%s]", jobDetail.getKey().getName()));
+//                this.addJob(jobDetail.getKey().getName());
+//            }
+//        }
+//        catch (Exception ex) {
+//            // todo need to add some notifications here
+//            logger.error(String.format("An exception has occurred registering contexts [%s]", ex.getMessage()), ex);
+//        }
     }
 
 }
