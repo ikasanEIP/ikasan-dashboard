@@ -13,8 +13,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
-import org.ikasan.dashboard.ui.scheduler.component.filter.ContextInstanceSearchFilterImpl;
 import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAudit;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
@@ -69,7 +69,7 @@ public class ContextInstanceAuditWidget extends Div {
 
     private void createGrid() {
         // Create a modulesGrid bound to the list
-        ContextInstanceSearchFilterImpl moduleSearchFilter = new ContextInstanceSearchFilterImpl();
+        SolrContextInstanceSearchFilterImpl moduleSearchFilter = new SolrContextInstanceSearchFilterImpl();
         contextInstanceAuditFilteringGrid = new ContextInstanceAuditFilteringGrid(this.contextInstanceService, moduleSearchFilter);
         contextInstanceAuditFilteringGrid.removeAllColumns();
         contextInstanceAuditFilteringGrid.setVisible(true);

@@ -14,30 +14,31 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.scheduler.component.filter.SchedulerJobSearchFilterImpl;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
     private Logger logger = LoggerFactory.getLogger(SchedulerJobFilteringGrid.class);
 
     private SchedulerJobService schedulerJobService;
 
-    private DataProvider<SchedulerJobRecord, SchedulerJobSearchFilterImpl> dataProvider;
-    private ConfigurableFilterDataProvider<SchedulerJobRecord, Void, SchedulerJobSearchFilterImpl> filteredDataProvider;
+    private DataProvider<SchedulerJobRecord, SchedulerJobSearchFilter> dataProvider;
+    private ConfigurableFilterDataProvider<SchedulerJobRecord, Void, SchedulerJobSearchFilter> filteredDataProvider;
 
-    private SchedulerJobSearchFilterImpl searchFilter;
+    private SchedulerJobSearchFilter searchFilter;
 
     private long resultSize = 0;
 
@@ -50,7 +51,7 @@ public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
      * @param searchFilter
      */
     public SchedulerJobFilteringGrid(SchedulerJobService schedulerJobService,
-                                     SchedulerJobSearchFilterImpl searchFilter) {
+                                     SchedulerJobSearchFilter searchFilter) {
         this.schedulerJobService = schedulerJobService;
         if(this.schedulerJobService ==  null) {
             throw new IllegalArgumentException("schedulerJobService cannot be null!");
@@ -145,7 +146,7 @@ public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
      */
     public void init() {
         dataProvider = DataProvider.fromFilteringCallbacks(query -> {
-            Optional<SchedulerJobSearchFilterImpl> filter = query.getFilter();
+            Optional<SchedulerJobSearchFilter> filter = query.getFilter();
 
             // The index of the first item to load
             int offset = query.getOffset();
@@ -165,7 +166,7 @@ public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
 
             return results.getResultList().stream();
         }, query -> {
-            Optional<SchedulerJobSearchFilterImpl> filter = query.getFilter();
+            Optional<SchedulerJobSearchFilter> filter = query.getFilter();
 
             SearchResults results;
 
@@ -182,7 +183,7 @@ public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
         this.setDataProvider(filteredDataProvider);
     }
 
-    private SearchResults getResults(SchedulerJobSearchFilterImpl filter, int offset, int limit, String sortColumn, String sortDirection) {
+    private SearchResults getResults(SchedulerJobSearchFilter filter, int offset, int limit, String sortColumn, String sortDirection) {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         SearchResults results;
