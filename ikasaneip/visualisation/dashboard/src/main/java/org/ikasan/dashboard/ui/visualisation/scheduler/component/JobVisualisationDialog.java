@@ -20,6 +20,7 @@ import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -32,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.UUID;
 
 public class JobVisualisationDialog extends AbstractCloseableResizableDialog implements CanvasItemRightClickEventListener
     , CanvasItemDoubleClickEventListener {
@@ -130,7 +132,7 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
                 this.removeAll();
             }
 
-            this.designerCanvas = new DesignerCanvas("job-viewport", this.dynamicImagePath, true);
+            this.designerCanvas = new DesignerCanvas("job-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, true);
             this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextInstance));
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
@@ -227,16 +229,19 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
-        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-            if(contextInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
-                logger.info("Updating scheduler visualisation job status. Scheduler Job Instance[{}], Status[{}], Status Colour[{}]",
-                    contextInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
-                    StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
-                ui.access(() ->
-                    this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier() + "_status"
-                        , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus())));
-            }
-        });
+        if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+            logger.info("Adding job visualisation dialog as context sate change event listener for context[{}], context identifier[{}].");
+            schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
+                if (contextInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
+                    logger.info("Updating scheduler visualisation job status. Scheduler Job Instance[{}], Status[{}], Status Colour[{}]",
+                        contextInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
+                        StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
+                    ui.access(() ->
+                        this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier() + "_status"
+                            , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus())));
+                }
+            });
+        }
     }
 
     @Override

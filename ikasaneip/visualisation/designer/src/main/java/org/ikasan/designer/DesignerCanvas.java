@@ -66,6 +66,8 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
 
     private boolean readonly;
 
+    private boolean connectorInitialised = false;
+
 
     public DesignerCanvas(String name, String dynamicImagePath, boolean readonly) {
         super();
@@ -75,6 +77,18 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
 
         this.getElement().getThemeList().remove("padding");
         this.getElement().getThemeList().remove("spacing");
+        this.getElement().getStyle().set("border", "1px solid #E0E0E0");
+        this.getElement().getStyle().set("padding", "0px");
+        this.getElement().getStyle().set("margin", "0px");
+        this.getElement().getStyle().set("position", "relative");
+        this.getElement().getStyle().set("top", "0px");
+        this.getElement().getStyle().set("right", "0px");
+        this.getElement().getStyle().set("left", "0px");
+        this.getElement().getStyle().set("bottom", "0px");
+        this.getElement().getStyle().set("overflow", "scroll");
+        this.getElement().getStyle().set("height", "100%");
+        this.getElement().getStyle().set("width", "100%");
+        this.getElement().getStyle().set("background-color", "#FFFFFF");
 
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery.js");
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery-ui.js");
@@ -142,8 +156,13 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         super.onAttach(attachEvent);
 
         initConnector();
-        if(this.canvasJson != null) {
+
+        if(this.canvasJson != null && ! connectorInitialised) {
             this.importJson();
+        }
+
+        if(!connectorInitialised) {
+            connectorInitialised = true;
         }
     }
 
