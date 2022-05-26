@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
@@ -14,14 +15,16 @@ import com.vaadin.flow.data.binder.Binder;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
+import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceGridWidget;
+import org.ikasan.dashboard.ui.scheduler.component.ContextTemplateStatisticsWidget;
+import org.ikasan.dashboard.ui.scheduler.component.CronBuilderDialog;
+import org.ikasan.dashboard.ui.scheduler.component.SchedulerJobGridWidget;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
-import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.security.model.Role;
+import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -30,25 +33,29 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
 
-public class ContextTemplateManagementWidget extends Div {
+public class ContextInstanceWidget extends Div {
 
-    private ScheduledContextService scheduledContextService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private FormLayout formLayout;
     private IkasanAuthentication authentication;
 
     private AceEditor aceEditor;
     protected SchedulerVisualisation schedulerVisualisation;
-    private ContextInstanceGridWidget contextInstanceGridWidget;
     private SchedulerJobGridWidget schedulerJobGridWidget;
     private ContextTemplateStatisticsWidget contextTemplateStatisticsWidget;
+    private ContextInstanceAuditWidget contextInstanceAuditWidget;
 
+    private TextField contextInstanceId;
+    private TextField contextInstanceStatus;
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
@@ -56,26 +63,26 @@ public class ContextTemplateManagementWidget extends Div {
 
     private Tab visualisationTab;
     private Tab rawContextTab;
-    private Tab instancesTab;
     private Tab jobsTab;
     private Tab statisticsTab;
+    private Tab auditTab;
     private Tabs tabs;
 
+    private ContextInstance contextInstance;
     private ContextTemplate contextTemplate;
 
     /**
      * Constructor
      *
-     * @param scheduledContextService
      */
-    public ContextTemplateManagementWidget(ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
-                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                           LogStreamingService logStreamingService, ContextTemplate contextTemplate) {
+    public ContextInstanceWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+                                 ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                 MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
+                                 LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate) {
 
-        this.scheduledContextService = scheduledContextService;
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        this.contextInstance = contextInstance;
         this.contextTemplate = contextTemplate;
 
         this.init(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
@@ -87,117 +94,100 @@ public class ContextTemplateManagementWidget extends Div {
                       ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                       MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                       LogStreamingService logStreamingService) {
-        Binder<ContextTemplate> binder = new Binder<>(ContextTemplate.class);
+        Binder<ContextInstance> binder = new Binder<>(ContextInstance.class);
 
-        this.contextNameTf = new TextField("Context Name");
+        this.contextInstanceId = new TextField(getTranslation("label.context-instance-id", UI.getCurrent().getLocale()));
+        binder.forField(contextInstanceId)
+            .bind(ContextInstance::getId, ContextInstance::setId);
+        this.contextInstanceStatus = new TextField(getTranslation("table-header.status", UI.getCurrent().getLocale()));
+        this.contextInstanceStatus.setValue(this.contextInstance.getStatus().name());
+
+        this.contextNameTf = new TextField(getTranslation("label.context-name", UI.getCurrent().getLocale()));
         binder.forField(contextNameTf)
-            .bind(ContextTemplate::getName, ContextTemplate::setName);
-        this.descriptionTa = new TextArea("Description");
+            .bind(ContextInstance::getName, ContextInstance::setName);
+        this.descriptionTa = new TextArea(getTranslation("table-header.description", UI.getCurrent().getLocale()));
         binder.forField(descriptionTa)
-            .bind(ContextTemplate::getDescription, ContextTemplate::setDescription);
+            .bind(ContextInstance::getDescription, ContextInstance::setDescription);
 
-        Icon startWindowCronBuilderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), "Build cron expression", "14pt", "rgba(241, 90, 35, 1.0)");
-        startWindowCronBuilderIcon.addClickListener(event -> {
-            CronBuilderDialog dialog = new CronBuilderDialog();
-            dialog.init(this.startWindowCronExpressionTf.getValue());
-            dialog.open();
-
-            dialog.addOpenedChangeListener(openedChangeEvent -> {
-                if(!openedChangeEvent.isOpened() && dialog.isSaveClose()) {
-                    this.startWindowCronExpressionTf.setValue(dialog.getCronExpression());
-                }
-            });
-        });
-        this.startWindowCronExpressionTf = new TextField("Time Window Start");
-        this.startWindowCronExpressionTf.setSuffixComponent(startWindowCronBuilderIcon);
+        this.startWindowCronExpressionTf = new TextField(getTranslation("label.time-window-start", UI.getCurrent().getLocale()));
         binder.forField(startWindowCronExpressionTf)
-            .bind(ContextTemplate::getTimeWindowStart, ContextTemplate::setTimeWindowStart);
+            .bind(ContextInstance::getTimeWindowStart, ContextInstance::setTimeWindowStart);
 
-        Icon endWindowCronBuilderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), "Build cron expression", "14pt", "rgba(241, 90, 35, 1.0)");
-        endWindowCronBuilderIcon.addClickListener(event -> {
-            CronBuilderDialog dialog = new CronBuilderDialog();
-            dialog.init(this.endWindowCronExpressionTf.getValue());
-            dialog.open();
 
-            dialog.addOpenedChangeListener(openedChangeEvent -> {
-                if(!openedChangeEvent.isOpened() && dialog.isSaveClose()) {
-                    this.endWindowCronExpressionTf.setValue(dialog.getCronExpression());
-                }
-            });
-        });
-        this.endWindowCronExpressionTf = new TextField("Time Window End");
-        this.endWindowCronExpressionTf.setSuffixComponent(endWindowCronBuilderIcon);
+        this.endWindowCronExpressionTf = new TextField(getTranslation("label.time-window-end", UI.getCurrent().getLocale()));
         binder.forField(endWindowCronExpressionTf)
-            .bind(ContextTemplate::getTimeWindowEnd, ContextTemplate::setTimeWindowEnd);
+            .bind(ContextInstance::getTimeWindowEnd, ContextInstance::setTimeWindowEnd);
 
-        binder.readBean(this.contextTemplate);
+        binder.readBean(this.contextInstance);
 
         this.formLayout = new FormLayout();
         this.formLayout.setWidth("100%");
 
-        this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.descriptionTa, this.endWindowCronExpressionTf);
+        this.formLayout.add(this.contextInstanceId, this.contextInstanceStatus, this.contextNameTf
+            , this.startWindowCronExpressionTf, this.descriptionTa, this.endWindowCronExpressionTf);
+
         this.initialiseEditor();
         this.initialiseVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
-        this.initialiseContextInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
-             configurationRestService,  moduleControlRestService, metaDataRestService,  systemEventLogger,  schedulerJobService, logStreamingService);
         this.initialiseSchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService,  moduleControlRestService, metaDataRestService,  systemEventLogger,  schedulerJobService, logStreamingService);
         this.initialiseContextTemplateStatisticsWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService,  moduleControlRestService, metaDataRestService,  systemEventLogger,  schedulerJobService, logStreamingService);
+        this.initialiseContextInstanceAuditWidget(scheduledContextInstanceService);
         this.initialiseTabs();
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(this.tabs);
-        this.add(this.formLayout, tabLayout, this.aceEditor, this.schedulerVisualisation, this.contextInstanceGridWidget, this.schedulerJobGridWidget, this.contextTemplateStatisticsWidget);
+        this.add(this.formLayout, tabLayout, this.aceEditor, this.schedulerVisualisation
+            , this.schedulerJobGridWidget, this.contextTemplateStatisticsWidget, this.contextInstanceAuditWidget);
     }
 
     private void initialiseTabs() {
-        this.visualisationTab = new Tab("Visualisation");
-        this.rawContextTab = new Tab("JSON");
-        this.instancesTab = new Tab("Instances");
-        this.jobsTab = new Tab("Jobs");
-        this.statisticsTab = new Tab("Statistics");
+        this.visualisationTab = new Tab(getTranslation("tab.visualisation", UI.getCurrent().getLocale()));
+        this.rawContextTab = new Tab(getTranslation("tab.json-raw-format", UI.getCurrent().getLocale()));
+        this.jobsTab = new Tab(getTranslation("tab.job-instances", UI.getCurrent().getLocale()));
+        this.statisticsTab = new Tab(getTranslation("tab.statistics", UI.getCurrent().getLocale()));
+        this.auditTab = new Tab(getTranslation("tab.audit", UI.getCurrent().getLocale()));
 
         this.tabs = new Tabs();
         this.tabs.add(this.visualisationTab, this.rawContextTab
-            , this.instancesTab, this.jobsTab, this.statisticsTab);
+            , this.jobsTab, this.statisticsTab, this.auditTab);
 
         tabs.addSelectedChangeListener(event -> {
             try {
-                if(tabs.getSelectedTab().equals(this.instancesTab)) {
+                if(tabs.getSelectedTab().equals(this.statisticsTab)) {
                     this.aceEditor.setVisible(false);
                     this.schedulerVisualisation.setVisible(false);
-                    this.contextInstanceGridWidget.setVisible(true);
-                    this.schedulerJobGridWidget.setVisible(false);
-                    this.contextTemplateStatisticsWidget.setVisible(false);
-                }
-                else if(tabs.getSelectedTab().equals(this.statisticsTab)) {
-                    this.aceEditor.setVisible(false);
-                    this.schedulerVisualisation.setVisible(false);
-                    this.contextInstanceGridWidget.setVisible(false);
                     this.schedulerJobGridWidget.setVisible(false);
                     this.contextTemplateStatisticsWidget.setVisible(true);
+                    this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.rawContextTab)) {
                     this.aceEditor.setVisible(true);
                     this.schedulerVisualisation.setVisible(false);
-                    this.contextInstanceGridWidget.setVisible(false);
                     this.schedulerJobGridWidget.setVisible(false);
                     this.contextTemplateStatisticsWidget.setVisible(false);
+                    this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.visualisationTab)) {
                     this.aceEditor.setVisible(false);
                     this.schedulerVisualisation.setVisible(true);
-                    this.contextInstanceGridWidget.setVisible(false);
                     this.schedulerJobGridWidget.setVisible(false);
                     this.contextTemplateStatisticsWidget.setVisible(false);
+                    this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.jobsTab)) {
                     this.aceEditor.setVisible(false);
                     this.schedulerVisualisation.setVisible(false);
-                    this.contextInstanceGridWidget.setVisible(false);
                     this.schedulerJobGridWidget.setVisible(true);
                     this.contextTemplateStatisticsWidget.setVisible(false);
+                    this.contextInstanceAuditWidget.setVisible(false);
+                }
+                else if(tabs.getSelectedTab().equals(this.auditTab)) {
+                    this.aceEditor.setVisible(false);
+                    this.schedulerVisualisation.setVisible(false);
+                    this.schedulerJobGridWidget.setVisible(false);
+                    this.contextTemplateStatisticsWidget.setVisible(false);
+                    this.contextInstanceAuditWidget.setVisible(true);
                 }
             }
             catch (Exception e){
@@ -223,7 +213,7 @@ public class ContextTemplateManagementWidget extends Div {
         ContextService contextService = new ContextService();
 
         try {
-            aceEditor.setValue(contextService.getContextTemplateString(this.contextTemplate));
+            aceEditor.setValue(contextService.getContextInstanceString(this.contextInstance));
         }
         catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -241,24 +231,13 @@ public class ContextTemplateManagementWidget extends Div {
 
         ContextService contextService = new ContextService();
         try {
-            this.schedulerVisualisation.createSchedulerVisualisation(contextService.getContextInstance(contextService.getContextTemplateString(this.contextTemplate)));
+            this.schedulerVisualisation.createSchedulerVisualisation(contextService.getContextInstance(contextService.getContextInstanceString(this.contextInstance)));
         }
         catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void initialiseContextInstanceGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
-                                                     ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                                     MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                                     LogStreamingService logStreamingService) {
-        this.contextInstanceGridWidget = new ContextInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
-            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate);
-        this.contextInstanceGridWidget.setWidthFull();
-        this.contextInstanceGridWidget.setHeight("75vh");
-        this.contextInstanceGridWidget.setVisible(false);
-
-    }
 
     private void initialiseSchedulerJobGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                                      ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -281,6 +260,17 @@ public class ContextTemplateManagementWidget extends Div {
         this.contextTemplateStatisticsWidget.setWidthFull();
         this.contextTemplateStatisticsWidget.setHeight("75vh");
         this.contextTemplateStatisticsWidget.setVisible(false);
+
+    }
+
+    private void initialiseContextInstanceAuditWidget(ScheduledContextInstanceService scheduledContextInstanceService) {
+        ContextInstanceSearchFilter contextInstanceSearchFilter = new SolrContextInstanceSearchFilterImpl();
+        contextInstanceSearchFilter.setContextSearchFilter(this.contextInstance.getId());
+        this.contextInstanceAuditWidget = new ContextInstanceAuditWidget(scheduledContextInstanceService
+            , contextInstanceSearchFilter, false);
+        this.contextInstanceAuditWidget.setWidthFull();
+        this.contextInstanceAuditWidget.setHeight("75vh");
+        this.contextInstanceAuditWidget.setVisible(false);
 
     }
 }
