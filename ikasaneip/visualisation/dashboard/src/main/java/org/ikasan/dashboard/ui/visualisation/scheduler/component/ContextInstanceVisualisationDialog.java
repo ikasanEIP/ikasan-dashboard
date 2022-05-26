@@ -21,6 +21,7 @@ import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -33,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.UUID;
 
 public class ContextInstanceVisualisationDialog extends AbstractCloseableResizableDialog implements CanvasItemRightClickEventListener
     , CanvasItemDoubleClickEventListener {
@@ -125,13 +127,13 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
     }
 
     private void init() throws IOException{
-        if(!initialised) {
+        if(!initialised && this.contextInstance != null) {
 
             if (this.designerCanvas != null) {
                 this.removeAll();
             }
 
-            this.designerCanvas = new DesignerCanvas("context-viewport", this.dynamicImagePath, true);
+            this.designerCanvas = new DesignerCanvas("context-viewport"+ UUID.randomUUID().toString(), this.dynamicImagePath, true);
             this.designerCanvas.setCanvasJson(adapter.adaptContext(contextInstance));
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
@@ -153,7 +155,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
         // Zoom in
         Button zoomInButton = new Button();
         zoomInButton.getElement().appendChild(IronIcons.ZOOM_IN.create().getElement());
-        zoomInButton.setId("canvas_zoom_in");
+        zoomInButton.addClickListener(event -> this.designerCanvas.zoomIn());
         Tooltip zoomInButtonTooltip = getTooltip(zoomInButton, getTranslation("tooltip.zoom-in", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         actions.add(zoomInButton, zoomInButtonTooltip);
@@ -161,7 +163,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
         // Zoom out
         Button zoomOutButton = new Button();
         zoomOutButton.getElement().appendChild(IronIcons.ZOOM_OUT.create().getElement());
-        zoomOutButton.setId("canvas_zoom_out");
+        zoomOutButton.addClickListener(event -> this.designerCanvas.zoomOut());
         Tooltip zoomOutButtonTooltip = getTooltip(zoomOutButton, getTranslation("tooltip.zoom-out", UI.getCurrent().getLocale())
             , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
         actions.add(zoomOutButton, zoomOutButtonTooltip);
@@ -245,16 +247,21 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
-        contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-            if(contextInstanceStateChangeEvent.getContextInstance() != null) {
-                logger.info("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
-                    contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
-                    StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
-                ui.access(() ->
-                    this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName()
-                        , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus())));
-            }
-        });
+        this.initialised = false;
+
+        if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+            logger.info("Adding context visualisation dialog as context sate change event listener for context[{}], context identifier[{}].");
+            contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
+                if (contextInstanceStateChangeEvent.getContextInstance() != null) {
+                    logger.info("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
+                        contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
+                        StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
+                    ui.access(() ->
+                        this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName()
+                            , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus())));
+                }
+            });
+        }
     }
 
     @Override

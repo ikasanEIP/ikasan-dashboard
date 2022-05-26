@@ -12,26 +12,27 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 
-public class ContextTemplateManagementDialog extends AbstractCloseableResizableDialog {
-    private ContextTemplateManagementWidget contextTemplateManagementWidget;
+public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
+    private ContextInstanceWidget contextInstanceWidget;
 
-    public ContextTemplateManagementDialog(ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
-                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                           LogStreamingService logStreamingService, ContextTemplate contextTemplate) {
-        this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, dynamicImagePath
+    public ContextInstanceDialog(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+                                 ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                 MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
+                                 LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate) {
+        this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextTemplate);
+            , schedulerJobService, logStreamingService, contextInstance, contextTemplate);
 
         this.setHeight("95vh");
         this.setWidth("90vw");
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
-        layout.add(this.contextTemplateManagementWidget);
+        layout.add(this.contextInstanceWidget);
         layout.getStyle().set("padding-bottom", "20px");
 
         super.title.setText(String.format(getTranslation("label.context-template-management", UI.getCurrent().getLocale())));
