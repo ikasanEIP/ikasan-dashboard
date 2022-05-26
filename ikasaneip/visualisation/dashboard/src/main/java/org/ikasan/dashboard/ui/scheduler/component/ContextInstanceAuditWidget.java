@@ -1,20 +1,20 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
+import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAudit;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
@@ -23,7 +23,21 @@ public class ContextInstanceAuditWidget extends Div {
 
     private ContextInstanceAuditFilteringGrid contextInstanceAuditFilteringGrid;
     private ScheduledContextInstanceService contextInstanceService;
-    private TextField textField = new TextField();
+    private ContextInstanceSearchFilter contextInstanceSearchFilter;
+    private boolean displayContextInstanceIdColumn = true;
+
+    /**
+     * Constructor
+     * @param contextInstanceService
+     * @param contextInstanceSearchFilter
+     */
+    public ContextInstanceAuditWidget(ScheduledContextInstanceService contextInstanceService
+        , ContextInstanceSearchFilter contextInstanceSearchFilter, boolean displayContextInstanceIdColumn) {
+        this(contextInstanceService);
+        this.contextInstanceSearchFilter = contextInstanceSearchFilter;
+        this.displayContextInstanceIdColumn = displayContextInstanceIdColumn;
+    }
+
 
     /**
      * Constructor
@@ -33,6 +47,9 @@ public class ContextInstanceAuditWidget extends Div {
     public ContextInstanceAuditWidget(ScheduledContextInstanceService contextInstanceService) {
 
         this.contextInstanceService = contextInstanceService;
+    }
+
+    private void init() {
         this.createGrid();
 
         Div div = new Div();
@@ -41,21 +58,16 @@ public class ContextInstanceAuditWidget extends Div {
 
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
-
-        textField.setPrefixComponent(icon);
-        textField.setWidth("300px");
         HorizontalLayout layout = new HorizontalLayout();
-        H4 modules = new H4("Context Instance Audit");
 
-        textField.getElement().getStyle().set("margin-left", "auto");
 
         Button refresh = new Button("Refresh");
+        refresh.setIcon(VaadinIcon.REFRESH.create());
+        refresh.setIconAfterText(true);
         refresh.addClickListener(event -> this.contextInstanceAuditFilteringGrid.init());
         refresh.getElement().getStyle().set("margin-left", "auto");
 
-        layout.add(modules, textField, refresh);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.START, modules);
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, textField);
+        layout.add(refresh);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, refresh);
 
         div.add(layout);
@@ -68,25 +80,29 @@ public class ContextInstanceAuditWidget extends Div {
     }
 
     private void createGrid() {
-        // Create a modulesGrid bound to the list
-        SolrContextInstanceSearchFilterImpl moduleSearchFilter = new SolrContextInstanceSearchFilterImpl();
-        contextInstanceAuditFilteringGrid = new ContextInstanceAuditFilteringGrid(this.contextInstanceService, moduleSearchFilter);
+        if(this.contextInstanceSearchFilter == null) {
+            this.contextInstanceSearchFilter = new SolrContextInstanceSearchFilterImpl();
+        }
+        contextInstanceAuditFilteringGrid = new ContextInstanceAuditFilteringGrid(this.contextInstanceService, this.contextInstanceSearchFilter);
         contextInstanceAuditFilteringGrid.removeAllColumns();
         contextInstanceAuditFilteringGrid.setVisible(true);
         contextInstanceAuditFilteringGrid.setWidthFull();
         contextInstanceAuditFilteringGrid.setHeight("1000px");
 
+        if(this.displayContextInstanceIdColumn) {
+            contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
+                HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-        contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
-            HorizontalLayout horizontalLayout = new HorizontalLayout();
+                Text text = new Text(scheduledContextInstanceAuditRecord.getContextInstanceId());
 
-            Text text = new Text(scheduledContextInstanceAuditRecord.getContextInstanceId());
-
-            horizontalLayout.add(text);
-            return horizontalLayout;
-        })).setHeader("Context Instance Id")
-        .setFlexGrow(3);
-
+                horizontalLayout.add(text);
+                return horizontalLayout;
+            })).setHeader("Context Instance Id")
+                .setFlexGrow(3)
+                .setKey("id")
+                .setSortable(true)
+                .setResizable(true);
+        }
 
         contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -100,7 +116,9 @@ public class ContextInstanceAuditWidget extends Div {
 
             horizontalLayout.add(button);
             return horizontalLayout;
-        })).setHeader("Source Event").setFlexGrow(6);
+        })).setHeader("Source Event")
+            .setFlexGrow(6)
+            .setResizable(true);
 
         contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
             VerticalLayout verticalLayout = new VerticalLayout();
@@ -123,7 +141,10 @@ public class ContextInstanceAuditWidget extends Div {
             }
 
             return verticalLayout;
-        })).setHeader("Job Raise Event/s").setFlexGrow(6);
+        }))
+            .setHeader("Job Raise Event/s")
+            .setFlexGrow(6)
+            .setResizable(true);
 
         contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -138,7 +159,9 @@ public class ContextInstanceAuditWidget extends Div {
             return horizontalLayout;
 
 
-        })).setHeader("Instance Before").setFlexGrow(1);
+        })).setHeader("Instance Before")
+            .setFlexGrow(1)
+            .setResizable(true);
 
         contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -151,7 +174,9 @@ public class ContextInstanceAuditWidget extends Div {
 
             horizontalLayout.add(button);
             return horizontalLayout;
-        })).setHeader("Instance After").setFlexGrow(1);
+        })).setHeader("Instance After")
+            .setFlexGrow(1)
+            .setResizable(true);
 
         this.contextInstanceAuditFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceAuditRecord>of(
             "<div>[[item.date]]</div>")
@@ -159,8 +184,19 @@ public class ContextInstanceAuditWidget extends Div {
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
             .setHeader(getTranslation("table-header.timestamp", UI.getCurrent().getLocale()))
             .setKey("timestamp")
-            .setResizable(true).setFlexGrow(3);
+            .setResizable(true)
+            .setFlexGrow(3)
+            .setSortable(true);;
+    }
 
-        this.contextInstanceAuditFilteringGrid.addGridFiltering(textField, moduleSearchFilter::setContextSearchFilter);
+    public void setContextInstanceId(String contextInstanceId) {
+        this.contextInstanceSearchFilter.setContextInstanceId(contextInstanceId);
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+
+        this.init();
     }
 }

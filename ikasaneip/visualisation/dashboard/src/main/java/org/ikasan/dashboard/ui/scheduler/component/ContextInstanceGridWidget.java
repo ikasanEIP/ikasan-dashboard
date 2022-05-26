@@ -11,6 +11,9 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.router.RouteConfiguration;
+import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
+import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
@@ -39,6 +42,7 @@ public class ContextInstanceGridWidget extends Div {
     private ContextInstanceFilteringGrid contextTemplateFilteringGrid;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private IkasanAuthentication authentication;
+    private ContextTemplate contextTemplate;
 
     /**
      * Constructor
@@ -50,6 +54,7 @@ public class ContextInstanceGridWidget extends Div {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        this.contextTemplate = contextTemplate;
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextTemplate);
@@ -98,7 +103,7 @@ public class ContextInstanceGridWidget extends Div {
             .setKey("componentName")
             .setFlexGrow(2);
 
-        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
+        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
             Icon view = VaadinIcon.EYE.create();
@@ -108,7 +113,11 @@ public class ContextInstanceGridWidget extends Div {
             ComponentSecurityVisibility.applySecurity(this.authentication, view, SecurityConstants.SCHEDULER_READ, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
             view.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                ContextInstanceDialog contextInstanceDialog = new ContextInstanceDialog(this.scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
+                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+                    , schedulerJobService, logStreamingService, scheduledContextInstanceRecord.getContextInstance(), this.contextTemplate);
 
+                contextInstanceDialog.open();
             });
 
             layout.add(view);
@@ -133,12 +142,15 @@ public class ContextInstanceGridWidget extends Div {
 
             layout.add(export);
 
-            Icon newWindow = VaadinIcon.PLUS_SQUARE_O.create();
+            Icon newWindow = VaadinIcon.EXTERNAL_LINK.create();
             newWindow.setSize("14pt");
             newWindow.getStyle().set("cursor", "pointer");
             newWindow.getElement().setAttribute("title", "Open in New Window");
             newWindow.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                String route = RouteConfiguration.forSessionScope()
+                    .getUrl(ContextInstanceView.class, scheduledContextInstanceRecord.getId());
 
+                getUI().ifPresent(ui -> ui.getPage().open(route));
             });
 
             layout.add(newWindow);
@@ -150,8 +162,8 @@ public class ContextInstanceGridWidget extends Div {
             .setFlexGrow(2);
 
         this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
-            "<div>[[item.date]]</div>")
-            .withProperty("date",
+            "<div>[[item.start-date-time]]</div>")
+            .withProperty("start-date-time",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getContextInstance().getStartTime())))
             .setHeader(getTranslation("table-header.start-date-time", UI.getCurrent().getLocale()))
             .setKey("startTime")
@@ -160,8 +172,8 @@ public class ContextInstanceGridWidget extends Div {
             .setFlexGrow(3);
 
         this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
-            "<div>[[item.date]]</div>")
-            .withProperty("date",
+            "<div>[[item.end-date-time]]</div>")
+            .withProperty("end-date-time",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getContextInstance().getEndTime())))
             .setHeader(getTranslation("table-header.end-date-time", UI.getCurrent().getLocale()))
             .setKey("endTime")
@@ -170,8 +182,8 @@ public class ContextInstanceGridWidget extends Div {
             .setFlexGrow(3);
 
         this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
-            "<div>[[item.date]]</div>")
-            .withProperty("date",
+            "<div>[[item.created-date-time]]</div>")
+            .withProperty("created-date-time",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
             .setHeader(getTranslation("table-header.created-date-time", UI.getCurrent().getLocale()))
             .setKey("timestamp")
@@ -180,8 +192,8 @@ public class ContextInstanceGridWidget extends Div {
             .setFlexGrow(3);
 
         this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
-            "<div>[[item.date]]</div>")
-            .withProperty("date",
+            "<div>[[item.modified-date-time]]</div>")
+            .withProperty("modified-date-time",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
             .setHeader(getTranslation("table-header.modified-date-time", UI.getCurrent().getLocale()))
             .setKey("modifiedTimestamp")
