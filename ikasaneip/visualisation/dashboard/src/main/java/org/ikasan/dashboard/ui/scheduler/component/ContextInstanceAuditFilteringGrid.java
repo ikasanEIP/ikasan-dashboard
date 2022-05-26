@@ -12,6 +12,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
+import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.search.SearchResults;
@@ -28,10 +29,10 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
 
     private ScheduledContextInstanceService contextInstanceService;
 
-    private DataProvider<ScheduledContextInstanceAuditRecord, SolrContextInstanceSearchFilterImpl> dataProvider;
-    private ConfigurableFilterDataProvider<ScheduledContextInstanceAuditRecord, Void, SolrContextInstanceSearchFilterImpl> filteredDataProvider;
+    private DataProvider<ScheduledContextInstanceAuditRecord, ContextInstanceSearchFilter> dataProvider;
+    private ConfigurableFilterDataProvider<ScheduledContextInstanceAuditRecord, Void, ContextInstanceSearchFilter> filteredDataProvider;
 
-    private SolrContextInstanceSearchFilterImpl searchFilter;
+    private ContextInstanceSearchFilter searchFilter;
 
     private long resultSize = 0;
 
@@ -42,7 +43,7 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
      * @param searchFilter
      */
     public ContextInstanceAuditFilteringGrid(ScheduledContextInstanceService solrSearchService,
-                                             SolrContextInstanceSearchFilterImpl searchFilter) {
+                                             ContextInstanceSearchFilter searchFilter) {
         this.contextInstanceService = solrSearchService;
         if(this.contextInstanceService ==  null) {
             throw new IllegalArgumentException("contextInstanceService cannot be null!");
@@ -94,7 +95,7 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
      */
     public void init() {
         dataProvider = DataProvider.fromFilteringCallbacks(query -> {
-            Optional<SolrContextInstanceSearchFilterImpl> filter = query.getFilter();
+            Optional<ContextInstanceSearchFilter> filter = query.getFilter();
 
             // The index of the first item to load
             int offset = query.getOffset();
@@ -108,7 +109,7 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
 
             return results.getResultList().stream();
         }, query -> {
-            Optional<SolrContextInstanceSearchFilterImpl> filter = query.getFilter();
+            Optional<ContextInstanceSearchFilter> filter = query.getFilter();
 
             SearchResults results;
 
@@ -125,7 +126,7 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
         this.setDataProvider(filteredDataProvider);
     }
 
-    private SearchResults getResults(SolrContextInstanceSearchFilterImpl filter, int offset, int limit) {
+    private SearchResults getResults(ContextInstanceSearchFilter filter, int offset, int limit) {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         SearchResults results;

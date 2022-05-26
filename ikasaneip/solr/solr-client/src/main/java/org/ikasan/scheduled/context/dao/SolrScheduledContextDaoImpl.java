@@ -110,6 +110,10 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
         if(sortColumn != null && !sortColumn.isEmpty()) {
             solrQuery.addSort(sortColumn, sortOrder != null && sortOrder.equals("ASCENDING") ? SolrQuery.ORDER.asc : SolrQuery.ORDER.desc);
         }
+        else {
+            // Default search to created date time descending
+            solrQuery.addSort(CREATED_DATE_TIME, SolrQuery.ORDER.desc);
+        }
 
         return this.findByQuery(solrQuery, SolrScheduledContextRecordImpl.class, offset, limit);
     }

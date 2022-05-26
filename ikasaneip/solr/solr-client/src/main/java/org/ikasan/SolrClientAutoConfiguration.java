@@ -4,7 +4,9 @@ import org.ikasan.scheduled.context.dao.SolrScheduledContextDaoImpl;
 import org.ikasan.scheduled.context.service.SolrScheduledContextServiceImpl;
 import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceAuditDaoImpl;
 import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl;
+import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
 import org.ikasan.scheduled.instance.service.SolrScheduledContextInstanceServiceImpl;
+import org.ikasan.scheduled.instance.service.SolrSchedulerJobInstanceServiceImpl;
 import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobDaoImpl;
 import org.ikasan.scheduled.job.dao.SolrInternalEventDrivenJobDaoImpl;
 import org.ikasan.scheduled.job.dao.SolrQuartzScheduleDrivenJobDaoImpl;
@@ -16,6 +18,7 @@ import org.ikasan.scheduled.joblockcache.dao.SolrJobLockCacheDaoImpl;
 import org.ikasan.scheduled.joblockcache.service.SolrJobLockCacheServiceImpl;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.dao.InternalEventDrivenJobDao;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -94,6 +97,16 @@ public class SolrClientAutoConfiguration {
         return new SolrSchedulerJobServiceImpl(fileEventDrivenJobDao
             ,internalEventDrivenJobDao, quartzScheduleDrivenJobDao
             , schedulerJobDao);
+    }
+
+    @Bean
+    public SchedulerJobInstanceService schedulerJobInstanceService() {
+        SolrSchedulerJobInstanceDaoImpl scheduledContextInstanceDao = new SolrSchedulerJobInstanceDaoImpl();
+        scheduledContextInstanceDao.initStandalone(solrUrl, solrRetentionDays);
+        scheduledContextInstanceDao.setSolrUsername(solrUsername);
+        scheduledContextInstanceDao.setSolrPassword(solrPassword);
+
+        return new SolrSchedulerJobInstanceServiceImpl(scheduledContextInstanceDao);
     }
 
     @Bean
