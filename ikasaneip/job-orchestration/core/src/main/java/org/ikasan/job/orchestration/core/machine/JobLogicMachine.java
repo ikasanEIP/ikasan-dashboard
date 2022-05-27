@@ -131,10 +131,11 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                                         SchedulerJobInstance schedulerJobInstance,
                                         List<SchedulerJobInitiationEvent> results) {
 
-        if (schedulerJobInstance != null && schedulerJobInstance.getStatus().equals(InstanceStatus.COMPLETE)) {
+        if (schedulerJobInstance != null
+            && (schedulerJobInstance.getStatus().equals(InstanceStatus.COMPLETE) || schedulerJobInstance.getStatus().equals(InstanceStatus.ERROR))) {
             String identifier = schedulerJobInstance.getIdentifier();
             String contextId = contextInstance.getName();
-            // release the lock as job completed
+            // release the lock as job has come to end state
             if (jobLockCache.hasLock(identifier, contextId)) {
                 jobLockCache.release(identifier, contextId);
             }
@@ -212,7 +213,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 InternalEventDrivenJob internalEventDrivenJob = internalEventDrivenJobs.get(jobDependency.getJobIdentifier());
 
                 boolean raiseEventDueToLock = false;
-                if (!jobLockCache.locked(jobDependency.getJobIdentifier()) && jobInstance.getStatus() != InstanceStatus.COMPLETE) {
+                if (!jobLockCache.locked(jobDependency.getJobIdentifier())
+                    && jobInstance.getStatus() != InstanceStatus.COMPLETE && jobInstance.getStatus() != InstanceStatus.ERROR) {
                     // adding the lock here will only add it if it's not already added and exists in the cache
                     // hence we try and add it every time regardless of whether it exists or not or has the lock as faster to do so
                     jobLockCache.lock(jobInstance.getIdentifier(), contextInstance.getName());

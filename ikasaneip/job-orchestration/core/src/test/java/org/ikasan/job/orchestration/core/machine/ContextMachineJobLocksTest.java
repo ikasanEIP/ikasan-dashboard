@@ -37,6 +37,255 @@ public class ContextMachineJobLocksTest extends AbstractTest {
     }
 
     @Test
+    public void test_context_machine_locks_in_two_different_contexts_one_lock_one_error() throws IOException, InvalidContextTemplateException {
+        ContextTemplate context1 = contextService.getContextTemplate(loadDataFile("/data/locks/context-with-same-job-locks-1.json"));
+        ContextInstance instance1 = contextService.getContextInstance(loadDataFile("/data/locks/context-with-same-job-locks-1.json"));
+
+        ContextTemplate context2 = contextService.getContextTemplate(loadDataFile("/data/locks/context-with-same-job-locks-2.json"));
+        ContextInstance instance2 = contextService.getContextInstance(loadDataFile("/data/locks/context-with-same-job-locks-2.json"));
+
+        Map<String, InternalEventDrivenJob> internalEventDrivenJobs1 = createInternalJobsMap(context1);
+        Map<String, InternalEventDrivenJob> internalEventDrivenJobs2 = createInternalJobsMap(context2);
+
+        contextTemplateValidator.validate(context1);
+        contextTemplateValidator.validate(context2);
+
+        ContextMachine contextMachine1 = new ContextMachine(context1, instance1, new ScheduledContextInstanceServiceTestImpl()
+            , internalEventDrivenJobs1, queueDir, new HashMap<>(), new JobLockCacheServiceTestImpl(), new SchedulerOverrider(false, null, false, null));
+        ContextMachine contextMachine2 = new ContextMachine(context2, instance2, new ScheduledContextInstanceServiceTestImpl()
+            , internalEventDrivenJobs2, queueDir, new HashMap<>(), new JobLockCacheServiceTestImpl(), new SchedulerOverrider(false, null, false, null));
+
+        InstanceStatus instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
+        assertEquals(InstanceStatus.WAITING, instanceStatus);
+        instanceStatus = contextMachine2.getContextStatus("Context-Locks-2");
+        assertEquals(InstanceStatus.WAITING, instanceStatus);
+
+        InstanceStatus jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName1-jobName1");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName5-jobName5");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+
+        ContextualisedScheduledProcessEventImpl eventInstance1 = scheduledProcessEventInstance("jobName1", "agentName1", false);
+        eventInstance1.setJobStarting(true);
+
+        ContextualisedScheduledProcessEventImpl eventInstance2 = scheduledProcessEventInstance("jobName5", "agentName5", false);
+        eventInstance2.setJobStarting(true);
+
+        List<SchedulerJobInitiationEvent> events1 = contextMachine1.eventReceived(eventInstance1);
+        assertEquals(0, events1.size());
+        List<SchedulerJobInitiationEvent> events2 = contextMachine2.eventReceived(eventInstance2);
+        assertEquals(0, events2.size());
+
+        instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
+        assertEquals(InstanceStatus.RUNNING, instanceStatus);
+        instanceStatus = contextMachine2.getContextStatus("Context-Locks-2");
+        assertEquals(InstanceStatus.RUNNING, instanceStatus);
+
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName1-jobName1");
+        assertEquals(InstanceStatus.RUNNING, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName2-jobName2");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName3-jobName3");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName4-jobName4");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName5-jobName5");
+        assertEquals(InstanceStatus.RUNNING, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName6-jobName6");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName7-jobName7");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName8-jobName8");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+
+        // jobName1 completes
+        events1 = contextMachine1.eventReceived(scheduledProcessEventInstance("jobName1", "agentName1", true));
+        assertEquals(1, events1.size());
+        //raises event for jobName2
+        assertEquals("jobName2", events1.get(0).getJobName());
+
+        // jobName5 completes
+        events2 = contextMachine2.eventReceived(scheduledProcessEventInstance("jobName5", "agentName5", true));
+        // jobName2 has the lock so completion of job 5 does not raise any events
+        assertEquals(0, events2.size());
+
+        instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
+        assertEquals(InstanceStatus.RUNNING, instanceStatus);
+        instanceStatus = contextMachine2.getContextStatus("Context-Locks-2");
+        assertEquals(InstanceStatus.RUNNING, instanceStatus);
+
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName1-jobName1");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName2-jobName2");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName3-jobName3");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName4-jobName4");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName5-jobName5");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName6-jobName6");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName7-jobName7");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName8-jobName8");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+
+        // jobName2 starting
+        eventInstance1 = scheduledProcessEventInstance("jobName2", "agentName2", false);
+        eventInstance1.setJobStarting(true);
+        events1 = contextMachine1.eventReceived(eventInstance1);
+        assertEquals(0, events1.size());
+
+        instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
+        assertEquals(InstanceStatus.RUNNING, instanceStatus);
+        instanceStatus = contextMachine2.getContextStatus("Context-Locks-2");
+        assertEquals(InstanceStatus.RUNNING, instanceStatus);
+
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName1-jobName1");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName2-jobName2");
+        assertEquals(InstanceStatus.RUNNING, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName3-jobName3");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName4-jobName4");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName5-jobName5");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName6-jobName6");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName7-jobName7");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName8-jobName8");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+
+        // errored for jobName2 next job jobName3 should be raised
+        eventInstance1 = scheduledProcessEventInstance("jobName2", "agentName2", false);
+        events1 = contextMachine1.eventReceived(eventInstance1);
+        assertEquals(1, events1.size());
+        assertEquals("jobName3", events1.get(0).getJobName());
+
+        instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
+        assertEquals(InstanceStatus.ERROR, instanceStatus);
+        instanceStatus = contextMachine2.getContextStatus("Context-Locks-2");
+        assertEquals(InstanceStatus.RUNNING, instanceStatus);
+
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName1-jobName1");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName2-jobName2");
+        assertEquals(InstanceStatus.ERROR, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName3-jobName3");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName4-jobName4");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName5-jobName5");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName6-jobName6");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName7-jobName7");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName8-jobName8");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+
+        // error for jobName3 (2 and 3 did not complete so 4 not raised)
+        eventInstance1 = scheduledProcessEventInstance("jobName3", "agentName3", false);
+        events1 = contextMachine1.eventReceived(eventInstance1);
+        assertEquals(0, events1.size());
+
+        // complete 6 raises 7
+        eventInstance2 = scheduledProcessEventInstance("jobName6", "agentName6", true);
+        events2 = contextMachine2.eventReceived(eventInstance2);
+        assertEquals(1, events2.size());
+        assertEquals("jobName7", events2.get(0).getJobName());
+
+        instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
+        assertEquals(InstanceStatus.ERROR, instanceStatus);
+        instanceStatus = contextMachine2.getContextStatus("Context-Locks-2");
+        assertEquals(InstanceStatus.RUNNING, instanceStatus);
+
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName1-jobName1");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName2-jobName2");
+        assertEquals(InstanceStatus.ERROR, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName3-jobName3");
+        assertEquals(InstanceStatus.ERROR, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName4-jobName4");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName5-jobName5");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName6-jobName6");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName7-jobName7");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName8-jobName8");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+
+        // complete 7 raises 8
+        eventInstance2 = scheduledProcessEventInstance("jobName7", "agentName7", true);
+        events2 = contextMachine2.eventReceived(eventInstance2);
+        assertEquals(1, events2.size());
+        assertEquals("jobName8", events2.get(0).getJobName());
+
+        instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
+        assertEquals(InstanceStatus.ERROR, instanceStatus);
+        instanceStatus = contextMachine2.getContextStatus("Context-Locks-2");
+        assertEquals(InstanceStatus.RUNNING, instanceStatus);
+
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName1-jobName1");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName2-jobName2");
+        assertEquals(InstanceStatus.ERROR, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName3-jobName3");
+        assertEquals(InstanceStatus.ERROR, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName4-jobName4");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName5-jobName5");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName6-jobName6");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName7-jobName7");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName8-jobName8");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+
+        // complete 8
+        eventInstance2 = scheduledProcessEventInstance("jobName8", "agentName8", true);
+        events2 = contextMachine2.eventReceived(eventInstance2);
+        assertEquals(0, events2.size());
+
+        instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
+        assertEquals(InstanceStatus.ERROR, instanceStatus);
+        instanceStatus = contextMachine2.getContextStatus("Context-Locks-2");
+        assertEquals(InstanceStatus.COMPLETE, instanceStatus);
+
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName1-jobName1");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName2-jobName2");
+        assertEquals(InstanceStatus.ERROR, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName3-jobName3");
+        assertEquals(InstanceStatus.ERROR, jobStatus);
+        jobStatus = contextMachine1.getJobStatus("Context-Locks-1", "agentName4-jobName4");
+        assertEquals(InstanceStatus.WAITING, jobStatus);
+
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName5-jobName5");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName6-jobName6");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName7-jobName7");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+        jobStatus = contextMachine2.getJobStatus("Context-Locks-2", "agentName8-jobName8");
+        assertEquals(InstanceStatus.COMPLETE, jobStatus);
+
+        validateAllLocksCleared();
+    }
+
+    @Test
     public void test_context_machine_full_locks_in_two_different_contexts_one_lock() throws IOException, InvalidContextTemplateException {
         ContextTemplate context1 = contextService.getContextTemplate(loadDataFile("/data/locks/context-with-same-job-locks-1.json"));
         ContextInstance instance1 = contextService.getContextInstance(loadDataFile("/data/locks/context-with-same-job-locks-1.json"));
