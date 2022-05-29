@@ -167,20 +167,21 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
                 });
 
                 contextMachine.addSchedulerJobStateChangeEventListener( event -> {
-                    try {
-                        SchedulerJobInstanceRecord record = new SolrSchedulerJobInstanceRecordImpl();
-                        record.setContextName(event.getSchedulerJobInstance().getContextId());
-                        record.setContextInstanceId(contextInstance.getId());
-                        record.setJobName(event.getSchedulerJobInstance().getJobName());
-
-                        record.setSchedulerJobInstance(event.getSchedulerJobInstance());
-                        schedulerJobInstanceService.save(record);
-
-                        logger.info("Saved job instance - " + record.toString());
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                    }
+//                    todo work out best way to update job instance
+//                    try {
+//                        SchedulerJobInstanceRecord record = new SolrSchedulerJobInstanceRecordImpl();
+//                        record.setContextName(event.getSchedulerJobInstance().getContextId());
+//                        record.setContextInstanceId(contextInstance.getId());
+//                        record.setJobName(event.getSchedulerJobInstance().getJobName());
+//
+//                        record.setSchedulerJobInstance(event.getSchedulerJobInstance());
+//                        schedulerJobInstanceService.save(record);
+//
+//                        logger.info("Saved job instance - " + record.toString());
+//                    }
+//                    catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
                 });
 
                 contextMachine.addContextInstanceStateChangeEventListener(event -> ContextInstanceStateChangeEventBroadcaster.broadcast(event));
