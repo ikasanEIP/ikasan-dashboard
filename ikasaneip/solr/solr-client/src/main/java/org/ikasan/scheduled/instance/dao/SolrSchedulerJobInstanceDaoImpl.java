@@ -4,12 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceRecordImpl;
+import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
+import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.instance.dao.SchedulerJobInstanceDao;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
@@ -24,16 +23,26 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
      */
     private static Logger logger = LoggerFactory.getLogger(SolrSchedulerJobInstanceDaoImpl.class);
 
-    /**
-     * We need to give this dao it's context.
-     */
-    public static final String SCHEDULED_JOB_INSTANCE = "schedulerJobInstance";
+
 
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
         SolrInputDocument document = new SolrInputDocument();
-        document.addField(ID, schedulerJobInstanceRecord.getJobName() + "_"
-            + schedulerJobInstanceRecord.getContextInstanceId() + "_" + SCHEDULED_JOB_INSTANCE);
-        document.addField(TYPE, SCHEDULED_JOB_INSTANCE);
+        if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof FileEventDrivenJobInstance) {
+            document.addField(ID, schedulerJobInstanceRecord.getJobName() + "_"
+                + schedulerJobInstanceRecord.getContextInstanceId() + "_" + JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE);
+            document.addField(TYPE, JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE);
+        }
+        else if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
+            document.addField(ID, schedulerJobInstanceRecord.getJobName() + "_"
+                + schedulerJobInstanceRecord.getContextInstanceId() + "_" + JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+            document.addField(TYPE, JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+        }
+        else if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof QuartzScheduleDrivenJobInstance) {
+            document.addField(ID, schedulerJobInstanceRecord.getJobName() + "_"
+                + schedulerJobInstanceRecord.getContextInstanceId() + "_" + JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
+            document.addField(TYPE, JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
+        }
+
         try {
             document.addField(PAYLOAD_CONTENT, this.getPayloadContents(schedulerJobInstanceRecord.getSchedulerJobInstance()));
         } catch (JsonProcessingException e) {
@@ -59,11 +68,30 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
 
     @Override
     public SchedulerJobInstanceRecord findById(String id) {
-        SolrQuery query = super.buildIdQuery(id, SCHEDULED_JOB_INSTANCE);
+        StringBuffer typeBuffer = new StringBuffer();
+        typeBuffer.append(OPEN_BRACKET);
+        typeBuffer.append(TYPE + COLON);
+        typeBuffer.append("\"").append(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE).append("\" ");
+        typeBuffer.append(OR).append(" ");
+        typeBuffer.append(TYPE + COLON);
+        typeBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE).append("\" ");
+        typeBuffer.append(OR).append(" ");
+        typeBuffer.append(TYPE + COLON);
+        typeBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE).append("\" ");
+        typeBuffer.append(CLOSE_BRACKET);
 
-        logger.debug("query: " + query);
+        StringBuffer queryString = new StringBuffer();
+        queryString.append(typeBuffer)
+            .append(AND)
+            .append(ID).append(COLON)
+            .append(id);
 
-        SearchResults<SchedulerJobInstanceRecord> searchResults = this.findByQuery(query, SolrSchedulerJobInstanceRecordImpl.class, 0, 1);
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(queryString.toString());
+
+        logger.debug("query: " + solrQuery);
+
+        SearchResults<SchedulerJobInstanceRecord> searchResults = this.findByQuery(solrQuery, SolrSchedulerJobInstanceRecordImpl.class, 0, 1);
         return searchResults.getResultList().size() > 0 ? searchResults.getResultList().get(0) : null;
     }
 
@@ -84,11 +112,32 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
 
     @Override
     public SearchResults<SchedulerJobInstanceRecord> getScheduledContextInstancesByFilter(SchedulerJobInstanceSearchFilter filter, int limit, int offset, String sortField, String sortDirection) {
+
         StringBuffer queryString = new StringBuffer();
-        queryString.append(TYPE).append(COLON).append(SCHEDULED_JOB_INSTANCE)
-            .append(AND)
+
+        if(filter.getJobType() != null && !filter.getJobType().isEmpty()) {
+            queryString.append(TYPE + COLON).append(filter.getJobType());
+        }
+        else {
+            StringBuffer typeBuffer = new StringBuffer();
+            typeBuffer.append(OPEN_BRACKET);
+            typeBuffer.append(TYPE + COLON);
+            typeBuffer.append("\"").append(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE).append("\" ");
+            typeBuffer.append(OR).append(" ");
+            typeBuffer.append(TYPE + COLON);
+            typeBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE).append("\" ");
+            typeBuffer.append(OR).append(" ");
+            typeBuffer.append(TYPE + COLON);
+            typeBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE).append("\" ");
+            typeBuffer.append(CLOSE_BRACKET);
+
+            queryString.append(typeBuffer);
+        }
+
+
+        queryString.append(AND)
             .append(MODULE_NAME).append(COLON)
-            .append(filter.getJobName() != null && !filter.getJobName().isEmpty() ? filter.getJobName() : "*");
+            .append(filter.getJobName() != null && !filter.getJobName().isEmpty() ? "*"+filter.getJobName()+"*" : "*");
 
         queryString.append(AND)
             .append(FLOW_NAME)

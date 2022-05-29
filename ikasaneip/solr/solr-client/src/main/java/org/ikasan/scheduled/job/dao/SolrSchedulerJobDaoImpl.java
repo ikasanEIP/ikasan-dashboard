@@ -47,7 +47,7 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
     }
 
     @Override
-    public SearchResults<? extends SchedulerJobRecord> findByContext(String contextId, int limit, int offset) {
+    public SearchResults<? extends SchedulerJobRecord> findByContext(String contextName, int limit, int offset) {
         StringBuffer queryBuffer = new StringBuffer();
         queryBuffer.append(OPEN_BRACKET);
         queryBuffer.append(TYPE + COLON);
@@ -60,7 +60,7 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
         queryBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB).append("\" ");
         queryBuffer.append(CLOSE_BRACKET);
         queryBuffer.append(AND).append(" ").append(COMPONENT_NAME).append(COLON);
-        queryBuffer.append("\"").append(contextId).append("\" ");
+        queryBuffer.append("\"").append(contextName).append("\" ");
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(queryBuffer.toString());

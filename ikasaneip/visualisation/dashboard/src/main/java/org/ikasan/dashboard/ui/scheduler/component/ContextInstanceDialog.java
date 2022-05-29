@@ -14,6 +14,7 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 
 public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
@@ -22,10 +23,11 @@ public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
     public ContextInstanceDialog(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                 LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate) {
+                                 LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
+                                 SchedulerJobInstanceService schedulerJobInstanceService) {
         this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextInstance, contextTemplate);
+            , schedulerJobService, logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService);
 
         this.setHeight("95vh");
         this.setWidth("90vw");
@@ -35,7 +37,7 @@ public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
         layout.add(this.contextInstanceWidget);
         layout.getStyle().set("padding-bottom", "20px");
 
-        super.title.setText(String.format(getTranslation("label.context-template-management", UI.getCurrent().getLocale())));
+        super.title.setText(String.format(getTranslation("label.context-instance", UI.getCurrent().getLocale())));
 
         super.content.add(layout);
     }

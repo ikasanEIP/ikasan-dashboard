@@ -1,6 +1,7 @@
 package org.ikasan.scheduled.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.ikasan.scheduled.context.model.*;
@@ -66,6 +67,7 @@ public class ScheduledObjectMapperFactory {
 
         objectMapper.registerModule(simpleModule);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         return objectMapper;
     }

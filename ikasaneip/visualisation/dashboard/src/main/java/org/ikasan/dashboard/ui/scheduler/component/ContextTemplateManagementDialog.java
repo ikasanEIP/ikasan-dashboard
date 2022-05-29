@@ -13,6 +13,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 
 public class ContextTemplateManagementDialog extends AbstractCloseableResizableDialog {
@@ -21,10 +22,10 @@ public class ContextTemplateManagementDialog extends AbstractCloseableResizableD
     public ContextTemplateManagementDialog(ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                           LogStreamingService logStreamingService, ContextTemplate contextTemplate) {
+                                           LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService) {
         this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextTemplate);
+            , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService);
 
         this.setHeight("95vh");
         this.setWidth("90vw");
