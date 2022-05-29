@@ -46,6 +46,7 @@ public class ContextDebugWidget extends Div {
     Logger logger = LoggerFactory.getLogger(ContextDebugWidget.class);
 
     private ScheduledContextService scheduledContextService;
+    private SchedulerJobInstanceService schedulerJobInstanceService;
     private JobLockCacheService jobLockCacheService;
     private SchedulerOverrider schedulerOverrider;
 
@@ -90,6 +91,7 @@ public class ContextDebugWidget extends Div {
         div.setHeight("100%");
 
         this.scheduledContextService = scheduledContextService;
+        this.schedulerJobInstanceService = schedulerJobInstanceService;
         this.jobLockCacheService = jobLockCacheService;
         this.schedulerOverrider = schedulerOverrider;
         this.internalEventDrivenJobService = internalEventDrivenJobService;
@@ -199,6 +201,8 @@ public class ContextDebugWidget extends Div {
             try {
                 contextMachine.resetContextInstance();
                 this.schedulerVisualisation.createSchedulerVisualisation(contextMachine.getContext());
+                this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext
+                    (contextMachine.getContext().getName(), contextMachine.getContext().getId());
                 if(tabs.getSelectedTab().equals(this.fullContextInstance)) {
                     if(this.contextInstances.getValue() != null && !this.contextInstances.getValue().isEmpty()){
                         this.aceEditor.setValue(this.objectMapper.writerWithDefaultPrettyPrinter()
@@ -226,10 +230,7 @@ public class ContextDebugWidget extends Div {
                    // do something
                 }
             }
-            catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-            catch (IOException e) {
+            catch (Exception e) {
                 e.printStackTrace();
             }
         });
