@@ -1,7 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -16,12 +15,13 @@ import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
-import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
-import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
-import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
 import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
+import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceRecordImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.SchedulerService;
@@ -30,12 +30,16 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +51,8 @@ import java.util.stream.Collectors;
 
 public class ContextUploadDialog extends AbstractCloseableResizableDialog
 {
+    Logger logger = LoggerFactory.getLogger(ContextUploadDialog.class);
+
     private byte[] contextFile;
 
     private ScheduledContextInstanceService scheduledContextInstanceService;
@@ -57,6 +63,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
     private ModuleMetaDataService moduleMetaDataService;
     private JobLockCacheService jobLockCacheService;
     private SchedulerOverrider schedulerOverrider;
+    private SchedulerJobInstanceService schedulerJobInstanceService;
 
     /**
      * Constructor
@@ -65,7 +72,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
     public ContextUploadDialog(ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
                                ScheduledContextService scheduledContextService, InternalEventDrivenJobService internalEventDrivenJobService,
                                String queueDir, ModuleMetaDataService moduleMetaDataService, JobLockCacheService jobLockCacheService,
-                               SchedulerOverrider schedulerOverrider)
+                               SchedulerOverrider schedulerOverrider, SchedulerJobInstanceService schedulerJobInstanceService)
     {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.schedulerService = schedulerService;
@@ -75,6 +82,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
         this.moduleMetaDataService = moduleMetaDataService;
         this.jobLockCacheService = jobLockCacheService;
         this.schedulerOverrider = schedulerOverrider;
+        this.schedulerJobInstanceService = schedulerJobInstanceService;
         this.init();
     }
 
@@ -135,6 +143,8 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
                 ContextInstance contextInstance = contextService.getContextInstance(new String(contextFile));
                 contextInstance.setId(UUID.randomUUID().toString());
 
+                this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextInstance.getName(), contextInstance.getId());
+
                 SearchResults<InternalEventDrivenJobRecord> internalEventDrivenJobRecordSearchResults
                     = this.internalEventDrivenJobService.findByContext(scheduledContextRecord.getContextName(), -1, -1);
 
@@ -156,6 +166,23 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
                     schedulerService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event);
                 });
 
+                contextMachine.addSchedulerJobStateChangeEventListener( event -> {
+                    try {
+                        SchedulerJobInstanceRecord record = new SolrSchedulerJobInstanceRecordImpl();
+                        record.setContextName(event.getSchedulerJobInstance().getContextId());
+                        record.setContextInstanceId(contextInstance.getId());
+                        record.setJobName(event.getSchedulerJobInstance().getJobName());
+
+                        record.setSchedulerJobInstance(event.getSchedulerJobInstance());
+                        schedulerJobInstanceService.save(record);
+
+                        logger.info("Saved job instance - " + record.toString());
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+
                 contextMachine.addContextInstanceStateChangeEventListener(event -> ContextInstanceStateChangeEventBroadcaster.broadcast(event));
                 contextMachine.addSchedulerJobStateChangeEventListener(event -> SchedulerJobStateChangeEventBroadcaster.broadcast(event));
 
@@ -164,10 +191,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
 
                 ContextMachineCache.instance().put(contextMachine);
             }
-            catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-            catch (IOException e) {
+            catch (Exception e) {
                 e.printStackTrace();
             }
 

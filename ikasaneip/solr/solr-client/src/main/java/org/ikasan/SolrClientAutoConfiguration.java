@@ -100,13 +100,13 @@ public class SolrClientAutoConfiguration {
     }
 
     @Bean
-    public SchedulerJobInstanceService schedulerJobInstanceService() {
+    public SchedulerJobInstanceService schedulerJobInstanceService(SolrSchedulerJobDaoImpl schedulerJobDao) {
         SolrSchedulerJobInstanceDaoImpl scheduledContextInstanceDao = new SolrSchedulerJobInstanceDaoImpl();
         scheduledContextInstanceDao.initStandalone(solrUrl, solrRetentionDays);
         scheduledContextInstanceDao.setSolrUsername(solrUsername);
         scheduledContextInstanceDao.setSolrPassword(solrPassword);
 
-        return new SolrSchedulerJobInstanceServiceImpl(scheduledContextInstanceDao);
+        return new SolrSchedulerJobInstanceServiceImpl(scheduledContextInstanceDao, schedulerJobDao);
     }
 
     @Bean

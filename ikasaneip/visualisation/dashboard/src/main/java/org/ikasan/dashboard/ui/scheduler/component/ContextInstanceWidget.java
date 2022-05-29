@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
@@ -15,11 +13,6 @@ import com.vaadin.flow.data.binder.Binder;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
-import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceGridWidget;
-import org.ikasan.dashboard.ui.scheduler.component.ContextTemplateStatisticsWidget;
-import org.ikasan.dashboard.ui.scheduler.component.CronBuilderDialog;
-import org.ikasan.dashboard.ui.scheduler.component.SchedulerJobGridWidget;
-import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
 import org.ikasan.job.orchestration.service.ContextService;
@@ -32,11 +25,10 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -45,12 +37,13 @@ import java.io.IOException;
 public class ContextInstanceWidget extends Div {
 
     private ScheduledContextInstanceService scheduledContextInstanceService;
+    private SchedulerJobInstanceService schedulerJobInstanceService;
     private FormLayout formLayout;
     private IkasanAuthentication authentication;
 
     private AceEditor aceEditor;
     protected SchedulerVisualisation schedulerVisualisation;
-    private SchedulerJobGridWidget schedulerJobGridWidget;
+    private SchedulerJobInstanceGridWidget schedulerJobInstanceGridWidget;
     private ContextTemplateStatisticsWidget contextTemplateStatisticsWidget;
     private ContextInstanceAuditWidget contextInstanceAuditWidget;
 
@@ -78,9 +71,11 @@ public class ContextInstanceWidget extends Div {
     public ContextInstanceWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                 LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate) {
+                                 LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
+                                 SchedulerJobInstanceService schedulerJobInstanceService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
+        this.schedulerJobInstanceService = schedulerJobInstanceService;
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.contextInstance = contextInstance;
         this.contextTemplate = contextTemplate;
@@ -138,7 +133,7 @@ public class ContextInstanceWidget extends Div {
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(this.tabs);
         this.add(this.formLayout, tabLayout, this.aceEditor, this.schedulerVisualisation
-            , this.schedulerJobGridWidget, this.contextTemplateStatisticsWidget, this.contextInstanceAuditWidget);
+            , this.schedulerJobInstanceGridWidget, this.contextTemplateStatisticsWidget, this.contextInstanceAuditWidget);
     }
 
     private void initialiseTabs() {
@@ -157,35 +152,35 @@ public class ContextInstanceWidget extends Div {
                 if(tabs.getSelectedTab().equals(this.statisticsTab)) {
                     this.aceEditor.setVisible(false);
                     this.schedulerVisualisation.setVisible(false);
-                    this.schedulerJobGridWidget.setVisible(false);
+                    this.schedulerJobInstanceGridWidget.setVisible(false);
                     this.contextTemplateStatisticsWidget.setVisible(true);
                     this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.rawContextTab)) {
                     this.aceEditor.setVisible(true);
                     this.schedulerVisualisation.setVisible(false);
-                    this.schedulerJobGridWidget.setVisible(false);
+                    this.schedulerJobInstanceGridWidget.setVisible(false);
                     this.contextTemplateStatisticsWidget.setVisible(false);
                     this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.visualisationTab)) {
                     this.aceEditor.setVisible(false);
                     this.schedulerVisualisation.setVisible(true);
-                    this.schedulerJobGridWidget.setVisible(false);
+                    this.schedulerJobInstanceGridWidget.setVisible(false);
                     this.contextTemplateStatisticsWidget.setVisible(false);
                     this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.jobsTab)) {
                     this.aceEditor.setVisible(false);
                     this.schedulerVisualisation.setVisible(false);
-                    this.schedulerJobGridWidget.setVisible(true);
+                    this.schedulerJobInstanceGridWidget.setVisible(true);
                     this.contextTemplateStatisticsWidget.setVisible(false);
                     this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.auditTab)) {
                     this.aceEditor.setVisible(false);
                     this.schedulerVisualisation.setVisible(false);
-                    this.schedulerJobGridWidget.setVisible(false);
+                    this.schedulerJobInstanceGridWidget.setVisible(false);
                     this.contextTemplateStatisticsWidget.setVisible(false);
                     this.contextInstanceAuditWidget.setVisible(true);
                 }
@@ -243,11 +238,11 @@ public class ContextInstanceWidget extends Div {
                                                      ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                                      MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                                      LogStreamingService logStreamingService) {
-        this.schedulerJobGridWidget = new SchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
-            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate);
-        this.schedulerJobGridWidget.setWidthFull();
-        this.schedulerJobGridWidget.setHeight("75vh");
-        this.schedulerJobGridWidget.setVisible(false);
+        this.schedulerJobInstanceGridWidget = new SchedulerJobInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextInstance, this.schedulerJobInstanceService);
+        this.schedulerJobInstanceGridWidget.setWidthFull();
+        this.schedulerJobInstanceGridWidget.setHeight("75vh");
+        this.schedulerJobInstanceGridWidget.setVisible(false);
 
     }
 

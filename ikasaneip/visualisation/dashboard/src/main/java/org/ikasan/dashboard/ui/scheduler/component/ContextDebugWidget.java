@@ -30,6 +30,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
@@ -82,7 +83,8 @@ public class ContextDebugWidget extends Div {
                               ModuleMetaDataService moduleMetaDataService, JobLockCacheService jobLockCacheService,
                               ScheduledContextInstanceService contextInstanceService, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
-                              SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, SchedulerOverrider schedulerOverrider) {
+                              SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, SchedulerOverrider schedulerOverrider,
+                              SchedulerJobInstanceService schedulerJobInstanceService) {
         Div div = new Div();
         div.addClassNames("card-counter");
         div.setHeight("100%");
@@ -172,7 +174,7 @@ public class ContextDebugWidget extends Div {
         addContextButton.addClickListener(buttonClickEvent -> {
             ContextUploadDialog contextUploadDialog = new ContextUploadDialog(scheduledContextInstanceService,
                 schedulerService, this.scheduledContextService, this.internalEventDrivenJobService, this.queueDir, moduleMetaDataService
-                , this.jobLockCacheService, this.schedulerOverrider);
+                , this.jobLockCacheService, this.schedulerOverrider, schedulerJobInstanceService);
             contextUploadDialog.open();
 
             contextUploadDialog.addOpenedChangeListener(event -> {
