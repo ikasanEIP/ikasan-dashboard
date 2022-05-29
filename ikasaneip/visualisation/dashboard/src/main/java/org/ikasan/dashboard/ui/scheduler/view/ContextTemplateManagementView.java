@@ -18,6 +18,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +65,9 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     @Resource(name = "moduleMetadataService")
     private ModuleMetaDataService moduleMetaDataService;
 
+    @Resource
+    private SchedulerJobInstanceService schedulerJobInstanceService;
+
     @Value("${scheduled.job.context.queue.directory}")
     private String queueDirectory;
 
@@ -90,7 +94,7 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     private void init() {
         this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, ""
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextTemplate);
+            , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService);
 
         H2 contextTemplateManagementLabel = new H2(String.format(getTranslation("label.context-template-management", UI.getCurrent().getLocale())));
         this.add(contextTemplateManagementLabel, this.contextTemplateManagementWidget);

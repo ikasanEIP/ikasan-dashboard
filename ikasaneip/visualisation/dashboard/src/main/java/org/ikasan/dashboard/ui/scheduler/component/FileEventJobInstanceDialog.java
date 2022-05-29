@@ -18,6 +18,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
@@ -25,15 +26,16 @@ import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
-import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobRecordImpl;
+import org.ikasan.scheduled.instance.model.SolrFileEventDrivenJobInstanceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
+import org.ikasan.spec.scheduled.instance.model.FileEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.quartz.CronExpression;
@@ -43,17 +45,20 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDialog {
+public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog {
 
-    Logger logger = LoggerFactory.getLogger(QuartzDrivenScheduledJobDialog.class);
+    Logger logger = LoggerFactory.getLogger(FileEventJobInstanceDialog.class);
 
     private ComboBox<String> agentCb;
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
     private TextArea jobDescriptionTa;
+    private TextField filenameTf;
+    private TextField archiveDirectoryTf;
     private TextField cronExpressionTf;
     private ComboBox<DateTimeUtil.TimezonePair> timezoneCb;
+    private TextField minFileAgeSecondsTf;
 
     private Button saveButton;
     private Button cancelButton;
@@ -65,9 +70,10 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
 
-    private QuartzScheduleDrivenJob quartzScheduleDrivenJob;
+    private FileEventDrivenJobInstance fileEventDrivenJobInstance;
+    private SchedulerJobInstanceRecord schedulerJobInstanceRecord;
 
-    private Binder<QuartzScheduleDrivenJob> formBinder;
+    private Binder<FileEventDrivenJobInstance> formBinder;
 
     private EditMode editMode = EditMode.NEW;
 
@@ -77,9 +83,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
 
     private SystemEventLogger systemEventLogger;
 
-    private SchedulerJobService schedulerJobService;
-
-    private SchedulerJobRecord schedulerJobRecord;
+    private SchedulerJobInstanceService schedulerJobInstanceService;
 
 
     /**
@@ -92,11 +96,12 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
      * @param metaDataRestService
      * @param systemEventLogger
      */
-    public QuartzDrivenScheduledJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
-                                          ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                          MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService) {
+    public FileEventJobInstanceDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
+                                      ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                      MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
+                                      SchedulerJobInstanceService schedulerJobInstanceService) {
         super.showResize(false);
-        super.title.setText(getTranslation("label.scheduled-job", UI.getCurrent().getLocale()));
+        super.title.setText(getTranslation("label.file-watcher-job", UI.getCurrent().getLocale()));
 
         this.agent = agent;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
@@ -104,15 +109,14 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         this.moduleControlRestService = moduleControlRestService;
         this.metaDataRestService = metaDataRestService;
         this.systemEventLogger = systemEventLogger;
-        this.schedulerJobService = schedulerJobService;
+        this.schedulerJobInstanceService = schedulerJobInstanceService;
 
-        this.quartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
-
+        this.fileEventDrivenJobInstance = new SolrFileEventDrivenJobInstanceImpl();
 
         this.formBinder
-            = new Binder<>(QuartzScheduleDrivenJob.class);
+            = new Binder<>(FileEventDrivenJobInstance.class);
 
-        this.setHeight("500px");
+        this.setHeight("700px");
         this.setWidth("1200px");
 
         saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
@@ -121,13 +125,13 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
 
             IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-            if(!this.performFormValidation(this.quartzScheduleDrivenJob)) {
+            if(!this.performFormValidation(this.fileEventDrivenJobInstance)) {
                 NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-configuration", UI.getCurrent().getLocale()));
                 return;
             }
 
             try {
-                createOrUpdateScheduledJob(this.quartzScheduleDrivenJob, authentication);
+                createOrUpdateScheduledJob(this.fileEventDrivenJobInstance, authentication);
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -136,12 +140,12 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
             }
 
             if (this.editMode == EditMode.NEW) {
-                String action = String.format("New quartz scheduled job created [%s].", this.quartzScheduleDrivenJob);
+                String action = String.format("New scheduled job created [%s].", this.fileEventDrivenJobInstance);
                 this.systemEventLogger.logEvent(SystemEventConstants.NEW_SCHEDULED_JOB_CREATED, action, authentication.getName());
             }
             else if (this.editMode == EditMode.EDIT) {
-                String action = String.format("Quartz scheduled job edited. \nBefore [%s]\nAfter [%s].", this.schedulerJobRecord.getJob(),
-                    this.quartzScheduleDrivenJob);
+                String action = String.format("Scheduled job edited. \nBefore [%s]\nAfter [%s].", this.schedulerJobInstanceRecord.getSchedulerJobInstance(),
+                    this.fileEventDrivenJobInstance);
                 this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_EDIT, action, authentication.getName());
             }
 
@@ -174,7 +178,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         formLayout = new FormLayout();
 
         // Fields to capture schedule job properties.
-        H3 scheduleDetailsLabel = new H3(getTranslation("header.schedule-details", UI.getCurrent().getLocale()));
+        H3 scheduleDetailsLabel = new H3(getTranslation("label.file-watcher-job", UI.getCurrent().getLocale()));
         formLayout.add(scheduleDetailsLabel, 2);
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
@@ -183,9 +187,8 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         this.jobNameTf.setEnabled(this.editMode == EditMode.NEW);
         formBinder.forField(this.jobNameTf)
             .withValidator(jobName -> !jobName.isEmpty(), getTranslation("error.missing-job-name", UI.getCurrent().getLocale()))
-            .bind(QuartzScheduleDrivenJob::getJobName, QuartzScheduleDrivenJob::setJobName);
+            .bind(FileEventDrivenJobInstance::getJobName, FileEventDrivenJobInstance::setJobName);
         formLayout.add(jobNameTf);
-
 
         this.agentCb = new ComboBox<>(getTranslation("label.agent", UI.getCurrent().getLocale()));
         this.agentCb.setId("agentCb");
@@ -198,7 +201,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         }
         formBinder.forField(this.agentCb)
             .withValidator(agentValue -> !agentValue.isEmpty(), getTranslation("error.missing-agent", UI.getCurrent().getLocale()))
-            .bind(QuartzScheduleDrivenJob::getAgentName, QuartzScheduleDrivenJob::setAgentName);
+            .bind(FileEventDrivenJobInstance::getAgentName, FileEventDrivenJobInstance::setAgentName);
         formLayout.add(agentCb);
 
 
@@ -207,32 +210,46 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         this.jobDescriptionTa.setId("jobDescriptionTa");
         jobDescriptionTa.getStyle().set("minHeight", "100px");
         formBinder.forField(this.jobDescriptionTa)
-            .withValidator(jobGroup -> !jobGroup.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
-            .bind(QuartzScheduleDrivenJob::getJobDescription, QuartzScheduleDrivenJob::setJobDescription);
+            .withValidator(jobDescription -> !jobDescription.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
+            .bind(FileEventDrivenJobInstance::getJobDescription, FileEventDrivenJobInstance::setJobDescription);
         formLayout.add(jobDescriptionTa, 2);
 
+        this.filenameTf = new TextField("File path");
+        this.filenameTf.setRequired(true);
+        this.filenameTf.setId("filePathTf");
+        formBinder.forField(this.filenameTf)
+            .withValidator(filePath -> !filePath.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
+            .bind(FileEventDrivenJobInstance::getFilePath, FileEventDrivenJobInstance::setFilePath);
+        formLayout.add(filenameTf, 2);
 
-        Icon builderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), "Build cron expression", "14pt", "rgba(241, 90, 35, 1.0)");
+        archiveDirectoryTf = new TextField(getTranslation("label.archive-directory", UI.getCurrent().getLocale()));
+        this.filenameTf.setId("archiveDirectoryTf");
+        formBinder.forField(this.archiveDirectoryTf)
+            .withValidator(filePath -> !filePath.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
+            .bind(FileEventDrivenJobInstance::getMoveDirectory, FileEventDrivenJobInstance::setMoveDirectory);
+        formLayout.add(this.archiveDirectoryTf, 2);
+
+        Icon builderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), getTranslation("tooltip.build-cron-expression", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
         builderIcon.addClickListener(event -> {
             CronBuilderDialog dialog = new CronBuilderDialog();
             dialog.init(this.cronExpressionTf.getValue());
             dialog.open();
 
             dialog.addOpenedChangeListener(openedChangeEvent -> {
-               if(!openedChangeEvent.isOpened() && dialog.isSaveClose()) {
-                   this.cronExpressionTf.setValue(dialog.getCronExpression());
-               }
+                if(!openedChangeEvent.isOpened() && dialog.isSaveClose()) {
+                    this.cronExpressionTf.setValue(dialog.getCronExpression());
+                }
             });
         });
 
         this.cronExpressionTf = new TextField(getTranslation("label.cron-expression", UI.getCurrent().getLocale()));
         this.cronExpressionTf.setRequired(true);
-        this.cronExpressionTf.setId("cronExpressionTf");
         this.cronExpressionTf.setSuffixComponent(builderIcon);
+        this.cronExpressionTf.setId("cronExpressionTf");
         formBinder.forField(this.cronExpressionTf)
             .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
             .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
-            .bind(QuartzScheduleDrivenJob::getCronExpression, QuartzScheduleDrivenJob::setCronExpression);
+            .bind(FileEventDrivenJobInstance::getCronExpression, FileEventDrivenJobInstance::setCronExpression);
         formLayout.add(cronExpressionTf);
 
 
@@ -247,25 +264,33 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         this.timezoneCb.setErrorMessage(getTranslation("error.timezone-required", UI.getCurrent().getLocale()));
         formLayout.add(timezoneCb);
 
+        this.minFileAgeSecondsTf = new TextField(getTranslation("label.min-file-age-seconds", UI.getCurrent().getLocale()));
+        this.minFileAgeSecondsTf.setRequired(true);
+        this.minFileAgeSecondsTf.setId("minFileAgeSecondsTf");
+        formBinder.forField(this.minFileAgeSecondsTf)
+            .withConverter(new StringToIntegerConverter(getTranslation("error.min-file-age-must-be-a-number", UI.getCurrent().getLocale())))
+            .bind(FileEventDrivenJobInstance::getMinFileAgeSeconds, FileEventDrivenJobInstance::setMinFileAgeSeconds);
+        formLayout.add(minFileAgeSecondsTf);
+
         return formLayout;
     }
 
     /**
      * Perform validation of the form.
      *
-     * @param quartzScheduleDrivenJob
+     * @param solrFileEventDrivenJob
      * @return
      */
-    private boolean performFormValidation(QuartzScheduleDrivenJob quartzScheduleDrivenJob) {
+    private boolean performFormValidation(FileEventDrivenJobInstance solrFileEventDrivenJob) {
 
         try {
             AtomicBoolean isValid = new AtomicBoolean(true);
 
             if(this.timezoneCb.getValue() != null) {
-                quartzScheduleDrivenJob.setTimeZone(this.timezoneCb.getValue().zoneId);
+                solrFileEventDrivenJob.setTimeZone(this.timezoneCb.getValue().zoneId);
             }
 
-            formBinder.writeBean(quartzScheduleDrivenJob);
+            formBinder.writeBean(solrFileEventDrivenJob);
 
             if(!isValid.get()){
                 return false;
@@ -280,29 +305,16 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
     
 
     /**
+     * This method interacts with with agent in order to create a new scheduler agent flow or update an existing flow and associated job.
      *
-     *
-     * @param solrQuartzScheduleDrivenJob
+     * @param fileEventDrivenJobInstance
      */
-    public void createOrUpdateScheduledJob(QuartzScheduleDrivenJob solrQuartzScheduleDrivenJob, IkasanAuthentication authentication) throws JsonProcessingException {
+    public void createOrUpdateScheduledJob(FileEventDrivenJobInstance fileEventDrivenJobInstance, IkasanAuthentication authentication) throws JsonProcessingException {
+        this.schedulerJobInstanceRecord.setSchedulerJobInstance(fileEventDrivenJobInstance);
+        this.schedulerJobInstanceRecord.setModifiedBy(authentication.getName());
 
-        QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
-        quartzScheduleDrivenJobRecord.setAgentName(solrQuartzScheduleDrivenJob.getAgentName());
-        quartzScheduleDrivenJobRecord.setContextId(solrQuartzScheduleDrivenJob.getContextId());
-        quartzScheduleDrivenJobRecord.setJobName(solrQuartzScheduleDrivenJob.getJobName());
-        quartzScheduleDrivenJobRecord.setQuartzScheduleDrivenJob(solrQuartzScheduleDrivenJob);
-        quartzScheduleDrivenJobRecord.setModifiedBy(authentication.getName());
-
-        if(this.schedulerJobRecord != null) {
-            quartzScheduleDrivenJobRecord.setTimestamp(this.schedulerJobRecord.getTimestamp());
-        }
-        else {
-            quartzScheduleDrivenJobRecord.setTimestamp(System.currentTimeMillis());
-        }
-
-        this.schedulerJobService.saveQuartzScheduledJobRecord(quartzScheduleDrivenJobRecord);
+        this.schedulerJobInstanceService.save(this.schedulerJobInstanceRecord);
      }
-
 
     /**
      * Helper method to set controls on the form elements if the form is read only
@@ -327,22 +339,23 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
     /**
      * Set the underlying pojo for the form along with the edit mode.
      *
-     * @param quartzScheduleDrivenJob
+     * @param fileEventDrivenJob
      * @param editMode
      */
-    public void setJob(QuartzScheduleDrivenJob quartzScheduleDrivenJob, EditMode editMode) {
+    private void setJob(FileEventDrivenJobInstance fileEventDrivenJob, EditMode editMode) {
         this.enabled = editMode == EditMode.NEW || editMode == EditMode.EDIT ? true : false;
-        this.quartzScheduleDrivenJob = quartzScheduleDrivenJob;
-        this.formBinder.readBean(this.quartzScheduleDrivenJob);
-        this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(quartzScheduleDrivenJob.getTimeZone()));
+        this.fileEventDrivenJobInstance = fileEventDrivenJob;
+        this.formBinder.readBean(this.fileEventDrivenJobInstance);
+        this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(fileEventDrivenJob.getTimeZone()));
         this.editMode = editMode;
 
         // make sure all value are bound before calling set enabled
         this.setEnabled(this.enabled);
     }
 
-    public void setJob(SchedulerJobRecord schedulerJobRecord, EditMode editMode) {
-        this.schedulerJobRecord = schedulerJobRecord;
-        this.setJob((QuartzScheduleDrivenJob)this.schedulerJobService.findById(schedulerJobRecord.getId()).getJob(), editMode);
+    public void setJob(SchedulerJobInstanceRecord internalEventDrivenJobRecord, EditMode editMode) {
+        this.schedulerJobInstanceRecord = internalEventDrivenJobRecord;
+        this.setJob((FileEventDrivenJobInstance) this.schedulerJobInstanceService
+            .findById(internalEventDrivenJobRecord.getId()).getSchedulerJobInstance(), editMode);
     }
 }

@@ -2,11 +2,13 @@ package org.ikasan.scheduled.instance.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
+import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceRecord {
@@ -19,6 +21,9 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
 
     @Field(SolrDaoBase.ID)
     private String id;
+
+    @Field(SolrDaoBase.TYPE)
+    private String type;
 
     @Field(SolrDaoBase.MODULE_NAME)
     private String jobName;
@@ -47,6 +52,11 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Override
     public String getId() {
         return this.id;
+    }
+
+    @Override
+    public String getType() {
+        return type;
     }
 
     @Override
@@ -82,7 +92,18 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Override
     public SchedulerJobInstance getSchedulerJobInstance() {
         try {
-            return objectMapper.readValue(this.schedulerJobInstance, SolrSchedulerJobInstanceImpl.class);
+            if(this.type != null && this.type.equals(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE)) {
+                return objectMapper.readValue(this.schedulerJobInstance, SolrFileEventDrivenJobInstanceImpl.class);
+            }
+            else if(this.type != null && this.type.equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE)) {
+                return objectMapper.readValue(this.schedulerJobInstance, SolrQuartzScheduleDrivenJobInstanceImpl.class);
+            }
+            else if(this.type != null && this.type.equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)) {
+                return objectMapper.readValue(this.schedulerJobInstance, SolrInternalEventDrivenJobInstanceImpl.class);
+            }
+            else {
+                return objectMapper.readValue(this.schedulerJobInstance, SolrSchedulerJobInstanceImpl.class);
+            }
         }
         catch (JsonProcessingException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + this.schedulerJobInstance, e);
@@ -92,6 +113,16 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Override
     public void setSchedulerJobInstance(SchedulerJobInstance schedulerJobInstance) {
         try {
+            if(schedulerJobInstance instanceof FileEventDrivenJobInstance) {
+                this.type = JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE;
+            }
+            else if(schedulerJobInstance instanceof QuartzScheduleDrivenJobInstance) {
+                this.type = JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE;
+            }
+            else if(schedulerJobInstance instanceof InternalEventDrivenJobInstance) {
+                this.type = JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE;
+            }
+
             this.schedulerJobInstance = objectMapper.writeValueAsString(schedulerJobInstance);
         }
         catch (JsonProcessingException e) {
@@ -137,5 +168,10 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Override
     public void setModifiedBy(String modifiedBy) {
         this.modifiedBy = modifiedBy;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

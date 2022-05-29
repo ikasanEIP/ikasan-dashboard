@@ -42,7 +42,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
     public JobLogicMachine(Map<String, ModuleMetaData> agents, JobLockCache jobLockCache, SchedulerOverrider schedulerOverrider) {
         this.agents = agents;
         this.schedulerJobInstanceStateChangeEventListeners = new ArrayList<>();
-        executor = Executors.newSingleThreadExecutor();
+        // todo make pool size configurable
+        executor = Executors.newFixedThreadPool(5);
         this.jobLockCache = jobLockCache;
         this.schedulerOverrider = schedulerOverrider;
     }
