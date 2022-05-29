@@ -270,7 +270,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
         UI ui = attachEvent.getUI();
 
-        if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+        if(this.contextInstance != null && ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
             logger.info("Adding scheduler visualisation as context sate change event listener for context[{}], context identifier[{}].");
             contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
                 if (contextInstanceStateChangeEvent.getContextInstance() != null) {
@@ -287,7 +287,9 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        this.contextInstanceStateChangeRegistration.remove();
-        this.contextInstanceStateChangeRegistration = null;
+        if(this.contextInstanceStateChangeRegistration != null) {
+            this.contextInstanceStateChangeRegistration.remove();
+            this.contextInstanceStateChangeRegistration = null;
+        }
     }
 }
