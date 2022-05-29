@@ -109,6 +109,7 @@ public class ContextMachine {
         inboundListenableFuture.addListener(new InboundQueueMessageRunner(), this.contextExecutor);
 
         this.addOutboundListener();
+        this.saveContext();
 
         this.attempts = 0;
         this.maxWait = 10000L;
