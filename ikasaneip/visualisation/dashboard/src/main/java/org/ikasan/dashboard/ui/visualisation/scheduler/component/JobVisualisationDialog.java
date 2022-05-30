@@ -229,19 +229,16 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
-        if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-            logger.info("Adding job visualisation dialog as context sate change event listener for context[{}], context identifier[{}].");
-            schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-                if (contextInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
-                    logger.info("Updating scheduler visualisation job status. Scheduler Job Instance[{}], Status[{}], Status Colour[{}]",
-                        contextInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
-                        StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
-                    ui.access(() ->
-                        this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier() + "_status"
-                            , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus())));
-                }
-            });
-        }
+        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
+            if (contextInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
+                logger.info("Updating scheduler visualisation job status. Scheduler Job Instance[{}], Status[{}], Status Colour[{}]",
+                    contextInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
+                    StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
+                ui.access(() ->
+                    this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier() + "_status"
+                        , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getSchedulerJobInstance().getStatus())));
+            }
+        });
     }
 
     @Override
