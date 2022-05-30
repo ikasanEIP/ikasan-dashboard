@@ -125,6 +125,7 @@ public class ContextMachine {
             contextInstance = contextService.getContextInstance(contextService.getContextTemplateString(this.context));
             contextInstance.setId(UUID.randomUUID().toString());
 
+            this.saveContext();
             List<JobLock> jobLocks = this.context.getJobLocks();
             if (jobLocks != null) {
                 jobLocks.forEach(j -> this.jobLockCache.resetLock(j.getName()));
