@@ -270,19 +270,16 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
         UI ui = attachEvent.getUI();
 
-        if(this.contextInstance != null && ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-            logger.info("Adding scheduler visualisation as context sate change event listener for context[{}], context identifier[{}].");
-            contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-                if (contextInstanceStateChangeEvent.getContextInstance() != null) {
-                    logger.info("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
-                        contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
-                        StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
-                    ui.access(() ->
-                        this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName() + "_status"
-                            , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus())));
-                }
-            });
-        }
+        contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
+            if (contextInstanceStateChangeEvent.getContextInstance() != null) {
+                logger.info("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
+                    contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
+                    StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
+                ui.access(() ->
+                    this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName() + "_status"
+                        , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus())));
+            }
+        });
     }
 
     @Override
