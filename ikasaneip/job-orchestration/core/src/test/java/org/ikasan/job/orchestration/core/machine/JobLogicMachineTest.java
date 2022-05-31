@@ -1,6 +1,8 @@
 package org.ikasan.job.orchestration.core.machine;
 
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
+import org.ikasan.job.orchestration.context.parameters.ContextParametersInstanceServiceImpl;
 import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateException;
 import org.ikasan.job.orchestration.core.AbstractTest;
@@ -10,6 +12,7 @@ import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,7 +24,7 @@ import java.util.Map;
 
 public class JobLogicMachineTest extends AbstractTest {
     private ContextService contextService = new ContextService();
-    private JobLogicMachine jobLogicMachine = new JobLogicMachine(new HashMap<>(), JobLockCacheImpl.instance(), new SchedulerOverrider(false, null, false, null));
+    private JobLogicMachine jobLogicMachine = new JobLogicMachine(new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
 
     /**
      * This test evaluates a simple dependency:
@@ -1830,11 +1833,13 @@ public class JobLogicMachineTest extends AbstractTest {
     @Test
     public void test_hack_hard_coding_context_params() throws IOException {
 
-        Map<String, Boolean> jobsToSkip = Map.of("AC_SCRIPT_Interface_SOII", true);
-        Map<String, String> paramsToReplace = Map.of("BusinessDate", "20220428", "ErrorSearch", "blah", "UseBusinessDate", "1");
+        Map<String, Map<String, Boolean>> jobsToSkip = Map.of("Context1", Map.of("AC_SCRIPT_Interface_SOII", true));
+        Map<String, Map<String, String>> paramsToReplace = Map.of("Context1", Map.of("BusinessDate", "20220428", "ErrorSearch", "blah", "UseBusinessDate", "1"));
 
         SchedulerOverrider schedulerOverrider = new SchedulerOverrider(true, jobsToSkip, true, paramsToReplace);
-        jobLogicMachine = new JobLogicMachine(new HashMap<>(), JobLockCacheImpl.instance(), schedulerOverrider);
+        ContextParametersFactory contextParametersFactory = new ContextParametersFactory(schedulerOverrider);
+        ContextParametersInstanceService contextParametersInstanceService = new ContextParametersInstanceServiceImpl(contextParametersFactory);
+        jobLogicMachine = new JobLogicMachine(new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
 
         String json = loadDataFile("/data/logic/simple-context-chained-jobs-with-context-parameters.json");
         String replace = json.replace("\"name\": \"test1\"", "\"name\" : \"BusinessDate\"")

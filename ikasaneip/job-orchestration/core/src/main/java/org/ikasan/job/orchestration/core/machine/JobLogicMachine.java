@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -22,6 +21,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.slf4j.Logger;
@@ -37,15 +37,15 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
     private ExecutorService executor;
     private Map<String, ModuleMetaData> agents;
     private JobLockCache jobLockCache;
-    private SchedulerOverrider schedulerOverrider;
+    private ContextParametersInstanceService contextParametersInstanceService;
 
-    public JobLogicMachine(Map<String, ModuleMetaData> agents, JobLockCache jobLockCache, SchedulerOverrider schedulerOverrider) {
+    public JobLogicMachine(Map<String, ModuleMetaData> agents, JobLockCache jobLockCache, ContextParametersInstanceService contextParametersInstanceService) {
         this.agents = agents;
         this.schedulerJobInstanceStateChangeEventListeners = new ArrayList<>();
         // todo make pool size configurable
         executor = Executors.newFixedThreadPool(5);
         this.jobLockCache = jobLockCache;
-        this.schedulerOverrider = schedulerOverrider;
+        this.contextParametersInstanceService = contextParametersInstanceService;
     }
 
     /**
@@ -277,7 +277,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         schedulerJobInitiationEvent.setDryRun(dryRunParameters != null);
         schedulerJobInitiationEvent.setDryRunParameters(dryRunParameters);
 
-        boolean shouldSkip = schedulerOverrider.isSkipped(schedulerJobInstance.getJobName());
+        boolean shouldSkip = contextParametersInstanceService.isSkipped(parentContextInstance.getName(), schedulerJobInstance.getJobName());
         schedulerJobInitiationEvent.setSkipped(shouldSkip);
 
         if(contextParameters != null) {
@@ -286,7 +286,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                     .getContextParameters()
                     .stream()
                     .filter(contextParameter -> contextParameterInstance.getName().equals(contextParameter.getName()))
-                    .map(instance -> replaceParamIfSet(contextParameterInstance))
+                    .map(instance -> replaceParamIfSet(parentContextInstance.getName(), contextParameterInstance))
                     .collect(Collectors.toList()).size() > 0)
                 .collect(Collectors.toList()));
         }
@@ -313,8 +313,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         return schedulerJobInitiationEvent;
     }
 
-    private ContextParameterInstance replaceParamIfSet(ContextParameterInstance instance) {
-        String replacementForContextParamName = schedulerOverrider.getReplacementForContextParamName(instance.getName());
+    private ContextParameterInstance replaceParamIfSet(String contextName, ContextParameterInstance instance) {
+        Object replacementForContextParamName = contextParametersInstanceService.getContextParameterValue(contextName, instance.getName());
         if (replacementForContextParamName != null) {
             instance.setValue(replacementForContextParamName);
         }

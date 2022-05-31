@@ -7,8 +7,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
 
-import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
-import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
@@ -31,9 +29,9 @@ import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +70,8 @@ public class ContextMachine {
     // todo clean up the transient queues once a context is complete.
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
                           Map<String, InternalEventDrivenJob> internalEventDrivenJobs, String queueDir,
-                          Map<String, ModuleMetaData> agents, JobLockCacheService jobLockCacheService, SchedulerOverrider schedulerOverrider) {
+                          Map<String, ModuleMetaData> agents, JobLockCache jobLockCache,
+                          ContextParametersInstanceService contextParametersInstanceService) {
         this.context = context;
         this.contextInstance = contextInstance;
         this.internalEventDrivenJobs = internalEventDrivenJobs;
@@ -87,12 +86,9 @@ public class ContextMachine {
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
+        this.jobLockCache = jobLockCache;
 
-        this.jobLockCache = JobLockCacheImpl.instance();
-        this.jobLockCache.setJobLockCacheService(jobLockCacheService);
-        this.jobLockCache.addLocks(context != null ? context.getAllNestedJobLocks() : Collections.emptyList());
-
-        this.jobLogicMachine = new JobLogicMachine(this.agents, this.jobLockCache, schedulerOverrider);
+        this.jobLogicMachine = new JobLogicMachine(this.agents, this.jobLockCache, contextParametersInstanceService);
     }
 
     /**

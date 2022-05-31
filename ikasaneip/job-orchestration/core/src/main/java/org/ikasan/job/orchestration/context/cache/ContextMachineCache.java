@@ -80,4 +80,11 @@ public class ContextMachineCache
     public Set contextInstanceIdentifiers() {
         return this.contextInstanceByContextInstanceIdCache.keySet();
     }
+
+    public void remove(ContextMachine contextMachine)
+    {
+        this.contextInstanceByContextNameCache.remove(contextMachine.getContext().getName(), contextMachine);
+        this.contextInstanceByContextInstanceIdCache.remove(contextMachine.getContext().getId(), contextMachine);
+    }
+
 }
