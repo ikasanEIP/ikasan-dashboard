@@ -131,9 +131,6 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
             try {
                 ContextTemplate contextTemplate = contextService.getContextTemplate(new String(contextFile));
 
-//                ContextTemplateValidator contextTemplateValidator = new ContextTemplateValidator();
-//                contextTemplateValidator.validate(contextTemplate);
-
                 ScheduledContextRecord scheduledContextRecord = new SolrScheduledContextRecordImpl();
                 scheduledContextRecord.setContextName(contextTemplate.getName());
                 scheduledContextRecord.setContext(contextTemplate);
@@ -143,7 +140,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
                 ContextInstance contextInstance = contextService.getContextInstance(new String(contextFile));
                 contextInstance.setId(UUID.randomUUID().toString());
 
-                this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextInstance.getName(), contextInstance.getId());
+                this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextInstance);
 
                 SearchResults<InternalEventDrivenJobRecord> internalEventDrivenJobRecordSearchResults
                     = this.internalEventDrivenJobService.findByContext(scheduledContextRecord.getContextName(), -1, -1);
@@ -162,30 +159,22 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
                 ContextMachine contextMachine = new ContextMachine(contextTemplate, contextInstance, scheduledContextInstanceService
                     , internalEventDrivenJobMap, this.queueDir, agents, jobLockCacheService, this.schedulerOverrider);
                 contextMachine.init();
-                contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> {
-                    schedulerService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event);
-                });
 
-                contextMachine.addSchedulerJobStateChangeEventListener( event -> {
-//                    todo work out best way to update job instance
-//                    try {
-//                        SchedulerJobInstanceRecord record = new SolrSchedulerJobInstanceRecordImpl();
-//                        record.setContextName(event.getSchedulerJobInstance().getContextId());
-//                        record.setContextInstanceId(contextInstance.getId());
-//                        record.setJobName(event.getSchedulerJobInstance().getJobName());
-//
-//                        record.setSchedulerJobInstance(event.getSchedulerJobInstance());
-//                        schedulerJobInstanceService.save(record);
-//
-//                        logger.info("Saved job instance - " + record.toString());
-//                    }
-//                    catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-                });
+                // We add the listener to write initiation events to the agents.
+                contextMachine.setSchedulerJobInitiationEventRaisedListener(event
+                    -> schedulerService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event));
 
-                contextMachine.addContextInstanceStateChangeEventListener(event -> ContextInstanceStateChangeEventBroadcaster.broadcast(event));
-                contextMachine.addSchedulerJobStateChangeEventListener(event -> SchedulerJobStateChangeEventBroadcaster.broadcast(event));
+                // We add a listener to broadcast any context state changes to interested parties.
+                contextMachine.addContextInstanceStateChangeEventListener(event
+                    -> ContextInstanceStateChangeEventBroadcaster.broadcast(event));
+
+                // We add a listener to broadcast any job state changes to interested parties.
+                contextMachine.addSchedulerJobStateChangeEventListener(event
+                    -> SchedulerJobStateChangeEventBroadcaster.broadcast(event));
+
+                // We add a listener to update scheduler job instances when a state change occurs.
+                contextMachine.addSchedulerJobStateChangeEventListener( event
+                    -> this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
 
                 DryRunParameters dryRunParameters = new DryRunParametersImpl();
                 contextMachine.setDryRunParameters(dryRunParameters);

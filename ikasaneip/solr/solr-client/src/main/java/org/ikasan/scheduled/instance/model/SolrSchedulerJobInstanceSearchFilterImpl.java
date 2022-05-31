@@ -24,6 +24,7 @@ public class SolrSchedulerJobInstanceSearchFilterImpl implements SchedulerJobIns
     private String jobType;
     private String contextName;
     private String contextInstanceId;
+    private String childContextName;
     private String status;
 
     @Override
@@ -64,6 +65,16 @@ public class SolrSchedulerJobInstanceSearchFilterImpl implements SchedulerJobIns
     @Override
     public void setContextInstanceId(String contextInstanceId) {
         this.contextInstanceId = contextInstanceId;
+    }
+
+    @Override
+    public String getChildContextName() {
+        return childContextName;
+    }
+
+    @Override
+    public void setChildContextName(String childContextName) {
+        this.childContextName = childContextName;
     }
 
     @Override

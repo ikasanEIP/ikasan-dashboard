@@ -7,6 +7,8 @@ import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.model.StatefulEntity;
 
 public class SolrSchedulerJobInstanceImpl extends SolrSchedulerJobImpl implements SchedulerJobInstance, StatefulEntity {
+    private String contextInstanceId;
+    private String childContextName;
     private boolean held = false;
     private boolean skip = false;
     private boolean initiationEventRaised = false;
@@ -15,6 +17,25 @@ public class SolrSchedulerJobInstanceImpl extends SolrSchedulerJobImpl implement
 
     public SolrSchedulerJobInstanceImpl() {
         status = InstanceStatus.WAITING;
+    }
+
+    public String getContextInstanceId() {
+        return contextInstanceId;
+    }
+
+    @Override
+    public void setContextInstanceId(String contextInstanceId) {
+        this.contextInstanceId = contextInstanceId;
+    }
+
+    @Override
+    public String getChildContextName() {
+        return childContextName;
+    }
+
+    @Override
+    public void setChildContextName(String childContextName) {
+        this.childContextName = childContextName;
     }
 
     public boolean isHeld() {
