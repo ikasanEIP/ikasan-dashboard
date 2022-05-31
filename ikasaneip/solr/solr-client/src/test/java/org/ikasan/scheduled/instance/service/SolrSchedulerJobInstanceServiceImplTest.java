@@ -110,15 +110,19 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         schedulerJobInstanceRecord.setJobName("jobName");
         schedulerJobInstanceRecord.setContextInstanceId("contexInstance");
         schedulerJobInstanceRecord.setContextName("contextName");
+        schedulerJobInstanceRecord.setChildContextName("contextContextName");
         schedulerJobInstanceRecord.setSchedulerJobInstance(solrSchedulerJobInstance);
         schedulerJobInstanceRecord.setTimestamp(1000000L);
         schedulerJobInstanceRecord.setStatus("RUNNING");
         service.save(schedulerJobInstanceRecord);
 
-        SchedulerJobInstanceRecord found = service.findById("jobName_contexInstance_quartzScheduleDrivenJobInstance");
+        SchedulerJobInstanceRecord found = service.findById("jobName_contexInstance_contextContextName_quartzScheduleDrivenJobInstance");
 
         Assert.assertEquals(schedulerJobInstanceRecord.getJobName() + "_"
-            + schedulerJobInstanceRecord.getContextInstanceId() + "_" + JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE, found.getId());
+            + schedulerJobInstanceRecord.getContextInstanceId() + "_"
+            + schedulerJobInstanceRecord.getChildContextName() + "_"
+            + JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE, found.getId());
+
         Assert.assertEquals("contextName", found.getContextName());
         Assert.assertEquals("jobName", found.getSchedulerJobInstance().getJobName());
         Assert.assertTrue(found.getSchedulerJobInstance().getScheduledProcessEvent().getJobName().startsWith("Job"));

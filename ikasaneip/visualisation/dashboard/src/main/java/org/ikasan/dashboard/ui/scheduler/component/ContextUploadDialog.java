@@ -13,6 +13,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
+import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
@@ -182,6 +183,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
                 ContextMachineCache.instance().put(contextMachine);
             }
             catch (Exception e) {
+                NotificationHelper.showErrorNotification("Unable to load the context. Please contact Ikasan Support.");
                 e.printStackTrace();
             }
 

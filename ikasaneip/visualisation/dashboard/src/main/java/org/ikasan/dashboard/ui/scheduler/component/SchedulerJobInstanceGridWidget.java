@@ -28,6 +28,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
@@ -38,6 +39,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class SchedulerJobInstanceGridWidget extends Div {
 
@@ -254,10 +257,26 @@ public class SchedulerJobInstanceGridWidget extends Div {
         .setSortable(true)
         .setFlexGrow(1);
 
+        schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
+            HorizontalLayout horizontalLayout = new HorizontalLayout();
+
+            Text text = new Text(schedulerJobInstanceRecord.getStatus());
+
+            horizontalLayout.add(text);
+            return horizontalLayout;
+        })).setHeader(getTranslation("table-header.status", UI.getCurrent().getLocale()))
+            .setResizable(true)
+            .setSortable(true)
+            .setKey("status")
+            .setFlexGrow(1);
+
         HeaderRow hr = schedulerJobInstanceFilteringGrid.appendHeaderRow();
         this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobName, "flowName");
+        this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setChildContextName, "childContextName");
         this.schedulerJobInstanceFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobType
             , SolrSchedulerJobInstanceSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
+        this.schedulerJobInstanceFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setStatus
+            , Arrays.asList(InstanceStatus.values()).stream().map(instanceStatus -> instanceStatus.name()).collect(Collectors.toList()), "status");
 
     }
 }

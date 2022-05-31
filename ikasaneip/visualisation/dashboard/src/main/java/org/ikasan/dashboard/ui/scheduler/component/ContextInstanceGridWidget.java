@@ -209,7 +209,7 @@ public class ContextInstanceGridWidget extends Div {
 
             horizontalLayout.add(text);
             return horizontalLayout;
-        })).setHeader("Context Status")
+        })).setHeader(getTranslation("table-header.status", UI.getCurrent().getLocale()))
             .setResizable(true)
             .setSortable(true)
             .setKey("status")
