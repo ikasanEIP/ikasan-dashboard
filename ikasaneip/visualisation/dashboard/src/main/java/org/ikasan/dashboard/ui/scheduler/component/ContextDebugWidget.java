@@ -201,8 +201,7 @@ public class ContextDebugWidget extends Div {
             try {
                 contextMachine.resetContextInstance();
                 this.schedulerVisualisation.createSchedulerVisualisation(contextMachine.getContext());
-                this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext
-                    (contextMachine.getContext().getName(), contextMachine.getContext().getId());
+                this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextMachine.getContext());
                 if(tabs.getSelectedTab().equals(this.fullContextInstance)) {
                     if(this.contextInstances.getValue() != null && !this.contextInstances.getValue().isEmpty()){
                         this.aceEditor.setValue(this.objectMapper.writerWithDefaultPrettyPrinter()

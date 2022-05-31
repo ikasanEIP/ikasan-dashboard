@@ -35,7 +35,7 @@
         </analyzer>
     </fieldType>
 
-    <field name="componentName" type="text_general" multiValued="false" stored="true"/>
+    <field name="componentName" type="strings" multiValued="false" stored="true"/>
     <field name="errorDetail" type="text_general" multiValued="false" stored="true"/>
     <field name="errorMessage" type="text_general" multiValued="false" stored="true"/>
     <field name="errorUri" type="strings" multiValued="false" stored="true"/>
@@ -53,5 +53,7 @@
     <field name="modifiedTimestamp" type="plongs" multiValued="false" stored="true"/>
     <field name="type" type="strings" multiValued="false" stored="true"/>
     <field name="status" type="strings" multiValued="false" stored="true"/>
+    <field name="modifiedBy" type="strings" multiValued="false" stored="true"/>
+    <field name="childContextName" type="strings" multiValued="false" stored="true"/>
 
 </schema>

@@ -34,6 +34,9 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Field(SolrDaoBase.COMPONENT_NAME)
     private String contextInstanceId;
 
+    @Field(SolrDaoBase.CHILD_CONTEXT_NAME)
+    private String childContextName;
+
     @Field(SolrDaoBase.PAYLOAD_CONTENT)
     private String schedulerJobInstance;
 
@@ -87,6 +90,16 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Override
     public void setContextInstanceId(String contextInstanceId) {
         this.contextInstanceId = contextInstanceId;
+    }
+
+    @Override
+    public String getChildContextName() {
+        return childContextName;
+    }
+
+    @Override
+    public void setChildContextName(String childContextName) {
+        this.childContextName = childContextName;
     }
 
     @Override

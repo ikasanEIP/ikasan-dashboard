@@ -119,6 +119,19 @@ public class SchedulerJobInstanceGridWidget extends Div {
             .setFlexGrow(2);
 
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
+            HorizontalLayout horizontalLayout = new HorizontalLayout();
+
+            Text text = new Text(schedulerJobInstanceRecord.getChildContextName());
+
+            horizontalLayout.add(text);
+            return horizontalLayout;
+        })).setHeader(getTranslation("table-header.child-context-name", UI.getCurrent().getLocale()))
+            .setResizable(true)
+            .setSortable(true)
+            .setKey("childContextName")
+            .setFlexGrow(2);
+
+        schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
             Icon edit = IconDecorator.decorate(new Icon(VaadinIcon.EDIT), getTranslation("tooltip.edit-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
