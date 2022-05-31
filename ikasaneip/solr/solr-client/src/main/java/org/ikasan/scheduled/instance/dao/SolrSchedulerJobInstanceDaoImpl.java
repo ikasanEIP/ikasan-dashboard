@@ -52,6 +52,7 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         document.addField(STATUS, schedulerJobInstanceRecord.getStatus());
         document.addField(MODULE_NAME, schedulerJobInstanceRecord.getJobName());
         document.addField(FLOW_NAME, schedulerJobInstanceRecord.getContextName());
+        document.addField(CHILD_CONTEXT_NAME, schedulerJobInstanceRecord.getChildContextName());
         document.addField(COMPONENT_NAME, schedulerJobInstanceRecord.getContextInstanceId());
         document.addField(CREATED_DATE_TIME, schedulerJobInstanceRecord.getTimestamp());
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
@@ -137,7 +138,7 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
 
         queryString.append(AND)
             .append(MODULE_NAME).append(COLON)
-            .append(filter.getJobName() != null && !filter.getJobName().isEmpty() ? "*"+filter.getJobName()+"*" : "*");
+            .append(filter.getJobName() != null && !filter.getJobName().isEmpty() ? filter.getJobName() : "*");
 
         queryString.append(AND)
             .append(FLOW_NAME)
@@ -148,6 +149,11 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
             .append(COMPONENT_NAME)
             .append(COLON)
             .append(filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty() ? filter.getContextInstanceId() : "*");
+
+        queryString.append(AND)
+            .append(CHILD_CONTEXT_NAME)
+            .append(COLON)
+            .append(filter.getChildContextName() != null && !filter.getChildContextName().isEmpty() ? filter.getChildContextName() : "*");
 
         if(filter.getStatus() != null && !filter.getStatus().isEmpty()) {
             queryString.append(AND).append(STATUS).append(COLON).append(filter.getStatus());

@@ -1,20 +1,15 @@
 package org.ikasan.scheduled.instance.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang.SerializationUtils;
 import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
-import org.ikasan.scheduled.instance.model.SolrFileEventDrivenJobInstanceImpl;
-import org.ikasan.scheduled.instance.model.SolrInternalEventDrivenJobInstanceImpl;
-import org.ikasan.scheduled.instance.model.SolrQuartzScheduleDrivenJobInstanceImpl;
-import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceRecordImpl;
+import org.ikasan.scheduled.instance.model.*;
 import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
 import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
@@ -23,6 +18,9 @@ import org.ikasan.spec.search.SearchResults;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstanceService {
 
@@ -55,6 +53,28 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
     }
 
     @Override
+    public void update(SchedulerJobInstance schedulerJobInstance) {
+        SchedulerJobInstanceSearchFilter filter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(schedulerJobInstance.getContextInstanceId());
+        filter.setJobName(schedulerJobInstance.getJobName());
+        filter.setChildContextName(schedulerJobInstance.getChildContextName());
+
+        SearchResults<SchedulerJobInstanceRecord> searchResults = this.solrSchedulerJobInstanceDao
+            .getScheduledContextInstancesByFilter(filter, 1, 0, null, null);
+
+        SchedulerJobInstanceRecord record = searchResults.getResultList().get(0);
+
+        record.setStatus(schedulerJobInstance.getStatus().name());
+        record.getSchedulerJobInstance().setScheduledProcessEvent(schedulerJobInstance.getScheduledProcessEvent());
+        record.getSchedulerJobInstance().setStatus(schedulerJobInstance.getStatus());
+        record.setModifiedTimestamp(System.currentTimeMillis());
+        // todo sort out modified by
+        record.setModifiedBy("ContextMachine");
+
+        this.solrSchedulerJobInstanceDao.save(record);
+    }
+
+    @Override
     public SearchResults<SchedulerJobInstanceRecord> getSchedulerJobInstancesByContextInstanceId(String contextInstanceId, int limit, int offset, String sortField, String sortDirection) {
         return this.solrSchedulerJobInstanceDao.getSchedulerJobInstancesByContextInstanceId(contextInstanceId, limit, offset, sortField, sortDirection);
     }
@@ -70,38 +90,57 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
     }
 
     @Override
-    public List<SchedulerJobInstance> initialiseSchedulerJobInstancesForContext(String contextName, String contextInstanceId) throws SchedulerJobInstanceInitialisationException {
+    public List<SchedulerJobInstance> initialiseSchedulerJobInstancesForContext(ContextInstance contextInstance) throws SchedulerJobInstanceInitialisationException {
         try {
-            SearchResults<? extends SchedulerJobRecord> schedulerJobRecordSearchResults = this.solrSchedulerJobDao.findByContext(contextName, 0, 0);
+            SearchResults<? extends SchedulerJobRecord> schedulerJobRecordSearchResults = this.solrSchedulerJobDao.findByContext(contextInstance.getName()
+                , 0, 0);
 
             if (schedulerJobRecordSearchResults.getTotalNumberOfResults() == 0) {
                 return new ArrayList<>();
             }
 
-            schedulerJobRecordSearchResults = this.solrSchedulerJobDao.findByContext(contextName, (int) schedulerJobRecordSearchResults.getTotalNumberOfResults(), 0);
+            schedulerJobRecordSearchResults = this.solrSchedulerJobDao.findByContext(contextInstance.getName()
+                , (int) schedulerJobRecordSearchResults.getTotalNumberOfResults(), 0);
 
-            List<SchedulerJobInstance> results = new ArrayList<>();
+            List<SchedulerJobInstance> schedulerJobInstances = new ArrayList<>();
             for (SchedulerJobRecord schedulerJobRecord : schedulerJobRecordSearchResults.getResultList()) {
                 if(schedulerJobRecord.getJob() instanceof SolrFileEventDrivenJobImpl) {
-                    results.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrFileEventDrivenJobInstanceImpl.class));
+                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrFileEventDrivenJobInstanceImpl.class));
                 }
                 else if(schedulerJobRecord.getJob() instanceof SolrInternalEventDrivenJobImpl) {
-                    results.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrInternalEventDrivenJobInstanceImpl.class));
+                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrInternalEventDrivenJobInstanceImpl.class));
                 }
                 else if(schedulerJobRecord.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
-                    results.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrQuartzScheduleDrivenJobInstanceImpl.class));
+                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrQuartzScheduleDrivenJobInstanceImpl.class));
                 }
             }
 
+            Map<String, SchedulerJobInstance> schedulerJobInstanceMap = schedulerJobInstances.stream()
+                .collect(Collectors.toMap(SchedulerJobInstance::getIdentifier, Function.identity()));
+
+            List<SchedulerJobInstance> contextualisedSchedulerJobInstances = new ArrayList<>();
+
+            contextInstance.getAllSchedulerJobInstances().forEach(schedulerJobInstance -> {
+                SchedulerJobInstance instance = schedulerJobInstanceMap.get(schedulerJobInstance.getIdentifier());
+
+                if(instance != null) {
+                    SchedulerJobInstance contextualisedInstance = (SchedulerJobInstance)SerializationUtils.clone(instance);
+                    contextualisedInstance.setChildContextName(schedulerJobInstance.getChildContextName());
+
+                    contextualisedSchedulerJobInstances.add(contextualisedInstance);
+                }
+            });
+
             List<SchedulerJobInstanceRecord> schedulerJobInstanceRecords = new ArrayList<>();
 
-            results.forEach(job -> {
+            contextualisedSchedulerJobInstances.forEach(job -> {
                 SchedulerJobInstanceRecord instanceRecord = new SolrSchedulerJobInstanceRecordImpl();
                 instanceRecord.setContextName(job.getContextId());
                 instanceRecord.setJobName(job.getJobName());
                 instanceRecord.setStatus(InstanceStatus.WAITING.name());
                 instanceRecord.setTimestamp(System.currentTimeMillis());
-                instanceRecord.setContextInstanceId(contextInstanceId);
+                instanceRecord.setContextInstanceId(contextInstance.getId());
+                instanceRecord.setChildContextName(job.getChildContextName());
                 instanceRecord.setSchedulerJobInstance(job);
 
                 schedulerJobInstanceRecords.add(instanceRecord);
@@ -109,11 +148,11 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
 
             this.solrSchedulerJobInstanceDao.save(schedulerJobInstanceRecords);
 
-            return results;
+            return contextualisedSchedulerJobInstances;
         }
         catch (IOException e) {
             throw new SchedulerJobInstanceInitialisationException(String.format("An exception has occurred " +
-                "attempting to initialise scheduler job instances for context[%s]", contextName), e);
+                "attempting to initialise scheduler job instances for context[%s]", contextInstance.getName()), e);
         }
     }
 }

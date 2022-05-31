@@ -1,15 +1,17 @@
 package org.ikasan.job.orchestration.model.instance;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.SerializationUtils;
 import org.ikasan.job.orchestration.model.context.ContextImpl;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextParameterInstance, SchedulerJobInstance, JobLockInstance>
     implements StatefulEntity, ContextInstance {
+    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
     private String id;
     private long createdDateTime;
     private long updatedDateTime;

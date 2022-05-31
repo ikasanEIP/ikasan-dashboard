@@ -1,5 +1,6 @@
 package org.ikasan.scheduled.instance.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.solr.SolrTestCaseJ4;
@@ -7,6 +8,8 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
+import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.context.model.SolrContextParameterImpl;
 import org.ikasan.scheduled.event.model.SolrContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduled.event.model.SolrDryRunParameters;
@@ -31,6 +34,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
@@ -274,8 +278,33 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         this.insertQuartzScheduleEventRecords("quartz", 75, "context");
         this.insertInternalEventDrivenRecords("internal", 400, "context");
 
+        ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+
+        ContextInstanceImpl contextInstance = new ContextInstanceImpl();
+        contextInstance.setName("context");
+        contextInstance.setId("contextInstanceId");
+        contextInstance.setScheduledJobs(this.solrSchedulerJobDao.findByContext("context", 1000, 0).getResultList()
+            .stream()
+            .map(schedulerJobRecord -> {
+                try {
+                    if (schedulerJobRecord.getJob() instanceof SolrFileEventDrivenJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrFileEventDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrInternalEventDrivenJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrInternalEventDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrQuartzScheduleDrivenJobInstanceImpl.class);
+                    }
+                }
+                catch (Exception e) {
+                    return null;
+                }
+                return null;
+            })
+            .collect(Collectors.toList())
+        );
+
         List<SchedulerJobInstance> schedulerJobInstances = this.service.initialiseSchedulerJobInstancesForContext
-            ("context", "contextInstanceId");
+            (contextInstance);
 
         Assert.assertEquals(610, schedulerJobInstances.size());
 
@@ -289,6 +318,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         SolrQuartzScheduleDrivenJobInstanceImpl solrSchedulerJobInstance = new SolrQuartzScheduleDrivenJobInstanceImpl();
         solrSchedulerJobInstance.setJobName(jobName);
         solrSchedulerJobInstance.setScheduledProcessEvent(createProcessEvent());
+        solrSchedulerJobInstance.setChildContextName("childContextName");
 
 
         SolrSchedulerJobInstanceRecordImpl schedulerJobInstanceRecord = new SolrSchedulerJobInstanceRecordImpl();
@@ -298,6 +328,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         schedulerJobInstanceRecord.setSchedulerJobInstance(solrSchedulerJobInstance);
         schedulerJobInstanceRecord.setTimestamp(1000000L);
         schedulerJobInstanceRecord.setStatus("RUNNING");
+        schedulerJobInstanceRecord.setChildContextName("childContextName");
 
         return schedulerJobInstanceRecord;
     }
@@ -352,7 +383,8 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         IntStream.range(0, num).forEach(i -> {
             SolrFileEventDrivenJobImpl solrFileEventDrivenJob = new SolrFileEventDrivenJobImpl();
             solrFileEventDrivenJob.setAgentName(idPrefix+"agentName"+i);
-            solrFileEventDrivenJob.setJobName("jobName"+i);
+            solrFileEventDrivenJob.setJobName(idPrefix+"jobName"+i);
+            solrFileEventDrivenJob.setIdentifier(solrFileEventDrivenJob.getAgentName()+"_"+solrFileEventDrivenJob.getJobName());
             solrFileEventDrivenJob.setContextId(contextId);
             solrFileEventDrivenJob.setCronExpression("cronExpression");
             solrFileEventDrivenJob.setFilePath("filePath");
@@ -371,8 +403,9 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     private void insertQuartzScheduleEventRecords(String idPrefix, int num, String contextId) {
         IntStream.range(0, num).forEach(i -> {
             SolrQuartzScheduleDrivenJobImpl solrQuartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
-            solrQuartzScheduleDrivenJob.setAgentName("agentName"+i);
-            solrQuartzScheduleDrivenJob.setJobName("jobName"+i);
+            solrQuartzScheduleDrivenJob.setAgentName(idPrefix+"agentName"+i);
+            solrQuartzScheduleDrivenJob.setJobName(idPrefix+"jobName"+i);
+            solrQuartzScheduleDrivenJob.setIdentifier(solrQuartzScheduleDrivenJob.getAgentName()+"_"+solrQuartzScheduleDrivenJob.getJobName());
             solrQuartzScheduleDrivenJob.setContextId(contextId);
             solrQuartzScheduleDrivenJob.setCronExpression("cronExpression");
 
@@ -391,8 +424,9 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     private void insertInternalEventDrivenRecords(String idPrefix, int num, String contextId) {
         IntStream.range(0, num).forEach(i -> {
             SolrInternalEventDrivenJobImpl solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
-            solrInternalEventDrivenJob.setAgentName("agentName"+i);
-            solrInternalEventDrivenJob.setJobName("jobName"+i);
+            solrInternalEventDrivenJob.setAgentName(idPrefix+"agentName"+i);
+            solrInternalEventDrivenJob.setJobName(idPrefix+"jobName"+i);
+            solrInternalEventDrivenJob.setIdentifier(solrInternalEventDrivenJob.getAgentName()+"_"+solrInternalEventDrivenJob.getJobName());
             solrInternalEventDrivenJob.setContextId(contextId);
             solrInternalEventDrivenJob.setCommandLine("ls -la");
 
