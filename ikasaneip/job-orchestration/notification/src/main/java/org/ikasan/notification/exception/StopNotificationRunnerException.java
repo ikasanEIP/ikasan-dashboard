@@ -1,4 +1,4 @@
-package org.ikasan.job.orchestration.core.notification;
+package org.ikasan.notification.exception;
 
 public class StopNotificationRunnerException extends RuntimeException {
 
