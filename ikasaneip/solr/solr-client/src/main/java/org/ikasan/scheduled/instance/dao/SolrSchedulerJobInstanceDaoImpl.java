@@ -28,18 +28,24 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
         SolrInputDocument document = new SolrInputDocument();
         if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof FileEventDrivenJobInstance) {
-            document.addField(ID, schedulerJobInstanceRecord.getJobName() + "_"
-                + schedulerJobInstanceRecord.getContextInstanceId() + "_" + JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE);
+            document.addField(ID, schedulerJobInstanceRecord.getJobName()
+                + "_" + schedulerJobInstanceRecord.getContextInstanceId()
+                + "_" + schedulerJobInstanceRecord.getChildContextName()
+                + "_" + JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE);
             document.addField(TYPE, JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE);
         }
         else if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
-            document.addField(ID, schedulerJobInstanceRecord.getJobName() + "_"
-                + schedulerJobInstanceRecord.getContextInstanceId() + "_" + JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+            document.addField(ID, schedulerJobInstanceRecord.getJobName()
+                + "_" + schedulerJobInstanceRecord.getContextInstanceId()
+                + "_" + schedulerJobInstanceRecord.getChildContextName()
+                + "_" + JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
             document.addField(TYPE, JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
         }
         else if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof QuartzScheduleDrivenJobInstance) {
-            document.addField(ID, schedulerJobInstanceRecord.getJobName() + "_"
-                + schedulerJobInstanceRecord.getContextInstanceId() + "_" + JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
+            document.addField(ID, schedulerJobInstanceRecord.getJobName()
+                + "_" + schedulerJobInstanceRecord.getContextInstanceId()
+                + "_" + schedulerJobInstanceRecord.getChildContextName()
+                + "_" + JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
             document.addField(TYPE, JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
         }
 
