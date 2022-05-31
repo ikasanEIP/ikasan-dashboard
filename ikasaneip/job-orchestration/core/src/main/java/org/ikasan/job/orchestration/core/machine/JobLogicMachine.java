@@ -97,6 +97,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
             schedulerJobInstance.setScheduledProcessEvent(scheduledProcessEvent);
             schedulerJobInstance.setContextInstanceId(parentContextInstance.getId());
+            schedulerJobInstance.setChildContextName(contextInstance.getName());
 
             this.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, parentContextInstance, currentJobState,
                 schedulerJobInstance.getStatus()));
