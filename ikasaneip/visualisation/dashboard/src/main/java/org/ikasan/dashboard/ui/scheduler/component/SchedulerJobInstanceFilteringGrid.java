@@ -25,10 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstanceRecord> {
@@ -77,9 +74,9 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
         textField.setSuffixComponent(filterIcon);
         textField.setWidthFull();
 
-        textField.addValueChangeListener(ev->{
+        textField.addValueChangeListener(ev -> {
 
-            setFilter.accept(ev.getValue());
+            setFilter.accept("*"+ev.getValue()+"*");
 
             filteredDataProvider.refreshAll();
         });
@@ -115,6 +112,42 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
             else {
                 setFilter.accept(ev.getValue().getValue());
             }
+
+            filteredDataProvider.refreshAll();
+        });
+
+        Icon filterIcon = VaadinIcon.FILTER.create();
+        filterIcon.setSize("12pt");
+
+        HorizontalLayout layout = new HorizontalLayout(select, filterIcon);
+        layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, filterIcon);
+
+        hr.getCell(getColumnByKey(columnKey)).setComponent(layout);
+    }
+
+    /**
+     * Add filtering to a column.
+     *
+     * @param hr
+     * @param setFilter
+     * @param columnKey
+     */
+    public void addSelectGridFiltering(HeaderRow hr, Consumer<String> setFilter, List<String> options, String columnKey) {
+        Select<String> select = new Select<>();
+        select.setItems(options);
+        select.setWidthFull();
+        select.setEmptySelectionAllowed(true);
+        select.setItemLabelGenerator(entry -> {
+            if(entry == null) {
+                return "";
+            }
+
+            return entry;
+        });
+
+        select.addValueChangeListener(ev-> {
+
+            setFilter.accept(ev.getValue());
 
             filteredDataProvider.refreshAll();
         });
@@ -198,6 +231,7 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
             results = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, limit, offset, sortColumn, sortDirection);
         }
         catch (Exception e) {
+            logger.error("An error has occurred querying solr!", e);
             final UI current = UI.getCurrent();
             final I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator().getI18NProvider();
             NotificationHelper.showErrorNotification(i18NProvider.getTranslation("error.solr-unavailable"
