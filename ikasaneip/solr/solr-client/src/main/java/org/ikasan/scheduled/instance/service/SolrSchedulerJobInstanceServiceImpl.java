@@ -65,8 +65,10 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
         SchedulerJobInstanceRecord record = searchResults.getResultList().get(0);
 
         record.setStatus(schedulerJobInstance.getStatus().name());
-        record.getSchedulerJobInstance().setScheduledProcessEvent(schedulerJobInstance.getScheduledProcessEvent());
-        record.getSchedulerJobInstance().setStatus(schedulerJobInstance.getStatus());
+        SchedulerJobInstance persistedInstance = record.getSchedulerJobInstance();
+        persistedInstance.setScheduledProcessEvent(schedulerJobInstance.getScheduledProcessEvent());
+        persistedInstance.setStatus(schedulerJobInstance.getStatus());
+        record.setSchedulerJobInstance(schedulerJobInstance);
         record.setModifiedTimestamp(System.currentTimeMillis());
         // todo sort out modified by
         record.setModifiedBy("ContextMachine");
