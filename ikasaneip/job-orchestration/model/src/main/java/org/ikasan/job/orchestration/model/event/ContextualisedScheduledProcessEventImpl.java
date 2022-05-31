@@ -3,9 +3,10 @@ package org.ikasan.job.orchestration.model.event;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ContextualisedScheduledProcessEventImpl implements ContextualisedScheduledProcessEvent<String, DryRunParametersImpl> {
+public class ContextualisedScheduledProcessEventImpl implements ContextualisedScheduledProcessEvent<String, DryRunParametersImpl>, Serializable {
     private Long id;
     private String agentName;
     private String agentHostname;
