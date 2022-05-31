@@ -1,0 +1,127 @@
+package org.ikasan.notification.monitor;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
+import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
+import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
+import org.ikasan.job.orchestration.model.notification.Monitor;
+import org.ikasan.job.orchestration.model.notification.Notifier;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.notification.NotificationConfiguration;
+import org.ikasan.notification.monitor.mock.ScheduledContextInstanceServiceTestImpl;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import static org.awaitility.Awaitility.with;
+import static org.junit.Assert.assertEquals;
+
+public class ErrorMonitorTest {
+
+    private  ObjectMapper objectMapper;
+
+    private String result="test";
+
+    @Before
+    public void setup() throws IOException {
+        objectMapper = ObjectMapperFactory.newInstance();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        ContextInstance contextInstance1 = new ContextInstanceImpl();
+        contextInstance1.setName("context-instance-1");
+
+        ContextTemplate contextTemplate1 = new ContextTemplateImpl();
+        contextTemplate1.setName("context-template-1");
+
+        SchedulerJobInstance schedulerJobInstance1 = new SchedulerJobInstanceImpl();
+        schedulerJobInstance1.setAgentName("agent-1");
+        schedulerJobInstance1.setJobName("job-1");
+        schedulerJobInstance1.setStatus(InstanceStatus.RUNNING);
+        schedulerJobInstance1.setIdentifier("agent-1-job-1");
+
+        contextInstance1.setScheduledJobs(Arrays.asList(schedulerJobInstance1));
+        contextInstance1.setJobDependencies(new ArrayList<>());
+
+        ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,"./target",null,null, null);
+        contextMachine1.init();
+
+        ContextMachineCache.instance().put(contextMachine1);
+    }
+
+    @Test
+    public void test_with_error_status() throws IOException {
+
+        ContextualisedScheduledProcessEvent scheduledProcessEvent1 = new ContextualisedScheduledProcessEventImpl();
+        scheduledProcessEvent1.setAgentName("agent-1");
+        scheduledProcessEvent1.setJobName("job-1");
+        scheduledProcessEvent1.setJobStarting(false);
+        scheduledProcessEvent1.setSuccessful(false);
+
+        // start test
+        NotificationConfiguration notificationConfiguration = new NotificationConfiguration();
+
+        Monitor errorMonitor = notificationConfiguration.errorMonitor(Arrays.asList(new TestNotifier()));
+
+        ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(scheduledProcessEvent1));
+
+        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
+            .atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+                assertEquals("from testNotifier!", result);
+            });
+    }
+
+    @Test
+    public void test_with_completed_status() throws IOException {
+
+        ContextualisedScheduledProcessEvent scheduledProcessEvent1 = new ContextualisedScheduledProcessEventImpl();
+        scheduledProcessEvent1.setAgentName("agent-1");
+        scheduledProcessEvent1.setJobName("job-1");
+        scheduledProcessEvent1.setJobStarting(false);
+        scheduledProcessEvent1.setSuccessful(true);
+
+        // start test
+        NotificationConfiguration notificationConfiguration = new NotificationConfiguration();
+
+        Monitor errorMonitor = notificationConfiguration.errorMonitor(Arrays.asList(new TestNotifier()));
+
+        ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(scheduledProcessEvent1));
+
+        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
+            .during(28, TimeUnit.SECONDS)
+            .atMost(30, TimeUnit.SECONDS)
+            .until(checkResult());
+    }
+
+    private Callable<Boolean> checkResult() {
+        return new Callable<Boolean>() {
+            public Boolean call() {
+                return result.equals("test");
+            }
+        };
+    }
+
+    protected class TestNotifier implements Notifier<GenericNotificationDetails>
+    {
+        @Override
+        public void invoke(GenericNotificationDetails notificationDetails)
+        {
+            result = "from testNotifier!";
+
+        }
+    }
+}
