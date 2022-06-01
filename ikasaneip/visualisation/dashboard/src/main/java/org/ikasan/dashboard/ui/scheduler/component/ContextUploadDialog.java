@@ -141,6 +141,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
                 ContextInstance contextInstance = contextService.getContextInstance(new String(contextFile));
                 contextInstance.setId(UUID.randomUUID().toString());
 
+                // initialise all the scheduler job instances.
                 this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextInstance);
 
                 SearchResults<InternalEventDrivenJobRecord> internalEventDrivenJobRecordSearchResults
