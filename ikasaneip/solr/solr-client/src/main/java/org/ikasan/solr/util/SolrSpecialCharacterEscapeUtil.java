@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 /**
  * Created by stewmi on 30/03/2018.
  */
-public class SolrSpecialCharacterEscapeUtil {
+public class    SolrSpecialCharacterEscapeUtil {
     private static String[] LOGICAL_OPERATORS = {"&&", "||", "!", "(", ")", "AND", "OR"};
     private static String[] TOKENS_TO_ESCAPE = { "+", "-", ":"};
 
