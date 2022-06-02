@@ -45,6 +45,7 @@ import org.ikasan.spec.cache.FlowStateCacheAdapter;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.persistence.BatchInsert;
+import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -81,6 +82,9 @@ public class IkasanRestAutoConfiguration
 
     @Resource
     private BatchInsert scheduledProcessEventBatchInsert;
+
+    @Resource
+    private ContextParametersInstanceService contextParametersInstanceService;
 
     @Resource
     @Qualifier("moduleMetadataService")
@@ -171,5 +175,10 @@ public class IkasanRestAutoConfiguration
     @Bean
     public JwtTokenUtil jwtTokenUtil() {
         return new JwtTokenUtil();
+    }
+
+    @Bean
+    public JobContextController jobContextController() {
+        return new JobContextController(contextParametersInstanceService);
     }
 }

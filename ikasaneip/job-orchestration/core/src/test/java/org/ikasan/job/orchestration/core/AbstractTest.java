@@ -5,12 +5,16 @@ import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.io.IOUtils;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
+import org.ikasan.job.orchestration.context.parameters.ContextParametersInstanceServiceImpl;
+import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
 import org.ikasan.job.orchestration.model.context.JobLockHolderImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
+import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
@@ -25,6 +29,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class AbstractTest
 {
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private final SchedulerOverrider schedulerOverrider = new SchedulerOverrider(false, null, false, null);
+    private final ContextParametersFactory contextParametersFactory = new ContextParametersFactory(schedulerOverrider);
+    protected final ContextParametersInstanceService contextParametersInstanceService = new ContextParametersInstanceServiceImpl(contextParametersFactory);
 
     protected String loadDataFile(String fileName) throws IOException {
         String contentToSend = IOUtils.toString(loadDataFileStream(fileName), "UTF-8");
