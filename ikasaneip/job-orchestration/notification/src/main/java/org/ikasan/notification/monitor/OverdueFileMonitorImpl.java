@@ -2,7 +2,9 @@ package org.ikasan.notification.monitor;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.Monitor;
+import org.ikasan.job.orchestration.model.notification.MonitorType;
 import org.ikasan.notification.exception.StopNotificationRunnerException;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -14,7 +16,6 @@ import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.quartz.TriggerUtils;
 import org.quartz.impl.triggers.CronTriggerImpl;
 
-import javax.annotation.Resource;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -25,7 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class OverdueFileMonitorImpl<T> extends AbstractMonitorBase<T> implements Monitor<T> {
+public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificationDetails> implements Monitor<GenericNotificationDetails> {
 
     private SchedulerJobService schedulerJobService;
 
@@ -52,7 +53,7 @@ public class OverdueFileMonitorImpl<T> extends AbstractMonitorBase<T> implements
     }
 
     @Override
-    public void invoke(final T status)
+    public void invoke(final GenericNotificationDetails status)
     {
         super.invoke(status);
     }
@@ -88,9 +89,10 @@ public class OverdueFileMonitorImpl<T> extends AbstractMonitorBase<T> implements
 
                             FileEventDrivenJob fileEventDrivenJob = (FileEventDrivenJob) job;
                             if (isJobOverdued(cal.getTime(), fileEventDrivenJob.getCronExpression())) {
-                                //do the logic!!
-                                //create GenericNotificationDetails
-                                invoke(null);
+                                GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(fileEventDrivenJob.getContextId(),
+                                    fileEventDrivenJob.getJobName(), MonitorType.OVERDUE, InstanceStatus.ERROR);
+
+                                invoke(genericNotificationDetails);
                             }
                         }
                     }
