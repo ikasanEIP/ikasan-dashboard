@@ -16,6 +16,9 @@ import org.ikasan.scheduled.job.service.SolrSchedulerJobServiceImpl;
 import org.ikasan.scheduled.joblock.dao.SolrJobLockCacheAuditDaoImpl;
 import org.ikasan.scheduled.joblock.dao.SolrJobLockCacheDaoImpl;
 import org.ikasan.scheduled.joblock.service.SolrJobLockCacheServiceImpl;
+import org.ikasan.scheduled.notification.dao.SolrEmailNotificationDetailsDao;
+import org.ikasan.scheduled.notification.service.EmailNotificationDetailsService;
+import org.ikasan.scheduled.notification.service.SolrEmailNotificationDetailsServiceImpl;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -88,6 +91,16 @@ public class SolrClientAutoConfiguration {
         scheduledContextInstanceAuditDao.setSolrPassword(solrPassword);
 
         return new SolrScheduledContextInstanceServiceImpl(scheduledContextInstanceDao, scheduledContextInstanceAuditDao, saveContextInstanceAuditRecords);
+    }
+
+    @Bean
+    public EmailNotificationDetailsService emailNotificationDetailsService() {
+        SolrEmailNotificationDetailsDao dao = new SolrEmailNotificationDetailsDao();
+        dao.initStandalone(solrUrl, solrRetentionDays);
+        dao.setSolrUsername(solrUsername);
+        dao.setSolrPassword(solrPassword);
+
+        return new SolrEmailNotificationDetailsServiceImpl(dao);
     }
 
     @Bean

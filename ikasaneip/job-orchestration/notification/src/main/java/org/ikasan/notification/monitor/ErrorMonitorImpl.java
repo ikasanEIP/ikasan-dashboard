@@ -4,17 +4,16 @@ import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.Monitor;
+import org.ikasan.job.orchestration.model.notification.MonitorType;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
-public class ErrorMonitorImpl<T> extends AbstractMonitorBase<T> implements Monitor<T> {
+public class ErrorMonitorImpl extends AbstractMonitorBase<GenericNotificationDetails> implements Monitor<GenericNotificationDetails> {
 
     private List<Future<?>> errorNotificationsExecutors = new ArrayList<>();
 
@@ -34,7 +33,7 @@ public class ErrorMonitorImpl<T> extends AbstractMonitorBase<T> implements Monit
     }
 
     @Override
-    public void invoke(final T status)
+    public void invoke(final GenericNotificationDetails status)
     {
         super.invoke(status);
     }
@@ -69,10 +68,11 @@ public class ErrorMonitorImpl<T> extends AbstractMonitorBase<T> implements Monit
             //do the logic!!
             //create GenericNotificationDetails
             if (event.getNewStatus().name().equalsIgnoreCase(InstanceStatus.ERROR.name())) {
-                invoke(null);
+                GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(event.getSchedulerJobInstance().getContextInstanceId(),
+                    event.getSchedulerJobInstance().getJobName(), MonitorType.ERROR, event.getNewStatus());
+
+                invoke(genericNotificationDetails);
             }
-
-
         }
     }
 
