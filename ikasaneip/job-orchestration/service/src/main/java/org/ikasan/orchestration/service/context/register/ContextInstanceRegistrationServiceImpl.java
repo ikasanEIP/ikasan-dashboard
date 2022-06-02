@@ -97,6 +97,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceHelpe
 
     public void deRegister(String contextName) {
         try {
+            LOG.info(String.format("De registering context [%s]", contextName));
             ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
             if (contextMachine == null) {
                 LOG.error("Could not find context machine for " + contextName);
@@ -119,6 +120,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceHelpe
 
     public void register(String contextName) {
         try {
+            LOG.info(String.format("Registering context [%s]", contextName));
             ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(contextName);
             if (scheduledContextRecord == null) {
                 LOG.error("Could not find scheduledContextRecord for " + contextName);
@@ -132,13 +134,12 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceHelpe
             Map<String, InternalEventDrivenJob> internalEventDrivenJobMap = getInternalJobs(contextName);
             HashMap<String, ModuleMetaData> agents = getAgents(internalEventDrivenJobMap);
 
-            // if we are creating new context we add the all the locks
-            JobLockCache jobLockCache = JobLockCacheImpl.instance();
-            jobLockCache.setJobLockCacheService(jobLockCacheService);
-            jobLockCache.addLocks(context.getAllNestedJobLocks());
+            JobLockCache jobLockCache = getJobLockCache(context);
 
             ContextMachine contextMachine = new ContextMachine(context, contextInstance, this.scheduledContextInstanceService, internalEventDrivenJobMap,
                 this.queueDirectory, agents, jobLockCache, this.contextParametersInstanceService);
+            // create the new queues and save the instance
+            contextMachine.init();
 
             raiseEvent(contextMachine);
 
@@ -148,7 +149,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceHelpe
 
             ContextMachineCache.instance().put(contextMachine);
         } catch (Exception e) {
-            LOG.error(String.format("An error has occurred executing registering job[%s]", e.getMessage()), e);
+            LOG.error(String.format("An error has occurred executing registering job [%s]", e.getMessage()), e);
             throw new RuntimeException(e);
         }
 
