@@ -1,0 +1,136 @@
+package org.ikasan.rest.dashboard;
+
+import static org.junit.Assert.assertEquals;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
+import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
+import org.ikasan.rest.dashboard.util.TestContextParametersInstanceService;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringBootTest(classes = JobContextController.class)
+@WebAppConfiguration
+@EnableWebMvc
+@ContextConfiguration(
+    {
+        "/substitute-components.xml"
+    }
+)
+public class JobContextControllerTest extends  AbstractRestMvcTest {
+
+    protected MockMvc mvc;
+
+    @Autowired
+    WebApplicationContext webApplicationContext;
+
+    @Resource
+    TestContextParametersInstanceService contextParametersInstanceService;
+
+    private ObjectMapper objectMapper;
+
+    @Before
+    public void setUp() throws Exception {
+        mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        ContextParameterInstance contextParameterInstance1 = new ContextParameterInstanceImpl();
+        contextParameterInstance1.setName("BusinessDate");
+        contextParameterInstance1.setType("java.lang.String");
+        contextParameterInstance1.setValue("20220530");
+
+        ContextParameterInstance contextParameterInstance2 = new ContextParameterInstanceImpl();
+        contextParameterInstance2.setName("localFilePath");
+        contextParameterInstance2.setType("path");
+        contextParameterInstance2.setValue("/opt/data/files");
+
+        ContextInstance contextInstance1 = new ContextInstanceImpl();
+        contextInstance1.setContextParameters(List.of(contextParameterInstance1, contextParameterInstance2));
+        contextInstance1.setName("context-instance-1");
+        contextInstance1.setId("UUID1");
+        contextInstance1.setCreatedDateTime(11);
+        contextInstance1.setUpdatedDateTime(111);
+        contextParametersInstanceService.addParamsToContext("context-instance-1", List.of(contextParameterInstance1, contextParameterInstance2));
+
+        ContextInstance contextInstance2 = new ContextInstanceImpl();
+        contextInstance2.setContextParameters(List.of(contextParameterInstance1));
+        contextInstance2.setName("context-instance-2");
+        contextInstance2.setId("UUID2");
+        contextInstance2.setCreatedDateTime(22);
+        contextInstance2.setUpdatedDateTime(222);
+        contextParametersInstanceService.addParamsToContext("context-instance-2", List.of(contextParameterInstance2));
+
+        ContextTemplate contextTemplate1 = new ContextTemplateImpl();
+        contextTemplate1.setName("context-template-1");
+
+        ContextTemplate contextTemplate2 = new ContextTemplateImpl();
+        contextTemplate2.setName("context-template-2");
+
+        ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, null, null,null,null,null, null);
+        ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, null, null,null,null,null, null);
+
+        ContextMachineCache.instance().put(contextMachine1);
+        ContextMachineCache.instance().put(contextMachine2);
+    }
+
+    @Test
+    public void test_get_all() throws Exception {
+
+        String uri = "/rest/jobContext/getAll";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+
+        String expected = objectMapper.writeValueAsString(objectMapper.readValue(loadDataFile("/data/job-context-instances-all.json"), Map.class));
+        String actual = mvcResult.getResponse().getContentAsString();
+
+        JSONAssert.assertEquals(expected, actual, true);
+    }
+
+    @Test
+    public void test_get_by_context_name() throws Exception {
+
+        String uri = "/rest/jobContext/getByContextName?contextName=context-instance-1";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+
+        String expected = objectMapper.writeValueAsString(objectMapper.readValue(loadDataFile("/data/job-context-instance-1.json"), Map.class));
+        String actual = mvcResult.getResponse().getContentAsString();
+
+        JSONAssert.assertEquals(expected, actual, true);
+    }
+}

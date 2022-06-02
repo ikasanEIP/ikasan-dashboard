@@ -4,6 +4,7 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -80,4 +81,16 @@ public class ContextMachineCache
     public Set contextInstanceIdentifiers() {
         return this.contextInstanceByContextInstanceIdCache.keySet();
     }
+
+    public void remove(ContextMachine contextMachine)
+    {
+        this.contextInstanceByContextNameCache.remove(contextMachine.getContext().getName(), contextMachine);
+        this.contextInstanceByContextInstanceIdCache.remove(contextMachine.getContext().getId(), contextMachine);
+        try {
+            contextMachine.nullify();
+        } catch (IOException e) {
+            logger.error("Error nullifying context machine: " + e.getMessage());
+        }
+    }
+
 }

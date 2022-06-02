@@ -18,7 +18,6 @@ import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -29,6 +28,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
@@ -48,7 +48,7 @@ public class ContextDebugWidget extends Div {
     private ScheduledContextService scheduledContextService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private JobLockCacheService jobLockCacheService;
-    private SchedulerOverrider schedulerOverrider;
+    private ContextParametersInstanceService contextParametersInstanceService;
 
     protected AceEditor aceEditor;
     protected SchedulerVisualisation schedulerVisualisation;
@@ -84,7 +84,7 @@ public class ContextDebugWidget extends Div {
                               ModuleMetaDataService moduleMetaDataService, JobLockCacheService jobLockCacheService,
                               ScheduledContextInstanceService contextInstanceService, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
-                              SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, SchedulerOverrider schedulerOverrider,
+                              SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, ContextParametersInstanceService contextParametersInstanceService,
                               SchedulerJobInstanceService schedulerJobInstanceService) {
         Div div = new Div();
         div.addClassNames("card-counter");
@@ -93,7 +93,7 @@ public class ContextDebugWidget extends Div {
         this.scheduledContextService = scheduledContextService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
         this.jobLockCacheService = jobLockCacheService;
-        this.schedulerOverrider = schedulerOverrider;
+        this.contextParametersInstanceService = contextParametersInstanceService;
         this.internalEventDrivenJobService = internalEventDrivenJobService;
         this.queueDir = queueDir;
 
@@ -176,7 +176,7 @@ public class ContextDebugWidget extends Div {
         addContextButton.addClickListener(buttonClickEvent -> {
             ContextUploadDialog contextUploadDialog = new ContextUploadDialog(scheduledContextInstanceService,
                 schedulerService, this.scheduledContextService, this.internalEventDrivenJobService, this.queueDir, moduleMetaDataService
-                , this.jobLockCacheService, this.schedulerOverrider, schedulerJobInstanceService);
+                , this.jobLockCacheService, this.contextParametersInstanceService, schedulerJobInstanceService);
             contextUploadDialog.open();
 
             contextUploadDialog.addOpenedChangeListener(event -> {
