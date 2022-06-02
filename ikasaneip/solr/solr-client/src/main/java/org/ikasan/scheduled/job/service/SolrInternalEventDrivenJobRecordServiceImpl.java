@@ -28,7 +28,7 @@ public class SolrInternalEventDrivenJobRecordServiceImpl implements InternalEven
 
     @Override
     public InternalEventDrivenJobRecord findById(String id) {
-        return null;
+        return internalEventDrivenJobRecordDao.findById(id);
     }
 
     @Override
