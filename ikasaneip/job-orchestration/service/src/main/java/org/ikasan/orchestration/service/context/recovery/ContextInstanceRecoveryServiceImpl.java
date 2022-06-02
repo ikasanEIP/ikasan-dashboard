@@ -146,16 +146,17 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceHelperSer
                 }
                 try {
                     ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
+                    LOG.info("Recovering instance : " + contextInstance.getName() + " id: " + contextInstance.getId());
 
                     initialiseSchedulerJobInstancesForContext(contextInstance);
 
                     Map<String, InternalEventDrivenJob> internalEventDrivenJobMap = getInternalJobs(scheduledContextInstanceRecord.getContextName());
                     HashMap<String, ModuleMetaData> agents = getAgents(internalEventDrivenJobMap);
-                    JobLockCache jobLockCache = getJobLockCache(context);
 
                     ContextMachine contextMachine = new ContextMachine(context, contextInstance,
                         this.scheduledContextInstanceService, internalEventDrivenJobMap, this.queueDirectory, agents,
-                        jobLockCache, this.contextParametersInstanceService);
+                        getJobLockCache(context), this.contextParametersInstanceService);
+                    // note we do not init here as we are recovering instance the queues should already exist
 
                     raiseEvent(contextMachine);
 
@@ -177,21 +178,5 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceHelperSer
                 ));
             }
         }
-    }
-
-    private JobLockCache getJobLockCache(ContextTemplate context) {
-        JobLockCache jobLockCache;
-        JobLockCacheRecord jobLockCacheRecord = jobLockCacheService.get();
-        if (jobLockCacheRecord == null) {
-            // should never happen we are recovering so should exist but just in case
-            jobLockCache = JobLockCacheImpl.instance();
-            jobLockCache.setJobLockCacheService(jobLockCacheService);
-            jobLockCache.addLocks(context.getAllNestedJobLocks());
-        } else {
-            // do not set the locks as should all be in there already
-            jobLockCache = jobLockCacheRecord.getJobLockCache();
-            jobLockCache.setJobLockCacheService(jobLockCacheService);
-        }
-        return jobLockCache;
     }
 }
