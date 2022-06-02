@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
@@ -14,6 +15,8 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ContextParametersUpdateService;
 import org.ikasan.spec.scheduled.SchedulerService;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
@@ -26,6 +29,7 @@ import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstance
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
@@ -166,4 +170,19 @@ public abstract class ContextInstanceHelperService {
         contextMachine.addSchedulerJobStateChangeEventListener(event -> this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
     }
 
+    protected JobLockCache getJobLockCache(ContextTemplate context) {
+        JobLockCache jobLockCache;
+        JobLockCacheRecord jobLockCacheRecord = jobLockCacheService.get();
+        if (jobLockCacheRecord == null) {
+            // should never happen we are recovering so should exist but just in case
+            jobLockCache = JobLockCacheImpl.instance();
+            jobLockCache.setJobLockCacheService(jobLockCacheService);
+            jobLockCache.addLocks(context.getAllNestedJobLocks());
+        } else {
+            // do not set the locks as should all be in there already
+            jobLockCache = jobLockCacheRecord.getJobLockCache();
+            jobLockCache.setJobLockCacheService(jobLockCacheService);
+        }
+        return jobLockCache;
+    }
 }
