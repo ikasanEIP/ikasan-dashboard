@@ -6,9 +6,9 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.service.ContextService;
-import org.ikasan.orchestration.service.JobLockCacheServiceTestImpl;
 import org.ikasan.orchestration.service.status.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -37,7 +37,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , null, null, null, new JobLockCacheServiceTestImpl(), null);
+            , null, null, null, JobLockCacheImpl.instance(), null);
         ContextMachineCache.instance().put(contextMachine);
 
         try {
@@ -54,7 +54,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , null, null, null, new JobLockCacheServiceTestImpl(), null);
+            , null, null, null, JobLockCacheImpl.instance(), null);
         ContextMachineCache.instance().put(contextMachine);
 
         try {
@@ -71,7 +71,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , null, null, null, new JobLockCacheServiceTestImpl(), null);
+            , null, null, null, JobLockCacheImpl.instance(), null);
         ContextMachineCache.instance().put(contextMachine);
 
         String contextStatus = contextStatusService.getContextStatus("CONTEXT-1436221681", "CONTEXT-1436221681");
@@ -90,7 +90,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , null, null, null, new JobLockCacheServiceTestImpl(), null);
+            , null, null, null, JobLockCacheImpl.instance(), null);
         ContextMachineCache.instance().put(contextMachine);
 
         try {
@@ -107,7 +107,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , null, null, null, new JobLockCacheServiceTestImpl(), null);
+            , null, null, null, JobLockCacheImpl.instance(), null);
         ContextMachineCache.instance().put(contextMachine);
 
         contextStatusService.getContextStatusForJob("CONTEXT-1436221681", "UNKNOWN_INSTANCE", "scheduler-agent-1799613995");
@@ -119,7 +119,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , null, null, null, new JobLockCacheServiceTestImpl(), null);
+            , null, null, null, JobLockCacheImpl.instance(), null);
         ContextMachineCache.instance().put(contextMachine);
 
         try {
@@ -136,7 +136,7 @@ public class ContextStatusServiceImplTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , null, null, null, new JobLockCacheServiceTestImpl(), null);
+            , null, null, null, JobLockCacheImpl.instance(), null);
         ContextMachineCache.instance().put(contextMachine);
 
         String status = contextStatusService.getContextStatusForJob("CONTEXT-1436221681", "CONTEXT-1616645609", "scheduler-agent-1799613995");
