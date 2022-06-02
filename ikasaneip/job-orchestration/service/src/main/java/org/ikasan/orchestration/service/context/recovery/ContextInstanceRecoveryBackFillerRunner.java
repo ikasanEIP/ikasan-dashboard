@@ -71,15 +71,14 @@ public class ContextInstanceRecoveryBackFillerRunner extends ContextInstanceHelp
             ContextMachine contextMachine = new ContextMachine(this.scheduledContextRecord.getContext(), contextInstance,
                 this.scheduledContextInstanceService, internalJobs, this.queueDirectory, agents,
                 this.jobLockCache, this.contextParametersInstanceService);
+            // create the new queues and save the instance
+            contextMachine.init();
 
             raiseEvent(contextMachine);
 
             populateParamsWithAgent(contextInstance, agents);
 
             addSchedulerJobStateChangeEventListener(contextMachine);
-
-            // save it so we do not create it again if restarted
-            saveContextInstance(contextInstance, contextInstance.getStatus());
 
             ContextMachineCache.instance().put(contextMachine);
 
