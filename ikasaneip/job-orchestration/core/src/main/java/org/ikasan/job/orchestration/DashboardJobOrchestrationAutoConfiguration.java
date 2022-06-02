@@ -2,6 +2,8 @@ package org.ikasan.job.orchestration;
 
 import java.util.Map;
 
+import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
+import org.ikasan.job.orchestration.context.parameters.ContextParametersInstanceServiceImpl;
 import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.module.service.ModuleActivatorDefaultImpl;
 import org.ikasan.module.startup.dao.StartupControlDao;
@@ -14,16 +16,22 @@ import org.ikasan.scheduler.SchedulerFactory;
 import org.ikasan.spec.configuration.ConfigurationService;
 import org.ikasan.spec.dashboard.DashboardRestService;
 import org.ikasan.spec.flow.Flow;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.Module;
 import org.ikasan.spec.module.ModuleActivator;
+import org.ikasan.spec.module.client.ContextParametersUpdateService;
 import org.ikasan.spec.scheduled.SchedulerService;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceRecoveryService;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 
 import javax.annotation.PostConstruct;
@@ -37,29 +45,39 @@ import javax.annotation.Resource;
 @Import({InboundModuleFactory.class})
 public class DashboardJobOrchestrationAutoConfiguration {
 
-    @Value("${scheduled.job.context.queue.directory}")
-    private String queueDirectory;
-
     @Resource
     ConfigurationService configurationService;
 
     @Resource
     Module<Flow> inboundFlowModule;
 
-    @Resource
-    InternalEventDrivenJobService internalEventDrivenJobService;
-
     @Value("${use.skip.jobs.flag:false}")
     private boolean useSkipJobs;
 
     @Value("#{${jobs.to.skip:{T(java.util.Collections).emptyMap()}}}")
-    private Map<String, Boolean> jobsToSkip;
+    private Map<String, Map<String, Boolean>> jobsToSkip;
 
     @Value("${use.replace.context.params.flag:false}")
     private boolean replaceContextParams;
 
     @Value("#{${job.context.params.to.replace:{T(java.util.Collections).emptyMap()}}}")
-    private Map<String, String> paramsToReplace;
+    private Map<String, Map<String, String>> paramsToReplace;
+
+    // TODO remove this feature flag when we are satisfied all recovery working
+    @Value("${use.post.construct.ikasan.2097:false}")
+    private boolean usePostConstructs;
+
+    @Bean
+    @DependsOn("contextParametersFactory")
+    public ContextParametersInstanceService contextParametersInstanceService() {
+        return new ContextParametersInstanceServiceImpl(contextParametersFactory());
+    }
+
+    @Bean
+    @DependsOn("schedulerOverrider")
+    public ContextParametersFactory contextParametersFactory() {
+        return new ContextParametersFactory(schedulerOverrider());
+    }
 
     @Bean
     public SchedulerOverrider schedulerOverrider() {
@@ -67,20 +85,16 @@ public class DashboardJobOrchestrationAutoConfiguration {
     }
 
     @Bean
-    public ContextInstanceRecoveryManager contextInstanceRecoveryManager(ScheduledContextInstanceService scheduledContextInstanceService
-        , ScheduledContextService scheduledContextService, InternalEventDrivenJobService internalEventDrivenJobRecordService
-        , JobLockCacheService jobLockCacheService, SchedulerOverrider schedulerOverrider) {
-        return new ContextInstanceRecoveryManager(scheduledContextInstanceService, scheduledContextService, internalEventDrivenJobRecordService,
-            queueDirectory, jobLockCacheService, schedulerOverrider);
+    public ContextInstanceRecoveryManager contextInstanceRecoveryManager(ContextInstanceRecoveryService contextInstanceRecoveryService) {
+        return new ContextInstanceRecoveryManager(contextInstanceRecoveryService, usePostConstructs);
     }
 
     @Bean
-    public ContextInstanceSchedulerService contextInstanceSchedulerService(ScheduledContextService scheduledContextService
-        , ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService
-        , JobLockCacheService jobLockCacheService, SchedulerOverrider schedulerOverrider) {
+    @DependsOn("contextInstanceRecoveryManager")
+    public ContextInstanceSchedulerService contextInstanceSchedulerService(ContextInstanceRegistrationService contextInstanceRegistrationService,
+                                                                           ScheduledContextService scheduledContextService) {
         return new ContextInstanceSchedulerService(SchedulerFactory.getInstance().getScheduler()
-            , CachingScheduledJobFactory.getInstance(), scheduledContextService, scheduledContextInstanceService, schedulerService
-            , this.internalEventDrivenJobService, this.queueDirectory, jobLockCacheService, schedulerOverrider);
+            , CachingScheduledJobFactory.getInstance(), scheduledContextService, contextInstanceRegistrationService, usePostConstructs);
     }
 
     @Bean

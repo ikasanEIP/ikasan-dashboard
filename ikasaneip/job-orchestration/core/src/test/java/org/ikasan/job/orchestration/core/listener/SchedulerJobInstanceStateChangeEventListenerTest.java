@@ -2,8 +2,7 @@ package org.ikasan.job.orchestration.core.listener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.ikasan.job.orchestration.JobLockCacheServiceTestImpl;
-import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.AbstractTest;
 import org.ikasan.job.orchestration.core.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
@@ -52,7 +51,7 @@ public class SchedulerJobInstanceStateChangeEventListenerTest extends AbstractTe
         internalEventDrivenJobs.put("agentName8-jobName8", job8);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), new JobLockCacheServiceTestImpl(), new SchedulerOverrider(false, null, false, null));
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
         contextMachine.addSchedulerJobStateChangeEventListener(event -> {
             Assert.assertNotNull(event);

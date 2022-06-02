@@ -1,0 +1,60 @@
+{
+  "context-instance-2": {
+    "name": "context-instance-2",
+    "description": null,
+    "timezone": null,
+    "jobDependencies": null,
+    "contexts": null,
+    "contextDependencies": null,
+    "contextParameters": [
+      {
+        "name": "localFilePath",
+        "type": "path",
+        "value": "/opt/data/files"
+      }
+    ],
+    "scheduledJobs": null,
+    "timeWindowStart": null,
+    "timeWindowEnd": null,
+    "jobLocks": null,
+    "id": "UUID2",
+    "createdDateTime": 22,
+    "updatedDateTime": 222,
+    "startTime": 0,
+    "endTime": 0,
+    "status": "WAITING",
+    "heldJobs": {}
+  },
+  "context-instance-1": {
+    "name": "context-instance-1",
+    "description": null,
+    "timezone": null,
+    "jobDependencies": null,
+    "contexts": null,
+    "contextDependencies": null,
+    "contextParameters": [
+      {
+        "name": "BusinessDate",
+        "type": "java.lang.String",
+        "value": "20220530"
+      },
+      {
+        "name": "localFilePath",
+        "type": "path",
+        "value": "/opt/data/files"
+      }
+    ],
+    "scheduledJobs": null,
+    "timeWindowStart": null,
+    "timeWindowEnd": null,
+    "jobLocks": null,
+    "id": "UUID1",
+    "createdDateTime": 11,
+    "updatedDateTime": 111,
+    "startTime": 0,
+    "endTime": 0,
+    "status": "WAITING",
+    "heldJobs": {}
+  }
+}
+
