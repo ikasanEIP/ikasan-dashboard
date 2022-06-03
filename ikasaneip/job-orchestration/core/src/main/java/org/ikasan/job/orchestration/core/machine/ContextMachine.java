@@ -134,8 +134,34 @@ public class ContextMachine {
      * @throws IOException
      */
     public void teardown() throws IOException {
-        this.inboundQueue.close();
-        this.outboundQueue.close();
+        if (this.inboundQueue != null && this.outboundQueue != null) {
+            this.inboundQueue.close();
+            this.outboundQueue.close();
+        }
+        this.statusListenerExecutor.shutdownNow();
+        this.contextExecutor.shutdownNow();
+        this.schedulerInitiatorEventRaisedListenerExecutor.shutdownNow();
+
+        this.contextInstance = null;
+        this.jobLogicMachine = null;
+        this.statusConverter = null;
+        this.contextInstanceStateChangeEventListeners = null;
+        this.statusListenerExecutor = null;
+        this.schedulerInitiatorEventRaisedListenerExecutor = null;
+        this.objectMapper = null;
+        this.scheduledContextInstanceService = null;
+        this.schedulerJobInitiationEventRaisedListener = null;
+        this.context = null;
+        this.dryRunParameters = null;
+        this.internalEventDrivenJobs = null;
+        this.agents = null;
+        this.queueDir = null;
+        this.jobLockCache = null;
+        this.contextExecutor = null;
+        this.inboundListenableFuture = null;
+        this.outboundListenableFuture = null;
+        this.inboundQueue = null;
+        this.outboundQueue = null;
     }
 
     /**
@@ -673,35 +699,4 @@ public class ContextMachine {
         outboundListenableFuture = outboundQueue.peekAsync();
         outboundListenableFuture.addListener(new OutboundQueueMessageRunner(), schedulerInitiatorEventRaisedListenerExecutor);
     }
-
-    /**
-     *
-     * Null out parameters to avoid memory leaks just in case
-     */
-    public void nullify() throws IOException {
-        contextInstance = null;
-        jobLogicMachine = null;
-        statusConverter = null;
-        contextInstanceStateChangeEventListeners = null;
-        statusListenerExecutor = null;
-        schedulerInitiatorEventRaisedListenerExecutor = null;
-        contextExecutor = null;
-        if (inboundQueue != null && outboundQueue != null) {
-            teardown();
-            inboundQueue = null;
-            outboundQueue = null;
-        }
-        inboundListenableFuture = null;
-        outboundListenableFuture = null;
-        objectMapper = null;
-        scheduledContextInstanceService = null;
-        schedulerJobInitiationEventRaisedListener = null;
-        context = null;
-        dryRunParameters = null;
-        internalEventDrivenJobs = null;
-        agents = null;
-        queueDir = null;
-        jobLockCache = null;
-    }
-
 }

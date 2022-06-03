@@ -16,18 +16,12 @@ import org.ikasan.scheduler.SchedulerFactory;
 import org.ikasan.spec.configuration.ConfigurationService;
 import org.ikasan.spec.dashboard.DashboardRestService;
 import org.ikasan.spec.flow.Flow;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.Module;
 import org.ikasan.spec.module.ModuleActivator;
-import org.ikasan.spec.module.client.ContextParametersUpdateService;
-import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRecoveryService;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
-import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
-import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -64,7 +58,7 @@ public class DashboardJobOrchestrationAutoConfiguration {
     private Map<String, Map<String, String>> paramsToReplace;
 
     // TODO remove this feature flag when we are satisfied all recovery working
-    @Value("${use.post.construct.ikasan.2097:false}")
+    @Value("${use.post.construct.ikasan.2097:true}")
     private boolean usePostConstructs;
 
     @Bean
