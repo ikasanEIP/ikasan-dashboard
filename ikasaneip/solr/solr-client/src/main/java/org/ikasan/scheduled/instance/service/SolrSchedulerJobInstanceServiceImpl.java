@@ -107,13 +107,16 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
             List<SchedulerJobInstance> schedulerJobInstances = new ArrayList<>();
             for (SchedulerJobRecord schedulerJobRecord : schedulerJobRecordSearchResults.getResultList()) {
                 if(schedulerJobRecord.getJob() instanceof SolrFileEventDrivenJobImpl) {
-                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrFileEventDrivenJobInstanceImpl.class));
+                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
+                        , SolrFileEventDrivenJobInstanceImpl.class));
                 }
                 else if(schedulerJobRecord.getJob() instanceof SolrInternalEventDrivenJobImpl) {
-                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrInternalEventDrivenJobInstanceImpl.class));
+                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
+                        , SolrInternalEventDrivenJobInstanceImpl.class));
                 }
                 else if(schedulerJobRecord.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
-                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrQuartzScheduleDrivenJobInstanceImpl.class));
+                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
+                        , SolrQuartzScheduleDrivenJobInstanceImpl.class));
                 }
             }
 

@@ -22,8 +22,10 @@ public class SuccessfulReturnCodesDialog extends AbstractCloseableResizableDialo
     private boolean isSaveClose = false;
     private VerticalLayout buttonLayout;
     private List<SuccessfulReturnCodeHolder> successfulReturnCodeHolders;
+    private boolean editable;
 
-    public SuccessfulReturnCodesDialog() {
+    public SuccessfulReturnCodesDialog(boolean editable) {
+        this.editable = editable;
         super.showResize(false);
         super.title.setText(getTranslation("label.successful-return-codes", UI.getCurrent().getLocale()));
         this.successfulReturnCodeHolders = new ArrayList<>();
@@ -33,6 +35,7 @@ public class SuccessfulReturnCodesDialog extends AbstractCloseableResizableDialo
     private void init() {
 
         Button okButton = new Button(getTranslation("button.ok", UI.getCurrent().getLocale()));
+        okButton.setVisible(this.editable);
         okButton.addClickListener(event -> {
             AtomicBoolean isValid = new AtomicBoolean(true);
             this.successfulReturnCodeHolders.forEach(successfulReturnCodeHolder -> {
@@ -90,6 +93,7 @@ public class SuccessfulReturnCodesDialog extends AbstractCloseableResizableDialo
 
         Icon addIcon = IconDecorator.decorate(VaadinIcon.PLUS.create(), getTranslation("label.add-return-code", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
         addIcon.getElement().getStyle().set("margin-left", "auto");
+        addIcon.setVisible(this.editable);
 
         addIcon.addClickListener(event -> {
             SuccessfulReturnCodeHolder successfulReturnCodeHolder = new SuccessfulReturnCodeHolder(null);
@@ -135,6 +139,8 @@ public class SuccessfulReturnCodesDialog extends AbstractCloseableResizableDialo
             this.returnCode.setRequired(true);
             if(code != null)this.returnCode.setValue(code);
             this.returnCode.setErrorMessage(getTranslation("error.missing-return-code", UI.getCurrent().getLocale()));
+            returnCode.setEnabled(editable);
+            removeIcon.setVisible(editable);
         }
 
         public TextField getReturnCode() {
