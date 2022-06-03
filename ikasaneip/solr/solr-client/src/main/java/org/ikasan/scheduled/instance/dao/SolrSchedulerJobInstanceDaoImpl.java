@@ -92,7 +92,7 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         queryString.append(typeBuffer)
             .append(AND)
             .append(ID).append(COLON)
-            .append(id);
+            .append(SolrSpecialCharacterEscapeUtil.escape(id));
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(queryString.toString());

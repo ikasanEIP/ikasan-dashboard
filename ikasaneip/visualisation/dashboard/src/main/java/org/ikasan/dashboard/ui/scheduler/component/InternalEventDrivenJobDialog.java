@@ -251,7 +251,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         Icon calendarIcon = IconDecorator.decorate(new Icon(VaadinIcon.CALENDAR), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
         calendarIcon.addClickListener(event -> {
             DayOfWeekJobDialog dayOfWeekJobDialog = new DayOfWeekJobDialog(this.internalEventDrivenJob.getDaysOfWeekToRun() == null
-                ? null : new ArrayList<>(this.internalEventDrivenJob.getDaysOfWeekToRun()));
+                ? null : new ArrayList<>(this.internalEventDrivenJob.getDaysOfWeekToRun()), true);
             dayOfWeekJobDialog.open();
 
             dayOfWeekJobDialog.addOpenedChangeListener(openedChangeEvent -> {
@@ -263,7 +263,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
         Icon parametersIcon = IconDecorator.decorate(new Icon(VaadinIcon.SLIDERS), getTranslation("label.job-parameters", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
         parametersIcon.addClickListener(event -> {
-            ContextParameterDialog contextParameterDialog = new ContextParameterDialog();
+            ContextParameterDialog contextParameterDialog = new ContextParameterDialog(true);
             contextParameterDialog.initParams(this.internalEventDrivenJob.getContextParameters() == null ? new ArrayList<>() : this.internalEventDrivenJob.getContextParameters());
             contextParameterDialog.open();
 
@@ -276,7 +276,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
         Icon successfulReturnCodesIcon = IconDecorator.decorate(new Icon(VaadinIcon.CHECK), getTranslation("label.successful-return-codes", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
         successfulReturnCodesIcon.addClickListener(event -> {
-            SuccessfulReturnCodesDialog successfulReturnCodesDialog = new SuccessfulReturnCodesDialog();
+            SuccessfulReturnCodesDialog successfulReturnCodesDialog = new SuccessfulReturnCodesDialog(true);
             successfulReturnCodesDialog.initReturnCodes(this.internalEventDrivenJob.getSuccessfulReturnCodes());
             successfulReturnCodesDialog.open();
 
