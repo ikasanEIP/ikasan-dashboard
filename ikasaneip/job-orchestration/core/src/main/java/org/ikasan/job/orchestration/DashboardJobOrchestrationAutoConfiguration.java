@@ -57,9 +57,8 @@ public class DashboardJobOrchestrationAutoConfiguration {
     @Value("#{${job.context.params.to.replace:{T(java.util.Collections).emptyMap()}}}")
     private Map<String, Map<String, String>> paramsToReplace;
 
-    // TODO remove this feature flag when we are satisfied all recovery working
-    @Value("${use.post.construct.ikasan.2097:true}")
-    private boolean usePostConstructs;
+    @Value("${context.lifecycle.active:true}")
+    private boolean isContextLifeCycleActive;
 
     @Bean
     @DependsOn("contextParametersFactory")
@@ -80,7 +79,7 @@ public class DashboardJobOrchestrationAutoConfiguration {
 
     @Bean
     public ContextInstanceRecoveryManager contextInstanceRecoveryManager(ContextInstanceRecoveryService contextInstanceRecoveryService) {
-        return new ContextInstanceRecoveryManager(contextInstanceRecoveryService, usePostConstructs);
+        return new ContextInstanceRecoveryManager(contextInstanceRecoveryService, isContextLifeCycleActive);
     }
 
     @Bean
@@ -88,7 +87,7 @@ public class DashboardJobOrchestrationAutoConfiguration {
     public ContextInstanceSchedulerService contextInstanceSchedulerService(ContextInstanceRegistrationService contextInstanceRegistrationService,
                                                                            ScheduledContextService scheduledContextService) {
         return new ContextInstanceSchedulerService(SchedulerFactory.getInstance().getScheduler()
-            , CachingScheduledJobFactory.getInstance(), scheduledContextService, contextInstanceRegistrationService, usePostConstructs);
+            , CachingScheduledJobFactory.getInstance(), scheduledContextService, contextInstanceRegistrationService, isContextLifeCycleActive);
     }
 
     @Bean
