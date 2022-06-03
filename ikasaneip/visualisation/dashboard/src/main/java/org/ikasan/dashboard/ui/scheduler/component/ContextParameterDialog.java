@@ -24,8 +24,10 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
     private boolean isSaveClose = false;
     private VerticalLayout buttonLayout;
     private List<ContextParameterHolder> contextParameterHolders;
+    private boolean editable;
 
-    public ContextParameterDialog() {
+    public ContextParameterDialog(boolean editable) {
+        this.editable = editable;
         super.showResize(false);
         super.title.setText(getTranslation("label.context-parameters", UI.getCurrent().getLocale()));
         this.contextParameterHolders = new ArrayList<>();
@@ -35,6 +37,7 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
     private void init() {
 
         Button okButton = new Button(getTranslation("button.ok", UI.getCurrent().getLocale()));
+        okButton.setVisible(this.editable);
         okButton.addClickListener(event -> {
             AtomicBoolean isValid = new AtomicBoolean(true);
             this.contextParameterHolders.forEach(contextParameterHolder -> {
@@ -53,6 +56,7 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
         });
 
         Button cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
+        cancelButton.setVisible(this.editable);
         cancelButton.addClickListener(event -> this.close());
 
         HorizontalLayout buttons = new HorizontalLayout();
@@ -95,6 +99,7 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
         });
 
         Icon addIcon = IconDecorator.decorate(VaadinIcon.PLUS.create(), getTranslation("label.add-context-parameter", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
+        addIcon.setVisible(this.editable);
         addIcon.getElement().getStyle().set("margin-left", "auto");
 
         addIcon.addClickListener(event -> {
@@ -150,6 +155,11 @@ public class ContextParameterDialog extends AbstractCloseableResizableDialog {
             this.paramType.setRequired(true);
             if(contextParameter.getType()!= null)this.paramType.setValue(contextParameter.getType());
             this.paramType.setErrorMessage(getTranslation("error.parameter-type-is-required", UI.getCurrent().getLocale()));
+
+            this.paramName.setEnabled(editable);
+            this.paramType.setEnabled(editable);
+            this.defaultValue.setEnabled(editable);
+            this.removeIcon.setVisible(editable);
         }
 
         public TextField getParamName() {

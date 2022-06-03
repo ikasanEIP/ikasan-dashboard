@@ -23,9 +23,11 @@ public class DayOfWeekJobDialog extends AbstractCloseableResizableDialog {
 
     private boolean isSaveClose = false;
     private List<Integer> daysOfWeek;
+    private boolean editable;
 
-    public DayOfWeekJobDialog(List<Integer> daysOfWeek) {
+    public DayOfWeekJobDialog(List<Integer> daysOfWeek, boolean editable) {
         this.daysOfWeek = daysOfWeek;
+        this.editable = editable;
 
         if(daysOfWeek == null) {
             this.daysOfWeek = new ArrayList<>();
@@ -40,12 +42,14 @@ public class DayOfWeekJobDialog extends AbstractCloseableResizableDialog {
     private void init() {
 
         Button okButton = new Button(getTranslation("button.ok", UI.getCurrent().getLocale()));
+        okButton.setVisible(this.editable);
         okButton.addClickListener(event -> {
             this.isSaveClose = true;
             this.close();
         });
 
         Button cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
+        cancelButton.setVisible(this.editable);
         cancelButton.addClickListener(event -> this.close());
 
         HorizontalLayout buttons = new HorizontalLayout();
@@ -99,6 +103,8 @@ public class DayOfWeekJobDialog extends AbstractCloseableResizableDialog {
                     }
                 });
             });
+
+            item.setEnabled(this.editable);
         });
 
         Icon helpIcon = new Icon(VaadinIcon.QUESTION_CIRCLE);
@@ -120,8 +126,6 @@ public class DayOfWeekJobDialog extends AbstractCloseableResizableDialog {
         return timeComponent;
     }
 
-
-
     private Integer dayOfWeek(String textDay) {
         switch (textDay){
             case "Sunday" : return 1;
@@ -135,22 +139,6 @@ public class DayOfWeekJobDialog extends AbstractCloseableResizableDialog {
         }
     }
 
-    private String numToDayOfWeek(String textDay) {
-        switch (textDay){
-            case "1" : return "Sunday";
-            case "2" : return "Monday";
-            case "3" : return "Tuesday";
-            case "4" : return "Wednesday";
-            case "5" : return "Thursday";
-            case "6" : return "Friday";
-            case "7" : return "Saturday";
-            default: return "";
-        }
-    }
-
-    /**
-     * Inner class that represents a time component within a cron schedule.
-     */
     private class TimeComponent {
         private String name;
         private Component component;
