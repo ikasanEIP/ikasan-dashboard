@@ -1,23 +1,17 @@
 package org.ikasan.orchestration.service.context.recovery;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceHelperService;
-import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ContextParametersUpdateService;
 import org.ikasan.spec.scheduled.SchedulerService;
-import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.slf4j.Logger;
@@ -27,7 +21,6 @@ public class ContextInstanceRecoveryBackFillerRunner extends ContextInstanceHelp
     private static final Logger LOG = LoggerFactory.getLogger(ContextInstanceRecoveryBackFillerRunner.class);
 
     private final ScheduledContextRecord scheduledContextRecord;
-    private final JobLockCache jobLockCache;
 
     public ContextInstanceRecoveryBackFillerRunner(String queueDirectory,
                                                    ScheduledContextInstanceService scheduledContextInstanceService,
@@ -39,8 +32,9 @@ public class ContextInstanceRecoveryBackFillerRunner extends ContextInstanceHelp
                                                    JobLockCacheService jobLockCacheService,
                                                    ScheduledContextService scheduledContextService,
                                                    ScheduledContextRecord scheduledContextRecord,
-                                                   JobLockCache jobLockCache,
-                                                   SchedulerJobInstanceService schedulerJobInstanceService) {
+                                                   SchedulerJobInstanceService schedulerJobInstanceService,
+                                                   ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
+                                                   SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
         super(queueDirectory,
             scheduledContextInstanceService,
             schedulerService, moduleMetadataService,
@@ -49,41 +43,25 @@ public class ContextInstanceRecoveryBackFillerRunner extends ContextInstanceHelp
             contextParametersUpdateService,
             jobLockCacheService,
             scheduledContextService,
-            schedulerJobInstanceService);
+            schedulerJobInstanceService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster);
 
         this.scheduledContextRecord = scheduledContextRecord;
-        this.jobLockCache = jobLockCache;
     }
 
     @Override
     public void run() {
         try {
-            LOG.info("Back filling instance for context " + scheduledContextRecord.getContextName());
+            LOG.info(String.format("Back filling instance for context [%s]", scheduledContextRecord.getContextName()));
 
             ContextInstanceImpl contextInstance = this.objectMapper
                 .readValue(this.objectMapper.writeValueAsBytes(this.scheduledContextRecord.getContext()), ContextInstanceImpl.class);
 
-            initialiseSchedulerJobInstancesForContext(contextInstance);
-
-            Map<String, InternalEventDrivenJob> internalJobs = getInternalJobs(this.scheduledContextRecord.getContextName());
-            HashMap<String, ModuleMetaData> agents = getAgents(internalJobs);
-
-            ContextMachine contextMachine = new ContextMachine(this.scheduledContextRecord.getContext(), contextInstance,
-                this.scheduledContextInstanceService, internalJobs, this.queueDirectory, agents,
-                this.jobLockCache, this.contextParametersInstanceService);
-            // create the new queues and save the instance
-            contextMachine.init();
-
-            raiseEvent(contextMachine);
-
-            populateParamsWithAgent(contextInstance, agents);
-
-            addSchedulerJobStateChangeEventListener(contextMachine);
-
-            ContextMachineCache.instance().put(contextMachine);
+            initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance);
 
         } catch (Exception e) {
-            LOG.error("Got error back filling context " + this.scheduledContextRecord.getContextName() + ". Error " + e);
+            LOG.error(String.format("Got error back filling context [%s]. Error: %s", this.scheduledContextRecord.getContextName(), e));
         }
     }
 }

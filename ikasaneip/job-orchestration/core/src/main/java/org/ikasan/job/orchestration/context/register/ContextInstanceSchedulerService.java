@@ -79,7 +79,7 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
             }
 
             for (JobDetail jobDetail : super.dashboardJobDetailsMap.values()) {
-                logger.info(String.format("Registering context instance job[%s]", jobDetail.getKey().getName()));
+                logger.info(String.format("Registering context instance job [%s]", jobDetail.getKey().getName()));
                 this.addJob(jobDetail.getKey().getName());
             }
         } catch (Exception ex) {
