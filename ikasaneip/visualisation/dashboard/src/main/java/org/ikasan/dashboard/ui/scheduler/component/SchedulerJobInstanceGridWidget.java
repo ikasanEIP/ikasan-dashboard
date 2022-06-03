@@ -105,7 +105,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
         })).setHeader(getTranslation("table-header.job-name", UI.getCurrent().getLocale()))
             .setResizable(true)
             .setSortable(true)
-            .setKey("flowName")
+            .setKey("moduleName")
             .setFlexGrow(3);
 
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
@@ -260,9 +260,14 @@ public class SchedulerJobInstanceGridWidget extends Div {
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Text text = new Text(schedulerJobInstanceRecord.getStatus());
+            SchedulerStatusDiv schedulerStatusDiv = new SchedulerStatusDiv();
+            schedulerStatusDiv.getElement().getStyle().set("font-size", "10pt");
+            schedulerStatusDiv.getElement().getStyle().set("margin-top", "1px");
+            schedulerStatusDiv.getElement().getStyle().set("margin-bottom", "1px");
+            schedulerStatusDiv.setWidth("100%");
+            schedulerStatusDiv.setStatus(schedulerJobInstanceRecord.getStatus());
 
-            horizontalLayout.add(text);
+            horizontalLayout.add(schedulerStatusDiv);
             return horizontalLayout;
         })).setHeader(getTranslation("table-header.status", UI.getCurrent().getLocale()))
             .setResizable(true)
@@ -271,7 +276,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
             .setFlexGrow(1);
 
         HeaderRow hr = schedulerJobInstanceFilteringGrid.appendHeaderRow();
-        this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobName, "flowName");
+        this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobName, "moduleName");
         this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setChildContextName, "childContextName");
         this.schedulerJobInstanceFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobType
             , SolrSchedulerJobInstanceSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
