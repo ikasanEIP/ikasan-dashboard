@@ -7,6 +7,8 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ContextParametersUpdateService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -32,7 +34,9 @@ public class ContextServiceAutoConfiguration {
         ContextParametersUpdateService contextParametersUpdateService,
         JobLockCacheService jobLockCacheService,
         ScheduledContextService scheduledContextService,
-        SchedulerJobInstanceService schedulerJobInstanceService) {
+        SchedulerJobInstanceService schedulerJobInstanceService,
+        ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
+        SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
 
         return new ContextInstanceRecoveryServiceImpl(queueDirectory,
             scheduledContextInstanceService,
@@ -43,7 +47,9 @@ public class ContextServiceAutoConfiguration {
             contextParametersUpdateService,
             jobLockCacheService,
             scheduledContextService,
-            schedulerJobInstanceService
+            schedulerJobInstanceService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster
         );
     }
 
@@ -57,7 +63,9 @@ public class ContextServiceAutoConfiguration {
         ContextParametersUpdateService contextParametersUpdateService,
         JobLockCacheService jobLockCacheService,
         ScheduledContextService scheduledContextService,
-        SchedulerJobInstanceService schedulerJobInstanceService) {
+        SchedulerJobInstanceService schedulerJobInstanceService,
+        ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
+        SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
 
         return new ContextInstanceRegistrationServiceImpl(queueDirectory,
             scheduledContextInstanceService,
@@ -68,7 +76,9 @@ public class ContextServiceAutoConfiguration {
             contextParametersUpdateService,
             jobLockCacheService,
             scheduledContextService,
-            schedulerJobInstanceService
+            schedulerJobInstanceService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster
         );
     }
 

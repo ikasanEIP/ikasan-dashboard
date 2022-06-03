@@ -47,29 +47,23 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.orchestration.service.context.ContextInstanceHelperService;
-import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ContextParametersUpdateService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRecoveryService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
-import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
@@ -89,7 +83,9 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceHelperSer
                                               ContextParametersUpdateService contextParametersUpdateService,
                                               JobLockCacheService jobLockCacheService,
                                               ScheduledContextService scheduledContextService,
-                                              SchedulerJobInstanceService schedulerJobInstanceService) {
+                                              SchedulerJobInstanceService schedulerJobInstanceService,
+                                              ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
+                                              SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
         super(queueDirectory,
             scheduledContextInstanceService,
             schedulerService,
@@ -99,7 +95,9 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceHelperSer
             contextParametersUpdateService,
             jobLockCacheService,
             scheduledContextService,
-            schedulerJobInstanceService);
+            schedulerJobInstanceService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster);
     }
 
     public void recoverInstances() {
@@ -146,35 +144,20 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceHelperSer
                 }
                 try {
                     ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
-                    LOG.info("Recovering instance : " + contextInstance.getName() + " id: " + contextInstance.getId());
-
-                    initialiseSchedulerJobInstancesForContext(contextInstance);
-
-                    Map<String, InternalEventDrivenJob> internalEventDrivenJobMap = getInternalJobs(scheduledContextInstanceRecord.getContextName());
-                    HashMap<String, ModuleMetaData> agents = getAgents(internalEventDrivenJobMap);
-
-                    ContextMachine contextMachine = new ContextMachine(context, contextInstance,
-                        this.scheduledContextInstanceService, internalEventDrivenJobMap, this.queueDirectory, agents,
-                        getJobLockCache(context), this.contextParametersInstanceService);
-                    // note we do not init here as we are recovering instance the queues should already exist
-
-                    raiseEvent(contextMachine);
-
-                    addSchedulerJobStateChangeEventListener(contextMachine);
-
-                    ContextMachineCache.instance().put(contextMachine);
+                    LOG.info(String.format("Recovering instance [%s] id [%s]", contextInstance.getName(), contextInstance.getId()));
+                    initialiseContextMachine(context, contextInstance);
                 } catch (Exception e) {
                     // todo probably want to send a notification here.
-                    LOG.error(String.format("An error has occurred recovering context instance[%s]!", scheduledContextInstanceRecord.getContextName()), e);
+                    LOG.error(String.format("An error has occurred recovering context instance [%s]!", scheduledContextInstanceRecord.getContextName()), e);
                 }
             } else {
                 // we have a context record without an instance which should not be the case
-                String message = String.format("Context %s does not have an instance. Creating instance now!", scheduledContextRecord.getContextName());
+                String message = String.format("Context [%s] does not have an instance. Creating instance now!", scheduledContextRecord.getContextName());
                 LOG.error(message);
                 executor.execute(new ContextInstanceRecoveryBackFillerRunner(
                     this.queueDirectory, this.scheduledContextInstanceService, this.schedulerService, this.moduleMetadataService, this.internalEventDrivenJobService,
                     this.contextParametersInstanceService, this.contextParametersUpdateService, this.jobLockCacheService, this.scheduledContextService,
-                    scheduledContextRecord, getJobLockCache(scheduledContextRecord.getContext()), this.schedulerJobInstanceService
+                    scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster
                 ));
             }
         }

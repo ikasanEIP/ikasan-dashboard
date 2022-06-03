@@ -3,12 +3,12 @@ package org.ikasan.orchestration.service.utils;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.mockito.ArgumentMatcher;
 
-public class CustomerBackFillerMatcher implements ArgumentMatcher<ContextInstance> {
+public class CustomBackFillerMatcher implements ArgumentMatcher<ContextInstance> {
 
-    private ContextInstance entry;
-    private String contextName;
+    private final ContextInstance entry;
+    private final String contextName;
 
-    public CustomerBackFillerMatcher(ContextInstance entry, String contextName) {
+    public CustomBackFillerMatcher(ContextInstance entry, String contextName) {
         this.entry = entry;
         this.contextName = contextName;
     }
