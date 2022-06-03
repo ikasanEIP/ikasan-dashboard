@@ -40,32 +40,27 @@
  */
 package org.ikasan.orchestration.service.context.register;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceHelperService;
-import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ContextParametersUpdateService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 
@@ -81,7 +76,9 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceHelpe
                                                   ContextParametersUpdateService contextParametersUpdateService,
                                                   JobLockCacheService jobLockCacheService,
                                                   ScheduledContextService scheduledContextService,
-                                                  SchedulerJobInstanceService schedulerJobInstanceService) {
+                                                  SchedulerJobInstanceService schedulerJobInstanceService,
+                                                  ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
+                                                  SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
         super(queueDirectory,
             scheduledContextInstanceService,
             schedulerService,
@@ -91,7 +88,9 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceHelpe
             contextParametersUpdateService,
             jobLockCacheService,
             scheduledContextService,
-            schedulerJobInstanceService);
+            schedulerJobInstanceService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster);
     }
 
 
@@ -100,14 +99,14 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceHelpe
             LOG.info(String.format("De registering context [%s]", contextName));
             ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
             if (contextMachine == null) {
-                LOG.error("Could not find context machine for " + contextName);
-                throw new RuntimeException("Could not find context machine for " + contextName);
+                LOG.error(String.format("Could not find context machine for [%s]", contextName));
+                throw new RuntimeException(String.format("Could not find context machine for [%s]", contextName));
             }
 
             ContextInstance instance = contextMachine.getContext();
             if (instance == null) {
-                LOG.error("Could not find instance in ContextMachine for " + contextName);
-                throw new RuntimeException("Could not find instance in ContextMachine for " + contextName);
+                LOG.error(String.format("Could not find instance in ContextMachine for [%s]", contextName));
+                throw new RuntimeException(String.format("Could not find instance in ContextMachine for [%s]", contextName));
             }
 
             saveContextInstance(instance, InstanceStatus.ENDED);
@@ -123,31 +122,14 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceHelpe
             LOG.info(String.format("Registering context [%s]", contextName));
             ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(contextName);
             if (scheduledContextRecord == null) {
-                LOG.error("Could not find scheduledContextRecord for " + contextName);
-                throw new RuntimeException("Could not find scheduledContextRecord for " + contextName);
+                LOG.error(String.format("Could not find scheduledContextRecord for [%s]", contextName));
+                throw new RuntimeException(String.format("Could not find scheduledContextRecord for [%s]", contextName));
             }
+
             ContextTemplate context = objectMapper.readValue(objectMapper.writeValueAsBytes(scheduledContextRecord.getContext()), ContextTemplateImpl.class);
             ContextInstanceImpl contextInstance = objectMapper.readValue(objectMapper.writeValueAsBytes(scheduledContextRecord.getContext()), ContextInstanceImpl.class);
+            initialiseContextMachine(context, contextInstance);
 
-            initialiseSchedulerJobInstancesForContext(contextInstance);
-
-            Map<String, InternalEventDrivenJob> internalEventDrivenJobMap = getInternalJobs(contextName);
-            HashMap<String, ModuleMetaData> agents = getAgents(internalEventDrivenJobMap);
-
-            JobLockCache jobLockCache = getJobLockCache(context);
-
-            ContextMachine contextMachine = new ContextMachine(context, contextInstance, this.scheduledContextInstanceService, internalEventDrivenJobMap,
-                this.queueDirectory, agents, jobLockCache, this.contextParametersInstanceService);
-            // create the new queues and save the instance
-            contextMachine.init();
-
-            raiseEvent(contextMachine);
-
-            populateParamsWithAgent(contextInstance, agents);
-
-            addSchedulerJobStateChangeEventListener(contextMachine);
-
-            ContextMachineCache.instance().put(contextMachine);
         } catch (Exception e) {
             LOG.error(String.format("An error has occurred executing registering job [%s]", e.getMessage()), e);
             throw new RuntimeException(e);
