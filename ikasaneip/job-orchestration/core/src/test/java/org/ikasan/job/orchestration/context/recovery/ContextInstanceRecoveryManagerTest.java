@@ -25,7 +25,7 @@ public class ContextInstanceRecoveryManagerTest {
 
     @Test
     public void should_do_nothing_if_featured_flagged_off() {
-        ReflectionTestUtils.setField(contextInstanceRecoveryManager, "usePostConstructs", false);
+        ReflectionTestUtils.setField(contextInstanceRecoveryManager, "isContextLifeCycleActive", false);
 
         contextInstanceRecoveryManager.recoverContextInstances();
 
@@ -34,7 +34,7 @@ public class ContextInstanceRecoveryManagerTest {
 
     @Test
     public void recovers_instances() {
-        ReflectionTestUtils.setField(contextInstanceRecoveryManager, "usePostConstructs", true);
+        ReflectionTestUtils.setField(contextInstanceRecoveryManager, "isContextLifeCycleActive", true);
 
         contextInstanceRecoveryManager.recoverContextInstances();
 

@@ -25,12 +25,12 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
 
     private final ScheduledContextService scheduledContextService;
     private final ContextInstanceRegistrationService contextInstanceRegistrationService;
-    private final boolean usePostConstructs;
+    private final boolean isContextLifeCycleActive;
 
     public ContextInstanceSchedulerService(Scheduler scheduler, ScheduledJobFactory scheduledJobFactory,
                                            ScheduledContextService scheduledContextService,
                                            ContextInstanceRegistrationService contextInstanceRegistrationService,
-                                           boolean usePostConstructs) {
+                                           boolean isContextLifeCycleActive) {
 
         super(scheduler, scheduledJobFactory);
         this.scheduledContextService = scheduledContextService;
@@ -43,14 +43,14 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
         }
 
-        this.usePostConstructs = usePostConstructs;
+        this.isContextLifeCycleActive = isContextLifeCycleActive;
     }
 
     @PostConstruct
     public void registerJobs() {
         // jobs get registered here in a post construct after ContextInstanceRecoveryManager
         logger.info("ContextInstanceSchedulerService Registering Jobs!");
-        if (!usePostConstructs) {
+        if (!isContextLifeCycleActive) {
             logger.info("ContextInstanceSchedulerService not running as usePostConstructs is false");
             return;
         }
