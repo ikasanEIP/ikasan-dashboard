@@ -114,6 +114,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceHelperSer
             }
         }
 
+        // TODO this represents an exception case  - there should never be more than one instance WAITING OR RUNNING
         List<ScheduledContextInstanceRecord> sorted = new ArrayList<>();
         for (String key : records.keySet()) {
             List<ScheduledContextInstanceRecord> mapRecords = records.get(key);
