@@ -57,7 +57,7 @@ public class ContextInstanceSchedulerServiceTest {
     public void should_do_nothing_if_featured_flagged_off() {
         assertEquals(0, ContextMachineCache.instance().contextNames().size());
 
-        ReflectionTestUtils.setField(contextInstanceSchedulerService, "usePostConstructs", false);
+        ReflectionTestUtils.setField(contextInstanceSchedulerService, "isContextLifeCycleActive", false);
 
         contextInstanceSchedulerService.registerJobs();
 

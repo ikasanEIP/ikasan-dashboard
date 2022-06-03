@@ -53,6 +53,7 @@ public class ContextInstanceEndJob implements DashboardJob {
             String contextName = jobName.substring(0, jobName.length() - END_JOB_EXTENSION.length());
             contextInstanceRegistrationService.deRegister(contextName);
         } catch (Exception e) {
+            // TODO hook in notification here
             LOG.error(String.format("An error has occurred executing ContextInstanceEndJob[%s]", e.getMessage()), e);
             throw new JobExecutionException(e);
         }
