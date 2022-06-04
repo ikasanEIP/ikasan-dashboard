@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
+import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobRecordImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
@@ -36,7 +37,7 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
             document.addField(PAYLOAD_CONTENT, getInternalEventDrivenJob(event.getInternalEventDrivenJob()));
         }
         catch (JsonProcessingException e) {
-            throw new RuntimeException(String.format("Cannot convert QuartzScheduleDrivenJobRecord to string! [%s]", event), e);
+            throw new SolrEntityConversionException(String.format("Cannot convert QuartzScheduleDrivenJobRecord to string! [%s]", event), e);
         }
 
         document.addField(ID, JobConstants.INTERNAL_EVENT_DRIVEN_JOB + "_" + event.getAgentName() + "_"

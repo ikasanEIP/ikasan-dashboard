@@ -565,8 +565,13 @@ public class ContextTemplateBuilderTest extends AbstractTest {
             .addSchedulerJob(job3)
             .addSchedulerJob(job4)
             // job locks
-            .addJobLocks(contextTemplateBuilder.getJobLockBuilder().withLockName("TEST-LOCK-1").withJob(job1).withJob(job2).withLockCount(1L).build())
-            .addJobLocks(contextTemplateBuilder.getJobLockBuilder().withLockName("TEST-LOCK-2").withJob(job3).withJob(job4).withLockCount(1L).build())
+            .addJobLocks(contextTemplateBuilder.getJobLockBuilder().withLockName("TEST-LOCK-1")
+                .withJob("context1", job1)
+                .withJob("context2", job2)
+                .withLockCount(1L).build())
+            .addJobLocks(contextTemplateBuilder.getJobLockBuilder().withLockName("TEST-LOCK-2")
+                .withJob("context1", job3)
+                .withJob("context2", job4).withLockCount(1L).build())
             // scheduler jobs
             .addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
                 .withJobName("Job5")

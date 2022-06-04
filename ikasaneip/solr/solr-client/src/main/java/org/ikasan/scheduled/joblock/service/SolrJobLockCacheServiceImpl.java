@@ -1,6 +1,6 @@
-package org.ikasan.scheduled.joblockcache.service;
+package org.ikasan.scheduled.joblock.service;
 
-import org.ikasan.scheduled.joblockcache.model.SolrJobLockCacheAuditRecordImpl;
+import org.ikasan.scheduled.joblock.model.SolrJobLockCacheAuditRecordImpl;
 import org.ikasan.spec.scheduled.joblock.dao.JobLockCacheAuditDao;
 import org.ikasan.spec.scheduled.joblock.dao.JobLockCacheDao;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheAuditRecord;

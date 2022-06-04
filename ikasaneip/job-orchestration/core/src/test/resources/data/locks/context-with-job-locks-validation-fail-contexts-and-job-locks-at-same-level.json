@@ -298,22 +298,22 @@
     {
       "name": "TEST-LOCK",
       "lockCount": 1,
-      "jobs": [
-        {
+      "jobs": {
+        "context1": [{
           "agentName": "AgentName",
           "jobName": "Job1",
           "identifier": "AgentName-Job1",
           "jobDescription": "Job1 Description"
-        },
-        {
+        }],
+        "context2": [{
           "agentName": "AgentName",
           "jobName": "Job2",
           "identifier": "AgentName-Job2",
           "jobDescription": "Job2 Description"
-        }
-      ]
+        }]
+      }
     }
   ],
-  "timeWindowStart" : "* * 6 ? * * *",
-  "timeWindowEnd" : "* * 15 ? * * *"
+  "timeWindowStart": "* * 6 ? * * *",
+  "timeWindowEnd": "* * 15 ? * * *"
 }

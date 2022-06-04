@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
+import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobRecordImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
@@ -36,7 +37,7 @@ public class SolrFileEventDrivenJobDaoImpl extends SolrDaoBase<FileEventDrivenJo
             document.addField(PAYLOAD_CONTENT, this.getFileEventDrivenJob(event.getFileEventDrivenJob()));
         }
         catch (JsonProcessingException e) {
-            throw new RuntimeException(String.format("Cannot convert FileEventDrivenJob to string! [%s]", event));
+            throw new SolrEntityConversionException(String.format("Cannot convert FileEventDrivenJob to string! [%s]", event));
         }
 
         document.addField(ID, JobConstants.FILE_EVENT_DRIVEN_JOB + "_" + event.getAgentName() + "_" + event.getJobName()
