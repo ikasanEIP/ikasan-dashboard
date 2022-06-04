@@ -1,4 +1,4 @@
-package org.ikasan.job.orchestration.context.cache;
+package org.ikasan.job.orchestration.model.cache;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -10,6 +10,7 @@ import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,6 +32,7 @@ public class JobLockCacheRecordImpl implements JobLockCacheRecord {
     private String id;
     private String jobLockCache;
     private long timestamp;
+    private long modifiedTimestamp;
 
     @Override
     public String getId() {
@@ -38,7 +40,7 @@ public class JobLockCacheRecordImpl implements JobLockCacheRecord {
     }
 
     @Override
-    public void setJobLockCache(JobLockCache jobLockCache) {
+    public void setJobLockCache(JobLockCacheData jobLockCache) {
         try {
             this.jobLockCache = objectMapper.writeValueAsString(jobLockCache);
         } catch (JsonProcessingException e) {
@@ -47,9 +49,9 @@ public class JobLockCacheRecordImpl implements JobLockCacheRecord {
     }
 
     @Override
-    public JobLockCache getJobLockCache() {
+    public JobLockCacheData getJobLockCache() {
         try {
-            return objectMapper.readValue(jobLockCache, JobLockCacheImpl.class);
+            return objectMapper.readValue(jobLockCache, JobLockCacheDataImpl.class);
         } catch (JsonProcessingException e) {
             throw new EntityConversionException("Could not convert string to entity: " + jobLockCache, e);
         }
@@ -59,6 +61,11 @@ public class JobLockCacheRecordImpl implements JobLockCacheRecord {
     @Override
     public long getTimestamp() {
         return this.timestamp;
+    }
+
+    @Override
+    public long getModifiedTimestamp() {
+        return modifiedTimestamp;
     }
 
     @Override

@@ -1,10 +1,11 @@
-package org.ikasan.scheduled.joblockcache.dao;
+package org.ikasan.scheduled.joblock.dao;
 
 import java.util.UUID;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.scheduled.joblockcache.model.SolrJobLockCacheAuditRecordImpl;
+import org.ikasan.scheduled.general.SolrEntityConversionException;
+import org.ikasan.scheduled.joblock.model.SolrJobLockCacheAuditRecordImpl;
 import org.ikasan.spec.scheduled.joblock.dao.JobLockCacheAuditDao;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheAuditRecord;
 import org.ikasan.spec.search.SearchResults;
@@ -41,7 +42,7 @@ public class SolrJobLockCacheAuditDaoImpl extends SolrDaoBase<JobLockCacheAuditR
         try {
             document.addField(PAYLOAD_CONTENT, OBJECT_MAPPER.writeValueAsString(record.getJobLockCache()));
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(String.format("Cannot convert JobLockCacheAuditRecord lockHolders to string! [%s]", record));
+            throw new SolrEntityConversionException(String.format("Cannot convert JobLockCacheAuditRecord lockHolders to string! [%s]", record));
         }
         document.addField(CREATED_DATE_TIME, System.currentTimeMillis());
         document.setField(EXPIRY, expiry);

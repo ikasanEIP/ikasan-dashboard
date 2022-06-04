@@ -4,10 +4,12 @@ import org.ikasan.job.orchestration.core.AbstractTest;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
 
+@Ignore
 public class ContextTemplateValidatorTest extends AbstractTest {
 
     @Test

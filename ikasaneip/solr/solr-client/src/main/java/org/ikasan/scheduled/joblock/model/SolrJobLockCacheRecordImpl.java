@@ -1,19 +1,17 @@
-package org.ikasan.scheduled.joblockcache.model;
-
-import org.apache.solr.client.solrj.beans.Field;
-import org.ikasan.scheduled.cache.SolrJobLockCacheMachine;
-import org.ikasan.scheduled.general.SolrEntityConversionException;
-import org.ikasan.scheduled.job.model.SolrJobLockHolderImpl;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
-import org.ikasan.spec.scheduled.context.model.JobLockCache;
-import org.ikasan.spec.scheduled.context.model.JobLockHolder;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
-import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
-import org.ikasan.spec.solr.SolrDaoBase;
+package org.ikasan.scheduled.joblock.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.apache.solr.client.solrj.beans.Field;
+import org.ikasan.scheduled.general.SolrEntityConversionException;
+import org.ikasan.scheduled.job.model.SolrJobLockHolderImpl;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
+import org.ikasan.spec.scheduled.context.model.JobLockHolder;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
+import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
+import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrJobLockCacheRecordImpl implements JobLockCacheRecord {
 
@@ -36,13 +34,16 @@ public class SolrJobLockCacheRecordImpl implements JobLockCacheRecord {
     @Field(SolrDaoBase.CREATED_DATE_TIME)
     private long timestamp;
 
+    @Field(SolrDaoBase.UPDATED_DATE_TIME)
+    private long modifiedTimestamp;
+
     @Override
     public String getId() {
         return this.id;
     }
 
     @Override
-    public void setJobLockCache(JobLockCache jobLockCache) {
+    public void setJobLockCache(JobLockCacheData jobLockCache) {
         try {
             this.jobLockCache = objectMapper.writeValueAsString(jobLockCache);
         } catch (JsonProcessingException e) {
@@ -51,9 +52,9 @@ public class SolrJobLockCacheRecordImpl implements JobLockCacheRecord {
     }
 
     @Override
-    public JobLockCache getJobLockCache() {
+    public JobLockCacheData getJobLockCache() {
         try {
-            return objectMapper.readValue(jobLockCache, SolrJobLockCacheMachine.class);
+            return objectMapper.readValue(jobLockCache, SolrJobLockCacheDataImpl.class);
         } catch (JsonProcessingException e) {
             throw new SolrEntityConversionException("Could not convert string to entity: " + jobLockCache, e);
         }
@@ -62,5 +63,10 @@ public class SolrJobLockCacheRecordImpl implements JobLockCacheRecord {
     @Override
     public long getTimestamp() {
         return this.timestamp;
+    }
+
+    @Override
+    public long getModifiedTimestamp() {
+        return 0;
     }
 }

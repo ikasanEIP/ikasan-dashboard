@@ -1,4 +1,4 @@
- {
+{
   "name": "Context1",
   "contextParameters": [
     {
@@ -191,20 +191,24 @@
             {
               "name": "TEST-LOCK",
               "lockCount": 1,
-              "jobs": [
-                {
-                  "agentName": "agentName9",
-                  "jobName": "jobName9",
-                  "identifier": "agentName9-jobName9",
-                  "jobDescription": "Job9 Description"
-                },
-                {
-                  "agentName": "agentName10",
-                  "jobName": "jobName10",
-                  "identifier": "agentName10-jobName10",
-                  "jobDescription": "Job10 Description"
-                }
-              ]
+              "jobs": {
+                "context1": [
+                  {
+                    "agentName": "agentName9",
+                    "jobName": "jobName9",
+                    "identifier": "agentName9-jobName9",
+                    "jobDescription": "Job9 Description"
+                  }
+                ],
+                "context2": [
+                  {
+                    "agentName": "agentName10",
+                    "jobName": "jobName10",
+                    "identifier": "agentName10-jobName10",
+                    "jobDescription": "Job10 Description"
+                  }
+                ]
+              }
             }
           ]
         }
@@ -306,6 +310,6 @@
       }
     }
   ],
-   "timeWindowStart" : "* * 6 ? * * *",
-   "timeWindowEnd" : "* * 15 ? * * *"
+  "timeWindowStart": "* * 6 ? * * *",
+  "timeWindowEnd": "* * 15 ? * * *"
 }
