@@ -479,7 +479,7 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
     }
 
     @Test
-        public void test_find_by_content_name_limit_offset_sort_timestamp() {
+    public void test_find_by_content_name_limit_offset_sort_timestamp() {
 
         SolrContextInstanceImpl contextInstance = new SolrContextInstanceImpl();
         contextInstance.setName("contextInstance");

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
+import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -42,7 +43,7 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         try {
             document.addField(PAYLOAD_CONTENT, this.getPayloadContents(scheduledContextInstanceRecord.getContextInstance()));
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(String.format("Cannot convert FileEventDrivenJob to string! [%s]", scheduledContextInstanceRecord.getContextInstance()));
+            throw new SolrEntityConversionException(String.format("Cannot convert FileEventDrivenJob to string! [%s]", scheduledContextInstanceRecord.getContextInstance()));
         }
         document.addField(STATUS, scheduledContextInstanceRecord.getStatus());
         document.addField(MODULE_NAME, scheduledContextInstanceRecord.getContextName());

@@ -5,12 +5,14 @@ import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class JobLockBuilder {
 
     private String lockName;
-    private List<SchedulerJob> schedulerJobs;
+    private Map<String, List<SchedulerJob>> schedulerJobs;
     private long lockCount = 1;
 
     public JobLockBuilder() {
@@ -21,12 +23,16 @@ public class JobLockBuilder {
         return this;
     }
 
-    public JobLockBuilder withJob(SchedulerJob job) {
+    public JobLockBuilder withJob(String contextName, SchedulerJob job) {
         if(this.schedulerJobs == null) {
-            schedulerJobs = new ArrayList<>();
+            schedulerJobs = new HashMap<>();
         }
 
-        schedulerJobs.add(job);
+        if(!schedulerJobs.containsKey(contextName)) {
+            schedulerJobs.put(contextName, new ArrayList<>());
+        }
+
+        schedulerJobs.get(contextName).add(job);
         return this;
     }
 
