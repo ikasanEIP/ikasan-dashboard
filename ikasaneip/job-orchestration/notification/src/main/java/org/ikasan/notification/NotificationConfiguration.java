@@ -5,8 +5,8 @@ import org.ikasan.job.orchestration.model.notification.Notifier;
 import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.ikasan.notification.monitor.ErrorMonitorImpl;
 import org.ikasan.notification.monitor.OverdueFileMonitorImpl;
-import org.ikasan.notification.notifier.EmailErrorNotifier;
-import org.ikasan.notification.notifier.EmailOverdueFileNotifier;
+import org.ikasan.notification.notifier.EmailNotifier;
+import org.ikasan.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -29,6 +29,9 @@ public class NotificationConfiguration {
     @Resource
     private SchedulerJobService schedulerJobService;
 
+    @Resource
+    private EmailNotificationDetailsService emailNotificationDetailsService;
+
     @Value("${scheduler.notification.file.overdue.tolerance.minutes:30}")
     private Integer fileArrivalToleranceInMinutes;
 
@@ -36,14 +39,9 @@ public class NotificationConfiguration {
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Bean
-    public EmailErrorNotifier emailErrorNotifier() {
-        EmailErrorNotifier emailNotifier = new EmailErrorNotifier();
-        return emailNotifier;
-    }
-
-    @Bean
-    public EmailOverdueFileNotifier emailOverdueFileNotifier() {
-        EmailOverdueFileNotifier emailNotifier = new EmailOverdueFileNotifier();
+    public EmailNotifier emailNotifier(TemplateEngine emailTemplateEngine, EmailNotifierConfiguration emailConfiguration) {
+        EmailNotifier emailNotifier = new EmailNotifier(emailNotificationDetailsService, emailTemplateEngine);
+        emailNotifier.setConfiguration(emailConfiguration);
         return emailNotifier;
     }
 
