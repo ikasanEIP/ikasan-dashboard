@@ -40,15 +40,42 @@
  */
 package org.ikasan.notification.notifier;
 
+import org.apache.commons.lang3.StringUtils;
+import org.ikasan.job.orchestration.model.notification.EmailNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.Notifier;
+import org.ikasan.scheduled.notification.service.EmailNotificationDetailsService;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
-public class EmailOverdueFileNotifier extends AbstractEmailNotifierBase implements Notifier<GenericNotificationDetails>
-{
+public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier<GenericNotificationDetails> {
+
+    private EmailNotificationDetailsService emailNotificationDetailsService;
+    private TemplateEngine templateEngine;
+
+    public EmailNotifier(EmailNotificationDetailsService emailNotificationDetailsService, TemplateEngine templateEngine) {
+        this.emailNotificationDetailsService = emailNotificationDetailsService;
+        this.templateEngine = templateEngine;
+    }
+
     @Override
-    public void invoke(GenericNotificationDetails notificationDetails)
-    {
-        super.invoke(notificationDetails);
+    public void invoke(GenericNotificationDetails notificationDetails) {
+        EmailNotificationDetails emailNotificationDetails = emailNotificationDetailsService.findByJobNameAndMonitorType(notificationDetails.getJobName(), notificationDetails.getMonitorType().name());
 
+        if (emailNotificationDetails != null) {
+
+            final Context ctx = new Context();
+            // todo fix this
+            ctx.setVariable("emailNotificationDetails", emailNotificationDetails);
+
+            if (StringUtils.isNotBlank(emailNotificationDetails.getEmailBodyTemplate())) {
+                emailNotificationDetails.setEmailBody(this.templateEngine.process(emailNotificationDetails.getEmailBodyTemplate(), ctx));
+            }
+            if (StringUtils.isNotBlank(emailNotificationDetails.getEmailSubjectTemplate())) {
+                emailNotificationDetails.setEmailSubject(this.templateEngine.process(emailNotificationDetails.getEmailSubjectTemplate(), ctx));
+            }
+
+            super.sendEmail(emailNotificationDetails);
+        }
     }
 }

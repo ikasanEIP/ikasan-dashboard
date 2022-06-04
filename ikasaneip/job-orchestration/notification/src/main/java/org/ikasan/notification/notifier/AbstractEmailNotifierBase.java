@@ -40,18 +40,14 @@
  */
 package org.ikasan.notification.notifier;
 
-import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
-import org.ikasan.job.orchestration.model.notification.Notifier;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
+import org.ikasan.job.orchestration.model.notification.EmailNotificationDetails;
+import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.mail.*;
 import javax.mail.internet.*;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 
@@ -60,7 +56,7 @@ import java.util.Properties;
  *
  * @author Ikasan Development Team
  */
-public abstract class AbstractEmailNotifierBase implements Notifier<GenericNotificationDetails>
+public abstract class AbstractEmailNotifierBase
 {
     /** logger instance */
     private static Logger logger = LoggerFactory.getLogger(AbstractEmailNotifierBase.class);
@@ -68,56 +64,36 @@ public abstract class AbstractEmailNotifierBase implements Notifier<GenericNotif
     /** regular expression for splitting grouped email addresses in a single String separated by comma, semi-colon, or space */
     private static String EMAIL_ADDRESS_SPLIT_REGEXP = ",| |;";
 
-    /** date time formatter */
-    private static DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("Y-MM-dd HH:mm:ss.SSS Z");
-
-    /** configured resource identifier */
-    private String configuredResourceId;
+    private EmailNotifierConfiguration configuration;
 
     /** mail session */
     private Session session;
 
 
-    @Override
-    public void invoke(GenericNotificationDetails notificationDetails)
-    {
-        sendNotification(notificationDetails);
-    }
-
-
-    protected void sendNotification(GenericNotificationDetails notificationDetails)
-    {
+    protected void sendEmail(EmailNotificationDetails emailNotificationDetails) {
         MimeMessage message = new MimeMessage(session);
-/*
-        message.addRecipients(Message.RecipientType.TO, toArray( configuration.getToRecipients() ));
-        message.addRecipients(Message.RecipientType.CC, toArray( configuration.getCcRecipients() ));
-        message.addRecipients(Message.RecipientType.BCC, toArray( configuration.getBccRecipients() ));
+        try {
+            message.addRecipients(Message.RecipientType.TO, toArray(emailNotificationDetails.getEmailSendTo()));
+            message.addRecipients(Message.RecipientType.CC, toArray(emailNotificationDetails.getEmailSendCc()));
+            message.addRecipients(Message.RecipientType.BCC, toArray(emailNotificationDetails.getEmailSendBcc()));
 
-        if(configuration.getSubject() == null)
-        {
-            message.setSubject( "[" + env + "] " + name + " is " + currentState );
+            message.setSubject(emailNotificationDetails.getEmailSubject());
+
+            BodyPart bodyPart = new MimeBodyPart();
+            if (emailNotificationDetails.isHtml()) {
+                bodyPart.setContent(emailNotificationDetails.getEmailBody(), "text/html; charset=utf-8");
+            } else {
+                bodyPart.setContent(emailNotificationDetails.getEmailBody(), "text/plain; charset=utf-8");
+            }
+
+            Multipart multipart = new MimeMultipart();
+            multipart.addBodyPart(bodyPart);
+            message.setContent(multipart);
+            Transport.send(message);
+        } catch (Exception e) {
+            // TODO: 04/06/2022  fix this
+            logger.error(e.getMessage());
         }
-        else
-        {
-            String subject = configuration.getSubject().replaceAll("\\$\\{environment\\}", env)
-                    .replaceAll("\\$\\{name\\}", name)
-                    .replaceAll("\\$\\{state\\}", currentState);
-
-            message.setSubject(subject);
-        }
-
-        BodyPart bodyPart = new MimeBodyPart();
-        if(content != null)
-        {
-            bodyPart.setText(content.toString());
-        }
-
-        Multipart multipart = new MimeMultipart();
-        multipart.addBodyPart(bodyPart);
-        message.setContent(multipart);
-        Transport.send(message);
-
- */
     }
 
     /**
@@ -176,6 +152,93 @@ public abstract class AbstractEmailNotifierBase implements Notifier<GenericNotif
         }
 
         return reviewedAddresses;
+    }
+
+    public EmailNotifierConfiguration getConfiguration()
+    {
+        return configuration;
+    }
+
+
+    public void setConfiguration(EmailNotifierConfiguration configuration)
+    {
+        this.configuration = configuration;
+
+        Properties mailProperties = new Properties();
+
+        mailProperties.put("mail.debug", configuration.isMailDebug());
+
+        if(configuration.getMailFrom() != null)
+        {
+            mailProperties.put("mail.from", configuration.getMailFrom());
+        }
+
+        mailProperties.put("mail.mime.access.strict", configuration.getMailMimeAddressStrict());
+
+        if(configuration.getMailHost() != null)
+        {
+            mailProperties.put("mail.host", configuration.getMailHost());
+        }
+
+        if(configuration.getMailStoreProtocol() != null)
+        {
+            mailProperties.put("mail.store.protocol", configuration.getMailStoreProtocol());
+        }
+
+        if(configuration.getMailTransportProtocol() != null)
+        {
+            mailProperties.put("mail.transport.protocol", configuration.getMailTransportProtocol());
+        }
+
+        if(configuration.getMailUser() != null)
+        {
+            mailProperties.put("mail.user", configuration.getMailUser());
+        }
+
+        if(configuration.getMailSmtpClass() != null)
+        {
+            mailProperties.put("mail.smtp.class", configuration.getMailSmtpClass());
+        }
+
+        if(configuration.getMailSmtpHost() != null)
+        {
+            mailProperties.put("mail.smtp.host", configuration.getMailSmtpHost());
+        }
+
+        if(configuration.getMailSmtpPort() > 0)
+        {
+            mailProperties.put("mail.smtp.port", configuration.getMailSmtpPort());
+        }
+
+        if(configuration.getMailSmtpUser() != null)
+        {
+            mailProperties.put("mail.smtp.user", configuration.getMailSmtpUser());
+        }
+
+        if(configuration.getMailPopClass() != null)
+        {
+            mailProperties.put("mail.pop.class", configuration.getMailPopClass());
+        }
+
+        if(configuration.getMailPopHost() != null)
+        {
+            mailProperties.put("mail.pop.host", configuration.getMailPopHost());
+        }
+
+        if(configuration.getMailPopPort() > 0)
+        {
+            mailProperties.put("mail.pop.port", configuration.getMailPopPort());
+        }
+
+        if(configuration.getMailPopUser() != null)
+        {
+            mailProperties.put("mail.pop.user", configuration.getMailPopUser());
+        }
+
+        mailProperties.putAll(configuration.getExtendedMailSessionProperties());
+
+        session = javax.mail.Session.getInstance(mailProperties);
+
     }
 
 }
