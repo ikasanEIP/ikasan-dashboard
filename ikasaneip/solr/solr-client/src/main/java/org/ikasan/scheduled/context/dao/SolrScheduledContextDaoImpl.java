@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
+import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextDao;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -35,7 +36,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
             document.addField(PAYLOAD_CONTENT, this.getPayloadContents(scheduledContextRecord.getContext()));
         }
         catch (JsonProcessingException e) {
-            throw new RuntimeException(String.format("Cannot convert FileEventDrivenJob to string! [%s]"
+            throw new SolrEntityConversionException(String.format("Cannot convert FileEventDrivenJob to string! [%s]"
                 , scheduledContextRecord.getContext()));
         }
         document.addField(ID, scheduledContextRecord.getContextName() + "-" + SCHEDULED_CONTEXT);

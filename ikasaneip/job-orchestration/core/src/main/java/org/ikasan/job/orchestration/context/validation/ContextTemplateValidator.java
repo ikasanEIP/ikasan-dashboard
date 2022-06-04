@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.context.validation;
 
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 /**
@@ -88,7 +89,7 @@ public class ContextTemplateValidator {
     private void assertJobLocksContainOnlyJobsAssociatedWithTheContext(ContextTemplate contextTemplate) {
         if(contextTemplate.getJobLocksMap() != null) {
             contextTemplate.getJobLocksMap().entrySet().forEach(entry -> {
-                boolean jobExists = entry.getValue().getJobs().stream()
+                boolean jobExists = entry.getValue().getJobs().values().stream().flatMap(Collection::stream)
                     .filter(job -> contextTemplate.getScheduledJobs().stream()
                         .filter(schedulerJob -> job.getIdentifier().equals(schedulerJob.getIdentifier()))
                         .findFirst()
