@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
+import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceAuditRecordImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditDao;
@@ -30,7 +31,7 @@ public class SolrScheduledContextInstanceAuditDaoImpl extends SolrDaoBase<Schedu
         try {
             document.addField(PAYLOAD_CONTENT, OBJECT_MAPPER.writeValueAsString(record.getScheduledContextInstanceAudit()));
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(String.format("Cannot convert ScheduledContextInstanceAuditRecord to string! [%s]", record.getScheduledContextInstanceAudit()));
+            throw new SolrEntityConversionException(String.format("Cannot convert ScheduledContextInstanceAuditRecord to string! [%s]", record.getScheduledContextInstanceAudit()));
         }
 
         document.setField(FLOW_NAME, record.getScheduledContextInstanceAudit().getPreviousContextInstance().getId());

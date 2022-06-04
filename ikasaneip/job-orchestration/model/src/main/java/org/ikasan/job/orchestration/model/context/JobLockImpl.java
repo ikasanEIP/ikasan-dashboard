@@ -1,15 +1,16 @@
 package org.ikasan.job.orchestration.model.context;
 
-import java.util.List;
-
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+
+import java.util.List;
+import java.util.Map;
 
 public class JobLockImpl implements JobLock {
 
     private String name;
     private long lockCount = 1;
-    private List<SchedulerJob> jobs;
+    private Map<String, List<SchedulerJob>> jobs;
 
     @Override
     public void setName(String name) {
@@ -32,12 +33,12 @@ public class JobLockImpl implements JobLock {
     }
 
     @Override
-    public void setJobs(List<SchedulerJob> jobs) {
+    public void setJobs(Map<String, List<SchedulerJob>> jobs) {
         this.jobs = jobs;
     }
 
     @Override
-    public List<SchedulerJob> getJobs() {
+    public Map<String, List<SchedulerJob>> getJobs() {
         return jobs;
     }
 
