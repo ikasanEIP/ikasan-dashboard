@@ -127,38 +127,38 @@
             {
               "name": "TEST-LOCK",
               "lockCount": 1,
-              "jobs": [
-                {
+              "jobs": {
+                "context1": [{
                   "agentName": "agentName2",
                   "jobName": "jobName2",
                   "identifier": "agentName2-jobName2",
                   "jobDescription": "Job2 Description"
-                },
-                {
+                }],
+                "context2": [{
                   "agentName": "agentName3",
                   "jobName": "jobName3",
                   "identifier": "agentName3-jobName3",
                   "jobDescription": "Job3 Description"
-                },
-                {
+                }],
+                "context3": [{
                   "agentName": "agentName4",
                   "jobName": "jobName4",
                   "identifier": "agentName4-jobName4",
                   "jobDescription": "Job4 Description"
-                },
-                {
+                }],
+                "context4": [{
                   "agentName": "agentName5",
                   "jobName": "jobName5",
                   "identifier": "agentName5-jobName5",
                   "jobDescription": "Job5 Description"
-                },
-                {
+                }],
+                "context5": [{
                   "agentName": "agentName6",
                   "jobName": "jobName6",
                   "identifier": "agentName6-jobName6",
                   "jobDescription": "Job6 Description"
-                }
-              ]
+                }]
+              }
             }
           ],
           "contexts": [
@@ -247,20 +247,20 @@
             {
               "name": "TEST-LOCK",
               "lockCount": 1,
-              "jobs": [
-                {
+              "jobs": {
+                "context1": [{
                   "agentName": "agentName9",
                   "jobName": "jobName9",
                   "identifier": "agentName9-jobName9",
                   "jobDescription": "Job9 Description"
-                },
-                {
+                }],
+                "context2": [{
                   "agentName": "agentName10",
                   "jobName": "jobName10",
                   "identifier": "agentName10-jobName10",
                   "jobDescription": "Job10 Description"
-                }
-              ]
+                }]
+              }
             }
           ]
         }
@@ -362,6 +362,6 @@
       }
     }
   ],
-  "timeWindowStart" : "* * 6 ? * * *",
-  "timeWindowEnd" : "* * 15 ? * * *"
+  "timeWindowStart": "* * 6 ? * * *",
+  "timeWindowEnd": "* * 15 ? * * *"
 }

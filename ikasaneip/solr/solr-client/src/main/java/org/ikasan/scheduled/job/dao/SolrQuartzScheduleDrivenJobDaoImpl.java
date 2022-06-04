@@ -6,6 +6,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
+import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobRecordImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
@@ -38,7 +39,7 @@ public class SolrQuartzScheduleDrivenJobDaoImpl extends SolrDaoBase<QuartzSchedu
             document.addField(PAYLOAD_CONTENT, getQuartzScheduleDrivenJob(event.getQuartzScheduleDrivenJob()));
         }
         catch (JsonProcessingException e) {
-            throw new RuntimeException(String.format("Cannot convert QuartzScheduleDrivenJobRecord to string! [%s]", event), e);
+            throw new SolrEntityConversionException(String.format("Cannot convert QuartzScheduleDrivenJobRecord to string! [%s]", event), e);
         }
 
         document.addField(ID, JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB + "_" + event.getAgentName() + "_" + event.getJobName()

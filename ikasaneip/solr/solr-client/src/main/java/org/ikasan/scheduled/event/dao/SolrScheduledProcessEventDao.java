@@ -9,6 +9,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.event.model.ScheduledProcessEventSearchResults;
 import org.ikasan.scheduled.event.model.SolrScheduledProcessEvent;
 import org.ikasan.scheduled.event.model.SolrScheduledProcessEventRecord;
+import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
@@ -41,7 +42,7 @@ public class SolrScheduledProcessEventDao extends SolrDaoBase<ScheduledProcessEv
             document.addField(PAYLOAD_CONTENT, getScheduledProcessEventContent(scheduledProcessEvent));
         }
         catch (JsonProcessingException e) {
-            throw new RuntimeException(String.format("Cannot convert scheduled process event to string! [%s]", scheduledProcessEvent));
+            throw new SolrEntityConversionException(String.format("Cannot convert scheduled process event to string! [%s]", scheduledProcessEvent));
         }
 
         document.addField(ID, scheduledProcessEvent.getAgentName()

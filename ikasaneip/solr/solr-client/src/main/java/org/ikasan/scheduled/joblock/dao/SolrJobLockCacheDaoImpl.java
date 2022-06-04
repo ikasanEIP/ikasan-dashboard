@@ -1,8 +1,10 @@
-package org.ikasan.scheduled.joblockcache.dao;
+package org.ikasan.scheduled.joblock.dao;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.scheduled.joblockcache.model.SolrJobLockCacheRecordImpl;
+import org.ikasan.scheduled.general.SolrEntityConversionException;
+import org.ikasan.scheduled.joblock.model.SolrJobLockCacheRecordImpl;
+import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.joblock.dao.JobLockCacheDao;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.ikasan.spec.search.SearchResults;
@@ -15,9 +17,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SolrJobLockCacheDaoImpl extends SolrDaoBase<JobLockCacheRecord> implements JobLockCacheDao {
 
-    private static final String JOB_LOCK_CACHE_TYPE = "jockLockCacheRecordInstance";
-    private static final String JOB_LOCK_CACHE_ID = "jockLockCacheRecordInstanceID";
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    public static final String JOB_LOCK_CACHE_TYPE = "jockLockCache";
+    public static final String JOB_LOCK_CACHE_ID = "jockLockCacheIdentifier";
+    private static final ObjectMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
     private static final Logger LOG = LoggerFactory.getLogger(SolrJobLockCacheDaoImpl.class);
 
     @Override
@@ -36,9 +38,16 @@ public class SolrJobLockCacheDaoImpl extends SolrDaoBase<JobLockCacheRecord> imp
         try {
             document.addField(PAYLOAD_CONTENT, OBJECT_MAPPER.writeValueAsString(record.getJobLockCache()));
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(String.format("Cannot convert JobLockCacheRecord lockHolders to string! [%s]", record));
+            throw new SolrEntityConversionException(String.format("Cannot convert JobLockCacheRecord lockHolders to string! [%s]", record));
         }
-        document.addField(CREATED_DATE_TIME, System.currentTimeMillis());
+        if(record.getTimestamp() == 0) {
+            document.addField(CREATED_DATE_TIME, System.currentTimeMillis());
+        }
+        else {
+            document.addField(CREATED_DATE_TIME, record.getTimestamp());
+        }
+
+        document.setField(UPDATED_DATE_TIME, System.currentTimeMillis());
         document.setField(EXPIRY, expiry);
 
         LOG.debug(String.format("Converted JobLockCacheRecord to SolrDocument[%s]", document));
