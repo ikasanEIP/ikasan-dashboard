@@ -1,4 +1,4 @@
-package org.ikasan.scheduled.joblockcache.model;
+package org.ikasan.scheduled.joblock.model;
 
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheAuditRecord;
 

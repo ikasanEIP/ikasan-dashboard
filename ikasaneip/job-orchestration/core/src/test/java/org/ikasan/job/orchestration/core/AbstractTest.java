@@ -1,8 +1,7 @@
 package org.ikasan.job.orchestration.core;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
@@ -10,11 +9,13 @@ import org.ikasan.job.orchestration.context.parameters.ContextParametersInstance
 import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
-import org.ikasan.job.orchestration.model.context.JobLockHolderImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
+import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
+import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
@@ -23,8 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.junit.Assert.*;
 
 public class AbstractTest
 {
@@ -50,6 +50,11 @@ public class AbstractTest
         eventInstance.setAgentName(agentName);
         eventInstance.setSuccessful(isSuccessful);
 
+        InternalEventDrivenJobImpl internalEventDrivenJob = new InternalEventDrivenJobImpl();
+        internalEventDrivenJob.setIdentifier(agentName + "-" + jobName);
+
+        eventInstance.setInternalEventDrivenJob(internalEventDrivenJob);
+
         return eventInstance;
     }
 
@@ -61,6 +66,11 @@ public class AbstractTest
         eventInstance.setSuccessful(isSuccessful);
         eventInstance.setChildContextIds(List.of(childContextId));
 
+        InternalEventDrivenJobImpl internalEventDrivenJob = new InternalEventDrivenJobImpl();
+        internalEventDrivenJob.setIdentifier(agentName + "-" + jobName);
+
+        eventInstance.setInternalEventDrivenJob(internalEventDrivenJob);
+
         return eventInstance;
     }
 
@@ -71,6 +81,11 @@ public class AbstractTest
         eventInstance.setAgentName(agentName);
         eventInstance.setSuccessful(isSuccessful);
         eventInstance.setJobStarting(true);
+
+        InternalEventDrivenJobImpl internalEventDrivenJob = new InternalEventDrivenJobImpl();
+        internalEventDrivenJob.setIdentifier(agentName + "-" + jobName);
+
+        eventInstance.setInternalEventDrivenJob(internalEventDrivenJob);
 
         return eventInstance;
     }
@@ -84,6 +99,11 @@ public class AbstractTest
         eventInstance.setAgentName(agentName);
         eventInstance.setSuccessful(isSuccessful);
 
+        InternalEventDrivenJobImpl internalEventDrivenJob = new InternalEventDrivenJobImpl();
+        internalEventDrivenJob.setIdentifier(agentName + "-" + jobName);
+
+        eventInstance.setInternalEventDrivenJob(internalEventDrivenJob);
+
         return eventInstance;
     }
 
@@ -95,6 +115,11 @@ public class AbstractTest
         eventInstance.setJobName(jobName);
         eventInstance.setAgentName(agentName);
         eventInstance.setSuccessful(isSuccessful);
+
+        InternalEventDrivenJobImpl internalEventDrivenJob = new InternalEventDrivenJobImpl();
+        internalEventDrivenJob.setIdentifier(agentName + "-" + jobName);
+
+        eventInstance.setInternalEventDrivenJob(internalEventDrivenJob);
 
         return eventInstance;
     }
@@ -110,23 +135,25 @@ public class AbstractTest
 
     protected void validateAllLocksCleared() {
         JobLockCacheImpl instance = JobLockCacheImpl.instance();
-        ConcurrentHashMap<String, JobLockHolderImpl> jobLocksByIdentifier
-            = (ConcurrentHashMap<String, JobLockHolderImpl>) ReflectionTestUtils.getField(instance, "jobLocksByIdentifier");
+        JobLockCacheData jobLockCacheData = (JobLockCacheData) ReflectionTestUtils.getField(instance, "jobLockCacheData");
 
-        ConcurrentHashMap<String, JobLockHolderImpl> jobLocksByLockName
-            = (ConcurrentHashMap<String, JobLockHolderImpl>) ReflectionTestUtils.getField(instance, "jobLocksByLockName");
+        ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier
+            = jobLockCacheData.getJobLocksByIdentifier();
+
+        ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName
+            = jobLockCacheData.getJobLocksByLockName();
 
         assertNotNull(jobLocksByIdentifier);
-        Collection<JobLockHolderImpl> jobLockHolders = jobLocksByIdentifier.values();
+        Collection<JobLockHolder> jobLockHolders = jobLocksByIdentifier.values();
         assertTrue(jobLockHolders.size() > 0);
-        for (JobLockHolderImpl jlh : jobLockHolders) {
+        for (JobLockHolder jlh : jobLockHolders) {
             assertEquals(0, jlh.getLockHolders().size());
         }
 
         assertNotNull(jobLocksByLockName);
         assertTrue(jobLocksByLockName.values().size() > 0);
         jobLockHolders = jobLocksByLockName.values();
-        for (JobLockHolderImpl jlh : jobLockHolders) {
+        for (JobLockHolder jlh : jobLockHolders) {
             assertEquals(0, jlh.getLockHolders().size());
         }
     }
