@@ -7,6 +7,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
@@ -382,7 +383,9 @@ public class ContextMachine {
 
         ContextInstance previousContextInstance = this.contextInstance;
 
-        List<SchedulerJobInitiationEvent> events = this.getInitiationEvents(this.contextInstance, scheduledProcessEvent);
+        MutableBoolean lockRaised = new MutableBoolean(false);
+
+        List<SchedulerJobInitiationEvent> events = this.getInitiationEvents(this.contextInstance, scheduledProcessEvent, lockRaised);
 
         List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();
 
@@ -432,7 +435,7 @@ public class ContextMachine {
      * @param scheduledProcessEvent
      * @return
      */
-    private List<SchedulerJobInitiationEvent> getInitiationEvents(ContextInstance contextInstance, ContextualisedScheduledProcessEvent scheduledProcessEvent) {
+    private List<SchedulerJobInitiationEvent> getInitiationEvents(ContextInstance contextInstance, ContextualisedScheduledProcessEvent scheduledProcessEvent, MutableBoolean lockRaised) {
         List<SchedulerJobInitiationEvent> results = new ArrayList<>();
 
         if(!contextInstance.getStatus().equals(InstanceStatus.COMPLETE)
@@ -443,7 +446,7 @@ public class ContextMachine {
              // required to be raised.
              List<SchedulerJobInitiationEvent> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
                  , contextInstance, this.dryRunParameters, this.internalEventDrivenJobs, this.contextInstance.getContextParameters()
-                 , this.contextInstance);
+                 , this.contextInstance, lockRaised);
 
              // Update the context status after event received and attached
              // to the job instance.
@@ -461,7 +464,7 @@ public class ContextMachine {
         if (contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()){
             for(ContextInstance instance: contextInstance.getContexts()) {
                 // Recursively work our way through all nested contexts to determine if any job initiation events need to be raised.
-                results.addAll(this.getInitiationEvents(instance, scheduledProcessEvent));
+                results.addAll(this.getInitiationEvents(instance, scheduledProcessEvent,lockRaised));
                 this.setContextStatus(contextInstance);
             }
         }
