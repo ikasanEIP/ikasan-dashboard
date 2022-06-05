@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -59,7 +60,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      */
     public List<SchedulerJobInitiationEvent> getJobInitiationEvents(ContextualisedScheduledProcessEvent scheduledProcessEvent
         , ContextInstance contextInstance, DryRunParameters dryRunParameters, Map<String, InternalEventDrivenJob> internalEventDrivenJobs
-        , List<ContextParameterInstance> contextParameters, ContextInstance parentContextInstance) {
+        , List<ContextParameterInstance> contextParameters, ContextInstance parentContextInstance, MutableBoolean lockRaised) {
         SchedulerJobInstance schedulerJobInstance = contextInstance.getScheduledJobsMap()
             .get(scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName());
 
