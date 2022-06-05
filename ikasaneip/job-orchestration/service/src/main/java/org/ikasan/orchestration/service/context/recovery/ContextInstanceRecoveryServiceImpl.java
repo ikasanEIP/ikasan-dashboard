@@ -40,16 +40,8 @@
  */
 package org.ikasan.orchestration.service.context.recovery;
 
-import static org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker.outsideOfOperatingWindow;
-
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
-
-import org.ikasan.orchestration.service.context.ContextInstanceHelperService;
+import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.module.client.ContextParametersUpdateService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -65,11 +57,19 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.rest.agent.client.ContextInstancePublicationService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ContextInstanceRecoveryServiceImpl extends ContextInstanceHelperService implements ContextInstanceRecoveryService {
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+
+import static org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker.outsideOfOperatingWindow;
+
+public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRecoveryService {
     private static final Logger LOG = LoggerFactory.getLogger(ContextInstanceRecoveryServiceImpl.class);
 
     private final ExecutorService executor = Executors.newCachedThreadPool();
@@ -80,7 +80,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceHelperSer
                                               ModuleMetaDataService moduleMetadataService,
                                               InternalEventDrivenJobService internalEventDrivenJobService,
                                               ContextParametersInstanceService contextParametersInstanceService,
-                                              ContextParametersUpdateService contextParametersUpdateService,
+                                              ContextInstancePublicationService contextInstancePublicationService,
                                               JobLockCacheService jobLockCacheService,
                                               ScheduledContextService scheduledContextService,
                                               SchedulerJobInstanceService schedulerJobInstanceService,
@@ -92,7 +92,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceHelperSer
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
@@ -155,7 +155,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceHelperSer
                 // we have a context record without an instance which should not be the case
                 String message = String.format("Context [%s] does not have an instance. Creating instance now!", scheduledContextRecord.getContextName());
                 LOG.error(message);
-                executor.execute(new ContextInstanceRecoveryBackFillerRunner(
+                executor.execute(new MissingContextInstanceRecoveryRunnable(
                     this.queueDirectory, this.scheduledContextInstanceService, this.schedulerService, this.moduleMetadataService, this.internalEventDrivenJobService,
                     this.contextParametersInstanceService, this.contextParametersUpdateService, this.jobLockCacheService, this.scheduledContextService,
                     scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster

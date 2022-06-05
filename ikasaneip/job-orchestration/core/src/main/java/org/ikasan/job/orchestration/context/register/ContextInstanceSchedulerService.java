@@ -59,7 +59,6 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
             SearchResults<ScheduledContextRecord> scheduledContextRecords
                 = (SearchResults<ScheduledContextRecord>) this.scheduledContextService.findAll();
 
-            Date now = new Date();
             for (ScheduledContextRecord scheduledContextRecord : scheduledContextRecords.getResultList()) {
                 ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(scheduledContextRecord.getContextName(),
                     scheduledContextRecord.getContext().getTimeWindowStart(), this.contextInstanceRegistrationService);

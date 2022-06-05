@@ -1,12 +1,6 @@
 package org.ikasan.orchestration.service.context.register;
 
-import static org.ikasan.orchestration.service.utils.InternalEventDrivenJobTestSearchResults.AGENT_NAME;
-import static org.ikasan.orchestration.service.utils.TestUtils.AGENT_URL;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.util.List;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
@@ -21,7 +15,6 @@ import org.ikasan.orchestration.service.utils.CustomBackFillerMatcher;
 import org.ikasan.orchestration.service.utils.InternalEventDrivenJobTestSearchResults;
 import org.ikasan.orchestration.service.utils.TestUtils;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.module.client.ContextParametersUpdateService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
@@ -39,6 +32,7 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.rest.agent.client.ContextInstancePublicationService;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
 import org.junit.Before;
@@ -50,7 +44,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+
+import static org.ikasan.orchestration.service.utils.InternalEventDrivenJobTestSearchResults.AGENT_NAME;
+import static org.ikasan.orchestration.service.utils.TestUtils.AGENT_URL;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContextInstanceRegistrationServiceImplTest {
@@ -77,7 +76,7 @@ public class ContextInstanceRegistrationServiceImplTest {
     private ContextParametersInstanceService contextParametersInstanceService;
 
     @Mock
-    private ContextParametersUpdateService<ContextInstance> contextParametersUpdateService;
+    private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
 
     @Mock
     private SchedulerJobInstanceService schedulerJobInstanceService;
@@ -105,7 +104,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
@@ -139,7 +138,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
@@ -195,7 +194,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             scheduledContextService,
             schedulerJobInstanceService,
             jobLockCacheService,
@@ -265,9 +264,9 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(moduleMetadataService).findById(AGENT_NAME + "3");
         verify(contextParametersInstanceService).populateContextParameters();
         verify(contextParametersInstanceService).getAllContextParameters(contextName);
-        verify(contextParametersUpdateService).update(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
-        verify(contextParametersUpdateService).update(eq(AGENT_URL + "2"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
-        verify(contextParametersUpdateService).update(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
         verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
         verify(jobLockCacheService).get();
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
@@ -285,7 +284,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             scheduledContextService,
             schedulerJobInstanceService,
             jobLockCacheService,
@@ -356,7 +355,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             scheduledContextService,
             schedulerJobInstanceService,
             jobLockCacheService,
@@ -398,7 +397,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             scheduledContextService,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
@@ -439,7 +438,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             scheduledContextService,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
