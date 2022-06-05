@@ -22,12 +22,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
-public class ContextParametersRestUpdateServiceImplTest {
+public class ContextInstancePublicationRestServiceImplTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(WireMockConfiguration.options().dynamicPort());
 
-    private ContextParametersRestUpdateServiceImpl uut;
+    private ContextInstancePublicationRestServiceImpl uut;
 
     private String contextBaseUrl;
 
@@ -37,7 +37,7 @@ public class ContextParametersRestUpdateServiceImplTest {
     public void setup() {
         contextBaseUrl = "http://localhost:" + wireMockRule.port();
         Environment environment = new StandardEnvironment();
-        uut = new ContextParametersRestUpdateServiceImpl(environment, new HttpComponentsClientHttpRequestFactory());
+        uut = new ContextInstancePublicationRestServiceImpl(environment, new HttpComponentsClientHttpRequestFactory());
     }
 
     @Test
@@ -53,7 +53,7 @@ public class ContextParametersRestUpdateServiceImplTest {
                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .withStatus(200)));
 
-        uut.update(contextBaseUrl, instanceWithParams);
+        uut.publish(contextBaseUrl, instanceWithParams);
 
         verify(putRequestedFor(urlEqualTo("/rest/contextInstance/save"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
@@ -74,7 +74,7 @@ public class ContextParametersRestUpdateServiceImplTest {
                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .withStatus(503)));
 
-        uut.update(contextBaseUrl, instanceWithParams);
+        uut.publish(contextBaseUrl, instanceWithParams);
 
         verify(putRequestedFor(urlEqualTo("/rest/contextInstance/save"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))

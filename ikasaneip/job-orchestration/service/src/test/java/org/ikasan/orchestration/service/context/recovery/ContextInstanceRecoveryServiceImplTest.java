@@ -1,16 +1,6 @@
 package org.ikasan.orchestration.service.context.recovery;
 
-import static org.ikasan.orchestration.service.utils.InternalEventDrivenJobTestSearchResults.AGENT_NAME;
-import static org.ikasan.orchestration.service.utils.ScheduledContextRecordTestSearchResults.CONTEXT_NAME;
-import static org.ikasan.orchestration.service.utils.TestUtils.AGENT_URL;
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheRecordImpl;
@@ -21,7 +11,6 @@ import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.orchestration.service.utils.*;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.module.client.ContextParametersUpdateService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
@@ -38,6 +27,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.rest.agent.client.ContextInstancePublicationService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +38,15 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+
+import static org.ikasan.orchestration.service.utils.InternalEventDrivenJobTestSearchResults.AGENT_NAME;
+import static org.ikasan.orchestration.service.utils.ScheduledContextRecordTestSearchResults.CONTEXT_NAME;
+import static org.ikasan.orchestration.service.utils.TestUtils.AGENT_URL;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContextInstanceRecoveryServiceImplTest {
@@ -74,7 +72,7 @@ public class ContextInstanceRecoveryServiceImplTest {
     private ModuleMetaDataService moduleMetadataService;
 
     @Mock
-    private ContextParametersUpdateService<ContextInstance> contextParametersUpdateService;
+    private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
 
     @Mock
     private SchedulerJobInstanceService schedulerJobInstanceService;
@@ -104,7 +102,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
@@ -145,7 +143,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
@@ -180,14 +178,14 @@ public class ContextInstanceRecoveryServiceImplTest {
         // verify
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING));
         verify(scheduledContextService).findAll();
-        verify(executor).execute(any(ContextInstanceRecoveryBackFillerRunner.class));
+        verify(executor).execute(any(MissingContextInstanceRecoveryRunnable.class));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             schedulerService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
@@ -224,7 +222,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
@@ -293,20 +291,20 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(contextParametersInstanceService).getAllContextParameters(CONTEXT_NAME + "3");
         ContextInstance contextInstance1 = instanceResults.getResultList().get(0).getContextInstance();
         contextInstance1.setContextParameters(params);
-        verify(contextParametersUpdateService).update(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance1, CONTEXT_NAME + "1")));
-        verify(contextParametersUpdateService).update(eq(AGENT_URL + "2"), argThat(new CustomBackFillerMatcher(contextInstance1, CONTEXT_NAME + "1")));
-        verify(contextParametersUpdateService).update(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance1, CONTEXT_NAME + "1")));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance1, CONTEXT_NAME + "1")));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), argThat(new CustomBackFillerMatcher(contextInstance1, CONTEXT_NAME + "1")));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance1, CONTEXT_NAME + "1")));
 
         ContextInstance contextInstance2 = instanceResults.getResultList().get(0).getContextInstance();
         contextInstance2.setContextParameters(params);
-        verify(contextParametersUpdateService).update(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance2, CONTEXT_NAME + "2")));
-        verify(contextParametersUpdateService).update(eq(AGENT_URL + "2"), argThat(new CustomBackFillerMatcher(contextInstance2, CONTEXT_NAME + "2")));
-        verify(contextParametersUpdateService).update(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance2, CONTEXT_NAME + "2")));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance2, CONTEXT_NAME + "2")));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), argThat(new CustomBackFillerMatcher(contextInstance2, CONTEXT_NAME + "2")));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance2, CONTEXT_NAME + "2")));
         ContextInstance contextInstance3 = instanceResults.getResultList().get(0).getContextInstance();
         contextInstance3.setContextParameters(params);
-        verify(contextParametersUpdateService).update(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance3, CONTEXT_NAME + "3")));
-        verify(contextParametersUpdateService).update(eq(AGENT_URL + "2"), argThat(new CustomBackFillerMatcher(contextInstance3, CONTEXT_NAME + "3")));
-        verify(contextParametersUpdateService).update(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance3, CONTEXT_NAME + "3")));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance3, CONTEXT_NAME + "3")));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), argThat(new CustomBackFillerMatcher(contextInstance3, CONTEXT_NAME + "3")));
+        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance3, CONTEXT_NAME + "3")));
 
         verify(jobLockCacheService, times(3)).get();
         verify(schedulerJobInstanceService, times(3)).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
@@ -317,7 +315,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
@@ -376,7 +374,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
@@ -411,7 +409,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
