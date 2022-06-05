@@ -4,9 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
-import org.ikasan.job.orchestration.context.cache.JobLockCacheRecordImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.core.machine.JobLogicMachine;
+import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
+import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
@@ -154,7 +155,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         // set up
         ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
         String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
-        jsonContext = jsonContext.replace("\"name\" : \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         record.setContext(context);
@@ -165,9 +166,10 @@ public class ContextInstanceRegistrationServiceImplTest {
         when(internalEventDrivenJobService.findByContext(contextName, -1, -1)).thenReturn(internalEventDrivenJobRecordSearchResults);
         when(moduleMetadataService.findById(AGENT_NAME + "1")).thenReturn(null);
         JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
+        jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
-        jobLockCacheRecord.setJobLockCache(jobLockInstance);
+
         when(jobLockCacheService.get()).thenReturn(jobLockCacheRecord);
 
         // execute
@@ -227,7 +229,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         // set up
         ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
         String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
-        jsonContext = jsonContext.replace("\"name\" : \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         record.setContext(context);
@@ -248,9 +250,10 @@ public class ContextInstanceRegistrationServiceImplTest {
         contextInstance.setContextParameters(params);
 
         JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
+        jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
-        jobLockCacheRecord.setJobLockCache(jobLockInstance);
+
         when(jobLockCacheService.get()).thenReturn(jobLockCacheRecord);
 
         // execute
@@ -317,7 +320,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         // set up
         ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
         String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
-        jsonContext = jsonContext.replace("\"name\" : \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         record.setContext(context);
@@ -327,9 +330,10 @@ public class ContextInstanceRegistrationServiceImplTest {
         SearchResults<InternalEventDrivenJobRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(0);
         when(internalEventDrivenJobService.findByContext(contextName, -1, -1)).thenReturn(internalEventDrivenJobRecordSearchResults);
         JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
+        jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
-        jobLockCacheRecord.setJobLockCache(jobLockInstance);
+
         when(jobLockCacheService.get()).thenReturn(jobLockCacheRecord);
 
         // execute
@@ -339,7 +343,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(scheduledContextService).findById(contextName);
         verify(internalEventDrivenJobService).findByContext(contextName, -1, -1);
         verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
-        verify(jobLockCacheService).get();
+        verify(jobLockCacheService, times(1)).get();
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -411,7 +415,7 @@ public class ContextInstanceRegistrationServiceImplTest {
     public void deregsiter_should_save_instance_as_ended() throws Exception {
         // set up
         String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
-        jsonContext = jsonContext.replace("\"name\" : \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
