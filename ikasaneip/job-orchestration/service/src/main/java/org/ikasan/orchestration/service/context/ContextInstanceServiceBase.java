@@ -163,17 +163,21 @@ public abstract class ContextInstanceServiceBase {
     }
 
     private JobLockCache getJobLockCache(ContextTemplate context) {
-        JobLockCache jobLockCache;
+        JobLockCache jobLockCache = JobLockCacheImpl.instance();
         JobLockCacheRecord jobLockCacheRecord = jobLockCacheService.get();
+        /**
+         * TODO we need to focus on exactly how the job lock cache is initialised / recovered.
+         * What happens when we have resolve the persisted cache, but the context has been updated
+         * to have more or less jobs in a lock, a lock has been removed, or a new lock added?
+         */
         if (jobLockCacheRecord == null) {
             // should never happen we are recovering so should exist but just in case
-            jobLockCache = JobLockCacheImpl.instance();
             jobLockCache.setJobLockCacheService(jobLockCacheService);
             jobLockCache.addLocks(context.getAllNestedJobLocks());
         } else {
             // do not set the locks as should all be in there already
-            jobLockCache = jobLockCacheRecord.getJobLockCache();
             jobLockCache.setJobLockCacheService(jobLockCacheService);
+            jobLockCache.setJobLockCacheRecord(jobLockCacheRecord);
         }
         return jobLockCache;
     }
