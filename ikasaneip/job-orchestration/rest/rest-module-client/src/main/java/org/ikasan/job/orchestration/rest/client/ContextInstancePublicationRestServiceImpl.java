@@ -1,8 +1,8 @@
 package org.ikasan.job.orchestration.rest.client;
 
 import org.ikasan.rest.client.ModuleRestService;
-import org.ikasan.spec.module.client.ContextParametersUpdateService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.rest.agent.client.ContextInstancePublicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
@@ -12,17 +12,17 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestClientResponseException;
 
-public class ContextParametersRestUpdateServiceImpl extends ModuleRestService implements ContextParametersUpdateService<ContextInstance> {
+public class ContextInstancePublicationRestServiceImpl extends ModuleRestService implements ContextInstancePublicationService<ContextInstance> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ContextParametersRestUpdateServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContextInstancePublicationRestServiceImpl.class);
     private static final String REST_URL = "/rest/contextInstance/save";
 
-    public ContextParametersRestUpdateServiceImpl(Environment environment, HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
+    public ContextInstancePublicationRestServiceImpl(Environment environment, HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
         super(environment, httpComponentsClientHttpRequestFactory);
     }
 
     @Override
-    public void update(String contextUrl, ContextInstance instance) {
+    public void publish(String contextUrl, ContextInstance instance) {
         HttpHeaders headers = createHttpHeaders();
         HttpEntity<?> entity = new HttpEntity<>(instance, headers);
         String url = contextUrl + REST_URL;
