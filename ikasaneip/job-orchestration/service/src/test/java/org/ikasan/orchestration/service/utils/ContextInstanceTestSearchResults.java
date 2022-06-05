@@ -37,7 +37,7 @@ public class ContextInstanceTestSearchResults implements SearchResults<Scheduled
             } catch (IOException e) {
                 throw new RuntimeException("could not find or parse file data/context.json");
             }
-            jsonContext = jsonContext.replace("\"name\" : \"CONTEXT-1436221681\"", "\"name\" : \"" + ("ContextName" + i) + "\"");
+            jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + ("ContextName" + i) + "\"");
             if (insideOperatingWindow) {
                 // make operating window 24 hours
                 jsonContext = jsonContext.replaceAll("\"timeWindowStart\".*", "\"timeWindowStart\" : \"" + "* * 0 ? * * *" + "\"" + ",");

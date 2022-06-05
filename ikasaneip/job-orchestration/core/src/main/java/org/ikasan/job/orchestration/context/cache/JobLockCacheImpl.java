@@ -202,4 +202,12 @@ public final class JobLockCacheImpl implements JobLockCache {
 
         return null;
     }
+
+    @Override
+    public void setJobLockCacheRecord(JobLockCacheRecord jobLockCacheRecord) {
+        this.jobLockCacheRecord = jobLockCacheRecord;
+        if(jobLockCacheRecord != null) {
+            this.jobLockCacheData = jobLockCacheRecord.getJobLockCache();
+        }
+    }
 }
