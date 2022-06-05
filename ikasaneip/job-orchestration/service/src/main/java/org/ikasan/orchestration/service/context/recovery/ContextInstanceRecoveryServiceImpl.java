@@ -154,7 +154,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
             } else {
                 // we have a context record without an instance which should not be the case
                 String message = String.format("Context [%s] does not have an instance. Creating instance now!", scheduledContextRecord.getContextName());
-                LOG.error(message);
+                LOG.info(message);
                 executor.execute(new MissingContextInstanceRecoveryRunnable(
                     this.queueDirectory, this.scheduledContextInstanceService, this.schedulerService, this.moduleMetadataService, this.internalEventDrivenJobService,
                     this.contextParametersInstanceService, this.contextParametersUpdateService, this.jobLockCacheService, this.scheduledContextService,
