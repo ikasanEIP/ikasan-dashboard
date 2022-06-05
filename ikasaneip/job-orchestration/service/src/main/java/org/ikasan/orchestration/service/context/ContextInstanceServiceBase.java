@@ -1,11 +1,6 @@
 package org.ikasan.orchestration.service.context;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
@@ -13,7 +8,6 @@ import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecor
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.module.client.ContextParametersUpdateService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
@@ -32,14 +26,19 @@ import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.rest.agent.client.ContextInstancePublicationService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-public abstract class ContextInstanceHelperService {
-    private static final Logger LOG = LoggerFactory.getLogger(ContextInstanceHelperService.class);
+public abstract class ContextInstanceServiceBase {
+    private static final Logger LOG = LoggerFactory.getLogger(ContextInstanceServiceBase.class);
 
     protected final String queueDirectory;
     protected final ScheduledContextInstanceService scheduledContextInstanceService;
@@ -47,7 +46,7 @@ public abstract class ContextInstanceHelperService {
     protected final ModuleMetaDataService moduleMetadataService;
     protected final InternalEventDrivenJobService internalEventDrivenJobService;
     protected final ContextParametersInstanceService contextParametersInstanceService;
-    protected final ContextParametersUpdateService<ContextInstance> contextParametersUpdateService;
+    protected final ContextInstancePublicationService<ContextInstance> contextParametersUpdateService;
     protected final JobLockCacheService jobLockCacheService;
     protected final ScheduledContextService scheduledContextService;
     protected final SchedulerJobInstanceService schedulerJobInstanceService;
@@ -57,18 +56,18 @@ public abstract class ContextInstanceHelperService {
     protected final ObjectMapper objectMapper;
 
 
-    public ContextInstanceHelperService(String queueDirectory,
-                                        ScheduledContextInstanceService scheduledContextInstanceService,
-                                        SchedulerService schedulerService,
-                                        ModuleMetaDataService moduleMetadataService,
-                                        InternalEventDrivenJobService internalEventDrivenJobService,
-                                        ContextParametersInstanceService contextParametersInstanceService,
-                                        ContextParametersUpdateService contextParametersUpdateService,
-                                        JobLockCacheService jobLockCacheService,
-                                        ScheduledContextService scheduledContextService,
-                                        SchedulerJobInstanceService schedulerJobInstanceService,
-                                        ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
-                                        SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
+    public ContextInstanceServiceBase(String queueDirectory,
+                                      ScheduledContextInstanceService scheduledContextInstanceService,
+                                      SchedulerService schedulerService,
+                                      ModuleMetaDataService moduleMetadataService,
+                                      InternalEventDrivenJobService internalEventDrivenJobService,
+                                      ContextParametersInstanceService contextParametersInstanceService,
+                                      ContextInstancePublicationService contextParametersUpdateService,
+                                      JobLockCacheService jobLockCacheService,
+                                      ScheduledContextService scheduledContextService,
+                                      SchedulerJobInstanceService schedulerJobInstanceService,
+                                      ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
+                                      SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
         this.queueDirectory = queueDirectory;
         if (this.queueDirectory == null) {
             throw new IllegalArgumentException("queueDirectory cannot be null!");
@@ -211,7 +210,7 @@ public abstract class ContextInstanceHelperService {
             contextInstance.setContextParameters(allContextParameters);
             for (String key : agents.keySet()) {
                 ModuleMetaData agent = agents.get(key);
-                contextParametersUpdateService.update(agent.getUrl(), contextInstance);
+                contextParametersUpdateService.publish(agent.getUrl(), contextInstance);
             }
         }
     }

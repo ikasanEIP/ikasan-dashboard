@@ -1,10 +1,10 @@
-package org.ikasan.orchestration.service.context.status;
+package org.ikasan.orchestration.service.context;
 
 import org.ikasan.orchestration.service.context.recovery.ContextInstanceRecoveryServiceImpl;
 import org.ikasan.orchestration.service.context.register.ContextInstanceRegistrationServiceImpl;
 import org.ikasan.orchestration.service.context.reset.ContextResetServiceImpl;
+import org.ikasan.orchestration.service.context.status.ContextStatusServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.module.client.ContextParametersUpdateService;
 import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
@@ -14,6 +14,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.rest.agent.client.ContextInstancePublicationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +32,7 @@ public class ContextServiceAutoConfiguration {
         ModuleMetaDataService moduleMetadataService,
         InternalEventDrivenJobService internalEventDrivenJobService,
         ContextParametersInstanceService contextParametersInstanceService,
-        ContextParametersUpdateService contextParametersUpdateService,
+        ContextInstancePublicationService contextInstancePublicationService,
         JobLockCacheService jobLockCacheService,
         ScheduledContextService scheduledContextService,
         SchedulerJobInstanceService schedulerJobInstanceService,
@@ -44,7 +45,7 @@ public class ContextServiceAutoConfiguration {
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,
@@ -60,7 +61,7 @@ public class ContextServiceAutoConfiguration {
         ModuleMetaDataService moduleMetadataService,
         InternalEventDrivenJobService internalEventDrivenJobService,
         ContextParametersInstanceService contextParametersInstanceService,
-        ContextParametersUpdateService contextParametersUpdateService,
+        ContextInstancePublicationService contextInstancePublicationService,
         JobLockCacheService jobLockCacheService,
         ScheduledContextService scheduledContextService,
         SchedulerJobInstanceService schedulerJobInstanceService,
@@ -73,7 +74,7 @@ public class ContextServiceAutoConfiguration {
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
-            contextParametersUpdateService,
+            contextInstancePublicationService,
             jobLockCacheService,
             scheduledContextService,
             schedulerJobInstanceService,

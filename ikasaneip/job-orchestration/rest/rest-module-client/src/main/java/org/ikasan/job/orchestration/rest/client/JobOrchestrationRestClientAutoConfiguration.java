@@ -16,9 +16,9 @@ public class JobOrchestrationRestClientAutoConfiguration {
     }
 
     @Bean
-    public ContextParametersRestUpdateServiceImpl contextParametersRestService(Environment environment
+    public ContextInstancePublicationRestServiceImpl contextParametersRestService(Environment environment
         , HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
-        return new ContextParametersRestUpdateServiceImpl(environment, httpComponentsClientHttpRequestFactory);
+        return new ContextInstancePublicationRestServiceImpl(environment, httpComponentsClientHttpRequestFactory);
     }
 
 }
