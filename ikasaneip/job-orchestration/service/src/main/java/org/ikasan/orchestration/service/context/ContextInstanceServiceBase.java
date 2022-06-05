@@ -180,11 +180,13 @@ public abstract class ContextInstanceServiceBase {
 
     private HashMap<String, ModuleMetaData> getAgents(Map<String, InternalEventDrivenJob> internalJobs) {
         HashMap<String, ModuleMetaData> agents = new HashMap<>();
+        // TODO we only need to get the module metadata for distinct agents!
         internalJobs.values().forEach(job -> {
             if (!agents.containsKey(job.getAgentName())) {
                 ModuleMetaData moduleMetadataById = moduleMetadataService.findById(job.getAgentName());
                 if (moduleMetadataById == null) {
-                    LOG.error("Could not find ModuleMetaData for agent name " + job.getAgentName());
+                    // TODO is this an exception case? Do we need to raise exceptions?
+                    LOG.warn("Could not find ModuleMetaData for agent name " + job.getAgentName());
                 } else {
                     agents.put(job.getAgentName(), moduleMetadataById);
                 }
