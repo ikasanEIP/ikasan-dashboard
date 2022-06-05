@@ -166,22 +166,24 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                                 ContextInstance contextInstance, List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents, MutableBoolean lockRaised) {
         List<SchedulerJobInitiationEvent> finalSchedulerJobInitiationEvents = new ArrayList<>();
 
+        String jobIdentifier = scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName();
+
         // Determine if the scheduled process event received is currently holding the lock. There are a
         // couple of things to note here.
         //      1. We are only interested in events that are tied to an internal event driven job as they are the only
         //         job types that can participate in a lock.
         //      2. We are not interested in jobs that are flagged as starting as they CANNOT release jobs when starting.
         if(!lockRaised.booleanValue() && scheduledProcessEvent.getInternalEventDrivenJob() != null && !scheduledProcessEvent.isJobStarting() &&
-            this.jobLockCache.hasLock(scheduledProcessEvent.getInternalEventDrivenJob().getIdentifier(), contextInstance.getName())) {
+            this.jobLockCache.hasLock(jobIdentifier, contextInstance.getName())) {
             lockRaised.setTrue();
             logger.info("Locked {}", scheduledProcessEvent.getInternalEventDrivenJob());
 
             // Once we have determined that the job is holding the lock, release it.
-            this.jobLockCache.release(scheduledProcessEvent.getInternalEventDrivenJob().getIdentifier(), contextInstance.getName());
+            this.jobLockCache.release(jobIdentifier, contextInstance.getName());
 
             // Now determine if there are any queued initiation events waiting for the lock to be released.
             ContextualisedSchedulerJobInitiationEvent queuedEvent = this.jobLockCache.pollSchedulerJobInitiationEventWaitQueue
-                (scheduledProcessEvent.getInternalEventDrivenJob().getIdentifier(), contextInstance.getName());
+                (jobIdentifier, contextInstance.getName());
 
             if (queuedEvent != null) {
                 // Having determined that there is a queued event, it then takes a lock.
