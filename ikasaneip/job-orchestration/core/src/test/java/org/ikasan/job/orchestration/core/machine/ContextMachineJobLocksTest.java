@@ -46,9 +46,6 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         Map<String, InternalEventDrivenJob> internalEventDrivenJobs1 = createInternalJobsMap(context1);
         Map<String, InternalEventDrivenJob> internalEventDrivenJobs2 = createInternalJobsMap(context2);
 
-        contextTemplateValidator.validate(context1);
-        contextTemplateValidator.validate(context2);
-
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
         jobLockCache.addLocks(context1.getAllNestedJobLocks());
@@ -301,9 +298,6 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         Map<String, InternalEventDrivenJob> internalEventDrivenJobs1 = createInternalJobsMap(context1);
         Map<String, InternalEventDrivenJob> internalEventDrivenJobs2 = createInternalJobsMap(context2);
 
-        contextTemplateValidator.validate(context1);
-        contextTemplateValidator.validate(context2);
-
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
         jobLockCache.addLocks(context1.getAllNestedJobLocks());
@@ -456,9 +450,6 @@ public class ContextMachineJobLocksTest extends AbstractTest {
 
         Map<String, InternalEventDrivenJob> internalEventDrivenJobs1 = createInternalJobsMap(context1);
         Map<String, InternalEventDrivenJob> internalEventDrivenJobs2 = createInternalJobsMap(context2);
-
-        contextTemplateValidator.validate(context1);
-        contextTemplateValidator.validate(context2);
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
@@ -615,9 +606,6 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         Map<String, InternalEventDrivenJob> internalEventDrivenJobs1 = createInternalJobsMap(context1);
         Map<String, InternalEventDrivenJob> internalEventDrivenJobs2 = createInternalJobsMap(context2);
 
-        contextTemplateValidator.validate(context1);
-        contextTemplateValidator.validate(context2);
-
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
         jobLockCache.addLocks(context1.getAllNestedJobLocks());
@@ -765,9 +753,6 @@ public class ContextMachineJobLocksTest extends AbstractTest {
 
         Map<String, InternalEventDrivenJob> internalEventDrivenJobs1 = createInternalJobsMap(context1);
         Map<String, InternalEventDrivenJob> internalEventDrivenJobs2 = createInternalJobsMap(context2);
-
-        contextTemplateValidator.validate(context1);
-        contextTemplateValidator.validate(context2);
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
