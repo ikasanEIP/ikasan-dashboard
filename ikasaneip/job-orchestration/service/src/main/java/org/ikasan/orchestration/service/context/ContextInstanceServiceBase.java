@@ -131,7 +131,7 @@ public abstract class ContextInstanceServiceBase {
         scheduledContextInstanceService.save(scheduledContextInstanceRecord);
     }
 
-    protected void initialiseContextMachine(ContextTemplate context, ContextInstance instance) throws Exception {
+    protected void initialiseContextMachine(ContextTemplate context, ContextInstance instance, boolean populateParams) throws Exception {
         schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(instance);
 
         Map<String, InternalEventDrivenJob> internalJobs = getInternalJobs(context.getName());
@@ -157,7 +157,9 @@ public abstract class ContextInstanceServiceBase {
         contextMachine.addSchedulerJobStateChangeEventListener(event ->
             this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
 
-        populateParamsWithAgent(instance, agents);
+        if (populateParams) {
+            populateParamsWithAgent(instance, agents);
+        }
 
         ContextMachineCache.instance().put(contextMachine);
     }
