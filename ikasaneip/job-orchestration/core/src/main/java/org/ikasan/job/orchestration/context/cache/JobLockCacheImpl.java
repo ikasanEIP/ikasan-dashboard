@@ -234,4 +234,8 @@ public final class JobLockCacheImpl implements JobLockCache {
             this.jobLockCacheData = jobLockCacheRecord.getJobLockCache();
         }
     }
+
+    public JobLockCacheData getJobLockCacheData() {
+        return jobLockCacheData;
+    }
 }
