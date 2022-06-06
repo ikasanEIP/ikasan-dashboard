@@ -98,7 +98,7 @@ public class ContextDebugWidget extends Div {
         this.queueDir = queueDir;
 
         this.schedulerVisualisation = new SchedulerVisualisation(".", moduleMetaDataService, scheduledProcessManagementService, configurationRestService,
-            moduleControlRestService,  metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
+            moduleControlRestService,  metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, schedulerJobInstanceService);
 
         this.schedulerVisualisation.setWidthFull();
         this.schedulerVisualisation.setHeight("1000px");
@@ -235,7 +235,13 @@ public class ContextDebugWidget extends Div {
         });
 
 
-        controlsLayout.add(this.contextInstances, addContextButton, resetContextButton);
+        Button viewJobLockCacheButton = new Button("View Job Lock Cache");
+        viewJobLockCacheButton.addClickListener(event -> {
+            JobLockCacheViewerDialog jobLockCacheViewerDialog = new JobLockCacheViewerDialog();
+            jobLockCacheViewerDialog.open();
+        });
+
+        controlsLayout.add(this.contextInstances, addContextButton, resetContextButton, viewJobLockCacheButton);
         controlsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.contextInstances);
 
 
