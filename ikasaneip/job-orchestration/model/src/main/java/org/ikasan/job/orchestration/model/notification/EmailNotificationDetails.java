@@ -1,9 +1,10 @@
 package org.ikasan.job.orchestration.model.notification;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-public interface EmailNotificationDetails {
+public interface EmailNotificationDetails extends Serializable {
 
     String getJobName();
 
