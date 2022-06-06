@@ -37,11 +37,6 @@ deploy:
     script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.proKey=mick_stewart73@hotmail.com/pro-e7494afe-55d8-4b7a-8a76-5dfbed55f637 -Pall -B  -V -q --settings .settings.xml
     on:
       branch: 3.3.x
-  - provider: script
-    skip_cleanup: true
-    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.proKey=mick_stewart73@hotmail.com/pro-e7494afe-55d8-4b7a-8a76-5dfbed55f637 -Pall -B  -V -q --settings .settings.xml
-    on:
-      branch: 3.3.x-scheduler-working-branch
   # Push release to oss
   - provider: script
     skip_cleanup: true
