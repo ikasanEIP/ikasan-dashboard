@@ -5,6 +5,7 @@ import org.ikasan.job.orchestration.model.notification.GenericNotificationDetail
 import org.ikasan.job.orchestration.model.notification.MonitorType;
 import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
+import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
 import org.ikasan.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.jmock.Expectations;
@@ -110,9 +111,12 @@ public class EmailNotifierTest {
         emailNotificationDetails.setEmailSubject("subject-1");
         emailNotificationDetails.setHtml(true);
 
+        SolrEmailNotificationDetailsRecord record = new SolrEmailNotificationDetailsRecord();
+        record.setEmailNotificationDetails(emailNotificationDetails);
+
         mockery.checking(new Expectations(){{
             oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "ERROR");
-            will(returnValue(emailNotificationDetails));
+            will(returnValue(record));
         }});
 
         emailNotifier.invoke(notificationDetails);
@@ -149,9 +153,12 @@ public class EmailNotifierTest {
         emailNotificationDetails.setEmailBodyTemplate("src/test/resources/email/notification-email-template.txt");
         emailNotificationDetails.setHtml(false);
 
+        SolrEmailNotificationDetailsRecord record = new SolrEmailNotificationDetailsRecord();
+        record.setEmailNotificationDetails(emailNotificationDetails);
+
         mockery.checking(new Expectations(){{
             oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "ERROR");
-            will(returnValue(emailNotificationDetails));
+            will(returnValue(record));
         }});
 
         emailNotifier.invoke(notificationDetails);
