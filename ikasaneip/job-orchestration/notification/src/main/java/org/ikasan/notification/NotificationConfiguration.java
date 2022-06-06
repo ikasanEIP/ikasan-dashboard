@@ -3,7 +3,7 @@ package org.ikasan.notification;
 import org.ikasan.job.orchestration.model.notification.Monitor;
 import org.ikasan.job.orchestration.model.notification.Notifier;
 import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
-import org.ikasan.notification.monitor.ErrorMonitorImpl;
+import org.ikasan.notification.monitor.StateChangeMonitorImpl;
 import org.ikasan.notification.monitor.OverdueFileMonitorImpl;
 import org.ikasan.notification.notifier.EmailNotifier;
 import org.ikasan.scheduled.notification.service.EmailNotificationDetailsService;
@@ -46,9 +46,9 @@ public class NotificationConfiguration {
     }
 
     @Bean
-    public Monitor errorMonitor(List<Notifier> errorNotifiers) {
-        Monitor monitor = new ErrorMonitorImpl(executorService);
-        monitor.setNotifiers(errorNotifiers);
+    public Monitor stateChangeMonitor(List<Notifier> stateChangeNotifiers) {
+        Monitor monitor = new StateChangeMonitorImpl(executorService);
+        monitor.setNotifiers(stateChangeNotifiers);
         return monitor;
     }
 
