@@ -25,13 +25,12 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.assertEquals;
 
-public class ErrorMonitorTest {
+public class StateChangeMonitorTest {
 
     private  ObjectMapper objectMapper;
 
@@ -61,10 +60,31 @@ public class ErrorMonitorTest {
         contextMachine1.init();
 
         ContextMachineCache.instance().put(contextMachine1);
+
+
+        ContextInstance contextInstance2 = new ContextInstanceImpl();
+        contextInstance2.setName("context-instance-2");
+
+        ContextTemplate contextTemplate2 = new ContextTemplateImpl();
+        contextTemplate2.setName("context-template-2");
+
+        SchedulerJobInstance schedulerJobInstance2 = new SchedulerJobInstanceImpl();
+        schedulerJobInstance2.setAgentName("agent-2");
+        schedulerJobInstance2.setJobName("job-2");
+        schedulerJobInstance2.setStatus(InstanceStatus.ON_HOLD);
+        schedulerJobInstance2.setIdentifier("agent-2-job-2");
+
+        contextInstance2.setScheduledJobs(Arrays.asList(schedulerJobInstance2));
+        contextInstance2.setJobDependencies(new ArrayList<>());
+
+        ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, new ScheduledContextInstanceServiceTestImpl(), null,"./target",null,null, null);
+        contextMachine2.init();
+
+        ContextMachineCache.instance().put(contextMachine2);
     }
 
     @Test
-    public void test_with_error_status() throws IOException {
+    public void test_with_error_monitor() throws IOException {
 
         ContextualisedScheduledProcessEvent scheduledProcessEvent1 = new ContextualisedScheduledProcessEventImpl();
         scheduledProcessEvent1.setAgentName("agent-1");
@@ -75,18 +95,18 @@ public class ErrorMonitorTest {
         // start test
         NotificationConfiguration notificationConfiguration = new NotificationConfiguration();
 
-        Monitor errorMonitor = notificationConfiguration.errorMonitor(Arrays.asList(new TestNotifier()));
+        Monitor stateChangeMonitor = notificationConfiguration.stateChangeMonitor(Arrays.asList(new TestNotifier()));
 
         ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(scheduledProcessEvent1));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
             .atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
-                assertEquals("from testNotifier!", result);
+                assertEquals("from testNotifier:ERROR", result);
             });
     }
 
     @Test
-    public void test_with_completed_status() throws IOException {
+    public void test_with_complete_monitor() throws IOException {
 
         ContextualisedScheduledProcessEvent scheduledProcessEvent1 = new ContextualisedScheduledProcessEventImpl();
         scheduledProcessEvent1.setAgentName("agent-1");
@@ -97,22 +117,36 @@ public class ErrorMonitorTest {
         // start test
         NotificationConfiguration notificationConfiguration = new NotificationConfiguration();
 
-        Monitor errorMonitor = notificationConfiguration.errorMonitor(Arrays.asList(new TestNotifier()));
+        Monitor stateChangeMonitor = notificationConfiguration.stateChangeMonitor(Arrays.asList(new TestNotifier()));
 
         ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(scheduledProcessEvent1));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
-            .during(28, TimeUnit.SECONDS)
-            .atMost(30, TimeUnit.SECONDS)
-            .until(checkResult());
+            .atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+                assertEquals("from testNotifier:COMPLETE", result);
+            });
     }
 
-    private Callable<Boolean> checkResult() {
-        return new Callable<Boolean>() {
-            public Boolean call() {
-                return result.equals("test");
-            }
-        };
+    @Test
+    public void test_with_start_monitor() throws IOException {
+
+        ContextualisedScheduledProcessEvent scheduledProcessEvent1 = new ContextualisedScheduledProcessEventImpl();
+        scheduledProcessEvent1.setAgentName("agent-2");
+        scheduledProcessEvent1.setJobName("job-2");
+        scheduledProcessEvent1.setJobStarting(true);
+        scheduledProcessEvent1.setSuccessful(false);
+
+        // start test
+        NotificationConfiguration notificationConfiguration = new NotificationConfiguration();
+
+        Monitor stateChangeMonitor = notificationConfiguration.stateChangeMonitor(Arrays.asList(new TestNotifier()));
+
+        ContextMachineCache.instance().getByContextName("context-instance-2").eventReceived( objectMapper.writeValueAsString(scheduledProcessEvent1));
+
+        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
+            .atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+                assertEquals("from testNotifier:START", result);
+            });
     }
 
     protected class TestNotifier implements Notifier<GenericNotificationDetails>
@@ -120,7 +154,7 @@ public class ErrorMonitorTest {
         @Override
         public void invoke(GenericNotificationDetails notificationDetails)
         {
-            result = "from testNotifier!";
+            result = "from testNotifier:"+notificationDetails.getMonitorType().name();
 
         }
     }
