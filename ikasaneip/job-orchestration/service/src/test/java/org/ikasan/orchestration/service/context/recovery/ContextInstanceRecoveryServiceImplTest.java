@@ -258,11 +258,6 @@ public class ContextInstanceRecoveryServiceImplTest {
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(3, false);
         when(scheduledContextService.findAll()).thenReturn(contextResults);
 
-        List<ContextParameterInstance> params = TestUtils.createParams();
-        when(contextParametersInstanceService.getAllContextParameters(CONTEXT_NAME + "1")).thenReturn(params);
-        when(contextParametersInstanceService.getAllContextParameters(CONTEXT_NAME + "2")).thenReturn(params);
-        when(contextParametersInstanceService.getAllContextParameters(CONTEXT_NAME + "3")).thenReturn(params);
-
         InternalEventDrivenJobTestSearchResults internalJobResults = new InternalEventDrivenJobTestSearchResults(3);
         when(internalEventDrivenJobService.findByContext(CONTEXT_NAME + "1", -1, -1)).thenReturn(internalJobResults);
         when(internalEventDrivenJobService.findByContext(CONTEXT_NAME + "2", -1, -1)).thenReturn(internalJobResults);
@@ -289,26 +284,6 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(moduleMetadataService, times(3)).findById(AGENT_NAME + "1");
         verify(moduleMetadataService, times(3)).findById(AGENT_NAME + "2");
         verify(moduleMetadataService, times(3)).findById(AGENT_NAME + "3");
-        verify(contextParametersInstanceService, times(3)).populateContextParameters();
-        verify(contextParametersInstanceService).getAllContextParameters(CONTEXT_NAME + "1");
-        verify(contextParametersInstanceService).getAllContextParameters(CONTEXT_NAME + "2");
-        verify(contextParametersInstanceService).getAllContextParameters(CONTEXT_NAME + "3");
-        ContextInstance contextInstance1 = instanceResults.getResultList().get(0).getContextInstance();
-        contextInstance1.setContextParameters(params);
-        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance1, CONTEXT_NAME + "1")));
-        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), argThat(new CustomBackFillerMatcher(contextInstance1, CONTEXT_NAME + "1")));
-        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance1, CONTEXT_NAME + "1")));
-
-        ContextInstance contextInstance2 = instanceResults.getResultList().get(0).getContextInstance();
-        contextInstance2.setContextParameters(params);
-        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance2, CONTEXT_NAME + "2")));
-        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), argThat(new CustomBackFillerMatcher(contextInstance2, CONTEXT_NAME + "2")));
-        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance2, CONTEXT_NAME + "2")));
-        ContextInstance contextInstance3 = instanceResults.getResultList().get(0).getContextInstance();
-        contextInstance3.setContextParameters(params);
-        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance3, CONTEXT_NAME + "3")));
-        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), argThat(new CustomBackFillerMatcher(contextInstance3, CONTEXT_NAME + "3")));
-        verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance3, CONTEXT_NAME + "3")));
 
         verify(jobLockCacheService, times(3)).get();
         verify(schedulerJobInstanceService, times(3)).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
