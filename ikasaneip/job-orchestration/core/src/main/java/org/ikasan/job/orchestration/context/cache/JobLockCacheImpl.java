@@ -160,6 +160,12 @@ public final class JobLockCacheImpl implements JobLockCache {
         if (lockName != null && this.jobLockCacheData.getJobLocksByLockName().get(lockName) != null) {
             this.jobLockCacheData.getJobLocksByLockName().get(lockName).getLockHolders().clear();
             this.jobLockCacheData.getJobLocksByLockName().get(lockName).getSchedulerJobInitiationEventWaitQueue().clear();
+
+            this.jobLockCacheData.getJobLocksByIdentifier().entrySet().forEach(entry -> {
+                if(entry.getValue().getLockName().equals(lockName)) {
+                    entry.getValue().getLockHolders().clear();
+                }
+            });
             return true;
         }
         return false;
