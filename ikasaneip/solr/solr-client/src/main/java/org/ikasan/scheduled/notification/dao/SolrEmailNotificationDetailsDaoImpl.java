@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetails;
-import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
+import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
@@ -13,13 +13,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class SolrEmailNotificationDetailsDao extends SolrDaoBase<EmailNotificationDetails>
-                        implements EmailNotificationDetailsDao<EmailNotificationDetails>
+public class SolrEmailNotificationDetailsDaoImpl extends SolrDaoBase<SolrEmailNotificationDetailsRecord>
+                        implements EmailNotificationDetailsDao<SolrEmailNotificationDetailsRecord>
 {
     /**
      * Logger for this class
      */
-    private static Logger logger = LoggerFactory.getLogger(SolrEmailNotificationDetailsDao.class);
+    private static Logger logger = LoggerFactory.getLogger(SolrEmailNotificationDetailsDaoImpl.class);
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -28,21 +28,24 @@ public class SolrEmailNotificationDetailsDao extends SolrDaoBase<EmailNotificati
      */
     public static final String EMAIL_NOTIFICATION_DETAILS = "emailNotificationDetails";
 
-    protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, EmailNotificationDetails emailNotificationDetails)
+    protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, SolrEmailNotificationDetailsRecord emailNotificationDetailsRecord)
     {
         SolrInputDocument document = new SolrInputDocument();
         document.addField(TYPE, EMAIL_NOTIFICATION_DETAILS);
         try {
-            document.addField(PAYLOAD_CONTENT, getEmailNotificationDetailsContent(emailNotificationDetails));
+            document.addField(PAYLOAD_CONTENT, getEmailNotificationDetailsContent(emailNotificationDetailsRecord.getEmailNotificationDetails()));
         }
         catch (JsonProcessingException e) {
-            throw new RuntimeException(String.format("Cannot convert Email Notification Details to string! [%s]", emailNotificationDetails));
+            throw new RuntimeException(String.format("Cannot convert Email Notification Details to string! [%s]", emailNotificationDetailsRecord));
         }
 
-        document.addField(ID, emailNotificationDetails.getJobName()+"_"+emailNotificationDetails.getMonitorType());
-
-        document.addField(CREATED_DATE_TIME, emailNotificationDetails.getTimestampLong());
+        document.addField(ID, emailNotificationDetailsRecord.getEmailNotificationDetails().getJobName()+"_"+emailNotificationDetailsRecord.getEmailNotificationDetails().getMonitorType());
+        document.addField(CREATED_DATE_TIME, emailNotificationDetailsRecord.getTimestamp());
+        document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
+        document.addField(MODIFIED_BY, emailNotificationDetailsRecord.getModifiedBy());
         document.setField(EXPIRY, expiry);
+
+        logger.debug(String.format("Converted scheduled context record to SolrDocument[%s]", document));
         return document;
     }
 
@@ -51,7 +54,7 @@ public class SolrEmailNotificationDetailsDao extends SolrDaoBase<EmailNotificati
     }
 
     @Override
-    public SearchResults<? extends EmailNotificationDetails> findAll(int limit, int offset) {
+    public SearchResults<SolrEmailNotificationDetailsRecord> findAll(int limit, int offset) {
         StringBuffer typeBuffer = new StringBuffer();
         typeBuffer.append(TYPE + COLON);
         typeBuffer.append("\"").append(EMAIL_NOTIFICATION_DETAILS).append("\" ");
@@ -63,16 +66,16 @@ public class SolrEmailNotificationDetailsDao extends SolrDaoBase<EmailNotificati
 
         logger.debug("query: " + solrQuery);
 
-        return this.findByQuery(solrQuery, SolrEmailNotificationDetails.class);
+        return this.findByQuery(solrQuery, SolrEmailNotificationDetailsRecord.class);
     }
 
     @Override
-    public EmailNotificationDetails findByJobNameAndMonitorType(String jobName, String monitorType) {
+    public SolrEmailNotificationDetailsRecord findByJobNameAndMonitorType(String jobName, String monitorType) {
         SolrQuery query = super.buildIdQuery(jobName+"_"+monitorType, EMAIL_NOTIFICATION_DETAILS);
 
         logger.debug("query: " + query);
 
-        List<? extends EmailNotificationDetails> beans = this.findByQuery(query, SolrEmailNotificationDetails.class).getResultList();
+        List<SolrEmailNotificationDetailsRecord> beans = this.findByQuery(query, SolrEmailNotificationDetailsRecord.class).getResultList();
 
         if(beans.size() > 0)
         {
