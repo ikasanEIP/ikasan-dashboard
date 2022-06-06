@@ -14,6 +14,8 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.search.SearchResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +25,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstanceService {
+
+    private Logger logger = LoggerFactory.getLogger(SolrSchedulerJobInstanceServiceImpl.class);
 
     private ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
@@ -45,6 +49,28 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
     @Override
     public SchedulerJobInstanceRecord findById(String id) {
         return this.solrSchedulerJobInstanceDao.findById(id);
+    }
+
+    @Override
+    public SchedulerJobInstanceRecord findByContextIdJobNameChildContextName(String uuid, String jobName, String childContextName) {
+        SchedulerJobInstanceSearchFilter schedulerJobInstanceSearchFilter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        schedulerJobInstanceSearchFilter.setChildContextName(childContextName);
+        schedulerJobInstanceSearchFilter.setJobName(jobName);
+        schedulerJobInstanceSearchFilter.setContextInstanceId(uuid);
+
+        SearchResults<SchedulerJobInstanceRecord> jobs = this.getScheduledContextInstancesByFilter(schedulerJobInstanceSearchFilter,
+            1, 0, null, null);
+
+        if(jobs.getTotalNumberOfResults() > 1) {
+            logger.warn("SchedulerJobInstance search returned more than one result for Context ID[{}], Job Name[{}] and Child Context Name[{}]",
+                uuid, jobName, childContextName);
+        }
+
+        if(jobs.getResultList().size() > 0) {
+            return jobs.getResultList().get(0);
+        }
+
+        return null;
     }
 
     @Override
