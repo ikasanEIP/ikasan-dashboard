@@ -6,6 +6,8 @@ import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
 import org.ikasan.job.orchestration.model.context.JobLockHolderImpl;
+import org.ikasan.job.orchestration.model.event.ContextualisedSchedulerJobInitiationEventImpl;
+import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.scheduled.context.model.SolrJobLockImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
 import org.ikasan.scheduled.joblock.dao.SolrJobLockCacheAuditDaoImpl;
@@ -199,10 +201,12 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
         JobLockHolder jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK");
         assertEquals(3, jobLockHolder.getLockCount());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
+        assertEquals(3, jobLockHolder.getSchedulerJobInitiationEventWaitQueue().size());
 
         jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK-1");
         assertEquals(2, jobLockHolder.getLockCount());
         assertEquals(2, jobLockHolder.getSchedulerJobs().size());
+        assertEquals(2, jobLockHolder.getSchedulerJobInitiationEventWaitQueue().size());
 
         jobLocks = List.of(makeJobLock("TEST-LOCK-3", 5, 1)
             , makeJobLock("TEST-LOCK-4", 20, 1));
@@ -230,18 +234,22 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
         jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK");
         assertEquals(3, jobLockHolder.getLockCount());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
+        assertEquals(3, jobLockHolder.getSchedulerJobInitiationEventWaitQueue().size());
 
         jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK-1");
         assertEquals(2, jobLockHolder.getLockCount());
         assertEquals(2, jobLockHolder.getSchedulerJobs().size());
+        assertEquals(2, jobLockHolder.getSchedulerJobInitiationEventWaitQueue().size());
 
         jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK-3");
         assertEquals(1, jobLockHolder.getLockCount());
         assertEquals(5, jobLockHolder.getSchedulerJobs().size());
+        assertEquals(5, jobLockHolder.getSchedulerJobInitiationEventWaitQueue().size());
 
         jobLockHolder = savedRecordJobLockCache.getJobLocksByLockName().get("TEST-LOCK-4");
         assertEquals(1, jobLockHolder.getLockCount());
         assertEquals(20, jobLockHolder.getSchedulerJobs().size());
+        assertEquals(20, jobLockHolder.getSchedulerJobInitiationEventWaitQueue().size());
     }
 
 
@@ -281,6 +289,15 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
                 jobLockHolder.setLockCount(jobLock.getLockCount());
                 for (Map.Entry<String, List<SchedulerJob>> entry : jobLock.getJobs().entrySet()) {
                     jobLockHolder.addSchedulerJobs(entry.getKey(), entry.getValue());
+                    SchedulerJobInitiationEventImpl schedulerJobInitiationEvent
+                        = new SchedulerJobInitiationEventImpl();
+                    schedulerJobInitiationEvent.setJobName(entry.getKey());
+
+                    ContextualisedSchedulerJobInitiationEventImpl contextualisedSchedulerJobInitiationEvent
+                        = new ContextualisedSchedulerJobInitiationEventImpl();
+                    contextualisedSchedulerJobInitiationEvent.setContextName("contextName");
+                    contextualisedSchedulerJobInitiationEvent.setSchedulerJobInitiationEvent(schedulerJobInitiationEvent);
+                    jobLockHolder.getSchedulerJobInitiationEventWaitQueue().offer(contextualisedSchedulerJobInitiationEvent);
                 }
             } else {
                 for (Map.Entry<String, List<SchedulerJob>> entry : jobLock.getJobs().entrySet()) {

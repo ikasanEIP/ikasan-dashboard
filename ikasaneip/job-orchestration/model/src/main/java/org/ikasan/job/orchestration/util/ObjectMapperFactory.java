@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.ikasan.job.orchestration.model.context.*;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.job.orchestration.model.event.ContextualisedSchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
@@ -16,6 +17,7 @@ import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -58,6 +60,7 @@ public class ObjectMapperFactory {
             .addAbstractTypeMapping(ContextParameterInstance.class, ContextParameterInstanceImpl.class)
             .addAbstractTypeMapping(ScheduledProcessEvent.class, ContextualisedScheduledProcessEventImpl.class)
             .addAbstractTypeMapping(ContextualisedScheduledProcessEvent.class, ContextualisedScheduledProcessEventImpl.class)
+            .addAbstractTypeMapping(ContextualisedSchedulerJobInitiationEvent.class, ContextualisedSchedulerJobInitiationEventImpl.class)
             .addAbstractTypeMapping(SchedulerJobInitiationEvent.class, SchedulerJobInitiationEventImpl.class)
             .addAbstractTypeMapping(InternalEventDrivenJob.class, InternalEventDrivenJobImpl.class)
             .addAbstractTypeMapping(JobLock.class, JobLockImpl.class)

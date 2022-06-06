@@ -56,12 +56,12 @@ public class SolrJobLockHolderImpl implements JobLockHolder {
     }
 
     @Override
-    public ContextualisedSchedulerJobInitiationEvent pollSchedulerJobInitiationEventWaitQueue() {
-        return this.contextualisedSchedulerJobInitiationEvents.poll();
+    public Queue<ContextualisedSchedulerJobInitiationEvent> getSchedulerJobInitiationEventWaitQueue() {
+        return this.contextualisedSchedulerJobInitiationEvents;
     }
 
     @Override
-    public void addQueuedSchedulerJobInitiationEvent(ContextualisedSchedulerJobInitiationEvent event) {
-        this.contextualisedSchedulerJobInitiationEvents.offer(event);
+    public void setSchedulerJobInitiationEventWaitQueue(Queue<ContextualisedSchedulerJobInitiationEvent> contextualisedSchedulerJobInitiationEventQueue) {
+        this.contextualisedSchedulerJobInitiationEvents = contextualisedSchedulerJobInitiationEventQueue;
     }
 }
