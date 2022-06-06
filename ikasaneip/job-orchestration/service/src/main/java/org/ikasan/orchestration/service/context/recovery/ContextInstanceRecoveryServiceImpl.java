@@ -146,7 +146,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                 try {
                     ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
                     LOG.info(String.format("Recovering instance [%s] id [%s]", contextInstance.getName(), contextInstance.getId()));
-                    initialiseContextMachine(context, contextInstance);
+                    initialiseContextMachine(context, contextInstance, false);
                 } catch (Exception e) {
                     // todo probably want to send a notification here.
                     LOG.error(String.format("An error has occurred recovering context instance [%s]!", scheduledContextInstanceRecord.getContextName()), e);

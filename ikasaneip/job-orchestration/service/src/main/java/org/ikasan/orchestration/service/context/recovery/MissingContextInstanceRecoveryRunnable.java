@@ -58,7 +58,7 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
             ContextInstanceImpl contextInstance = this.objectMapper
                 .readValue(this.objectMapper.writeValueAsBytes(this.scheduledContextRecord.getContext()), ContextInstanceImpl.class);
 
-            initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance);
+            initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true);
 
         } catch (Exception e) {
             // TODO hook in notification here

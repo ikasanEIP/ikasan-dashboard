@@ -1,8 +1,5 @@
 package org.ikasan.job.orchestration.context.recovery;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRecoveryService;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +7,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContextInstanceRecoveryManagerTest {
@@ -35,6 +34,19 @@ public class ContextInstanceRecoveryManagerTest {
     @Test
     public void recovers_instances() {
         ReflectionTestUtils.setField(contextInstanceRecoveryManager, "isContextLifeCycleActive", true);
+
+        contextInstanceRecoveryManager.recoverContextInstances();
+
+        verify(contextInstanceRecoveryService).recoverInstances();
+
+        verifyNoMoreInteractions(contextInstanceRecoveryService);
+    }
+
+    @Test
+    public void recovers_instances_should_catch_exceptions() {
+        ReflectionTestUtils.setField(contextInstanceRecoveryManager, "isContextLifeCycleActive", true);
+
+        doThrow(new RuntimeException("test exception")).when(contextInstanceRecoveryService).recoverInstances();
 
         contextInstanceRecoveryManager.recoverContextInstances();
 

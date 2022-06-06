@@ -32,6 +32,11 @@ public class ContextInstanceRecoveryManager {
             return;
         }
 
-        contextInstanceRecoveryService.recoverInstances();
+        try {
+            contextInstanceRecoveryService.recoverInstances();
+        } catch (Exception e) {
+            // todo need to add some notifications here
+            logger.error(String.format("An exception has occurred recovering contexts [%s]", e.getMessage()), e);
+        }
     }
 }

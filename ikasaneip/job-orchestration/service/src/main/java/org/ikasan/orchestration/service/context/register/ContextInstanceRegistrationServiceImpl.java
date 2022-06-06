@@ -128,7 +128,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
 
             ContextTemplate context = objectMapper.readValue(objectMapper.writeValueAsBytes(scheduledContextRecord.getContext()), ContextTemplateImpl.class);
             ContextInstanceImpl contextInstance = objectMapper.readValue(objectMapper.writeValueAsBytes(scheduledContextRecord.getContext()), ContextInstanceImpl.class);
-            initialiseContextMachine(context, contextInstance);
+            initialiseContextMachine(context, contextInstance, true);
 
         } catch (Exception e) {
             LOG.error(String.format("An error has occurred executing registering job [%s]", e.getMessage()), e);
