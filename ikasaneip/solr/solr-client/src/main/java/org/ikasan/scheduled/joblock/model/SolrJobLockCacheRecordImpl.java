@@ -7,6 +7,7 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.job.model.SolrJobLockHolderImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
+import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
@@ -15,15 +16,7 @@ import org.ikasan.spec.solr.SolrDaoBase;
 
 public class SolrJobLockCacheRecordImpl implements JobLockCacheRecord {
 
-    private static ObjectMapper objectMapper;
-
-    static {
-        objectMapper = new ObjectMapper();
-        final var simpleModule = new SimpleModule()
-            .addAbstractTypeMapping(SchedulerJob.class, SolrSchedulerJobImpl.class)
-            .addAbstractTypeMapping(JobLockHolder.class, SolrJobLockHolderImpl.class);
-        objectMapper.registerModule(simpleModule);
-    }
+    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     @Field(SolrDaoBase.ID)
     private String id;

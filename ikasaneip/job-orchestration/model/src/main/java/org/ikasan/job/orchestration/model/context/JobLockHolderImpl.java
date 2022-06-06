@@ -1,12 +1,11 @@
 package org.ikasan.job.orchestration.model.context;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
-import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class JobLockHolderImpl implements JobLockHolder {
     private String lockName;
@@ -64,12 +63,12 @@ public class JobLockHolderImpl implements JobLockHolder {
     }
 
     @Override
-    public ContextualisedSchedulerJobInitiationEvent pollSchedulerJobInitiationEventWaitQueue() {
-        return this.queuedSchedulerJobInitiationEvents.poll();
+    public Queue<ContextualisedSchedulerJobInitiationEvent> getSchedulerJobInitiationEventWaitQueue() {
+        return this.queuedSchedulerJobInitiationEvents;
     }
 
     @Override
-    public void addQueuedSchedulerJobInitiationEvent(ContextualisedSchedulerJobInitiationEvent event) {
-        this.queuedSchedulerJobInitiationEvents.offer(event);
+    public void setSchedulerJobInitiationEventWaitQueue(Queue<ContextualisedSchedulerJobInitiationEvent> contextualisedSchedulerJobInitiationEventQueue) {
+        this.queuedSchedulerJobInitiationEvents = contextualisedSchedulerJobInitiationEventQueue;
     }
 }

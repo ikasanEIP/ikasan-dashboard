@@ -5,6 +5,8 @@ import org.ikasan.job.orchestration.builder.context.JobLockBuilder;
 import org.ikasan.job.orchestration.builder.job.SchedulerJobBuilder;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
 import org.ikasan.job.orchestration.model.context.JobLockHolderImpl;
+import org.ikasan.job.orchestration.model.event.ContextualisedSchedulerJobInitiationEventImpl;
+import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
@@ -13,6 +15,7 @@ import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -145,6 +148,13 @@ public class JobLockCacheImplTest {
         assertTrue(jlc.locked("AgentName1-TEST-LOCK-1-JobName1", "contextName"));
 
         // reset TEST-LOCK-1
+        SchedulerJobInitiationEventImpl schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
+        schedulerJobInitiationEvent.setJobName("JobName0");
+
+        jlc.addQueuedSchedulerJobInitiationEvent("AgentName0-TEST-LOCK-JobName0", "contextName", schedulerJobInitiationEvent);
+
+        Assert.assertNotNull(jlc.pollSchedulerJobInitiationEventWaitQueue("AgentName0-TEST-LOCK-JobName0", "contextName"));
+
         assertTrue(jlc.resetLock("TEST-LOCK-1"));
 
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName"));
@@ -153,6 +163,14 @@ public class JobLockCacheImplTest {
 
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-1-JobName0", "contextName"));
         assertFalse(jlc.locked("AgentName1-TEST-LOCK-1-JobName1", "contextName"));
+
+
+        // confirm queue jobs are reset too
+        jlc.addQueuedSchedulerJobInitiationEvent("AgentName0-TEST-LOCK-JobName0", "contextName", schedulerJobInitiationEvent);
+
+        assertTrue(jlc.resetLock("TEST-LOCK"));
+
+        Assert.assertNull(jlc.pollSchedulerJobInitiationEventWaitQueue("AgentName0-TEST-LOCK-JobName0", "contextName"));
 
         // should not fail null or unknown
         assertFalse(jlc.resetLock(null));
