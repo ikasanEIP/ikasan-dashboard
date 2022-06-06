@@ -1,8 +1,6 @@
 package org.ikasan.scheduled.notification.model;
 
-import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetails;
-import org.ikasan.spec.solr.SolrDaoBase;
 
 import java.util.Date;
 import java.util.List;
@@ -31,10 +29,8 @@ public class SolrEmailNotificationDetails implements EmailNotificationDetails {
 
     private boolean isHtml;
 
-    @Field(SolrDaoBase.CREATED_DATE_TIME)
     private long timestampLong;
 
-    @Field(SolrDaoBase.EXPIRY)
     private long expiryLong;
 
     public SolrEmailNotificationDetails() {
