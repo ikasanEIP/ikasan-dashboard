@@ -10,6 +10,7 @@ import org.ikasan.dashboard.ui.scheduler.component.InternalEventDrivenJobDialog;
 import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -17,11 +18,11 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +43,7 @@ public class JobContextMenu extends Dialog {
     private ContextInstance rootContextInstance;
     private LogStreamingService logStreamingService;
     private ContextInstance currentInstance;
+    private SchedulerJobInstanceService schedulerJobInstanceService;
 
     private final Button viewErrorLogButton;
     private final Button viewOutputLogButton;
@@ -53,19 +55,16 @@ public class JobContextMenu extends Dialog {
                           ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                           SchedulerJobService schedulerJobService, ContextInstance rootContextInstance, ContextInstance currentInstance,
-                          LogStreamingService logStreamingService) {
+                          LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService) {
 
         this.setWidth("200px");
-//        this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "align-self", "flex-start");
-//        this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "position", "absolute");
-//        this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "left", x + "px");
-//        this.getElement().executeJs("this.$.overlay.$.overlay.style[$0]=$1", "top", y + "px");
 
         this.moduleMetaDataService = moduleMetaDataService;
         this.schedulerJobService = schedulerJobService;
         this.rootContextInstance = rootContextInstance;
         this.currentInstance = currentInstance;
         this.logStreamingService = logStreamingService;
+        this.schedulerJobInstanceService = schedulerJobInstanceService;
 
         layout.setWidthFull();
 
@@ -148,18 +147,35 @@ public class JobContextMenu extends Dialog {
         LOG.info("Current Instance status: " + status);
         if (allowedStatuses.contains(status)) {
             SchedulerJobInstance schedulerJobInstance = this.currentInstance.getScheduledJobsMap().get(schedulerJob.getIdentifier());
-            LOG.info("schedulerJobInstance is " + schedulerJobInstance + " for job identifier " + schedulerJob.getIdentifier());
-            ModuleMetaData agent = this.getAgent(schedulerJob.getAgentName());
-            LOG.info("agent is " + agent + " for name " + schedulerJob.getAgentName());
-            if (schedulerJobInstance != null && schedulerJobInstance.getScheduledProcessEvent() != null && agent != null) {
-                ScheduledProcessEvent scheduledProcessEvent = schedulerJobInstance.getScheduledProcessEvent();
-                host = agent.getUrl();
-                endPoint = "/rest/logs";
-                outputLog = getErrorLog ? scheduledProcessEvent.getResultError() : scheduledProcessEvent.getResultOutput();
-                LOG.info(String.format("Streaming log for host %s, endPoint %s, log %s", host, endPoint, outputLog));
-                if (outputLog != null && host != null) {
-                    displayLog = true;
+
+            SchedulerJobInstanceSearchFilter schedulerJobInstanceSearchFilter = new SolrSchedulerJobInstanceSearchFilterImpl();
+            schedulerJobInstanceSearchFilter.setChildContextName(this.currentInstance.getName());
+            schedulerJobInstanceSearchFilter.setJobName(schedulerJobInstance.getJobName());
+            schedulerJobInstanceSearchFilter.setContextInstanceId(this.rootContextInstance.getId());
+
+            SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(this.rootContextInstance.getId(),
+                schedulerJobInstance.getJobName(), this.currentInstance.getName());
+
+            if(schedulerJobInstanceRecord != null) {
+                schedulerJobInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
+
+                LOG.info("schedulerJobInstance is " + schedulerJobInstance + " for job identifier " + schedulerJob.getIdentifier());
+                ModuleMetaData agent = this.getAgent(schedulerJob.getAgentName());
+                LOG.info("agent is " + agent + " for name " + schedulerJob.getAgentName());
+                if (schedulerJobInstance != null && schedulerJobInstance.getScheduledProcessEvent() != null && agent != null) {
+                    ScheduledProcessEvent scheduledProcessEvent = schedulerJobInstance.getScheduledProcessEvent();
+                    host = agent.getUrl();
+                    endPoint = "/rest/logs";
+                    outputLog = getErrorLog ? scheduledProcessEvent.getResultError() : scheduledProcessEvent.getResultOutput();
+                    LOG.info(String.format("Streaming log for host %s, endPoint %s, log %s", host, endPoint, outputLog));
+                    if (outputLog != null && host != null) {
+                        displayLog = true;
+                    }
                 }
+            }
+            else {
+                LOG.info("SchedulerJobInstance search returned no result for Context ID[{}], Job Name[{}] and Child Context Name[{}]",
+                    this.rootContextInstance.getId(), schedulerJobInstance.getJobName(), this.currentInstance.getName());
             }
         }
 
