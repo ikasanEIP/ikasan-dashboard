@@ -28,6 +28,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,11 +63,13 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
     private SystemEventLogger systemEventLogger;
     private SchedulerJobService schedulerJobService;
     private LogStreamingService logStreamingService;
+    private SchedulerJobInstanceService schedulerJobInstanceService;
 
     public JobVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
-                                  SchedulerJobService schedulerJobService, LogStreamingService logStreamingService) {
+                                  SchedulerJobService schedulerJobService, LogStreamingService logStreamingService,
+                                  SchedulerJobInstanceService schedulerJobInstanceService) {
         this.setHeight("90%");
         this.setWidth("90%");
 
@@ -108,6 +111,11 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
         this.logStreamingService = logStreamingService;
         if(this.logStreamingService == null) {
             throw new IllegalArgumentException("logStreamingService cannot be null!");
+        }
+
+        this.schedulerJobInstanceService = schedulerJobInstanceService;
+        if(this.schedulerJobInstanceService == null) {
+            throw new IllegalArgumentException("schedulerJobInstanceService cannot be null!");
         }
 
         layout = new VerticalLayout();
@@ -211,7 +219,7 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
         JobContextMenu jobContextMenu = new JobContextMenu(this.contextInstance.getScheduledJobsMap().get(canvasItemDoubleClickEvent.getFigure().getIdentifier()),
             this.systemEventLogger, this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService,
             this.moduleControlRestService, this.metaDataRestService, this.schedulerJobService, this.rootContextInstance, this.contextInstance,
-            this.logStreamingService);
+            this.logStreamingService, schedulerJobInstanceService);
         jobContextMenu.open();
     }
 
