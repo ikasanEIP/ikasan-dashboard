@@ -9,6 +9,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.job.orchestration.model.event.ContextualisedSchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -95,7 +97,10 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 schedulerJobInstance.setStatus(InstanceStatus.ERROR);
             }
 
-            schedulerJobInstance.setScheduledProcessEvent(scheduledProcessEvent);
+            ContextualisedScheduledProcessEvent event = new ContextualisedScheduledProcessEventImpl();
+            event.setChildContextIds(scheduledProcessEvent.getChildContextIds());
+            schedulerJobInstance.setScheduledProcessEvent(event);
+            schedulerJobInstance.setChildContextName(contextInstance.getName());
             schedulerJobInstance.setContextInstanceId(parentContextInstance.getId());
             schedulerJobInstance.setChildContextName(contextInstance.getName());
 
