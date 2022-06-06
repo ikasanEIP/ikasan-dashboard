@@ -44,13 +44,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.Notifier;
+import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
 import org.ikasan.scheduled.notification.service.EmailNotificationDetailsService;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier<GenericNotificationDetails> {
 
-    private EmailNotificationDetailsService emailNotificationDetailsService;
+    private EmailNotificationDetailsService<SolrEmailNotificationDetailsRecord> emailNotificationDetailsService;
     private TemplateEngine templateEngine;
 
     public EmailNotifier(EmailNotificationDetailsService emailNotificationDetailsService, TemplateEngine templateEngine) {
@@ -60,9 +61,11 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
 
     @Override
     public void invoke(GenericNotificationDetails notificationDetails) {
-        EmailNotificationDetails emailNotificationDetails = emailNotificationDetailsService.findByJobNameAndMonitorType(notificationDetails.getJobName(), notificationDetails.getMonitorType().name());
+        SolrEmailNotificationDetailsRecord solrEmailNotificationDetailsRecord = emailNotificationDetailsService.
+                        findByJobNameAndMonitorType(notificationDetails.getJobName(), notificationDetails.getMonitorType().name());
 
-        if (emailNotificationDetails != null) {
+        if (solrEmailNotificationDetailsRecord != null) {
+            EmailNotificationDetails emailNotificationDetails = solrEmailNotificationDetailsRecord.getEmailNotificationDetails();
 
             final Context ctx = new Context();
             // todo fix this
