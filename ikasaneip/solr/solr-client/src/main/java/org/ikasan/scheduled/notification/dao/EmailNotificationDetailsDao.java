@@ -1,13 +1,12 @@
 package org.ikasan.scheduled.notification.dao;
 
-import org.ikasan.job.orchestration.model.notification.EmailNotificationDetails;
 import org.ikasan.spec.search.SearchResults;
 
 import java.util.List;
 
-public interface EmailNotificationDetailsDao<T extends EmailNotificationDetails> {
+public interface EmailNotificationDetailsDao<T> {
 
-    SearchResults<? extends T> findAll(int limit, int offset);
+    SearchResults<T> findAll(int limit, int offset);
 
     T findByJobNameAndMonitorType(String jobName, String monitorType);
 
