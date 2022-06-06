@@ -147,17 +147,17 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     @Test
     public void test_find_by_filter() {
         IntStream.range(0, 371).forEach(i -> {
-            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobRecord("contextInstance1",
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance1",
                 "context1", "job"+i));
         });
 
         IntStream.range(0, 275).forEach(i -> {
-            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobRecord("contextInstance2",
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance2",
                 "context1", "job"+i));
         });
 
         IntStream.range(0, 275).forEach(i -> {
-            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobRecord("contextInstance3",
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance3",
                 "context2", "context2Job"+i));
         });
 
@@ -201,7 +201,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         filter.setContextInstanceId("contextInstance1");
         filter.setJobName("job370");
 
-        searchResults = this.solrSchedulerJobInstanceDao
+        searchResults = this.service
             .getScheduledContextInstancesByFilter(filter, 1000, 0, null, null);
 
         Assert.assertEquals(1, searchResults.getResultList().size());
@@ -211,17 +211,17 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     @Test
     public void test_find_by_filter_with_escape_characters() {
         IntStream.range(0, 371).forEach(i -> {
-            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobRecord("contextInstance:1",
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance:1",
                 "context:1", "job:"+i));
         });
 
         IntStream.range(0, 275).forEach(i -> {
-            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobRecord("contextInstance:2",
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance:2",
                 "context:1", "job:"+i));
         });
 
         IntStream.range(0, 275).forEach(i -> {
-            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobRecord("contextInstance:3",
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance:3",
                 "context:2", "context2Job:"+i));
         });
 
@@ -265,7 +265,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         filter.setContextInstanceId("contextInstance:1");
         filter.setJobName("job:370");
 
-        searchResults = this.solrSchedulerJobInstanceDao
+        searchResults = this.service
             .getScheduledContextInstancesByFilter(filter, 1000, 0, null, null);
 
         Assert.assertEquals(1, searchResults.getResultList().size());
@@ -275,17 +275,17 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     @Test
     public void test_find_by_context_name() {
         IntStream.range(0, 371).forEach(i -> {
-            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobRecord("contextInstance1",
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance1",
                 "context1", "job"+i));
         });
 
         IntStream.range(0, 275).forEach(i -> {
-            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobRecord("contextInstance2",
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance2",
                 "context1", "job"+i));
         });
 
         IntStream.range(0, 275).forEach(i -> {
-            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobRecord("contextInstance3",
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance3",
                 "context2", "context2Job"+i));
         });
 
@@ -296,45 +296,69 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         Assert.assertEquals(646, searchResults.getResultList().size());
         Assert.assertEquals(646, searchResults.getTotalNumberOfResults());
 
-        searchResults = this.solrSchedulerJobInstanceDao
+        searchResults = this.service
             .getSchedulerJobInstancesByContextName("context2", 1000, 0, null, null);
 
         Assert.assertEquals(275, searchResults.getResultList().size());
         Assert.assertEquals(275, searchResults.getTotalNumberOfResults());
     }
 
-
     @Test
-    public void test_find_by_context_instance_id() {
+    public void test_find_by_context_id_job_name_and_child_context_name() {
         IntStream.range(0, 371).forEach(i -> {
-            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobRecord("contextInstance1",
-                "context1", "job1"+i));
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance1",
+                "context1", "job"+i));
         });
 
         IntStream.range(0, 275).forEach(i -> {
-            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobRecord("contextInstance2",
-                "context1", "job2"+i));
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance2",
+                "context1", "job"+i));
         });
 
-        IntStream.range(0, 167).forEach(i -> {
-            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobRecord("contextInstance3",
+        IntStream.range(0, 275).forEach(i -> {
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance3",
                 "context2", "context2Job"+i));
         });
 
 
-        SearchResults<SchedulerJobInstanceRecord> searchResults = this.solrSchedulerJobInstanceDao
+        SchedulerJobInstanceRecord searchResult = this.service
+            .findByContextIdJobNameChildContextName("contextInstance1", "job69", "childContextName");
+
+        Assert.assertNotNull(searchResult);
+    }
+
+
+    @Test
+    public void test_find_by_context_instance_id() {
+        IntStream.range(0, 371).forEach(i -> {
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance1",
+                "context1", "job1"+i));
+        });
+
+        IntStream.range(0, 275).forEach(i -> {
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance2",
+                "context1", "job2"+i));
+        });
+
+        IntStream.range(0, 167).forEach(i -> {
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance3",
+                "context2", "context2Job"+i));
+        });
+
+
+        SearchResults<SchedulerJobInstanceRecord> searchResults = this.service
             .getSchedulerJobInstancesByContextInstanceId("contextInstance1", 1000, 0, null, null);
 
         Assert.assertEquals(371, searchResults.getResultList().size());
         Assert.assertEquals(371, searchResults.getTotalNumberOfResults());
 
-        searchResults = this.solrSchedulerJobInstanceDao
+        searchResults = this.service
             .getSchedulerJobInstancesByContextInstanceId("contextInstance2", 1000, 0, null, null);
 
         Assert.assertEquals(275, searchResults.getResultList().size());
         Assert.assertEquals(275, searchResults.getTotalNumberOfResults());
 
-        searchResults = this.solrSchedulerJobInstanceDao
+        searchResults = this.service
             .getSchedulerJobInstancesByContextInstanceId("contextInstance3", 1000, 0, null, null);
 
         Assert.assertEquals(167, searchResults.getResultList().size());
@@ -383,7 +407,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         Assert.assertEquals(610, searchResults.getResultList().size());
     }
 
-    private SchedulerJobInstanceRecord createSchedulerJobRecord(String contextInstanceId, String contextName, String jobName) {
+    private SchedulerJobInstanceRecord createSchedulerJobInstanceRecord(String contextInstanceId, String contextName, String jobName) {
         SolrQuartzScheduleDrivenJobInstanceImpl solrSchedulerJobInstance = new SolrQuartzScheduleDrivenJobInstanceImpl();
         solrSchedulerJobInstance.setJobName(jobName);
         solrSchedulerJobInstance.setScheduledProcessEvent(createProcessEvent());
