@@ -41,11 +41,11 @@
 package org.ikasan.notification.notifier;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ikasan.job.orchestration.model.notification.EmailNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
-import org.ikasan.job.orchestration.model.notification.Notifier;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
-import org.ikasan.scheduled.notification.service.EmailNotificationDetailsService;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
+import org.ikasan.spec.scheduled.notification.model.Notifier;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
