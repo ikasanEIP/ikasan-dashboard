@@ -137,22 +137,22 @@ public class AbstractTest
         JobLockCacheImpl instance = JobLockCacheImpl.instance();
         JobLockCacheData jobLockCacheData = (JobLockCacheData) ReflectionTestUtils.getField(instance, "jobLockCacheData");
 
-        ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier
+        ConcurrentHashMap<String, String> jobLocksByIdentifier
             = jobLockCacheData.getJobLocksByIdentifier();
 
         ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName
             = jobLockCacheData.getJobLocksByLockName();
 
         assertNotNull(jobLocksByIdentifier);
-        Collection<JobLockHolder> jobLockHolders = jobLocksByIdentifier.values();
-        assertTrue(jobLockHolders.size() > 0);
-        for (JobLockHolder jlh : jobLockHolders) {
-            assertEquals(0, jlh.getLockHolders().size());
-        }
+//        Collection<JobLockHolder> jobLockHolders = jobLocksByIdentifier.values();
+//        assertTrue(jobLockHolders.size() > 0);
+//        for (JobLockHolder jlh : jobLockHolders) {
+//            assertEquals(0, jlh.getLockHolders().size());
+//        }
 
         assertNotNull(jobLocksByLockName);
         assertTrue(jobLocksByLockName.values().size() > 0);
-        jobLockHolders = jobLocksByLockName.values();
+        Collection<JobLockHolder> jobLockHolders = jobLocksByLockName.values();
         for (JobLockHolder jlh : jobLockHolders) {
             assertEquals(0, jlh.getLockHolders().size());
         }

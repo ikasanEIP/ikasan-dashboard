@@ -95,15 +95,15 @@ public class JobLockCacheImplTest {
 
         JobLockCacheData jobLockCacheData = (JobLockCacheData) ReflectionTestUtils.getField(jlc, "jobLockCacheData");
 
-        ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier
+        ConcurrentHashMap<String, String> jobLocksByIdentifier
             = jobLockCacheData.getJobLocksByIdentifier();
 
         ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName
             = jobLockCacheData.getJobLocksByLockName();
 
         assertNotNull(jobLocksByLockName.get("TEST-LOCK"));
-        assertNotNull(jobLocksByIdentifier.get("AgentName0-TEST-LOCK-JobName0"));
-        assertNotNull(jobLocksByIdentifier.get("AgentName1-TEST-LOCK-JobName1"));
+        assertNotNull(jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName0-TEST-LOCK-JobName0")));
+        assertNotNull(jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName1-TEST-LOCK-JobName1")));
 
         jlc.reset();
 
@@ -197,10 +197,13 @@ public class JobLockCacheImplTest {
 
         JobLockCacheData jobLockCacheData = (JobLockCacheData) ReflectionTestUtils.getField(jlc, "jobLockCacheData");
 
-        ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier
+        ConcurrentHashMap<String, String> jobLocksByIdentifier
             = jobLockCacheData.getJobLocksByIdentifier();
 
-        JobLockHolder jobLockHolder = jobLocksByIdentifier.get("AgentName0-TEST-LOCK-JobName0");
+        ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName
+            = jobLockCacheData.getJobLocksByLockName();
+
+        JobLockHolder jobLockHolder = jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName0-TEST-LOCK-JobName0"));
         assertEquals(1, jobLockHolder.getLockHolders().size());
         assertTrue(jobLockHolder.getLockHolders().contains("AgentName0-TEST-LOCK-JobName0:context-id:" + contextId0));
 
@@ -209,7 +212,7 @@ public class JobLockCacheImplTest {
         assertFalse(jlc.locked("AgentName3-TEST-LOCK-JobName2", "contextName"));
 
         assertTrue(jlc.lock("AgentName2-TEST-LOCK-JobName2", contextId2));
-        jobLockHolder = jobLocksByIdentifier.get("AgentName2-TEST-LOCK-JobName2");
+        jobLockHolder = jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName2-TEST-LOCK-JobName2"));
         assertEquals(2, jobLockHolder.getLockHolders().size());
 
         assertTrue(jobLockHolder.getLockHolders().contains("AgentName0-TEST-LOCK-JobName0:context-id:" + contextId0));
@@ -227,7 +230,7 @@ public class JobLockCacheImplTest {
         assertFalse(jlc.release("AgentName2-TEST-LOCK-JobName2", contextId1));
 
         assertTrue(jlc.release("AgentName2-TEST-LOCK-JobName2", contextId2));
-        jobLockHolder = jobLocksByIdentifier.get("AgentName2-TEST-LOCK-JobName2");
+        jobLockHolder = jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName2-TEST-LOCK-JobName2"));
         assertEquals(1, jobLockHolder.getLockHolders().size());
         assertTrue(jobLockHolder.getLockHolders().contains("AgentName0-TEST-LOCK-JobName0:context-id:" + contextId0));
 
@@ -239,7 +242,7 @@ public class JobLockCacheImplTest {
 
         assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0));
 
-        jobLockHolder = jobLocksByIdentifier.get("AgentName0-TEST-LOCK-JobName0");
+        jobLockHolder = jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName0-TEST-LOCK-JobName0"));
         assertEquals(0, jobLockHolder.getLockHolders().size());
 
         assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName"));
@@ -334,7 +337,7 @@ public class JobLockCacheImplTest {
 
         JobLockCacheData jobLockCacheData = (JobLockCacheData) ReflectionTestUtils.getField(jlc, "jobLockCacheData");
 
-        ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier
+        ConcurrentHashMap<String, String> jobLocksByIdentifier
             = jobLockCacheData.getJobLocksByIdentifier();
 
         ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName
@@ -352,7 +355,7 @@ public class JobLockCacheImplTest {
 
         JobLockCacheData jobLockCacheData = (JobLockCacheData) ReflectionTestUtils.getField(jlc, "jobLockCacheData");
 
-        ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier
+        ConcurrentHashMap<String, String> jobLocksByIdentifier
             = jobLockCacheData.getJobLocksByIdentifier();
 
         ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName
@@ -369,7 +372,7 @@ public class JobLockCacheImplTest {
             .collect(Collectors.toList()), "TEST-LOCK");
 
         assertEquals(3, jobLocksByIdentifier.size());
-        jobLockHolder = jobLocksByIdentifier.get("AgentName0-TEST-LOCK-JobName0");
+        jobLockHolder = jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName0-TEST-LOCK-JobName0"));
         assertEquals("TEST-LOCK", jobLockHolder.getLockName());
         assertEquals(2, jobLockHolder.getLockCount());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
@@ -378,7 +381,7 @@ public class JobLockCacheImplTest {
             .flatMap(Collection::stream)
             .collect(Collectors.toList()), "TEST-LOCK");
 
-        jobLockHolder = jobLocksByIdentifier.get("AgentName1-TEST-LOCK-JobName1");
+        jobLockHolder = jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName1-TEST-LOCK-JobName1"));
         assertEquals("TEST-LOCK", jobLockHolder.getLockName());
         assertEquals(2, jobLockHolder.getLockCount());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
@@ -387,7 +390,7 @@ public class JobLockCacheImplTest {
             .flatMap(Collection::stream)
             .collect(Collectors.toList()), "TEST-LOCK");
 
-        jobLockHolder = jobLocksByIdentifier.get("AgentName2-TEST-LOCK-JobName2");
+        jobLockHolder = jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName2-TEST-LOCK-JobName2"));
         assertEquals("TEST-LOCK", jobLockHolder.getLockName());
         assertEquals(2, jobLockHolder.getLockCount());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
@@ -406,7 +409,7 @@ public class JobLockCacheImplTest {
 
         JobLockCacheData jobLockCacheData = (JobLockCacheData) ReflectionTestUtils.getField(jlc, "jobLockCacheData");
 
-        ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier
+        ConcurrentHashMap<String, String> jobLocksByIdentifier
             = jobLockCacheData.getJobLocksByIdentifier();
 
         ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName
@@ -432,7 +435,7 @@ public class JobLockCacheImplTest {
             .flatMap(Collection::stream)
             .collect(Collectors.toList()), "TEST-LOCK-4");
 
-        validateJobLocksByIdentifier(jobLocksByIdentifier);
+        validateJobLocksByIdentifier(jobLocksByIdentifier, jobLocksByLockName);
     }
 
     @Test
@@ -445,7 +448,7 @@ public class JobLockCacheImplTest {
 
         JobLockCacheData jobLockCacheData = (JobLockCacheData) ReflectionTestUtils.getField(jlc, "jobLockCacheData");
 
-        ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier
+        ConcurrentHashMap<String, String> jobLocksByIdentifier
             = jobLockCacheData.getJobLocksByIdentifier();
 
         ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName
@@ -473,7 +476,7 @@ public class JobLockCacheImplTest {
             .collect(Collectors.toList()), "TEST-LOCK-4");
 
 
-        validateJobLocksByIdentifier(jobLocksByIdentifier);
+        validateJobLocksByIdentifier(jobLocksByIdentifier, jobLocksByLockName);
     }
 
     @Test
@@ -492,7 +495,7 @@ public class JobLockCacheImplTest {
 
         JobLockCacheData jobLockCacheData = (JobLockCacheData) ReflectionTestUtils.getField(jlc1, "jobLockCacheData");
 
-        ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier
+        ConcurrentHashMap<String, String> jobLocksByIdentifier
             = jobLockCacheData.getJobLocksByIdentifier();
 
         assertEquals(5, jobLocksByIdentifier.size());
@@ -510,7 +513,7 @@ public class JobLockCacheImplTest {
 
         JobLockCacheData jobLockCacheData = (JobLockCacheData) ReflectionTestUtils.getField(jlc, "jobLockCacheData");
 
-        ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier
+        ConcurrentHashMap<String, String> jobLocksByIdentifier
             = jobLockCacheData.getJobLocksByIdentifier();
 
         assertEquals(5, jobLocksByIdentifier.size());
@@ -524,7 +527,7 @@ public class JobLockCacheImplTest {
 
         JobLockCacheData jobLockCacheData = (JobLockCacheData) ReflectionTestUtils.getField(jlc, "jobLockCacheData");
 
-        ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier
+        ConcurrentHashMap<String, String> jobLocksByIdentifier
             = jobLockCacheData.getJobLocksByIdentifier();
 
         ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName
@@ -542,7 +545,7 @@ public class JobLockCacheImplTest {
 
         JobLockCacheData jobLockCacheData = (JobLockCacheData) ReflectionTestUtils.getField(jlc, "jobLockCacheData");
 
-        ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier
+        ConcurrentHashMap<String, String> jobLocksByIdentifier
             = jobLockCacheData.getJobLocksByIdentifier();
 
         ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName
@@ -552,10 +555,11 @@ public class JobLockCacheImplTest {
         assertEquals(0, jobLocksByIdentifier.size());
     }
 
-    private void validateJobLocksByIdentifier(ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier) {
+    private void validateJobLocksByIdentifier(ConcurrentHashMap<String, String> jobLocksByIdentifier, ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName) {
+
         JobLockHolder jobLockHolder;
         assertEquals(7, jobLocksByIdentifier.size());
-        jobLockHolder = jobLocksByIdentifier.get("AgentName0-TEST-LOCK-3-JobName0");
+        jobLockHolder = jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName0-TEST-LOCK-3-JobName0"));
         assertEquals("TEST-LOCK-3", jobLockHolder.getLockName());
         assertEquals(3, jobLockHolder.getLockCount());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
@@ -565,7 +569,7 @@ public class JobLockCacheImplTest {
             .flatMap(Collection::stream)
             .collect(Collectors.toList()), "TEST-LOCK-3");
 
-        jobLockHolder = jobLocksByIdentifier.get("AgentName1-TEST-LOCK-3-JobName1");
+        jobLockHolder = jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName1-TEST-LOCK-3-JobName1"));
         assertEquals("TEST-LOCK-3", jobLockHolder.getLockName());
         assertEquals(3, jobLockHolder.getLockCount());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
@@ -574,7 +578,7 @@ public class JobLockCacheImplTest {
             .flatMap(Collection::stream)
             .collect(Collectors.toList()), "TEST-LOCK-3");
 
-        jobLockHolder = jobLocksByIdentifier.get("AgentName2-TEST-LOCK-3-JobName2");
+        jobLockHolder = jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName2-TEST-LOCK-3-JobName2"));
         assertEquals("TEST-LOCK-3", jobLockHolder.getLockName());
         assertEquals(3, jobLockHolder.getLockCount());
         assertEquals(3, jobLockHolder.getSchedulerJobs().size());
@@ -583,7 +587,7 @@ public class JobLockCacheImplTest {
             .flatMap(Collection::stream)
             .collect(Collectors.toList()), "TEST-LOCK-3");
 
-        jobLockHolder = jobLocksByIdentifier.get("AgentName0-TEST-LOCK-4-JobName0");
+        jobLockHolder = jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName0-TEST-LOCK-4-JobName0"));
         assertEquals("TEST-LOCK-4", jobLockHolder.getLockName());
         assertEquals(4, jobLockHolder.getLockCount());
         assertEquals(4, jobLockHolder.getSchedulerJobs().size());
@@ -592,7 +596,7 @@ public class JobLockCacheImplTest {
             .flatMap(Collection::stream)
             .collect(Collectors.toList()), "TEST-LOCK-4");
 
-        jobLockHolder = jobLocksByIdentifier.get("AgentName1-TEST-LOCK-4-JobName1");
+        jobLockHolder = jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName1-TEST-LOCK-4-JobName1"));
         assertEquals("TEST-LOCK-4", jobLockHolder.getLockName());
         assertEquals(4, jobLockHolder.getLockCount());
         assertEquals(4, jobLockHolder.getSchedulerJobs().size());
@@ -601,7 +605,7 @@ public class JobLockCacheImplTest {
             .flatMap(Collection::stream)
             .collect(Collectors.toList()), "TEST-LOCK-4");
 
-        jobLockHolder = jobLocksByIdentifier.get("AgentName2-TEST-LOCK-4-JobName2");
+        jobLockHolder = jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName2-TEST-LOCK-4-JobName2"));
         assertEquals("TEST-LOCK-4", jobLockHolder.getLockName());
         assertEquals(4, jobLockHolder.getLockCount());
         assertEquals(4, jobLockHolder.getSchedulerJobs().size());
@@ -610,7 +614,7 @@ public class JobLockCacheImplTest {
             .flatMap(Collection::stream)
             .collect(Collectors.toList()), "TEST-LOCK-4");
 
-        jobLockHolder = jobLocksByIdentifier.get("AgentName3-TEST-LOCK-4-JobName3");
+        jobLockHolder = jobLocksByLockName.get(jobLocksByIdentifier.get("AgentName3-TEST-LOCK-4-JobName3"));
         assertEquals("TEST-LOCK-4", jobLockHolder.getLockName());
         assertEquals(4, jobLockHolder.getLockCount());
         assertEquals(4, jobLockHolder.getSchedulerJobs().size());
