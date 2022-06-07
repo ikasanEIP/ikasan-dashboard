@@ -7,6 +7,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceRecordImpl;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.scheduled.job.model.JobConstants;
+import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.solr.util.SolrSpecialCharacterEscapeUtil;
 import org.ikasan.spec.scheduled.instance.dao.SchedulerJobInstanceDao;
 import org.ikasan.spec.scheduled.instance.model.*;
@@ -17,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobInstanceRecord> implements SchedulerJobInstanceDao {
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
     /**
      * Logger for this class

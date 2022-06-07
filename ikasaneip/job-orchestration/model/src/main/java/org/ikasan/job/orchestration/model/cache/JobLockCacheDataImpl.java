@@ -7,15 +7,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class JobLockCacheDataImpl implements JobLockCacheData {
     private ConcurrentHashMap<String, JobLockHolder> jobLocksByLockName = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, String> jobLocksByIdentifier = new ConcurrentHashMap<>();
 
     @Override
-    public ConcurrentHashMap<String, JobLockHolder> getJobLocksByIdentifier() {
+    public ConcurrentHashMap<String, String> getJobLocksByIdentifier() {
         return jobLocksByIdentifier;
     }
 
     @Override
-    public void setJobLocksByIdentifier(ConcurrentHashMap<String, JobLockHolder> jobLocksByIdentifier) {
+    public void setJobLocksByIdentifier(ConcurrentHashMap<String, String> jobLocksByIdentifier) {
         this.jobLocksByIdentifier = jobLocksByIdentifier;
     }
 
