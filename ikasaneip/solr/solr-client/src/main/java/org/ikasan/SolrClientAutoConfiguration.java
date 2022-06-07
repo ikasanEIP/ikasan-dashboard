@@ -18,7 +18,9 @@ import org.ikasan.scheduled.joblock.dao.SolrJobLockCacheAuditDaoImpl;
 import org.ikasan.scheduled.joblock.dao.SolrJobLockCacheDaoImpl;
 import org.ikasan.scheduled.joblock.service.SolrJobLockCacheServiceImpl;
 import org.ikasan.scheduled.notification.dao.SolrEmailNotificationDetailsDaoImpl;
+import org.ikasan.scheduled.notification.dao.SolrNotificationSendAuditDaoImpl;
 import org.ikasan.scheduled.notification.service.SolrEmailNotificationDetailsServiceImpl;
+import org.ikasan.scheduled.notification.service.SolrNotificationSendAuditServiceImpl;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -27,6 +29,7 @@ import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
+import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -108,6 +111,16 @@ public class SolrClientAutoConfiguration {
         dao.setSolrPassword(solrPassword);
 
         return new SolrEmailNotificationDetailsServiceImpl(dao);
+    }
+
+    @Bean
+    public NotificationSendAuditService notificationSendAuditService() {
+        SolrNotificationSendAuditDaoImpl dao = new SolrNotificationSendAuditDaoImpl();
+        dao.initStandalone(solrUrl, solrRetentionDays);
+        dao.setSolrUsername(solrUsername);
+        dao.setSolrPassword(solrPassword);
+
+        return new SolrNotificationSendAuditServiceImpl(dao);
     }
 
     @Bean

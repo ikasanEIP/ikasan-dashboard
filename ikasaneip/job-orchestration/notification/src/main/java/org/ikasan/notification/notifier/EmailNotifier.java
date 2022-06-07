@@ -42,8 +42,8 @@ package org.ikasan.notification.notifier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
-import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.thymeleaf.TemplateEngine;
@@ -51,7 +51,7 @@ import org.thymeleaf.context.Context;
 
 public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier<GenericNotificationDetails> {
 
-    private EmailNotificationDetailsService<SolrEmailNotificationDetailsRecord> emailNotificationDetailsService;
+    private EmailNotificationDetailsService<EmailNotificationDetailsRecord> emailNotificationDetailsService;
     private TemplateEngine templateEngine;
 
     public EmailNotifier(EmailNotificationDetailsService emailNotificationDetailsService, TemplateEngine templateEngine) {
@@ -61,11 +61,11 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
 
     @Override
     public void invoke(GenericNotificationDetails notificationDetails) {
-        SolrEmailNotificationDetailsRecord solrEmailNotificationDetailsRecord = emailNotificationDetailsService.
+        EmailNotificationDetailsRecord emailNotificationDetailsRecord = emailNotificationDetailsService.
                         findByJobNameAndMonitorType(notificationDetails.getJobName(), notificationDetails.getMonitorType().name());
 
-        if (solrEmailNotificationDetailsRecord != null) {
-            EmailNotificationDetails emailNotificationDetails = solrEmailNotificationDetailsRecord.getEmailNotificationDetails();
+        if (emailNotificationDetailsRecord != null) {
+            EmailNotificationDetails emailNotificationDetails = emailNotificationDetailsRecord.getEmailNotificationDetails();
 
             final Context ctx = new Context();
             // todo fix this
