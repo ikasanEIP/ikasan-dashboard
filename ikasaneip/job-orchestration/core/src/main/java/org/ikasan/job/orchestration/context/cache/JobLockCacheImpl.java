@@ -76,7 +76,7 @@ public final class JobLockCacheImpl implements JobLockCache {
                 .collect(Collectors.toList());
 
             for (SchedulerJob schedulerJob : jobs) {
-                this.jobLockCacheData.getJobLocksByIdentifier().put(schedulerJob.getIdentifier(), jobLockHolder);
+                this.jobLockCacheData.getJobLocksByIdentifier().put(schedulerJob.getIdentifier(), jobLock.getName());
             }
 
             saveJobLockCacheRecord();
@@ -105,7 +105,8 @@ public final class JobLockCacheImpl implements JobLockCache {
         boolean locked = false;
         LOGGER.debug(String.format("Locking jobIdentifier: %s contextName: %s", jobIdentifier, contextName));
         if (jobIdentifier != null && contextName != null) {
-            JobLockHolder jobLockHolder = this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier);
+            JobLockHolder jobLockHolder = this.jobLockCacheData.getJobLocksByLockName()
+                .get(this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier));
             if (jobLockHolder != null && !locked(jobIdentifier, contextName)) {
                 jobLockHolder.addLockHolder(jobIdentifier + CONTEXT_ID + contextName);
                 saveJobLockCacheRecord();
@@ -122,7 +123,8 @@ public final class JobLockCacheImpl implements JobLockCache {
         boolean removed = false;
         LOGGER.debug(String.format("Releasing lock for jobIdentifier: %s  contextName %s", jobIdentifier, contextName));
         if (jobIdentifier != null && contextName != null) {
-            JobLockHolder jobLockHolder = this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier);
+            JobLockHolder jobLockHolder = this.jobLockCacheData.getJobLocksByLockName()
+                .get(this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier));
             if (jobLockHolder != null) {
                 removed = jobLockHolder.removeLockHolder(jobIdentifier + CONTEXT_ID + contextName);
                 if (removed) {
@@ -161,11 +163,6 @@ public final class JobLockCacheImpl implements JobLockCache {
             this.jobLockCacheData.getJobLocksByLockName().get(lockName).getLockHolders().clear();
             this.jobLockCacheData.getJobLocksByLockName().get(lockName).getSchedulerJobInitiationEventWaitQueue().clear();
 
-            this.jobLockCacheData.getJobLocksByIdentifier().entrySet().forEach(entry -> {
-                if(entry.getValue().getLockName().equals(lockName)) {
-                    entry.getValue().getLockHolders().clear();
-                }
-            });
             return true;
         }
         return false;
@@ -181,8 +178,10 @@ public final class JobLockCacheImpl implements JobLockCache {
 
     private JobLockHolder getJobLockHolderForJobIdentifier(String jobIdentifier) {
         JobLockHolder jlh = null;
-        if (jobIdentifier != null) {
-            jlh = this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier);
+        if (jobIdentifier != null &&  this.jobLockCacheData.getJobLocksByIdentifier().containsKey(jobIdentifier)
+            && this.jobLockCacheData.getJobLocksByLockName().containsKey(this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier))) {
+            jlh = this.jobLockCacheData.getJobLocksByLockName()
+                .get(this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier));
         }
         return jlh;
     }
@@ -202,7 +201,8 @@ public final class JobLockCacheImpl implements JobLockCache {
     @Override
     public void addQueuedSchedulerJobInitiationEvent(String jobIdentifier, String contextName, SchedulerJobInitiationEvent event) {
         if (jobIdentifier != null && contextName != null) {
-            JobLockHolder jobLockHolder = this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier);
+            JobLockHolder jobLockHolder = this.jobLockCacheData.getJobLocksByLockName()
+                .get(this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier));
             if (jobLockHolder != null) {
                 ContextualisedSchedulerJobInitiationEvent contextualisedSchedulerJobInitiationEvent
                     = new ContextualisedSchedulerJobInitiationEventImpl();
@@ -218,7 +218,8 @@ public final class JobLockCacheImpl implements JobLockCache {
         ContextualisedSchedulerJobInitiationEvent removed = null;
         LOGGER.debug(String.format("Releasing lock for jobIdentifier: %s  contextName %s", jobIdentifier, contextName));
         if (jobIdentifier != null && contextName != null) {
-            JobLockHolder jobLockHolder = this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier);
+            JobLockHolder jobLockHolder = this.jobLockCacheData.getJobLocksByLockName()
+                .get(this.jobLockCacheData.getJobLocksByIdentifier().get(jobIdentifier));
             if (jobLockHolder != null) {
                 removed = jobLockHolder.getSchedulerJobInitiationEventWaitQueue().poll();
                 if (removed != null) {

@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SolrScheduledContextInstanceAuditDaoImpl extends SolrDaoBase<ScheduledContextInstanceAuditRecord> implements ScheduledContextInstanceAuditDao {
     private static final ObjectMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
+
     private static final Logger LOG = LoggerFactory.getLogger(SolrScheduledContextInstanceAuditDaoImpl.class);
     private static final String SCHEDULED_CONTEXT_AUDIT_INSTANCE_TYPE = "scheduledContextAuditInstance";
     private static final String SCHEDULED_CONTEXT_AUDIT_INSTANCE_ID = "scheduledContextAuditInstanceId";

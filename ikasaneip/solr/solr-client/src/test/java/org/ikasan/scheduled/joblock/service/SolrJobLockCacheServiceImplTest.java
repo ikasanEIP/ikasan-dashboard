@@ -314,7 +314,7 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
                 .collect(Collectors.toList());
 
             for (SchedulerJob schedulerJob : jobs) {
-                jobLockCacheData.getJobLocksByIdentifier().put(schedulerJob.getIdentifier(), jobLockHolder);
+                jobLockCacheData.getJobLocksByIdentifier().put(schedulerJob.getIdentifier(), jobLock.getName());
             }
         }
 
