@@ -3,7 +3,6 @@ package org.ikasan.notification.monitor;
 import org.apache.commons.lang3.time.DateUtils;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
-import org.ikasan.job.orchestration.model.notification.Monitor;
 import org.ikasan.job.orchestration.model.notification.MonitorType;
 import org.ikasan.notification.exception.StopNotificationRunnerException;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -13,6 +12,7 @@ import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.quartz.TriggerUtils;
 import org.quartz.impl.triggers.CronTriggerImpl;
 

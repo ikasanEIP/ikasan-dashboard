@@ -9,8 +9,6 @@ import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEv
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
-import org.ikasan.job.orchestration.model.notification.Monitor;
-import org.ikasan.job.orchestration.model.notification.Notifier;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.notification.NotificationConfiguration;
 import org.ikasan.notification.monitor.mock.ScheduledContextInstanceServiceTestImpl;
@@ -19,6 +17,8 @@ import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.notification.model.Monitor;
+import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.junit.Before;
 import org.junit.Test;
 
