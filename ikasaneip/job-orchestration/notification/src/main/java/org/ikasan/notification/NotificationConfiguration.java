@@ -19,6 +19,7 @@ import org.thymeleaf.templateresolver.FileTemplateResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -57,6 +58,16 @@ public class NotificationConfiguration {
         Monitor monitor = new OverdueFileMonitorImpl(fileArrivalToleranceInMinutes, executorService, schedulerJobService);
         monitor.setNotifiers(overdueFileNotifiers);
         return monitor;
+    }
+
+    @Bean
+    public List<Notifier> stateChangeNotifiers(EmailNotifier emailNotifier) {
+        return Arrays.asList(emailNotifier);
+    }
+
+    @Bean
+    public List<Notifier> overdueFileNotifiers(EmailNotifier emailNotifier) {
+        return Arrays.asList(emailNotifier);
     }
 
     @Bean
