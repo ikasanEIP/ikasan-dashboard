@@ -1,13 +1,14 @@
 package org.ikasan.scheduled.notification.service;
 
 import org.ikasan.scheduled.notification.dao.SolrEmailNotificationDetailsDaoImpl;
-import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrServiceBase;
 
 import java.util.List;
 
-public class SolrEmailNotificationDetailsServiceImpl extends SolrServiceBase implements EmailNotificationDetailsService<SolrEmailNotificationDetailsRecord>
+public class SolrEmailNotificationDetailsServiceImpl extends SolrServiceBase implements EmailNotificationDetailsService<EmailNotificationDetailsRecord>
 {
 
     private SolrEmailNotificationDetailsDaoImpl dao;
@@ -22,28 +23,28 @@ public class SolrEmailNotificationDetailsServiceImpl extends SolrServiceBase imp
     }
 
     @Override
-    public SearchResults<SolrEmailNotificationDetailsRecord> findAll(int limit, int offset) {
+    public SearchResults<EmailNotificationDetailsRecord> findAll(int limit, int offset) {
         return this.dao.findAll(limit, offset);
     }
 
     @Override
-    public SolrEmailNotificationDetailsRecord findByJobNameAndMonitorType(String jobName, String monitorType) {
+    public EmailNotificationDetailsRecord findByJobNameAndMonitorType(String jobName, String monitorType) {
         return this.dao.findByJobNameAndMonitorType(jobName, monitorType);
     }
 
     @Override
-    public void save(SolrEmailNotificationDetailsRecord solrEmailNotificationDetailsRecord)
+    public void save(EmailNotificationDetailsRecord emailNotificationDetailsRecord)
     {
         this.dao.setSolrUsername(this.solrUsername);
         this.dao.setSolrPassword(this.solrPassword);
-        dao.save(solrEmailNotificationDetailsRecord);
+        dao.save(emailNotificationDetailsRecord);
     }
 
     @Override
-    public void save(List<SolrEmailNotificationDetailsRecord> solrEmailNotificationDetailsRecords)
+    public void save(List<EmailNotificationDetailsRecord> emailNotificationDetailsRecords)
     {
         this.dao.setSolrUsername(this.solrUsername);
         this.dao.setSolrPassword(this.solrPassword);
-        dao.save(solrEmailNotificationDetailsRecords);
+        dao.save(emailNotificationDetailsRecords);
     }
 }

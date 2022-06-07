@@ -1,13 +1,13 @@
 package org.ikasan.notification.notifier;
 
-import org.ikasan.job.orchestration.model.notification.EmailNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.MonitorType;
 import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
-import org.ikasan.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;

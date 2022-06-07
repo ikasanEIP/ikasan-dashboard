@@ -40,8 +40,8 @@
  */
 package org.ikasan.notification.notifier;
 
-import org.ikasan.job.orchestration.model.notification.EmailNotificationDetails;
 import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
