@@ -6,10 +6,11 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
-import org.ikasan.job.orchestration.model.notification.EmailNotificationDetails;
 import org.ikasan.scheduled.notification.dao.SolrEmailNotificationDetailsDaoImpl;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
 import org.junit.Assert;
@@ -79,7 +80,7 @@ public class SolrEmailNotificationDetailsDaoTest extends SolrTestCaseJ4 {
 
             this.dao.save(solrEmailNotificationDetailsRecord);
 
-            SolrEmailNotificationDetailsRecord found = this.dao.findByJobNameAndMonitorType("job-1", "ERROR");
+            EmailNotificationDetailsRecord found = this.dao.findByJobNameAndMonitorType("job-1", "ERROR");
             EmailNotificationDetails foundEmailNotificationDetails = found.getEmailNotificationDetails();
 
             Assert.assertEquals("job-1", foundEmailNotificationDetails.getJobName());
@@ -112,7 +113,7 @@ public class SolrEmailNotificationDetailsDaoTest extends SolrTestCaseJ4 {
 
             this.dao.save(solrEmailNotificationDetailsRecord);
 
-            SearchResults<SolrEmailNotificationDetailsRecord> found =  this.dao.findAll(100,0);
+            SearchResults<EmailNotificationDetailsRecord> found =  this.dao.findAll(100,0);
 
             Assert.assertEquals(1, found.getResultList().size());
 
