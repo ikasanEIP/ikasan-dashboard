@@ -1,20 +1,13 @@
 package org.ikasan.job.orchestration.core.machine;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
-import org.ikasan.job.orchestration.model.event.ContextualisedSchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.scheduled.context.model.*;
+import org.ikasan.spec.scheduled.context.model.JobDependency;
+import org.ikasan.spec.scheduled.context.model.JobLockCache;
+import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
@@ -28,6 +21,14 @@ import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceServi
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> {
 
@@ -100,14 +101,9 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             schedulerJobInstance.setScheduledProcessEvent(scheduledProcessEvent);
             schedulerJobInstance.setChildContextName(contextInstance.getName());
             schedulerJobInstance.setContextInstanceId(parentContextInstance.getId());
-            schedulerJobInstance.setChildContextName(contextInstance.getName());
 
             this.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, parentContextInstance
                 , currentJobState, schedulerJobInstance.getStatus()));
-
-            ContextualisedScheduledProcessEvent event = new ContextualisedScheduledProcessEventImpl();
-            event.setChildContextIds(scheduledProcessEvent.getChildContextIds());
-            schedulerJobInstance.setScheduledProcessEvent(event);
         }
 
         List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents = new ArrayList<>();
