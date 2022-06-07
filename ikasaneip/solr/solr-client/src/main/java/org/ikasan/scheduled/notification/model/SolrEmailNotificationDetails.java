@@ -1,6 +1,6 @@
 package org.ikasan.scheduled.notification.model;
 
-import org.ikasan.job.orchestration.model.notification.EmailNotificationDetails;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 
 import java.util.Date;
 import java.util.List;

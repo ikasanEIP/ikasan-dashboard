@@ -3,14 +3,13 @@ package org.ikasan.scheduled.notification.model;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
-import org.ikasan.job.orchestration.model.notification.EmailNotificationDetails;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
 
-import java.io.Serializable;
-
-public class SolrEmailNotificationDetailsRecord implements Serializable {
+public class SolrEmailNotificationDetailsRecord implements EmailNotificationDetailsRecord {
 
     private ObjectMapper objectMapper = ScheduledObjectMapperFactory.newInstance();
 
@@ -31,6 +30,11 @@ public class SolrEmailNotificationDetailsRecord implements Serializable {
 
     public String getId() {
         return this.id;
+    }
+
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     public long getTimestamp() {

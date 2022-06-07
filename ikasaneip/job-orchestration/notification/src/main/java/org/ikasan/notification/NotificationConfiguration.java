@@ -1,13 +1,13 @@
 package org.ikasan.notification;
 
-import org.ikasan.job.orchestration.model.notification.Monitor;
-import org.ikasan.job.orchestration.model.notification.Notifier;
 import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.ikasan.notification.monitor.StateChangeMonitorImpl;
 import org.ikasan.notification.monitor.OverdueFileMonitorImpl;
 import org.ikasan.notification.notifier.EmailNotifier;
-import org.ikasan.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.notification.model.Monitor;
+import org.ikasan.spec.scheduled.notification.model.Notifier;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;

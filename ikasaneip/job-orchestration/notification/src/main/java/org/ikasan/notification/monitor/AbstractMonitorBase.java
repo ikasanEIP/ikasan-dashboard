@@ -1,7 +1,7 @@
 package org.ikasan.notification.monitor;
 
-import org.ikasan.job.orchestration.model.notification.Monitor;
-import org.ikasan.job.orchestration.model.notification.Notifier;
+import org.ikasan.spec.scheduled.notification.model.Monitor;
+import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
