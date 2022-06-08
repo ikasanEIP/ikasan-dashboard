@@ -12,8 +12,8 @@ import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToCo
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
-import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditImpl;
-import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditRecordImpl;
+import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditAggregateImpl;
+import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditAggregateRecordImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.job.orchestration.service.ContextService;
@@ -414,16 +414,15 @@ public class ContextMachine {
                                          List<SchedulerJobInitiationEvent> finalEvents,
                                          ContextInstance previousContextInstance,
                                          ContextInstance updatedContextInstance) {
-        ScheduledContextInstanceAudit contextInstanceAudit = new ScheduledContextInstanceAuditImpl();
-        contextInstanceAudit.setPreviousContextInstance(previousContextInstance);
-        contextInstanceAudit.setUpdatedContextInstance(updatedContextInstance);
+        ScheduledContextInstanceAuditAggregate contextInstanceAudit = new ScheduledContextInstanceAuditAggregateImpl();
         contextInstanceAudit.setProcessEvent(scheduledProcessEvent);
         contextInstanceAudit.setSchedulerJobInitiationEvents(finalEvents);
 
-        ScheduledContextInstanceAuditRecord auditRecord = new ScheduledContextInstanceAuditRecordImpl();
+        ScheduledContextInstanceAuditAggregateRecord auditRecord = new ScheduledContextInstanceAuditAggregateRecordImpl();
         auditRecord.setContextName(this.contextInstance.getName());
-        auditRecord.setScheduledContextInstanceAudit(contextInstanceAudit);
-        scheduledContextInstanceService.saveAudit(auditRecord);
+        auditRecord.setContextInstanceId(this.contextInstance.getId());
+        auditRecord.setScheduledContextInstanceAuditAggregate(contextInstanceAudit);
+        scheduledContextInstanceService.saveAudit(auditRecord, previousContextInstance, updatedContextInstance);
     }
 
     /**

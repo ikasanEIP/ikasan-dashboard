@@ -10,10 +10,10 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.scheduled.general.SearchResultsImpl;
-import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditRecord;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateRecord;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateSearchFilter;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
@@ -24,15 +24,15 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInstanceAuditRecord> {
+public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInstanceAuditAggregateRecord> {
     private Logger logger = LoggerFactory.getLogger(ContextInstanceAuditFilteringGrid.class);
 
     private ScheduledContextInstanceService contextInstanceService;
 
-    private DataProvider<ScheduledContextInstanceAuditRecord, ContextInstanceSearchFilter> dataProvider;
-    private ConfigurableFilterDataProvider<ScheduledContextInstanceAuditRecord, Void, ContextInstanceSearchFilter> filteredDataProvider;
+    private DataProvider<ScheduledContextInstanceAuditAggregateRecord, ScheduledContextInstanceAuditAggregateSearchFilter> dataProvider;
+    private ConfigurableFilterDataProvider<ScheduledContextInstanceAuditAggregateRecord, Void, ScheduledContextInstanceAuditAggregateSearchFilter> filteredDataProvider;
 
-    private ContextInstanceSearchFilter searchFilter;
+    private ScheduledContextInstanceAuditAggregateSearchFilter searchFilter;
 
     private long resultSize = 0;
 
@@ -43,7 +43,7 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
      * @param searchFilter
      */
     public ContextInstanceAuditFilteringGrid(ScheduledContextInstanceService solrSearchService,
-                                             ContextInstanceSearchFilter searchFilter) {
+                                             ScheduledContextInstanceAuditAggregateSearchFilter searchFilter) {
         this.contextInstanceService = solrSearchService;
         if(this.contextInstanceService ==  null) {
             throw new IllegalArgumentException("contextInstanceService cannot be null!");
@@ -95,7 +95,7 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
      */
     public void init() {
         dataProvider = DataProvider.fromFilteringCallbacks(query -> {
-            Optional<ContextInstanceSearchFilter> filter = query.getFilter();
+            Optional<ScheduledContextInstanceAuditAggregateSearchFilter> filter = query.getFilter();
 
             // The index of the first item to load
             int offset = query.getOffset();
@@ -105,15 +105,21 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
 
             SearchResults results;
 
-            results = this.getResults(filter.get(), offset, limit);
+            if(query.getSortOrders().size() > 0) {
+                results = this.getResults(filter.get(), offset, limit, query.getSortOrders().get(0).getSorted(),
+                    query.getSortOrders().get(0).getDirection().name());
+            }
+            else {
+                results = this.getResults(filter.get(), offset, limit, null, null);
+            }
 
             return results.getResultList().stream();
         }, query -> {
-            Optional<ContextInstanceSearchFilter> filter = query.getFilter();
+            Optional<ScheduledContextInstanceAuditAggregateSearchFilter> filter = query.getFilter();
 
             SearchResults results;
 
-            results = this.getResults(filter.get(), 0, 0);
+            results = this.getResults(filter.get(), 0, 0, null, null);
 
             this.resultSize = results.getTotalNumberOfResults();
 
@@ -126,18 +132,13 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
         this.setDataProvider(filteredDataProvider);
     }
 
-    private SearchResults getResults(ContextInstanceSearchFilter filter, int offset, int limit) {
+    private SearchResults getResults(ScheduledContextInstanceAuditAggregateSearchFilter filter, int offset, int limit, String sortField, String sortOrder) {
         IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-        SearchResults results;
+        SearchResults results = null;
 
         try {
-            if(filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty()) {
-                results = this.contextInstanceService.findAllAuditRecordsByContextId(filter.getContextSearchFilter(), limit, offset);
-            }
-            else {
-                results = this.contextInstanceService.findAllAuditRecords(limit, offset);
-            }
+            results = this.contextInstanceService.findAllAuditRecordsByFilter(this.searchFilter, limit, offset, sortField, sortOrder);
         }
         catch (Exception e) {
             final UI current = UI.getCurrent();

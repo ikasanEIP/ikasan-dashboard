@@ -17,7 +17,7 @@ public class SolrScheduledContextInstanceRecordImpl implements ScheduledContextI
     }
 
     @Field(SolrDaoBase.ID)
-    private String id;
+    protected String id;
 
     @Field(SolrDaoBase.MODULE_NAME)
     private String contextName;
