@@ -42,20 +42,26 @@ package org.ikasan.notification.notifier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
-import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
-import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
-import org.ikasan.spec.scheduled.notification.model.Notifier;
+import org.ikasan.job.orchestration.model.notification.NotificationType;
+import org.ikasan.scheduled.notification.model.SolrNotificationSendAudit;
+import org.ikasan.scheduled.notification.model.SolrNotificationSendAuditRecord;
+import org.ikasan.spec.scheduled.notification.model.*;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
+import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+
+import java.util.Date;
 
 public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier<GenericNotificationDetails> {
 
     private EmailNotificationDetailsService<EmailNotificationDetailsRecord> emailNotificationDetailsService;
+    private NotificationSendAuditService<NotificationSendAuditRecord> notificationSendAuditService;
     private TemplateEngine templateEngine;
 
-    public EmailNotifier(EmailNotificationDetailsService emailNotificationDetailsService, TemplateEngine templateEngine) {
+    public EmailNotifier(EmailNotificationDetailsService emailNotificationDetailsService, NotificationSendAuditService notificationSendAuditService, TemplateEngine templateEngine) {
         this.emailNotificationDetailsService = emailNotificationDetailsService;
+        this.notificationSendAuditService = notificationSendAuditService;
         this.templateEngine = templateEngine;
     }
 
@@ -67,18 +73,39 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
         if (emailNotificationDetailsRecord != null) {
             EmailNotificationDetails emailNotificationDetails = emailNotificationDetailsRecord.getEmailNotificationDetails();
 
-            final Context ctx = new Context();
-            // todo fix this
-            ctx.setVariable("emailNotificationDetails", emailNotificationDetails);
+            NotificationSendAuditRecord notificationSendAuditRecord = notificationSendAuditService.find(notificationDetails.getContextInstanceId(),
+                notificationDetails.getJobName(), notificationDetails.getMonitorType().name(), NotificationType.EMAIL.name());
 
-            if (StringUtils.isNotBlank(emailNotificationDetails.getEmailBodyTemplate())) {
-                emailNotificationDetails.setEmailBody(this.templateEngine.process(emailNotificationDetails.getEmailBodyTemplate(), ctx));
-            }
-            if (StringUtils.isNotBlank(emailNotificationDetails.getEmailSubjectTemplate())) {
-                emailNotificationDetails.setEmailSubject(this.templateEngine.process(emailNotificationDetails.getEmailSubjectTemplate(), ctx));
-            }
+            if (notificationSendAuditRecord == null || notificationSendAuditRecord.getNotificationSendAudit() == null ||
+                  !notificationSendAuditRecord.getNotificationSendAudit().isNotificationSend()) {
 
-            super.sendEmail(emailNotificationDetails);
+                final Context ctx = new Context();
+                // todo fix this
+                ctx.setVariable("emailNotificationDetails", emailNotificationDetails);
+
+                if (StringUtils.isNotBlank(emailNotificationDetails.getEmailBodyTemplate())) {
+                    emailNotificationDetails.setEmailBody(this.templateEngine.process(emailNotificationDetails.getEmailBodyTemplate(), ctx));
+                }
+                if (StringUtils.isNotBlank(emailNotificationDetails.getEmailSubjectTemplate())) {
+                    emailNotificationDetails.setEmailSubject(this.templateEngine.process(emailNotificationDetails.getEmailSubjectTemplate(), ctx));
+                }
+
+                super.sendEmail(emailNotificationDetails);
+
+                // save the notification
+                NotificationSendAudit notificationSendAudit = new SolrNotificationSendAudit();
+                notificationSendAudit.setContextInstanceId(notificationDetails.getContextInstanceId());
+                notificationSendAudit.setJobName(notificationDetails.getJobName());
+                notificationSendAudit.setMonitorType(notificationDetails.getMonitorType().name());
+                notificationSendAudit.setNotifierType(NotificationType.EMAIL.name());
+                notificationSendAudit.setNotificationSend(true);
+
+                NotificationSendAuditRecord record = new SolrNotificationSendAuditRecord();
+                record.setNotificationSendAudit(notificationSendAudit);
+                record.setTimestamp(new Date().getTime());
+
+                notificationSendAuditService.save(record);
+            }
         }
     }
 }
