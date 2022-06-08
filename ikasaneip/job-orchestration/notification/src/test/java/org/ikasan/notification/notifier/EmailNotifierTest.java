@@ -5,9 +5,15 @@ import org.ikasan.job.orchestration.model.notification.MonitorType;
 import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
+import org.ikasan.scheduled.notification.model.SolrNotificationSendAudit;
+import org.ikasan.scheduled.notification.model.SolrNotificationSendAuditRecord;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
+import org.ikasan.spec.scheduled.notification.model.NotificationSendAudit;
+import org.ikasan.spec.scheduled.notification.model.NotificationSendAuditRecord;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
+import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
@@ -50,6 +56,7 @@ public class EmailNotifierTest {
 
     private EmailNotifier emailNotifier;
     private EmailNotificationDetailsService emailNotificationDetailsService = mockery.mock(EmailNotificationDetailsService.class);
+    private NotificationSendAuditService notificationSendAuditService = mockery.mock(NotificationSendAuditService.class);
 
     @Before
     public void setup()
@@ -69,7 +76,7 @@ public class EmailNotifierTest {
                 }
             }
 
-        emailNotifier = new EmailNotifier(emailNotificationDetailsService, emailTemplateEngine());
+        emailNotifier = new EmailNotifier(emailNotificationDetailsService, notificationSendAuditService, emailTemplateEngine());
         emailNotifier.setConfiguration(getConfiguration());
     }
 
@@ -111,12 +118,15 @@ public class EmailNotifierTest {
         emailNotificationDetails.setEmailSubject("subject-1");
         emailNotificationDetails.setHtml(true);
 
-        SolrEmailNotificationDetailsRecord record = new SolrEmailNotificationDetailsRecord();
-        record.setEmailNotificationDetails(emailNotificationDetails);
+        SolrEmailNotificationDetailsRecord emailNotificationDetailsRecord = new SolrEmailNotificationDetailsRecord();
+        emailNotificationDetailsRecord.setEmailNotificationDetails(emailNotificationDetails);
 
         mockery.checking(new Expectations(){{
             oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "ERROR");
-            will(returnValue(record));
+            will(returnValue(emailNotificationDetailsRecord));
+            oneOf(notificationSendAuditService).find("context-instance-id-1", "job-1", "ERROR", "EMAIL");
+            will(returnValue(null));
+            oneOf(notificationSendAuditService).save(with(any(NotificationSendAuditRecord.class)));
         }});
 
         emailNotifier.invoke(notificationDetails);
@@ -159,6 +169,9 @@ public class EmailNotifierTest {
         mockery.checking(new Expectations(){{
             oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "ERROR");
             will(returnValue(record));
+            oneOf(notificationSendAuditService).find("context-instance-id-1", "job-1", "ERROR", "EMAIL");
+            will(returnValue(null));
+            oneOf(notificationSendAuditService).save(with(any(NotificationSendAuditRecord.class)));
         }});
 
         emailNotifier.invoke(notificationDetails);
@@ -182,6 +195,103 @@ public class EmailNotifierTest {
 
     }
 
+    @Test
+    public void test_with_already_sent_before() throws MessagingException, IOException {
+
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-instance-id-1", "job-1", MonitorType.ERROR, InstanceStatus.ERROR);
+
+        EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+        emailNotificationDetails.setJobName("job-1");
+        emailNotificationDetails.setMonitorType("ERROR");
+        emailNotificationDetails.setEmailSendTo(Arrays.asList("to-1", "to-2"));
+        emailNotificationDetails.setEmailSendCc(Arrays.asList("cc-1"));
+        emailNotificationDetails.setEmailSendBcc(Arrays.asList("bcc-1"));
+        emailNotificationDetails.setEmailBody("body-1");
+        emailNotificationDetails.setEmailSubject("subject-1");
+        emailNotificationDetails.setHtml(true);
+
+        EmailNotificationDetailsRecord emailNotificationDetailsRecord = new SolrEmailNotificationDetailsRecord();
+        emailNotificationDetailsRecord.setEmailNotificationDetails(emailNotificationDetails);
+
+        NotificationSendAudit notificationSendAudit = new SolrNotificationSendAudit();
+        notificationSendAudit.setContextInstanceId("context-instance-id-1");
+        notificationSendAudit.setJobName("job-1");
+        notificationSendAudit.setMonitorType("ERROR");
+        notificationSendAudit.setNotifierType("EMAIL");
+        notificationSendAudit.setNotificationSend(true);
+
+        NotificationSendAuditRecord notificationSendAuditRecord = new SolrNotificationSendAuditRecord();
+        notificationSendAuditRecord.setNotificationSendAudit(notificationSendAudit);
+        notificationSendAuditRecord.setTimestamp(new Date().getTime());
+
+        mockery.checking(new Expectations(){{
+            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "ERROR");
+            will(returnValue(emailNotificationDetailsRecord));
+            oneOf(notificationSendAuditService).find("context-instance-id-1", "job-1", "ERROR", "EMAIL");
+            will(returnValue(notificationSendAuditRecord));
+        }});
+
+        emailNotifier.invoke(notificationDetails);
+
+        List<WiserMessage> messages = wiser.getMessages();
+        Assert.assertTrue("no messages should have been published", messages.size() == 0);
+    }
+
+    @Test
+    public void test_with_not_sent_before() throws MessagingException, IOException {
+
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-instance-id-1", "job-1", MonitorType.ERROR, InstanceStatus.ERROR);
+
+        EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+        emailNotificationDetails.setJobName("job-1");
+        emailNotificationDetails.setMonitorType("ERROR");
+        emailNotificationDetails.setEmailSendTo(Arrays.asList("to-1", "to-2"));
+        emailNotificationDetails.setEmailSendCc(Arrays.asList("cc-1"));
+        emailNotificationDetails.setEmailSendBcc(Arrays.asList("bcc-1"));
+        emailNotificationDetails.setEmailBody("body-1");
+        emailNotificationDetails.setEmailSubject("subject-1");
+        emailNotificationDetails.setHtml(true);
+
+        EmailNotificationDetailsRecord emailNotificationDetailsRecord = new SolrEmailNotificationDetailsRecord();
+        emailNotificationDetailsRecord.setEmailNotificationDetails(emailNotificationDetails);
+
+        NotificationSendAudit notificationSendAudit = new SolrNotificationSendAudit();
+        notificationSendAudit.setContextInstanceId("context-instance-id-1");
+        notificationSendAudit.setJobName("job-1");
+        notificationSendAudit.setMonitorType("ERROR");
+        notificationSendAudit.setNotifierType("EMAIL");
+        notificationSendAudit.setNotificationSend(false);
+
+        NotificationSendAuditRecord notificationSendAuditRecord = new SolrNotificationSendAuditRecord();
+        notificationSendAuditRecord.setNotificationSendAudit(notificationSendAudit);
+        notificationSendAuditRecord.setTimestamp(new Date().getTime());
+
+        mockery.checking(new Expectations(){{
+            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "ERROR");
+            will(returnValue(emailNotificationDetailsRecord));
+            oneOf(notificationSendAuditService).find("context-instance-id-1", "job-1", "ERROR", "EMAIL");
+            will(returnValue(notificationSendAuditRecord));
+            oneOf(notificationSendAuditService).save(with(any(NotificationSendAuditRecord.class)));
+        }});
+
+        emailNotifier.invoke(notificationDetails);
+
+        List<WiserMessage> messages = wiser.getMessages();
+
+        Assert.assertTrue("Should be four messages - one per addressee", messages.size() == 4);
+        for(WiserMessage message:wiser.getMessages())
+        {
+            Assert.assertEquals("sender-1" , message.getEnvelopeSender());
+
+            MimeMessage mimeMessage = message.getMimeMessage();
+            MimeMultipart mimeMultipart = (MimeMultipart)mimeMessage.getContent();
+            Assert.assertTrue("should be only 1 bodypart", mimeMultipart.getCount() == 1);
+            BodyPart bodyPart = mimeMultipart.getBodyPart(0);
+            String content = (String)bodyPart.getContent();
+            Assert.assertTrue(content.contains("body-1"));
+            Assert.assertEquals("subject-1", mimeMessage.getSubject());
+        }
+    }
 
     private TemplateEngine emailTemplateEngine() {
         final SpringTemplateEngine templateEngine = new SpringTemplateEngine();

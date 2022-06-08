@@ -8,6 +8,7 @@ import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
+import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -33,6 +34,9 @@ public class NotificationConfiguration {
     @Resource
     private EmailNotificationDetailsService emailNotificationDetailsService;
 
+    @Resource
+    private NotificationSendAuditService notificationSendAuditService;
+
     @Value("${scheduler.notification.file.overdue.tolerance.minutes:30}")
     private Integer fileArrivalToleranceInMinutes;
 
@@ -41,7 +45,7 @@ public class NotificationConfiguration {
 
     @Bean
     public EmailNotifier emailNotifier(TemplateEngine emailTemplateEngine, EmailNotifierConfiguration emailConfiguration) {
-        EmailNotifier emailNotifier = new EmailNotifier(emailNotificationDetailsService, emailTemplateEngine);
+        EmailNotifier emailNotifier = new EmailNotifier(emailNotificationDetailsService, notificationSendAuditService, emailTemplateEngine);
         emailNotifier.setConfiguration(emailConfiguration);
         return emailNotifier;
     }
