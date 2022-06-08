@@ -27,6 +27,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateSearchFilter;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -260,8 +261,8 @@ public class ContextInstanceWidget extends Div {
     }
 
     private void initialiseContextInstanceAuditWidget(ScheduledContextInstanceService scheduledContextInstanceService) {
-        ContextInstanceSearchFilter contextInstanceSearchFilter = new SolrContextInstanceSearchFilterImpl();
-        contextInstanceSearchFilter.setContextSearchFilter(this.contextInstance.getId());
+        ScheduledContextInstanceAuditAggregateSearchFilter contextInstanceSearchFilter = new ScheduledContextInstanceAuditAggregateSearchFilter();
+        contextInstanceSearchFilter.setContextInstanceId(this.contextInstance.getId());
         this.contextInstanceAuditWidget = new ContextInstanceAuditWidget(scheduledContextInstanceService
             , contextInstanceSearchFilter, false);
         this.contextInstanceAuditWidget.setWidthFull();
