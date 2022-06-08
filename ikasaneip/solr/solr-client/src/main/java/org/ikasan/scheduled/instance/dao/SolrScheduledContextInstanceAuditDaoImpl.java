@@ -1,69 +1,52 @@
 package org.ikasan.scheduled.instance.dao;
 
-import java.util.UUID;
-
-import org.apache.solr.client.solrj.SolrQuery;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
-import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceAuditRecordImpl;
+import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditDao;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditRecord;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.UUID;
 
-public class SolrScheduledContextInstanceAuditDaoImpl extends SolrDaoBase<ScheduledContextInstanceAuditRecord> implements ScheduledContextInstanceAuditDao {
+public class SolrScheduledContextInstanceAuditDaoImpl extends SolrDaoBase<ScheduledContextInstanceRecord> implements ScheduledContextInstanceAuditDao {
     private static final ObjectMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
 
     private static final Logger LOG = LoggerFactory.getLogger(SolrScheduledContextInstanceAuditDaoImpl.class);
-    private static final String SCHEDULED_CONTEXT_AUDIT_INSTANCE_TYPE = "scheduledContextAuditInstance";
-    private static final String SCHEDULED_CONTEXT_AUDIT_INSTANCE_ID = "scheduledContextAuditInstanceId";
+    private static final String SCHEDULED_CONTEXT_INSTANCE_AUDIT_TYPE = "scheduledContextInstanceAudit";
+    public static final String SCHEDULED_CONTEXT_INSTANCE_AUDIT_ID = "scheduledContextInstanceAuditId";
 
     @Override
-    protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, ScheduledContextInstanceAuditRecord record) {
+    protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, ScheduledContextInstanceRecord record) {
         SolrInputDocument document = new SolrInputDocument();
-        document.addField(ID, SCHEDULED_CONTEXT_AUDIT_INSTANCE_ID + "_" + UUID.randomUUID());
-        document.addField(TYPE, SCHEDULED_CONTEXT_AUDIT_INSTANCE_TYPE);
+        document.addField(ID, record.getId());
+        document.addField(TYPE, SCHEDULED_CONTEXT_INSTANCE_AUDIT_TYPE);
         try {
-            document.addField(PAYLOAD_CONTENT, OBJECT_MAPPER.writeValueAsString(record.getScheduledContextInstanceAudit()));
+            document.addField(PAYLOAD_CONTENT, OBJECT_MAPPER.writeValueAsString(record.getContextInstance()));
         } catch (JsonProcessingException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert ScheduledContextInstanceAuditRecord to string! [%s]", record.getScheduledContextInstanceAudit()));
+            throw new SolrEntityConversionException(String.format("Cannot convert ScheduledContextInstanceRecord to string! [%s]"
+                , record.getContextInstance()));
         }
 
-        document.setField(FLOW_NAME, record.getScheduledContextInstanceAudit().getPreviousContextInstance().getId());
+        document.setField(FLOW_NAME, record.getContextInstanceId());
         document.addField(MODULE_NAME, record.getContextName());
         document.addField(CREATED_DATE_TIME, System.currentTimeMillis());
         document.setField(EXPIRY, expiry);
 
-        LOG.debug(String.format("Converted ScheduledContextInstanceAuditRecord to SolrDocument[%s]", document));
+        LOG.debug(String.format("Converted ScheduledContextInstanceRecord to SolrDocument[%s]", document));
         return document;
     }
 
     @Override
-    public SearchResults<ScheduledContextInstanceAuditRecord> findAll(int limit, int offset) {
-        String queryString = TYPE + COLON + SCHEDULED_CONTEXT_AUDIT_INSTANCE_TYPE;
-        return getResults(queryString, limit, offset);
-    }
-
-    @Override
-    public SearchResults<ScheduledContextInstanceAuditRecord> findAllAuditRecordsByContextId(String contextId, int limit, int offset) {
-        String queryString = FLOW_NAME + COLON + contextId + AND + TYPE + COLON + SCHEDULED_CONTEXT_AUDIT_INSTANCE_TYPE;
-        return getResults(queryString, limit, offset);
-    }
-
-    private SearchResults<ScheduledContextInstanceAuditRecord> getResults(String queryString, int limit, int offset) {
-        SolrQuery query = new SolrQuery();
-        query.setQuery(queryString);
-        query.setRows(limit);
-        query.setStart(offset);
-        query.addSort(CREATED_DATE_TIME, SolrQuery.ORDER.desc);
-
-        LOG.debug("query: " + query);
-        return this.findByQuery(query, SolrScheduledContextInstanceAuditRecordImpl.class);
+    public ScheduledContextInstanceRecord findById(String id) {
+        SearchResults<ScheduledContextInstanceRecord> searchResults = this.findByQuery(buildIdQuery(id, SCHEDULED_CONTEXT_INSTANCE_AUDIT_TYPE)
+            , SolrScheduledContextInstanceRecordImpl.class, 0, 1);
+        return searchResults.getResultList().size() > 0 ? searchResults.getResultList().get(0) : null;
     }
 }

@@ -1,24 +1,25 @@
 package org.ikasan.scheduled.instance.service;
 
 
-import java.util.List;
-
+import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceAuditRecordImpl;
+import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditAggregateDao;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceAuditDao;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao;
-import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditRecord;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.search.SearchResults;
+
+import java.util.List;
 
 public class SolrScheduledContextInstanceServiceImpl implements ScheduledContextInstanceService {
     private final ScheduledContextInstanceDao scheduledContextInstanceDao;
     private final ScheduledContextInstanceAuditDao scheduledContextInstanceAuditDao;
+    private final ScheduledContextInstanceAuditAggregateDao scheduledContextInstanceAuditAggregateDao;
     private final boolean saveContextInstanceAuditRecords;
 
     public SolrScheduledContextInstanceServiceImpl(ScheduledContextInstanceDao scheduledContextInstanceDao,
                                                    ScheduledContextInstanceAuditDao scheduledContextInstanceAuditDao,
+                                                   ScheduledContextInstanceAuditAggregateDao scheduledContextInstanceAuditAggregateDao,
                                                    boolean saveContextInstanceAuditRecords) {
         if (scheduledContextInstanceDao == null) {
             throw new IllegalArgumentException("scheduledContextInstanceDao cannot be null!");
@@ -26,9 +27,13 @@ public class SolrScheduledContextInstanceServiceImpl implements ScheduledContext
         if (scheduledContextInstanceAuditDao == null) {
             throw new IllegalArgumentException("scheduledContextInstanceAuditDao cannot be null!");
         }
+        if (scheduledContextInstanceAuditAggregateDao == null) {
+            throw new IllegalArgumentException("scheduledContextInstanceAuditAggregateDao cannot be null!");
+        }
 
         this.scheduledContextInstanceDao = scheduledContextInstanceDao;
         this.scheduledContextInstanceAuditDao = scheduledContextInstanceAuditDao;
+        this.scheduledContextInstanceAuditAggregateDao = scheduledContextInstanceAuditAggregateDao;
         this.saveContextInstanceAuditRecords = saveContextInstanceAuditRecords;
     }
 
@@ -48,20 +53,46 @@ public class SolrScheduledContextInstanceServiceImpl implements ScheduledContext
     }
 
     @Override
-    public void saveAudit(ScheduledContextInstanceAuditRecord scheduledContextInstanceAuditRecord) {
+    public ScheduledContextInstanceRecord findAuditRecordById(String id) {
+        return this.scheduledContextInstanceAuditDao.findById(id);
+    }
+
+    @Override
+    public void saveAudit(ScheduledContextInstanceAuditAggregateRecord scheduledContextInstanceAuditAggregateRecord, ContextInstance previousContextInstance,
+                          ContextInstance updatedContextInstance) {
         if (this.saveContextInstanceAuditRecords) {
-            this.scheduledContextInstanceAuditDao.save(scheduledContextInstanceAuditRecord);
+            SolrScheduledContextInstanceAuditRecordImpl previousContextInstanceRecord = new SolrScheduledContextInstanceAuditRecordImpl();
+            previousContextInstanceRecord.setContextName(previousContextInstance.getName());
+            previousContextInstanceRecord.setContextInstanceId(previousContextInstance.getId());
+            previousContextInstanceRecord.setContextInstance(previousContextInstance);
+            this.scheduledContextInstanceAuditDao.save(previousContextInstanceRecord);
+
+            SolrScheduledContextInstanceAuditRecordImpl updatedContextInstanceRecord = new SolrScheduledContextInstanceAuditRecordImpl();
+            updatedContextInstanceRecord.setContextName(updatedContextInstance.getName());
+            updatedContextInstanceRecord.setContextInstanceId(updatedContextInstance.getId());
+            updatedContextInstanceRecord.setContextInstance(updatedContextInstance);
+            this.scheduledContextInstanceAuditDao.save(updatedContextInstanceRecord);
+
+            ScheduledContextInstanceAuditAggregate auditAggregate = scheduledContextInstanceAuditAggregateRecord
+                .getScheduledContextInstanceAuditAggregate();
+
+            auditAggregate.setPreviousContextInstanceAuditId(previousContextInstanceRecord.getId());
+            auditAggregate.setUpdatedContextInstanceAuditId(updatedContextInstanceRecord.getId());
+
+            scheduledContextInstanceAuditAggregateRecord.setScheduledContextInstanceAuditAggregate(auditAggregate);
+
+            this.scheduledContextInstanceAuditAggregateDao.save(scheduledContextInstanceAuditAggregateRecord);
         }
     }
 
     @Override
-    public SearchResults<ScheduledContextInstanceAuditRecord> findAllAuditRecords(int limit, int offset) {
-        return this.scheduledContextInstanceAuditDao.findAll(limit, offset);
+    public SearchResults<ScheduledContextInstanceAuditAggregateRecord> findAllAuditRecords(int limit, int offset, String sortField, String sortDirection) {
+        return this.scheduledContextInstanceAuditAggregateDao.findAll(limit, offset, sortField, sortDirection);
     }
 
     @Override
-    public SearchResults<ScheduledContextInstanceAuditRecord> findAllAuditRecordsByContextId(String contextId, int limit, int offset) {
-        return this.scheduledContextInstanceAuditDao.findAllAuditRecordsByContextId(contextId, limit, offset);
+    public SearchResults<ScheduledContextInstanceAuditAggregateRecord> findAllAuditRecordsByFilter(ScheduledContextInstanceAuditAggregateSearchFilter filter, int limit, int offset, String sortField, String sortDirection) {
+        return this.scheduledContextInstanceAuditAggregateDao.findScheduledContextInstanceAuditAggregateRecordsByFilter(filter, limit, offset, sortField, sortDirection);
     }
 
     @Override
