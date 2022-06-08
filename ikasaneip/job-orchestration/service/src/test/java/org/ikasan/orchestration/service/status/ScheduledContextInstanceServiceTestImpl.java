@@ -1,13 +1,10 @@
 package org.ikasan.orchestration.service.status;
 
-import java.util.List;
-
-import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditRecord;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.search.SearchResults;
+
+import java.util.List;
 
 public class ScheduledContextInstanceServiceTestImpl implements ScheduledContextInstanceService {
 
@@ -26,16 +23,22 @@ public class ScheduledContextInstanceServiceTestImpl implements ScheduledContext
     }
 
     @Override
-    public void saveAudit(ScheduledContextInstanceAuditRecord scheduledContextInstanceAuditRecord) {
+    public void saveAudit(ScheduledContextInstanceAuditAggregateRecord scheduledContextInstanceAuditAggregateRecord, ContextInstance previousContextInstance, ContextInstance updatedContextInstance) {
+
     }
 
     @Override
-    public SearchResults<ScheduledContextInstanceAuditRecord> findAllAuditRecords(int limit, int offset) {
+    public ScheduledContextInstanceRecord findAuditRecordById(String id) {
         return null;
     }
 
     @Override
-    public SearchResults<ScheduledContextInstanceAuditRecord> findAllAuditRecordsByContextId(String contextId, int limit, int offset) {
+    public SearchResults<ScheduledContextInstanceAuditAggregateRecord> findAllAuditRecords(int limit, int offset, String sortField, String sortDirection) {
+        return null;
+    }
+
+    @Override
+    public SearchResults<ScheduledContextInstanceAuditAggregateRecord> findAllAuditRecordsByFilter(ScheduledContextInstanceAuditAggregateSearchFilter filter, int limit, int offset, String sortField, String sortDirection) {
         return null;
     }
 

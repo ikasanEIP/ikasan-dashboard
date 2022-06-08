@@ -1,0 +1,99 @@
+package org.ikasan.scheduled.instance.model;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.solr.client.solrj.beans.Field;
+import org.ikasan.scheduled.general.SolrEntityConversionException;
+import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregate;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateRecord;
+import org.ikasan.spec.solr.SolrDaoBase;
+
+public class SolrScheduledContextInstanceAuditAggregateRecordImpl implements ScheduledContextInstanceAuditAggregateRecord {
+
+    private static final ObjectMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
+
+    @Field(SolrDaoBase.ID)
+    private String id;
+
+    @Field(SolrDaoBase.MODULE_NAME)
+    private String contextName;
+
+    @Field(SolrDaoBase.FLOW_NAME)
+    private String contextInstanceId;
+
+    @Field(SolrDaoBase.PAYLOAD_CONTENT)
+    private String contextInstanceAudit;
+
+    @Field(SolrDaoBase.COMPONENT_NAME)
+    private String scheduledProcessEventName;
+
+    @Field(SolrDaoBase.EVENT)
+    private String raisedEvents;
+
+    @Field(SolrDaoBase.CREATED_DATE_TIME)
+    private long timestamp;
+
+    @Override
+    public String getId() {
+        return this.id;
+    }
+
+    @Override
+    public String getContextName() {
+        return this.contextName;
+    }
+
+    @Override
+    public void setContextName(String contextName) {
+        this.contextName = contextName;
+    }
+
+    @Override
+    public String getContextInstanceId() {
+        return this.contextInstanceId;
+    }
+
+    @Override
+    public void setContextInstanceId(String contextInstanceId) {
+        this.contextInstanceId = contextInstanceId;
+    }
+
+    @Override
+    public String getScheduledProcessEventName() {
+        return this.scheduledProcessEventName;
+    }
+
+    @Override
+    public void setScheduledProcessEventName(String scheduledProcessEventName) {
+        this.scheduledProcessEventName = scheduledProcessEventName;
+    }
+
+    @Override
+    public String getRaisedEvents() {
+        return this.raisedEvents;
+    }
+
+    @Override
+    public ScheduledContextInstanceAuditAggregate getScheduledContextInstanceAuditAggregate() {
+        try {
+            return OBJECT_MAPPER.readValue(this.contextInstanceAudit, SolrScheduledContextInstanceAuditAggregateImpl.class);
+        } catch (JsonProcessingException e) {
+            throw new SolrEntityConversionException("Could not convert string to entity: " + this.contextInstanceAudit, e);
+        }
+    }
+
+    @Override
+    public void setScheduledContextInstanceAuditAggregate(ScheduledContextInstanceAuditAggregate scheduledContextInstanceAudit) {
+        try {
+            this.contextInstanceAudit = OBJECT_MAPPER.writeValueAsString(scheduledContextInstanceAudit);
+        } catch (JsonProcessingException e) {
+            throw new SolrEntityConversionException("Could not convert entity to string: " + scheduledContextInstanceAudit, e);
+        }
+    }
+
+    @Override
+    public long getTimestamp() {
+        return this.timestamp;
+    }
+}

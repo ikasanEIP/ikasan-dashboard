@@ -14,27 +14,27 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
-import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAudit;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditRecord;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregate;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateRecord;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateSearchFilter;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 
 public class ContextInstanceAuditWidget extends Div {
 
     private ContextInstanceAuditFilteringGrid contextInstanceAuditFilteringGrid;
     private ScheduledContextInstanceService contextInstanceService;
-    private ContextInstanceSearchFilter contextInstanceSearchFilter;
+    private ScheduledContextInstanceAuditAggregateSearchFilter contextInstanceAuditAggregateSearchFilter;
     private boolean displayContextInstanceIdColumn = true;
 
     /**
      * Constructor
      * @param contextInstanceService
-     * @param contextInstanceSearchFilter
+     * @param contextInstanceAuditAggregateSearchFilter
      */
     public ContextInstanceAuditWidget(ScheduledContextInstanceService contextInstanceService
-        , ContextInstanceSearchFilter contextInstanceSearchFilter, boolean displayContextInstanceIdColumn) {
+        , ScheduledContextInstanceAuditAggregateSearchFilter contextInstanceAuditAggregateSearchFilter, boolean displayContextInstanceIdColumn) {
         this(contextInstanceService);
-        this.contextInstanceSearchFilter = contextInstanceSearchFilter;
+        this.contextInstanceAuditAggregateSearchFilter = contextInstanceAuditAggregateSearchFilter;
         this.displayContextInstanceIdColumn = displayContextInstanceIdColumn;
     }
 
@@ -80,10 +80,10 @@ public class ContextInstanceAuditWidget extends Div {
     }
 
     private void createGrid() {
-        if(this.contextInstanceSearchFilter == null) {
-            this.contextInstanceSearchFilter = new SolrContextInstanceSearchFilterImpl();
+        if(this.contextInstanceAuditAggregateSearchFilter == null) {
+            this.contextInstanceAuditAggregateSearchFilter = new ScheduledContextInstanceAuditAggregateSearchFilter();
         }
-        contextInstanceAuditFilteringGrid = new ContextInstanceAuditFilteringGrid(this.contextInstanceService, this.contextInstanceSearchFilter);
+        contextInstanceAuditFilteringGrid = new ContextInstanceAuditFilteringGrid(this.contextInstanceService, this.contextInstanceAuditAggregateSearchFilter);
         contextInstanceAuditFilteringGrid.removeAllColumns();
         contextInstanceAuditFilteringGrid.setVisible(true);
         contextInstanceAuditFilteringGrid.setWidthFull();
@@ -107,7 +107,7 @@ public class ContextInstanceAuditWidget extends Div {
         contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            ScheduledContextInstanceAudit scheduledContextInstanceAudit = scheduledContextInstanceAuditRecord.getScheduledContextInstanceAudit();
+            ScheduledContextInstanceAuditAggregate scheduledContextInstanceAudit = scheduledContextInstanceAuditRecord.getScheduledContextInstanceAuditAggregate();
             Button button = new Button(scheduledContextInstanceAudit.getProcessEvent().getJobName());
             button.addClickListener(event -> {
                 JsonViewerDialog dialog = new JsonViewerDialog(scheduledContextInstanceAudit.getProcessEvent());
@@ -122,7 +122,7 @@ public class ContextInstanceAuditWidget extends Div {
 
         contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
             VerticalLayout verticalLayout = new VerticalLayout();
-            ScheduledContextInstanceAudit scheduledContextInstanceAudit = scheduledContextInstanceAuditRecord.getScheduledContextInstanceAudit();
+            ScheduledContextInstanceAuditAggregate scheduledContextInstanceAudit = scheduledContextInstanceAuditRecord.getScheduledContextInstanceAuditAggregate();
 
             if(scheduledContextInstanceAudit.getSchedulerJobInitiationEvents() != null
                 && !scheduledContextInstanceAudit.getSchedulerJobInitiationEvents().isEmpty()) {
@@ -139,7 +139,6 @@ public class ContextInstanceAuditWidget extends Div {
                 });
 
             }
-
             return verticalLayout;
         }))
             .setHeader("Job Raise Event/s")
@@ -150,15 +149,14 @@ public class ContextInstanceAuditWidget extends Div {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
             Button button = new Button("Open");
             button.addClickListener(event -> {
-                JsonViewerDialog dialog = new JsonViewerDialog(scheduledContextInstanceAuditRecord
-                    .getScheduledContextInstanceAudit().getPreviousContextInstance());
+                JsonViewerDialog dialog = new JsonViewerDialog(this.contextInstanceService
+                    .findAuditRecordById(scheduledContextInstanceAuditRecord.getScheduledContextInstanceAuditAggregate()
+                        .getPreviousContextInstanceAuditId()));
                 dialog.open();
             });
 
             horizontalLayout.add(button);
             return horizontalLayout;
-
-
         })).setHeader("Instance Before")
             .setFlexGrow(1)
             .setResizable(true);
@@ -167,8 +165,9 @@ public class ContextInstanceAuditWidget extends Div {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
             Button button = new Button("Open");
             button.addClickListener(event -> {
-                JsonViewerDialog dialog = new JsonViewerDialog(scheduledContextInstanceAuditRecord
-                    .getScheduledContextInstanceAudit().getUpdatedContextInstance());
+                JsonViewerDialog dialog = new JsonViewerDialog(this.contextInstanceService
+                    .findAuditRecordById(scheduledContextInstanceAuditRecord.getScheduledContextInstanceAuditAggregate()
+                        .getUpdatedContextInstanceAuditId()));
                 dialog.open();
             });
 
@@ -178,7 +177,7 @@ public class ContextInstanceAuditWidget extends Div {
             .setFlexGrow(1)
             .setResizable(true);
 
-        this.contextInstanceAuditFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceAuditRecord>of(
+        this.contextInstanceAuditFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceAuditAggregateRecord>of(
             "<div>[[item.date]]</div>")
             .withProperty("date",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
@@ -190,7 +189,7 @@ public class ContextInstanceAuditWidget extends Div {
     }
 
     public void setContextInstanceId(String contextInstanceId) {
-        this.contextInstanceSearchFilter.setContextInstanceId(contextInstanceId);
+        this.contextInstanceAuditAggregateSearchFilter.setContextInstanceId(contextInstanceId);
     }
 
     @Override

@@ -1,19 +1,18 @@
 package org.ikasan.scheduled.instance.model;
 
-import java.util.List;
-
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAudit;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregate;
 
-public class SolrScheduledContextInstanceAuditImpl implements ScheduledContextInstanceAudit {
+import java.util.List;
+
+public class SolrScheduledContextInstanceAuditAggregateImpl implements ScheduledContextInstanceAuditAggregate {
 
     private ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent;
     private List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents;
-    private ContextInstance previousContext;
-    private ContextInstance updatedContext;
+    private String previousContextInstanceAuditId;
+    private String updatedContextInstanceAuditId;
 
     @Override
     public ContextualisedScheduledProcessEvent<String, DryRunParameters> getProcessEvent() {
@@ -36,22 +35,22 @@ public class SolrScheduledContextInstanceAuditImpl implements ScheduledContextIn
     }
 
     @Override
-    public ContextInstance getPreviousContextInstance() {
-        return this.previousContext;
+    public String getPreviousContextInstanceAuditId() {
+        return previousContextInstanceAuditId;
     }
 
     @Override
-    public void setPreviousContextInstance(ContextInstance previousContext) {
-        this.previousContext = previousContext;
+    public void setPreviousContextInstanceAuditId(String previousContextInstanceAuditId) {
+        this.previousContextInstanceAuditId = previousContextInstanceAuditId;
     }
 
     @Override
-    public ContextInstance getUpdatedContextInstance() {
-        return this.updatedContext;
+    public String getUpdatedContextInstanceAuditId() {
+        return updatedContextInstanceAuditId;
     }
 
     @Override
-    public void setUpdatedContextInstance(ContextInstance updatedContext) {
-        this.updatedContext = updatedContext;
+    public void setUpdatedContextInstanceAuditId(String updatedContextInstanceAuditId) {
+        this.updatedContextInstanceAuditId = updatedContextInstanceAuditId;
     }
 }
