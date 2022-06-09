@@ -3,6 +3,8 @@ package org.ikasan.dashboard.ui.scheduler.component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -65,6 +67,10 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
         TextField textField = new TextField();
         textField.setWidthFull();
 
+        Icon filterIcon = VaadinIcon.FILTER.create();
+        filterIcon.setSize("12pt");
+        textField.setSuffixComponent(filterIcon);
+
         textField.addValueChangeListener(ev->{
 
             setFilter.accept(ev.getValue());
@@ -73,21 +79,6 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
         });
 
         hr.getCell(getColumnByKey(columnKey)).setComponent(textField);
-    }
-
-    /**
-     * Add general filter
-     *
-     * @param textField
-     * @param setFilter
-     */
-    public void addGridFiltering(TextField textField, Consumer<String> setFilter) {
-        textField.addValueChangeListener(ev->{
-
-            setFilter.accept(ev.getValue());
-
-            filteredDataProvider.refreshAll();
-        });
     }
 
     /**

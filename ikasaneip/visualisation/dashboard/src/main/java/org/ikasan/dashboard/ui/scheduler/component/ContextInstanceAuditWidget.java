@@ -4,6 +4,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -97,9 +98,9 @@ public class ContextInstanceAuditWidget extends Div {
 
                 horizontalLayout.add(text);
                 return horizontalLayout;
-            })).setHeader("Context Instance Id")
+            })).setHeader(getTranslation("table-header.context-instance-id", UI.getCurrent().getLocale()))
                 .setFlexGrow(3)
-                .setKey("id")
+                .setKey("flowName")
                 .setSortable(true)
                 .setResizable(true);
         }
@@ -116,8 +117,10 @@ public class ContextInstanceAuditWidget extends Div {
 
             horizontalLayout.add(button);
             return horizontalLayout;
-        })).setHeader("Source Event")
+        })).setHeader(getTranslation("table-header.source-event", UI.getCurrent().getLocale()))
+            .setKey("componentName")
             .setFlexGrow(6)
+            .setSortable(true)
             .setResizable(true);
 
         contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
@@ -141,8 +144,10 @@ public class ContextInstanceAuditWidget extends Div {
             }
             return verticalLayout;
         }))
-            .setHeader("Job Raise Event/s")
+            .setHeader(getTranslation("table-header.job-raise-events", UI.getCurrent().getLocale()))
             .setFlexGrow(6)
+            .setKey("event")
+            .setSortable(true)
             .setResizable(true);
 
         contextInstanceAuditFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceAuditRecord -> {
@@ -157,7 +162,7 @@ public class ContextInstanceAuditWidget extends Div {
 
             horizontalLayout.add(button);
             return horizontalLayout;
-        })).setHeader("Instance Before")
+        })).setHeader(getTranslation("table-header.instance-before", UI.getCurrent().getLocale()))
             .setFlexGrow(1)
             .setResizable(true);
 
@@ -173,19 +178,24 @@ public class ContextInstanceAuditWidget extends Div {
 
             horizontalLayout.add(button);
             return horizontalLayout;
-        })).setHeader("Instance After")
+        })).setHeader(getTranslation("table-header.instance-after", UI.getCurrent().getLocale()))
             .setFlexGrow(1)
             .setResizable(true);
 
         this.contextInstanceAuditFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceAuditAggregateRecord>of(
             "<div>[[item.date]]</div>")
-            .withProperty("date",
+            .withProperty("timestamp",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
-            .setHeader(getTranslation("table-header.timestamp", UI.getCurrent().getLocale()))
+            .setHeader(getTranslation("table-header.created-date-time", UI.getCurrent().getLocale()))
             .setKey("timestamp")
             .setResizable(true)
             .setFlexGrow(3)
-            .setSortable(true);;
+            .setSortable(true);
+
+        HeaderRow hr = this.contextInstanceAuditFilteringGrid.appendHeaderRow();
+        this.contextInstanceAuditFilteringGrid.addGridFiltering(hr, this.contextInstanceAuditAggregateSearchFilter::setContextInstanceId, "flowName");
+        this.contextInstanceAuditFilteringGrid.addGridFiltering(hr, this.contextInstanceAuditAggregateSearchFilter::setScheduledProcessEventName, "componentName");
+        this.contextInstanceAuditFilteringGrid.addGridFiltering(hr, this.contextInstanceAuditAggregateSearchFilter::setRaisedInitiationEventName, "event");
     }
 
     public void setContextInstanceId(String contextInstanceId) {
