@@ -147,6 +147,39 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         assertNull(scheduledContextInstanceRecord);
     }
 
+    @Test
+    public void test_find_audit_records_by_filter() {
+        ScheduledContextInstanceAuditAggregateRecord record = createAuditRecord();
+
+        SolrContextInstanceImpl previous = new SolrContextInstanceImpl();
+        SolrContextInstanceImpl updated = new SolrContextInstanceImpl();
+        service.saveAudit(record, previous, updated);
+
+        ScheduledContextInstanceAuditAggregateSearchFilter filter
+            = new ScheduledContextInstanceAuditAggregateSearchFilter();
+
+        Assert.assertEquals(1, service.findAllAuditRecordsByFilter(filter, 0, 100, null, null).getTotalNumberOfResults());
+        filter.setContextInstanceId("bad");
+        Assert.assertEquals(0, service.findAllAuditRecordsByFilter(filter, 0, 100, null, null).getTotalNumberOfResults());
+        filter.setContextInstanceId("contextInstanceId");
+        Assert.assertEquals(1, service.findAllAuditRecordsByFilter(filter, 0, 100, null, null).getTotalNumberOfResults());
+        filter.setContextInstanceId("context");
+        Assert.assertEquals(1, service.findAllAuditRecordsByFilter(filter, 0, 100, null, null).getTotalNumberOfResults());
+        filter.setContextInstanceId("InstanceId");
+        Assert.assertEquals(1, service.findAllAuditRecordsByFilter(filter, 0, 100, null, null).getTotalNumberOfResults());
+
+        filter.setContextName("contextName");
+        Assert.assertEquals(1, service.findAllAuditRecordsByFilter(filter, 0, 100, null, null).getTotalNumberOfResults());
+        filter.setContextName("contextname");
+        Assert.assertEquals(0, service.findAllAuditRecordsByFilter(filter, 0, 100, null, null).getTotalNumberOfResults());
+        filter.setContextName("Name");
+        Assert.assertEquals(1, service.findAllAuditRecordsByFilter(filter, 0, 100, null, null).getTotalNumberOfResults());
+        filter.setContextName("CONTEXT");
+        Assert.assertEquals(0, service.findAllAuditRecordsByFilter(filter, 0, 100, null, null).getTotalNumberOfResults());
+        filter.setContextName("bad");
+        Assert.assertEquals(0, service.findAllAuditRecordsByFilter(filter, 0, 100, null, null).getTotalNumberOfResults());
+    }
+
     private void validateAuditRecord(ContextualisedScheduledProcessEvent<String, DryRunParameters> processEventInstance,
                                      List<SchedulerJobInitiationEvent> jobInitiationEvents,
                                      ScheduledContextInstanceAuditAggregateRecord record,
@@ -643,36 +676,6 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         SchedulerJobInitiationEvent<ContextParameterInstance, InternalEventDrivenJob, DryRunParameters> jobInitiationEvent3 = createJobInitiationEvent();
         List<SchedulerJobInitiationEvent> jobInitiationEvents = List.of(jobInitiationEvent1, jobInitiationEvent2, jobInitiationEvent3);
         audit.setSchedulerJobInitiationEvents(jobInitiationEvents);
-
-//        SolrContextInstanceImpl previousContextInstance = new SolrContextInstanceImpl();
-//        previousContextInstance.setName("contextInstance");
-//        SolrScheduledContextInstanceRecordImpl previousScheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
-//        previousScheduledContextRecord.setContextName("contextName");
-//        previousScheduledContextRecord.setContextInstance(previousContextInstance);
-//        previousScheduledContextRecord.setTimestamp(1000000L);
-//        previousScheduledContextRecord.setStatus("RUNNING");
-//
-//        SolrScheduledContextInstanceAuditRecordImpl previous = new SolrScheduledContextInstanceAuditRecordImpl();
-//        previous.setContextInstance(previousContextInstance);
-//        previous.setContextInstanceId(previousContextInstance.getId());
-//        previous.setContextName(previousContextInstance.getName());
-//        audit.setPreviousContextInstanceAuditId(previous.getId());
-
-//        SolrContextInstanceImpl updatedContextInstance = new SolrContextInstanceImpl();
-//        updatedContextInstance.setId(previousContextInstance.getId());
-//        updatedContextInstance.setName("contextInstance");
-//        SolrScheduledContextInstanceRecordImpl updatedScheduledContextRecord = new SolrScheduledContextInstanceRecordImpl();
-//        updatedScheduledContextRecord.setContextName("contextName");
-//        updatedScheduledContextRecord.setContextInstance(updatedContextInstance);
-//        updatedScheduledContextRecord.setTimestamp(1000000L);
-//        updatedScheduledContextRecord.setStatus("COMPLETE");
-//
-//        SolrScheduledContextInstanceAuditRecordImpl updated = new SolrScheduledContextInstanceAuditRecordImpl();
-//        previous.setContextInstance(updatedContextInstance);
-//        previous.setContextInstanceId(updatedContextInstance.getId());
-//        previous.setContextName(updatedContextInstance.getName());
-//
-//        audit.setUpdatedContextInstanceAuditId(updated.getId());
 
         ScheduledContextInstanceAuditAggregateRecord record = new SolrScheduledContextInstanceAuditAggregateRecordImpl();
         record.setContextName("contextName");
