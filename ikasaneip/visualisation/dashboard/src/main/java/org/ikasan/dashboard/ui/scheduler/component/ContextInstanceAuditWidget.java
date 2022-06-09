@@ -193,7 +193,9 @@ public class ContextInstanceAuditWidget extends Div {
             .setSortable(true);
 
         HeaderRow hr = this.contextInstanceAuditFilteringGrid.appendHeaderRow();
-        this.contextInstanceAuditFilteringGrid.addGridFiltering(hr, this.contextInstanceAuditAggregateSearchFilter::setContextInstanceId, "flowName");
+        if(this.displayContextInstanceIdColumn) {
+            this.contextInstanceAuditFilteringGrid.addGridFiltering(hr, this.contextInstanceAuditAggregateSearchFilter::setContextInstanceId, "flowName");
+        }
         this.contextInstanceAuditFilteringGrid.addGridFiltering(hr, this.contextInstanceAuditAggregateSearchFilter::setScheduledProcessEventName, "componentName");
         this.contextInstanceAuditFilteringGrid.addGridFiltering(hr, this.contextInstanceAuditAggregateSearchFilter::setRaisedInitiationEventName, "event");
     }
