@@ -85,16 +85,12 @@ public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBa
             .append(COLON)
             .append(filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getContextInstanceId()) : "*");
 
-        queryString.append(AND)
-            .append(COMPONENT_NAME)
-            .append(COLON)
-            .append(filter.getScheduledProcessEventName() != null && !filter.getScheduledProcessEventName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getScheduledProcessEventName()) : "*");
-
-        queryString.append(AND)
-            .append(EVENT)
-            .append(COLON)
-            .append(filter.getRaisedInitiationEventName() != null && !filter.getRaisedInitiationEventName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getRaisedInitiationEventName()) : "*");
-
+        if(filter.getRaisedInitiationEventName() != null && !filter.getRaisedInitiationEventName().isEmpty()) {
+            queryString.append(AND)
+                .append(EVENT)
+                .append(COLON)
+                .append(SolrSpecialCharacterEscapeUtil.escape(filter.getRaisedInitiationEventName()));
+        }
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(queryString.toString());

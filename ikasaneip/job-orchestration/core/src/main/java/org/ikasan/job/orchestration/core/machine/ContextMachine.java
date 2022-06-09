@@ -421,6 +421,7 @@ public class ContextMachine {
         ScheduledContextInstanceAuditAggregateRecord auditRecord = new ScheduledContextInstanceAuditAggregateRecordImpl();
         auditRecord.setContextName(this.contextInstance.getName());
         auditRecord.setContextInstanceId(this.contextInstance.getId());
+        auditRecord.setScheduledProcessEventName(scheduledProcessEvent.getJobName());
         auditRecord.setScheduledContextInstanceAuditAggregate(contextInstanceAudit);
         scheduledContextInstanceService.saveAudit(auditRecord, previousContextInstance, updatedContextInstance);
     }
