@@ -40,7 +40,9 @@ public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBa
 
         document.setField(FLOW_NAME, record.getContextInstanceId());
         document.addField(MODULE_NAME, record.getContextName());
-        document.addField(COMPONENT_NAME, record.getScheduledProcessEventName());
+        if(record.getScheduledProcessEventName() != null) {
+            document.addField(COMPONENT_NAME, record.getScheduledProcessEventName().toLowerCase());
+        }
         document.addField(CREATED_DATE_TIME, System.currentTimeMillis());
 
         if(record.getScheduledContextInstanceAuditAggregate().getSchedulerJobInitiationEvents() != null &&
@@ -49,7 +51,7 @@ public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBa
             record.getScheduledContextInstanceAuditAggregate()
                 .getSchedulerJobInitiationEvents().forEach(event -> eventsBuffer.append(event.getJobName()).append(" "));
 
-            document.addField(EVENT, eventsBuffer.toString());
+            document.addField(EVENT, eventsBuffer.toString().toLowerCase());
         }
 
         document.setField(EXPIRY, expiry);
@@ -73,23 +75,24 @@ public class SolrScheduledContextInstanceAuditAggregateDaoImpl extends SolrDaoBa
 
         queryString.append(AND)
             .append(MODULE_NAME).append(COLON)
-            .append(filter.getContextName() != null && !filter.getContextName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getContextName()) : "*");
+            .append(filter.getContextName() != null && !filter.getContextName().isEmpty() ? "*"+SolrSpecialCharacterEscapeUtil.escape(filter.getContextName())+"*" : "*");
 
         queryString.append(AND)
             .append(FLOW_NAME)
             .append(COLON)
-            .append(filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getContextInstanceId()) : "*");
+            .append(filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty() ? "*"+SolrSpecialCharacterEscapeUtil.escape(filter.getContextInstanceId()+"*") : "*");
 
         queryString.append(AND)
             .append(COMPONENT_NAME)
             .append(COLON)
-            .append(filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getContextInstanceId()) : "*");
+            .append(filter.getScheduledProcessEventName() != null && !filter.getScheduledProcessEventName().isEmpty()
+                ? "*"+SolrSpecialCharacterEscapeUtil.escape(filter.getScheduledProcessEventName().toLowerCase())+"*" : "*");
 
         if(filter.getRaisedInitiationEventName() != null && !filter.getRaisedInitiationEventName().isEmpty()) {
             queryString.append(AND)
                 .append(EVENT)
                 .append(COLON)
-                .append(SolrSpecialCharacterEscapeUtil.escape(filter.getRaisedInitiationEventName()));
+                .append("*"+SolrSpecialCharacterEscapeUtil.escape(filter.getRaisedInitiationEventName().toLowerCase())+"*");
         }
 
         SolrQuery solrQuery = new SolrQuery();
