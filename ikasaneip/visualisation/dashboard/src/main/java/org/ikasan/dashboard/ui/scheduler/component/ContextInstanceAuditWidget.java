@@ -183,7 +183,7 @@ public class ContextInstanceAuditWidget extends Div {
             .setResizable(true);
 
         this.contextInstanceAuditFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceAuditAggregateRecord>of(
-            "<div>[[item.date]]</div>")
+            "<div>[[item.timestamp]]</div>")
             .withProperty("timestamp",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
             .setHeader(getTranslation("table-header.created-date-time", UI.getCurrent().getLocale()))
