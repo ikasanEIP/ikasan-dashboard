@@ -2,14 +2,13 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -19,9 +18,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.converter.StringToLongConverter;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.shared.Registration;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
@@ -30,18 +29,26 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrInternalEventDrivenJobInstanceImpl;
+import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -49,11 +56,12 @@ import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResizableDialog {
 
     Logger logger = LoggerFactory.getLogger(InternalEventDrivenJobInstanceDialog.class);
+
+    private Registration schedulerJobStateChangeRegistration;
 
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -70,11 +78,11 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     private TextField minExecutionTimeTf;
     private TextField maxExecutionTimeTf;
 
-    private Checkbox holdCb;
-    private Checkbox skipCb;
-
-    private Button saveButton;
-    private Button cancelButton;
+    private boolean skipped = false;
+    private Button skipButton;
+    private Button enableButton;
+    private Button holdButton;
+    private Button releaseButton;
 
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
@@ -98,6 +106,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
     private SchedulerStatusDiv statusDiv;
+
+    private IkasanAuthentication authentication;
 
 
     /**
@@ -126,6 +136,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.schedulerJobInstanceService = schedulerJobInstanceService;
 
         this.internalEventDrivenJobInstance = new SolrInternalEventDrivenJobInstanceImpl();
+
+        authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
     }
 
     private void init() {
@@ -135,53 +147,11 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.setHeight("1100px");
         this.setWidth("1400px");
 
-        saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
-        saveButton.setId("scheduledJobSaveButton");
-        saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->  {
-
-            IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
-
-            if(!this.performFormValidation(this.internalEventDrivenJobInstance)) {
-                NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-configuration", UI.getCurrent().getLocale()));
-                return;
-            }
-
-            try {
-                createOrUpdateScheduledJob(this.internalEventDrivenJobInstance, authentication);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-                NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-creation", UI.getCurrent().getLocale()));
-                return;
-            }
-
-            if (this.editMode == EditMode.NEW) {
-                String action = String.format("New scheduled job created [%s].", this.internalEventDrivenJobInstance);
-                this.systemEventLogger.logEvent(SystemEventConstants.NEW_SCHEDULED_JOB_CREATED, action, authentication.getName());
-            }
-            else if (this.editMode == EditMode.EDIT) {
-                String action = String.format("Scheduled job edited. \nBefore [%s]\nAfter [%s].", this.schedulerJobInstanceRecord.getSchedulerJobInstance(),
-                    this.internalEventDrivenJobInstance);
-                this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_EDIT, action, authentication.getName());
-            }
-
-            this.close();
-        });
-
-        cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
-        cancelButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.close());
-
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.setMargin(true);
-        buttonLayout.setSpacing(true);
-        buttonLayout.add(saveButton, cancelButton);
-        buttonLayout.getStyle().set("padding-bottom", "20px");
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
         layout.setMargin(false);
-        layout.add(this.createConfigurationForm(), buttonLayout);
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
+        layout.add(this.createConfigurationForm());
         layout.getStyle().set("padding-top", "0px");
         layout.getStyle().set("padding-bottom", "10px");
         super.content.getStyle().set("padding-top", "0px");
@@ -203,8 +173,117 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
         formLayout.add(this.statusDiv, 2);
 
+        Icon holdIcon = IconDecorator.decorate(new Icon(VaadinIcon.HAND), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
+        this.holdButton = new Button("Hold", holdIcon);
+        this.holdButton.setIconAfterText(true);
+        this.holdButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader("Hold Job");
+            confirmDialog.setText("Are you sure that you would like to hold this job?");
+
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                this.statusDiv.setStatus(InstanceStatus.ON_HOLD);
+                this.releaseButton.setVisible(true);
+                this.holdButton.setVisible(false);
+                this.skipButton.setVisible(false);
+
+                this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.ON_HOLD);
+            });
+        });
+
+        Icon releaseIcon = IconDecorator.decorate(new Icon(VaadinIcon.HANDS_UP), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
+        this.releaseButton = new Button("Release", releaseIcon);
+        this.releaseButton.setIconAfterText(true);
+        this.releaseButton.setVisible(false);
+        this.releaseButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader("Release Job");
+            confirmDialog.setText("Are you sure that you would like to release this job?");
+
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                this.statusDiv.setStatus(InstanceStatus.RELEASED);
+                this.releaseButton.setVisible(false);
+                this.holdButton.setVisible(true);
+                this.skipButton.setVisible(true);
+
+                this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.RELEASED);
+            });
+        });
+
+        Icon skipIcon = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
+        this.skipButton = new Button("Skip", skipIcon);
+        this.skipButton.setIconAfterText(true);
+        this.skipButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader("Skipping Job");
+            confirmDialog.setText("Are you sure that you would like to skip this job?");
+
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                this.statusDiv.setStatus(InstanceStatus.SKIPPED);
+                this.releaseButton.setVisible(false);
+                this.holdButton.setVisible(false);
+                this.skipped = true;
+
+                this.enableButton.setVisible(true);
+                this.skipButton.setVisible(false);
+
+                this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.SKIPPED);
+            });
+        });
+
+        Icon enableIcon = IconDecorator.decorate(new Icon(VaadinIcon.PLAY), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
+        this.enableButton = new Button("Enable", enableIcon);
+        this.enableButton.setIconAfterText(true);
+        this.enableButton.setVisible(false);
+        this.enableButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader("Enable Job");
+            confirmDialog.setText("Are you sure that you would like to enable this job?");
+
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                this.statusDiv.setStatus(this.schedulerJobInstanceRecord.getStatus());
+                this.releaseButton.setVisible(false);
+                this.holdButton.setVisible(true);
+                this.enableButton.setVisible(false);
+                this.skipButton.setVisible(true);
+                this.skipped = false;
+
+                this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.WAITING);
+            });
+        });
+
+        Icon submitIcon = IconDecorator.decorate(new Icon(VaadinIcon.PAPERPLANE), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
+        Button submitButton = new Button("Submit", submitIcon);
+        submitButton.setIconAfterText(true);
+
+        HorizontalLayout actionsLayout = new HorizontalLayout();
+        actionsLayout.add(holdButton, releaseButton, skipButton, enableButton, submitButton);
+        actionsLayout.setMargin(false);
+
+        VerticalLayout actionsButtonLayout = new VerticalLayout();
+        actionsButtonLayout.setWidth("100%");
+        actionsButtonLayout.add(actionsLayout);
+        actionsButtonLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, actionsLayout);
+        actionsButtonLayout.setMargin(false);
+
         H3 jobExecutionLabel = new H3(getTranslation("label.command-execution-job-instance", UI.getCurrent().getLocale()));
-        formLayout.add(jobExecutionLabel, 2);
+        formLayout.add(jobExecutionLabel, actionsButtonLayout);
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setId("jobNameTf");
@@ -260,8 +339,10 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             .bind(InternalEventDrivenJobInstance::getWorkingDirectory, InternalEventDrivenJobInstance::setWorkingDirectory);
         formLayout.add(workingDirectoryTf, 2);
 
-        Icon calendarIcon = IconDecorator.decorate(new Icon(VaadinIcon.CALENDAR), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
-        calendarIcon.addClickListener(event -> {
+        Icon calendarIcon = IconDecorator.decorate(new Icon(VaadinIcon.CALENDAR), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
+        Button executionDaysButton = new Button("Execution Days", calendarIcon);
+        executionDaysButton.setIconAfterText(true);
+        executionDaysButton.addClickListener(event -> {
             DayOfWeekJobDialog dayOfWeekJobDialog = new DayOfWeekJobDialog(this.internalEventDrivenJobInstance.getDaysOfWeekToRun() == null
                 ? null : new ArrayList<>(this.internalEventDrivenJobInstance.getDaysOfWeekToRun()), false);
             dayOfWeekJobDialog.open();
@@ -273,8 +354,10 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             });
         });
 
-        Icon parametersIcon = IconDecorator.decorate(new Icon(VaadinIcon.SLIDERS), getTranslation("label.job-parameters", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
-        parametersIcon.addClickListener(event -> {
+        Icon parametersIcon = IconDecorator.decorate(new Icon(VaadinIcon.SLIDERS), getTranslation("label.job-parameters", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
+        Button parametersButton = new Button("Parameters", parametersIcon);
+        parametersButton.setIconAfterText(true);
+        parametersButton.addClickListener(event -> {
             ContextParameterDialog contextParameterDialog = new ContextParameterDialog(false);
             contextParameterDialog.initParams(this.internalEventDrivenJobInstance.getContextParameters() == null ? new ArrayList<>() : this.internalEventDrivenJobInstance.getContextParameters());
             contextParameterDialog.open();
@@ -286,8 +369,10 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             });
         });
 
-        Icon successfulReturnCodesIcon = IconDecorator.decorate(new Icon(VaadinIcon.CHECK), getTranslation("label.successful-return-codes", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
-        successfulReturnCodesIcon.addClickListener(event -> {
+        Icon successfulReturnCodesIcon = IconDecorator.decorate(new Icon(VaadinIcon.CHECK), getTranslation("label.successful-return-codes", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
+        Button successfulReturnCodesButton = new Button("Return Codes", successfulReturnCodesIcon);
+        successfulReturnCodesButton.setIconAfterText(true);
+        successfulReturnCodesButton.addClickListener(event -> {
             SuccessfulReturnCodesDialog successfulReturnCodesDialog = new SuccessfulReturnCodesDialog(false);
             successfulReturnCodesDialog.initReturnCodes(this.internalEventDrivenJobInstance.getSuccessfulReturnCodes());
             successfulReturnCodesDialog.open();
@@ -299,7 +384,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             });
         });
 
-        Icon downloadIcon = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
+        Icon downloadIcon = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
+        Button downloadButton = new Button("Download", downloadIcon);
+        downloadButton.setIconAfterText(true);
         StreamResource streamResource = new StreamResource(this.internalEventDrivenJobInstance.getJobName()+".json"
             , () -> {
             try {
@@ -312,32 +399,21 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         });
 
         FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
-        buttonWrapper.wrapComponent(downloadIcon);
+        buttonWrapper.wrapComponent(downloadButton);
 
-        Icon externalIcon = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), getTranslation("label.expand-text-editor", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
+        Icon externalIcon = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), getTranslation("label.expand-text-editor", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
+        Button expandButton = new Button("Expand", externalIcon);
+        expandButton.setIconAfterText(true);
 
-        HorizontalLayout holdSkipLayout = new HorizontalLayout();
-        this.holdCb = new Checkbox("Hold");
-        this.holdCb.addValueChangeListener(event -> {
-            if (event.getValue() == true) {
-                this.statusDiv.setStatus(InstanceStatus.ON_HOLD);
-            }
-            else {
-                this.statusDiv.setStatus(InstanceStatus.RUNNING);
-            }
-        });
-
-        this.skipCb = new Checkbox("Skip");
-        holdSkipLayout.add(this.holdCb, this.skipCb);
-        holdSkipLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, this.holdCb, this.skipCb);
-
+        HorizontalLayout jobActionsButtonLayout = new HorizontalLayout();
+        jobActionsButtonLayout.add(executionDaysButton, parametersButton, successfulReturnCodesButton);
         VerticalLayout cbLayout = new VerticalLayout();
         cbLayout.setWidth("100%");
-        cbLayout.add(holdSkipLayout);
-        cbLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.START, holdSkipLayout);
+        cbLayout.add(jobActionsButtonLayout);
+        cbLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.START, jobActionsButtonLayout);
 
         HorizontalLayout horizontalLayout = new HorizontalLayout();
-        horizontalLayout.add(calendarIcon, parametersIcon, successfulReturnCodesIcon, buttonWrapper, externalIcon);
+        horizontalLayout.add(buttonWrapper, expandButton);
 
         VerticalLayout newButtonLayout = new VerticalLayout();
         newButtonLayout.setWidth("100%");
@@ -347,7 +423,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         formLayout.add(cbLayout, newButtonLayout);
 
         this.commandLineTa = new AceEditor();
-        this.commandLineTa.setHeight("500px");
+        this.commandLineTa.setHeight("450px");
         this.commandLineTa.setMode(AceMode.batchfile);
         this.commandLineTa.setTheme(AceTheme.dracula);
         this.commandLineTa.setId("commandLineTa");
@@ -358,24 +434,25 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         return formLayout;
     }
 
-    /**
-     * Perform validation of the form.
-     *
-     * @param internalEventDrivenJobInstance
-     * @return
-     */
-    private boolean performFormValidation(InternalEventDrivenJobInstance internalEventDrivenJobInstance) {
+    private boolean skipJob(boolean skipFlag) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (this.schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification("This job is not part of an active context and cannot be skipped.");
+            return false;
+        }
 
         try {
-            AtomicBoolean isValid = new AtomicBoolean(true);
+            contextMachine.skipJob(this.internalEventDrivenJobInstance.getIdentifier(), this.internalEventDrivenJobInstance.getChildContextName(), skipFlag);
+            this.updateScheduledJob(this.internalEventDrivenJobInstance, this.authentication);
 
-            formBinder.writeBean(internalEventDrivenJobInstance);
-
-            if(!isValid.get()){
-                return false;
-            }
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
+                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), skipFlag), this.authentication.getName());
         }
-        catch (ValidationException e) {
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification("An error has occurred attempting to skip the job. Please contact Ikasan Support.");
             return false;
         }
 
@@ -388,11 +465,12 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
      *
      * @param internalEventDrivenJobInstance
      */
-    public void createOrUpdateScheduledJob(InternalEventDrivenJobInstance internalEventDrivenJobInstance, IkasanAuthentication authentication) throws JsonProcessingException {
+    public void updateScheduledJob(InternalEventDrivenJobInstance internalEventDrivenJobInstance, IkasanAuthentication authentication) {
 
         this.schedulerJobInstanceRecord.setModifiedTimestamp(System.currentTimeMillis());
         this.schedulerJobInstanceRecord.setSchedulerJobInstance(internalEventDrivenJobInstance);
         this.schedulerJobInstanceRecord.setModifiedBy(authentication.getName());
+        this.schedulerJobInstanceRecord.setStatus(internalEventDrivenJobInstance.getStatus().name());
 
         this.schedulerJobInstanceService.save(this.schedulerJobInstanceRecord);
      }
@@ -418,9 +496,6 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
         this.minExecutionTimeTf.setEnabled(enabled);
         this.maxExecutionTimeTf.setEnabled(enabled);
-
-        this.saveButton.setVisible(enabled);
-        this.cancelButton.setVisible(enabled);
     }
 
     /**
@@ -443,10 +518,38 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.setEnabled(this.enabled);
     }
 
+    private void updateJobState(InternalEventDrivenJobInstance internalEventDrivenJobInstance, InstanceStatus newStatus) {
+        InstanceStatus previousStatus = internalEventDrivenJobInstance.getStatus();
+        internalEventDrivenJobInstance.setStatus(newStatus);
+        this.updateScheduledJob(internalEventDrivenJobInstance, this.authentication);
+
+        // todo sort out context instance
+        SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
+            = new SchedulerJobInstanceStateChangeEventImpl(internalEventDrivenJobInstance,
+            null, previousStatus, newStatus);
+
+        SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+    }
+
     public void setJob(SchedulerJobInstanceRecord internalEventDrivenJobRecord, EditMode editMode) {
         this.schedulerJobInstanceRecord = internalEventDrivenJobRecord;
         this.setJob((InternalEventDrivenJobInstance) this.schedulerJobInstanceService
             .findById(internalEventDrivenJobRecord.getId()).getSchedulerJobInstance(), editMode);
     }
 
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
+            if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
+                this.internalEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+            }
+        });
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        this.schedulerJobStateChangeRegistration.remove();
+        this.schedulerJobStateChangeRegistration = null;
+    }
 }

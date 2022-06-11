@@ -2,7 +2,8 @@ package org.ikasan.rest.dashboard;
 
 
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ public class JwtAuthenticationControllerTest extends AbstractRestMvcTest
     @MockBean
     protected AuthenticationManager authenticationManager;
 
+    @BeforeEach
     @Before
     public void setUp()
     {

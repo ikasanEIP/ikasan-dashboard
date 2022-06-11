@@ -23,10 +23,7 @@ import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaised
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -162,8 +159,8 @@ public class ContextInstanceRegistrationServiceImplTest {
         record.setContextName(contextName);
         when(scheduledContextService.findById(contextName)).thenReturn(record);
 
-        SearchResults<InternalEventDrivenJobRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(1);
-        when(internalEventDrivenJobService.findByContext(contextName, -1, -1)).thenReturn(internalEventDrivenJobRecordSearchResults);
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(1);
+        when(schedulerJobInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull())).thenReturn(internalEventDrivenJobRecordSearchResults);
         when(moduleMetadataService.findById(AGENT_NAME + "1")).thenReturn(null);
         JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
         jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
@@ -177,7 +174,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         // verify
         verify(scheduledContextService).findById(contextName);
-        verify(internalEventDrivenJobService).findByContext(contextName, -1, -1);
+        verify(schedulerJobInstanceService).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(moduleMetadataService).findById(AGENT_NAME + "1");
         verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
         verify(jobLockCacheService).get();
@@ -236,8 +233,8 @@ public class ContextInstanceRegistrationServiceImplTest {
         record.setContextName(contextName);
         when(scheduledContextService.findById(contextName)).thenReturn(record);
 
-        SearchResults<InternalEventDrivenJobRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(3);
-        when(internalEventDrivenJobService.findByContext(contextName, -1, -1)).thenReturn(internalEventDrivenJobRecordSearchResults);
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(3);
+        when(schedulerJobInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull())).thenReturn(internalEventDrivenJobRecordSearchResults);
         when(moduleMetadataService.findById(AGENT_NAME + "1")).thenReturn(TestUtils.createModuleMetaData("1"));
         when(moduleMetadataService.findById(AGENT_NAME + "2")).thenReturn(TestUtils.createModuleMetaData("2"));
         when(moduleMetadataService.findById(AGENT_NAME + "3")).thenReturn(TestUtils.createModuleMetaData("3"));
@@ -261,7 +258,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         // verify
         verify(scheduledContextService).findById(contextName);
-        verify(internalEventDrivenJobService).findByContext(contextName, -1, -1);
+        verify(schedulerJobInstanceService).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(moduleMetadataService).findById(AGENT_NAME + "1");
         verify(moduleMetadataService).findById(AGENT_NAME + "2");
         verify(moduleMetadataService).findById(AGENT_NAME + "3");
@@ -327,8 +324,8 @@ public class ContextInstanceRegistrationServiceImplTest {
         record.setContextName(contextName);
         when(scheduledContextService.findById(contextName)).thenReturn(record);
 
-        SearchResults<InternalEventDrivenJobRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(0);
-        when(internalEventDrivenJobService.findByContext(contextName, -1, -1)).thenReturn(internalEventDrivenJobRecordSearchResults);
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(0);
+        when(schedulerJobInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull())).thenReturn(internalEventDrivenJobRecordSearchResults);
         JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
         jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
@@ -341,7 +338,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         // verify
         verify(scheduledContextService).findById(contextName);
-        verify(internalEventDrivenJobService).findByContext(contextName, -1, -1);
+        verify(schedulerJobInstanceService).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
         verify(jobLockCacheService, times(1)).get();
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
@@ -351,7 +348,8 @@ public class ContextInstanceRegistrationServiceImplTest {
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
-        assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
+        assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp()
+            <= System.currentTimeMillis());
 
         verifyNoMoreInteractions(
             scheduledContextInstanceService,

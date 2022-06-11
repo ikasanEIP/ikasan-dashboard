@@ -259,9 +259,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         when(scheduledContextService.findAll()).thenReturn(contextResults);
 
         InternalEventDrivenJobTestSearchResults internalJobResults = new InternalEventDrivenJobTestSearchResults(3);
-        when(internalEventDrivenJobService.findByContext(CONTEXT_NAME + "1", -1, -1)).thenReturn(internalJobResults);
-        when(internalEventDrivenJobService.findByContext(CONTEXT_NAME + "2", -1, -1)).thenReturn(internalJobResults);
-        when(internalEventDrivenJobService.findByContext(CONTEXT_NAME + "3", -1, -1)).thenReturn(internalJobResults);
+        when(schedulerJobInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull())).thenReturn(internalJobResults);
         when(moduleMetadataService.findById(AGENT_NAME + "1")).thenReturn(TestUtils.createModuleMetaData("1"));
         when(moduleMetadataService.findById(AGENT_NAME + "2")).thenReturn(TestUtils.createModuleMetaData("2"));
         when(moduleMetadataService.findById(AGENT_NAME + "3")).thenReturn(TestUtils.createModuleMetaData("3"));
@@ -278,15 +276,13 @@ public class ContextInstanceRecoveryServiceImplTest {
         // verify
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING));
         verify(scheduledContextService).findAll();
-        verify(internalEventDrivenJobService).findByContext("ContextName1", -1, -1);
-        verify(internalEventDrivenJobService).findByContext("ContextName2", -1, -1);
-        verify(internalEventDrivenJobService).findByContext("ContextName3", -1, -1);
+        verify(schedulerJobInstanceService, times(3)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(moduleMetadataService, times(3)).findById(AGENT_NAME + "1");
         verify(moduleMetadataService, times(3)).findById(AGENT_NAME + "2");
         verify(moduleMetadataService, times(3)).findById(AGENT_NAME + "3");
 
         verify(jobLockCacheService, times(3)).get();
-        verify(schedulerJobInstanceService, times(3)).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
+        verify(schedulerJobInstanceService, times(0)).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
         verify(scheduledContextInstanceService, times(3)).save(any(ScheduledContextInstanceRecord.class));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
@@ -326,7 +322,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, false);
         when(scheduledContextService.findAll()).thenReturn(contextResults);
 
-        when(internalEventDrivenJobService.findByContext("ContextName1", -1, -1)).thenReturn(new InternalEventDrivenJobTestSearchResults(0));
+        when(schedulerJobInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull())).thenReturn(new InternalEventDrivenJobTestSearchResults(0));
         when(jobLockCacheService.get()).thenReturn(null);
 
         // execute
@@ -335,9 +331,9 @@ public class ContextInstanceRecoveryServiceImplTest {
         // verify
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING));
         verify(scheduledContextService).findAll();
-        verify(internalEventDrivenJobService).findByContext("ContextName1", -1, -1);
+        verify(schedulerJobInstanceService).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(jobLockCacheService).get();
-        verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
+        verify(schedulerJobInstanceService, times(0)).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
 
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService).save(contextInstanceCaptor.capture());

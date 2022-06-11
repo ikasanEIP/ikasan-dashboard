@@ -671,9 +671,9 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         ContextualisedScheduledProcessEvent<String, DryRunParameters> processEventInstance = createProcessEvent();
         audit.setProcessEvent(processEventInstance);
 
-        SchedulerJobInitiationEvent<ContextParameterInstance, InternalEventDrivenJob, DryRunParameters> jobInitiationEvent1 = createJobInitiationEvent();
-        SchedulerJobInitiationEvent<ContextParameterInstance, InternalEventDrivenJob, DryRunParameters> jobInitiationEvent2 = createJobInitiationEvent();
-        SchedulerJobInitiationEvent<ContextParameterInstance, InternalEventDrivenJob, DryRunParameters> jobInitiationEvent3 = createJobInitiationEvent();
+        SchedulerJobInitiationEvent<ContextParameterInstance, InternalEventDrivenJobInstance, DryRunParameters> jobInitiationEvent1 = createJobInitiationEvent();
+        SchedulerJobInitiationEvent<ContextParameterInstance, InternalEventDrivenJobInstance, DryRunParameters> jobInitiationEvent2 = createJobInitiationEvent();
+        SchedulerJobInitiationEvent<ContextParameterInstance, InternalEventDrivenJobInstance, DryRunParameters> jobInitiationEvent3 = createJobInitiationEvent();
         List<SchedulerJobInitiationEvent> jobInitiationEvents = List.of(jobInitiationEvent1, jobInitiationEvent2, jobInitiationEvent3);
         audit.setSchedulerJobInitiationEvents(jobInitiationEvents);
 
@@ -731,13 +731,13 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         return event;
     }
 
-    private SchedulerJobInitiationEvent<ContextParameterInstance, InternalEventDrivenJob, DryRunParameters> createJobInitiationEvent() {
+    private SchedulerJobInitiationEvent<ContextParameterInstance, InternalEventDrivenJobInstance, DryRunParameters> createJobInitiationEvent() {
         SchedulerJobInitiationEvent event = new SolrSchedulerJobInitiationEventImpl();
         event.setAgentName("Agent " + RandomStringUtils.randomAlphabetic(5));
         event.setAgentUrl("AgentUrl " + RandomStringUtils.randomAlphabetic(5));
         event.setJobName("Job " + RandomStringUtils.randomAlphabetic(5));
 
-        SolrInternalEventDrivenJobImpl internalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
+        InternalEventDrivenJobInstance internalEventDrivenJob = new SolrInternalEventDrivenJobInstanceImpl();
         internalEventDrivenJob.setSuccessfulReturnCodes(List.of("EventCode1", "EventCode2"));
         internalEventDrivenJob.setWorkingDirectory("workingDirectory/" + RandomStringUtils.randomAlphabetic(5));
         internalEventDrivenJob.setCommandLine("commandLine " + RandomStringUtils.randomAlphabetic(5));

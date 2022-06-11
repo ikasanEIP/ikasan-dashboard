@@ -11,6 +11,7 @@ import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateExc
 import org.ikasan.job.orchestration.core.AbstractTest;
 import org.ikasan.job.orchestration.core.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
@@ -18,6 +19,7 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.json.JSONException;
 import org.junit.After;
@@ -51,7 +53,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
@@ -252,14 +254,14 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
-        contextMachine.holdJob("bad-job-identifier");
+        contextMachine.holdJob("bad-job-identifier", "bad_context_name");
     }
 
     @Test(expected = ContextMachineException.class)
@@ -267,14 +269,14 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
-        contextMachine.releaseJob("bad-job-identifier");
+        contextMachine.releaseJob("bad-job-identifier", "bad_context_name");
     }
 
     @Test(expected = ContextMachineException.class)
@@ -284,14 +286,14 @@ public class ContextMachineTest extends AbstractTest {
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.COMPLETE);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
-        contextMachine.holdJob("agentName1-jobName1");
+        contextMachine.holdJob("agentName1-jobName1", "Context3");
     }
 
     @Test(expected = ContextMachineException.class)
@@ -301,14 +303,14 @@ public class ContextMachineTest extends AbstractTest {
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RUNNING);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
-        contextMachine.holdJob("agentName1-jobName1");
+        contextMachine.holdJob("agentName1-jobName1", "Context3");
     }
 
     @Test(expected = ContextMachineException.class)
@@ -318,14 +320,14 @@ public class ContextMachineTest extends AbstractTest {
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.ON_HOLD);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
-        contextMachine.holdJob("agentName1-jobName1");
+        contextMachine.holdJob("agentName1-jobName1", "Context3");
     }
 
     @Test(expected = ContextMachineException.class)
@@ -335,14 +337,14 @@ public class ContextMachineTest extends AbstractTest {
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.ERROR);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
-        contextMachine.holdJob("agentName1-jobName1");
+        contextMachine.holdJob("agentName1-jobName1", "Context3");
     }
 
     @Test(expected = ContextMachineException.class)
@@ -352,14 +354,14 @@ public class ContextMachineTest extends AbstractTest {
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.SKIPPED);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
-        contextMachine.holdJob("agentName1-jobName1");
+        contextMachine.holdJob("agentName1-jobName1", "Context3");
     }
 
     @Test(expected = ContextMachineException.class)
@@ -369,14 +371,14 @@ public class ContextMachineTest extends AbstractTest {
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.COMPLETE);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
-        contextMachine.releaseJob("agentName1-jobName1");
+        contextMachine.releaseJob("agentName1-jobName1", "Context3");
     }
 
     @Test(expected = ContextMachineException.class)
@@ -386,14 +388,14 @@ public class ContextMachineTest extends AbstractTest {
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RUNNING);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
-        contextMachine.releaseJob("agentName1-jobName1");
+        contextMachine.releaseJob("agentName1-jobName1", "Context3");
     }
 
     @Test(expected = ContextMachineException.class)
@@ -403,14 +405,14 @@ public class ContextMachineTest extends AbstractTest {
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RELEASED);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
-        contextMachine.releaseJob("agentName1-jobName1");
+        contextMachine.releaseJob("agentName1-jobName1", "Context3");
     }
 
     @Test(expected = ContextMachineException.class)
@@ -420,14 +422,14 @@ public class ContextMachineTest extends AbstractTest {
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.ERROR);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
-        contextMachine.releaseJob("agentName1-jobName1");
+        contextMachine.releaseJob("agentName1-jobName1", "Context3");
     }
 
     @Test(expected = ContextMachineException.class)
@@ -437,14 +439,14 @@ public class ContextMachineTest extends AbstractTest {
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.SKIPPED);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
-        contextMachine.releaseJob("agentName1-jobName1");
+        contextMachine.releaseJob("agentName1-jobName1", "Context3");
     }
 
     @Test
@@ -454,14 +456,14 @@ public class ContextMachineTest extends AbstractTest {
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.ON_HOLD);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
-        contextMachine.releaseJob("agentName1-jobName1");
+        contextMachine.releaseJob("agentName1-jobName1", "Context3");
 
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RELEASED);
@@ -472,15 +474,15 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
-        contextMachine.holdJob("agentName5-jobName5");
-        contextMachine.holdJob("agentName16-jobName16");
+        contextMachine.holdJob("agentName5-jobName5", "Context3");
+        contextMachine.holdJob("agentName16-jobName16", "Context3");
 
         ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
             "agentName3", false);
@@ -501,7 +503,7 @@ public class ContextMachineTest extends AbstractTest {
         JSONAssert.assertEquals(loadDataFile("/data/machine/result/job1-success-context-status-on-hold.json")
             , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
 
-        contextMachine.releaseJob("bad-job-name");
+        contextMachine.releaseJob("bad-job-name", "Context3");
     }
 
     @Test
@@ -509,15 +511,15 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
         contextMachine.init();
-        contextMachine.holdJob("agentName5-jobName5");
-        contextMachine.holdJob("agentName16-jobName16");
+        contextMachine.holdJob("agentName5-jobName5", "Context3");
+        contextMachine.holdJob("agentName16-jobName16", "Context5");
 
         ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
             "agentName3", false);
@@ -574,7 +576,7 @@ public class ContextMachineTest extends AbstractTest {
         AtomicReference<String> jobName = new AtomicReference<>();
         contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> jobName.set(event.getJobName()));
 
-        contextMachine.releaseJob("agentName5-jobName5");
+        contextMachine.releaseJob("agentName5-jobName5", "Context3");
 
         Assert.assertEquals(0, contextInstance.getHeldJobs().size());
 
@@ -703,7 +705,7 @@ public class ContextMachineTest extends AbstractTest {
         AtomicReference<String> jobName2 = new AtomicReference<>();
         contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> jobName2.set(event.getJobName()));
 
-        contextMachine.releaseJob("agentName16-jobName16");
+        contextMachine.releaseJob("agentName16-jobName16", "Context5");
 
         Assert.assertEquals(0, contextInstance.getHeldJobs().size());
 
@@ -733,11 +735,221 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
+    public void test_context_machine_full_nested_context_job_held_success_same_job_multiple_contexts() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context-same-job-multiple-contexts.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context-same-job-multiple-contexts.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
+        contextMachine.init();
+        contextMachine.holdJob("agentName5-jobName5", "Context3");
+        contextMachine.holdJob("agentName16-jobName16", "Context5");
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
+            "agentName3", false);
+        eventInstance.setJobStarting(true);
+
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName3",
+            "agentName3", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName1",
+            "agentName1", true);
+        InstanceStatus status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName2",
+            "agentName2", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName4",
+            "agentName4", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        Assert.assertEquals(1, contextInstance.getHeldJobs().size());
+
+        AtomicReference<String> jobName = new AtomicReference<>();
+        contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> jobName.set(event.getJobName()));
+
+        contextMachine.releaseJob("agentName5-jobName5", "Context3");
+
+        Assert.assertEquals(0, contextInstance.getHeldJobs().size());
+
+        Thread.sleep(1000);
+
+        Assert.assertEquals("jobName5", jobName.get());
+
+        eventInstance = scheduledProcessEventInstance("jobName5",
+            "agentName5", true);
+        eventInstance.setChildContextIds(List.of("Context3"));
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName6",
+            "agentName6", true);
+        eventInstance.setChildContextIds(List.of("Context3"));
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName7",
+            "agentName7", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(2, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName8",
+            "agentName8", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName9",
+            "agentName9", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        eventInstance = scheduledProcessEventInstance("jobName10",
+            "agentName10", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName11",
+            "agentName11", true);
+        eventInstance.setChildContextIds(List.of("Context4"));
+
+        contextMachine.holdJob("agentName6-jobName6", "Context4");
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        eventInstance = scheduledProcessEventInstance("jobName12",
+            "agentName12", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        eventInstance = scheduledProcessEventInstance("jobName13",
+            "agentName13", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName14",
+            "agentName14", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName15",
+            "agentName15", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        AtomicReference<String> jobName2 = new AtomicReference<>();
+        contextMachine.setSchedulerJobInitiationEventRaisedListener(event -> jobName2.set(event.getJobName()));
+
+        contextMachine.releaseJob("agentName16-jobName16", "Context5");
+
+        // agentName6-jobName6 in Context4 is still held
+        Assert.assertEquals(1, contextInstance.getHeldJobs().size());
+
+        Thread.sleep(1000);
+
+        Assert.assertEquals("jobName16", jobName2.get());
+
+        eventInstance = scheduledProcessEventInstance("jobName16",
+            "agentName16", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        // RELEASE THE HELD JOB.
+        contextMachine.releaseJob("agentName6-jobName6", "Context4");
+
+        eventInstance = scheduledProcessEventInstance("jobName6",
+            "agentName6", true);
+        eventInstance.setChildContextIds(List.of("Context4"));
+
+        contextMachine.eventReceived(eventInstance);
+
+        // Give it some time to process
+        Thread.sleep(1000);
+
+        // No more held jobs
+        Assert.assertEquals(0, contextInstance.getHeldJobs().size());
+
+        // Now confirm that the job is complete.
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+    }
+
+    @Test
     public void test_context_machine_with_job_locks() throws IOException, InvalidContextTemplateException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/locks/context-with-job-locks.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/locks/context-with-job-locks.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
@@ -818,7 +1030,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/locks/context-with-four-jobs-in-job-locks.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/locks/context-with-four-jobs-in-job-locks.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
@@ -913,7 +1125,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/locks/context-with-four-jobs-in-two-separate-job-locks.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/locks/context-with-four-jobs-in-two-separate-job-locks.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
@@ -1007,7 +1219,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/locks/nested-contexts-with-locks.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/locks/nested-contexts-with-locks.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
@@ -1211,7 +1423,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/locks/nested-contexts-with-locks-at-different-levels.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/locks/nested-contexts-with-locks-at-different-levels.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
@@ -1408,7 +1620,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
@@ -1451,7 +1663,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/CONTEXT-36916071.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/CONTEXT-36916071.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
@@ -1575,7 +1787,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
@@ -1621,7 +1833,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
@@ -1682,7 +1894,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
@@ -1720,25 +1932,25 @@ public class ContextMachineTest extends AbstractTest {
 
         this.contextTemplateValidator.validate(context);
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        InternalEventDrivenJobImpl job5 = new InternalEventDrivenJobImpl();
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        InternalEventDrivenJobInstanceImpl job5 = new InternalEventDrivenJobInstanceImpl();
         job5.setContextParameters(List.of(getContextParameter("test1", "String"), getContextParameter("test2", "String")));
-        internalEventDrivenJobs.put("agentName5-jobName5", job5);
-        InternalEventDrivenJobImpl job6 = new InternalEventDrivenJobImpl();
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", job5);
+        InternalEventDrivenJobInstanceImpl job6 = new InternalEventDrivenJobInstanceImpl();
         job6.setContextParameters(List.of(getContextParameter("test3", "String")
             , getContextParameter("test4", "String")
             , getContextParameter("test5", "String")));
-        internalEventDrivenJobs.put("agentName6-jobName6", job6);
-        internalEventDrivenJobs.put("agentName7-jobName7", new InternalEventDrivenJobImpl());
-        InternalEventDrivenJobImpl job8 = new InternalEventDrivenJobImpl();
+        internalEventDrivenJobs.put("agentName6-jobName6-Context1", job6);
+        internalEventDrivenJobs.put("agentName7-jobName7-Context1", new InternalEventDrivenJobInstanceImpl());
+        InternalEventDrivenJobInstanceImpl job8 = new InternalEventDrivenJobInstanceImpl();
         job8.setContextParameters(List.of(getContextParameter("test4", "String")
             , getContextParameter("test5", "String")
             , getContextParameter("test6", "String")
             , getContextParameter("test7", "String")));
-        internalEventDrivenJobs.put("agentName8-jobName8", job8);
+        internalEventDrivenJobs.put("agentName8-jobName8-Context1", job8);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
@@ -1814,7 +2026,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
@@ -1830,7 +2042,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance instance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         this.contextTemplateValidator.validate(context);
 
@@ -1863,7 +2075,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/CONTEXT-1436221681.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/CONTEXT-1436221681.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
@@ -3650,7 +3862,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/CONTEXT-1436221681.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/CONTEXT-1436221681.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
@@ -3740,7 +3952,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/CONTEXT-1436221681.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/CONTEXT-1436221681.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);

@@ -5,12 +5,16 @@ import static org.ikasan.orchestration.service.utils.ScheduledContextRecordTestS
 import java.util.ArrayList;
 import java.util.List;
 
+import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.search.SearchResults;
 
-public class InternalEventDrivenJobTestSearchResults implements SearchResults<InternalEventDrivenJobRecord> {
+public class InternalEventDrivenJobTestSearchResults implements SearchResults<SchedulerJobInstanceRecord> {
     public static final String AGENT_NAME = "AgentName";
 
     private final int number;
@@ -26,10 +30,10 @@ public class InternalEventDrivenJobTestSearchResults implements SearchResults<In
     }
 
     @Override
-    public List<InternalEventDrivenJobRecord> getResultList() {
-        List<InternalEventDrivenJobRecord> results = new ArrayList<>();
+    public List<SchedulerJobInstanceRecord> getResultList() {
+        List<SchedulerJobInstanceRecord> results = new ArrayList<>();
         for (int i = 1; i < number + 1; i++) {
-            results.add(new TestInternalEventDrivenJobRecordImpl(i, useContextName));
+            results.add(new TestInternalEventDrivenJobRecordImpl(i, useContextName, ""));
         }
         return results;
     }
@@ -44,14 +48,16 @@ public class InternalEventDrivenJobTestSearchResults implements SearchResults<In
         throw new UnsupportedOperationException();
     }
 
-    public static class TestInternalEventDrivenJobRecordImpl implements InternalEventDrivenJobRecord {
+    public static class TestInternalEventDrivenJobRecordImpl implements SchedulerJobInstanceRecord {
 
         private final String id;
         private final boolean useContextName;
+        private final String type;
 
-        public TestInternalEventDrivenJobRecordImpl(int id, boolean useContextName) {
+        public TestInternalEventDrivenJobRecordImpl(int id, boolean useContextName, String type) {
             this.id = String.valueOf(id);
             this.useContextName = useContextName;
+            this.type = type;
         }
 
         @Override
@@ -60,43 +66,111 @@ public class InternalEventDrivenJobTestSearchResults implements SearchResults<In
         }
 
         @Override
-        public String getAgentName() {
-            return useContextName ? AGENT_NAME + "-" + CONTEXT_NAME + id : AGENT_NAME + id;
-        }
-
-        @Override
-        public void setAgentName(String agentName) {
+        public String getType() {
+            return type;
         }
 
         @Override
         public String getJobName() {
-            return "JobName" + id;
+            return null;
         }
 
         @Override
         public void setJobName(String jobName) {
+
         }
 
         @Override
-        public String getContextId() {
-            return "ContextId" + id;
+        public String getContextName() {
+            return null;
         }
 
         @Override
-        public void setContextId(String contextId) {
+        public void setContextName(String contextName) {
+
         }
 
         @Override
-        public InternalEventDrivenJob getInternalEventDrivenJob() {
-            InternalEventDrivenJobImpl internalEventDrivenJob = new InternalEventDrivenJobImpl();
+        public String getChildContextName() {
+            return null;
+        }
+
+        @Override
+        public void setChildContextName(String childContextName) {
+
+        }
+
+        @Override
+        public String getContextInstanceId() {
+            return null;
+        }
+
+        @Override
+        public void setContextInstanceId(String contextInstanceId) {
+
+        }
+
+        @Override
+        public SchedulerJobInstance getSchedulerJobInstance() {
+            InternalEventDrivenJobInstance internalEventDrivenJob = new InternalEventDrivenJobInstanceImpl();
             internalEventDrivenJob.setIdentifier(id);
             internalEventDrivenJob.setAgentName(useContextName ? AGENT_NAME + id + "-" + CONTEXT_NAME + id : AGENT_NAME + id);
             return internalEventDrivenJob;
         }
 
         @Override
-        public void setInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob) {
+        public void setSchedulerJobInstance(SchedulerJobInstance schedulerJobInstance) {
+
         }
+
+        @Override
+        public String getStatus() {
+            return null;
+        }
+
+        @Override
+        public void setStatus(String status) {
+
+        }
+
+        //        @Override
+//        public String getAgentName() {
+//            return useContextName ? AGENT_NAME + "-" + CONTEXT_NAME + id : AGENT_NAME + id;
+//        }
+//
+//        @Override
+//        public void setAgentName(String agentName) {
+//        }
+//
+//        @Override
+//        public String getJobName() {
+//            return "JobName" + id;
+//        }
+//
+//        @Override
+//        public void setJobName(String jobName) {
+//        }
+//
+//        @Override
+//        public String getContextId() {
+//            return "ContextId" + id;
+//        }
+//
+//        @Override
+//        public void setContextId(String contextId) {
+//        }
+//
+//        @Override
+//        public InternalEventDrivenJob getInternalEventDrivenJob() {
+//            InternalEventDrivenJobImpl internalEventDrivenJob = new InternalEventDrivenJobImpl();
+//            internalEventDrivenJob.setIdentifier(id);
+//            internalEventDrivenJob.setAgentName(useContextName ? AGENT_NAME + id + "-" + CONTEXT_NAME + id : AGENT_NAME + id);
+//            return internalEventDrivenJob;
+//        }
+//
+//        @Override
+//        public void setInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob) {
+//        }
 
         @Override
         public long getTimestamp() {
