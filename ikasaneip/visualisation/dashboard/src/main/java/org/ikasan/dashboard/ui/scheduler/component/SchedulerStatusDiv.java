@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.html.Div;
+import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
 public class SchedulerStatusDiv extends Div {
@@ -42,7 +43,7 @@ public class SchedulerStatusDiv extends Div {
             super.setText(InstanceStatus.ERROR.name());
         }
         else if(status.equals(InstanceStatus.ON_HOLD.name())) {
-            super.getElement().getStyle().set("background-color", "rgba(241, 90, 35, 1.0)");
+            super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ON_HOLD);
             super.getElement().getStyle().set("color", "#FFF");
             super.setText(InstanceStatus.ON_HOLD.name());
         }
@@ -50,6 +51,16 @@ public class SchedulerStatusDiv extends Div {
             super.getElement().getStyle().set("background-color", "rgba(133,181,225,1.0)");
             super.getElement().getStyle().set("color", "#FFF");
             super.setText(InstanceStatus.RUNNING.name());
+        }
+        else if(status.equals(InstanceStatus.SKIPPED.name())) {
+            super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_SKIPPED);
+            super.getElement().getStyle().set("color", "#FFF");
+            super.setText(InstanceStatus.SKIPPED.name());
+        }
+        else if(status.equals(InstanceStatus.RELEASED.name())) {
+            super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_RELEASED);
+            super.getElement().getStyle().set("color", "#FFF");
+            super.setText(InstanceStatus.RELEASED.name());
         }
     }
 }

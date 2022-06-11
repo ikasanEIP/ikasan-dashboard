@@ -49,12 +49,12 @@ public class ContextMachineCache
         return this.contextInstanceByContextNameCache.get(contextName);
     }
 
-    public ContextMachine getByContextInstanceId(String contextName)
+    public ContextMachine getByContextInstanceId(String contextInstanceId)
     {
         logger.debug(String.format("%s attempting to get context using context instance id[%s]"
-            , this, contextName));
+            , this, contextInstanceId));
 
-        return this.contextInstanceByContextInstanceIdCache.get(contextName);
+        return this.contextInstanceByContextInstanceIdCache.get(contextInstanceId);
     }
 
     public boolean containsContextName(String contextName)
@@ -74,11 +74,11 @@ public class ContextMachineCache
         return result;
     }
 
-    public Set contextNames() {
+    public Set<String> contextNames() {
         return this.contextInstanceByContextNameCache.keySet();
     }
 
-    public Set contextInstanceIdentifiers() {
+    public Set<String> contextInstanceIdentifiers() {
         return this.contextInstanceByContextInstanceIdCache.keySet();
     }
 

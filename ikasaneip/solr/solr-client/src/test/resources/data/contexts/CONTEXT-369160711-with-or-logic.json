@@ -1054,8 +1054,8 @@
       "type": "Number"
     }
   ],
-  "timeWindowStart": "* * 6 ? * * *",
-  "timeWindowEnd": "* * 15 ? * * *",
+  "timeWindowStart": "0 0 6 ? * * *",
+  "timeWindowEnd": "0 0 23 ? * * *",
   "jobLocks": [
     {
       "name": "%Partition%.AC_PriceConsolidation_LK",

@@ -8,13 +8,14 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.ikasan.scheduled.instance.model.SolrContextParameterInstanceImpl;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 
-public class SolrSchedulerJobInitiationEventImpl implements SchedulerJobInitiationEvent<SolrContextParameterInstanceImpl, InternalEventDrivenJob, SolrDryRunParameters> {
+public class SolrSchedulerJobInitiationEventImpl implements SchedulerJobInitiationEvent<SolrContextParameterInstanceImpl, InternalEventDrivenJobInstance, SolrDryRunParameters> {
     private String agentName;
     private String agentUrl;
     private String jobName;
-    private InternalEventDrivenJob internalEventDrivenJob;
+    private InternalEventDrivenJobInstance internalEventDrivenJob;
     private String contextId;
     private List<String> childContextIds;
     private String contextInstanceId;
@@ -54,12 +55,12 @@ public class SolrSchedulerJobInitiationEventImpl implements SchedulerJobInitiati
     }
 
     @Override
-    public InternalEventDrivenJob getInternalEventDrivenJob() {
+    public InternalEventDrivenJobInstance getInternalEventDrivenJob() {
         return internalEventDrivenJob;
     }
 
     @Override
-    public void setInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob) {
+    public void setInternalEventDrivenJob(InternalEventDrivenJobInstance internalEventDrivenJob) {
         this.internalEventDrivenJob = internalEventDrivenJob;
     }
 
