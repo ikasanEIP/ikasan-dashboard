@@ -6,6 +6,7 @@ import org.ikasan.spec.search.SearchResults;
 
 import java.util.List;
 
+// TODO bad practice to be mocked!
 public class ScheduledContextInstanceServiceTestImpl implements ScheduledContextInstanceService {
 
     @Override
