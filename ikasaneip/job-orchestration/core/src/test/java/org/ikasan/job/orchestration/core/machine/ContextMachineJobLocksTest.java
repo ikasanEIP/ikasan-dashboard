@@ -23,6 +23,7 @@ import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.junit.After;
@@ -49,8 +50,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         ContextTemplate context2 = contextService.getContextTemplate(loadDataFile("/data/locks/context-with-same-job-locks-2.json"));
         ContextInstance instance2 = contextService.getContextInstance(loadDataFile("/data/locks/context-with-same-job-locks-2.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs1 = createInternalJobsMap(context1);
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs2 = createInternalJobsMap(context2);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs1 = createInternalJobsMap(context1);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs2 = createInternalJobsMap(context2);
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
@@ -303,8 +304,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         ContextTemplate context2 = contextService.getContextTemplate(loadDataFile("/data/locks/context-with-same-job-locks-2.json"));
         ContextInstance instance2 = contextService.getContextInstance(loadDataFile("/data/locks/context-with-same-job-locks-2.json"));
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs1 = createInternalJobsMap(context1);
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs2 = createInternalJobsMap(context2);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs1 = createInternalJobsMap(context1);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs2 = createInternalJobsMap(context2);
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
@@ -466,8 +467,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         ContextTemplate context2 = contextService.getContextTemplate(context2Json);
         ContextInstance instance2 = contextService.getContextInstance(context2Json);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs1 = createInternalJobsMap(context1);
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs2 = createInternalJobsMap(context2);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs1 = createInternalJobsMap(context1);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs2 = createInternalJobsMap(context2);
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
@@ -621,8 +622,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         ContextTemplate context2 = contextService.getContextTemplate(context2Json);
         ContextInstance instance2 = contextService.getContextInstance(context2Json);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs1 = createInternalJobsMap(context1);
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs2 = createInternalJobsMap(context2);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs1 = createInternalJobsMap(context1);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs2 = createInternalJobsMap(context2);
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
@@ -769,8 +770,8 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         ContextTemplate context2 = contextService.getContextTemplate(context2Json);
         ContextInstance instance2 = contextService.getContextInstance(context2Json);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs1 = createInternalJobsMap(context1);
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs2 = createInternalJobsMap(context2);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs1 = createInternalJobsMap(context1);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs2 = createInternalJobsMap(context2);
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
@@ -915,7 +916,7 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
@@ -2249,7 +2250,7 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobs = createInternalJobsMap(context);
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         JobLockCacheImpl jobLockCache = JobLockCacheImpl.instance();
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());

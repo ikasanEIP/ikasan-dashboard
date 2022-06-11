@@ -3,14 +3,22 @@ package org.ikasan.dashboard.ui.scheduler.view;
 import com.flowingcode.vaadin.addons.ironicons.IronIcons;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.board.Board;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.IronIcon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.*;
@@ -18,6 +26,7 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -201,7 +210,15 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         IronIcon addIcon = IronIcons.ADD.create();
         addIcon.setSize("16pt");
 
-        this.add(tabs, this.schedulerAgentDashboardView, this.contextTemplateWidget, scheduledJobsBoard, contextDebugBoard);
+        MenuBar quickAccessMenu = this.createQuickAccessMenu();
+        quickAccessMenu.getElement().getStyle().set("position", "absolute");
+        quickAccessMenu.getElement().getStyle().set("right", "30px");
+
+        HorizontalLayout tabsLayout = new HorizontalLayout();
+        tabsLayout.setMargin(false);
+        tabsLayout.add(tabs, quickAccessMenu);
+        tabsLayout.setWidth("100%");
+        this.add(tabsLayout, this.schedulerAgentDashboardView, this.contextTemplateWidget, scheduledJobsBoard, contextDebugBoard);
     }
 
     @Override
@@ -230,6 +247,38 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.contextDebugBoard.addRow(this.contextDebugWidget);
             initialised = true;
         }
+    }
+
+    private MenuBar createQuickAccessMenu() {
+        MenuBar quickStartMenuBar = new MenuBar();
+        quickStartMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
+
+        MenuItem quickAccess = createIconItem(quickStartMenuBar, VaadinIcon.COG, "View");
+
+        SubMenu activeContextInstancesSubMenu = quickAccess.getSubMenu();
+        MenuItem activeContexts = activeContextInstancesSubMenu.addItem("Active Contexts");
+        SubMenu activeContextSubMenu = activeContexts.getSubMenu();
+
+        ContextMachineCache.instance().contextNames().forEach(name ->
+            activeContextSubMenu.addItem(name, menuItemClickEvent -> {
+                String route = RouteConfiguration.forSessionScope()
+                    .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
+                        .getByContextName(name).getContext().getId()+"_scheduledContextInstance");
+
+                getUI().ifPresent(ui -> ui.getPage().open(route));
+            })
+        );
+
+        return quickStartMenuBar;
+    }
+
+    private MenuItem createIconItem(MenuBar menu, VaadinIcon iconName, String ariaLabel) {
+        Icon icon = new Icon(iconName);
+        icon.setSize("20pt");
+        MenuItem item = menu.addItem(icon);
+        item.getElement().setAttribute("aria-label", ariaLabel);
+
+        return item;
     }
 }
 

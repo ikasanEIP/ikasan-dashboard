@@ -8,10 +8,7 @@ import org.ikasan.scheduled.context.model.*;
 import org.ikasan.scheduled.event.model.SolrContextualisedScheduledProcessEventImpl;
 import org.ikasan.scheduled.event.model.SolrContextualisedSchedulerJobInitiationEventImpl;
 import org.ikasan.scheduled.event.model.SolrSchedulerJobInitiationEventImpl;
-import org.ikasan.scheduled.instance.model.SolrContextInstanceImpl;
-import org.ikasan.scheduled.instance.model.SolrContextParameterInstanceImpl;
-import org.ikasan.scheduled.instance.model.SolrJobLockInstanceImpl;
-import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceImpl;
+import org.ikasan.scheduled.instance.model.*;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrJobLockHolderImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
@@ -20,10 +17,7 @@ import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
-import org.ikasan.spec.scheduled.instance.model.JobLockInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
@@ -65,6 +59,9 @@ public class ScheduledObjectMapperFactory {
             .addAbstractTypeMapping(ContextualisedSchedulerJobInitiationEvent.class, SolrContextualisedSchedulerJobInitiationEventImpl.class)
             .addAbstractTypeMapping(SchedulerJobInitiationEvent.class, SolrSchedulerJobInitiationEventImpl.class)
             .addAbstractTypeMapping(InternalEventDrivenJob.class, SolrInternalEventDrivenJobImpl.class)
+            .addAbstractTypeMapping(InternalEventDrivenJobInstance.class, SolrInternalEventDrivenJobInstanceImpl.class)
+            .addAbstractTypeMapping(FileEventDrivenJobInstance.class, SolrFileEventDrivenJobInstanceImpl.class)
+            .addAbstractTypeMapping(QuartzScheduleDrivenJobInstance.class, SolrQuartzScheduleDrivenJobInstanceImpl.class)
             .addAbstractTypeMapping(JobLockHolder.class, SolrJobLockHolderImpl.class)
             .addAbstractTypeMapping(List.class, ArrayList.class)
             .addAbstractTypeMapping(Map.class, HashMap.class);

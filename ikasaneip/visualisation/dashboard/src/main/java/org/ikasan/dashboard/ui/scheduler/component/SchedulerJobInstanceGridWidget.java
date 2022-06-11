@@ -2,10 +2,7 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
@@ -14,27 +11,29 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.shared.Registration;
+import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.scheduled.job.model.JobConstants;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
@@ -44,11 +43,15 @@ import java.util.stream.Collectors;
 
 public class SchedulerJobInstanceGridWidget extends Div {
 
+    private Registration schedulerJobStateChangeRegistration;
+
     private SchedulerJobInstanceFilteringGrid schedulerJobInstanceFilteringGrid;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private IkasanAuthentication authentication;
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private ContextInstance contextInstance;
+    private SystemEventLogger systemEventLogger;
 
     /**
      * Constructor
@@ -61,6 +64,8 @@ public class SchedulerJobInstanceGridWidget extends Div {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        this.contextInstance = contextInstance;
+        this.systemEventLogger = systemEventLogger;
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextInstance);
@@ -186,14 +191,14 @@ public class SchedulerJobInstanceGridWidget extends Div {
 
             layout.add(edit);
 
-            Icon view = IconDecorator.decorate(new Icon(VaadinIcon.EYE), getTranslation("tooltip.view-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
-            ComponentSecurityVisibility.applySecurity(this.authentication, view, SecurityConstants.SCHEDULER_READ, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
-
-            view.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-
-            });
-
-            layout.add(view);
+//            Icon view = IconDecorator.decorate(new Icon(VaadinIcon.EYE), getTranslation("tooltip.view-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+//            ComponentSecurityVisibility.applySecurity(this.authentication, view, SecurityConstants.SCHEDULER_READ, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
+//
+//            view.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+//
+//            });
+//
+//            layout.add(view);
 
             Icon chart = IconDecorator.decorate(new Icon(VaadinIcon.CHART), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -201,6 +206,26 @@ public class SchedulerJobInstanceGridWidget extends Div {
             });
 
             layout.add(chart);
+
+            Icon skip = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            skip.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                this.skipJob(!schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED), schedulerJobInstanceRecord);
+            });
+
+            layout.add(skip);
+
+            Icon hold = IconDecorator.decorate(new Icon(VaadinIcon.HAND), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            hold.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+            });
+
+            layout.add(hold);
+
+            Icon release = IconDecorator.decorate(new Icon(VaadinIcon.HANDS_UP), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            hold.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+
+            });
+
+            layout.add(release);
 
             Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             StreamResource streamResource = new StreamResource(schedulerJobInstanceRecord.getJobName()+".json"
@@ -283,5 +308,85 @@ public class SchedulerJobInstanceGridWidget extends Div {
         this.schedulerJobInstanceFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setStatus
             , Arrays.asList(InstanceStatus.values()).stream().map(instanceStatus -> instanceStatus.name()).collect(Collectors.toList()), "status");
 
+    }
+
+    private boolean skipJob(boolean skipFlag, SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification("This job is not part of an active context and cannot be skipped.");
+            return false;
+        }
+
+        try {
+            contextMachine.skipJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getChildContextName(), skipFlag);
+            this.updateJobState(schedulerJobInstanceRecord, skipFlag ? InstanceStatus.SKIPPED : InstanceStatus.WAITING);
+            this.updateScheduledJob(schedulerJobInstanceRecord, this.authentication);
+            this.schedulerJobInstanceFilteringGrid.refreshItem(schedulerJobInstanceRecord);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName()
+                , skipFlag), this.authentication.getName());
+
+            this.updateJobState(schedulerJobInstanceRecord, schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification("An error has occurred attempting to skip the job. Please contact Ikasan Support.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private void updateJobState(SchedulerJobInstanceRecord schedulerJobInstanceRecord, InstanceStatus newStatus) {
+        InstanceStatus previousStatus = schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus();
+        SchedulerJobInstance schedulerJobInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
+        schedulerJobInstance.setStatus(newStatus);
+        schedulerJobInstanceRecord.setSchedulerJobInstance(schedulerJobInstance);
+        updateScheduledJob(schedulerJobInstanceRecord, this.authentication);
+
+        // todo sort out context instance
+        SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
+            = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance,
+            this.contextInstance, previousStatus, newStatus);
+
+        SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+    }
+
+    public void updateScheduledJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord, IkasanAuthentication authentication) {
+
+        schedulerJobInstanceRecord.setModifiedTimestamp(System.currentTimeMillis());
+        schedulerJobInstanceRecord.setModifiedBy(authentication.getName());
+        schedulerJobInstanceRecord.setStatus(schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().name());
+
+        this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        UI ui = attachEvent.getUI();
+        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
+            if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
+                SchedulerJobInstanceSearchFilter filter = new SolrSchedulerJobInstanceSearchFilterImpl();
+                filter.setContextInstanceId(jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId());
+                filter.setJobName(jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
+                filter.setContextName(jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextId());
+
+                SearchResults<SchedulerJobInstanceRecord> searchResults = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter
+                    (filter, 1, 0, null, null);
+
+                if(searchResults.getResultList().size() == 1) {
+                    ui.access(() -> this.schedulerJobInstanceFilteringGrid.refreshItem(searchResults.getResultList().get(0)));
+                }
+            }
+        });
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        this.schedulerJobStateChangeRegistration.remove();
+        this.schedulerJobStateChangeRegistration = null;
     }
 }

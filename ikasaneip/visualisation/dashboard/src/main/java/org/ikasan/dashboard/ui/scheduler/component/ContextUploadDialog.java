@@ -20,6 +20,7 @@ import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -31,6 +32,9 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -68,7 +72,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
 
     /**
      * Constructor
-     *
+     * TODO if this class stays around, it should leverage the base functionality in ContextInstanceServiceBase
      */
     public ContextUploadDialog(ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
                                ScheduledContextService scheduledContextService, InternalEventDrivenJobService internalEventDrivenJobService,
@@ -144,12 +148,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
                 // initialise all the scheduler job instances.
                 this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextInstance);
 
-                SearchResults<InternalEventDrivenJobRecord> internalEventDrivenJobRecordSearchResults
-                    = this.internalEventDrivenJobService.findByContext(scheduledContextRecord.getContextName(), -1, -1);
-
-                Map<String, InternalEventDrivenJob> internalEventDrivenJobMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
-                    .map(internalEventDrivenJobRecord -> internalEventDrivenJobRecord.getInternalEventDrivenJob())
-                    .collect(Collectors.toMap(InternalEventDrivenJob::getIdentifier, Function.identity()));
+                Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobMap = this.getInternalJobs(contextInstance.getId());
 
                 HashMap<String, ModuleMetaData> agents = new HashMap<>();
                 internalEventDrivenJobMap.values().forEach(job -> {
@@ -207,5 +206,18 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
         this.content.add(verticalLayout);
         super.setWidth("600px");
         super.setHeight("400px");
+    }
+
+    private Map<String, InternalEventDrivenJobInstance> getInternalJobs(String contextInstanceId) {
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        filter.setJobType("internalEventDrivenJobInstance");
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults
+            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
+            .map(internalEventDrivenJobRecord -> (InternalEventDrivenJobInstance)internalEventDrivenJobRecord.getSchedulerJobInstance())
+            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity()));
+        return internalEventDrivenJobMap;
     }
 }

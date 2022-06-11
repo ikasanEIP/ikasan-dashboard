@@ -60,4 +60,5 @@ public class SystemEventConstants
     public static final String NEW_SCHEDULED_JOB_CREATED = "New scheduled job created";
     public static final String SCHEDULED_JOB_DELETED = "Scheduled job deleted";
     public static final String SCHEDULED_JOB_EDIT = "Scheduled job edited";
+    public static final String SCHEDULED_JOB_SKIPPED = "Scheduled job skipped";
 }
