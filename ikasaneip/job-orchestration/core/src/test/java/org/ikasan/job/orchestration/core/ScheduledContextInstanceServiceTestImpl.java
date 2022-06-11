@@ -7,6 +7,7 @@ import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.search.SearchResults;
 
+// TODO bad practice to be mocked!
 public class ScheduledContextInstanceServiceTestImpl implements ScheduledContextInstanceService {
 
     @Override
