@@ -11,6 +11,8 @@ import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.solr.SolrDaoBase;
 
+import java.util.Objects;
+
 public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceRecord {
 
     private static ObjectMapper objectMapper;
@@ -186,5 +188,18 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SolrSchedulerJobInstanceRecordImpl that = (SolrSchedulerJobInstanceRecordImpl) o;
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
