@@ -3,11 +3,11 @@ package org.ikasan.rest.dashboard;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.rest.dashboard.model.flow.FlowStateImpl;
-import org.ikasan.rest.dashboard.util.TestBatchInsert;
 import org.ikasan.rest.dashboard.util.TestCacheAdapter;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,6 +49,7 @@ public class NotifierControllerTest extends  AbstractRestMvcTest
 
     private ObjectMapper mapper;
 
+    @BeforeEach
     @Before
     public void setUp()
     {

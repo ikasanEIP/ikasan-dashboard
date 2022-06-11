@@ -5,6 +5,7 @@ import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -14,10 +15,7 @@ import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -131,10 +129,12 @@ public abstract class ContextInstanceServiceBase {
         scheduledContextInstanceService.save(scheduledContextInstanceRecord);
     }
 
-    protected void initialiseContextMachine(ContextTemplate context, ContextInstance instance, boolean populateParams) throws Exception {
-        schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(instance);
+    protected void initialiseContextMachine(ContextTemplate context, ContextInstance instance, boolean isRecoveryDueToMissedTimeWindow) throws Exception {
+        if(isRecoveryDueToMissedTimeWindow) {
+            schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(instance);
+        }
 
-        Map<String, InternalEventDrivenJob> internalJobs = getInternalJobs(context.getName());
+        Map<String, InternalEventDrivenJobInstance> internalJobs = getInternalJobs(instance.getId());
         HashMap<String, ModuleMetaData> agents = getAgents(internalJobs);
 
         ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, internalJobs, queueDirectory, agents,
@@ -157,7 +157,7 @@ public abstract class ContextInstanceServiceBase {
         contextMachine.addSchedulerJobStateChangeEventListener(event ->
             this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
 
-        if (populateParams) {
+        if (isRecoveryDueToMissedTimeWindow) {
             populateParamsWithAgent(instance, agents);
         }
 
@@ -184,7 +184,7 @@ public abstract class ContextInstanceServiceBase {
         return jobLockCache;
     }
 
-    private HashMap<String, ModuleMetaData> getAgents(Map<String, InternalEventDrivenJob> internalJobs) {
+    private HashMap<String, ModuleMetaData> getAgents(Map<String, InternalEventDrivenJobInstance> internalJobs) {
         HashMap<String, ModuleMetaData> agents = new HashMap<>();
         // TODO we only need to get the module metadata for distinct agents!
         internalJobs.values().forEach(job -> {
@@ -201,13 +201,16 @@ public abstract class ContextInstanceServiceBase {
         return agents;
     }
 
-    private Map<String, InternalEventDrivenJob> getInternalJobs(String contextName) {
-        SearchResults<InternalEventDrivenJobRecord> internalEventDrivenJobRecordSearchResults
-            = this.internalEventDrivenJobService.findByContext(contextName, -1, -1);
+    private Map<String, InternalEventDrivenJobInstance> getInternalJobs(String contextInstanceId) {
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        filter.setJobType("internalEventDrivenJobInstance");
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults
+            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
 
-        Map<String, InternalEventDrivenJob> internalEventDrivenJobMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
-            .map(internalEventDrivenJobRecord -> internalEventDrivenJobRecord.getInternalEventDrivenJob())
-            .collect(Collectors.toMap(InternalEventDrivenJob::getIdentifier, Function.identity()));
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
+            .map(internalEventDrivenJobRecord -> (InternalEventDrivenJobInstance)internalEventDrivenJobRecord.getSchedulerJobInstance())
+            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity()));
         return internalEventDrivenJobMap;
     }
 

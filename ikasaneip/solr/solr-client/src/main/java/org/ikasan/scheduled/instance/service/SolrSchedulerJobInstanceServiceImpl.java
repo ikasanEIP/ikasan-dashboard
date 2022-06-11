@@ -157,6 +157,7 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                 if(instance != null) {
                     SchedulerJobInstance contextualisedInstance = (SchedulerJobInstance)SerializationUtils.clone(instance);
                     contextualisedInstance.setChildContextName(schedulerJobInstance.getChildContextName());
+                    contextualisedInstance.setContextInstanceId(contextInstance.getId());
 
                     contextualisedSchedulerJobInstances.add(contextualisedInstance);
                 }
