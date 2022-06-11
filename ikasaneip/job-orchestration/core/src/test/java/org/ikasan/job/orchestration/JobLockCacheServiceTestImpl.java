@@ -5,6 +5,7 @@ import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 
+// TODO bad practice to be mocked!
 public class JobLockCacheServiceTestImpl implements JobLockCacheService {
     @Override
     public void save(JobLockCacheRecord jobLockCacheLockHolderRecord) {
