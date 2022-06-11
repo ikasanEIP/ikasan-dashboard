@@ -9,10 +9,12 @@ import org.ikasan.job.orchestration.context.validation.InvalidContextTemplateExc
 import org.ikasan.job.orchestration.core.AbstractTest;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
+import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.junit.Assert;
@@ -52,8 +54,8 @@ public class JobLogicMachineTest extends AbstractTest {
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
 
         List<SchedulerJobInitiationEvent> events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters(), context, new MutableBoolean(false));
@@ -190,9 +192,9 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_and_multiple_dependency_relevant_event() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-and-multiple-dependency.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -288,9 +290,9 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_or_dependency_relevant_event() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-or-dependency.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -333,9 +335,9 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_or_dependency_relevant_event_make_sure_event_not_raised_twice() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-or-dependency.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -391,10 +393,10 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_and_or_dependency_relevant_and_statement_fulfilled() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-and-or-dependency.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -449,10 +451,10 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_and_or_dependency_relevant_or_statement_fulfilled() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-and-or-dependency.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
@@ -499,10 +501,10 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_and_or_dependency_relevant_or_statement_fulfilled_assert_initiation_event_not_raised_twice() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-and-or-dependency.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -582,11 +584,11 @@ public class JobLogicMachineTest extends AbstractTest {
     @Test
     public void test_simple_context_nested_and_or_with_and_dependency_relevant_inner_and_outer_and_statement_fulfilled() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName5-jobName5", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -667,11 +669,11 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_nested_and_or_with_and_dependency_relevant_inner_or_outer_and_statement_fulfilled() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName5-jobName5", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
@@ -744,11 +746,11 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_nested_and_or_with_and_dependency_relevant_inner_or_outer_and_statement_fulfilled_assert_event_not_raised_twice() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-and-dependency.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName5-jobName5", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
@@ -854,11 +856,11 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_two_nested_and_with_outer_or_dependency_and_statement_fulfilled() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName5-jobName5", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -948,11 +950,11 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_two_nested_and_with_outer_or_dependency_and_statement_fulfilled_other_side_of_or_fulfilled() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName5-jobName5", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName3", "agentName3", true);
@@ -1042,11 +1044,11 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_two_nested_and_with_outer_or_dependency_and_statement_fulfilled_all_jobs_assert_only_one_event_created() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-two-nested-and-with-outer-or-dependency.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName5-jobName5", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -1152,11 +1154,11 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_two_nested_and_or_with_outer_and_dependency_and_statement_fulfilled() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-outer-and-dependency.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName5-jobName5", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -1303,12 +1305,12 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_and_with_nested_or() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-nested-or-with-and-dependency.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName1-jobName1", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName5-jobName5", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName1-jobName1-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -1406,11 +1408,11 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_two_nested_and_or_with_outer_and_dependency_and_statement_fulfilled_assert_event_not_sent_twice() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-nested-and-or-with-outer-and-dependency.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName5-jobName5", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -1516,11 +1518,11 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_single_job_creates_multiple_events() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-single-job-produces-multiple-events.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName5-jobName5", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -1645,14 +1647,14 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_chained_jobs() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-chained-jobs.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName5-jobName5", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName6-jobName6", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName7-jobName7", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName8-jobName8", new InternalEventDrivenJobImpl());
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName6-jobName6-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName7-jobName7-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName8-jobName8-Context1", new InternalEventDrivenJobInstanceImpl());
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -1737,25 +1739,25 @@ public class JobLogicMachineTest extends AbstractTest {
     public void test_simple_context_chained_jobs_with_context_parameters() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-chained-jobs-with-context-parameters.json");
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        InternalEventDrivenJobImpl job5 = new InternalEventDrivenJobImpl();
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        InternalEventDrivenJobInstanceImpl job5 = new InternalEventDrivenJobInstanceImpl();
         job5.setContextParameters(List.of(getContextParameter("test1", "String"), getContextParameter("test2", "String")));
-        internalEventDrivenJobs.put("agentName5-jobName5", job5);
-        InternalEventDrivenJobImpl job6 = new InternalEventDrivenJobImpl();
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", job5);
+        InternalEventDrivenJobInstanceImpl job6 = new InternalEventDrivenJobInstanceImpl();
         job6.setContextParameters(List.of(getContextParameter("test3", "String")
             , getContextParameter("test4", "String")
             , getContextParameter("test5", "String")));
-        internalEventDrivenJobs.put("agentName6-jobName6", job6);
-        internalEventDrivenJobs.put("agentName7-jobName7", new InternalEventDrivenJobImpl());
-        InternalEventDrivenJobImpl job8 = new InternalEventDrivenJobImpl();
+        internalEventDrivenJobs.put("agentName6-jobName6-Context1", job6);
+        internalEventDrivenJobs.put("agentName7-jobName7-Context1", new InternalEventDrivenJobInstanceImpl());
+        InternalEventDrivenJobInstanceImpl job8 = new InternalEventDrivenJobInstanceImpl();
         job8.setContextParameters(List.of(getContextParameter("test4", "String")
             , getContextParameter("test5", "String")
             , getContextParameter("test6", "String")
             , getContextParameter("test7", "String")));
-        internalEventDrivenJobs.put("agentName8-jobName8", job8);
+        internalEventDrivenJobs.put("agentName8-jobName8-Context1", job8);
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -1850,25 +1852,25 @@ public class JobLogicMachineTest extends AbstractTest {
 
         ContextInstance context = this.contextService.getContextInstance(replace);
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        InternalEventDrivenJobImpl job5 = new InternalEventDrivenJobImpl();
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3-Context1", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4-Context1", new InternalEventDrivenJobInstanceImpl());
+        InternalEventDrivenJobInstanceImpl job5 = new InternalEventDrivenJobInstanceImpl();
         job5.setContextParameters(List.of(getContextParameter("BusinessDate", "String"), getContextParameter("ErrorSearch", "String")));
-        internalEventDrivenJobs.put("agentName5-jobName5", job5);
-        InternalEventDrivenJobImpl job6 = new InternalEventDrivenJobImpl();
+        internalEventDrivenJobs.put("agentName5-jobName5-Context1", job5);
+        InternalEventDrivenJobInstanceImpl job6 = new InternalEventDrivenJobInstanceImpl();
         job6.setContextParameters(List.of(getContextParameter("UseBusinessDate", "String")
             , getContextParameter("test4", "String")
             , getContextParameter("test5", "String")));
-        internalEventDrivenJobs.put("agentName6-jobName6", job6);
-        internalEventDrivenJobs.put("agentName7-jobName7", new InternalEventDrivenJobImpl());
-        InternalEventDrivenJobImpl job8 = new InternalEventDrivenJobImpl();
+        internalEventDrivenJobs.put("agentName6-jobName6-Context1", job6);
+        internalEventDrivenJobs.put("agentName7-jobName7-Context1", new InternalEventDrivenJobInstanceImpl());
+        InternalEventDrivenJobInstanceImpl job8 = new InternalEventDrivenJobInstanceImpl();
         job8.setContextParameters(List.of(getContextParameter("test4", "String")
             , getContextParameter("test5", "String")
             , getContextParameter("test6", "String")
             , getContextParameter("test7", "String")));
-        internalEventDrivenJobs.put("agentName8-jobName8", job8);
+        internalEventDrivenJobs.put("agentName8-jobName8-Context1", job8);
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);

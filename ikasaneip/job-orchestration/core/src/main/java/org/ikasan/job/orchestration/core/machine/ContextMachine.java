@@ -63,14 +63,14 @@ public class ContextMachine {
     private int attempts;
     private long maxWait;
     private DryRunParameters dryRunParameters;
-    private Map<String, InternalEventDrivenJob> internalEventDrivenJobs;
+    private Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs;
     private Map<String, ModuleMetaData> agents;
     private String queueDir;
     private JobLockCache jobLockCache;
 
     // todo clean up the transient queues once a context is complete.
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
-                          Map<String, InternalEventDrivenJob> internalEventDrivenJobs, String queueDir,
+                          Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs, String queueDir,
                           Map<String, ModuleMetaData> agents, JobLockCache jobLockCache,
                           ContextParametersInstanceService contextParametersInstanceService) {
         this.context = context;
@@ -300,8 +300,41 @@ public class ContextMachine {
      *
      * @param jobIdentifier
      */
-    public void holdJob(String jobIdentifier) {
-        SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, jobIdentifier);
+    public void skipJob(String jobIdentifier, String childContextName,  boolean skipFlag) {
+        SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, childContextName, jobIdentifier);
+        if(schedulerJobInstance != null) {
+            if(((!schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING) && (!schedulerJobInstance.getStatus().equals(InstanceStatus.RELEASED))) && skipFlag)
+                || (!schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED) && !skipFlag)) {
+                throw new ContextMachineException(String.format("Attempting to set skip flag to [%s] on job[%s], " +
+                        "in context[%s] with instance id[%s]. The job currently has a status of [%s] which cannot have the skip flag set."
+                    , skipFlag, jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId(), schedulerJobInstance.getStatus()));
+            }
+
+            schedulerJobInstance.setSkip(skipFlag);
+            if(skipFlag) {
+                schedulerJobInstance.setStatus(InstanceStatus.SKIPPED);
+            }
+            else {
+                schedulerJobInstance.setStatus(InstanceStatus.RELEASED);
+            }
+            this.saveContext();
+            logger.info(String.format("Successfully set skip flag to [%s] on job[%s]. Context[%s], Context Instance[%s]."
+                , skipFlag, jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId()));
+        }
+        else {
+            throw new ContextMachineException(String.format("Attempting to set skip flag on job[%s], however this job does not " +
+                    "appear in context[%s] with instance id[%s], or any of its nested contexts."
+                , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId()));
+        }
+    }
+
+    /**
+     *
+     * @param jobIdentifier
+     * @param childContextName
+     */
+    public void holdJob(String jobIdentifier, String childContextName) {
+        SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, childContextName, jobIdentifier);
         if(schedulerJobInstance != null) {
             if(!schedulerJobInstance.getStatus().equals(InstanceStatus.WAITING) &&
                 !schedulerJobInstance.getStatus().equals(InstanceStatus.RELEASED)) {
@@ -327,15 +360,15 @@ public class ContextMachine {
      * @param jobIdentifier
      * @throws IOException
      */
-    public void releaseJob(String jobIdentifier) throws IOException {
-        SchedulerJobInitiationEvent event = this.contextInstance.getHeldJobs().get(jobIdentifier);
+    public void releaseJob(String jobIdentifier, String childContextName) throws IOException {
+        SchedulerJobInitiationEvent event = this.contextInstance.getHeldJobs().get(jobIdentifier+ "_" + childContextName);
         if(event != null) {
-            this.contextInstance.getHeldJobs().remove(jobIdentifier);
+            this.contextInstance.getHeldJobs().remove(jobIdentifier + "_" + childContextName);
             String serialised = objectMapper.writeValueAsString(event);
             logger.info("Enqueue job initiation event: " + serialised);
             outboundQueue.enqueue(serialised.getBytes());
             logger.info("Outbound queue size: " + outboundQueue.size());
-            SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, jobIdentifier);
+            SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, childContextName, jobIdentifier);
             schedulerJobInstance.setHeld(false);
             schedulerJobInstance.setStatus(InstanceStatus.RELEASED);
             this.saveContext();
@@ -343,7 +376,7 @@ public class ContextMachine {
                 , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId()));
         }
         else {
-            SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, jobIdentifier);
+            SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, childContextName, jobIdentifier);
 
             if(schedulerJobInstance != null) {
                 if(!schedulerJobInstance.getStatus().equals(InstanceStatus.ON_HOLD)) {
@@ -391,10 +424,11 @@ public class ContextMachine {
 
         events.forEach(event -> {
             if(event.getInternalEventDrivenJob() != null) {
-                SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(contextInstance, event.getInternalEventDrivenJob().getIdentifier());
+                SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(contextInstance, event.getInternalEventDrivenJob().getChildContextName(),
+                    event.getInternalEventDrivenJob().getIdentifier());
 
                 if (schedulerJobInstance != null && schedulerJobInstance.isHeld()) {
-                    this.contextInstance.getHeldJobs().put(schedulerJobInstance.getIdentifier(), event);
+                    this.contextInstance.getHeldJobs().put(schedulerJobInstance.getIdentifier() + "_" + event.getInternalEventDrivenJob().getChildContextName(), event);
                 } else {
                     finalEvents.add(event);
                 }
@@ -589,6 +623,25 @@ public class ContextMachine {
                  if(schedulerJobInstance != null) {
                      return schedulerJobInstance;
                  }
+            }
+
+            return null;
+        }
+
+        return null;
+    }
+
+    private SchedulerJobInstance getSchedulerJob(ContextInstance contextInstance, String childContextName, String jobIdentifier) {
+        if(contextInstance.getScheduledJobsMap() != null && contextInstance.getScheduledJobsMap().containsKey(jobIdentifier) && contextInstance.getName().equals(childContextName)) {
+            return contextInstance.getScheduledJobsMap().get(jobIdentifier);
+        }
+        else if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
+            for(ContextInstance contextInstance1: contextInstance.getContexts()) {
+                SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(contextInstance1, childContextName, jobIdentifier);
+
+                if(schedulerJobInstance != null) {
+                    return schedulerJobInstance;
+                }
             }
 
             return null;

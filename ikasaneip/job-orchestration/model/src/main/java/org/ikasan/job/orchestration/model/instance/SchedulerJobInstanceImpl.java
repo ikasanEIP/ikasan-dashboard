@@ -10,7 +10,7 @@ import java.io.Serializable;
 
 public class SchedulerJobInstanceImpl extends SchedulerJobImpl implements SchedulerJobInstance, StatefulEntity, Serializable {
     private String contextInstanceId;
-    private String ChildContextName;
+    private String childContextName;
     private boolean held = false;
     private boolean skip = false;
     private boolean initiationEventRaised = false;
@@ -33,12 +33,12 @@ public class SchedulerJobInstanceImpl extends SchedulerJobImpl implements Schedu
 
     @Override
     public String getChildContextName() {
-        return ChildContextName;
+        return childContextName;
     }
 
     @Override
     public void setChildContextName(String childContextName) {
-        ChildContextName = childContextName;
+        this.childContextName = childContextName;
     }
 
     @Override

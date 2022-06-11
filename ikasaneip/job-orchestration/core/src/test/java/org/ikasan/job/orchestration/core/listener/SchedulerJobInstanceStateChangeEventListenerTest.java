@@ -7,11 +7,13 @@ import org.ikasan.job.orchestration.core.AbstractTest;
 import org.ikasan.job.orchestration.core.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
+import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,20 +32,20 @@ public class SchedulerJobInstanceStateChangeEventListenerTest extends AbstractTe
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
 
-        HashMap<String, InternalEventDrivenJob> internalEventDrivenJobs = new HashMap<>();
-        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobImpl());
-        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobImpl());
-        InternalEventDrivenJobImpl job5 = new InternalEventDrivenJobImpl();
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName3-jobName3", new InternalEventDrivenJobInstanceImpl());
+        internalEventDrivenJobs.put("agentName4-jobName4", new InternalEventDrivenJobInstanceImpl());
+        InternalEventDrivenJobInstanceImpl job5 = new InternalEventDrivenJobInstanceImpl();
         job5.setContextParameters(List.of(getContextParameter("test1", "String"), getContextParameter("test2", "String")));
         internalEventDrivenJobs.put("agentName5-jobName5", job5);
-        InternalEventDrivenJobImpl job6 = new InternalEventDrivenJobImpl();
+        InternalEventDrivenJobInstanceImpl job6 = new InternalEventDrivenJobInstanceImpl();
         job6.setContextParameters(List.of(getContextParameter("test3", "String")
             , getContextParameter("test4", "String")
             , getContextParameter("test5", "String")));
         internalEventDrivenJobs.put("agentName6-jobName6", job6);
-        internalEventDrivenJobs.put("agentName7-jobName7", new InternalEventDrivenJobImpl());
-        InternalEventDrivenJobImpl job8 = new InternalEventDrivenJobImpl();
+        internalEventDrivenJobs.put("agentName7-jobName7", new InternalEventDrivenJobInstanceImpl());
+        InternalEventDrivenJobInstanceImpl job8 = new InternalEventDrivenJobInstanceImpl();
         job8.setContextParameters(List.of(getContextParameter("test4", "String")
             , getContextParameter("test5", "String")
             , getContextParameter("test6", "String")
