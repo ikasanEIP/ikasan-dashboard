@@ -43,10 +43,7 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
@@ -78,7 +75,6 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     private TextField minExecutionTimeTf;
     private TextField maxExecutionTimeTf;
 
-    private boolean skipped = false;
     private Button skipButton;
     private Button enableButton;
     private Button holdButton;
@@ -109,6 +105,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
     private IkasanAuthentication authentication;
 
+    private ContextInstance contextInstance;
+
 
     /**
      * Constructor
@@ -119,11 +117,12 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
      * @param moduleControlRestService
      * @param metaDataRestService
      * @param systemEventLogger
+     * @param contextInstance
      */
     public InternalEventDrivenJobInstanceDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                                 ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                                 MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
-                                                SchedulerJobInstanceService schedulerJobInstanceService) {
+                                                SchedulerJobInstanceService schedulerJobInstanceService, ContextInstance contextInstance) {
         super.showResize(false);
         super.title.setText(getTranslation("label.command-execution-job-instance", UI.getCurrent().getLocale()));
 
@@ -134,6 +133,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.metaDataRestService = metaDataRestService;
         this.systemEventLogger = systemEventLogger;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
+        this.contextInstance = contextInstance;
 
         this.internalEventDrivenJobInstance = new SolrInternalEventDrivenJobInstanceImpl();
 
@@ -173,104 +173,125 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
         formLayout.add(this.statusDiv, 2);
 
-        Icon holdIcon = IconDecorator.decorate(new Icon(VaadinIcon.HAND), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
-        this.holdButton = new Button("Hold", holdIcon);
+        this.holdButton = new Button(getTranslation("button.hold", UI.getCurrent().getLocale()), new Icon(VaadinIcon.HAND));
         this.holdButton.setIconAfterText(true);
+
+        if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.ON_HOLD) ||
+            this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED)) {
+            this.holdButton.setVisible(false);
+        }
+
         this.holdButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
-            confirmDialog.setHeader("Hold Job");
-            confirmDialog.setText("Are you sure that you would like to hold this job?");
+            confirmDialog.setHeader(getTranslation("confirm-dialog-header.hold-job", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog-text.hold-job", UI.getCurrent().getLocale()));
 
             confirmDialog.setCancelable(true);
 
             confirmDialog.open();
 
             confirmDialog.addConfirmListener(confirmEvent -> {
-                this.statusDiv.setStatus(InstanceStatus.ON_HOLD);
-                this.releaseButton.setVisible(true);
-                this.holdButton.setVisible(false);
-                this.skipButton.setVisible(false);
-
-                this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.ON_HOLD);
+                if(this.holdJob()) {
+                    this.statusDiv.setStatus(InstanceStatus.ON_HOLD);
+                    this.releaseButton.setVisible(true);
+                    this.holdButton.setVisible(false);
+                    this.skipButton.setVisible(false);
+                }
             });
         });
 
-        Icon releaseIcon = IconDecorator.decorate(new Icon(VaadinIcon.HANDS_UP), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
-        this.releaseButton = new Button("Release", releaseIcon);
+        this.releaseButton = new Button(getTranslation("button.release", UI.getCurrent().getLocale()), new Icon(VaadinIcon.HANDS_UP));
         this.releaseButton.setIconAfterText(true);
-        this.releaseButton.setVisible(false);
+
+        if(!this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.ON_HOLD)) {
+            this.releaseButton.setVisible(false);
+        }
+
         this.releaseButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
-            confirmDialog.setHeader("Release Job");
-            confirmDialog.setText("Are you sure that you would like to release this job?");
+            confirmDialog.setHeader(getTranslation("confirm-dialog-header.release-job", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog-text.release-job", UI.getCurrent().getLocale()));
 
             confirmDialog.setCancelable(true);
 
             confirmDialog.open();
 
             confirmDialog.addConfirmListener(confirmEvent -> {
-                this.statusDiv.setStatus(InstanceStatus.RELEASED);
-                this.releaseButton.setVisible(false);
-                this.holdButton.setVisible(true);
-                this.skipButton.setVisible(true);
-
-                this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.RELEASED);
+                if(this.releaseJob()) {
+                    this.statusDiv.setStatus(InstanceStatus.WAITING);
+                    this.holdButton.setVisible(true);
+                    this.skipButton.setVisible(true);
+                    this.releaseButton.setVisible(false);
+                }
             });
         });
 
-        Icon skipIcon = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
-        this.skipButton = new Button("Skip", skipIcon);
+        this.skipButton = new Button(getTranslation("button.skip", UI.getCurrent().getLocale()), new Icon(VaadinIcon.BAN));
         this.skipButton.setIconAfterText(true);
+
+        if(!(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.ON_HOLD) ||
+            this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED))) {
+            this.skipButton.setVisible(true);
+        }
+        else {
+            this.skipButton.setVisible(false);
+        }
+
         this.skipButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
-            confirmDialog.setHeader("Skipping Job");
-            confirmDialog.setText("Are you sure that you would like to skip this job?");
+            confirmDialog.setHeader(getTranslation("confirm-dialog-header.skip-job", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog-text.skip-job", UI.getCurrent().getLocale()));
 
             confirmDialog.setCancelable(true);
 
             confirmDialog.open();
 
             confirmDialog.addConfirmListener(confirmEvent -> {
-                this.statusDiv.setStatus(InstanceStatus.SKIPPED);
-                this.releaseButton.setVisible(false);
-                this.holdButton.setVisible(false);
-                this.skipped = true;
+                if(this.skipJob()) {
+                    this.statusDiv.setStatus(InstanceStatus.SKIPPED);
+                    this.releaseButton.setVisible(false);
+                    this.holdButton.setVisible(false);
 
-                this.enableButton.setVisible(true);
-                this.skipButton.setVisible(false);
-
-                this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.SKIPPED);
+                    this.enableButton.setVisible(true);
+                    this.skipButton.setVisible(false);
+                }
             });
         });
 
-        Icon enableIcon = IconDecorator.decorate(new Icon(VaadinIcon.PLAY), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
-        this.enableButton = new Button("Enable", enableIcon);
+        this.enableButton = new Button(getTranslation("button.enable", UI.getCurrent().getLocale()), new Icon(VaadinIcon.PLAY));
         this.enableButton.setIconAfterText(true);
-        this.enableButton.setVisible(false);
+
+        if(!this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED)) {
+            this.enableButton.setVisible(false);
+        }
+
         this.enableButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
-            confirmDialog.setHeader("Enable Job");
-            confirmDialog.setText("Are you sure that you would like to enable this job?");
+            confirmDialog.setHeader(getTranslation("confirm-dialog-header.enable-job", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog-text.enable-job", UI.getCurrent().getLocale()));
 
             confirmDialog.setCancelable(true);
 
             confirmDialog.open();
 
             confirmDialog.addConfirmListener(confirmEvent -> {
-                this.statusDiv.setStatus(this.schedulerJobInstanceRecord.getStatus());
-                this.releaseButton.setVisible(false);
-                this.holdButton.setVisible(true);
-                this.enableButton.setVisible(false);
-                this.skipButton.setVisible(true);
-                this.skipped = false;
-
-                this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.WAITING);
+                if(this.enableJob()) {
+                    this.statusDiv.setStatus(InstanceStatus.WAITING);
+                    this.releaseButton.setVisible(false);
+                    this.holdButton.setVisible(true);
+                    this.enableButton.setVisible(false);
+                    this.skipButton.setVisible(true);
+                }
             });
         });
 
-        Icon submitIcon = IconDecorator.decorate(new Icon(VaadinIcon.PAPERPLANE), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
-        Button submitButton = new Button("Submit", submitIcon);
+        Button submitButton = new Button(getTranslation("button.submit", UI.getCurrent().getLocale()), new Icon(VaadinIcon.PAPERPLANE));
         submitButton.setIconAfterText(true);
+
+        submitButton.addClickListener(event -> {
+            UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
+            underConstructionDialog.open();
+        });
 
         HorizontalLayout actionsLayout = new HorizontalLayout();
         actionsLayout.add(holdButton, releaseButton, skipButton, enableButton, submitButton);
@@ -317,14 +338,14 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             .bind(InternalEventDrivenJobInstance::getJobDescription, InternalEventDrivenJobInstance::setJobDescription);
         formLayout.add(jobDescriptionTa, 2);
 
-        this.minExecutionTimeTf = new TextField("Minimum execution time");
+        this.minExecutionTimeTf = new TextField(getTranslation("label.minimum-execution-time", UI.getCurrent().getLocale()));
         formBinder.forField(this.minExecutionTimeTf)
             .withNullRepresentation("")
             .withConverter(
                 new StringToLongConverter("Please enter a number"))
             .bind(InternalEventDrivenJobInstance::getMinExecutionTime, InternalEventDrivenJobInstance::setMinExecutionTime);
 
-        this.maxExecutionTimeTf = new TextField("Maximum execution time");
+        this.maxExecutionTimeTf = new TextField(getTranslation("label.maximum-execution-time", UI.getCurrent().getLocale()));
         formBinder.forField(this.maxExecutionTimeTf)
             .withNullRepresentation("")
             .withConverter(
@@ -339,8 +360,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             .bind(InternalEventDrivenJobInstance::getWorkingDirectory, InternalEventDrivenJobInstance::setWorkingDirectory);
         formLayout.add(workingDirectoryTf, 2);
 
-        Icon calendarIcon = IconDecorator.decorate(new Icon(VaadinIcon.CALENDAR), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
-        Button executionDaysButton = new Button("Execution Days", calendarIcon);
+        Button executionDaysButton = new Button(getTranslation("button.execution-days", UI.getCurrent().getLocale()), new Icon(VaadinIcon.CALENDAR));
         executionDaysButton.setIconAfterText(true);
         executionDaysButton.addClickListener(event -> {
             DayOfWeekJobDialog dayOfWeekJobDialog = new DayOfWeekJobDialog(this.internalEventDrivenJobInstance.getDaysOfWeekToRun() == null
@@ -354,8 +374,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             });
         });
 
-        Icon parametersIcon = IconDecorator.decorate(new Icon(VaadinIcon.SLIDERS), getTranslation("label.job-parameters", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
-        Button parametersButton = new Button("Parameters", parametersIcon);
+        Button parametersButton = new Button(getTranslation("button.parameters", UI.getCurrent().getLocale()), new Icon(VaadinIcon.SLIDERS));
         parametersButton.setIconAfterText(true);
         parametersButton.addClickListener(event -> {
             ContextParameterDialog contextParameterDialog = new ContextParameterDialog(false);
@@ -369,8 +388,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             });
         });
 
-        Icon successfulReturnCodesIcon = IconDecorator.decorate(new Icon(VaadinIcon.CHECK), getTranslation("label.successful-return-codes", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
-        Button successfulReturnCodesButton = new Button("Return Codes", successfulReturnCodesIcon);
+        Button successfulReturnCodesButton = new Button(getTranslation("button.return-codes", UI.getCurrent().getLocale()), new Icon(VaadinIcon.CHECK));
         successfulReturnCodesButton.setIconAfterText(true);
         successfulReturnCodesButton.addClickListener(event -> {
             SuccessfulReturnCodesDialog successfulReturnCodesDialog = new SuccessfulReturnCodesDialog(false);
@@ -384,8 +402,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             });
         });
 
-        Icon downloadIcon = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
-        Button downloadButton = new Button("Download", downloadIcon);
+        Button downloadButton = new Button(getTranslation("button.download", UI.getCurrent().getLocale()), new Icon(VaadinIcon.DOWNLOAD_ALT));
         downloadButton.setIconAfterText(true);
         StreamResource streamResource = new StreamResource(this.internalEventDrivenJobInstance.getJobName()+".json"
             , () -> {
@@ -401,8 +418,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
         buttonWrapper.wrapComponent(downloadButton);
 
-        Icon externalIcon = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), getTranslation("label.expand-text-editor", UI.getCurrent().getLocale()), "18pt", "rgba(241, 90, 35, 1.0)");
-        Button expandButton = new Button("Expand", externalIcon);
+        Button expandButton = new Button(getTranslation("button.expand", UI.getCurrent().getLocale()), new Icon(VaadinIcon.EXTERNAL_LINK));
         expandButton.setIconAfterText(true);
 
         HorizontalLayout jobActionsButtonLayout = new HorizontalLayout();
@@ -434,25 +450,120 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         return formLayout;
     }
 
-    private boolean skipJob(boolean skipFlag) {
+    /**
+     * Helper method to skip the job.
+     *
+     * @return
+     */
+    private boolean skipJob() {
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
             (this.schedulerJobInstanceRecord.getContextInstanceId());
 
         if(contextMachine == null) {
-            NotificationHelper.showErrorNotification("This job is not part of an active context and cannot be skipped.");
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-skipped", UI.getCurrent().getLocale()));
             return false;
         }
 
         try {
-            contextMachine.skipJob(this.internalEventDrivenJobInstance.getIdentifier(), this.internalEventDrivenJobInstance.getChildContextName(), skipFlag);
-            this.updateScheduledJob(this.internalEventDrivenJobInstance, this.authentication);
+            contextMachine.skipJob(this.internalEventDrivenJobInstance.getIdentifier(), this.internalEventDrivenJobInstance.getChildContextName(), true);
+            this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.SKIPPED);
 
             this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
-                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), skipFlag), this.authentication.getName());
+                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), true), this.authentication.getName());
         }
         catch (Exception e) {
             e.printStackTrace();
-            NotificationHelper.showErrorNotification("An error has occurred attempting to skip the job. Please contact Ikasan Support.");
+            NotificationHelper.showErrorNotification(getTranslation("error.skipped-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper method to enable the job.
+     *
+     * @return
+     */
+    private boolean enableJob() {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (this.schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-enabled", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.skipJob(this.internalEventDrivenJobInstance.getIdentifier(), this.internalEventDrivenJobInstance.getChildContextName(), false);
+            this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.WAITING);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
+                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), false), this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.enabled-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper method to hold the job.
+     *
+     * @return
+     */
+    private boolean holdJob() {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (this.schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-held", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.holdJob(this.internalEventDrivenJobInstance.getIdentifier(), this.internalEventDrivenJobInstance.getChildContextName());
+            this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.ON_HOLD);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_HELD, String.format("Agent Name[%s], Scheduled Job Name[%s], Held[%s]"
+                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), true), this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.held-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper method to release the job.
+     *
+     * @return
+     */
+    private boolean releaseJob() {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (this.schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-released", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.releaseJob(this.internalEventDrivenJobInstance.getIdentifier(), this.internalEventDrivenJobInstance.getChildContextName());
+            this.updateJobState(this.internalEventDrivenJobInstance, InstanceStatus.WAITING);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RELEASED, String.format("Agent Name[%s], Scheduled Job Name[%s], Released[%s]"
+                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), true), this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.released-general-error", UI.getCurrent().getLocale()));
             return false;
         }
 
@@ -461,7 +572,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     
 
     /**
-     *
+     * Update and persist the associated job.
      *
      * @param internalEventDrivenJobInstance
      */
@@ -518,19 +629,30 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.setEnabled(this.enabled);
     }
 
+    /**
+     * Helper method to update a jobs state and persist it before broadcasting the state change.
+     *
+     * @param internalEventDrivenJobInstance
+     * @param newStatus
+     */
     private void updateJobState(InternalEventDrivenJobInstance internalEventDrivenJobInstance, InstanceStatus newStatus) {
         InstanceStatus previousStatus = internalEventDrivenJobInstance.getStatus();
         internalEventDrivenJobInstance.setStatus(newStatus);
         this.updateScheduledJob(internalEventDrivenJobInstance, this.authentication);
 
-        // todo sort out context instance
         SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
             = new SchedulerJobInstanceStateChangeEventImpl(internalEventDrivenJobInstance,
-            null, previousStatus, newStatus);
+            this.contextInstance, previousStatus, newStatus);
 
         SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
     }
 
+    /**
+     * Set the job record on this object.
+     *
+     * @param internalEventDrivenJobRecord
+     * @param editMode
+     */
     public void setJob(SchedulerJobInstanceRecord internalEventDrivenJobRecord, EditMode editMode) {
         this.schedulerJobInstanceRecord = internalEventDrivenJobRecord;
         this.setJob((InternalEventDrivenJobInstance) this.schedulerJobInstanceService
