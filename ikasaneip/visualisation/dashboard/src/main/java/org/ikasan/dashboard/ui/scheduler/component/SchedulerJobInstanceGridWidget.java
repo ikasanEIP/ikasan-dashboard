@@ -142,71 +142,6 @@ public class SchedulerJobInstanceGridWidget extends Div {
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
-            Icon edit = IconDecorator.decorate(new Icon(VaadinIcon.EDIT), getTranslation("tooltip.edit-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
-            edit.setId("editScheduledJob");
-            ComponentSecurityVisibility.applySecurity(this.authentication,  edit, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
-
-            edit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                if(schedulerJobInstanceRecord.getType().equals(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE)) {
-                    FileEventJobInstanceDialog fileEventJobDialog = new FileEventJobInstanceDialog(moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName())
-                        , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobInstanceService);
-                    fileEventJobDialog.setJob(schedulerJobInstanceRecord, EditMode.READONLY);
-
-                    fileEventJobDialog.open();
-
-                    fileEventJobDialog.addOpenedChangeListener(event -> {
-                        if(!event.isOpened()) {
-                            this.schedulerJobInstanceFilteringGrid.refreshItem(schedulerJobInstanceRecord);
-                        }
-                    });
-                }
-                else if(schedulerJobInstanceRecord.getType().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE)) {
-                    QuartzDrivenScheduledJobInstanceDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobInstanceDialog(moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName())
-                        , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService);
-                    quartzDrivenScheduledJobDialog.setJob(schedulerJobInstanceRecord, EditMode.READONLY);
-
-                    quartzDrivenScheduledJobDialog.open();
-
-                    quartzDrivenScheduledJobDialog.addOpenedChangeListener(event -> {
-                        if(!event.isOpened()) {
-                            this.schedulerJobInstanceFilteringGrid.refreshItem(schedulerJobInstanceRecord);
-                        }
-                    });
-                }
-                else if(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)) {
-                    InternalEventDrivenJobInstanceDialog internalEventDrivenJobDialog = new InternalEventDrivenJobInstanceDialog(moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName())
-                        , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService);
-                    internalEventDrivenJobDialog.setJob(schedulerJobInstanceRecord, EditMode.READONLY);
-
-                    internalEventDrivenJobDialog.open();
-
-                    internalEventDrivenJobDialog.addOpenedChangeListener(event -> {
-                        if(!event.isOpened()) {
-                            this.schedulerJobInstanceFilteringGrid.refreshItem(schedulerJobInstanceRecord);
-                        }
-                    });
-
-                }
-            });
-
-            layout.add(edit);
-
-//            Icon view = IconDecorator.decorate(new Icon(VaadinIcon.EYE), getTranslation("tooltip.view-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
-//            ComponentSecurityVisibility.applySecurity(this.authentication, view, SecurityConstants.SCHEDULER_READ, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
-//
-//            view.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-//
-//            });
-//
-//            layout.add(view);
-
-            Icon chart = IconDecorator.decorate(new Icon(VaadinIcon.CHART), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
-            chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-
-            });
-
-            layout.add(chart);
-
             Icon skip = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             skip.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 this.skipJob(!schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED), schedulerJobInstanceRecord);
@@ -226,6 +161,13 @@ public class SchedulerJobInstanceGridWidget extends Div {
             });
 
             layout.add(release);
+
+            Icon chart = IconDecorator.decorate(new Icon(VaadinIcon.CHART), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+
+            });
+
+            layout.add(chart);
 
             Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             StreamResource streamResource = new StreamResource(schedulerJobInstanceRecord.getJobName()+".json"
@@ -308,6 +250,49 @@ public class SchedulerJobInstanceGridWidget extends Div {
         this.schedulerJobInstanceFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setStatus
             , Arrays.asList(InstanceStatus.values()).stream().map(instanceStatus -> instanceStatus.name()).collect(Collectors.toList()), "status");
 
+        this.schedulerJobInstanceFilteringGrid.addItemDoubleClickListener(event -> {
+            if(event.getItem().getType().equals(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE)) {
+                FileEventJobInstanceDialog fileEventJobDialog = new FileEventJobInstanceDialog(moduleMetaDataService.findById(event.getItem().getSchedulerJobInstance().getAgentName())
+                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobInstanceService);
+                fileEventJobDialog.setJob(event.getItem(), EditMode.READONLY);
+
+                fileEventJobDialog.open();
+
+                fileEventJobDialog.addOpenedChangeListener(openedChangeEvent -> {
+                    if(!openedChangeEvent.isOpened()) {
+                        this.schedulerJobInstanceFilteringGrid.refreshItem(event.getItem());
+                    }
+                });
+            }
+            else if(event.getItem().getType().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE)) {
+                QuartzDrivenScheduledJobInstanceDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobInstanceDialog(moduleMetaDataService.findById(event.getItem().getSchedulerJobInstance().getAgentName())
+                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService);
+                quartzDrivenScheduledJobDialog.setJob(event.getItem(), EditMode.READONLY);
+
+                quartzDrivenScheduledJobDialog.open();
+
+                quartzDrivenScheduledJobDialog.addOpenedChangeListener(openedChangeEvent -> {
+                    if(!openedChangeEvent.isOpened()) {
+                        this.schedulerJobInstanceFilteringGrid.refreshItem(event.getItem());
+                    }
+                });
+            }
+            else if(event.getItem().getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)) {
+                InternalEventDrivenJobInstanceDialog internalEventDrivenJobDialog = new InternalEventDrivenJobInstanceDialog(moduleMetaDataService.findById(event.getItem().getSchedulerJobInstance().getAgentName())
+                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService, this.contextInstance);
+                internalEventDrivenJobDialog.setJob(event.getItem(), EditMode.READONLY);
+
+                internalEventDrivenJobDialog.open();
+
+                internalEventDrivenJobDialog.addOpenedChangeListener(openedChangeEvent -> {
+                    if(!openedChangeEvent.isOpened()) {
+                        this.schedulerJobInstanceFilteringGrid.refreshItem(event.getItem());
+                    }
+                });
+
+            }
+        });
+
     }
 
     private boolean skipJob(boolean skipFlag, SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
@@ -372,7 +357,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
                 SchedulerJobInstanceSearchFilter filter = new SolrSchedulerJobInstanceSearchFilterImpl();
                 filter.setContextInstanceId(jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId());
                 filter.setJobName(jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
-                filter.setContextName(jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextId());
+                filter.setChildContextName(jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName());
 
                 SearchResults<SchedulerJobInstanceRecord> searchResults = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter
                     (filter, 1, 0, null, null);
