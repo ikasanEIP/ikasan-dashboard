@@ -111,6 +111,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
 
             saveContextInstance(instance, InstanceStatus.ENDED);
             ContextMachineCache.instance().remove(contextMachine);
+            contextMachine.teardown();
         } catch (Exception e) {
             LOG.error(String.format("An error has occurred executing de registering job[%s]", e.getMessage()), e);
             throw new RuntimeException(e);

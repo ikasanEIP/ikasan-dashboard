@@ -86,11 +86,6 @@ public class ContextMachineCache
     {
         this.contextInstanceByContextNameCache.remove(contextMachine.getContext().getName(), contextMachine);
         this.contextInstanceByContextInstanceIdCache.remove(contextMachine.getContext().getId(), contextMachine);
-        try {
-            contextMachine.teardown();
-        } catch (IOException e) {
-            logger.error("Error tearing down context machine: " + e.getMessage());
-        }
     }
 
 }

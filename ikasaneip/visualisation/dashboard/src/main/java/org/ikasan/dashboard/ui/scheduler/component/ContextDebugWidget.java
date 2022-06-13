@@ -199,7 +199,10 @@ public class ContextDebugWidget extends Div {
         resetContextButton.addClickListener(buttonClickEvent -> {
             ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
             try {
+                ContextMachineCache.instance().remove(contextMachine);
                 contextMachine.resetContextInstance();
+                ContextMachineCache.instance().put(contextMachine);
+
                 this.schedulerVisualisation.createSchedulerVisualisation(contextMachine.getContext());
                 this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextMachine.getContext());
                 if(tabs.getSelectedTab().equals(this.fullContextInstance)) {
