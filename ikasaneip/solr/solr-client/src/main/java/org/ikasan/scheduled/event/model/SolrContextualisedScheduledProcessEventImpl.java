@@ -8,6 +8,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 
 public class SolrContextualisedScheduledProcessEventImpl implements ContextualisedScheduledProcessEvent<String, SolrDryRunParameters>, Serializable {
@@ -35,7 +36,7 @@ public class SolrContextualisedScheduledProcessEventImpl implements Contextualis
     private boolean jobStarting = false;
     private SolrDryRunParameters dryRunParameters;
     private boolean skipped;
-    private InternalEventDrivenJob internalEventDrivenJob;
+    private InternalEventDrivenJobInstance internalEventDrivenJob;
 
     public Long getId() {
         return id;
@@ -276,12 +277,12 @@ public class SolrContextualisedScheduledProcessEventImpl implements Contextualis
     }
 
     @Override
-    public void setInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob) {
+    public void setInternalEventDrivenJob(InternalEventDrivenJobInstance internalEventDrivenJob) {
         this.internalEventDrivenJob = internalEventDrivenJob;
     }
 
     @Override
-    public InternalEventDrivenJob getInternalEventDrivenJob() {
+    public InternalEventDrivenJobInstance getInternalEventDrivenJob() {
         return this.internalEventDrivenJob;
     }
 
