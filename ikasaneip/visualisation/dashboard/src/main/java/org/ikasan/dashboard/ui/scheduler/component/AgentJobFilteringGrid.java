@@ -40,7 +40,7 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.SchedulerService;
+import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
