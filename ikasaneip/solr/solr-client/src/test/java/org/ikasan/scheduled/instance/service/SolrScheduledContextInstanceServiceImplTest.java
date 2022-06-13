@@ -713,7 +713,7 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
 
         event.setSkipped(false);
 
-        SolrInternalEventDrivenJobImpl internalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
+        SolrInternalEventDrivenJobInstanceImpl internalEventDrivenJob = new SolrInternalEventDrivenJobInstanceImpl();
         internalEventDrivenJob.setSuccessfulReturnCodes(List.of("Code1", "Code2"));
         internalEventDrivenJob.setWorkingDirectory("workingDirectory/" + RandomStringUtils.randomAlphabetic(5));
         internalEventDrivenJob.setCommandLine("commandLine " + RandomStringUtils.randomAlphabetic(5));
