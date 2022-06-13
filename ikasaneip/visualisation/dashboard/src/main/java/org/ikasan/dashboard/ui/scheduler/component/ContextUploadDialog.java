@@ -25,7 +25,6 @@ import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -38,9 +37,8 @@ import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
@@ -61,7 +59,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
     private byte[] contextFile;
 
     private ScheduledContextInstanceService scheduledContextInstanceService;
-    private SchedulerService schedulerService;
+    private JobInitiationService jobInitiationService;
     private ScheduledContextService scheduledContextService;
     private InternalEventDrivenJobService internalEventDrivenJobService;
     private String queueDir;
@@ -74,13 +72,13 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
      * Constructor
      * TODO if this class stays around, it should leverage the base functionality in ContextInstanceServiceBase
      */
-    public ContextUploadDialog(ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
+    public ContextUploadDialog(ScheduledContextInstanceService scheduledContextInstanceService, JobInitiationService jobInitiationService,
                                ScheduledContextService scheduledContextService, InternalEventDrivenJobService internalEventDrivenJobService,
                                String queueDir, ModuleMetaDataService moduleMetaDataService, JobLockCacheService jobLockCacheService,
                                ContextParametersInstanceService contextParametersInstanceService, SchedulerJobInstanceService schedulerJobInstanceService)
     {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
-        this.schedulerService = schedulerService;
+        this.jobInitiationService = jobInitiationService;
         this.scheduledContextService = scheduledContextService;
         this.internalEventDrivenJobService = internalEventDrivenJobService;
         this.queueDir = queueDir;
@@ -168,7 +166,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog
 
                 // We add the listener to write initiation events to the agents.
                 contextMachine.setSchedulerJobInitiationEventRaisedListener(event
-                    -> schedulerService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event));
+                    -> jobInitiationService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event));
 
                 // We add a listener to broadcast any context state changes to interested parties.
                 contextMachine.addContextInstanceStateChangeEventListener(event
