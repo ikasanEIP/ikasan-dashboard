@@ -42,7 +42,6 @@ package org.ikasan.orchestration.service.context.recovery;
 
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRecoveryService;
@@ -52,12 +51,13 @@ import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroad
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
-import org.ikasan.spec.scheduled.rest.agent.client.ContextInstancePublicationService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +76,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
 
     public ContextInstanceRecoveryServiceImpl(String queueDirectory,
                                               ScheduledContextInstanceService scheduledContextInstanceService,
-                                              SchedulerService schedulerService,
+                                              JobInitiationService jobInitiationService,
                                               ModuleMetaDataService moduleMetadataService,
                                               InternalEventDrivenJobService internalEventDrivenJobService,
                                               ContextParametersInstanceService contextParametersInstanceService,
@@ -88,7 +88,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                               SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
         super(queueDirectory,
             scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
@@ -156,7 +156,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                 String message = String.format("Context [%s] does not have an instance. Creating instance now!", scheduledContextRecord.getContextName());
                 LOG.info(message);
                 executor.execute(new MissingContextInstanceRecoveryRunnable(
-                    this.queueDirectory, this.scheduledContextInstanceService, this.schedulerService, this.moduleMetadataService, this.internalEventDrivenJobService,
+                    this.queueDirectory, this.scheduledContextInstanceService, this.jobInitiationService, this.moduleMetadataService, this.internalEventDrivenJobService,
                     this.contextParametersInstanceService, this.contextParametersUpdateService, this.jobLockCacheService, this.scheduledContextService,
                     scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster
                 ));

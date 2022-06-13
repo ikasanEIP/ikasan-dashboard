@@ -6,6 +6,7 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.slf4j.Logger;
@@ -20,7 +21,7 @@ public class JobProvisionServiceImpl implements JobProvisionService {
     Logger logger = LoggerFactory.getLogger(JobProvisionServiceImpl.class);
 
     private SchedulerJobService schedulerJobService;
-    private JobProvisionModuleRestServiceImpl jobProvisionModuleRestService;
+    private JobProvisionModuleService jobProvisionModuleRestService;
     private ModuleMetaDataService moduleMetaDataService;
 
     /**
@@ -28,10 +29,10 @@ public class JobProvisionServiceImpl implements JobProvisionService {
      *
      * @param schedulerJobService
      * @param moduleMetaDataService
-     * @param jobProvisionModuleRestService
+     * @param jobProvisionModuleService
      */
     public JobProvisionServiceImpl(SchedulerJobService schedulerJobService, ModuleMetaDataService moduleMetaDataService,
-                                   JobProvisionModuleRestServiceImpl jobProvisionModuleRestService) {
+                                   JobProvisionModuleService jobProvisionModuleService) {
         this.schedulerJobService = schedulerJobService;
         if(this.schedulerJobService == null) {
             throw new IllegalArgumentException("schedulerJobService cannot be null!");
@@ -42,7 +43,7 @@ public class JobProvisionServiceImpl implements JobProvisionService {
             throw new IllegalArgumentException("moduleMetaDataService cannot be null!");
         }
 
-        this.jobProvisionModuleRestService = jobProvisionModuleRestService;
+        this.jobProvisionModuleRestService = jobProvisionModuleService;
         if(this.jobProvisionModuleRestService == null) {
             throw new IllegalArgumentException("jobProvisionModuleRestService cannot be null!");
         }
