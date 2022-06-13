@@ -3,6 +3,7 @@ package org.ikasan.dashboard.ui.scheduler.component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
@@ -142,34 +143,100 @@ public class SchedulerJobInstanceGridWidget extends Div {
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
-            Icon skip = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            Icon skip = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.skip-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             skip.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                this.skipJob(!schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED), schedulerJobInstanceRecord);
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog-header.skip-job", UI.getCurrent().getLocale()));
+                confirmDialog.setText(getTranslation("confirm-dialog-text.skip-job", UI.getCurrent().getLocale()));
+
+                confirmDialog.setCancelable(true);
+
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent ->
+                    this.skipJob(schedulerJobInstanceRecord));
             });
+
+            if(!(schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED))) {
+                skip.setVisible(true);
+            }
+            else {
+                skip.setVisible(false);
+            }
 
             layout.add(skip);
 
-            Icon hold = IconDecorator.decorate(new Icon(VaadinIcon.HAND), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
-            hold.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+            Icon enable = IconDecorator.decorate(new Icon(VaadinIcon.PLAY), getTranslation("tooltip.enable-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            enable.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog-header.enable-job", UI.getCurrent().getLocale()));
+                confirmDialog.setText(getTranslation("confirm-dialog-text.enable-job", UI.getCurrent().getLocale()));
+
+                confirmDialog.setCancelable(true);
+
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent ->
+                    this.enableJob(schedulerJobInstanceRecord));
             });
+
+            if(!schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED)) {
+                enable.setVisible(false);
+            }
+
+            layout.add(enable);
+
+            Icon hold = IconDecorator.decorate(new Icon(VaadinIcon.HAND), getTranslation("tooltip.hold-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            hold.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog-header.hold-job", UI.getCurrent().getLocale()));
+                confirmDialog.setText(getTranslation("confirm-dialog-text.hold-job", UI.getCurrent().getLocale()));
+
+                confirmDialog.setCancelable(true);
+
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent ->
+                    this.holdJob(schedulerJobInstanceRecord));
+            });
+
+            if(schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED)) {
+                hold.setVisible(false);
+            }
 
             layout.add(hold);
 
-            Icon release = IconDecorator.decorate(new Icon(VaadinIcon.HANDS_UP), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
-            hold.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+            Icon release = IconDecorator.decorate(new Icon(VaadinIcon.HANDS_UP), getTranslation("tooltip.release-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            release.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog-header.release-job", UI.getCurrent().getLocale()));
+                confirmDialog.setText(getTranslation("confirm-dialog-text.release-job", UI.getCurrent().getLocale()));
 
+                confirmDialog.setCancelable(true);
+
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent ->
+                    this.releaseJob(schedulerJobInstanceRecord));
             });
+
+            if(!schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD)) {
+                release.setVisible(false);
+            }
 
             layout.add(release);
 
-            Icon chart = IconDecorator.decorate(new Icon(VaadinIcon.CHART), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            Icon chart = IconDecorator.decorate(new Icon(VaadinIcon.CHART), getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-
+                UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
+                underConstructionDialog.open();
             });
 
             layout.add(chart);
 
-            Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             StreamResource streamResource = new StreamResource(schedulerJobInstanceRecord.getJobName()+".json"
                 , () -> {
                 try {
@@ -295,30 +362,125 @@ public class SchedulerJobInstanceGridWidget extends Div {
 
     }
 
-    private boolean skipJob(boolean skipFlag, SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
+    /**
+     * Helper method to skip the job.
+     *
+     * @return
+     */
+    private boolean skipJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
             (schedulerJobInstanceRecord.getContextInstanceId());
 
         if(contextMachine == null) {
-            NotificationHelper.showErrorNotification("This job is not part of an active context and cannot be skipped.");
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-skipped", UI.getCurrent().getLocale()));
             return false;
         }
 
         try {
-            contextMachine.skipJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getChildContextName(), skipFlag);
-            this.updateJobState(schedulerJobInstanceRecord, skipFlag ? InstanceStatus.SKIPPED : InstanceStatus.WAITING);
-            this.updateScheduledJob(schedulerJobInstanceRecord, this.authentication);
-            this.schedulerJobInstanceFilteringGrid.refreshItem(schedulerJobInstanceRecord);
+            contextMachine.skipJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier()
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), true);
+            this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.SKIPPED);
 
             this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
-                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName()
-                , skipFlag), this.authentication.getName());
-
-            this.updateJobState(schedulerJobInstanceRecord, schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus());
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true)
+                , this.authentication.getName());
         }
         catch (Exception e) {
             e.printStackTrace();
-            NotificationHelper.showErrorNotification("An error has occurred attempting to skip the job. Please contact Ikasan Support.");
+            NotificationHelper.showErrorNotification(getTranslation("error.skipped-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper method to enable the job.
+     *
+     * @return
+     */
+    private boolean enableJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-enabled", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.skipJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), false);
+            this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.WAITING);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), false)
+                , this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.enabled-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper method to hold the job.
+     *
+     * @return
+     */
+    private boolean holdJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-held", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.holdJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName());
+            this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.ON_HOLD);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_HELD, String.format("Agent Name[%s], Scheduled Job Name[%s], Held[%s]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true)
+                , this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.held-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper method to release the job.
+     *
+     * @return
+     */
+    private boolean releaseJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-released", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.releaseJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName());
+            this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.WAITING);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RELEASED, String.format("Agent Name[%s], Scheduled Job Name[%s], Released[%s]"
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true)
+                , this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.released-general-error", UI.getCurrent().getLocale()));
             return false;
         }
 
@@ -332,7 +494,6 @@ public class SchedulerJobInstanceGridWidget extends Div {
         schedulerJobInstanceRecord.setSchedulerJobInstance(schedulerJobInstance);
         updateScheduledJob(schedulerJobInstanceRecord, this.authentication);
 
-        // todo sort out context instance
         SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
             = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance,
             this.contextInstance, previousStatus, newStatus);
