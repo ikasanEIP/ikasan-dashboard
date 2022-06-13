@@ -33,12 +33,13 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.slf4j.Logger;
@@ -83,7 +84,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     private SystemEventLogger systemEventLogger;
 
     @Resource
-    private SchedulerService schedulerService;
+    private JobInitiationService jobInitiationService;
 
     @Resource
     private ScheduledContextInstanceService scheduledContextInstanceService;
@@ -96,6 +97,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     @Resource
     private SchedulerJobService schedulerJobService;
+
+    @Resource
+    private SchedulerService schedulerService;
 
     @Resource(name = "moduleMetadataService")
     private ModuleMetaDataService moduleMetaDataService;
@@ -238,7 +242,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             scheduledJobsBoard.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
 
-            this.contextDebugWidget = new ContextDebugWidget(this.scheduledContextInstanceService, this.schedulerService
+            this.contextDebugWidget = new ContextDebugWidget(this.scheduledContextInstanceService, this.jobInitiationService
                 , this.scheduledContextService, this.systemEventLogger, this.internalEventDrivenJobService, this.queueDirectory
                 , this.moduleMetaDataService, this.jobLockCacheService, this.contextInstanceService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.schedulerJobService,

@@ -48,7 +48,6 @@ import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
@@ -57,19 +56,20 @@ import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBr
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
-import org.ikasan.spec.scheduled.rest.agent.client.ContextInstancePublicationService;
 
 public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRegistrationService {
     private static final Log LOG = LogFactory.getLog(ContextInstanceRegistrationServiceImpl.class);
 
     public ContextInstanceRegistrationServiceImpl(String queueDirectory,
                                                   ScheduledContextInstanceService scheduledContextInstanceService,
-                                                  SchedulerService schedulerService,
+                                                  JobInitiationService jobInitiationService,
                                                   ModuleMetaDataService moduleMetadataService,
                                                   InternalEventDrivenJobService internalEventDrivenJobService,
                                                   ContextParametersInstanceService contextParametersInstanceService,
@@ -81,7 +81,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                                                   SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
         super(queueDirectory,
             scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,

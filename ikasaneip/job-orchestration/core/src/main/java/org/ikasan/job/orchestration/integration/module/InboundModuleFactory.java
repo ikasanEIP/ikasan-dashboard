@@ -43,8 +43,6 @@ package org.ikasan.job.orchestration.integration.module;
 import org.ikasan.builder.BuilderFactory;
 import org.ikasan.job.orchestration.integration.inbound.component.ScheduledProcessEventInboundFlowComponentFactory;
 import org.ikasan.job.orchestration.integration.inbound.flow.ScheduledProcessEventInboundFlowFactory;
-import org.ikasan.job.orchestration.integration.outbound.component.JobInitiationEventOutboundFlowComponentFactory;
-import org.ikasan.job.orchestration.integration.outbound.flow.JobInitiationEventOutboundFlowFactory;
 import org.ikasan.module.ConfiguredModuleConfiguration;
 import org.ikasan.spec.flow.Flow;
 import org.ikasan.spec.module.Module;
@@ -66,8 +64,7 @@ import javax.annotation.Resource;
 @ImportResource( {
     "classpath:ikasan-transaction-pointcut-ikasanMessageListener.xml"
 } )
-@Import({ ScheduledProcessEventInboundFlowComponentFactory.class, ScheduledProcessEventInboundFlowFactory.class
-    , JobInitiationEventOutboundFlowComponentFactory.class, JobInitiationEventOutboundFlowFactory.class})
+@Import({ ScheduledProcessEventInboundFlowComponentFactory.class, ScheduledProcessEventInboundFlowFactory.class})
 public class InboundModuleFactory
 {
     @Value( "${module.name}" )

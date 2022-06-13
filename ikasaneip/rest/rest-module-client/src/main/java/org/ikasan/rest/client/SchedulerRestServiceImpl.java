@@ -1,7 +1,7 @@
 package org.ikasan.rest.client;
 
-import org.ikasan.spec.scheduled.SchedulerService;
-import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
+
+import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.quartz.Trigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +24,6 @@ public class SchedulerRestServiceImpl extends ModuleRestService implements Sched
 
     public static final String TRIGGER_URL = "/rest/scheduler";
     public static final String FLOW_SCHEDULE_FIRE_NOW_URL = "/rest/scheduler/{moduleName}/{flowName}";
-    public static final String SCHEDULER_JOB_INITIATION_URL = "/rest/schedulerJobInitiation";
 
     public SchedulerRestServiceImpl(Environment environment, HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
         super(environment, httpComponentsClientHttpRequestFactory);
@@ -68,15 +67,5 @@ public class SchedulerRestServiceImpl extends ModuleRestService implements Sched
                 + " with response [{"+e.getLocalizedMessage()+"}]");
             return false;
         }
-    }
-
-    @Override
-    public void raiseSchedulerJobInitiationEvent(String contextUrl, SchedulerJobInitiationEvent event) {
-        HttpHeaders headers = createHttpHeaders();
-        HttpEntity entity = new HttpEntity(event, headers);
-        String url = contextUrl + SCHEDULER_JOB_INITIATION_URL;
-
-        logger.info("Context URL[{}] Payload[{}] ", url, event);
-        restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
     }
 }

@@ -3,12 +3,12 @@ package org.ikasan.job.orchestration.rest.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
+import org.ikasan.job.orchestration.rest.client.exception.SchedulerAgentRestClientException;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.rest.client.ModuleRestService;
 import org.ikasan.rest.client.SchedulerRestServiceImpl;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobWrapper;
-import org.ikasan.spec.scheduled.rest.agent.client.JobProvisionService;
-import org.ikasan.spec.scheduled.rest.agent.client.exception.SchedulerAgentRestClientException;
+import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
@@ -17,7 +17,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
-public class JobProvisionModuleRestServiceImpl extends ModuleRestService implements JobProvisionService {
+public class JobProvisionModuleRestServiceImpl extends ModuleRestService implements JobProvisionModuleService {
 
     Logger logger = LoggerFactory.getLogger(SchedulerRestServiceImpl.class);
 
