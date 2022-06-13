@@ -26,12 +26,12 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.slf4j.Logger;
@@ -78,7 +78,7 @@ public class ContextDebugWidget extends Div {
     /**
      * Constructor
      */
-    public ContextDebugWidget(ScheduledContextInstanceService scheduledContextInstanceService, SchedulerService schedulerService,
+    public ContextDebugWidget(ScheduledContextInstanceService scheduledContextInstanceService, JobInitiationService jobInitiationService,
                               ScheduledContextService scheduledContextService, SystemEventLogger systemEventLogger,
                               InternalEventDrivenJobService internalEventDrivenJobService, String queueDir,
                               ModuleMetaDataService moduleMetaDataService, JobLockCacheService jobLockCacheService,
@@ -175,7 +175,7 @@ public class ContextDebugWidget extends Div {
         Button addContextButton = new Button("Add Context");
         addContextButton.addClickListener(buttonClickEvent -> {
             ContextUploadDialog contextUploadDialog = new ContextUploadDialog(scheduledContextInstanceService,
-                schedulerService, this.scheduledContextService, this.internalEventDrivenJobService, this.queueDir, moduleMetaDataService
+                jobInitiationService, this.scheduledContextService, this.internalEventDrivenJobService, this.queueDir, moduleMetaDataService
                 , this.jobLockCacheService, this.contextParametersInstanceService, schedulerJobInstanceService);
             contextUploadDialog.open();
 

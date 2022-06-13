@@ -2,7 +2,7 @@ package org.ikasan.job.orchestration.rest.client;
 
 import org.ikasan.rest.client.ModuleRestService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.rest.agent.client.ContextInstancePublicationService;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;

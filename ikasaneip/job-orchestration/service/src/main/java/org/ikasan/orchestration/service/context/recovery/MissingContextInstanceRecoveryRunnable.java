@@ -3,17 +3,17 @@ package org.ikasan.orchestration.service.context.recovery;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
-import org.ikasan.spec.scheduled.rest.agent.client.ContextInstancePublicationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +24,7 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
 
     public MissingContextInstanceRecoveryRunnable(String queueDirectory,
                                                   ScheduledContextInstanceService scheduledContextInstanceService,
-                                                  SchedulerService schedulerService,
+                                                  JobInitiationService jobInitiationService,
                                                   ModuleMetaDataService moduleMetadataService,
                                                   InternalEventDrivenJobService internalEventDrivenJobService,
                                                   ContextParametersInstanceService contextParametersInstanceService,
@@ -37,7 +37,7 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
                                                   SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
         super(queueDirectory,
             scheduledContextInstanceService,
-            schedulerService, moduleMetadataService,
+            jobInitiationService, moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
             contextInstancePublicationService,

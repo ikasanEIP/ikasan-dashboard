@@ -2,7 +2,7 @@ package org.ikasan.rest.client;
 
 import org.ikasan.configurationService.metadata.JsonConfigurationMetaDataProvider;
 import org.ikasan.spec.module.client.*;
-import org.ikasan.spec.scheduled.SchedulerService;
+import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
