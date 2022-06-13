@@ -5,16 +5,16 @@ import org.ikasan.orchestration.service.context.register.ContextInstanceRegistra
 import org.ikasan.orchestration.service.context.reset.ContextResetServiceImpl;
 import org.ikasan.orchestration.service.context.status.ContextStatusServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
-import org.ikasan.spec.scheduled.rest.agent.client.ContextInstancePublicationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +28,7 @@ public class ContextServiceAutoConfiguration {
     @Bean
     public ContextInstanceRecoveryServiceImpl contextInstanceRecoveryService(
         ScheduledContextInstanceService scheduledContextInstanceService,
-        SchedulerService schedulerService,
+        JobInitiationService jobInitiationService,
         ModuleMetaDataService moduleMetadataService,
         InternalEventDrivenJobService internalEventDrivenJobService,
         ContextParametersInstanceService contextParametersInstanceService,
@@ -41,7 +41,7 @@ public class ContextServiceAutoConfiguration {
 
         return new ContextInstanceRecoveryServiceImpl(queueDirectory,
             scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
@@ -57,7 +57,7 @@ public class ContextServiceAutoConfiguration {
     @Bean
     public ContextInstanceRegistrationServiceImpl contextInstanceRegistrationService(
         ScheduledContextInstanceService scheduledContextInstanceService,
-        SchedulerService schedulerService,
+        JobInitiationService jobInitiationService,
         ModuleMetaDataService moduleMetadataService,
         InternalEventDrivenJobService internalEventDrivenJobService,
         ContextParametersInstanceService contextParametersInstanceService,
@@ -70,7 +70,7 @@ public class ContextServiceAutoConfiguration {
 
         return new ContextInstanceRegistrationServiceImpl(queueDirectory,
             scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,

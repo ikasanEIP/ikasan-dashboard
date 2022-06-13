@@ -9,22 +9,20 @@ import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFil
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
-import org.ikasan.spec.scheduled.rest.agent.client.ContextInstancePublicationService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +38,7 @@ public abstract class ContextInstanceServiceBase {
 
     protected final String queueDirectory;
     protected final ScheduledContextInstanceService scheduledContextInstanceService;
-    protected final SchedulerService schedulerService;
+    protected final JobInitiationService jobInitiationService;
     protected final ModuleMetaDataService moduleMetadataService;
     protected final InternalEventDrivenJobService internalEventDrivenJobService;
     protected final ContextParametersInstanceService contextParametersInstanceService;
@@ -56,7 +54,7 @@ public abstract class ContextInstanceServiceBase {
 
     public ContextInstanceServiceBase(String queueDirectory,
                                       ScheduledContextInstanceService scheduledContextInstanceService,
-                                      SchedulerService schedulerService,
+                                      JobInitiationService jobInitiationService,
                                       ModuleMetaDataService moduleMetadataService,
                                       InternalEventDrivenJobService internalEventDrivenJobService,
                                       ContextParametersInstanceService contextParametersInstanceService,
@@ -74,8 +72,8 @@ public abstract class ContextInstanceServiceBase {
         if (this.scheduledContextInstanceService == null) {
             throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
         }
-        this.schedulerService = schedulerService;
-        if (this.schedulerService == null) {
+        this.jobInitiationService = jobInitiationService;
+        if (this.jobInitiationService == null) {
             throw new IllegalArgumentException("schedulerService cannot be null!");
         }
         this.moduleMetadataService = moduleMetadataService;
@@ -143,7 +141,7 @@ public abstract class ContextInstanceServiceBase {
 
         // We add the listener to write initiation events to the agents.
         contextMachine.setSchedulerJobInitiationEventRaisedListener(event ->
-            schedulerService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event));
+            jobInitiationService.raiseSchedulerJobInitiationEvent(event.getAgentUrl(), event));
 
         // We add a listener to broadcast any context state changes to interested parties.
         contextMachine.addContextInstanceStateChangeEventListener(event ->

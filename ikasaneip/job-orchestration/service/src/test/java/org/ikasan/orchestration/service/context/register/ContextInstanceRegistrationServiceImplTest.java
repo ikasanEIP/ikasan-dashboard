@@ -16,7 +16,6 @@ import org.ikasan.orchestration.service.utils.CustomBackFillerMatcher;
 import org.ikasan.orchestration.service.utils.InternalEventDrivenJobTestSearchResults;
 import org.ikasan.orchestration.service.utils.TestUtils;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
@@ -24,13 +23,13 @@ import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEv
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
-import org.ikasan.spec.scheduled.rest.agent.client.ContextInstancePublicationService;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
 import org.junit.Before;
@@ -59,7 +58,7 @@ public class ContextInstanceRegistrationServiceImplTest {
     private ScheduledContextInstanceService scheduledContextInstanceService;
 
     @Mock
-    private SchedulerService schedulerService;
+    private JobInitiationService jobInitiationService;
 
     @Mock
     private InternalEventDrivenJobService internalEventDrivenJobService;
@@ -98,7 +97,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         contextInstanceRegistrationService = new ContextInstanceRegistrationServiceImpl(
             "bigQueue/dir",
             scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
@@ -132,7 +131,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         verifyNoMoreInteractions(
             scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
@@ -189,7 +188,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         verifyNoMoreInteractions(
             scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
@@ -280,7 +279,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         verifyNoMoreInteractions(
             scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
@@ -353,7 +352,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         verifyNoMoreInteractions(
             scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
@@ -395,7 +394,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         verifyNoMoreInteractions(
             scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
@@ -436,7 +435,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         verifyNoMoreInteractions(
             scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,

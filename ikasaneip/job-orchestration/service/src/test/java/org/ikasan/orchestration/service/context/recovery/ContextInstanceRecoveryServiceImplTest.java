@@ -10,9 +10,11 @@ import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.orchestration.service.utils.*;
+import org.ikasan.orchestration.service.utils.ContextInstanceTestSearchResults;
+import org.ikasan.orchestration.service.utils.InternalEventDrivenJobTestSearchResults;
+import org.ikasan.orchestration.service.utils.ScheduledContextRecordTestSearchResults;
+import org.ikasan.orchestration.service.utils.TestUtils;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.scheduled.SchedulerService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
@@ -20,23 +22,22 @@ import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEv
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
-import org.ikasan.spec.scheduled.rest.agent.client.ContextInstancePublicationService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -46,7 +47,6 @@ import java.util.concurrent.ExecutorService;
 
 import static org.ikasan.orchestration.service.utils.InternalEventDrivenJobTestSearchResults.AGENT_NAME;
 import static org.ikasan.orchestration.service.utils.ScheduledContextRecordTestSearchResults.CONTEXT_NAME;
-import static org.ikasan.orchestration.service.utils.TestUtils.AGENT_URL;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -69,7 +69,7 @@ public class ContextInstanceRecoveryServiceImplTest {
     private ContextParametersInstanceService contextParametersInstanceService;
 
     @Mock
-    private SchedulerService schedulerService;
+    private JobInitiationService jobInitiationService;
 
     @Mock
     private ModuleMetaDataService moduleMetadataService;
@@ -101,7 +101,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         contextInstanceRecoveryServiceImpl = new ContextInstanceRecoveryServiceImpl(
             "bigQueue/dir",
             scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
@@ -142,7 +142,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(scheduledContextService).findAll();
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
@@ -185,7 +185,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(executor).execute(any(MissingContextInstanceRecoveryRunnable.class));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
@@ -222,7 +222,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(scheduledContextService).findAll();
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
@@ -286,7 +286,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(scheduledContextInstanceService, times(3)).save(any(ScheduledContextInstanceRecord.class));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
@@ -345,7 +345,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
@@ -380,7 +380,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(scheduledContextService).findAll();
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
-            schedulerService,
+            jobInitiationService,
             moduleMetadataService,
             internalEventDrivenJobService,
             contextParametersInstanceService,
