@@ -30,6 +30,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateSearchFilter;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -47,6 +48,7 @@ public class ContextInstanceWidget extends Div {
     private SchedulerJobInstanceGridWidget schedulerJobInstanceGridWidget;
     private ContextTemplateStatisticsWidget contextTemplateStatisticsWidget;
     private ContextInstanceAuditWidget contextInstanceAuditWidget;
+    private JobInitiationService jobInitiationService;
 
     private TextField contextInstanceId;
     private TextField contextInstanceStatus;
@@ -73,13 +75,14 @@ public class ContextInstanceWidget extends Div {
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
-                                 SchedulerJobInstanceService schedulerJobInstanceService) {
+                                 SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.contextInstance = contextInstance;
         this.contextTemplate = contextTemplate;
+        this.jobInitiationService = jobInitiationService;
 
         this.init(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
@@ -241,7 +244,8 @@ public class ContextInstanceWidget extends Div {
                                                      MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobInstanceGridWidget = new SchedulerJobInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
-            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextInstance, this.schedulerJobInstanceService);
+            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextInstance, this.schedulerJobInstanceService,
+            this.jobInitiationService);
         this.schedulerJobInstanceGridWidget.setWidthFull();
         this.schedulerJobInstanceGridWidget.setHeight("75vh");
         this.schedulerJobInstanceGridWidget.setVisible(false);

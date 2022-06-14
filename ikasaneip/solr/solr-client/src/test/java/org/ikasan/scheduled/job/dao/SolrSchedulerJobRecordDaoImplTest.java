@@ -275,7 +275,6 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
-    @Ignore
     public void test_save_for_context() {
         SolrFileEventDrivenJobDaoImpl solrFileEventDrivenJobRecordDao = new SolrFileEventDrivenJobDaoImpl();
         solrFileEventDrivenJobRecordDao.setSolrUsername("ikasan");
@@ -312,7 +311,7 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             job.setContextId("CONTEXT-369160711");
             if(i.get() %3 == 0) {
                 SolrFileEventDrivenJobImpl solrFileEventDrivenJob = new SolrFileEventDrivenJobImpl();
-                solrFileEventDrivenJob.setAgentName(job.getAgentName());
+                solrFileEventDrivenJob.setAgentName("scheduler-agent");
                 solrFileEventDrivenJob.setJobName(job.getJobName());
                 solrFileEventDrivenJob.setIdentifier(job.getIdentifier());
                 solrFileEventDrivenJob.setContextId(job.getContextId());
@@ -333,7 +332,7 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             }
             else if(i.get() %2 == 0) {
                 SolrQuartzScheduleDrivenJobImpl solrQuartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
-                solrQuartzScheduleDrivenJob.setAgentName(job.getAgentName());
+                solrQuartzScheduleDrivenJob.setAgentName("scheduler-agent");
                 solrQuartzScheduleDrivenJob.setJobName(job.getJobName());
 
                 solrQuartzScheduleDrivenJob.setContextId(job.getContextId());
@@ -351,7 +350,7 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
             }
             else {
                 SolrInternalEventDrivenJobImpl solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
-                solrInternalEventDrivenJob.setAgentName(job.getAgentName());
+                solrInternalEventDrivenJob.setAgentName("scheduler-agent");
                 solrInternalEventDrivenJob.setJobName(job.getJobName());
                 solrInternalEventDrivenJob.setIdentifier(job.getIdentifier());
                 solrInternalEventDrivenJob.setContextId(job.getContextId());
@@ -361,14 +360,18 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
                 solrInternalEventDrivenJob.setWorkingDirectory("/opt/prd/workingDir");
 
                 SolrContextParameterImpl contextParameter1 = new SolrContextParameterImpl();
-                contextParameter1.setName("businessDate");
+                contextParameter1.setName("BusinessDate");
                 contextParameter1.setType("java.lang.String");
 
                 SolrContextParameterImpl contextParameter2 = new SolrContextParameterImpl();
-                contextParameter2.setName("aNumber");
-                contextParameter2.setType("java.lang.Integer");
+                contextParameter2.setName("ErrorSearch");
+                contextParameter2.setType("java.lang.String");
 
-                solrInternalEventDrivenJob.setContextParameters(List.of(contextParameter1, contextParameter2));
+                SolrContextParameterImpl contextParameter3 = new SolrContextParameterImpl();
+                contextParameter3.setName("UseBusinessDate");
+                contextParameter3.setType("java.lang.String");
+
+                solrInternalEventDrivenJob.setContextParameters(List.of(contextParameter1, contextParameter2, contextParameter3));
 
                 SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
                 solrInternalEventDrivenJobRecord.setAgentName(job.getAgentName());
