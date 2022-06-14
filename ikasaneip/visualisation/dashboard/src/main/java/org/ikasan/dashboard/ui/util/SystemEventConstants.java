@@ -64,4 +64,5 @@ public class SystemEventConstants
     public static final String SCHEDULED_JOB_ENABLED = "Scheduled job skipped";
     public static final String SCHEDULED_JOB_HELD = "Scheduled job held";
     public static final String SCHEDULED_JOB_RELEASED = "Scheduled job released";
+    public static final String SCHEDULED_JOB_SUBMITTED = "Scheduled job manually submitted";
 }
