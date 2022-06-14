@@ -20,6 +20,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +76,9 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
     @Resource
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
+    @Resource
+    private JobInitiationService jobInitiationService;
+
     private ContextInstanceWidget contextInstanceWidget;
 
     private ContextTemplate contextTemplate;
@@ -96,7 +100,7 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
     private void init() {
         this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService);
+            , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService);
 
         H2 contextTemplateManagementLabel = new H2(String.format(getTranslation("label.context-instance", UI.getCurrent().getLocale())));
         this.add(contextTemplateManagementLabel, this.contextInstanceWidget);

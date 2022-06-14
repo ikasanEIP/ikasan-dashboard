@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> {
 
-    private static final String PASS_THROUGH = "PASS_THROUGH";
+    public static final String PASS_THROUGH = "PASS_THROUGH";
 
     private Logger logger = LoggerFactory.getLogger(JobLogicMachine.class);
 
