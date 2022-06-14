@@ -275,6 +275,7 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
+    @Ignore
     public void test_save_for_context() {
         SolrFileEventDrivenJobDaoImpl solrFileEventDrivenJobRecordDao = new SolrFileEventDrivenJobDaoImpl();
         solrFileEventDrivenJobRecordDao.setSolrUsername("ikasan");
