@@ -26,7 +26,6 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
@@ -36,16 +35,16 @@ import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeE
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrInternalEventDrivenJobInstanceImpl;
-import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.search.SearchResults;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -107,6 +106,10 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
     private ContextInstance contextInstance;
 
+    private ModuleMetaDataService moduleMetaDataService;
+
+    private JobInitiationService jobInitiationService;
+
 
     /**
      * Constructor
@@ -122,7 +125,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     public InternalEventDrivenJobInstanceDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                                 ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                                 MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
-                                                SchedulerJobInstanceService schedulerJobInstanceService, ContextInstance contextInstance) {
+                                                SchedulerJobInstanceService schedulerJobInstanceService, ContextInstance contextInstance,
+                                                JobInitiationService jobInitiationService, ModuleMetaDataService moduleMetaDataService) {
         super.showResize(false);
         super.title.setText(getTranslation("label.command-execution-job-instance", UI.getCurrent().getLocale()));
 
@@ -134,6 +138,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.systemEventLogger = systemEventLogger;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
         this.contextInstance = contextInstance;
+        this.jobInitiationService = jobInitiationService;
+        this.moduleMetaDataService = moduleMetaDataService;
 
         this.internalEventDrivenJobInstance = new SolrInternalEventDrivenJobInstanceImpl();
 
@@ -151,7 +157,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
         layout.setMargin(false);
-        layout.add(this.createConfigurationForm());
+        layout.add(this.createJobForm());
         layout.getStyle().set("padding-top", "0px");
         layout.getStyle().set("padding-bottom", "10px");
         super.content.getStyle().set("padding-top", "0px");
@@ -163,7 +169,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
      *
      * @return
      */
-    private FormLayout createConfigurationForm() {
+    private FormLayout createJobForm() {
         formLayout = new FormLayout();
         formLayout.getStyle().set("padding-top", "0px");
         this.statusDiv = new SchedulerStatusDiv();
@@ -289,8 +295,10 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         submitButton.setIconAfterText(true);
 
         submitButton.addClickListener(event -> {
-            UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
-            underConstructionDialog.open();
+            InternalEventDrivenJobSubmissionDialog internalEventDrivenJobSubmissionDialog = new InternalEventDrivenJobSubmissionDialog(this.systemEventLogger,
+                this.moduleMetaDataService, this.schedulerJobInstanceService, this.contextInstance, this.jobInitiationService, this.internalEventDrivenJobInstance);
+
+            internalEventDrivenJobSubmissionDialog.open();
         });
 
         HorizontalLayout actionsLayout = new HorizontalLayout();
@@ -423,10 +431,12 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
         HorizontalLayout jobActionsButtonLayout = new HorizontalLayout();
         jobActionsButtonLayout.add(executionDaysButton, parametersButton, successfulReturnCodesButton);
-        VerticalLayout cbLayout = new VerticalLayout();
-        cbLayout.setWidth("100%");
-        cbLayout.add(jobActionsButtonLayout);
-        cbLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.START, jobActionsButtonLayout);
+        jobActionsButtonLayout.setMargin(false);
+        VerticalLayout wrapperLayout = new VerticalLayout();
+        wrapperLayout.setWidth("100%");
+        wrapperLayout.add(jobActionsButtonLayout);
+        wrapperLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.START, jobActionsButtonLayout);
+        wrapperLayout.setMargin(false);
 
         HorizontalLayout horizontalLayout = new HorizontalLayout();
         horizontalLayout.add(buttonWrapper, expandButton);
@@ -435,8 +445,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         newButtonLayout.setWidth("100%");
         newButtonLayout.add(horizontalLayout);
         newButtonLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, horizontalLayout);
+        newButtonLayout.setMargin(false);
 
-        formLayout.add(cbLayout, newButtonLayout);
+        formLayout.add(wrapperLayout, newButtonLayout);
 
         this.commandLineTa = new AceEditor();
         this.commandLineTa.setHeight("450px");
