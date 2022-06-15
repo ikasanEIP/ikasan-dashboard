@@ -178,7 +178,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
         verify(jobLockCacheService).get();
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -269,7 +269,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
         verify(jobLockCacheService).get();
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -341,7 +341,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
         verify(jobLockCacheService, times(1)).get();
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
