@@ -296,7 +296,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
         submitButton.addClickListener(event -> {
             InternalEventDrivenJobSubmissionDialog internalEventDrivenJobSubmissionDialog = new InternalEventDrivenJobSubmissionDialog(this.systemEventLogger,
-                this.moduleMetaDataService, this.schedulerJobInstanceService, this.contextInstance, this.jobInitiationService, this.internalEventDrivenJobInstance);
+                this.moduleMetaDataService, this.contextInstance, this.jobInitiationService, this.internalEventDrivenJobInstance);
 
             internalEventDrivenJobSubmissionDialog.open();
         });

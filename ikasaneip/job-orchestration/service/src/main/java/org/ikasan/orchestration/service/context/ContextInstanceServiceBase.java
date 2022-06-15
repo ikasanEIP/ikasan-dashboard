@@ -127,8 +127,8 @@ public abstract class ContextInstanceServiceBase {
         scheduledContextInstanceService.save(scheduledContextInstanceRecord);
     }
 
-    protected void initialiseContextMachine(ContextTemplate context, ContextInstance instance, boolean isRecoveryDueToMissedTimeWindow) throws Exception {
-        if(isRecoveryDueToMissedTimeWindow) {
+    protected void initialiseContextMachine(ContextTemplate context, ContextInstance instance, boolean isInitialContextInstantiation) throws Exception {
+        if(isInitialContextInstantiation) {
             schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(instance);
         }
 
@@ -155,8 +155,9 @@ public abstract class ContextInstanceServiceBase {
         contextMachine.addSchedulerJobStateChangeEventListener(event ->
             this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
 
-        if (isRecoveryDueToMissedTimeWindow) {
+        if (isInitialContextInstantiation) {
             populateParamsWithAgent(instance, agents);
+            this.saveContextInstance(instance, InstanceStatus.WAITING);
         }
 
         ContextMachineCache.instance().put(contextMachine);

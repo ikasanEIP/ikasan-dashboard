@@ -52,6 +52,8 @@ public class ContextTemplateManagementWidget extends Div {
     private SchedulerJobGridWidget schedulerJobGridWidget;
     private ContextTemplateStatisticsWidget contextTemplateStatisticsWidget;
 
+    private JobInitiationService jobInitiationService;
+
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
@@ -82,6 +84,7 @@ public class ContextTemplateManagementWidget extends Div {
         this.schedulerJobInstanceService = schedulerJobInstanceService;
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.contextTemplate = contextTemplate;
+        this.jobInitiationService = jobInitiationService;
 
         this.init(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, jobInitiationService);
@@ -271,7 +274,7 @@ public class ContextTemplateManagementWidget extends Div {
                                                      MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobGridWidget = new SchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
-            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate);
+            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate, this.jobInitiationService);
         this.schedulerJobGridWidget.setWidthFull();
         this.schedulerJobGridWidget.setHeight("75vh");
         this.schedulerJobGridWidget.setVisible(false);

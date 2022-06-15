@@ -20,6 +20,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisual
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
+import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -27,6 +28,9 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -74,6 +78,7 @@ public class ContextDebugWidget extends Div {
     private Checkbox dryRunModeCheckBox = new Checkbox("Dry run mode");
     private boolean contextChanged = false;
 
+    private ScheduledContextInstanceService scheduledContextInstanceService;
 
     /**
      * Constructor
@@ -96,6 +101,7 @@ public class ContextDebugWidget extends Div {
         this.contextParametersInstanceService = contextParametersInstanceService;
         this.internalEventDrivenJobService = internalEventDrivenJobService;
         this.queueDir = queueDir;
+        this.scheduledContextInstanceService = scheduledContextInstanceService;
 
         this.schedulerVisualisation = new SchedulerVisualisation(".", moduleMetaDataService, scheduledProcessManagementService, configurationRestService,
             moduleControlRestService,  metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, schedulerJobInstanceService);
@@ -203,8 +209,10 @@ public class ContextDebugWidget extends Div {
                 contextMachine.resetContextInstance();
                 ContextMachineCache.instance().put(contextMachine);
 
+
                 this.schedulerVisualisation.createSchedulerVisualisation(contextMachine.getContext());
                 this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextMachine.getContext());
+
                 if(tabs.getSelectedTab().equals(this.fullContextInstance)) {
                     if(this.contextInstances.getValue() != null && !this.contextInstances.getValue().isEmpty()){
                         this.aceEditor.setValue(this.objectMapper.writerWithDefaultPrettyPrinter()
@@ -332,6 +340,17 @@ public class ContextDebugWidget extends Div {
 
         this.setSizeFull();
         this.add(div);
+    }
+
+    protected void saveContextInstance(ContextInstance contextInstance, InstanceStatus instanceStatus) {
+        contextInstance.setStatus(instanceStatus);
+        ScheduledContextInstanceRecord scheduledContextInstanceRecord = new ScheduledContextInstanceRecordImpl();
+        scheduledContextInstanceRecord.setContextName(contextInstance.getName());
+        scheduledContextInstanceRecord.setContextInstance(contextInstance);
+        scheduledContextInstanceRecord.setTimestamp(contextInstance.getCreatedDateTime());
+        scheduledContextInstanceRecord.setStatus(contextInstance.getStatus().name());
+
+        scheduledContextInstanceService.save(scheduledContextInstanceRecord);
     }
 
     protected void initialiseEditor()

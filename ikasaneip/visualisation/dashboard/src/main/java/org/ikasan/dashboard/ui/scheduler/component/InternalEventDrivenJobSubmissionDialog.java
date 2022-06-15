@@ -43,7 +43,6 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
     private InternalEventDrivenJobInstance internalEventDrivenJobInstance;
 
     private SystemEventLogger systemEventLogger;
-    private SchedulerJobInstanceService schedulerJobInstanceService;
     private IkasanAuthentication authentication;
     private ContextInstance contextInstance;
     private JobInitiationService jobInitiationService;
@@ -56,24 +55,20 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
      *
      * @param systemEventLogger
      * @param moduleMetaDataService
-     * @param schedulerJobInstanceService
      * @param contextInstance
      * @param jobInitiationService
      * @param internalEventDrivenJobInstance
      */
     public InternalEventDrivenJobSubmissionDialog(SystemEventLogger systemEventLogger, ModuleMetaDataService moduleMetaDataService,
-                                                  SchedulerJobInstanceService schedulerJobInstanceService, ContextInstance contextInstance,
-                                                  JobInitiationService jobInitiationService, InternalEventDrivenJobInstance internalEventDrivenJobInstance) {
+                                                  ContextInstance contextInstance, JobInitiationService jobInitiationService,
+                                                  InternalEventDrivenJobInstance internalEventDrivenJobInstance) {
         super.showResize(false);
         super.title.setText(getTranslation("label.command-execution-job-submission", UI.getCurrent().getLocale()));
 
         this.systemEventLogger = systemEventLogger;
         this.moduleMetaDataService = moduleMetaDataService;
-        this.schedulerJobInstanceService = schedulerJobInstanceService;
         this.contextInstance = contextInstance;
         this.jobInitiationService = jobInitiationService;
-        this.internalEventDrivenJobInstance = internalEventDrivenJobInstance;
-
         this.internalEventDrivenJobInstance = internalEventDrivenJobInstance;
 
         authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
