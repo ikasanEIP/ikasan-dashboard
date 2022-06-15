@@ -158,7 +158,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
         verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
 
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals(contextName, actualContextInstanceRecord.getContextName());
         assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
@@ -213,7 +213,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
         // verify
         verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
         verify(schedulerJobInstanceService).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
-        verify(scheduledContextInstanceService).save(any());
+        verify(scheduledContextInstanceService, times(2)).save(any());
         verify(jobLockCacheService).get();
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
