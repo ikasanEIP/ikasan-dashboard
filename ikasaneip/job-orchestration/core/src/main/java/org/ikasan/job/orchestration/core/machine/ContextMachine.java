@@ -32,7 +32,6 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,19 +62,19 @@ public class ContextMachine {
     private int attempts;
     private long maxWait;
     private DryRunParameters dryRunParameters;
-    private Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs;
+    private Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstances;
     private Map<String, ModuleMetaData> agents;
     private String queueDir;
     private JobLockCache jobLockCache;
 
     // todo clean up the transient queues once a context is complete.
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
-                          Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs, String queueDir,
+                          Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstances, String queueDir,
                           Map<String, ModuleMetaData> agents, JobLockCache jobLockCache,
                           ContextParametersInstanceService contextParametersInstanceService) {
         this.context = context;
         this.contextInstance = contextInstance;
-        this.internalEventDrivenJobs = internalEventDrivenJobs;
+        this.internalEventDrivenJobInstances = internalEventDrivenJobInstances;
         this.agents = agents;
         this.queueDir = queueDir;
         this.statusConverter = new ContextInstanceToContextInstanceStatusConverter();
@@ -119,8 +118,14 @@ public class ContextMachine {
     public void resetContextInstance() throws JsonProcessingException {
         if(this.context != null) {
             ContextService contextService = new ContextService();
-            contextInstance = contextService.getContextInstance(contextService.getContextTemplateString(this.context));
-            contextInstance.setId(UUID.randomUUID().toString());
+            this.contextInstance = contextService.getContextInstance(contextService.getContextTemplateString(this.context));
+            this.contextInstance.setId(UUID.randomUUID().toString());
+
+            this.internalEventDrivenJobInstances.entrySet().forEach(entry -> {
+                entry.getValue().setScheduledProcessEvent(null);
+                entry.getValue().setContextInstanceId(this.contextInstance.getId());
+                entry.getValue().setStatus(InstanceStatus.WAITING);
+            });
 
             this.saveContext();
             List<JobLock> jobLocks = this.context.getJobLocks();
@@ -154,7 +159,7 @@ public class ContextMachine {
         this.schedulerJobInitiationEventRaisedListener = null;
         this.context = null;
         this.dryRunParameters = null;
-        this.internalEventDrivenJobs = null;
+        this.internalEventDrivenJobInstances = null;
         this.agents = null;
         this.queueDir = null;
         this.jobLockCache = null;
@@ -479,7 +484,7 @@ public class ContextMachine {
              // Delegate to the JobLogicMachine to determine if any SchedulerJobInitiationEvents are
              // required to be raised.
              List<SchedulerJobInitiationEvent> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
-                 , contextInstance, this.dryRunParameters, this.internalEventDrivenJobs, this.contextInstance.getContextParameters()
+                 , contextInstance, this.dryRunParameters, this.internalEventDrivenJobInstances, this.contextInstance.getContextParameters()
                  , this.contextInstance, lockRaised);
 
              // Update the context status after event received and attached
