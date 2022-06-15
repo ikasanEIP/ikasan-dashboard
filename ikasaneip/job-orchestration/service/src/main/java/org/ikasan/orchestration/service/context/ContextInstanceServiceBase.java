@@ -162,6 +162,17 @@ public abstract class ContextInstanceServiceBase {
         ContextMachineCache.instance().put(contextMachine);
     }
 
+    protected void removeAgentInstances(ContextInstance instance) {
+        Map<String, InternalEventDrivenJobInstance> internalJobs = getInternalJobs(instance.getId());
+        HashMap<String, ModuleMetaData> agents = getAgents(internalJobs);
+        if (!agents.keySet().isEmpty()) {
+            for (String key : agents.keySet()) {
+                ModuleMetaData agent = agents.get(key);
+                contextParametersUpdateService.remove(agent.getUrl(), instance);
+            }
+        }
+    }
+
     private JobLockCache getJobLockCache(ContextTemplate context) {
         JobLockCache jobLockCache = JobLockCacheImpl.instance();
         JobLockCacheRecord jobLockCacheRecord = jobLockCacheService.get();
