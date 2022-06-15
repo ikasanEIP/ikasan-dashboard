@@ -35,13 +35,12 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
 
         try {
             restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
+            //TODO figure out if more serious problem i.e. agent is down vs some more serious problem
+            // 503/504 is timeout? 408? depends on server setup
         } catch (RestClientResponseException e) {
             String message = String.format("Could not update context parameters for for agent url %s, params %s, responseCode: %d, error: %s",
                 url, instance, e.getRawStatusCode(), e.getMessage());
             LOGGER.warn(message);
-
-            //TODO figure out if more serious problem i.e. agent is down vs some more serious problem
-            // 503/504 is timeout? 408? depends on server setup
         } catch (Exception e) {
             String message = String.format("Could not update context parameters for for agent url %s, params %s, error: %s",
                 url, instance, e.getMessage());
@@ -64,18 +63,16 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
             }};
 
             restTemplate.exchange(urlTemplate, HttpMethod.DELETE, entity, String.class, parameters);
-
+            //TODO figure out if more serious problem i.e. agent is down vs some more serious problem
+            // 503/504 is timeout? 408? depends on server setup
         } catch (RestClientResponseException e) {
             String message = String.format("Could not remove instance from agent for agent url %s, name %s, responseCode: %d, error: %s",
                 url, contextInstance.getName(), e.getRawStatusCode(), e.getMessage());
             LOGGER.warn(message);
-            //TODO figure out if more serious problem i.e. agent is down vs some more serious problem
-            // 503/504 is timeout? 408? depends on server setup
         } catch (Exception e) {
             String message = String.format("Could not remove instance from agent for agent url %s, name %s, error: %s",
                 url, contextInstance.getName(), e.getMessage());
             LOGGER.warn(message);
         }
-
     }
 }
