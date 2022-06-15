@@ -82,6 +82,42 @@ public class ContextInstancePublicationRestServiceImplTest {
             .withRequestBody(containing(json)));
     }
 
+    @Test
+    public void remove_returns_200() {
+        ContextInstance instanceWithParams = createInstanceWithParams("CONTEXT-NAME");
+        stubFor(delete(urlEqualTo("/rest/contextInstance/remove?contextName=CONTEXT-NAME"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(
+                aResponse()
+                    .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                    .withStatus(200)));
+
+        uut.remove(contextBaseUrl, instanceWithParams);
+
+        verify(deleteRequestedFor(urlEqualTo("/rest/contextInstance/remove?contextName=CONTEXT-NAME"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
+    }
+
+    @Test
+    public void remove_returns_error() {
+        ContextInstance instanceWithParams = createInstanceWithParams("CONTEXT-NAME");
+        stubFor(delete(urlEqualTo("/rest/contextInstance/remove?contextName=CONTEXT-NAME"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(
+                aResponse()
+                    .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                    .withStatus(403)));
+
+        uut.remove(contextBaseUrl, instanceWithParams);
+
+        verify(deleteRequestedFor(urlEqualTo("/rest/contextInstance/remove?contextName=CONTEXT-NAME"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
+    }
+
     private ContextInstance createInstanceWithParams(String contextName) {
         ContextInstance instance = new ContextInstanceImpl();
         instance.setName(contextName);
