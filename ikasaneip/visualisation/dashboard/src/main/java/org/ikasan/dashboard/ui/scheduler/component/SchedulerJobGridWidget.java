@@ -26,10 +26,13 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
@@ -42,6 +45,10 @@ public class SchedulerJobGridWidget extends Div {
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private IkasanAuthentication authentication;
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private SystemEventLogger systemEventLogger;
+    private ModuleMetaDataService moduleMetaDataService;
+    private JobInitiationService jobInitiationService;
+    private ContextTemplate contextTemplate;
 
     /**
      * Constructor
@@ -49,10 +56,14 @@ public class SchedulerJobGridWidget extends Div {
     public SchedulerJobGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                  LogStreamingService logStreamingService, ContextTemplate contextTemplate) {
+                                  LogStreamingService logStreamingService, ContextTemplate contextTemplate, JobInitiationService jobInitiationService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        this.systemEventLogger = systemEventLogger;
+        this.moduleMetaDataService = moduleMetaDataService;
+        this.jobInitiationService = jobInitiationService;
+        this.contextTemplate = contextTemplate;
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextTemplate);
@@ -180,6 +191,27 @@ public class SchedulerJobGridWidget extends Div {
             });
 
             layout.add(chart);
+
+            Icon submit = IconDecorator.decorate(new Icon(VaadinIcon.PAPERPLANE), getTranslation("tooltip.submit-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            submit.setVisible(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB));
+            submit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                try {
+                    InternalEventDrivenJobInstance jobInstance = this.objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
+                        , InternalEventDrivenJobInstance.class);
+                    ContextInstance contextInstance = this.objectMapper.readValue(objectMapper.writeValueAsBytes(contextTemplate)
+                        , ContextInstance.class);
+
+                    InternalEventDrivenJobSubmissionDialog internalEventDrivenJobSubmissionDialog = new InternalEventDrivenJobSubmissionDialog(this.systemEventLogger,
+                        this.moduleMetaDataService, contextInstance, this.jobInitiationService, jobInstance);
+
+                    internalEventDrivenJobSubmissionDialog.open();
+                }
+                catch (Exception e) {
+                    // add notification
+                }
+            });
+
+            layout.add(submit);
 
             Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             StreamResource streamResource = new StreamResource(schedulerJobRecord.getJobName()+".json"
