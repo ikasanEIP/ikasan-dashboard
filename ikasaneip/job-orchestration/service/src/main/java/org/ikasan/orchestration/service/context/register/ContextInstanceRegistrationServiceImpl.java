@@ -109,6 +109,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                 throw new RuntimeException(String.format("Could not find instance in ContextMachine for [%s]", contextName));
             }
 
+            removeAgentInstances(instance);
             saveContextInstance(instance, InstanceStatus.ENDED);
             ContextMachineCache.instance().remove(contextMachine);
             contextMachine.teardown();

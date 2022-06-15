@@ -16,6 +16,7 @@ public class CustomBackFillerMatcher implements ArgumentMatcher<ContextInstance>
     @Override
     public boolean matches(ContextInstance instance) {
             return instance.getName().equals(contextName)
-                && entry.getContextParameters().equals(instance.getContextParameters());
+                && (entry.getContextParameters() == null && instance.getContextParameters() == null
+                || entry.getContextParameters().equals(instance.getContextParameters()));
     }
 }
