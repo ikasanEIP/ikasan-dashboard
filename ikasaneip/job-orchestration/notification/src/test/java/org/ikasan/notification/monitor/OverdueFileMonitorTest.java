@@ -21,6 +21,7 @@ import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -93,6 +94,7 @@ public class OverdueFileMonitorTest {
     }
 
     @Test
+    @Ignore
     public void test_with_running_and_overdued() throws IOException {
 
         ContextualisedScheduledProcessEvent scheduledProcessEvent1 = new ContextualisedScheduledProcessEventImpl();
