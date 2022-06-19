@@ -1,0 +1,10 @@
+{
+  "jobName" : "AC_SCRIPT_Interface_Reuters_RIC_1500",
+  "contextName" : "AC_CHAIN_Reuters_1500",
+  "monitorType" : "OVERDUE",
+  "emailSendTo" : [ "DL-MHI-ISD-MarketDataSystem@uk.mizuho-sc.com", "owen.finnegan@uk.mizuho-sc.com" ],
+  "emailSubject" : " Reuters 1500 capture failed",
+  "emailBody" : "Reuters Capture failure.",
+  "attachment" : "stderr.log",
+  "html" : false
+}
