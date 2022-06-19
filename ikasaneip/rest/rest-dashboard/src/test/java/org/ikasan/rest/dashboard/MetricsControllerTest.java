@@ -1,6 +1,5 @@
 package org.ikasan.rest.dashboard;
 
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.rest.dashboard.model.metrics.FlowInvocationMetricImpl;

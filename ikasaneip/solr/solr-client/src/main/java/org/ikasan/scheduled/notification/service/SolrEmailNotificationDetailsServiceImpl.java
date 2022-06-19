@@ -28,8 +28,8 @@ public class SolrEmailNotificationDetailsServiceImpl extends SolrServiceBase imp
     }
 
     @Override
-    public EmailNotificationDetailsRecord findByJobNameAndMonitorType(String jobName, String monitorType) {
-        return this.dao.findByJobNameAndMonitorType(jobName, monitorType);
+    public EmailNotificationDetailsRecord findByJobNameAndMonitorType(String jobName, String contextName, String monitorType) {
+        return this.dao.findByJobNameAndMonitorType(jobName,contextName, monitorType);
     }
 
     @Override

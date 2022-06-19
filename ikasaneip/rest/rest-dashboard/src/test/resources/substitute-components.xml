@@ -50,6 +50,8 @@
 
     <bean id="metricsService" class="org.ikasan.rest.dashboard.util.TestMetricsService" />
 
+    <bean id="emailNotificationDetailsService" class="org.ikasan.rest.dashboard.util.TestEmailNotificationDetailsService" />
+
     <bean id="contextParametersInstanceService" class="org.ikasan.rest.dashboard.util.TestContextParametersInstanceService" />
 
 </beans>
