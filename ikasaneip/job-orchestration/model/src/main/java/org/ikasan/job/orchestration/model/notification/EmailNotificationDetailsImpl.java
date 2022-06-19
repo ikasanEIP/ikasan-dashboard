@@ -2,12 +2,12 @@ package org.ikasan.job.orchestration.model.notification;
 
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 
-import java.util.Date;
 import java.util.List;
 
 public class EmailNotificationDetailsImpl implements EmailNotificationDetails {
 
     private String jobName;
+    private String contextName;
     private String monitorType;
     private List<String> emailSendTo;
     private List<String> emailSendCc;
@@ -18,8 +18,6 @@ public class EmailNotificationDetailsImpl implements EmailNotificationDetails {
     private String emailBodyTemplate;
     private String attachment;
     private boolean isHtml;
-    private long timestampLong;
-    private long expiryLong;
 
     public String getJobName() {
         return jobName;
@@ -101,22 +99,6 @@ public class EmailNotificationDetailsImpl implements EmailNotificationDetails {
         isHtml = html;
     }
 
-    public long getTimestampLong() {
-        return timestampLong;
-    }
-
-    public void setTimestampLong(long timestampLong) {
-        this.timestampLong = timestampLong;
-    }
-
-    public long getExpiryLong() {
-        return expiryLong;
-    }
-
-    public void setExpiryLong(long expiryLong) {
-        this.expiryLong = expiryLong;
-    }
-
     public String getMonitorType() {
         return monitorType;
     }
@@ -125,12 +107,29 @@ public class EmailNotificationDetailsImpl implements EmailNotificationDetails {
         this.monitorType = monitorType;
     }
 
-    public Date getTimestamp(){
-        return new Date(this.getTimestampLong());
+    public String getContextName() {
+        return contextName;
     }
 
-    public Date getExpiry(){
-        return new Date(this.getExpiryLong());
+    public void setContextName(String contextName) {
+        this.contextName = contextName;
     }
 
+    @Override
+    public String toString() {
+        return "EmailNotificationDetailsImpl{" +
+            "jobName='" + jobName + '\'' +
+            ", contextName='" + contextName + '\'' +
+            ", monitorType='" + monitorType + '\'' +
+            ", emailSendTo=" + emailSendTo +
+            ", emailSendCc=" + emailSendCc +
+            ", emailSendBcc=" + emailSendBcc +
+            ", emailSubject='" + emailSubject + '\'' +
+            ", emailBody='" + emailBody + '\'' +
+            ", emailSubjectTemplate='" + emailSubjectTemplate + '\'' +
+            ", emailBodyTemplate='" + emailBodyTemplate + '\'' +
+            ", attachment='" + attachment + '\'' +
+            ", isHtml=" + isHtml +
+            '}';
+    }
 }

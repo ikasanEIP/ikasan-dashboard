@@ -41,7 +41,9 @@ public class SolrEmailNotificationDetailsDaoImpl extends SolrDaoBase<EmailNotifi
             throw new RuntimeException(String.format("Cannot convert Email Notification Details to string! [%s]", emailNotificationDetailsRecord));
         }
 
-        document.addField(ID, emailNotificationDetailsRecord.getEmailNotificationDetails().getJobName()+"_"+emailNotificationDetailsRecord.getEmailNotificationDetails().getMonitorType());
+        EmailNotificationDetails emailNotificationDetails = emailNotificationDetailsRecord.getEmailNotificationDetails();
+
+        document.addField(ID, emailNotificationDetails.getJobName()+"_"+emailNotificationDetails.getContextName()+"_"+emailNotificationDetails.getMonitorType() );
         document.addField(CREATED_DATE_TIME, emailNotificationDetailsRecord.getTimestamp());
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
         document.addField(MODIFIED_BY, emailNotificationDetailsRecord.getModifiedBy());
@@ -72,8 +74,8 @@ public class SolrEmailNotificationDetailsDaoImpl extends SolrDaoBase<EmailNotifi
     }
 
     @Override
-    public EmailNotificationDetailsRecord findByJobNameAndMonitorType(String jobName, String monitorType) {
-        SolrQuery query = super.buildIdQuery(jobName+"_"+monitorType, EMAIL_NOTIFICATION_DETAILS);
+    public EmailNotificationDetailsRecord findByJobNameAndMonitorType(String jobName, String contextName, String monitorType) {
+        SolrQuery query = super.buildIdQuery(jobName+"_"+contextName+"_"+monitorType, EMAIL_NOTIFICATION_DETAILS);
 
         logger.debug("query: " + query);
 

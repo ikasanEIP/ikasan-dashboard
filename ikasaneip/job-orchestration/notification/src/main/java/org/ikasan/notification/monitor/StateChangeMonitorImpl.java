@@ -67,21 +67,21 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
         public void onSchedulerJobInstanceStateChangeEvent(SchedulerJobInstanceStateChangeEvent event) {
 
             if (event.getNewStatus().name().equalsIgnoreCase(InstanceStatus.ERROR.name())) {
-                GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(event.getSchedulerJobInstance().getContextInstanceId(),
-                    event.getSchedulerJobInstance().getJobName(), MonitorType.ERROR, event.getNewStatus());
+                GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(event.getSchedulerJobInstance().getContextId(),
+                    event.getSchedulerJobInstance().getJobName(), event.getSchedulerJobInstance().getContextInstanceId(), MonitorType.ERROR, event.getNewStatus());
 
                 invoke(genericNotificationDetails);
             }
             else if (!event.getPreviousStatus().name().equalsIgnoreCase(InstanceStatus.RUNNING.name()) &&
                        event.getNewStatus().name().equalsIgnoreCase(InstanceStatus.RUNNING.name())) {
-                GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(event.getSchedulerJobInstance().getContextInstanceId(),
-                    event.getSchedulerJobInstance().getJobName(), MonitorType.START, event.getNewStatus());
+                GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(event.getSchedulerJobInstance().getContextId(),
+                    event.getSchedulerJobInstance().getJobName(), event.getSchedulerJobInstance().getContextInstanceId(), MonitorType.START, event.getNewStatus());
 
                 invoke(genericNotificationDetails);
             }
             else if (event.getNewStatus().name().equalsIgnoreCase(InstanceStatus.COMPLETE.name())) {
-                GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(event.getSchedulerJobInstance().getContextInstanceId(),
-                    event.getSchedulerJobInstance().getJobName(), MonitorType.COMPLETE, event.getNewStatus());
+                GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(event.getSchedulerJobInstance().getContextId(),
+                    event.getSchedulerJobInstance().getJobName(), event.getSchedulerJobInstance().getContextInstanceId(), MonitorType.COMPLETE, event.getNewStatus());
 
                 invoke(genericNotificationDetails);
             }
