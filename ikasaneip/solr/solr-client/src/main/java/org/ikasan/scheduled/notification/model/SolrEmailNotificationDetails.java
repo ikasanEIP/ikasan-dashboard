@@ -9,6 +9,8 @@ public class SolrEmailNotificationDetails implements EmailNotificationDetails {
 
     private String jobName;
 
+    private String contextName;
+
     private String monitorType;
 
     private List<String> emailSendTo;
@@ -29,16 +31,12 @@ public class SolrEmailNotificationDetails implements EmailNotificationDetails {
 
     private boolean isHtml;
 
-    private long timestampLong;
-
-    private long expiryLong;
-
     public SolrEmailNotificationDetails() {
     }
 
-    public SolrEmailNotificationDetails(String jobName, String monitorType, List<String> emailSendTo, List<String> emailSendCc, List<String> emailSendBcc,
-                                        String emailSubject, String emailBody, String emailSubjectTemplate, String emailBodyTemplate,
-                                        String attachment, boolean isHtml, long eventTimestamp) {
+    public SolrEmailNotificationDetails(String jobName, String contextName, String monitorType, List<String> emailSendTo, List<String> emailSendCc,
+                                        List<String> emailSendBcc, String emailSubject, String emailBody, String emailSubjectTemplate,
+                                        String emailBodyTemplate, String attachment, boolean isHtml) {
         this.jobName = jobName;
         this.monitorType = monitorType;
         this.emailSendTo = emailSendTo;
@@ -50,7 +48,7 @@ public class SolrEmailNotificationDetails implements EmailNotificationDetails {
         this.emailBodyTemplate = emailBodyTemplate;
         this.attachment = attachment;
         this.isHtml = isHtml;
-        this.timestampLong = eventTimestamp;
+        this.contextName = contextName;
     }
 
     public String getJobName() {
@@ -133,44 +131,27 @@ public class SolrEmailNotificationDetails implements EmailNotificationDetails {
         isHtml = html;
     }
 
-    public long getTimestampLong() {
-        return timestampLong;
-    }
-
-    public void setTimestampLong(long timestampLong) {
-        this.timestampLong = timestampLong;
-    }
-
-    public long getExpiryLong() {
-        return expiryLong;
-    }
-
-    public void setExpiryLong(long expiryLong) {
-        this.expiryLong = expiryLong;
-    }
-
-    public Date getTimestamp(){
-        return new Date(this.getTimestampLong());
-    }
-
-    public Date getExpiry(){
-        return new Date(this.getExpiryLong());
-    }
-
-    @Override
     public String getMonitorType() {
         return monitorType;
     }
 
-    @Override
     public void setMonitorType(String monitorType) {
         this.monitorType = monitorType;
+    }
+
+    public String getContextName() {
+        return contextName;
+    }
+
+    public void setContextName(String contextName) {
+        this.contextName = contextName;
     }
 
     @Override
     public String toString() {
         return "SolrEmailNotificationDetails{" +
             "jobName='" + jobName + '\'' +
+            ", contextName=" + contextName +
             ", monitorType=" + monitorType +
             ", emailSendTo=" + emailSendTo +
             ", emailSendCc=" + emailSendCc +

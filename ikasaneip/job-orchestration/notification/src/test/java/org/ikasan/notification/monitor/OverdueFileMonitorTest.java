@@ -20,6 +20,8 @@ import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
+import org.joda.time.DateTimeUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -42,6 +44,11 @@ public class OverdueFileMonitorTest {
     private String result="test";
 
     private ObjectMapper objectMapper;
+
+    @After
+    public void tearDown() {
+        DateTimeUtils.setCurrentMillisSystem();
+    }
 
     @Before
     public void startup() throws IOException {
@@ -103,7 +110,9 @@ public class OverdueFileMonitorTest {
         scheduledProcessEvent1.setJobStarting(true);
         scheduledProcessEvent1.setSuccessful(false);
 
-        // start test
+        DateTimeUtils.setCurrentMillisFixed(1490688000000L); // 09:00:00
+
+         // start test
         Monitor overdueFileMonitor = new OverdueFileMonitorImpl(30, executorService, new SchedulerJobServiceTestImpl());
         overdueFileMonitor.setNotifiers(Arrays.asList(new TestNotifier()));
 

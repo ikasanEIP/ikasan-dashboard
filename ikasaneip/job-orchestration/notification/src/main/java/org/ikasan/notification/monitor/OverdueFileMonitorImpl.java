@@ -13,12 +13,14 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
+import org.joda.time.DateTime;
 import org.quartz.TriggerUtils;
 import org.quartz.impl.triggers.CronTriggerImpl;
 
 import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -74,11 +76,8 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
                 }
 
                 if (contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.RUNNING.toString())) {
-                    Calendar cal = Calendar.getInstance();
-                    cal.set(Calendar.HOUR_OF_DAY, 1);
-                    cal.set(Calendar.MINUTE, 0);
-                    cal.set(Calendar.SECOND, 0);
-                    cal.set(Calendar.MILLISECOND, 0);
+
+                    DateTime dateTime = new DateTime().withHourOfDay(1).withMinuteOfHour(0).withSecondOfMinute(0);
 
                     for (SchedulerJobInstance schedulerJobInstance : contextInstance.getScheduledJobs()) {
                         SchedulerJobRecord schedulerJobRecord = schedulerJobService.findByContextIdAndJobName(schedulerJobInstance.getContextId(), schedulerJobInstance.getJobName());
@@ -88,9 +87,9 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
                         if(job instanceof FileEventDrivenJob) {
 
                             FileEventDrivenJob fileEventDrivenJob = (FileEventDrivenJob) job;
-                            if (isJobOverdued(cal.getTime(), fileEventDrivenJob.getCronExpression())) {
+                            if (isJobOverdued(dateTime.toDate(), fileEventDrivenJob.getCronExpression())) {
                                 GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(fileEventDrivenJob.getContextId(),
-                                    fileEventDrivenJob.getJobName(), MonitorType.OVERDUE, InstanceStatus.ERROR);
+                                    fileEventDrivenJob.getJobName(), schedulerJobInstance.getContextInstanceId(), MonitorType.OVERDUE, InstanceStatus.ERROR);
 
                                 invoke(genericNotificationDetails);
                             }
@@ -115,7 +114,7 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
         Date firstFireTime = fireTimes.iterator().next();
 
         Date firstFireTimeWithTolerance = DateUtils.addMinutes(firstFireTime, fileArrivalToleranceInMinutes);
-        return firstFireTimeWithTolerance.before(new Date());
+        return firstFireTimeWithTolerance.before(new DateTime().toDate());
     }
 
 }

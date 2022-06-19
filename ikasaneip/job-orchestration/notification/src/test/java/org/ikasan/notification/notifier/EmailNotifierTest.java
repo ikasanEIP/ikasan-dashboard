@@ -89,10 +89,10 @@ public class EmailNotifierTest {
     @Test
     public void test_with_no_record_from_config() {
 
-        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-instance-id-1", "job-1", MonitorType.ERROR, InstanceStatus.ERROR);
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
         mockery.checking(new Expectations(){{
-            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "ERROR");
+            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1","context-id-1","ERROR");
             will(returnValue(null));
         }});
 
@@ -106,7 +106,7 @@ public class EmailNotifierTest {
     @Test
     public void test_with_a_record_from_config() throws MessagingException, IOException {
 
-        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-instance-id-1", "job-1", MonitorType.ERROR, InstanceStatus.ERROR);
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
         EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
         emailNotificationDetails.setJobName("job-1");
@@ -122,7 +122,7 @@ public class EmailNotifierTest {
         emailNotificationDetailsRecord.setEmailNotificationDetails(emailNotificationDetails);
 
         mockery.checking(new Expectations(){{
-            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "ERROR");
+            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "context-id-1","ERROR");
             will(returnValue(emailNotificationDetailsRecord));
             oneOf(notificationSendAuditService).find("context-instance-id-1", "job-1", "ERROR", "EMAIL");
             will(returnValue(null));
@@ -152,7 +152,7 @@ public class EmailNotifierTest {
     @Test
     public void test_with_a_template() throws MessagingException, IOException {
 
-        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-instance-id-1", "job-1", MonitorType.ERROR, InstanceStatus.ERROR);
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
         EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
         emailNotificationDetails.setJobName("job-1");
@@ -167,7 +167,7 @@ public class EmailNotifierTest {
         record.setEmailNotificationDetails(emailNotificationDetails);
 
         mockery.checking(new Expectations(){{
-            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "ERROR");
+            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "context-id-1","ERROR");
             will(returnValue(record));
             oneOf(notificationSendAuditService).find("context-instance-id-1", "job-1", "ERROR", "EMAIL");
             will(returnValue(null));
@@ -198,7 +198,7 @@ public class EmailNotifierTest {
     @Test
     public void test_with_already_sent_before() throws MessagingException, IOException {
 
-        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-instance-id-1", "job-1", MonitorType.ERROR, InstanceStatus.ERROR);
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1",MonitorType.ERROR, InstanceStatus.ERROR);
 
         EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
         emailNotificationDetails.setJobName("job-1");
@@ -225,7 +225,7 @@ public class EmailNotifierTest {
         notificationSendAuditRecord.setTimestamp(new Date().getTime());
 
         mockery.checking(new Expectations(){{
-            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "ERROR");
+            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "context-id-1","ERROR");
             will(returnValue(emailNotificationDetailsRecord));
             oneOf(notificationSendAuditService).find("context-instance-id-1", "job-1", "ERROR", "EMAIL");
             will(returnValue(notificationSendAuditRecord));
@@ -240,7 +240,7 @@ public class EmailNotifierTest {
     @Test
     public void test_with_not_sent_before() throws MessagingException, IOException {
 
-        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-instance-id-1", "job-1", MonitorType.ERROR, InstanceStatus.ERROR);
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1","context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
         EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
         emailNotificationDetails.setJobName("job-1");
@@ -267,7 +267,7 @@ public class EmailNotifierTest {
         notificationSendAuditRecord.setTimestamp(new Date().getTime());
 
         mockery.checking(new Expectations(){{
-            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "ERROR");
+            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "context-id-1","ERROR");
             will(returnValue(emailNotificationDetailsRecord));
             oneOf(notificationSendAuditService).find("context-instance-id-1", "job-1", "ERROR", "EMAIL");
             will(returnValue(notificationSendAuditRecord));

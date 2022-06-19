@@ -68,7 +68,7 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
     @Override
     public void invoke(GenericNotificationDetails notificationDetails) {
         EmailNotificationDetailsRecord emailNotificationDetailsRecord = emailNotificationDetailsService.
-                        findByJobNameAndMonitorType(notificationDetails.getJobName(), notificationDetails.getMonitorType().name());
+                        findByJobNameAndMonitorType(notificationDetails.getJobName(), notificationDetails.getContextName(), notificationDetails.getMonitorType().name());
 
         if (emailNotificationDetailsRecord != null) {
             EmailNotificationDetails emailNotificationDetails = emailNotificationDetailsRecord.getEmailNotificationDetails();

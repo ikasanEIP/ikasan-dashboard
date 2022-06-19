@@ -72,6 +72,7 @@ public class SolrEmailNotificationDetailsServiceTest extends SolrTestCaseJ4 {
 
             EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
             emailNotificationDetails.setJobName("job-1");
+            emailNotificationDetails.setContextName("context-1");
             emailNotificationDetails.setMonitorType("ERROR");
             emailNotificationDetails.setEmailSendTo(Arrays.asList("to-1", "to-2"));
             emailNotificationDetails.setEmailBody("email-body-1");
@@ -84,15 +85,16 @@ public class SolrEmailNotificationDetailsServiceTest extends SolrTestCaseJ4 {
 
             this.service.save(solrEmailNotificationDetailsRecord);
 
-            EmailNotificationDetailsRecord found = this.service.findByJobNameAndMonitorType("job-1", "ERROR");
+            EmailNotificationDetailsRecord found = this.service.findByJobNameAndMonitorType("job-1", "context-1", "ERROR");
             EmailNotificationDetails foundEmailNotificationDetails = found.getEmailNotificationDetails();
 
             Assert.assertEquals("job-1", foundEmailNotificationDetails.getJobName());
+            Assert.assertEquals("context-1", foundEmailNotificationDetails.getContextName());
             Assert.assertEquals("email-body-1", foundEmailNotificationDetails.getEmailBody());
             Assert.assertEquals("email-subject-1", foundEmailNotificationDetails.getEmailSubject());
             Assert.assertEquals(false, foundEmailNotificationDetails.isHtml());
 
-            Assert.assertNull(this.service.findByJobNameAndMonitorType("bad-job", "ERROR"));
+            Assert.assertNull(this.service.findByJobNameAndMonitorType("bad-job", "context-1", "ERROR"));
         }
     }
 
@@ -105,6 +107,7 @@ public class SolrEmailNotificationDetailsServiceTest extends SolrTestCaseJ4 {
 
             EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
             emailNotificationDetails.setJobName("job-1");
+            emailNotificationDetails.setContextName("context-1");
             emailNotificationDetails.setMonitorType("ERROR");
             emailNotificationDetails.setEmailSendTo(Arrays.asList("to-1", "to-2"));
             emailNotificationDetails.setEmailBody("email-body-1");
@@ -122,6 +125,7 @@ public class SolrEmailNotificationDetailsServiceTest extends SolrTestCaseJ4 {
             Assert.assertEquals(1, found.getResultList().size());
 
             Assert.assertEquals("job-1", found.getResultList().get(0).getEmailNotificationDetails().getJobName());
+            Assert.assertEquals("context-1", found.getResultList().get(0).getEmailNotificationDetails().getContextName());
             Assert.assertEquals("email-body-1", found.getResultList().get(0).getEmailNotificationDetails().getEmailBody());
             Assert.assertEquals("email-subject-1", found.getResultList().get(0).getEmailNotificationDetails().getEmailSubject());
             Assert.assertEquals(false, found.getResultList().get(0).getEmailNotificationDetails().isHtml());
