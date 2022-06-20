@@ -62,8 +62,8 @@ public class SchedulerRestServiceImpl extends ModuleRestService implements Sched
             return true;
         }
         catch(RestClientException e){
-            logger.warn("Issue querying module activation state [" + url
-                + "] with module ["+moduleName+"] "
+            logger.warn("Issue triggering scheduler flow job [" + url
+                + "] with agent ["+moduleName+"] " + "] and job ["+flowName +"] "
                 + " with response [{"+e.getLocalizedMessage()+"}]");
             return false;
         }

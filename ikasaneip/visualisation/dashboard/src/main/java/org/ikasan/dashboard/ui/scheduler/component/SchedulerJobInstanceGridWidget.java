@@ -14,7 +14,10 @@ import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.IconDecorator;
+import org.ikasan.dashboard.ui.util.SystemEventConstants;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
@@ -24,18 +27,22 @@ import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
+import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
@@ -44,6 +51,8 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class SchedulerJobInstanceGridWidget extends Div {
+
+    Logger logger = LoggerFactory.getLogger(SchedulerJobInstanceGridWidget.class);
 
     private Registration schedulerJobStateChangeRegistration;
 
@@ -56,6 +65,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
     private SystemEventLogger systemEventLogger;
     private JobInitiationService jobInitiationService;
     private ModuleMetaDataService moduleMetaDataService;
+    private SchedulerService schedulerService;
 
     /**
      * Constructor
@@ -64,7 +74,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                           LogStreamingService logStreamingService, ContextInstance contextInstance, SchedulerJobInstanceService schedulerJobInstanceService,
-                                          JobInitiationService jobInitiationService) {
+                                          JobInitiationService jobInitiationService, SchedulerService schedulerService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
@@ -73,6 +83,8 @@ public class SchedulerJobInstanceGridWidget extends Div {
         this.systemEventLogger = systemEventLogger;
         this.jobInitiationService = jobInitiationService;
         this.moduleMetaDataService = moduleMetaDataService;
+        this.schedulerService = schedulerService;
+
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextInstance);
@@ -242,12 +254,47 @@ public class SchedulerJobInstanceGridWidget extends Div {
             layout.add(release);
 
             Icon submit = IconDecorator.decorate(new Icon(VaadinIcon.PAPERPLANE), getTranslation("tooltip.submit-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
-            submit.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE));
             submit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                InternalEventDrivenJobSubmissionDialog internalEventDrivenJobSubmissionDialog = new InternalEventDrivenJobSubmissionDialog(this.systemEventLogger,
-                    this.moduleMetaDataService, this.contextInstance, this.jobInitiationService, (InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance());
+                if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
+                    InternalEventDrivenJobSubmissionDialog internalEventDrivenJobSubmissionDialog = new InternalEventDrivenJobSubmissionDialog(this.systemEventLogger,
+                        this.moduleMetaDataService, this.contextInstance, this.jobInitiationService, (InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance());
 
-                internalEventDrivenJobSubmissionDialog.open();
+                    internalEventDrivenJobSubmissionDialog.open();
+                }
+                else if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof QuartzScheduleDrivenJobInstance) {
+                    ConfirmDialog confirmDialog = new ConfirmDialog();
+                    confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-quartz-job", UI.getCurrent().getLocale()));
+                    confirmDialog.setText(getTranslation("confirm-dialog-text.submit-quartz-job", UI.getCurrent().getLocale()));
+
+                    confirmDialog.setCancelable(true);
+
+                    confirmDialog.open();
+
+                    confirmDialog.addConfirmListener(confirmEvent -> {
+                        try {
+                            ModuleMetaData agent = this.moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
+                            boolean success = this.schedulerService.triggerFlowNow(agent.getUrl(), agent.getName()
+                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName());
+
+                            if(success) {
+                                logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
+
+                                this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
+                                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
+                                    , this.authentication.getName());
+
+                                NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
+                            }
+                            else {
+                                NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
+                            }
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                            NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
+                        }
+                    });
+                }
             });
 
             layout.add(submit);
