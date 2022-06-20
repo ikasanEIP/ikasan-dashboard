@@ -25,6 +25,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateSearchFilter;
@@ -49,6 +50,7 @@ public class ContextInstanceWidget extends Div {
     private ContextTemplateStatisticsWidget contextTemplateStatisticsWidget;
     private ContextInstanceAuditWidget contextInstanceAuditWidget;
     private JobInitiationService jobInitiationService;
+    private SchedulerService schedulerService;
 
     private TextField contextInstanceId;
     private TextField contextInstanceStatus;
@@ -75,7 +77,7 @@ public class ContextInstanceWidget extends Div {
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
-                                 SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService) {
+                                 SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService, SchedulerService schedulerService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
@@ -83,6 +85,7 @@ public class ContextInstanceWidget extends Div {
         this.contextInstance = contextInstance;
         this.contextTemplate = contextTemplate;
         this.jobInitiationService = jobInitiationService;
+        this.schedulerService = schedulerService;
 
         this.init(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
@@ -245,7 +248,7 @@ public class ContextInstanceWidget extends Div {
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobInstanceGridWidget = new SchedulerJobInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextInstance, this.schedulerJobInstanceService,
-            this.jobInitiationService);
+            this.jobInitiationService, this.schedulerService);
         this.schedulerJobInstanceGridWidget.setWidthFull();
         this.schedulerJobInstanceGridWidget.setHeight("75vh");
         this.schedulerJobInstanceGridWidget.setVisible(false);
