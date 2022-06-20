@@ -17,6 +17,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -69,6 +70,9 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     @Resource
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
+    @Resource
+    private SchedulerService schedulerService;
+
     @Value("${scheduled.job.context.queue.directory}")
     private String queueDirectory;
 
@@ -98,7 +102,7 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     private void init() {
         this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, ""
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService);
+            , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.schedulerService);
 
         H2 contextTemplateManagementLabel = new H2(String.format(getTranslation("label.context-template-management", UI.getCurrent().getLocale())));
         this.add(contextTemplateManagementLabel, this.contextTemplateManagementWidget);
