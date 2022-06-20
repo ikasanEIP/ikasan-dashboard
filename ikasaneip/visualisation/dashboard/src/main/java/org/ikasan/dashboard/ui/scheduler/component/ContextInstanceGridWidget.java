@@ -27,6 +27,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
@@ -54,7 +55,7 @@ public class ContextInstanceGridWidget extends Div {
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
-                                     JobInitiationService jobInitiationService) {
+                                     JobInitiationService jobInitiationService, SchedulerService schedulerService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -62,7 +63,7 @@ public class ContextInstanceGridWidget extends Div {
         this.jobInitiationService = jobInitiationService;
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService);
+            , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService, schedulerService);
 
         Div div = new Div();
         div.setSizeFull();
@@ -83,7 +84,8 @@ public class ContextInstanceGridWidget extends Div {
     private void createGrid(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                             ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                             MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService) {
+                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
+                            SchedulerService schedulerService) {
         // Create a modulesGrid bound to the list
         ContextInstanceSearchFilter contextInstanceSearchFilter = new SolrContextInstanceSearchFilterImpl();
         contextInstanceSearchFilter.setContextSearchFilter(contextTemplate.getName());
@@ -121,7 +123,7 @@ public class ContextInstanceGridWidget extends Div {
                 ContextInstanceDialog contextInstanceDialog = new ContextInstanceDialog(this.scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, scheduledContextInstanceRecord.getContextInstance(), this.contextTemplate, schedulerJobInstanceService
-                    , this.jobInitiationService);
+                    , this.jobInitiationService, schedulerService);
 
                 contextInstanceDialog.open();
             });

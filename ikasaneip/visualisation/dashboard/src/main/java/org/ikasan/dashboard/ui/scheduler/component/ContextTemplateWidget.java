@@ -29,6 +29,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -50,13 +51,13 @@ public class ContextTemplateWidget extends Div {
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
-                                 JobInitiationService jobInitiationService) {
+                                 JobInitiationService jobInitiationService, SchedulerService schedulerService) {
 
         this.scheduledContextService = scheduledContextService;
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, scheduledContextInstanceService, schedulerJobInstanceService, jobInitiationService);
+            , schedulerJobService, logStreamingService, scheduledContextInstanceService, schedulerJobInstanceService, jobInitiationService, schedulerService);
 
         Div div = new Div();
         div.setSizeFull();
@@ -82,7 +83,7 @@ public class ContextTemplateWidget extends Div {
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                               LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
-                              JobInitiationService jobInitiationService) {
+                              JobInitiationService jobInitiationService, SchedulerService schedulerService) {
         // Create a modulesGrid bound to the list
         ScheduledContextSearchFilter contextSearchFilter = new ScheduledContextSearchFilterImpl();
         contextTemplateFilteringGrid = new ContextTemplateFilteringGrid(this.scheduledContextService, contextSearchFilter);
@@ -131,7 +132,7 @@ public class ContextTemplateWidget extends Div {
                 ContextTemplateManagementDialog contextTemplateManagementDialog
                     = new ContextTemplateManagementDialog(this.scheduledContextService, scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-                    , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService);
+                    , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService, schedulerService);
                 contextTemplateManagementDialog.open();
             });
 
