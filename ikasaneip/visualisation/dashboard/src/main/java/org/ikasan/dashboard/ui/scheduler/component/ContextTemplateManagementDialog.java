@@ -25,10 +25,10 @@ public class ContextTemplateManagementDialog extends AbstractCloseableResizableD
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
-                                           JobInitiationService jobInitiationService, SchedulerService schedulerService) {
+                                           JobInitiationService jobInitiationService) {
         this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService, jobInitiationService, schedulerService);
+            , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService, jobInitiationService);
 
         this.setHeight("95vh");
         this.setWidth("90vw");
