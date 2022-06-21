@@ -80,13 +80,15 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
                   !notificationSendAuditRecord.getNotificationSendAudit().isNotificationSend()) {
 
                 final Context ctx = new Context();
-                // todo fix this
                 ctx.setVariable("emailNotificationDetails", emailNotificationDetails);
 
                 if (StringUtils.isNotBlank(emailNotificationDetails.getEmailBodyTemplate())) {
+                    // todo fix this
+                    emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK.name(), "link-1");
                     emailNotificationDetails.setEmailBody(this.templateEngine.process(emailNotificationDetails.getEmailBodyTemplate(), ctx));
                 }
                 if (StringUtils.isNotBlank(emailNotificationDetails.getEmailSubjectTemplate())) {
+                    emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_SUBJECT_LINK.name(), "link-2");
                     emailNotificationDetails.setEmailSubject(this.templateEngine.process(emailNotificationDetails.getEmailSubjectTemplate(), ctx));
                 }
 
