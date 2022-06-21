@@ -1,12 +1,12 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.ItemLabelGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
@@ -17,39 +17,39 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.util.DateTimeUtil;
-import org.ikasan.dashboard.ui.util.IconDecorator;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.scheduled.instance.model.SolrFileEventDrivenJobInstanceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.instance.model.FileEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
-import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
-import org.quartz.CronExpression;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.vaadin.olli.FileDownloadWrapper;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.io.ByteArrayInputStream;
 
 public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog {
 
     Logger logger = LoggerFactory.getLogger(FileEventJobInstanceDialog.class);
 
-    private ComboBox<String> agentCb;
+    private Registration schedulerJobStateChangeRegistration;
+
+    private TextField agentTf;
 
     // Fields to capture schedule job properties.
     private TextField jobNameTf;
@@ -57,18 +57,10 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
     private TextField filenameTf;
     private TextField archiveDirectoryTf;
     private TextField cronExpressionTf;
-    private ComboBox<DateTimeUtil.TimezonePair> timezoneCb;
+    private TextField timezoneTf;
     private TextField minFileAgeSecondsTf;
 
-    private Button saveButton;
-    private Button cancelButton;
-
-
-    private ScheduledProcessManagementService scheduledProcessManagementService;
-    private ConfigurationService configurationRestService;
     private ModuleMetaData agent;
-    private ModuleControlService moduleControlRestService;
-    private MetaDataService metaDataRestService;
 
     private FileEventDrivenJobInstance fileEventDrivenJobInstance;
     private SchedulerJobInstanceRecord schedulerJobInstanceRecord;
@@ -79,93 +71,52 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
 
     private FormLayout formLayout;
 
-    private boolean enabled = true;
-
     private SystemEventLogger systemEventLogger;
 
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
+    private SchedulerStatusDiv statusDiv;
+
+    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+
+    private JobInitiationService jobInitiationService;
+
+    private IkasanAuthentication authentication;
 
     /**
      * Constructor
      *
      * @param agent
-     * @param scheduledProcessManagementService
-     * @param configurationRestService
-     * @param moduleControlRestService
-     * @param metaDataRestService
+     * @param jobInitiationService
      * @param systemEventLogger
+     * @param schedulerJobInstanceService
      */
-    public FileEventJobInstanceDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
-                                      ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                      MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
+    public FileEventJobInstanceDialog(ModuleMetaData agent, JobInitiationService jobInitiationService, SystemEventLogger systemEventLogger,
                                       SchedulerJobInstanceService schedulerJobInstanceService) {
         super.showResize(false);
         super.title.setText(getTranslation("label.file-watcher-job", UI.getCurrent().getLocale()));
 
         this.agent = agent;
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        this.configurationRestService = configurationRestService;
-        this.moduleControlRestService = moduleControlRestService;
-        this.metaDataRestService = metaDataRestService;
         this.systemEventLogger = systemEventLogger;
+        this.jobInitiationService = jobInitiationService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
 
-        this.fileEventDrivenJobInstance = new SolrFileEventDrivenJobInstanceImpl();
+        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+    }
 
+    private void init() {
         this.formBinder
             = new Binder<>(FileEventDrivenJobInstance.class);
 
-        this.setHeight("700px");
+        this.setHeight("750px");
         this.setWidth("1200px");
-
-        saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
-        saveButton.setId("scheduledJobSaveButton");
-        saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->  {
-
-            IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
-
-            if(!this.performFormValidation(this.fileEventDrivenJobInstance)) {
-                NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-configuration", UI.getCurrent().getLocale()));
-                return;
-            }
-
-            try {
-                createOrUpdateScheduledJob(this.fileEventDrivenJobInstance, authentication);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-                NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-creation", UI.getCurrent().getLocale()));
-                return;
-            }
-
-            if (this.editMode == EditMode.NEW) {
-                String action = String.format("New scheduled job created [%s].", this.fileEventDrivenJobInstance);
-                this.systemEventLogger.logEvent(SystemEventConstants.NEW_SCHEDULED_JOB_CREATED, action, authentication.getName());
-            }
-            else if (this.editMode == EditMode.EDIT) {
-                String action = String.format("Scheduled job edited. \nBefore [%s]\nAfter [%s].", this.schedulerJobInstanceRecord.getSchedulerJobInstance(),
-                    this.fileEventDrivenJobInstance);
-                this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_EDIT, action, authentication.getName());
-            }
-
-            this.close();
-        });
-
-        cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
-        cancelButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.close());
-
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.setMargin(true);
-        buttonLayout.setSpacing(true);
-        buttonLayout.add(saveButton, cancelButton);
-        buttonLayout.getStyle().set("padding-bottom", "20px");
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
-        layout.add(this.createConfigurationForm(), buttonLayout);
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
-        layout.getStyle().set("padding-bottom", "20px");
+        layout.getStyle().set("padding-top", "0px");
+        layout.getStyle().set("padding-bottom", "10px");
+        layout.add(createConfigurationForm());
+        super.content.getStyle().set("padding-top", "0px");
         super.content.add(layout);
     }
 
@@ -176,33 +127,87 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
      */
     private FormLayout createConfigurationForm() {
         formLayout = new FormLayout();
+        formLayout.getStyle().set("padding-top", "0px");
+        this.statusDiv = new SchedulerStatusDiv();
+        this.statusDiv.setHeight("45px");
+        this.statusDiv.setWidth("100%");
+
+        formLayout.add(this.statusDiv, 2);
+
+        Button submitButton = new Button(getTranslation("button.submit", UI.getCurrent().getLocale()), new Icon(VaadinIcon.PAPERPLANE));
+        submitButton.setIconAfterText(true);
+        submitButton.getElement().setAttribute("title", "Submit Job");
+
+        submitButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-file-job", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog-text.submit-file-job", UI.getCurrent().getLocale()));
+
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                try {
+                this.jobInitiationService.raiseFileEventSchedulerJob(this.agent.getUrl(), this.agent.getName(), this.fileEventDrivenJobInstance.getJobName());
+
+                this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
+                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
+                    , this.authentication.getName());
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
+                }
+            });
+        });
+
+        Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", IkasanColours.IKASAN_ORANGE);
+        StreamResource streamResource = new StreamResource(schedulerJobInstanceRecord.getJobName()+".json"
+            , () -> {
+            try {
+                return new ByteArrayInputStream(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(schedulerJobInstanceRecord.getSchedulerJobInstance()));
+            }
+            catch (JsonProcessingException e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
+
+        FileDownloadWrapper exportWrapper = new FileDownloadWrapper(streamResource);
+        exportWrapper.wrapComponent(export);
+
+        HorizontalLayout actionsLayout = new HorizontalLayout();
+        actionsLayout.add(submitButton, exportWrapper);
+        actionsLayout.setMargin(false);
+        actionsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, submitButton);
+        actionsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, exportWrapper);
+
+        VerticalLayout actionsButtonLayout = new VerticalLayout();
+        actionsButtonLayout.setWidth("100%");
+        actionsButtonLayout.add(actionsLayout);
+        actionsButtonLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, actionsLayout);
+        actionsButtonLayout.setMargin(false);
 
         // Fields to capture schedule job properties.
-        H3 scheduleDetailsLabel = new H3(getTranslation("label.file-watcher-job", UI.getCurrent().getLocale()));
-        formLayout.add(scheduleDetailsLabel, 2);
+        H3 fileWatcherJobLabel = new H3(getTranslation("label.file-watcher-job", UI.getCurrent().getLocale()));
+        formLayout.add(fileWatcherJobLabel, actionsButtonLayout);
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setId("jobNameTf");
         this.jobNameTf.setRequired(true);
         this.jobNameTf.setEnabled(this.editMode == EditMode.NEW);
         formBinder.forField(this.jobNameTf)
-            .withValidator(jobName -> !jobName.isEmpty(), getTranslation("error.missing-job-name", UI.getCurrent().getLocale()))
             .bind(FileEventDrivenJobInstance::getJobName, FileEventDrivenJobInstance::setJobName);
         formLayout.add(jobNameTf);
 
-        this.agentCb = new ComboBox<>(getTranslation("label.agent", UI.getCurrent().getLocale()));
-        this.agentCb.setId("agentCb");
-        this.agentCb.setRequired(true);
-        this.agentCb.setClearButtonVisible(true);
-        this.agentCb.setItems(this.scheduledProcessManagementService.getAllAgentNames());
-        if(agent != null) {
-            this.agentCb.setValue(agent.getName());
-            this.agentCb.setEnabled(false);
-        }
-        formBinder.forField(this.agentCb)
-            .withValidator(agentValue -> !agentValue.isEmpty(), getTranslation("error.missing-agent", UI.getCurrent().getLocale()))
+        this.agentTf = new TextField(getTranslation("label.agent", UI.getCurrent().getLocale()));
+        this.agentTf.setId("agentCb");
+        this.agentTf.setRequired(true);
+        this.agentTf.setClearButtonVisible(true);
+        formBinder.forField(this.agentTf)
             .bind(FileEventDrivenJobInstance::getAgentName, FileEventDrivenJobInstance::setAgentName);
-        formLayout.add(agentCb);
+        formLayout.add(agentTf);
 
 
         this.jobDescriptionTa = new TextArea(getTranslation("label.job-description", UI.getCurrent().getLocale()));
@@ -210,59 +215,37 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         this.jobDescriptionTa.setId("jobDescriptionTa");
         jobDescriptionTa.getStyle().set("minHeight", "100px");
         formBinder.forField(this.jobDescriptionTa)
-            .withValidator(jobDescription -> !jobDescription.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
             .bind(FileEventDrivenJobInstance::getJobDescription, FileEventDrivenJobInstance::setJobDescription);
         formLayout.add(jobDescriptionTa, 2);
 
         this.filenameTf = new TextField("File path");
         this.filenameTf.setRequired(true);
         this.filenameTf.setId("filePathTf");
-        formBinder.forField(this.filenameTf)
-            .withValidator(filePath -> !filePath.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
-            .bind(FileEventDrivenJobInstance::getFilePath, FileEventDrivenJobInstance::setFilePath);
+        filenameTf.setValue(this.fileEventDrivenJobInstance.getFilenames().get(0));
         formLayout.add(filenameTf, 2);
 
         archiveDirectoryTf = new TextField(getTranslation("label.archive-directory", UI.getCurrent().getLocale()));
-        this.filenameTf.setId("archiveDirectoryTf");
+        this.archiveDirectoryTf.setId("archiveDirectoryTf");
         formBinder.forField(this.archiveDirectoryTf)
-            .withValidator(filePath -> !filePath.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
             .bind(FileEventDrivenJobInstance::getMoveDirectory, FileEventDrivenJobInstance::setMoveDirectory);
         formLayout.add(this.archiveDirectoryTf, 2);
 
-        Icon builderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), getTranslation("tooltip.build-cron-expression", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
-        builderIcon.addClickListener(event -> {
-            CronBuilderDialog dialog = new CronBuilderDialog();
-            dialog.init(this.cronExpressionTf.getValue());
-            dialog.open();
-
-            dialog.addOpenedChangeListener(openedChangeEvent -> {
-                if(!openedChangeEvent.isOpened() && dialog.isSaveClose()) {
-                    this.cronExpressionTf.setValue(dialog.getCronExpression());
-                }
-            });
-        });
-
-        this.cronExpressionTf = new TextField(getTranslation("label.cron-expression", UI.getCurrent().getLocale()));
+        this.cronExpressionTf = new TextField(getTranslation("label.polling-interval-cron-expression", UI.getCurrent().getLocale()));
         this.cronExpressionTf.setRequired(true);
-        this.cronExpressionTf.setSuffixComponent(builderIcon);
         this.cronExpressionTf.setId("cronExpressionTf");
         formBinder.forField(this.cronExpressionTf)
-            .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
-            .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
             .bind(FileEventDrivenJobInstance::getCronExpression, FileEventDrivenJobInstance::setCronExpression);
         formLayout.add(cronExpressionTf);
 
 
-        this.timezoneCb = new ComboBox<>(getTranslation("label.timezone", UI.getCurrent().getLocale()));
-        ComboBox.ItemFilter<DateTimeUtil.TimezonePair> filter = (element, filterString) ->
-            element.zoneId.toLowerCase().contains(filterString.toLowerCase());
-        this.timezoneCb.setId("timezoneCb");
-        this.timezoneCb.setItems(filter, DateTimeUtil.getAllZoneIdsAndItsOffSet());
-        this.timezoneCb.setItemLabelGenerator((ItemLabelGenerator<DateTimeUtil.TimezonePair>) s -> String.format("%35s (UTC%s) %n", s.zoneId, s.offset).trim());
-        this.timezoneCb.setClearButtonVisible(true);
-        this.timezoneCb.setPlaceholder(getTranslation("label.choose-a-timezone", UI.getCurrent().getLocale()));
-        this.timezoneCb.setErrorMessage(getTranslation("error.timezone-required", UI.getCurrent().getLocale()));
-        formLayout.add(timezoneCb);
+        this.timezoneTf = new TextField(getTranslation("label.timezone", UI.getCurrent().getLocale()));
+        this.timezoneTf.setId("timezoneCb");
+        formBinder.forField(this.timezoneTf)
+            .bind(FileEventDrivenJobInstance::getTimeZone, FileEventDrivenJobInstance::setTimeZone);
+        this.timezoneTf.setClearButtonVisible(true);
+        this.timezoneTf.setPlaceholder(getTranslation("label.choose-a-timezone", UI.getCurrent().getLocale()));
+        this.timezoneTf.setErrorMessage(getTranslation("error.timezone-required", UI.getCurrent().getLocale()));
+        formLayout.add(timezoneTf);
 
         this.minFileAgeSecondsTf = new TextField(getTranslation("label.min-file-age-seconds", UI.getCurrent().getLocale()));
         this.minFileAgeSecondsTf.setRequired(true);
@@ -276,86 +259,54 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
     }
 
     /**
-     * Perform validation of the form.
-     *
-     * @param solrFileEventDrivenJob
-     * @return
-     */
-    private boolean performFormValidation(FileEventDrivenJobInstance solrFileEventDrivenJob) {
-
-        try {
-            AtomicBoolean isValid = new AtomicBoolean(true);
-
-            if(this.timezoneCb.getValue() != null) {
-                solrFileEventDrivenJob.setTimeZone(this.timezoneCb.getValue().zoneId);
-            }
-
-            formBinder.writeBean(solrFileEventDrivenJob);
-
-            if(!isValid.get()){
-                return false;
-            }
-        }
-        catch (ValidationException e) {
-            return false;
-        }
-
-        return true;
-    }
-    
-
-    /**
-     * This method interacts with with agent in order to create a new scheduler agent flow or update an existing flow and associated job.
-     *
-     * @param fileEventDrivenJobInstance
-     */
-    public void createOrUpdateScheduledJob(FileEventDrivenJobInstance fileEventDrivenJobInstance, IkasanAuthentication authentication) throws JsonProcessingException {
-        this.schedulerJobInstanceRecord.setSchedulerJobInstance(fileEventDrivenJobInstance);
-        this.schedulerJobInstanceRecord.setModifiedBy(authentication.getName());
-
-        this.schedulerJobInstanceService.save(this.schedulerJobInstanceRecord);
-     }
-
-    /**
      * Helper method to set controls on the form elements if the form is read only
      * or editable.
-     *
-     * @param enabled
      */
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-
-        this.timezoneCb.setEnabled(enabled);
-
-        this.jobNameTf.setEnabled(this.editMode == EditMode.NEW);
-        this.jobDescriptionTa.setEnabled(enabled);
-        this.cronExpressionTf.setEnabled(enabled);
-        this.timezoneCb.setEnabled(enabled);
-
-        this.saveButton.setVisible(enabled);
-        this.cancelButton.setVisible(enabled);
+    public void setEnabled() {
+        this.filenameTf.setEnabled(false);
+        this.archiveDirectoryTf.setEnabled(false);
+        this.jobNameTf.setEnabled(false);
+        this.jobDescriptionTa.setEnabled(false);
+        this.cronExpressionTf.setEnabled(false);
+        this.timezoneTf.setEnabled(false);
+        this.minFileAgeSecondsTf.setEnabled(false);
+        this.agentTf.setEnabled(false);
     }
 
     /**
      * Set the underlying pojo for the form along with the edit mode.
      *
      * @param fileEventDrivenJob
-     * @param editMode
      */
-    private void setJob(FileEventDrivenJobInstance fileEventDrivenJob, EditMode editMode) {
-        this.enabled = editMode == EditMode.NEW || editMode == EditMode.EDIT ? true : false;
+    private void setJob(FileEventDrivenJobInstance fileEventDrivenJob) {
         this.fileEventDrivenJobInstance = fileEventDrivenJob;
-        this.formBinder.readBean(this.fileEventDrivenJobInstance);
-        this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(fileEventDrivenJob.getTimeZone()));
-        this.editMode = editMode;
 
-        // make sure all value are bound before calling set enabled
-        this.setEnabled(this.enabled);
+        this.init();
+
+        this.formBinder.readBean(this.fileEventDrivenJobInstance);
+        this.setEnabled();
+        this.statusDiv.setStatus(this.schedulerJobInstanceRecord.getStatus());
     }
 
-    public void setJob(SchedulerJobInstanceRecord internalEventDrivenJobRecord, EditMode editMode) {
+    public void setJob(SchedulerJobInstanceRecord internalEventDrivenJobRecord) {
         this.schedulerJobInstanceRecord = internalEventDrivenJobRecord;
         this.setJob((FileEventDrivenJobInstance) this.schedulerJobInstanceService
-            .findById(internalEventDrivenJobRecord.getId()).getSchedulerJobInstance(), editMode);
+            .findById(internalEventDrivenJobRecord.getId()).getSchedulerJobInstance());
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
+            if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
+                this.fileEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+            }
+        });
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        this.schedulerJobStateChangeRegistration.remove();
+        this.schedulerJobStateChangeRegistration = null;
     }
 }

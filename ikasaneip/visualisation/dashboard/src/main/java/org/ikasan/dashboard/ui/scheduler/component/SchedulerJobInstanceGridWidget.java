@@ -411,8 +411,8 @@ public class SchedulerJobInstanceGridWidget extends Div {
         this.schedulerJobInstanceFilteringGrid.addItemDoubleClickListener(event -> {
             if(event.getItem().getType().equals(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE)) {
                 FileEventJobInstanceDialog fileEventJobDialog = new FileEventJobInstanceDialog(moduleMetaDataService.findById(event.getItem().getSchedulerJobInstance().getAgentName())
-                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobInstanceService);
-                fileEventJobDialog.setJob(event.getItem(), EditMode.READONLY);
+                    , this.jobInitiationService, this.systemEventLogger, this.schedulerJobInstanceService);
+                fileEventJobDialog.setJob(event.getItem());
 
                 fileEventJobDialog.open();
 
