@@ -8,10 +8,7 @@ import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecor
 import org.ikasan.scheduled.notification.model.SolrNotificationSendAudit;
 import org.ikasan.scheduled.notification.model.SolrNotificationSendAuditRecord;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
-import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
-import org.ikasan.spec.scheduled.notification.model.NotificationSendAudit;
-import org.ikasan.spec.scheduled.notification.model.NotificationSendAuditRecord;
+import org.ikasan.spec.scheduled.notification.model.*;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
 import org.jmock.Expectations;
@@ -191,6 +188,58 @@ public class EmailNotifierTest {
         BodyPart bodyPart = mimeMultipart.getBodyPart(0);
         String content = (String)bodyPart.getContent();
         Assert.assertTrue(content.contains("from template: job-1"));
+        Assert.assertEquals("subject-1", mimeMessage.getSubject());
+
+    }
+
+    @Test
+    public void test_with_a_template_2() throws MessagingException, IOException {
+
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
+
+        EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+        emailNotificationDetails.setJobName("job-1");
+        emailNotificationDetails.setMonitorType("ERROR");
+        emailNotificationDetails.setEmailSendTo(Arrays.asList("to-1"));
+        emailNotificationDetails.setEmailBody("body-1");
+        emailNotificationDetails.setEmailSubject("subject-1");
+        emailNotificationDetails.setEmailBodyTemplate("src/main/resources/templates/notification-overdue-email-body-template.txt");
+        emailNotificationDetails.setHtml(false);
+
+        Map<String,String> templateParams = new HashMap<>();
+        templateParams.put(EmailNotificationTemplateParameters.EMAIL_BODY_TEXT.name(), "from template body text!");
+
+        emailNotificationDetails.setEmailNotificationTemplateParameters(templateParams);
+
+        SolrEmailNotificationDetailsRecord record = new SolrEmailNotificationDetailsRecord();
+        record.setEmailNotificationDetails(emailNotificationDetails);
+
+        mockery.checking(new Expectations(){{
+            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "context-id-1","ERROR");
+            will(returnValue(record));
+            oneOf(notificationSendAuditService).find("context-instance-id-1", "job-1", "ERROR", "EMAIL");
+            will(returnValue(null));
+            oneOf(notificationSendAuditService).save(with(any(NotificationSendAuditRecord.class)));
+        }});
+
+        emailNotifier.invoke(notificationDetails);
+
+
+        List<WiserMessage> messages = wiser.getMessages();
+
+        Assert.assertTrue("Should be only one message", messages.size() == 1);
+
+        WiserMessage message = wiser.getMessages().get(0);
+
+        Assert.assertEquals("sender-1" , message.getEnvelopeSender());
+
+        MimeMessage mimeMessage = message.getMimeMessage();
+        MimeMultipart mimeMultipart = (MimeMultipart)mimeMessage.getContent();
+        Assert.assertTrue("should be only 1 bodypart", mimeMultipart.getCount() == 1);
+        BodyPart bodyPart = mimeMultipart.getBodyPart(0);
+        String content = (String)bodyPart.getContent();
+        Assert.assertTrue(content.contains("from template body text!"));
+        Assert.assertTrue(content.contains("You can access to log files : link-1"));
         Assert.assertEquals("subject-1", mimeMessage.getSubject());
 
     }
