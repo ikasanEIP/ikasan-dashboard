@@ -3,12 +3,14 @@ package org.ikasan.job.orchestration.model.notification;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 
 import java.util.List;
+import java.util.Map;
 
 public class EmailNotificationDetailsImpl implements EmailNotificationDetails {
 
     private String jobName;
     private String contextName;
     private String monitorType;
+    private Map<String,String> emailNotificationTemplateParameters;
     private List<String> emailSendTo;
     private List<String> emailSendCc;
     private List<String> emailSendBcc;
@@ -116,11 +118,22 @@ public class EmailNotificationDetailsImpl implements EmailNotificationDetails {
     }
 
     @Override
+    public Map<String,String> getEmailNotificationTemplateParameters() {
+        return emailNotificationTemplateParameters;
+    }
+
+    @Override
+    public void setEmailNotificationTemplateParameters(Map<String,String> emailNotificationTemplateParameters) {
+        this.emailNotificationTemplateParameters = emailNotificationTemplateParameters;
+    }
+
+    @Override
     public String toString() {
         return "EmailNotificationDetailsImpl{" +
             "jobName='" + jobName + '\'' +
             ", contextName='" + contextName + '\'' +
             ", monitorType='" + monitorType + '\'' +
+            ", emailNotificationTemplateParameters=" + emailNotificationTemplateParameters +
             ", emailSendTo=" + emailSendTo +
             ", emailSendCc=" + emailSendCc +
             ", emailSendBcc=" + emailSendBcc +
