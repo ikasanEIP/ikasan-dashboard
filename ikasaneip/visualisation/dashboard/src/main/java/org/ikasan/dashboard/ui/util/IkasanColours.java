@@ -9,4 +9,5 @@ public class IkasanColours {
     public static final String SCHEDULER_ERROR = "#ef5350";
     public static final String SCHEDULER_RUNNING = "rgba(133,181,225,1.0)";
     public static final String SCHEDULER_SKIPPED = "#19AFBA";
+    public static final String SCHEDULER_ENDED ="#8150af";
 }
