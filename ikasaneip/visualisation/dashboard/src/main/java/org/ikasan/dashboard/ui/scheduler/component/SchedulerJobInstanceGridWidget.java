@@ -616,6 +616,11 @@ public class SchedulerJobInstanceGridWidget extends Div {
                     (filter, 1, 0, null, null);
 
                 if(searchResults.getResultList().size() == 1) {
+                    SchedulerJobInstanceRecord record = searchResults.getResultList().get(0);
+                    record.setStatus(jobInstanceStateChangeEvent.getNewStatus().name());
+                    SchedulerJobInstance instance = record.getSchedulerJobInstance();
+                    instance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    record.setSchedulerJobInstance(instance);
                     ui.access(() -> this.schedulerJobInstanceFilteringGrid.refreshItem(searchResults.getResultList().get(0)));
                 }
             }
