@@ -2,8 +2,8 @@ package org.ikasan.scheduled.notification.model;
 
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 
-import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class SolrEmailNotificationDetails implements EmailNotificationDetails {
 
@@ -12,6 +12,8 @@ public class SolrEmailNotificationDetails implements EmailNotificationDetails {
     private String contextName;
 
     private String monitorType;
+
+    private Map<String,String> emailNotificationTemplateParameters;
 
     private List<String> emailSendTo;
 
@@ -34,11 +36,12 @@ public class SolrEmailNotificationDetails implements EmailNotificationDetails {
     public SolrEmailNotificationDetails() {
     }
 
-    public SolrEmailNotificationDetails(String jobName, String contextName, String monitorType, List<String> emailSendTo, List<String> emailSendCc,
-                                        List<String> emailSendBcc, String emailSubject, String emailBody, String emailSubjectTemplate,
+    public SolrEmailNotificationDetails(String jobName, String contextName, String monitorType, Map<String,String> emailNotificationTemplateParameters, List<String> emailSendTo,
+                                        List<String> emailSendCc, List<String> emailSendBcc, String emailSubject, String emailBody, String emailSubjectTemplate,
                                         String emailBodyTemplate, String attachment, boolean isHtml) {
         this.jobName = jobName;
         this.monitorType = monitorType;
+        this.emailNotificationTemplateParameters = emailNotificationTemplateParameters;
         this.emailSendTo = emailSendTo;
         this.emailSendCc = emailSendCc;
         this.emailSendBcc = emailSendBcc;
@@ -148,11 +151,22 @@ public class SolrEmailNotificationDetails implements EmailNotificationDetails {
     }
 
     @Override
+    public Map<String,String> getEmailNotificationTemplateParameters() {
+        return emailNotificationTemplateParameters;
+    }
+
+    @Override
+    public void setEmailNotificationTemplateParameters(Map<String,String> emailNotificationTemplateParameters) {
+        this.emailNotificationTemplateParameters = emailNotificationTemplateParameters;
+    }
+
+    @Override
     public String toString() {
         return "SolrEmailNotificationDetails{" +
             "jobName='" + jobName + '\'' +
             ", contextName=" + contextName +
             ", monitorType=" + monitorType +
+            ", emailNotificationTemplateParameters=" + emailNotificationTemplateParameters +
             ", emailSendTo=" + emailSendTo +
             ", emailSendCc=" + emailSendCc +
             ", emailSendBcc=" + emailSendBcc +

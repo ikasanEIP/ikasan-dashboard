@@ -1,0 +1,3 @@
+[( ${emailNotificationDetails.emailNotificationTemplateParameters.EMAIL_BODY_TEXT} )]
+
+You can access to log files : [( ${emailNotificationDetails.emailNotificationTemplateParameters.EMAIL_BODY_LINK} )]
