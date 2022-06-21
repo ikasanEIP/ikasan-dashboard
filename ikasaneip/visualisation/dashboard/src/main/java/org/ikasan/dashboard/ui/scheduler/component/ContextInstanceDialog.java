@@ -38,9 +38,11 @@ public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
         layout.setSizeFull();
         layout.add(this.contextInstanceWidget);
         layout.getStyle().set("padding-bottom", "20px");
+        layout.getStyle().set("padding-top", "0px");
 
         super.title.setText(String.format(getTranslation("label.context-instance", UI.getCurrent().getLocale())));
 
+        super.content.getStyle().set("padding-top", "0px");
         super.content.add(layout);
     }
 }

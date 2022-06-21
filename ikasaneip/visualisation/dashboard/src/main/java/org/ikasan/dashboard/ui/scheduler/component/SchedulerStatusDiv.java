@@ -81,5 +81,11 @@ public class SchedulerStatusDiv extends Div {
             super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.RELEASED.name()
                 , this.current.getLocale()));
         }
+        else if(status.equals(InstanceStatus.ENDED.name())) {
+            super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ENDED);
+            super.getElement().getStyle().set("color", "#FFF");
+            super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.ENDED.name()
+                , this.current.getLocale()));
+        }
     }
 }
