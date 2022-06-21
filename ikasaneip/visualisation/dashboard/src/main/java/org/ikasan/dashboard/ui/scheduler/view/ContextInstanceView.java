@@ -103,8 +103,8 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService);
 
-        H2 contextTemplateManagementLabel = new H2(String.format(getTranslation("label.context-instance", UI.getCurrent().getLocale())));
-        this.add(contextTemplateManagementLabel, this.contextInstanceWidget);
+        this.getStyle().set("padding-top", "0px");
+        this.add(this.contextInstanceWidget);
     }
 
     @Override
