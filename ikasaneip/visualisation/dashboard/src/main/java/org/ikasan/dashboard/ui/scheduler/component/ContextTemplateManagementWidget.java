@@ -46,7 +46,6 @@ public class ContextTemplateManagementWidget extends Div {
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private FormLayout formLayout;
     private IkasanAuthentication authentication;
-    private SchedulerService schedulerService;
 
     private AceEditor aceEditor;
     protected SchedulerVisualisation schedulerVisualisation;
@@ -79,7 +78,7 @@ public class ContextTemplateManagementWidget extends Div {
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
-                                           JobInitiationService jobInitiationService, SchedulerService schedulerService) {
+                                           JobInitiationService jobInitiationService) {
 
         this.scheduledContextService = scheduledContextService;
         this.scheduledContextInstanceService = scheduledContextInstanceService;
@@ -87,7 +86,6 @@ public class ContextTemplateManagementWidget extends Div {
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.contextTemplate = contextTemplate;
         this.jobInitiationService = jobInitiationService;
-        this.schedulerService = schedulerService;
 
         this.init(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, jobInitiationService);
@@ -266,7 +264,7 @@ public class ContextTemplateManagementWidget extends Div {
                                                      LogStreamingService logStreamingService, JobInitiationService jobInitiationService) {
         this.contextInstanceGridWidget = new ContextInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate, this.schedulerJobInstanceService,
-            jobInitiationService, this.schedulerService);
+            jobInitiationService);
         this.contextInstanceGridWidget.setWidthFull();
         this.contextInstanceGridWidget.setHeight("75vh");
         this.contextInstanceGridWidget.setVisible(false);

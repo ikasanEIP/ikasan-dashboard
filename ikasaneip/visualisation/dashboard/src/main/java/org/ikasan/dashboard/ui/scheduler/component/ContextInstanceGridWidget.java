@@ -55,7 +55,7 @@ public class ContextInstanceGridWidget extends Div {
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
-                                     JobInitiationService jobInitiationService, SchedulerService schedulerService) {
+                                     JobInitiationService jobInitiationService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -63,7 +63,7 @@ public class ContextInstanceGridWidget extends Div {
         this.jobInitiationService = jobInitiationService;
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService, schedulerService);
+            , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService);
 
         Div div = new Div();
         div.setSizeFull();
@@ -84,8 +84,7 @@ public class ContextInstanceGridWidget extends Div {
     private void createGrid(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                             ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                             MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
-                            SchedulerService schedulerService) {
+                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService) {
         // Create a modulesGrid bound to the list
         ContextInstanceSearchFilter contextInstanceSearchFilter = new SolrContextInstanceSearchFilterImpl();
         contextInstanceSearchFilter.setContextSearchFilter(contextTemplate.getName());
@@ -123,7 +122,7 @@ public class ContextInstanceGridWidget extends Div {
                 ContextInstanceDialog contextInstanceDialog = new ContextInstanceDialog(this.scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, scheduledContextInstanceRecord.getContextInstance(), this.contextTemplate, schedulerJobInstanceService
-                    , this.jobInitiationService, schedulerService);
+                    , this.jobInitiationService);
 
                 contextInstanceDialog.open();
             });

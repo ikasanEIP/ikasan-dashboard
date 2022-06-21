@@ -70,9 +70,6 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     @Resource
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
-    @Resource
-    private SchedulerService schedulerService;
-
     @Value("${scheduled.job.context.queue.directory}")
     private String queueDirectory;
 
@@ -102,7 +99,7 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     private void init() {
         this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, ""
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.schedulerService);
+            , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService);
 
         H2 contextTemplateManagementLabel = new H2(String.format(getTranslation("label.context-template-management", UI.getCurrent().getLocale())));
         this.add(contextTemplateManagementLabel, this.contextTemplateManagementWidget);

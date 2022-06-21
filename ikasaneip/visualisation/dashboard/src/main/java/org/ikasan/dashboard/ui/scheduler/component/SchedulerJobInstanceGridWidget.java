@@ -65,7 +65,6 @@ public class SchedulerJobInstanceGridWidget extends Div {
     private SystemEventLogger systemEventLogger;
     private JobInitiationService jobInitiationService;
     private ModuleMetaDataService moduleMetaDataService;
-    private SchedulerService schedulerService;
 
     /**
      * Constructor
@@ -74,7 +73,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                           LogStreamingService logStreamingService, ContextInstance contextInstance, SchedulerJobInstanceService schedulerJobInstanceService,
-                                          JobInitiationService jobInitiationService, SchedulerService schedulerService) {
+                                          JobInitiationService jobInitiationService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
@@ -83,7 +82,6 @@ public class SchedulerJobInstanceGridWidget extends Div {
         this.systemEventLogger = systemEventLogger;
         this.jobInitiationService = jobInitiationService;
         this.moduleMetaDataService = moduleMetaDataService;
-        this.schedulerService = schedulerService;
 
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
@@ -261,6 +259,34 @@ public class SchedulerJobInstanceGridWidget extends Div {
 
                     internalEventDrivenJobSubmissionDialog.open();
                 }
+                else if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof FileEventDrivenJobInstance) {
+                    ConfirmDialog confirmDialog = new ConfirmDialog();
+                    confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-file-job", UI.getCurrent().getLocale()));
+                    confirmDialog.setText(getTranslation("confirm-dialog-text.submit-file-job", UI.getCurrent().getLocale()));
+
+                    confirmDialog.setCancelable(true);
+
+                    confirmDialog.open();
+
+                    confirmDialog.addConfirmListener(confirmEvent -> {
+                        try {
+                            ModuleMetaData agent = this.moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
+                            this.jobInitiationService.raiseFileEventSchedulerJob(agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getJobName());
+
+                            logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
+
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
+                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
+                                , this.authentication.getName());
+
+                            NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                            NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
+                        }
+                    });
+                }
                 else if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof QuartzScheduleDrivenJobInstance) {
                     ConfirmDialog confirmDialog = new ConfirmDialog();
                     confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-quartz-job", UI.getCurrent().getLocale()));
@@ -273,21 +299,15 @@ public class SchedulerJobInstanceGridWidget extends Div {
                     confirmDialog.addConfirmListener(confirmEvent -> {
                         try {
                             ModuleMetaData agent = this.moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
-                            boolean success = this.schedulerService.triggerFlowNow(agent.getUrl(), agent.getName()
-                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName());
+                            this.jobInitiationService.raiseQuartzSchedulerJob(agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getJobName());
 
-                            if(success) {
-                                logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
+                            logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
 
-                                this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
-                                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
-                                    , this.authentication.getName());
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
+                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
+                                , this.authentication.getName());
 
-                                NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
-                            }
-                            else {
-                                NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
-                            }
+                            NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                         }
                         catch (Exception e) {
                             e.printStackTrace();
