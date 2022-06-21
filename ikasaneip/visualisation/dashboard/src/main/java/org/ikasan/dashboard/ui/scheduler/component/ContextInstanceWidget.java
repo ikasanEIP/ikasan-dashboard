@@ -2,19 +2,29 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.router.RouteConfiguration;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
+import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
@@ -26,9 +36,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.general.SchedulerService;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateSearchFilter;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -36,6 +44,7 @@ import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
+import java.nio.Buffer;
 
 public class ContextInstanceWidget extends Div {
 
@@ -67,6 +76,8 @@ public class ContextInstanceWidget extends Div {
 
     private ContextInstance contextInstance;
     private ContextTemplate contextTemplate;
+
+    private SchedulerStatusDiv statusDiv;
 
     /**
      * Constructor
@@ -121,10 +132,63 @@ public class ContextInstanceWidget extends Div {
         binder.readBean(this.contextInstance);
 
         this.formLayout = new FormLayout();
+        formLayout.getStyle().set("padding-top", "0px");
+        this.statusDiv = new SchedulerStatusDiv();
+        this.statusDiv.setHeight("45px");
+        this.statusDiv.setWidth("100%");
+        this.statusDiv.setStatus(this.contextInstance.getStatus());
+
+        formLayout.add(this.statusDiv, 4);
+        formLayout.setResponsiveSteps(
+            // Use four columns by default
+            new FormLayout.ResponsiveStep("0", 4)
+        );
+
         this.formLayout.setWidth("100%");
 
-        this.formLayout.add(this.contextInstanceId, this.contextInstanceStatus, this.contextNameTf
-            , this.startWindowCronExpressionTf, this.descriptionTa, this.endWindowCronExpressionTf);
+        H2 contextInstanceLabel = new H2(String.format(getTranslation("label.context-instance", UI.getCurrent().getLocale())));
+        contextInstanceLabel.getStyle().set("padding-top", "5px");
+        contextInstanceLabel.getStyle().set("margin", "20px");
+        formLayout.add(contextInstanceLabel, 2);
+
+        VerticalLayout buttonLayout = new VerticalLayout();
+        buttonLayout.setWidth("100%");
+
+        Button resetButton = new Button("Reset Context");
+        resetButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+        resetButton.addClickListener(event -> {
+            ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+            if(contextMachine != null) {
+                try {
+                    this.saveContextInstance(contextMachine.getContext(), InstanceStatus.ENDED);
+                    this.statusDiv.setStatus(InstanceStatus.ENDED);
+                    ContextMachineCache.instance().remove(contextMachine);
+                    contextMachine.resetContextInstance();
+                    ContextMachineCache.instance().put(contextMachine);
+                    this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextMachine.getContext());
+                    String route = RouteConfiguration.forSessionScope()
+                        .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
+                            .getByContextName(this.contextInstance.getName()).getContext().getId()+"_scheduledContextInstance");
+
+                    getUI().ifPresent(ui -> ui.getPage().open(route));
+
+                    resetButton.setVisible(false);
+                }
+                catch (Exception e) {
+                    NotificationHelper.showErrorNotification("An error has occurred attempting to reset the context! Please contact Ikasan support.");
+                }
+            }
+        });
+
+        buttonLayout.add(resetButton);
+        buttonLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, resetButton);
+        buttonLayout.setMargin(false);
+        buttonLayout.setSpacing(false);
+
+        formLayout.add(buttonLayout, 2);
+
+        this.formLayout.add(this.contextInstanceId, this.contextNameTf
+            , this.startWindowCronExpressionTf, this.endWindowCronExpressionTf, this.descriptionTa);
 
         this.initialiseEditor();
         this.initialiseVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
@@ -137,6 +201,7 @@ public class ContextInstanceWidget extends Div {
         this.initialiseTabs();
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(this.tabs);
+        this.getStyle().set("padding-top", "0px");
         this.add(this.formLayout, tabLayout, this.aceEditor, this.schedulerVisualisation
             , this.schedulerJobInstanceGridWidget, this.contextTemplateStatisticsWidget, this.contextInstanceAuditWidget);
     }
@@ -274,5 +339,16 @@ public class ContextInstanceWidget extends Div {
         this.contextInstanceAuditWidget.setHeight("75vh");
         this.contextInstanceAuditWidget.setVisible(false);
 
+    }
+
+    protected void saveContextInstance(ContextInstance contextInstance, InstanceStatus instanceStatus) {
+        contextInstance.setStatus(instanceStatus);
+        ScheduledContextInstanceRecord scheduledContextInstanceRecord = new ScheduledContextInstanceRecordImpl();
+        scheduledContextInstanceRecord.setContextName(contextInstance.getName());
+        scheduledContextInstanceRecord.setContextInstance(contextInstance);
+        scheduledContextInstanceRecord.setTimestamp(contextInstance.getCreatedDateTime());
+        scheduledContextInstanceRecord.setStatus(contextInstance.getStatus().name());
+
+        scheduledContextInstanceService.save(scheduledContextInstanceRecord);
     }
 }
