@@ -11,6 +11,7 @@ import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationTemplateParameters;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
 import org.junit.Assert;
@@ -23,6 +24,8 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SolrEmailNotificationDetailsDaoTest extends SolrTestCaseJ4 {
 
@@ -66,11 +69,16 @@ public class SolrEmailNotificationDetailsDaoTest extends SolrTestCaseJ4 {
         {
             init(server);
 
+            Map<String,String> emailTemplateParameters = new HashMap<>();
+            emailTemplateParameters.put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK.name(), "link-1");
+            emailTemplateParameters.put(EmailNotificationTemplateParameters.EMAIL_BODY_TEXT.name(), "text-1");
+
             EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
             emailNotificationDetails.setJobName("job-1");
             emailNotificationDetails.setContextName("context-1");
             emailNotificationDetails.setMonitorType("ERROR");
             emailNotificationDetails.setEmailSendTo(Arrays.asList("to-1", "to-2"));
+            emailNotificationDetails.setEmailNotificationTemplateParameters(emailTemplateParameters);
             emailNotificationDetails.setEmailBody("email-body-1");
             emailNotificationDetails.setEmailSubject("email-subject-1");
             emailNotificationDetails.setHtml(false);
@@ -88,6 +96,9 @@ public class SolrEmailNotificationDetailsDaoTest extends SolrTestCaseJ4 {
             Assert.assertEquals("email-body-1", foundEmailNotificationDetails.getEmailBody());
             Assert.assertEquals("email-subject-1", foundEmailNotificationDetails.getEmailSubject());
             Assert.assertEquals(false, foundEmailNotificationDetails.isHtml());
+            Assert.assertEquals("link-1", foundEmailNotificationDetails.getEmailNotificationTemplateParameters().get(EmailNotificationTemplateParameters.EMAIL_BODY_LINK.name()));
+            Assert.assertEquals("text-1", foundEmailNotificationDetails.getEmailNotificationTemplateParameters().get(EmailNotificationTemplateParameters.EMAIL_BODY_TEXT.name()));
+            Assert.assertNull(foundEmailNotificationDetails.getEmailNotificationTemplateParameters().get(EmailNotificationTemplateParameters.EMAIL_SUBJECT_LINK.name()));
 
             Assert.assertNull(this.dao.findByJobNameAndMonitorType("bad-job", "context-1", "ERROR"));
         }
