@@ -50,7 +50,6 @@ public class ContextInstanceWidget extends Div {
     private ContextTemplateStatisticsWidget contextTemplateStatisticsWidget;
     private ContextInstanceAuditWidget contextInstanceAuditWidget;
     private JobInitiationService jobInitiationService;
-    private SchedulerService schedulerService;
 
     private TextField contextInstanceId;
     private TextField contextInstanceStatus;
@@ -77,7 +76,7 @@ public class ContextInstanceWidget extends Div {
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
-                                 SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService, SchedulerService schedulerService) {
+                                 SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
@@ -85,7 +84,6 @@ public class ContextInstanceWidget extends Div {
         this.contextInstance = contextInstance;
         this.contextTemplate = contextTemplate;
         this.jobInitiationService = jobInitiationService;
-        this.schedulerService = schedulerService;
 
         this.init(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
@@ -248,7 +246,7 @@ public class ContextInstanceWidget extends Div {
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobInstanceGridWidget = new SchedulerJobInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextInstance, this.schedulerJobInstanceService,
-            this.jobInitiationService, this.schedulerService);
+            this.jobInitiationService);
         this.schedulerJobInstanceGridWidget.setWidthFull();
         this.schedulerJobInstanceGridWidget.setHeight("75vh");
         this.schedulerJobInstanceGridWidget.setVisible(false);

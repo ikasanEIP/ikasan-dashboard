@@ -80,9 +80,6 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
     @Resource
     private JobInitiationService jobInitiationService;
 
-    @Resource
-    private SchedulerService schedulerService;
-
     private ContextInstanceWidget contextInstanceWidget;
 
     private ContextTemplate contextTemplate;
@@ -104,7 +101,7 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
     private void init() {
         this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.schedulerService);
+            , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService);
 
         H2 contextTemplateManagementLabel = new H2(String.format(getTranslation("label.context-instance", UI.getCurrent().getLocale())));
         this.add(contextTemplateManagementLabel, this.contextInstanceWidget);
