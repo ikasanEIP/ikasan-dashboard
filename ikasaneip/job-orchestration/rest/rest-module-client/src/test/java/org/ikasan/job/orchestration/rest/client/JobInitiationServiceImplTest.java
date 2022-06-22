@@ -37,7 +37,7 @@ public class JobInitiationServiceImplTest {
     public void setup() {
         contextBaseUrl = "http://localhost:" + wireMockRule.port();
         Environment environment = new StandardEnvironment();
-        uut = new JobInitiationServiceImpl(environment, new HttpComponentsClientHttpRequestFactory());
+        uut = new JobInitiationServiceImpl(environment, new HttpComponentsClientHttpRequestFactory(), 3);
     }
 
     @Test
@@ -116,8 +116,7 @@ public class JobInitiationServiceImplTest {
     }
 
     @Test
-    public void test_submit_file_job_success() throws JsonProcessingException
-    {
+    public void test_submit_file_job_success() throws JsonProcessingException, InterruptedException {
         JobDryRunModeDto jobDryRunTrue = new JobDryRunModeDto();
         jobDryRunTrue.setJobName("jobName");
         jobDryRunTrue.setIsDryRun(true);
@@ -157,6 +156,7 @@ public class JobInitiationServiceImplTest {
 
         uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", "jobName");
 
+        Thread.sleep(5000);
         verify(getRequestedFor(urlEqualTo("/rest/scheduler/agentName/jobName"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
@@ -229,9 +229,8 @@ public class JobInitiationServiceImplTest {
         uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", "jobName");
     }
 
-    @Test(expected = RestClientException.class)
-    public void test_submit_file_job_exception_set_job_dry_run_false() throws JsonProcessingException
-    {
+    @Test
+    public void test_submit_file_job_exception_set_job_dry_run_false() throws JsonProcessingException, InterruptedException {
         JobDryRunModeDto jobDryRunTrue = new JobDryRunModeDto();
         jobDryRunTrue.setJobName("jobName");
         jobDryRunTrue.setIsDryRun(true);
@@ -270,6 +269,8 @@ public class JobInitiationServiceImplTest {
                     .withStatus(403)));
 
         uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", "jobName");
+
+        Thread.sleep(5000);
     }
 
     private class MockTrigger implements Trigger {
