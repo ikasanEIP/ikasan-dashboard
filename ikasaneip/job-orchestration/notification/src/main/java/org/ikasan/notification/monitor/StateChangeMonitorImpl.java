@@ -8,12 +8,16 @@ import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEv
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
 public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificationDetails> implements Monitor<GenericNotificationDetails> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(StateChangeMonitorImpl.class);
 
     private List<Future<?>> errorNotificationsExecutors = new ArrayList<>();
 
@@ -23,13 +27,14 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
      */
     public StateChangeMonitorImpl(ExecutorService executorService) {
         super(executorService);
+        LOG.info("StateChangeMonitorImpl is being created!");
 
         errorNotificationsExecutors.clear();
         for ( Object contextName : ContextMachineCache.instance().contextNames() ) {
             ContextMachine contextMachine = ContextMachineCache.instance().getByContextName((String) contextName);
             errorNotificationsExecutors.add(Executors.newSingleThreadExecutor().submit(new ErrorNotificationsRunner(contextMachine)));
         }
-
+        LOG.info(errorNotificationsExecutors.size() + " number of Contexts are being monitored now!");
     }
 
     @Override
