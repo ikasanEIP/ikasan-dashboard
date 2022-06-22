@@ -424,8 +424,8 @@ public class SchedulerJobInstanceGridWidget extends Div {
             }
             else if(event.getItem().getType().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE)) {
                 QuartzDrivenScheduledJobInstanceDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobInstanceDialog(moduleMetaDataService.findById(event.getItem().getSchedulerJobInstance().getAgentName())
-                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService);
-                quartzDrivenScheduledJobDialog.setJob(event.getItem(), EditMode.READONLY);
+                    , this.jobInitiationService, systemEventLogger, this.schedulerJobInstanceService);
+                quartzDrivenScheduledJobDialog.setJob(event.getItem());
 
                 quartzDrivenScheduledJobDialog.open();
 
