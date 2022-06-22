@@ -154,6 +154,8 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
                 this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
                     , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
                     , this.authentication.getName());
+
+                    NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                 }
                 catch (Exception e) {
                     e.printStackTrace();
