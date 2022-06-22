@@ -1,10 +1,15 @@
 {
-  "jobName" : "AC_SCRIPT_Interface_Reuters_RIC_1500",
-  "contextName" : "AC_CHAIN_Reuters_1500",
-  "monitorType" : "OVERDUE",
+  "jobName" : "AC_CHAIN_Refresh_CDWAnvilSOIBondEUClose",
+  "contextName" : "AC_CHAIN_AnvilSOI_1530",
+  "monitorType" : "ERROR",
+  "emailNotificationTemplateParameters" : {
+    "EMAIL_BODY_TEXT" : "Refresh SOI failure.",
+    "EMAIL_SUBJECT_TEXT" : " 1530 Anvil SOI Load Error - Bond EU Close"
+  },
   "emailSendTo" : [ "DL-MHI-ISD-MarketDataSystem@uk.mizuho-sc.com", "owen.finnegan@uk.mizuho-sc.com" ],
-  "emailSubject" : " Reuters 1500 capture failed",
-  "emailBody" : "Reuters Capture failure.",
+  "emailSubject" : " 1530 Anvil SOI Load Error - Bond EU Close",
+  "emailBody" : "Refresh SOI failure.",
+  "emailBodyTemplate" : "src/main/resources/templates/notification-error-email-body-template.txt",
   "attachment" : "stderr.log",
   "html" : false
 }
