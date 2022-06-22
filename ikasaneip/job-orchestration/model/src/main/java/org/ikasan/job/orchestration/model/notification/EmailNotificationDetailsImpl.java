@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.model.notification;
 
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -119,6 +120,9 @@ public class EmailNotificationDetailsImpl implements EmailNotificationDetails {
 
     @Override
     public Map<String,String> getEmailNotificationTemplateParameters() {
+        if (emailNotificationTemplateParameters == null) {
+            emailNotificationTemplateParameters = new HashMap<>();
+        }
         return emailNotificationTemplateParameters;
     }
 
