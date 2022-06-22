@@ -2,6 +2,7 @@ package org.ikasan.scheduled.notification.model;
 
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -152,6 +153,9 @@ public class SolrEmailNotificationDetails implements EmailNotificationDetails {
 
     @Override
     public Map<String,String> getEmailNotificationTemplateParameters() {
+        if (emailNotificationTemplateParameters == null) {
+            emailNotificationTemplateParameters = new HashMap<>();
+        }
         return emailNotificationTemplateParameters;
     }
 
