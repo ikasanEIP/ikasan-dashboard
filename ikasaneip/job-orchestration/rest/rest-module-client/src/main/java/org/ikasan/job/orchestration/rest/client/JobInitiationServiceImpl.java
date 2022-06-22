@@ -2,7 +2,6 @@ package org.ikasan.job.orchestration.rest.client;
 
 import org.ikasan.job.orchestration.rest.client.dto.JobDryRunModeDto;
 import org.ikasan.rest.client.ModuleRestService;
-import org.ikasan.rest.client.SchedulerRestServiceImpl;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.slf4j.Logger;
@@ -16,17 +15,24 @@ import org.springframework.web.client.RestClientException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class JobInitiationServiceImpl extends ModuleRestService implements JobInitiationService {
 
-    private static Logger logger = LoggerFactory.getLogger(SchedulerRestServiceImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(JobInitiationServiceImpl.class);
 
     public static final String SCHEDULER_JOB_INITIATION_URL = "/rest/schedulerJobInitiation";
     public static final String FLOW_SCHEDULE_FIRE_NOW_URL = "/rest/scheduler/{moduleName}/{flowName}";
     public static final String JOB_DRY_RUN_MODE_URL = "/rest/dryRun/jobmode";
 
-    public JobInitiationServiceImpl(Environment environment, HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
+    private int fileJobSubmissionWaitTimeSeconds;
+
+    public JobInitiationServiceImpl(Environment environment, HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory
+        , int fileJobSubmissionWaitTimeSeconds) {
         super(environment, httpComponentsClientHttpRequestFactory);
+        this.fileJobSubmissionWaitTimeSeconds = fileJobSubmissionWaitTimeSeconds;
     }
 
     @Override
@@ -48,7 +54,17 @@ public class JobInitiationServiceImpl extends ModuleRestService implements JobIn
     public void raiseFileEventSchedulerJob(String contextUrl, String agentName, String jobName) {
         this.setJobDryRunMode(contextUrl, jobName, true);
         this.triggerJobNow(contextUrl, agentName, jobName);
-        this.setJobDryRunMode(contextUrl, jobName, false);
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.schedule(() -> {
+                try {
+                    this.setJobDryRunMode(contextUrl, jobName, false);
+                }
+                catch (RestClientException e) {
+                    logger.error("An error has occurred setting job dry run to false", e);
+                }
+            }
+        , this.fileJobSubmissionWaitTimeSeconds, TimeUnit.SECONDS);
+        scheduler.shutdown();
     }
 
     private void setJobDryRunMode(String contextUrl, String jobName, boolean isDryRun) {
@@ -70,6 +86,7 @@ public class JobInitiationServiceImpl extends ModuleRestService implements JobIn
         Map<String, String> parameters = new HashMap<>()
         {{put("moduleName",agentName);{put("flowName",jobName);}}};
         String url = contextUrl+FLOW_SCHEDULE_FIRE_NOW_URL;
+        logger.info("Context URL[{}] Payload[{}] ", url, parameters);
         try
         {
             restTemplate.exchange(url, HttpMethod.GET, entity, String.class, parameters);

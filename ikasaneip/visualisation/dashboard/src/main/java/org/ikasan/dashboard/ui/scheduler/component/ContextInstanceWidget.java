@@ -1,6 +1,8 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -16,6 +18,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.shared.Registration;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
@@ -23,6 +26,8 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
@@ -48,6 +53,8 @@ import java.io.IOException;
 import java.nio.Buffer;
 
 public class ContextInstanceWidget extends Div {
+
+    private Registration contextInstanceStateChangeRegistration;
 
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
@@ -361,5 +368,29 @@ public class ContextInstanceWidget extends Div {
         scheduledContextInstanceRecord.setStatus(contextInstance.getStatus().name());
 
         scheduledContextInstanceService.save(scheduledContextInstanceRecord);
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        UI ui = attachEvent.getUI();
+
+        contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
+            if (contextInstanceStateChangeEvent.getContextInstance() != null) {
+                ui.access(() ->  {
+                    if(this.contextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
+                        this.contextInstance = contextInstance;
+                        this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        if(this.contextInstanceStateChangeRegistration != null) {
+            this.contextInstanceStateChangeRegistration.remove();
+            this.contextInstanceStateChangeRegistration = null;
+        }
     }
 }
