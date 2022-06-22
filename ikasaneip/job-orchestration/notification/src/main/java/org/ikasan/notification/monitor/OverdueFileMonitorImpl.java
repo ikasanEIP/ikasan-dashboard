@@ -16,10 +16,10 @@ import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.joda.time.DateTime;
 import org.quartz.TriggerUtils;
 import org.quartz.impl.triggers.CronTriggerImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +29,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificationDetails> implements Monitor<GenericNotificationDetails> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(StateChangeMonitorImpl.class);
 
     private SchedulerJobService schedulerJobService;
 
@@ -43,6 +45,7 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
      */
     public OverdueFileMonitorImpl(Integer fileArrivalToleranceInMinutes, ExecutorService executorService, SchedulerJobService schedulerJobService) {
         super(executorService);
+        LOG.info("StateChangeMonitorImpl is being created!");
 
         this.fileArrivalToleranceInMinutes = fileArrivalToleranceInMinutes;
         this.schedulerJobService = schedulerJobService;
@@ -52,6 +55,7 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
             ContextInstance contextInstance = ContextMachineCache.instance().getByContextName((String) contextName).getContext();
             overdueFileNotificationsExecutors.add(Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new OverdueFileNotificationsRunner(contextInstance),1,1, TimeUnit.MINUTES));
         }
+        LOG.info(overdueFileNotificationsExecutors.size() + " number of Contexts are being monitored now!");
     }
 
     @Override
