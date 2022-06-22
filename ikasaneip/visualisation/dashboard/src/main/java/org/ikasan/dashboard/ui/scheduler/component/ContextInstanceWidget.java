@@ -3,6 +3,7 @@ package org.ikasan.dashboard.ui.scheduler.component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -157,27 +158,37 @@ public class ContextInstanceWidget extends Div {
         Button resetButton = new Button("Reset Context");
         resetButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         resetButton.addClickListener(event -> {
-            ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
-            if(contextMachine != null) {
-                try {
-                    this.saveContextInstance(contextMachine.getContext(), InstanceStatus.ENDED);
-                    this.statusDiv.setStatus(InstanceStatus.ENDED);
-                    ContextMachineCache.instance().remove(contextMachine);
-                    contextMachine.resetContextInstance();
-                    ContextMachineCache.instance().put(contextMachine);
-                    this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextMachine.getContext());
-                    String route = RouteConfiguration.forSessionScope()
-                        .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
-                            .getByContextName(this.contextInstance.getName()).getContext().getId()+"_scheduledContextInstance");
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog-header.reset-context", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog-text.reset-context", UI.getCurrent().getLocale()));
 
-                    getUI().ifPresent(ui -> ui.getPage().open(route));
+            confirmDialog.setCancelable(true);
 
-                    resetButton.setVisible(false);
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+                if (contextMachine != null) {
+                    try {
+                        this.saveContextInstance(contextMachine.getContext(), InstanceStatus.ENDED);
+                        this.statusDiv.setStatus(InstanceStatus.ENDED);
+                        ContextMachineCache.instance().remove(contextMachine);
+                        contextMachine.resetContextInstance();
+                        ContextMachineCache.instance().put(contextMachine);
+                        this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextMachine.getContext());
+                        String route = RouteConfiguration.forSessionScope()
+                            .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
+                                .getByContextName(this.contextInstance.getName()).getContext().getId() + "_scheduledContextInstance");
+
+                        getUI().ifPresent(ui -> ui.getPage().open(route));
+
+                        resetButton.setVisible(false);
+                    }
+                    catch (Exception e) {
+                        NotificationHelper.showErrorNotification("An error has occurred attempting to reset the context! Please contact Ikasan support.");
+                    }
                 }
-                catch (Exception e) {
-                    NotificationHelper.showErrorNotification("An error has occurred attempting to reset the context! Please contact Ikasan support.");
-                }
-            }
+            });
         });
 
         buttonLayout.add(resetButton);
