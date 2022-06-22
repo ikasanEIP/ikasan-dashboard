@@ -1,14 +1,14 @@
 {
-  "jobName" : "AC_CHAIN_Refresh_CDWAnvilSOIBondEUClose",
-  "contextName" : "AC_CHAIN_AnvilSOI_1530",
+  "jobName" : "job-from-template-1",
+  "contextName" : "context-from-template-1",
   "monitorType" : "ERROR",
   "emailNotificationTemplateParameters" : {
-    "EMAIL_BODY_TEXT" : "Refresh SOI failure.",
-    "EMAIL_SUBJECT_TEXT" : " 1530 Anvil SOI Load Error - Bond EU Close"
+    "EMAIL_BODY_TEXT" : "body-text-from-template-1",
+    "EMAIL_SUBJECT_TEXT" : "subject-from-template-1"
   },
-  "emailSendTo" : [ "DL-MHI-ISD-MarketDataSystem@uk.mizuho-sc.com", "owen.finnegan@uk.mizuho-sc.com" ],
-  "emailSubject" : " 1530 Anvil SOI Load Error - Bond EU Close",
-  "emailBody" : "Refresh SOI failure.",
+  "emailSendTo" : [ "11@email.com", "22@email.com" ],
+  "emailSubject" : "subject-from-template-1",
+  "emailBody" : "body-text-from-template-1",
   "emailBodyTemplate" : "src/main/resources/templates/notification-error-email-body-template.txt",
   "attachment" : "stderr.log",
   "html" : false
