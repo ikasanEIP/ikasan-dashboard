@@ -61,10 +61,10 @@ public class EmailNotificationDetailsControllerTest extends AbstractRestMvcTest
         int status = mvcResult.getResponse().getStatus();
         assertEquals(HttpStatus.OK.value(), status);
 
-        EmailNotificationDetails details = emailNotificationDetailsService.findByJobNameAndMonitorType("AC_SCRIPT_Interface_Reuters_RIC_1500","AC_CHAIN_Reuters_1500","OVERDUE");
+        EmailNotificationDetails details = emailNotificationDetailsService.findByJobNameAndMonitorType("AC_CHAIN_Refresh_CDWAnvilSOIBondEUClose","AC_CHAIN_AnvilSOI_1530","ERROR");
 
         assertNotNull(details);
-        assertEquals(" Reuters 1500 capture failed", details.getEmailSubject());
+        assertEquals(" 1530 Anvil SOI Load Error - Bond EU Close", details.getEmailSubject());
     }
 
     @Test
