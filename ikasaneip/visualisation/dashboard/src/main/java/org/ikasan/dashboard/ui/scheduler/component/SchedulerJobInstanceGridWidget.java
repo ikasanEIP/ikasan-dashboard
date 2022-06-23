@@ -415,12 +415,6 @@ public class SchedulerJobInstanceGridWidget extends Div {
                 fileEventJobDialog.setJob(event.getItem());
 
                 fileEventJobDialog.open();
-
-                fileEventJobDialog.addOpenedChangeListener(openedChangeEvent -> {
-                    if(!openedChangeEvent.isOpened()) {
-                        this.schedulerJobInstanceFilteringGrid.refreshItem(event.getItem());
-                    }
-                });
             }
             else if(event.getItem().getType().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE)) {
                 QuartzDrivenScheduledJobInstanceDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobInstanceDialog(moduleMetaDataService.findById(event.getItem().getSchedulerJobInstance().getAgentName())
@@ -428,12 +422,6 @@ public class SchedulerJobInstanceGridWidget extends Div {
                 quartzDrivenScheduledJobDialog.setJob(event.getItem());
 
                 quartzDrivenScheduledJobDialog.open();
-
-                quartzDrivenScheduledJobDialog.addOpenedChangeListener(openedChangeEvent -> {
-                    if(!openedChangeEvent.isOpened()) {
-                        this.schedulerJobInstanceFilteringGrid.refreshItem(event.getItem());
-                    }
-                });
             }
             else if(event.getItem().getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)) {
                 InternalEventDrivenJobInstanceDialog internalEventDrivenJobDialog = new InternalEventDrivenJobInstanceDialog(moduleMetaDataService.findById(event.getItem().getSchedulerJobInstance().getAgentName())
@@ -442,13 +430,6 @@ public class SchedulerJobInstanceGridWidget extends Div {
                 internalEventDrivenJobDialog.setJob(event.getItem(), EditMode.READONLY);
 
                 internalEventDrivenJobDialog.open();
-
-                internalEventDrivenJobDialog.addOpenedChangeListener(openedChangeEvent -> {
-                    if(!openedChangeEvent.isOpened()) {
-                        this.schedulerJobInstanceFilteringGrid.refreshItem(event.getItem());
-                    }
-                });
-
             }
         });
 

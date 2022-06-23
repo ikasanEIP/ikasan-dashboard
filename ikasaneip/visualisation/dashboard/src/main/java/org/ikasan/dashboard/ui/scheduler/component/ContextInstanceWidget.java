@@ -378,8 +378,14 @@ public class ContextInstanceWidget extends Div {
             if (contextInstanceStateChangeEvent.getContextInstance() != null) {
                 ui.access(() ->  {
                     if(this.contextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
-                        this.contextInstance = contextInstance;
+                        this.contextInstance = contextInstanceStateChangeEvent.getContextInstance();
                         this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
+                    }
+                    else {
+                        ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId());
+                        if(record != null) {
+                            this.contextInstance = record.getContextInstance();
+                        }
                     }
                 });
             }
