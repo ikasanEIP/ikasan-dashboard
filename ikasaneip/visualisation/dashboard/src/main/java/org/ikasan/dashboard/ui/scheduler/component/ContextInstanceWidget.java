@@ -313,9 +313,8 @@ public class ContextInstanceWidget extends Div {
         this.schedulerVisualisation.setWidthFull();
         this.schedulerVisualisation.setHeight("75vh");
 
-        ContextService contextService = new ContextService();
         try {
-            this.schedulerVisualisation.createSchedulerVisualisation(contextService.getContextInstance(contextService.getContextInstanceString(this.contextInstance)));
+            this.schedulerVisualisation.createSchedulerVisualisation(ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext());
         }
         catch (IOException e) {
             e.printStackTrace();
