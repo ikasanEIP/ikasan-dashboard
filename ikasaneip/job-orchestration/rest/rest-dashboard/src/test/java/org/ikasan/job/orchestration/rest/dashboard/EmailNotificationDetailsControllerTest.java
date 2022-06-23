@@ -1,6 +1,14 @@
-package org.ikasan.rest.dashboard;
+package org.ikasan.job.orchestration.rest.dashboard;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
+import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
+import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsWrapperImpl;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsWrapper;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationTemplateParameters;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +27,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
@@ -65,6 +75,53 @@ public class EmailNotificationDetailsControllerTest extends AbstractRestMvcTest
 
         assertNotNull(details);
         assertEquals("subject-from-template-1", details.getEmailSubject());
+    }
+
+    @Test
+    public void save_all_success() throws Exception
+    {
+        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+            .allowIfSubType("org.ikasan.spec.scheduled.notification.model")
+            .allowIfSubType("org.ikasan.job.orchestration.model.notification")
+            .allowIfSubType("java.util.ArrayList")
+            .allowIfSubType("java.util.HashMap")
+            .build();
+        ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+        objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+
+        String uri = "/rest/emailNotificationDetails/saveAll";
+
+        List<EmailNotificationDetails> emailNotificationDetails = new ArrayList<>();
+
+        EmailNotificationDetails emailDetails = new EmailNotificationDetailsImpl();
+        emailDetails.setContextName("context-1");
+        emailDetails.setJobName("job-1");
+        emailDetails.setEmailBody("body-1");
+        emailDetails.setEmailSubject("subject-1");
+        emailDetails.setMonitorType("ERROR");
+        List<String> distributionList = new ArrayList<>();
+        distributionList.add("email-1");
+        distributionList.add("email-2");
+        emailDetails.setEmailSendTo(distributionList);
+        Map<String,String> params = new HashMap<>();
+        params.put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK.name(), "link-1");
+        emailDetails.setEmailNotificationTemplateParameters(params);
+
+        emailNotificationDetails.add(emailDetails);
+
+        EmailNotificationDetailsWrapper wrapper = new EmailNotificationDetailsWrapperImpl();
+        wrapper.setEmailNotificationDetails(emailNotificationDetails);
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri)
+            .contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(wrapper))).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+
+        EmailNotificationDetails details = emailNotificationDetailsService.findByJobNameAndMonitorType("job-1","context-1","ERROR");
+
+        assertNotNull(details);
+        assertEquals("subject-1", details.getEmailSubject());
     }
 
     @Test

@@ -1,4 +1,4 @@
-package org.ikasan.rest.dashboard.util;
+package org.ikasan.job.orchestration.rest.dashboard.util;
 
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
@@ -28,8 +28,8 @@ public class TestEmailNotificationDetailsService implements EmailNotificationDet
     }
 
     @Override
-    public void save(List var1) {
-
+    public void save(List<EmailNotificationDetails> list) {
+        list.forEach(e -> cache.put(createKey(e), e));
     }
 
     private String createKey(EmailNotificationDetails emailNotificationDetails){

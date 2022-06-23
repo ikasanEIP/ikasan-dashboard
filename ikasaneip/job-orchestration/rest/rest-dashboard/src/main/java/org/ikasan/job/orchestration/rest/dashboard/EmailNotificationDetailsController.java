@@ -38,13 +38,17 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * ====================================================================
  */
-package org.ikasan.rest.dashboard;
+package org.ikasan.job.orchestration.rest.dashboard;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsWrapper;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,6 +89,37 @@ public class EmailNotificationDetailsController
             EmailNotificationDetails emailNotificationDetails = this.mapper.readValue(emailNotificationDetailsJsonPayload, EmailNotificationDetailsImpl.class);
 
             this.emailNotificationDetailsService.save(emailNotificationDetails);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return new ResponseEntity(
+                new ErrorDto("An error has occurred attempting to perform a save of EmailNotificationDetails! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity( HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.PUT,
+        value = "/emailNotificationDetails/saveAll")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity saveEmailNotificationDetailsAll(@RequestBody String emailNotificationDetailsWrapper)
+    {
+        try
+        {
+            PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+                .allowIfSubType("org.ikasan.spec.scheduled.notification.model")
+                .allowIfSubType("org.ikasan.job.orchestration.model.notification")
+                .allowIfSubType("java.util.ArrayList")
+                .allowIfSubType("java.util.HashMap")
+                .build();
+            ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+            objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+
+            EmailNotificationDetailsWrapper wrapper = objectMapper.readValue(emailNotificationDetailsWrapper, EmailNotificationDetailsWrapper.class);
+
+            this.emailNotificationDetailsService.save(wrapper.getEmailNotificationDetails());
         }
         catch (Exception e)
         {
