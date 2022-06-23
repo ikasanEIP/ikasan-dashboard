@@ -673,7 +673,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
-            if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
+            if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null
+                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.internalEventDrivenJobInstance.getContextInstanceId())
+                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.internalEventDrivenJobInstance.getJobName())) {
                 this.internalEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
                 this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
             }

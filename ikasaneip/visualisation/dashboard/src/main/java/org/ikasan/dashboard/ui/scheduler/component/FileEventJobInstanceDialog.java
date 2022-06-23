@@ -299,7 +299,9 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
-            if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
+            if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null
+                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.fileEventDrivenJobInstance.getContextInstanceId())
+                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.fileEventDrivenJobInstance.getJobName())) {
                 this.fileEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
                 this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
             }
