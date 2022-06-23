@@ -104,7 +104,6 @@ public class OverdueFileMonitorTest {
     }
 
     @Test
-    @Ignore
     public void test_with_running_and_overdued() throws IOException {
 
         ContextualisedScheduledProcessEvent scheduledProcessEvent1 = new ContextualisedScheduledProcessEventImpl();
