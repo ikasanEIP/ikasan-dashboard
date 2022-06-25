@@ -7,7 +7,6 @@ import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
 import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobRecordImpl;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobRecordImpl;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobRecordImpl;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobRecordImpl;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
@@ -82,6 +81,41 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     @Override
     public void deleteByAgentName(String agentName) {
         this.schedulerJobRecordDao.deleteByAgentName(agentName);
+    }
+
+    @Override
+    public void deleteByContextName(String contextName) {
+        this.schedulerJobRecordDao.deleteByContextName(contextName);
+    }
+
+    @Override
+    public void save(List<SchedulerJob> records) {
+        if (records != null && !records.isEmpty()) {
+            List<FileEventDrivenJob> fileEventDrivenJobs = new ArrayList<>();
+            List<InternalEventDrivenJob> internalEventDrivenJobs = new ArrayList<>();
+            List<QuartzScheduleDrivenJob> quartzScheduleDrivenJobs = new ArrayList<>();
+            records.forEach(job -> {
+                if (job instanceof InternalEventDrivenJob) {
+                    internalEventDrivenJobs.add((InternalEventDrivenJob) job);
+                } else if (job instanceof FileEventDrivenJob) {
+                    fileEventDrivenJobs.add((FileEventDrivenJob) job);
+                } else if (job instanceof QuartzScheduleDrivenJob) {
+                    quartzScheduleDrivenJobs.add((QuartzScheduleDrivenJob) job);
+                }
+            });
+
+            if (!internalEventDrivenJobs.isEmpty()) {
+                this.saveInternalEventDrivenJobs(internalEventDrivenJobs);
+            }
+
+            if (!fileEventDrivenJobs.isEmpty()) {
+                this.saveFileEventDrivenJobs(fileEventDrivenJobs);
+            }
+
+            if (!quartzScheduleDrivenJobs.isEmpty()) {
+                this.saveQuartzScheduledJobs(quartzScheduleDrivenJobs);
+            }
+        }
     }
 
     @Override
