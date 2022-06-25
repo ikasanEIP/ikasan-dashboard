@@ -4,6 +4,7 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
@@ -13,6 +14,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.server.StreamResource;
+import org.ikasan.dashboard.ui.scheduler.util.ContextExportZipUtils;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
@@ -28,19 +31,28 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
+import org.ikasan.spec.scheduled.context.service.ContextUploadInitialisationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.vaadin.olli.FileDownloadWrapper;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
+import static org.ikasan.dashboard.ui.scheduler.util.ContextExportZipUtils.getExportZipFileName;
 
 public class ContextTemplateWidget extends Div {
 
     private ContextTemplateFilteringGrid contextTemplateFilteringGrid;
     private ScheduledContextService scheduledContextService;
     private IkasanAuthentication authentication;
+
+    private SchedulerJobService schedulerJobService;
+    private String zipWorkingDirectory;
 
     /**
      * Constructor
@@ -51,9 +63,12 @@ public class ContextTemplateWidget extends Div {
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
-                                 JobInitiationService jobInitiationService) {
+                                 JobInitiationService jobInitiationService, String zipWorkingDirectory, ContextUploadInitialisationService contextUploadInitialisationService) {
 
         this.scheduledContextService = scheduledContextService;
+        this.schedulerJobService = schedulerJobService;
+        this.zipWorkingDirectory = zipWorkingDirectory;
+
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
@@ -62,7 +77,6 @@ public class ContextTemplateWidget extends Div {
         Div div = new Div();
         div.setSizeFull();
 
-
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
 
@@ -70,8 +84,13 @@ public class ContextTemplateWidget extends Div {
         H4 contextTemplates = new H4("Context Templates");
         headerLayout.add(contextTemplates);
 
+        Button addContextButton = new Button("Add Context And Jobs");
+        addContextButton.addClickListener(buttonClickEvent -> {
+            ContextImportFileDialog importer = new ContextImportFileDialog(contextUploadInitialisationService);
+            importer.open();
+        });
 
-        div.add(headerLayout, this.contextTemplateFilteringGrid);
+        div.add(headerLayout, addContextButton, this.contextTemplateFilteringGrid);
 
         this.contextTemplateFilteringGrid.init();
 
@@ -187,12 +206,31 @@ public class ContextTemplateWidget extends Div {
             Icon export = VaadinIcon.DOWNLOAD_ALT.create();
             export.setSize("14pt");
             export.getStyle().set("cursor", "pointer");
-            export.getElement().setAttribute("title", "Export");
+            export.getStyle().set("color", "black");
+            export.getElement().setAttribute("title", "Export Context and Jobs");
             export.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
 
             });
 
-            layout.add(export);
+            StreamResource streamResource = new StreamResource(getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
+                try {
+                    ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
+                        scheduledContextRecord.getContext(),
+                        this.zipWorkingDirectory,
+                        this.schedulerJobService,
+                        50 // limit to loop searching solr
+                    );
+                    return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            });
+
+            FileDownloadWrapper exportWrapper = new FileDownloadWrapper(streamResource);
+            exportWrapper.wrapComponent(export);
+
+            layout.add(exportWrapper);
 
             Icon newWindow = VaadinIcon.EXTERNAL_LINK.create();
             newWindow.setSize("14pt");

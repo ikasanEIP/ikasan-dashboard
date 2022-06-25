@@ -44,6 +44,16 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     }
 
     @Override
+    public void deleteByContextName(String contextName) {
+
+    }
+
+    @Override
+    public void save(List records) {
+
+    }
+
+    @Override
     public void saveFileEventDrivenJobRecord(FileEventDrivenJobRecord fileEventDrivenJobRecord) {
 
     }

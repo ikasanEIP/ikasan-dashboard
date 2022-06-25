@@ -1,0 +1,102 @@
+package org.ikasan.dashboard.ui.scheduler.util;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import static org.ikasan.dashboard.ui.scheduler.util.ContextImportExportConstants.*;
+
+public final class ContextImportZipUtils {
+    private static final Logger LOG = LoggerFactory.getLogger(ContextImportZipUtils.class);
+
+    public static ImmutablePair<ContextTemplate, List<SchedulerJob>> extractZipFile(InputStream inputStream) {
+        List<SchedulerJob> contextJobs = new ArrayList<>();
+        ContextTemplate[] contextTemplate = new ContextTemplate[1];
+        try {
+            ContextService contextService = new ContextService();
+            String[] parentDirectory = new String[1];
+            readZipInputStream(inputStream, (entry, outputStream) -> {
+                    // 1st entry is the parent Directory
+                    if (parentDirectory[0] == null) {
+                        parentDirectory[0] = entry.getName();
+                    }
+                    String contextDirectory = parentDirectory[0] + CONTEXT_DIR + File.separator;
+                    String fileJobsDirectory = parentDirectory[0] + JOBS_DIR + File.separator + FILE_DIR + File.separator;
+                    String internalJobsDirectory = parentDirectory[0] + JOBS_DIR + File.separator + INTERNAL_DIR + File.separator;
+                    String quartzJobsDirectory = parentDirectory[0] + JOBS_DIR + File.separator + QUARTZ_DIR + File.separator;
+
+                    if (!entry.isDirectory() && entry.getName().startsWith(contextDirectory)
+                        && entry.getName().endsWith(".json")) {
+                        contextTemplate[0] = (ContextTemplate) getJob(CONTEXT_TEMPLATE, outputStream.toString(), contextService);
+                    } else if (!entry.isDirectory() && entry.getName().startsWith(fileJobsDirectory)
+                        && entry.getName().endsWith(".json")) {
+                        contextJobs.add((SchedulerJob) getJob(FILE_DIR, outputStream.toString(), contextService));
+                    } else if (!entry.isDirectory() && entry.getName().startsWith(internalJobsDirectory)
+                        && entry.getName().endsWith(".json")) {
+                        contextJobs.add((SchedulerJob) getJob(INTERNAL_DIR, outputStream.toString(), contextService));
+                    } else if (!entry.isDirectory() && entry.getName().startsWith(quartzJobsDirectory)
+                        && entry.getName().endsWith(".json")) {
+                        contextJobs.add((SchedulerJob) getJob(QUARTZ_DIR, outputStream.toString(), contextService));
+                    }
+                }
+            );
+        } catch (Exception e) {
+            LOG.warn("Could not read zip file, Error: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+
+        return new ImmutablePair<>(contextTemplate[0], contextJobs);
+    }
+
+    private static void readZipInputStream(InputStream inputStream, BiConsumer<ZipEntry, ByteArrayOutputStream> biConsumer) {
+        try {
+            ZipInputStream zipInput = new ZipInputStream(inputStream);
+            for (ZipEntry entry; (entry = zipInput.getNextEntry()) != null; ) {
+                ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+                byte[] buffer = new byte[1024];
+                int length;
+                while ((length = zipInput.read(buffer)) != -1) {
+                    outStream.write(buffer, 0, length);
+                }
+                biConsumer.accept(entry, outStream);
+            }
+        } catch (Exception e) {
+            LOG.warn("Could not read zip input stream, Error: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Object getJob(String type, String json, ContextService service) {
+        try {
+            switch (type) {
+                case CONTEXT_TEMPLATE:
+                    return service.getContextTemplate(json);
+                case FILE_DIR:
+                    return service.getFileEventDrivenJob(json);
+                case INTERNAL_DIR:
+                    return service.getInternalEventDrivenJob(json);
+                case QUARTZ_DIR:
+                    return service.getQuartzScheduleDrivenJob(json);
+                default:
+                    throw new RuntimeException("Unknown job type: " + type);
+            }
+        } catch (JsonProcessingException e) {
+            LOG.warn(String.format("Could not read json for job type %s, Error: %s", type, e.getMessage()));
+            throw new RuntimeException(e);
+        }
+    }
+
+}

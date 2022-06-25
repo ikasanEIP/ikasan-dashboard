@@ -236,6 +236,25 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
     }
 
     @Override
+    public void deleteByContextName(String contextName) {
+        StringBuffer queryBuffer = new StringBuffer();
+        queryBuffer.append(OPEN_BRACKET);
+        queryBuffer.append(TYPE + COLON);
+        queryBuffer.append("\"").append(JobConstants.FILE_EVENT_DRIVEN_JOB).append("\" ");
+        queryBuffer.append(OR).append(" ");
+        queryBuffer.append(TYPE + COLON);
+        queryBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB).append("\" ");
+        queryBuffer.append(OR).append(" ");
+        queryBuffer.append(TYPE + COLON);
+        queryBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB).append("\" ");
+        queryBuffer.append(CLOSE_BRACKET);
+        queryBuffer.append(AND).append(" ").append(COMPONENT_NAME).append(COLON);
+        queryBuffer.append("\"").append(contextName).append("\" ");
+
+        super.deleteByQuery(queryBuffer.toString());
+    }
+
+    @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, SchedulerJobRecord event) {
         throw new UnsupportedOperationException("It is not possible to save SchedulerJobRecord directly. " +
             "Please save child implementations of SchedulerJobRecord.");
