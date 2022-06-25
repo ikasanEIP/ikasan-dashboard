@@ -9,7 +9,6 @@ import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.service.ContextService;
-import org.ikasan.orchestration.service.status.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.junit.Before;
@@ -36,7 +35,7 @@ public class ContextStatusServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new    ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null
             , null, null, null, JobLockCacheImpl.instance(), null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -53,7 +52,7 @@ public class ContextStatusServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null
             , null, null, null, JobLockCacheImpl.instance(), null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -70,7 +69,7 @@ public class ContextStatusServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null
             , null, null, null, JobLockCacheImpl.instance(), null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -89,7 +88,7 @@ public class ContextStatusServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null
             , null, null, null, JobLockCacheImpl.instance(), null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -106,7 +105,7 @@ public class ContextStatusServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null
             , null, null, null, JobLockCacheImpl.instance(), null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -118,7 +117,7 @@ public class ContextStatusServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null
             , null, null, null, JobLockCacheImpl.instance(), null);
         ContextMachineCache.instance().put(contextMachine);
 
@@ -135,7 +134,7 @@ public class ContextStatusServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null
             , null, null, null, JobLockCacheImpl.instance(), null);
         ContextMachineCache.instance().put(contextMachine);
 

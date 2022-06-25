@@ -1,0 +1,45 @@
+{
+  "name": "CONTEXT-NOT-SO-COMPLEX",
+  "description" : "Context Template Description",
+  "contexts" : [ {
+    "name" : "CONTEXT-NO-1A",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "scheduler-agent-jobName0",
+      "logicalGrouping" : {
+        "and" : [
+          {
+            "identifier" : "scheduler-agent-jobName1"
+          },
+          {
+            "identifier" : "scheduler-agent-jobName2"
+          },
+          {
+            "identifier" : "scheduler-agent-jobName3"
+          }
+        ]
+      }
+    } ],
+    "scheduledJobs" : [
+      {
+        "agentName" : "scheduler-agent",
+        "jobName" : "jobName1",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-jobName1"
+      },
+      {
+        "agentName" : "scheduler-agent",
+        "jobName" : "jobName2",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-jobName2"
+      },
+      {
+        "agentName" : "scheduler-agent",
+        "jobName" : "jobName3",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-jobName3"
+      }
+    ]
+  }],
+  "timeWindowStart" : "0 0 6 ? * * *",
+  "timeWindowEnd" : "0 0 23 ? * * *"
+}

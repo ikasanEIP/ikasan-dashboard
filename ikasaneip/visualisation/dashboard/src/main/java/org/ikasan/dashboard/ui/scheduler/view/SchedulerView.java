@@ -33,6 +33,7 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.service.ContextUploadInitialisationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
@@ -122,6 +123,12 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
+    @Value("${ikasan.dashboard.zip.working.directory:.}")
+    private String zipWorkingDirectory;
+
+    @Resource
+    private ContextUploadInitialisationService contextUploadInitialisationService;
+
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
     private UpcomingJobExecutionsWidget upcomingJobExecutionsWidget;
@@ -177,7 +184,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
         this.contextTemplateWidget = new ContextTemplateWidget(this.scheduledContextService, ".", this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
-            this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService);
+            this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService,
+            this.zipWorkingDirectory, this.contextUploadInitialisationService);
         this.contextTemplateWidget.setVisible(false);
 
 
