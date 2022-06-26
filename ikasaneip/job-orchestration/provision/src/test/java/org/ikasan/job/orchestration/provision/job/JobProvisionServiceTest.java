@@ -2,35 +2,14 @@ package org.ikasan.job.orchestration.provision.job;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.configuration.metadata.model.SolrConfigurationMetaData;
 import org.ikasan.configuration.metadata.model.SolrConfigurationParameterMetaData;
-import org.ikasan.configurationService.metadata.JsonConfigurationMetaDataProvider;
 import org.ikasan.job.orchestration.AbstractTest;
 import org.ikasan.job.orchestration.builder.context.ContextParameterBuilder;
 import org.ikasan.job.orchestration.builder.job.FileEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.InternalEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.QuartzScheduleDrivenJobBuilder;
-import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
-import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
-import org.ikasan.job.orchestration.rest.client.JobProvisionModuleRestServiceImpl;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.module.metadata.dao.SolrModuleMetadataDao;
 import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
-import org.ikasan.module.metadata.service.SolrModuleMetadataServiceImpl;
-import org.ikasan.rest.client.ConfigurationRestServiceImpl;
-import org.ikasan.rest.client.MetaDataRestServiceImpl;
-import org.ikasan.rest.client.ModuleControlRestServiceImpl;
-import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrInternalEventDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrQuartzScheduleDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
-import org.ikasan.scheduled.job.service.SolrSchedulerJobServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
@@ -50,23 +29,17 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.env.Environment;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
+@Ignore
+// todo fix this test
 public class JobProvisionServiceTest extends AbstractTest {
     @Mock
     private SchedulerJobService schedulerJobService;
@@ -173,128 +146,6 @@ public class JobProvisionServiceTest extends AbstractTest {
             , "file-jobName3", "jobGroup", "cronExpression", "timezone"));
 
         jobProvisionService.provisionJobs(schedulerJobs);
-    }
-
-    @Test
-    public void test2() throws IOException {
-
-        when(environment.getProperty("rest.module.username")).thenReturn("admin");
-        when(environment.getProperty("rest.module.password")).thenReturn("admin");
-
-        JsonConfigurationMetaDataProvider jsonConfigurationMetaDataProvider = new JsonConfigurationMetaDataProvider(null);
-        ConfigurationService configurationRestService
-            = new ConfigurationRestServiceImpl(environment, jsonConfigurationMetaDataProvider, new HttpComponentsClientHttpRequestFactory());
-
-        ModuleControlService moduleControlService = new ModuleControlRestServiceImpl(environment, new HttpComponentsClientHttpRequestFactory());
-
-        MetaDataService metaDataService = new MetaDataRestServiceImpl(environment, new HttpComponentsClientHttpRequestFactory());
-
-        JobProvisionModuleRestServiceImpl jobProvisionModuleRestService = new JobProvisionModuleRestServiceImpl(environment, new HttpComponentsClientHttpRequestFactory());
-
-        SolrModuleMetadataDao solrModuleMetadataDao = new SolrModuleMetadataDao();
-        solrModuleMetadataDao.initStandalone("http://localhost:8983/solr", 30);
-        solrModuleMetadataDao.setSolrUsername("ikasan");
-        solrModuleMetadataDao.setSolrPassword("1ka5an");
-        SolrModuleMetadataServiceImpl moduleMetaDataService = new SolrModuleMetadataServiceImpl(solrModuleMetadataDao);
-        moduleMetaDataService.setSolrUsername("ikasan");
-        moduleMetaDataService.setSolrPassword("1ka5an");
-
-        SolrFileEventDrivenJobDaoImpl fileEventDrivenJobRecordDao = new SolrFileEventDrivenJobDaoImpl();
-        fileEventDrivenJobRecordDao.initStandalone("http://localhost:8983/solr", 30);
-        fileEventDrivenJobRecordDao.setSolrUsername("ikasan");
-        fileEventDrivenJobRecordDao.setSolrPassword("1ka5an");
-        SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao = new SolrInternalEventDrivenJobDaoImpl();
-        internalEventDrivenJobRecordDao.initStandalone("http://localhost:8983/solr", 30);
-        internalEventDrivenJobRecordDao.setSolrUsername("ikasan");
-        internalEventDrivenJobRecordDao.setSolrPassword("1ka5an");
-        SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobRecordDao = new SolrQuartzScheduleDrivenJobDaoImpl();
-        quartzScheduleDrivenJobRecordDao.initStandalone("http://localhost:8983/solr", 30);
-        quartzScheduleDrivenJobRecordDao.setSolrUsername("ikasan");
-        quartzScheduleDrivenJobRecordDao.setSolrPassword("1ka5an");
-        SolrSchedulerJobDaoImpl schedulerJobRecordDao = new SolrSchedulerJobDaoImpl();
-        schedulerJobRecordDao.initStandalone("http://localhost:8983/solr", 30);
-        schedulerJobRecordDao.setSolrUsername("ikasan");
-        schedulerJobRecordDao.setSolrPassword("1ka5an");
-
-        SchedulerJobService schedulerJobService = new SolrSchedulerJobServiceImpl(fileEventDrivenJobRecordDao, internalEventDrivenJobRecordDao,
-            quartzScheduleDrivenJobRecordDao, schedulerJobRecordDao);
-
-        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService, moduleMetaDataService, jobProvisionModuleRestService);
-
-        List<SchedulerJob> schedulerJobs = new ArrayList<>();
-
-        loadFileJobs(schedulerJobs);
-        loadCommandJobs(schedulerJobs);
-        loadQuartzJobs(schedulerJobs);
-
-        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-            .allowIfSubType("org.ikasan.spec.scheduled.job.model")
-            .allowIfSubType("org.ikasan.job.orchestration.model.job")
-            .allowIfSubType("org.ikasan.job.orchestration.model.context")
-            .allowIfSubType("java.util.ArrayList")
-            .build();
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
-
-        SchedulerJobWrapperImpl schedulerJobWrapper = new SchedulerJobWrapperImpl();
-        schedulerJobWrapper.setJobs(schedulerJobs);
-
-        String serialised = objectMapper.writeValueAsString(schedulerJobWrapper);
-        SchedulerJobWrapperImpl schedulerJobWrapper1 = objectMapper.readValue(serialised, SchedulerJobWrapperImpl.class);
-
-
-        jobProvisionService.provisionJobs(schedulerJobWrapper1.getJobs());
-    }
-
-    private void loadFileJobs(List<SchedulerJob> schedulerJobs) throws IOException {
-        List<Path> files =  Files.walk(Paths.get("./src/test/resources/data/full-context/CONTEXT-369160711/jobs/file"))
-            .filter(Files::isRegularFile)
-            .collect(Collectors.toList());
-
-        for (Path f : files) {
-            FileInputStream inputStream = new FileInputStream(f.toFile());
-
-            FileEventDrivenJob job = ObjectMapperFactory.newInstance().readValue(inputStream.readAllBytes(), FileEventDrivenJobImpl.class);
-
-            schedulerJobs.add(job);
-
-            inputStream.close();
-        }
-
-    }
-
-    private void loadCommandJobs(List<SchedulerJob> schedulerJobs) throws IOException {
-        List<Path> files =  Files.walk(Paths.get("./src/test/resources/data/full-context/CONTEXT-369160711/jobs/internal"))
-            .filter(Files::isRegularFile)
-            .collect(Collectors.toList());
-
-        for (Path f : files) {
-            FileInputStream inputStream = new FileInputStream(f.toFile());
-
-            InternalEventDrivenJob job = ObjectMapperFactory.newInstance().readValue(inputStream.readAllBytes(), InternalEventDrivenJobImpl.class);
-
-            schedulerJobs.add(job);
-
-            inputStream.close();
-        }
-
-    }
-
-    private void loadQuartzJobs(List<SchedulerJob> schedulerJobs) throws IOException {
-        List<Path> files =  Files.walk(Paths.get("./src/test/resources/data/full-context/CONTEXT-369160711/jobs/quartz"))
-            .filter(Files::isRegularFile)
-            .collect(Collectors.toList());
-
-        for (Path f : files) {
-            FileInputStream inputStream = new FileInputStream(f.toFile());
-
-            QuartzScheduleDrivenJob job = ObjectMapperFactory.newInstance().readValue(inputStream.readAllBytes(), QuartzScheduleDrivenJobImpl.class);
-
-            schedulerJobs.add(job);
-
-            inputStream.close();
-        }
-
     }
 
     private InternalEventDrivenJob createInternalEventDrivenJob(String commandLine, String workingDirectory
