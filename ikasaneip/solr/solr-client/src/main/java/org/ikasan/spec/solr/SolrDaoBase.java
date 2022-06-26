@@ -2,7 +2,7 @@ package org.ikasan.spec.solr;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.QueryRequest;
@@ -10,14 +10,15 @@ import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.configuration.metadata.model.SolrComponentConfiguration;
-import org.ikasan.solr.model.IkasanSolrDocument;
 import org.ikasan.solr.util.SolrTokenizerQueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -634,7 +635,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         solrQuery.setRows(0);
         solrQuery.setFacetLimit(-1);
 
-        QueryRequest req = new QueryRequest(solrQuery);
+        QueryRequest req = new QueryRequest(solrQuery, SolrRequest.METHOD.POST);
         req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
         try {

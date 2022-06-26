@@ -4,15 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.metrics.model.FlowInvocationMetricImpl;
 import org.ikasan.metrics.model.SolrFlowInvocationMetric;
-import org.ikasan.module.metadata.model.SolrModule;
-import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
 import org.ikasan.spec.history.FlowInvocationMetric;
-import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
@@ -132,7 +130,7 @@ public class SolrMetricsDao extends SolrDaoBase<FlowInvocationMetric> {
             SolrQuery solrQuery = new SolrQuery();
             solrQuery.setQuery(query);
 
-            QueryRequest req = new QueryRequest(solrQuery);
+            QueryRequest req = new QueryRequest(solrQuery, SolrRequest.METHOD.POST);
             req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
             QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);

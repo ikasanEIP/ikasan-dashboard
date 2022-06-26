@@ -3,13 +3,13 @@ package org.ikasan.business.stream.metadata.dao;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.request.json.JsonQueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.business.stream.metadata.model.BusinessStreamMetaDataImpl;
-import org.ikasan.spec.metadata.BusinessStreamMetadataSearchResults;
 import org.ikasan.business.stream.metadata.model.SolrBusinessStream;
 import org.ikasan.module.metadata.model.SolrFlowElementMetaDataImpl;
 import org.ikasan.module.metadata.model.SolrFlowMetaDataImpl;
@@ -109,7 +109,7 @@ public class SolrBusinessStreamMetadataDao extends SolrDaoBase<SolrBusinessStrea
 
         try
         {
-            QueryRequest req = new QueryRequest(query);
+            QueryRequest req = new QueryRequest(query, SolrRequest.METHOD.POST);
             req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
             QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
@@ -236,7 +236,7 @@ public class SolrBusinessStreamMetadataDao extends SolrDaoBase<SolrBusinessStrea
 
         try
         {
-            QueryRequest req = new QueryRequest(query);
+            QueryRequest req = new QueryRequest(query, SolrRequest.METHOD.POST);
             req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
             QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
