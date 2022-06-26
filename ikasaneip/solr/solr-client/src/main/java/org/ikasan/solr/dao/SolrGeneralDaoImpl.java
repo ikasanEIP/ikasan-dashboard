@@ -1,6 +1,7 @@
 package org.ikasan.solr.dao;
 
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
@@ -122,7 +123,7 @@ public class SolrGeneralDaoImpl extends SolrDaoBase<IkasanSolrDocument> implemen
         {
             logger.debug("query: " + query);
 
-            QueryRequest req = new QueryRequest(query);
+            QueryRequest req = new QueryRequest(query, SolrRequest.METHOD.POST);
             req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
             QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
