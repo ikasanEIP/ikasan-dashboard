@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
-import org.ikasan.configurationService.metadata.JsonConfigurationMetaDataProvider;
 import org.ikasan.job.orchestration.AbstractTest;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
@@ -14,20 +13,18 @@ import org.ikasan.job.orchestration.rest.client.JobProvisionModuleRestServiceImp
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.module.metadata.dao.SolrModuleMetadataDao;
 import org.ikasan.module.metadata.service.SolrModuleMetadataServiceImpl;
-import org.ikasan.rest.client.ConfigurationRestServiceImpl;
 import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobDaoImpl;
 import org.ikasan.scheduled.job.dao.SolrInternalEventDrivenJobDaoImpl;
 import org.ikasan.scheduled.job.dao.SolrQuartzScheduleDrivenJobDaoImpl;
 import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
 import org.ikasan.scheduled.job.service.SolrSchedulerJobServiceImpl;
-import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -40,12 +37,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
+@Ignore
 public class ContextProvisionHelperTest extends AbstractTest {
 
     private SolrModuleMetadataDao solrModuleMetadataDao = new SolrModuleMetadataDao();
