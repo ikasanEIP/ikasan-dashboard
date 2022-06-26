@@ -1,0 +1,24 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "1651431039",
+  "contextId" : "CONTEXT-1436221681",
+  "childContextIds" : [ "CONTEXT--1543216829", "CONTEXT--1409548854" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nif [ $UseBusinessDate == 0 ]; then\n  listado -e  C0_ANVL_EQUITIES_EOD | ac_consolidate_prices.pl -c Pc_Default_Equity -t 210000 -\nelse\n  listado -e  C0_ANVL_EQUITIES_EOD | ac_consolidate_prices.pl -d $BusinessDate -c Pc_Default_Equity -t 210000 -\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-1651431039",
+  "jobDescription" : "This is a command execution job! It executes a script and possible has some parameters passed to it."
+}

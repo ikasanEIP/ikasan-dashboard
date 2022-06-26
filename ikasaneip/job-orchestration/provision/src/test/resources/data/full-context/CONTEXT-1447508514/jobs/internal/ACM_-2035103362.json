@@ -1,0 +1,24 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "ACM_-2035103362",
+  "contextId" : "CONTEXT-1447508514",
+  "childContextIds" : [ "CONTEXT--1787814039" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nif [ $UseBusinessDate == 0 ]; then\n  listado -e C0_PC_CUF | ac_consolidate_prices.pl -c Pc_MultiSource_1 -t 160000 -\nelse\n  listado -e C0_PC_CUF | ac_consolidate_prices.pl -d $BusinessDate -c Pc_MultiSource_1 -t 160000 -\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-ACM_-2035103362",
+  "jobDescription" : "This is a command execution job! It executes a script and possible has some parameters passed to it."
+}
