@@ -1,4 +1,4 @@
-package org.ikasan.job.orchestration.provision.job;
+package org.ikasan.job.orchestration.provision.context;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +9,7 @@ import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
+import org.ikasan.job.orchestration.provision.job.JobProvisionServiceImpl;
 import org.ikasan.job.orchestration.rest.client.JobProvisionModuleRestServiceImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.module.metadata.dao.SolrModuleMetadataDao;
