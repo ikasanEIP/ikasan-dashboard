@@ -1,0 +1,18 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "ACM_-1898950882",
+  "contextId" : "CONTEXT-1447508514",
+  "childContextIds" : [ "CONTEXT--259697702" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "\nimport com.redwood.scheduler.api.model.*;\nimport com.redwood.scheduler.api.model.enumeration.*;\nimport com.redwood.scheduler.api.model.Job.*;\nimport java.util.Iterator;\nimport java.io.IOException;\nimport java.io.*;\nimport java.math.*;\nimport java.net.*;\n\n{\n  Partition partition = jcsSession.getPartitionByName(\"%Partition%\");\n  Queue queue = jcsSession.getQueueByName(partition, \"%Queue%\");\n  try\n  {\n    Job processNotify = jcsSession.getJobDefinitionByName(partition,\"AC_SCRIPT_Validation_CheckSuspect_NotifyAutomatic\").prepare();\n    processNotify.setQueue(queue);\n    processNotify.getJobParameterByName(\"Report\").setInValueString(Report);\n    jcsSession.persist();//Submit\n    jcsSession.waitForJob(processNotify,JobStatus.Completed,600000) ;\n    JobStatus statusActual = processNotify.getStatus();\n    if (statusActual.equals(JobStatus.Completed)) {  \n      jcsOut.println(statusActual);\n    }\n    else\n    {\n      jcsOut.println(statusActual);\n    }\n  }\n  catch (Exception e)\n  {\n     throw new RuntimeException(e); \n  }\n}",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "Report",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-ACM_-1898950882",
+  "jobDescription" : "This is a command execution job! It executes a script and possible has some parameters passed to it."
+}

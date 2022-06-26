@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "991999604",
+  "contextId" : "CONTEXT-369160711",
+  "childContextIds" : [ "CONTEXT-1167353422" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\necho \"ado_browse(\\\"code = 'Req_BB_Numerix_Basis_Swap'\\\");\" | ac_evalform - | ac_trigger_ado.sh -\t\t\nac_bloomberg_persecurity.sh -c Req_BB_Numerix_Basis_Swap -i\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-991999604",
+  "jobDescription" : "This is a command execution job! It executes a script and possible has some parameters passed to it."
+}

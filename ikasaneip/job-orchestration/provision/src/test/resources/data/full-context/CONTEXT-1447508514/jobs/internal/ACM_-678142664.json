@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "ACM_-678142664",
+  "contextId" : "CONTEXT-1447508514",
+  "childContextIds" : [ "CONTEXT--1036156282" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\necho \"list_contents('C0_MURX_SCPR_LOAN','EVAL_DERIVED');\" | ac_evalform - > /dev/null 2>&1 &\nwait\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-ACM_-678142664",
+  "jobDescription" : "This is a command execution job! It executes a script and possible has some parameters passed to it."
+}

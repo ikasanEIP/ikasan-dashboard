@@ -30,6 +30,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,11 +66,13 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
     private SystemEventLogger systemEventLogger;
     private SchedulerJobService schedulerJobService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
+    private JobInitiationService jobInitiationService;
 
     public ContextInstanceVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                              LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService) {
+                                              LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
+                                              JobInitiationService jobInitiationService) {
         this.setHeight("90%");
         this.setWidth("90%");
 
@@ -116,6 +119,11 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
         this.schedulerJobInstanceService = schedulerJobInstanceService;
         if(this.schedulerJobInstanceService == null) {
             throw new IllegalArgumentException("schedulerJobInstanceService cannot be null!");
+        }
+
+        this.jobInitiationService = jobInitiationService;
+        if(this.jobInitiationService == null) {
+            throw new IllegalArgumentException("jobInitiationService cannot be null!");
         }
 
         layout = new VerticalLayout();
@@ -224,7 +232,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
                 JobVisualisationDialog jobVisualisationDialog = new JobVisualisationDialog(this.moduleMetaDataService,
                     this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
                     this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
-                    this.schedulerJobInstanceService);
+                    this.schedulerJobInstanceService, this.jobInitiationService);
                 jobVisualisationDialog.createSchedulerVisualisation(rootContextInstance, contextInstance);
                 jobVisualisationDialog.open();
             }
@@ -238,7 +246,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
                     = new ContextInstanceVisualisationDialog(this.moduleMetaDataService,
                     this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
                     this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
-                    this.schedulerJobInstanceService);
+                    this.schedulerJobInstanceService, this.jobInitiationService);
                 contextInstanceVisualisationDialog.createSchedulerVisualisation(this.rootContextInstance, contextInstance);
                 contextInstanceVisualisationDialog.open();
             }

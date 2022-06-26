@@ -1,0 +1,24 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-958075417",
+  "contextId" : "CONTEXT-369160711",
+  "childContextIds" : [ "CONTEXT--1281498017" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nif [ $UseBusinessDate == 0 ]; then\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/xva/out ac_extract.sh -c Pub_Numerix_EOD -t 163000 -n -i\nelse\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/xva/out ac_extract.sh -d $BusinessDate -c Pub_Numerix_EOD -t 163000 -n -i\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent--958075417",
+  "jobDescription" : "This is a command execution job! It executes a script and possible has some parameters passed to it."
+}

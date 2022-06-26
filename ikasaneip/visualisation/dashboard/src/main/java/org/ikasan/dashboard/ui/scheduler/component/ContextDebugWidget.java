@@ -53,6 +53,7 @@ public class ContextDebugWidget extends Div {
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private JobLockCacheService jobLockCacheService;
     private ContextParametersInstanceService contextParametersInstanceService;
+    private JobInitiationService jobInitiationService;
 
     protected AceEditor aceEditor;
     protected SchedulerVisualisation schedulerVisualisation;
@@ -102,9 +103,10 @@ public class ContextDebugWidget extends Div {
         this.internalEventDrivenJobService = internalEventDrivenJobService;
         this.queueDir = queueDir;
         this.scheduledContextInstanceService = scheduledContextInstanceService;
+        this.jobInitiationService = jobInitiationService;
 
         this.schedulerVisualisation = new SchedulerVisualisation(".", moduleMetaDataService, scheduledProcessManagementService, configurationRestService,
-            moduleControlRestService,  metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, schedulerJobInstanceService);
+            moduleControlRestService,  metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, schedulerJobInstanceService, jobInitiationService);
 
         this.schedulerVisualisation.setWidthFull();
         this.schedulerVisualisation.setHeight("1000px");

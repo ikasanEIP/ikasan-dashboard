@@ -65,6 +65,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
     private SystemEventLogger systemEventLogger;
     private JobInitiationService jobInitiationService;
     private ModuleMetaDataService moduleMetaDataService;
+    private LogStreamingService logStreamingService;
 
     /**
      * Constructor
@@ -82,6 +83,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
         this.systemEventLogger = systemEventLogger;
         this.jobInitiationService = jobInitiationService;
         this.moduleMetaDataService = moduleMetaDataService;
+        this.logStreamingService = logStreamingService;
 
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
@@ -426,8 +428,8 @@ public class SchedulerJobInstanceGridWidget extends Div {
             else if(event.getItem().getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)) {
                 InternalEventDrivenJobInstanceDialog internalEventDrivenJobDialog = new InternalEventDrivenJobInstanceDialog(moduleMetaDataService.findById(event.getItem().getSchedulerJobInstance().getAgentName())
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService, this.contextInstance
-                    , this.jobInitiationService, moduleMetaDataService);
-                internalEventDrivenJobDialog.setJob(event.getItem(), EditMode.READONLY);
+                    , this.jobInitiationService, moduleMetaDataService, this.logStreamingService);
+                internalEventDrivenJobDialog.setJob(event.getItem());
 
                 internalEventDrivenJobDialog.open();
             }
@@ -602,7 +604,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
                     SchedulerJobInstance instance = record.getSchedulerJobInstance();
                     instance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
                     record.setSchedulerJobInstance(instance);
-                    ui.access(() -> this.schedulerJobInstanceFilteringGrid.refreshItem(searchResults.getResultList().get(0)));
+                    ui.access(() -> this.schedulerJobInstanceFilteringGrid.refreshItem(record));
                 }
             }
         });

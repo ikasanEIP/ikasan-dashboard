@@ -1,0 +1,27 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "ACM_-1905475423",
+  "contextId" : "CONTEXT-1447508514",
+  "childContextIds" : [ "CONTEXT-427044378" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nmurexFilepath='/opt/mhi-ac/gateway/dev2/murex/out/FGRT_MUREX-NATIVE_EOD-DATA_20220606.csv'\n>&2 echo $murexFilepath\nif [ $UseBusinessDate == 0 ]; then\n  ac_extract_murex_fgrt.sh -t 160000 -r [\\'MUREX_REQUEST_FGRT\\'] -f $murexFilepath\nelse\n  ac_extract_murex_fgrt.sh -d $BusinessDate -t 160000 -r [\\'MUREX_REQUEST_FGRT\\'] -f $murexFilepath\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-ACM_-1905475423",
+  "jobDescription" : "This is a command execution job! It executes a script and possible has some parameters passed to it."
+}

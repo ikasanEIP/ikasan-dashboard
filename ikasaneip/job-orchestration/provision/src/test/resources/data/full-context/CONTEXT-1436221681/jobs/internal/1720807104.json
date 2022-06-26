@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "1720807104",
+  "contextId" : "CONTEXT-1436221681",
+  "childContextIds" : [ "CONTEXT-613708632" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nac_get_ado.sh SOII | ac_trigger_ado.sh -",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-1720807104",
+  "jobDescription" : "This is a command execution job! It executes a script and possible has some parameters passed to it."
+}

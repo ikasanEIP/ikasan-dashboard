@@ -1,0 +1,36 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "ACM_-185055925",
+  "contextId" : "CONTEXT-1447508514",
+  "childContextIds" : [ "CONTEXT--259697702" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "\nimport java.util.*;  \nimport javax.mail.*;  \nimport javax.mail.internet.*;  \n//import javax.activation.*;\nimport javax.mail.util.ByteArrayDataSource;\n{\n  String from = \"no-reply@uk.mizuho-sc.com\";\n  String host = \"smtplive.uk.mizuho-sc.com\";\n  try\n  {\n     Properties properties = System.getProperties();  \n     properties.setProperty(\"mail.smtp.host\", host);  \n     Session session = Session.getDefaultInstance(properties);  \n     MimeMessage message = new MimeMessage(session);  \n     message.setFrom(new InternetAddress(from));  \n     if (EmailTo!=\"\" && EmailSubject !=\"\") {\n      message.setRecipients(Message.RecipientType.TO,InternetAddress.parse(EmailTo));\n      if (EmailCC != null) {message.setRecipients(Message.RecipientType.CC,InternetAddress.parse(EmailCC));}\n      if (EmailBCC != null){message.setRecipients(Message.RecipientType.BCC,InternetAddress.parse(EmailBCC));}    \n      message.setSubject(EmailSubject);  \n\n      if (EmailFilepath1 != null)\n      {\n        Multipart multipart = new MimeMultipart();\n\n        MimeBodyPart attachmentBodyPart = new MimeBodyPart();\n        //DataSource sourceFile = new FileDataSource(EmailFilepath1); javax.activation deprecated\n        //attachmentBodyPart.attachFile(new File(EmailFilepath1));\n\t\t//DataSource sourceByteArray = new ByteArrayDataSource(EmailAttachmentContent1.getBytes(), \"text/csv\");\n        //attachmentBodyPart.setDataHandler(new DataHandler(sourceByteArray));\n        //attachmentBodyPart.setFileName(sourceFile.getName());\n        \n        MimeBodyPart textBodyPart = new MimeBodyPart();\n        textBodyPart.setContent(EmailBody, \"text/html\");\n        \n        //multipart.addBodyPart(attachmentBodyPart);\n        multipart.addBodyPart(textBodyPart);\n        message.setContent(multipart);\n      }\n      else \n      {\n        message.setContent(EmailBody, \"text/html\");\n      }\n      Transport.send(message);  \n      jcsOut.println(\"Mail sent\");      \n     }\n     else\n     {\n       jcsOut.println(\"Mail not sent, check parameters\");      \n     }\n    }\n\n   catch (Exception e)\n  {\n    throw new RuntimeException(e);\n  }\n}",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "EmailTo",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "EmailCC",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "EmailBCC",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "EmailSubject",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "EmailBody",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "EmailFilepath1",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "EmailAttachmentContent1",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-ACM_-185055925",
+  "jobDescription" : "This is a command execution job! It executes a script and possible has some parameters passed to it."
+}
