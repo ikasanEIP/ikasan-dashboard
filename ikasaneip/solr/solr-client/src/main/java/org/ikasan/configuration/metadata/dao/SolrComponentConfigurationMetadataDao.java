@@ -3,6 +3,7 @@ package org.ikasan.configuration.metadata.dao;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -168,7 +169,7 @@ public class SolrComponentConfigurationMetadataDao extends SolrDaoBase<Configura
 
         try
         {
-            QueryRequest req = new QueryRequest(query);
+            QueryRequest req = new QueryRequest(query, SolrRequest.METHOD.POST);
             req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
             QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
