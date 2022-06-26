@@ -2,6 +2,7 @@ package org.ikasan.spec.solr;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.QueryRequest;
@@ -641,7 +642,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         solrQuery.setRows(0);
         solrQuery.setFacetLimit(-1);
 
-        QueryRequest req = new QueryRequest(solrQuery);
+        QueryRequest req = new QueryRequest(solrQuery, SolrRequest.METHOD.POST);
         req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
         try {
@@ -668,7 +669,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         logger.debug("queryString: " + query);
 
         try {
-            QueryRequest req = new QueryRequest(query);
+            QueryRequest req = new QueryRequest(query, SolrRequest.METHOD.POST);
             req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
             QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
@@ -694,7 +695,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
                 query.setRows(limit);
                 query.setStart(offset);
 
-                QueryRequest req = new QueryRequest(query);
+                QueryRequest req = new QueryRequest(query, SolrRequest.METHOD.POST);
                 req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
                 QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
@@ -706,14 +707,14 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
                 query.setStart(0);
                 query.setRows(0);
 
-                QueryRequest req = new QueryRequest(query);
+                QueryRequest req = new QueryRequest(query,  SolrRequest.METHOD.POST);
                 req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
                 QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
 
                 query.setRows((int)rsp.getResults().getNumFound());
 
-                req = new QueryRequest(query);
+                req = new QueryRequest(query,  SolrRequest.METHOD.POST);
                 req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
                 rsp = req.process(this.solrClient, SolrConstants.CORE);
