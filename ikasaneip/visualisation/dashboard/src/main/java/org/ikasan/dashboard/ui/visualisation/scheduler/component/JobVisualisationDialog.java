@@ -11,6 +11,9 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
+import org.ikasan.dashboard.ui.scheduler.component.FileEventJobInstanceDialog;
+import org.ikasan.dashboard.ui.scheduler.component.InternalEventDrivenJobInstanceDialog;
+import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobInstanceDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ScheduledContextDraw2dAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
@@ -27,8 +30,11 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,12 +70,13 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
     private SchedulerJobService schedulerJobService;
     private LogStreamingService logStreamingService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
+    private JobInitiationService jobInitiationService;
 
     public JobVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                   SchedulerJobService schedulerJobService, LogStreamingService logStreamingService,
-                                  SchedulerJobInstanceService schedulerJobInstanceService) {
+                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService) {
         this.setHeight("90%");
         this.setWidth("90%");
 
@@ -116,6 +123,11 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
         this.schedulerJobInstanceService = schedulerJobInstanceService;
         if(this.schedulerJobInstanceService == null) {
             throw new IllegalArgumentException("schedulerJobInstanceService cannot be null!");
+        }
+
+        this.jobInitiationService = jobInitiationService;
+        if(this.jobInitiationService == null) {
+            throw new IllegalArgumentException("jobInitiationService cannot be null!");
         }
 
         layout = new VerticalLayout();
@@ -216,11 +228,39 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
     @Override
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
         logger.info(canvasItemDoubleClickEvent.toString());
-        JobContextMenu jobContextMenu = new JobContextMenu(this.contextInstance.getScheduledJobsMap().get(canvasItemDoubleClickEvent.getFigure().getIdentifier()),
-            this.systemEventLogger, this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService,
-            this.moduleControlRestService, this.metaDataRestService, this.schedulerJobService, this.rootContextInstance, this.contextInstance,
-            this.logStreamingService, schedulerJobInstanceService);
-        jobContextMenu.open();
+        SchedulerJobInstance schedulerJob = this.contextInstance.getScheduledJobsMap().get(canvasItemDoubleClickEvent.getFigure().getIdentifier());
+
+        SchedulerJobInstanceRecord schedulerJobRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName
+            (this.rootContextInstance.getId(), schedulerJob.getJobName(), this.contextInstance.getName());
+
+        if(schedulerJobRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
+            InternalEventDrivenJobInstanceDialog internalEventDrivenJobInstanceDialog = new InternalEventDrivenJobInstanceDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
+                , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService, this.rootContextInstance
+                , this.jobInitiationService, moduleMetaDataService, this.logStreamingService);
+
+            internalEventDrivenJobInstanceDialog.setJob(schedulerJobRecord);
+            internalEventDrivenJobInstanceDialog.open();
+        }
+        else if(schedulerJobRecord.getSchedulerJobInstance() instanceof FileEventDrivenJobInstance) {
+            FileEventJobInstanceDialog fileEventJobDialog = new FileEventJobInstanceDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
+                , this.jobInitiationService, this.systemEventLogger, this.schedulerJobInstanceService);
+            fileEventJobDialog.setJob(schedulerJobRecord);
+
+            fileEventJobDialog.open();
+        }
+        else {
+            QuartzDrivenScheduledJobInstanceDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobInstanceDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
+                , this.jobInitiationService, systemEventLogger, this.schedulerJobInstanceService);
+            quartzDrivenScheduledJobDialog.setJob(schedulerJobRecord);
+
+            quartzDrivenScheduledJobDialog.open();
+        }
+
+//        JobContextMenu jobContextMenu = new JobContextMenu(this.contextInstance.getScheduledJobsMap().get(canvasItemDoubleClickEvent.getFigure().getIdentifier()),
+//            this.systemEventLogger, this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService,
+//            this.moduleControlRestService, this.metaDataRestService, this.schedulerJobService, this.rootContextInstance, this.contextInstance,
+//            this.logStreamingService, schedulerJobInstanceService);
+//        jobContextMenu.open();
     }
 
     @Override

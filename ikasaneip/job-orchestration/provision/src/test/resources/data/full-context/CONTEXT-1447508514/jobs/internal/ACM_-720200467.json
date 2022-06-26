@@ -1,0 +1,24 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "ACM_-720200467",
+  "contextId" : "CONTEXT-1447508514",
+  "childContextIds" : [ "CONTEXT-427042456" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nif [ $UseBusinessDate == 0 ]; then\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/cdw/out ac_extract.sh -c Pub_CDW_INDICES_1400 -i\nelse\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/cdw/out ac_extract.sh -d $BusinessDate -c Pub_CDW_INDICES_1400 -i\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-ACM_-720200467",
+  "jobDescription" : "This is a command execution job! It executes a script and possible has some parameters passed to it."
+}

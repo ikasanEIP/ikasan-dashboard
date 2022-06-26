@@ -1,0 +1,16 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "ACM_1226437131",
+  "contextId" : "CONTEXT-1447508514",
+  "childContextIds" : [ "CONTEXT-981694383" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nac_bloomberg_persecurity.sh -c Req_BB_Index_NYClose -i\nac_bloomberg_persecurity.sh -c Req_BB_Index_Historic_GetData -i\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "daysOfWeekToRun" : [ 2 ],
+  "identifier" : "scheduler-agent-ACM_1226437131",
+  "jobDescription" : "This is a command execution job! It executes a script and possible has some parameters passed to it."
+}

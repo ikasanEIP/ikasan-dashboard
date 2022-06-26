@@ -13,13 +13,24 @@ import org.ikasan.job.orchestration.builder.context.ContextParameterBuilder;
 import org.ikasan.job.orchestration.builder.job.FileEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.InternalEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.QuartzScheduleDrivenJobBuilder;
+import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
+import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
+import org.ikasan.job.orchestration.rest.client.JobProvisionModuleRestServiceImpl;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.module.metadata.dao.SolrModuleMetadataDao;
 import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
 import org.ikasan.module.metadata.service.SolrModuleMetadataServiceImpl;
 import org.ikasan.rest.client.ConfigurationRestServiceImpl;
 import org.ikasan.rest.client.MetaDataRestServiceImpl;
 import org.ikasan.rest.client.ModuleControlRestServiceImpl;
+import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobDaoImpl;
+import org.ikasan.scheduled.job.dao.SolrInternalEventDrivenJobDaoImpl;
+import org.ikasan.scheduled.job.dao.SolrQuartzScheduleDrivenJobDaoImpl;
+import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
+import org.ikasan.scheduled.job.service.SolrSchedulerJobServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
@@ -41,15 +52,21 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.env.Environment;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-@Ignore
 public class JobProvisionServiceTest extends AbstractTest {
     @Mock
     private SchedulerJobService schedulerJobService;
@@ -172,6 +189,8 @@ public class JobProvisionServiceTest extends AbstractTest {
 
         MetaDataService metaDataService = new MetaDataRestServiceImpl(environment, new HttpComponentsClientHttpRequestFactory());
 
+        JobProvisionModuleRestServiceImpl jobProvisionModuleRestService = new JobProvisionModuleRestServiceImpl(environment, new HttpComponentsClientHttpRequestFactory());
+
         SolrModuleMetadataDao solrModuleMetadataDao = new SolrModuleMetadataDao();
         solrModuleMetadataDao.initStandalone("http://localhost:8983/solr", 30);
         solrModuleMetadataDao.setSolrUsername("ikasan");
@@ -180,90 +199,33 @@ public class JobProvisionServiceTest extends AbstractTest {
         moduleMetaDataService.setSolrUsername("ikasan");
         moduleMetaDataService.setSolrPassword("1ka5an");
 
-        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService, moduleMetaDataService, null);
+        SolrFileEventDrivenJobDaoImpl fileEventDrivenJobRecordDao = new SolrFileEventDrivenJobDaoImpl();
+        fileEventDrivenJobRecordDao.initStandalone("http://localhost:8983/solr", 30);
+        fileEventDrivenJobRecordDao.setSolrUsername("ikasan");
+        fileEventDrivenJobRecordDao.setSolrPassword("1ka5an");
+        SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao = new SolrInternalEventDrivenJobDaoImpl();
+        internalEventDrivenJobRecordDao.initStandalone("http://localhost:8983/solr", 30);
+        internalEventDrivenJobRecordDao.setSolrUsername("ikasan");
+        internalEventDrivenJobRecordDao.setSolrPassword("1ka5an");
+        SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobRecordDao = new SolrQuartzScheduleDrivenJobDaoImpl();
+        quartzScheduleDrivenJobRecordDao.initStandalone("http://localhost:8983/solr", 30);
+        quartzScheduleDrivenJobRecordDao.setSolrUsername("ikasan");
+        quartzScheduleDrivenJobRecordDao.setSolrPassword("1ka5an");
+        SolrSchedulerJobDaoImpl schedulerJobRecordDao = new SolrSchedulerJobDaoImpl();
+        schedulerJobRecordDao.initStandalone("http://localhost:8983/solr", 30);
+        schedulerJobRecordDao.setSolrUsername("ikasan");
+        schedulerJobRecordDao.setSolrPassword("1ka5an");
+
+        SchedulerJobService schedulerJobService = new SolrSchedulerJobServiceImpl(fileEventDrivenJobRecordDao, internalEventDrivenJobRecordDao,
+            quartzScheduleDrivenJobRecordDao, schedulerJobRecordDao);
+
+        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService, moduleMetaDataService, jobProvisionModuleRestService);
 
         List<SchedulerJob> schedulerJobs = new ArrayList<>();
 
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "scheduler-agent", "contextId", "description", "jobName1", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "scheduler-agent", "contextId", "description", "jobName2", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "scheduler-agent", "contextId", "description", "jobName3", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "scheduler-agent", "contextId", "description", "jobName4", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "scheduler-agent", "contextId", "description", "jobName5", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "scheduler-agent", "contextId", "description", "jobName6", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "scheduler-agent", "contextId", "description", "jobName7", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "scheduler-agent", "contextId", "description", "jobName8", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "scheduler-agent", "contextId", "description", "jobName9", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "scheduler-agent", "contextId", "description", "jobName10", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "scheduler-agent", "contextId", "description", "jobName11", getContextParameters(), List.of("1")));
-        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-            , "scheduler-agent", "contextId", "description", "jobName12", getContextParameters(), List.of("1")));
-
-//        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-//            , "agent2", "contextId", "description", "jobName1", getContextParameters(), List.of("1")));
-//        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-//            , "agent2", "contextId", "description", "jobName2", getContextParameters(), List.of("1")));
-//        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-//            , "agent2", "contextId", "description", "jobName3", getContextParameters(), List.of("1")));
-//
-//        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-//            , "agent3", "contextId", "description", "jobName1", getContextParameters(), List.of("1")));
-//        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-//            , "agent3", "contextId", "description", "jobName2", getContextParameters(), List.of("1")));
-//        schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
-//            , "agent3", "contextId", "description", "jobName3", getContextParameters(), List.of("1")));
-
-        schedulerJobs.add(this.createQuartzScheduleDrivenJob("scheduler-agent", "contextId", "description"
-            , "quartz-jobName1", "jobGroup", "* 0/15 * ? * * *", "timezone"));
-        schedulerJobs.add(this.createQuartzScheduleDrivenJob("scheduler-agent", "contextId", "description"
-            , "quartz-jobName2", "jobGroup", "* 0/15 * ? * * *", "timezone"));
-        schedulerJobs.add(this.createQuartzScheduleDrivenJob("scheduler-agent", "contextId", "description"
-            , "quartz-jobName3", "jobGroup", "* 0/15 * ? * * *", "timezone"));
-
-//        schedulerJobs.add(this.createQuartzScheduleDrivenJob("agent2", "contextId", "description"
-//            , "quartz-jobName1", "jobGroup", "cronExpression", "timezone"));
-//        schedulerJobs.add(this.createQuartzScheduleDrivenJob("agent2", "contextId", "description"
-//            , "quartz-jobName2", "jobGroup", "cronExpression", "timezone"));
-//        schedulerJobs.add(this.createQuartzScheduleDrivenJob("agent2", "contextId", "description"
-//            , "quartz-jobName3", "jobGroup", "cronExpression", "timezone"));
-//
-//        schedulerJobs.add(this.createQuartzScheduleDrivenJob("agent3", "contextId", "description"
-//            , "quartz-jobName1", "jobGroup", "cronExpression", "timezone"));
-//        schedulerJobs.add(this.createQuartzScheduleDrivenJob("agent3", "contextId", "description"
-//            , "quartz-jobName2", "jobGroup", "cronExpression", "timezone"));
-//        schedulerJobs.add(this.createQuartzScheduleDrivenJob("agent3", "contextId", "description"
-//            , "quartz-jobName3", "jobGroup", "cronExpression", "timezone"));
-
-        schedulerJobs.add(this.createFileEventDrivenJob("scheduler-agent", "contextId", "description"
-            , "file-jobName1", "jobGroup", "* 0/15 * ? * * *", "timezone"));
-        schedulerJobs.add(this.createFileEventDrivenJob("scheduler-agent", "contextId", "description"
-            , "file-jobName2", "jobGroup", "* 0/15 * ? * * *", "timezone"));
-        schedulerJobs.add(this.createFileEventDrivenJob("scheduler-agent", "contextId", "description"
-            , "file-jobName3", "jobGroup", "* 0/15 * ? * * *", "timezone"));
-
-//        schedulerJobs.add(this.createFileEventDrivenJob("agent2", "contextId", "description"
-//            , "file-jobName1", "jobGroup", "cronExpression", "timezone"));
-//        schedulerJobs.add(this.createFileEventDrivenJob("agent2", "contextId", "description"
-//            , "file-jobName2", "jobGroup", "cronExpression", "timezone"));
-//        schedulerJobs.add(this.createFileEventDrivenJob("agent2", "contextId", "description"
-//            , "file-jobName3", "jobGroup", "cronExpression", "timezone"));
-//
-//        schedulerJobs.add(this.createFileEventDrivenJob("agent3", "contextId", "description"
-//            , "file-jobName1", "jobGroup", "cronExpression", "timezone"));
-//        schedulerJobs.add(this.createFileEventDrivenJob("agent3", "contextId", "description"
-//            , "file-jobName2", "jobGroup", "cronExpression", "timezone"));
-//        schedulerJobs.add(this.createFileEventDrivenJob("agent3", "contextId", "description"
-//            , "file-jobName3", "jobGroup", "cronExpression", "timezone"));
+        loadFileJobs(schedulerJobs);
+        loadCommandJobs(schedulerJobs);
+        loadQuartzJobs(schedulerJobs);
 
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
             .allowIfSubType("org.ikasan.spec.scheduled.job.model")
@@ -282,6 +244,57 @@ public class JobProvisionServiceTest extends AbstractTest {
 
 
         jobProvisionService.provisionJobs(schedulerJobWrapper1.getJobs());
+    }
+
+    private void loadFileJobs(List<SchedulerJob> schedulerJobs) throws IOException {
+        List<Path> files =  Files.walk(Paths.get("./src/test/resources/data/full-context/CONTEXT-369160711/jobs/file"))
+            .filter(Files::isRegularFile)
+            .collect(Collectors.toList());
+
+        for (Path f : files) {
+            FileInputStream inputStream = new FileInputStream(f.toFile());
+
+            FileEventDrivenJob job = ObjectMapperFactory.newInstance().readValue(inputStream.readAllBytes(), FileEventDrivenJobImpl.class);
+
+            schedulerJobs.add(job);
+
+            inputStream.close();
+        }
+
+    }
+
+    private void loadCommandJobs(List<SchedulerJob> schedulerJobs) throws IOException {
+        List<Path> files =  Files.walk(Paths.get("./src/test/resources/data/full-context/CONTEXT-369160711/jobs/internal"))
+            .filter(Files::isRegularFile)
+            .collect(Collectors.toList());
+
+        for (Path f : files) {
+            FileInputStream inputStream = new FileInputStream(f.toFile());
+
+            InternalEventDrivenJob job = ObjectMapperFactory.newInstance().readValue(inputStream.readAllBytes(), InternalEventDrivenJobImpl.class);
+
+            schedulerJobs.add(job);
+
+            inputStream.close();
+        }
+
+    }
+
+    private void loadQuartzJobs(List<SchedulerJob> schedulerJobs) throws IOException {
+        List<Path> files =  Files.walk(Paths.get("./src/test/resources/data/full-context/CONTEXT-369160711/jobs/quartz"))
+            .filter(Files::isRegularFile)
+            .collect(Collectors.toList());
+
+        for (Path f : files) {
+            FileInputStream inputStream = new FileInputStream(f.toFile());
+
+            QuartzScheduleDrivenJob job = ObjectMapperFactory.newInstance().readValue(inputStream.readAllBytes(), QuartzScheduleDrivenJobImpl.class);
+
+            schedulerJobs.add(job);
+
+            inputStream.close();
+        }
+
     }
 
     private InternalEventDrivenJob createInternalEventDrivenJob(String commandLine, String workingDirectory

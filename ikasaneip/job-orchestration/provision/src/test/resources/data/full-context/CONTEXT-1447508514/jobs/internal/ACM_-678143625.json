@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "ACM_-678143625",
+  "contextId" : "CONTEXT-1447508514",
+  "childContextIds" : [ "CONTEXT--1036157243" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\necho \"list_contents('C0_MURX_SCPR_BOND_1700','EVAL_DERIVED');\" | ac_evalform - > /dev/null 2>&1 &\necho \"list_contents('C0_MURX_SCPR_BOND_1800','EVAL_DERIVED');\" | ac_evalform - > /dev/null 2>&1 &\necho \"list_contents('C0_MURX_SCPR_EQUITY_1800','EVAL_DERIVED');\" | ac_evalform - > /dev/null 2>&1 &\necho \"list_contents('C0_CDW_SCPR_BOND_1800','EVAL_DERIVED');\" | ac_evalform - > /dev/null 2>&1 &\necho \"list_contents('C0_CDW_SCPR_EQUITY_1800','EVAL_DERIVED');\" | ac_evalform - > /dev/null 2>&1 &\nwait\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-ACM_-678143625",
+  "jobDescription" : "This is a command execution job! It executes a script and possible has some parameters passed to it."
+}
