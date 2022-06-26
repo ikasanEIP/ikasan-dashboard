@@ -28,6 +28,7 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
@@ -35,15 +36,19 @@ import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeE
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrInternalEventDrivenJobInstanceImpl;
+import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
+import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +57,7 @@ import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResizableDialog {
 
@@ -110,6 +116,14 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
     private JobInitiationService jobInitiationService;
 
+    private SchedulerJobLogFileViewerDialog schedulerJobLogFileViewerDialog;
+
+    private Button viewErrorLogButton;
+    private Button viewOutputLogButton;
+
+    private ScheduledProcessEvent scheduledProcessEvent;
+
+    private LogStreamingService logStreamingService;
 
     /**
      * Constructor
@@ -120,13 +134,18 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
      * @param moduleControlRestService
      * @param metaDataRestService
      * @param systemEventLogger
+     * @param schedulerJobInstanceService
      * @param contextInstance
+     * @param jobInitiationService
+     * @param moduleMetaDataService
+     * @param logStreamingService
      */
     public InternalEventDrivenJobInstanceDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                                 ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                                 MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                                 SchedulerJobInstanceService schedulerJobInstanceService, ContextInstance contextInstance,
-                                                JobInitiationService jobInitiationService, ModuleMetaDataService moduleMetaDataService) {
+                                                JobInitiationService jobInitiationService, ModuleMetaDataService moduleMetaDataService,
+                                                LogStreamingService logStreamingService) {
         super.showResize(false);
         super.title.setText(getTranslation("label.command-execution-job-instance", UI.getCurrent().getLocale()));
 
@@ -140,6 +159,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.contextInstance = contextInstance;
         this.jobInitiationService = jobInitiationService;
         this.moduleMetaDataService = moduleMetaDataService;
+        this.logStreamingService = logStreamingService;
 
         this.internalEventDrivenJobInstance = new SolrInternalEventDrivenJobInstanceImpl();
 
@@ -410,6 +430,20 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             });
         });
 
+        this.viewOutputLogButton = new Button("Output Log", VaadinIcon.FILE_PROCESS.create());
+        this.viewOutputLogButton.setVisible(this.scheduledProcessEvent != null);
+        this.viewOutputLogButton.setIconAfterText(true);
+        this.viewOutputLogButton.addClickListener(event -> {
+           this.streamLog(this.internalEventDrivenJobInstance, false);
+        });
+
+        this.viewErrorLogButton = new Button("Error Log", VaadinIcon.FILE_PROCESS.create());
+        this.viewErrorLogButton.setVisible(this.scheduledProcessEvent != null);
+        this.viewErrorLogButton.setIconAfterText(true);
+        this.viewErrorLogButton.addClickListener(event -> {
+            this.streamLog(this.internalEventDrivenJobInstance, true);
+        });
+
         Button downloadButton = new Button(getTranslation("button.download", UI.getCurrent().getLocale()), new Icon(VaadinIcon.DOWNLOAD_ALT));
         downloadButton.setIconAfterText(true);
         StreamResource streamResource = new StreamResource(this.internalEventDrivenJobInstance.getJobName()+".json"
@@ -430,7 +464,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         expandButton.setIconAfterText(true);
 
         HorizontalLayout jobActionsButtonLayout = new HorizontalLayout();
-        jobActionsButtonLayout.add(executionDaysButton, parametersButton, successfulReturnCodesButton);
+        jobActionsButtonLayout.add(executionDaysButton, parametersButton, successfulReturnCodesButton, this.viewOutputLogButton, this.viewErrorLogButton);
         jobActionsButtonLayout.setMargin(false);
         VerticalLayout wrapperLayout = new VerticalLayout();
         wrapperLayout.setWidth("100%");
@@ -459,6 +493,39 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         commandLineTa.getStyle().set("minHeight", "100px");
 
         return formLayout;
+    }
+
+    private void streamLog(SchedulerJob schedulerJob, boolean getErrorLog) {
+        // TODO remove all the log info when happy this is working correctly
+        boolean displayLog = false;
+        String host = null;
+        String endPoint = null;
+        String outputLog = null;
+
+        SchedulerJobInstance schedulerJobInstance = this.contextInstance.getScheduledJobsMap().get(schedulerJob.getIdentifier());
+
+        schedulerJobInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
+
+        logger.info("schedulerJobInstance is " + schedulerJobInstance + " for job identifier " + schedulerJob.getIdentifier());
+
+        logger.info("agent is " + agent + " for name " + schedulerJob.getAgentName());
+        if (this.scheduledProcessEvent != null && agent != null) {
+            host = agent.getUrl();
+            endPoint = "/rest/logs";
+            outputLog = getErrorLog ? this.scheduledProcessEvent.getResultError() : this.scheduledProcessEvent.getResultOutput();
+            logger.info(String.format("Streaming log for host %s, endPoint %s, log %s", host, endPoint, outputLog));
+            if (outputLog != null && host != null) {
+                displayLog = true;
+            }
+        }
+
+        if (displayLog) {
+            schedulerJobLogFileViewerDialog = new SchedulerJobLogFileViewerDialog(this.logStreamingService, host, endPoint, outputLog);
+            schedulerJobLogFileViewerDialog.open();
+        } else {
+            String message = "There is no " + (getErrorLog ? "error" : "output") + " log for the job";
+            NotificationHelper.showUserNotification(message);
+        }
     }
 
     /**
@@ -624,20 +691,18 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
      * Set the underlying pojo for the form along with the edit mode.
      *
      * @param internalEventDrivenJob
-     * @param editMode
      */
-    private void setJob(InternalEventDrivenJobInstance internalEventDrivenJob, EditMode editMode) {
-        this.enabled = editMode == EditMode.NEW || editMode == EditMode.EDIT ? true : false;
+    private void setJob(InternalEventDrivenJobInstance internalEventDrivenJob) {
         this.internalEventDrivenJobInstance = internalEventDrivenJob;
+        this.scheduledProcessEvent = this.internalEventDrivenJobInstance.getScheduledProcessEvent();
 
         this.init();
 
         this.formBinder.readBean(this.internalEventDrivenJobInstance);
         this.commandLineTa.setValue(internalEventDrivenJob.getCommandLine());
-        this.editMode = editMode;
 
         // make sure all value are bound before calling set enabled
-        this.setEnabled(this.enabled);
+        this.setEnabled(false);
     }
 
     /**
@@ -662,12 +727,11 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
      * Set the job record on this object.
      *
      * @param internalEventDrivenJobRecord
-     * @param editMode
      */
-    public void setJob(SchedulerJobInstanceRecord internalEventDrivenJobRecord, EditMode editMode) {
+    public void setJob(SchedulerJobInstanceRecord internalEventDrivenJobRecord) {
         this.schedulerJobInstanceRecord = internalEventDrivenJobRecord;
         this.setJob((InternalEventDrivenJobInstance) this.schedulerJobInstanceService
-            .findById(internalEventDrivenJobRecord.getId()).getSchedulerJobInstance(), editMode);
+            .findById(internalEventDrivenJobRecord.getId()).getSchedulerJobInstance());
     }
 
     @Override
@@ -678,6 +742,11 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.internalEventDrivenJobInstance.getJobName())) {
                 this.internalEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
                 this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+
+                this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
+
+                this.viewOutputLogButton.setVisible(this.scheduledProcessEvent != null);
+                this.viewErrorLogButton.setVisible(this.scheduledProcessEvent != null);
             }
         });
     }

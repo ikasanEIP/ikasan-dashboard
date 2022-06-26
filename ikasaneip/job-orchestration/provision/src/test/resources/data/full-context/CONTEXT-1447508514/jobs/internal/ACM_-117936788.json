@@ -1,0 +1,18 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "ACM_-117936788",
+  "contextId" : "CONTEXT-1447508514",
+  "childContextIds" : [ "CONTEXT-676551827" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nsleep 3s\t\nierun IONI",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-ACM_-117936788",
+  "jobDescription" : "This is a command execution job! It executes a script and possible has some parameters passed to it."
+}

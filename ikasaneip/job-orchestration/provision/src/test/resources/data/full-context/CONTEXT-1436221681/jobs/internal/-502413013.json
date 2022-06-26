@@ -1,0 +1,24 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-502413013",
+  "contextId" : "CONTEXT-1436221681",
+  "childContextIds" : [ "CONTEXT--2036736597" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\necho \"ado_browse(\\\"code = 'Pub_CDW_BOND_NYCLOSE'\\\");\" | ac_evalform - | ac_trigger_ado.sh -\nif [ $UseBusinessDate == 0 ]; then\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/cdw/out ac_extract.sh -c Pub_CDW_BOND_NYCLOSE -t 070000 -i\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/ipv/out ac_blend_extract.sh -t 070000 -i -k 7 Pub_IPV_BOND_NYCLOSE,Pub_IPV_BOND_NYCLOSE_ORIG,Pub_IPV_BOND_NYCLOSE_PREV\nelse\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/cdw/out ac_extract.sh -d $BusinessDate -c Pub_CDW_BOND_NYCLOSE -t 070000 -i\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/ipv/out ac_blend_extract.sh -d $BusinessDate -t 070000 -i -k 7 Pub_IPV_BOND_NYCLOSE,Pub_IPV_BOND_NYCLOSE_ORIG,Pub_IPV_BOND_NYCLOSE_PREV\nfi  \n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent--502413013",
+  "jobDescription" : "This is a command execution job! It executes a script and possible has some parameters passed to it."
+}

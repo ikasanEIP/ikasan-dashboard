@@ -31,6 +31,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,12 +64,14 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     private SchedulerJobService schedulerJobService;
     private LogStreamingService logStreamingService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
+    private JobInitiationService jobInitiationService;
 
 
     public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                  LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService) {
+                                  LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
+                                  JobInitiationService jobInitiationService) {
 
         this.dynamicImagePath = dynamicImagePath;
         if (this.dynamicImagePath == null) {
@@ -118,6 +121,11 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
         this.schedulerJobInstanceService = schedulerJobInstanceService;
         if(this.schedulerJobInstanceService == null) {
             throw new IllegalArgumentException("schedulerJobInstanceService cannot be null!");
+        }
+
+        this.jobInitiationService = jobInitiationService;
+        if(this.jobInitiationService == null) {
+            throw new IllegalArgumentException("jobInitiationService cannot be null!");
         }
 
         this.setMargin(false);
@@ -215,7 +223,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
                 try {
                     JobVisualisationDialog jobVisualisationDialog = new JobVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
-                        this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService);
+                        this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
                     jobVisualisationDialog.createSchedulerVisualisation(this.contextInstance, contextInstance);
                     jobVisualisationDialog.open();
                 }
@@ -228,7 +236,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
                     ContextInstanceVisualisationDialog contextInstanceVisualisationDialog
                         = new ContextInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
-                        this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService);
+                        this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
                     contextInstanceVisualisationDialog.createSchedulerVisualisation(this.contextInstance, contextInstance);
                     contextInstanceVisualisationDialog.open();
                 }
@@ -283,9 +291,12 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
                 logger.info("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
                     contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
                     StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
-                ui.access(() ->
+                ui.access(() -> {
+                    if(this.designerCanvas != null) {
                     this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName() + "_status"
-                        , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus())));
+                        , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
+                    }
+                });
             }
         });
     }

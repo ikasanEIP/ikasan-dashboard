@@ -1,0 +1,18 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-131863702",
+  "contextId" : "CONTEXT-1436221681",
+  "childContextIds" : [ "CONTEXT-613708632" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\n$AC_SYSTEM/local/bin/cdw_request_missing.sh -p SOII",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent--131863702",
+  "jobDescription" : "This is a command execution job! It executes a script and possible has some parameters passed to it."
+}
