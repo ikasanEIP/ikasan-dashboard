@@ -245,7 +245,7 @@ public class ContextTemplateManagementWidget extends Div {
                                            LogStreamingService logStreamingService) {
         this.schedulerVisualisation = new SchedulerVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
-            , this.schedulerJobInstanceService, null);
+            , this.schedulerJobInstanceService, this.jobInitiationService);
         this.schedulerVisualisation.setWidthFull();
         this.schedulerVisualisation.setHeight("75vh");
 
