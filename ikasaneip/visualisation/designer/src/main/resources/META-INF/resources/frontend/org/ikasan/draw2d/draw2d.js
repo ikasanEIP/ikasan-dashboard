@@ -7629,14 +7629,14 @@ _packages2.default.Canvas = Class.extend(
 
     // this is only required if the used router requires the crossing information
     // of the connections
-    if (figure instanceof _packages2.default.shape.basic.PolyLine) {
-      this.calculateConnectionIntersection();
-      this.linesToRepaintAfterDragDrop.each(function (i, line) {
-        line.svgPathString = null;
-        line.repaint();
-      });
-      this.linesToRepaintAfterDragDrop = new _packages2.default.util.ArrayList();
-    }
+    // if (figure instanceof _packages2.default.shape.basic.PolyLine) {
+    //   this.calculateConnectionIntersection();
+    //   this.linesToRepaintAfterDragDrop.each(function (i, line) {
+    //     line.svgPathString = null;
+    //     line.repaint();
+    //   });
+    //   this.linesToRepaintAfterDragDrop = new _packages2.default.util.ArrayList();
+    // }
 
     return this;
   },
