@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "2001531828",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--977214365" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\n$AC_SYSTEM/interfaces/CURV/scripts/curv_ac_obj_security.sh -g",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-2001531828",
+  "jobDescription" : "AC_SCRIPT_CURV_SetCurveDebugSecurity"
+}

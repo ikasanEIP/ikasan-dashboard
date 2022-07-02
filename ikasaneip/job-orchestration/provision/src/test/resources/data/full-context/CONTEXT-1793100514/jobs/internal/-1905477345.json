@@ -1,0 +1,24 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-1905477345",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-427042456" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nmurexFilepath='/opt/mhi-ac/gateway/dev2/murex/out/FGRT_MUREX-NATIVE_EOD-DATA_20220606.csv.FEDFUND'\n>&2 echo $murexFilepath\nif [ $UseBusinessDate == 0 ]; then\n  ac_extract_murex_fgrt.sh -t 140000 -r [\\'MUREX_REQFEDFUND_FGRT\\'] -f $murexFilepath\nelse\n  ac_extract_murex_fgrt.sh -d $BusinessDate -t 140000 -r [\\'MUREX_REQFEDFUND_FGRT\\'] -f $murexFilepath\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent--1905477345",
+  "jobDescription" : "AC_SCRIPT_Export_MX_FGRT_1400"
+}

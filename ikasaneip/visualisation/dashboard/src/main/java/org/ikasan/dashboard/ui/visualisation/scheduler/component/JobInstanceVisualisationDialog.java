@@ -23,7 +23,6 @@ import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
-import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -32,8 +31,6 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
@@ -42,10 +39,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.UUID;
 
-public class JobVisualisationDialog extends AbstractCloseableResizableDialog implements CanvasItemRightClickEventListener
+public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDialog implements CanvasItemRightClickEventListener
     , CanvasItemDoubleClickEventListener {
 
-    private Logger logger = LoggerFactory.getLogger(JobVisualisationDialog.class);
+    private Logger logger = LoggerFactory.getLogger(JobInstanceVisualisationDialog.class);
 
     private Registration schedulerJobStateChangeRegistration;
 
@@ -72,11 +69,11 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private JobInitiationService jobInitiationService;
 
-    public JobVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
-                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
-                                  SchedulerJobService schedulerJobService, LogStreamingService logStreamingService,
-                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService) {
+    public JobInstanceVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+                                          ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                          MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
+                                          SchedulerJobService schedulerJobService, LogStreamingService logStreamingService,
+                                          SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService) {
         this.setHeight("90%");
         this.setWidth("90%");
 
@@ -233,7 +230,7 @@ public class JobVisualisationDialog extends AbstractCloseableResizableDialog imp
         SchedulerJobInstanceRecord schedulerJobRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName
             (this.rootContextInstance.getId(), schedulerJob.getJobName(), this.contextInstance.getName());
 
-        if(schedulerJobRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
+            if(schedulerJobRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
             InternalEventDrivenJobInstanceDialog internalEventDrivenJobInstanceDialog = new InternalEventDrivenJobInstanceDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
                 , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService, this.rootContextInstance
                 , this.jobInitiationService, moduleMetaDataService, this.logStreamingService);

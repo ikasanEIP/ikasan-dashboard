@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "1106302425",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--707156913" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\n$AC_SYSTEM/local/bin/recent_inactive.sh -a IONI -s IONI_SA0100 | ac_apply_validation_rules.pl Val_Config_1 –\n$AC_SYSTEM/local/bin/recent_inactive.sh -a C0 -s C0#I0100 | ac_apply_validation_rules.pl Val_Config_1 -\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-1106302425",
+  "jobDescription" : "AC_SCRIPT_Maintenance_AC_ValidationRemoval"
+}

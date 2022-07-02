@@ -10,6 +10,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
+import org.ikasan.solr.util.SolrSpecialCharacterEscapeUtil;
 import org.ikasan.spec.scheduled.instance.dao.ScheduledContextInstanceDao;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
@@ -98,7 +99,7 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         StringBuffer queryString = new StringBuffer();
         queryString.append(TYPE).append(COLON).append(SCHEDULED_CONTEXT_INSTANCE)
             .append(AND)
-            .append(MODULE_NAME).append(COLON).append(contextName);
+            .append(MODULE_NAME).append(COLON).append(SolrSpecialCharacterEscapeUtil.escape(contextName));
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(queryString.toString());
@@ -116,7 +117,7 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         StringBuffer queryString = new StringBuffer();
         queryString.append(TYPE).append(COLON).append(SCHEDULED_CONTEXT_INSTANCE)
             .append(AND)
-            .append(MODULE_NAME).append(COLON).append(contextName);
+            .append(MODULE_NAME).append(COLON).append(SolrSpecialCharacterEscapeUtil.escape(contextName));
 
         if(startTimestamp > 0 || endTimestamp > 0) {
             queryString.append(AND).append(CREATED_DATE_TIME).append(COLON).append("[").append(startTimestamp)
@@ -139,14 +140,14 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         queryString.append(TYPE).append(COLON).append(SCHEDULED_CONTEXT_INSTANCE)
             .append(AND)
             .append(MODULE_NAME).append(COLON)
-            .append(filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty() ? filter.getContextSearchFilter() : "*");
+            .append(filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getContextSearchFilter()) : "*");
 
         if(filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty()) {
             queryString.append(AND)
                 .append(COMPONENT_NAME)
                 .append(COLON)
                 .append(WILDCARD)
-                .append(filter.getContextInstanceId())
+                .append(SolrSpecialCharacterEscapeUtil.escape(filter.getContextInstanceId()))
                 .append(WILDCARD);
         }
 

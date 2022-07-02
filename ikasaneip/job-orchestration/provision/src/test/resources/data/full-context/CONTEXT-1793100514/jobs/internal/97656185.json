@@ -1,0 +1,18 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "97656185",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-1182789416", "CONTEXT--89883133", "CONTEXT-140537370" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nsleep 12s\nierun SOII",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-97656185",
+  "jobDescription" : "AC_SCRIPT_Interface_SOII"
+}

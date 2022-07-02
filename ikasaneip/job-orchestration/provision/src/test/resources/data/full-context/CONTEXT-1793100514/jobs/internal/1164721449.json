@@ -1,0 +1,18 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "1164721449",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--1250033421", "CONTEXT--1613159660", "CONTEXT--1596119798" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nsleep 3s\t\nierun BLOOMBERG",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-1164721449",
+  "jobDescription" : "AC_SCRIPT_Interface_Bloomberg_DLResponses"
+}

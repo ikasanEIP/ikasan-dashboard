@@ -1,0 +1,16 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-238594369",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-271289272" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\n$AC_SYSTEM/bin/ac_state 0",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "daysOfWeekToRun" : [ 1 ],
+  "identifier" : "scheduler-agent--238594369",
+  "jobDescription" : "AC_SCRIPT_Maintenance_AC_ReadOnlyMode"
+}

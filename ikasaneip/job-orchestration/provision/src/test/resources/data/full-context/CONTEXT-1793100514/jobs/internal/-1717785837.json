@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-1717785837",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-1739913794" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "\nimport java.util.Iterator;\nimport com.redwood.scheduler.api.model.*;\n\n{\nPartition p = jcsSession.getPartitionByName(\"%Partition%\");\n\nString eventName = null;\n\nString sql = \"select tv1.* from Table t\" \n+ \" join Partition p on t.Partition = p.UniqueId AND p.Name = ?\"\n+ \" join TableValue tv1 on tv1.Table = t.UniqueId and tv1.SearchColumnName = ? \"\n+ \" where t.Name = ? and tv1.ColumnValue IN (?) \";\n\n   Iterator it = jcsSession.executeObjectQuery(sql, new Object [] {\"%Partition%\",\"EVENTNAME\",\"AC_EVENT\",\"AC_AC_MurexExport_1600_FLOW_EV\"});\n   while (it.hasNext())\n   {\n     TableValue tv = (TableValue) it.next();\n     eventName = tv.getColumnValue();\n     //jcsOut.println(eventName);\n     p.getEventDefinitionByName(eventName).raise();\n     jcsSession.persist();\n   }\n  \n}",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent--1717785837",
+  "jobDescription" : "AC_SCRIPT_RaiseEvent_FLOW_MX_Export_1600"
+}

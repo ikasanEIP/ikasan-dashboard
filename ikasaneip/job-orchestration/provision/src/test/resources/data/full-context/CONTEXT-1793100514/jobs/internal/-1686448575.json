@@ -1,0 +1,16 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-1686448575",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-1500699512" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\n$AC_SYSTEM/local/bin/ac_rdbms_admn.sh -u",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "daysOfWeekToRun" : [ 2, 3, 4, 5, 6 ],
+  "identifier" : "scheduler-agent--1686448575",
+  "jobDescription" : "AC_SCRIPT_Maintenance_AC_UpdateDatabaseStatistics"
+}

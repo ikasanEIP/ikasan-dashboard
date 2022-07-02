@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "1799613995",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-1616645609" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\necho \"ado_browse(\\\"code like 'Req_BB_Anvil_NYClose%'\\\");\" | ac_evalform - | ac_trigger_ado.sh -\t\t\nac_bloomberg_persecurity.sh -c Req_BB_Anvil_NYClose -i\nac_bloomberg_persecurity.sh -c Req_BB_Anvil_NYClose_Original -i\nac_bloomberg_persecurity.sh -c Req_BB_Anvil_NYClose_GetData -i\nac_bloomberg_persecurity.sh -c Req_BB_Anvil_NYClose_GetData_Original -i\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-1799613995",
+  "jobDescription" : "AC_SCRIPT_PriceRequest_BB_AnvilBondNYClose_0700"
+}
