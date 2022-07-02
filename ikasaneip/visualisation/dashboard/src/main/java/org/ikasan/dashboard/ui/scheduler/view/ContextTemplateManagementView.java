@@ -22,6 +22,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -79,6 +80,9 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     @Resource
     private JobInitiationService jobInitiationService;
 
+    @Resource
+    private ContextProfileService contextProfileService;
+
     private ContextTemplateManagementWidget contextTemplateManagementWidget;
 
     private ContextTemplate contextTemplate;
@@ -99,7 +103,7 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     private void init() {
         this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, ""
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService);
+            , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService);
 
         H2 contextTemplateManagementLabel = new H2(String.format(getTranslation("label.context-template-management", UI.getCurrent().getLocale())));
         this.add(contextTemplateManagementLabel, this.contextTemplateManagementWidget);

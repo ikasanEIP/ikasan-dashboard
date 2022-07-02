@@ -1,0 +1,18 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "97185587",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--977214365" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nsleep 3s\nierun CURV\n$AC_SYSTEM/interfaces/CURV/scripts/create_curve_instrument_C0.sh\necho \"ado_browse(\\\"code like 'Pub_IPV_%'\\\")\" | ac_evalform - | ac_trigger_ado.sh -\nac_get_ado.sh CURV | ac_trigger_ado.sh -",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-97185587",
+  "jobDescription" : "AC_SCRIPT_Interface_CURV"
+}

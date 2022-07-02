@@ -35,6 +35,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Arrays;
@@ -47,6 +48,7 @@ public class ContextInstanceGridWidget extends Div {
     private IkasanAuthentication authentication;
     private ContextTemplate contextTemplate;
     private JobInitiationService jobInitiationService;
+    private ContextProfileService contextProfileService;
 
     /**
      * Constructor
@@ -55,7 +57,7 @@ public class ContextInstanceGridWidget extends Div {
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
-                                     JobInitiationService jobInitiationService) {
+                                     JobInitiationService jobInitiationService, ContextProfileService contextProfileService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -122,7 +124,7 @@ public class ContextInstanceGridWidget extends Div {
                 ContextInstanceDialog contextInstanceDialog = new ContextInstanceDialog(this.scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, scheduledContextInstanceRecord.getContextInstance(), this.contextTemplate, schedulerJobInstanceService
-                    , this.jobInitiationService);
+                    , this.jobInitiationService, this.contextProfileService);
 
                 contextInstanceDialog.open();
             });

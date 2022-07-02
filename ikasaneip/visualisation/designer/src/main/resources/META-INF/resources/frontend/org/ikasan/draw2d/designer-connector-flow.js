@@ -1,4 +1,6 @@
-    window.Vaadin.Flow.designerConnector = {
+
+window.Vaadin.Flow.designerConnector = {
+
     initLazy : function(designer, name, readonly) {
 
         // Check whether the connector was already initialized for the Iron list
@@ -104,7 +106,12 @@
             let ports = icon.getPorts();
 
             ports.each((i, port) => {
-                port.setDiameter(5);
+                if(readonly) {
+                    port.setDiameter(0);
+                }
+                else {
+                    port.setDiameter(5);
+                }
             });
 
             let command = new draw2d.command.CommandAdd(_this, icon, x, y);
@@ -513,48 +520,73 @@
             return result;
         }
 
-        designer.$connector.importJson = function (jsonDocument) {
+        designer.$connector.importJson = async function (jsonDocument) {
+
+            let opts = {
+                lines: 13, // The number of lines to draw
+                length: 38, // The length of each line
+                width: 17, // The line thickness
+                radius: 45, // The radius of the inner circle
+                scale: 1, // Scales overall size of the spinner
+                corners: 1, // Corner roundness (0..1)
+                speed: 1, // Rounds per second
+                rotate: 0, // The rotation offset
+                animation: 'spinner-line-fade-quick', // The CSS animation name for the lines
+                direction: 1, // 1: clockwise, -1: counterclockwise
+                color: 'rgba(241, 90, 35, 1.0)', // CSS color or array of colors
+                fadeColor: 'transparent', // CSS color or array of colors
+                top: '50%', // Top position relative to parent
+                left: '50%', // Left position relative to parent
+                shadow: '0 0 1px transparent', // Box-shadow for the lines
+                zIndex: 2000000000, // The z-index (defaults to 2e9)
+                className: 'spinner', // The CSS class to assign to the spinner
+                position: 'absolute', // Element positioning
+            };
+
+
             let reader = new draw2d.io.json.Reader();
+
+            let target = document.getElementById('schedulerVisualisation');
+            let spinner = new Spin.Spinner(opts).spin(target);
+            await new Promise(r => setTimeout(r, 100));
 
             console.log("before unmarshal " + performance.now());
             reader.unmarshal(designer.$connector.designer, jsonDocument);
             console.log("after unmarshal " + performance.now());
 
-            _this.getFigures().each((i, figure)=>{
+            _this.getFigures().each((i, figure) => {
                 debugger;
-                if(figure.NAME === 'draw2d.shape.basic.Image') {
+                if (figure.NAME === 'draw2d.shape.basic.Image') {
                     figure.setKeepAspectRatio(true);
                     // We want to bring images to the front so that
                     // they can be double clicked!
                     figure.toFront();
-                }
-                else {
+                } else {
                     figure.toBack();
                 }
             });
 
             let xCoords = [];
             let yCoords = [];
-            _this.getFigures().each(function(i,f){
+            _this.getFigures().each(function (i, f) {
                 let b = f.getBoundingBox();
-                xCoords.push(b.x, b.x+b.w);
-                yCoords.push(b.y, b.y+b.h);
+                xCoords.push(b.x, b.x + b.w);
+                yCoords.push(b.y, b.y + b.h);
             });
 
-            let minX   = Math.min.apply(Math, xCoords);
-            let minY   = Math.min.apply(Math, yCoords);
-            let width  = Math.max.apply(Math, xCoords)-minX;
-            let height = Math.max.apply(Math, yCoords)-minY;
+            let minX = Math.min.apply(Math, xCoords);
+            let minY = Math.min.apply(Math, yCoords);
+            let width = Math.max.apply(Math, xCoords) - minX;
+            let height = Math.max.apply(Math, yCoords) - minY;
 
             let widthZoomFactor = width / 1500;
             let heightZoomFactor = height / 800;
 
             let zoomFactor = 0;
 
-            if(widthZoomFactor > heightZoomFactor) {
+            if (widthZoomFactor > heightZoomFactor) {
                 zoomFactor = widthZoomFactor;
-            }
-            else {
+            } else {
                 zoomFactor = heightZoomFactor;
             }
 
@@ -564,7 +596,9 @@
 
 
             designer.$connector.designer.setZoom(zoomFactor)
-            designer.$connector.designer.scrollTo((minY/zoomFactor)-((800-(height/zoomFactor))/4), (minX-100)/zoomFactor);
+            designer.$connector.designer.scrollTo((minY / zoomFactor) - ((800 - (height / zoomFactor)) / 4), (minX - 100) / zoomFactor);
+
+            spinner.stop();
             console.log("finished import json " + performance.now());
         }
 

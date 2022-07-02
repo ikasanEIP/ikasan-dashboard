@@ -1,0 +1,18 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "796154721",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--1036158204" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\n$AC_SYSTEM/apps/mds-ac-extract/app-start.sh -e DEV2 -a \"-c -x Pub_MURX_SCPR_1600\"\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-796154721",
+  "jobDescription" : "AC_SCRIPT_CacheStatic_SecurityPrice_1600"
+}

@@ -23,6 +23,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,6 +79,9 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
     @Resource
+    private ContextProfileService contextProfileService;
+
+    @Resource
     private JobInitiationService jobInitiationService;
 
     private ContextInstanceWidget contextInstanceWidget;
@@ -101,7 +105,7 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
     private void init() {
         this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService);
+            , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService);
 
         this.getStyle().set("padding-top", "0px");
         this.add(this.contextInstanceWidget);

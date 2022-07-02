@@ -43,6 +43,7 @@ import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,6 +124,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
+    @Resource
+    private ContextProfileService contextProfileService;
+
     @Value("${ikasan.dashboard.zip.working.directory:.}")
     private String zipWorkingDirectory;
 
@@ -185,7 +189,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.contextTemplateWidget = new ContextTemplateWidget(this.scheduledContextService, ".", this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService,
-            this.zipWorkingDirectory, this.contextUploadInitialisationService);
+            this.zipWorkingDirectory, this.contextUploadInitialisationService, this.contextProfileService);
         this.contextTemplateWidget.setVisible(false);
 
 
@@ -222,13 +226,13 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         IronIcon addIcon = IronIcons.ADD.create();
         addIcon.setSize("16pt");
 
-        MenuBar quickAccessMenu = this.createQuickAccessMenu();
-        quickAccessMenu.getElement().getStyle().set("position", "absolute");
-        quickAccessMenu.getElement().getStyle().set("right", "30px");
+//        MenuBar quickAccessMenu = this.createQuickAccessMenu();
+//        quickAccessMenu.getElement().getStyle().set("position", "absolute");
+//        quickAccessMenu.getElement().getStyle().set("right", "30px");
 
         HorizontalLayout tabsLayout = new HorizontalLayout();
         tabsLayout.setMargin(false);
-        tabsLayout.add(tabs, quickAccessMenu);
+        tabsLayout.add(tabs);
         tabsLayout.setWidth("100%");
         this.add(tabsLayout, this.schedulerAgentDashboardView, this.contextTemplateWidget, scheduledJobsBoard, contextDebugBoard);
     }

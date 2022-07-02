@@ -1,0 +1,25 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-1509670477",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-1500699512" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\n>&2 echo /opt/mhi-ac/gateway/dev2/rimes/out\nif [ $UseBusinessDate == 0 ]; then\n  $AC_SYSTEM/local/bin/ac_rimes_benchmarkreport.sh /opt/mhi-ac/gateway/dev2/rimes/out\nelse\n  $AC_SYSTEM/local/bin/ac_rimes_benchmarkreport.sh $BusinessDate /opt/mhi-ac/gateway/dev2/rimes/out\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "daysOfWeekToRun" : [ 6 ],
+  "identifier" : "scheduler-agent--1509670477",
+  "jobDescription" : "AC_SCRIPT_Export_RI_BMR"
+}

@@ -1,0 +1,22 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "1105780416",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-1500699512" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nif [ ADOType==1 ]\nthen\n  ac_delete_historic_attribute_data.pl -a SOII_SA0008 -n $RetentionPeriodDays\n  ac_delete_historic_attribute_data.pl -a SOII_SA0009 -n $RetentionPeriodDays\n  ac_delete_historic_attribute_data.pl -a SOII_SA0010 -n $RetentionPeriodDays\n  ac_delete_historic_attribute_data.pl -a SOII_SA0011 -n $RetentionPeriodDays\n  ac_delete_historic_attribute_data.pl -a SOII_SA0012 -n $RetentionPeriodDays\nelif [ ADOType==2 ]\nthen\n  ac_delete_historic_attribute_data.pl -a C0#I0000 -n $RetentionPeriodDays\n  ac_delete_historic_attribute_data.pl -a IONI_SA0000 -n $RetentionPeriodDays\n  ac_delete_historic_attribute_data.pl -a MURX_SA0000 -n $RetentionPeriodDays\n  ac_delete_historic_attribute_data.pl -a N0#I0000 -n $RetentionPeriodDays\nfi\n\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "RetentionPeriodDays",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "ADOType",
+    "type" : "java.lang.String"
+  } ],
+  "daysOfWeekToRun" : [ 7 ],
+  "identifier" : "scheduler-agent-1105780416",
+  "jobDescription" : "AC_SCRIPT_Maintenance_AC_DeleteHistoricSOII"
+}
