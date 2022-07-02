@@ -1,0 +1,18 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "346379200",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--573668245" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nexport AC_RT_RUNBATCH_ADO_CODE=Req_RT_SubCfg_RIC_1600 ; runbatch.sh SELECTFEED",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-346379200",
+  "jobDescription" : "AC_SCRIPT_Interface_Reuters_RIC_1600"
+}

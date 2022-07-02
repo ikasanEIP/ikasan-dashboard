@@ -1,0 +1,21 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-1005593808",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--271587604" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\n    folderpath=$(echo '/opt/mhi-ac/gateway/dev2/bloomberg/staging')\n    folderpathArchive=$folderpath/archive\n    [ -d \"$folderpathArchive\" ] || mkdir \"$folderpathArchive\"\t\n    find $folderpath -maxdepth 1 -name \"*.req\" -exec mv -f {} $folderpathArchive \\;\n    \n    if [ $UseBusinessDate == 0 ]; then\n      cd $AC_SYSTEM/apps/mds-ipv\n      $AC_SYSTEM/apps/mds-ipv/app-start.sh -e DEV2 -a \"-r\"\n    else\n      cd $AC_SYSTEM/apps/mds-ipv\n      $AC_SYSTEM/apps/mds-ipv/app-start.sh -e DEV2 -a \"-r -d $BusinessDate\"\n    fi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent--1005593808",
+  "jobDescription" : "AC_SCRIPT_IPV_Derivatives_Generate_BBGDLRequest"
+}

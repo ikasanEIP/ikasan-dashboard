@@ -1,0 +1,27 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-644008841",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-427044378" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nif [ $UseBusinessDate == 0 ]; then\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/murex/out ac_extract.sh -c Pub_MURX_FGEQ -i\nelse\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/murex/out ac_extract.sh -d $BusinessDate -c Pub_MURX_FGEQ -i\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent--644008841",
+  "jobDescription" : "AC_SCRIPT_Export_MX_FGEQ_1600"
+}

@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-359481762",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-143563739" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "#",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent--359481762",
+  "jobDescription" : "AC_SCRIPT_CheckEvent_EXPT_BB_Curve_1530"
+}

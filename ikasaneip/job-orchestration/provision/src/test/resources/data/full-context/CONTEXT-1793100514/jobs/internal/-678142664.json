@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-678142664",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--1036156282" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\necho \"list_contents('C0_MURX_SCPR_LOAN','EVAL_DERIVED');\" | ac_evalform - > /dev/null 2>&1 &\nwait\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent--678142664",
+  "jobDescription" : "AC_SCRIPT_DerivedList_SecurityPrice_1800"
+}

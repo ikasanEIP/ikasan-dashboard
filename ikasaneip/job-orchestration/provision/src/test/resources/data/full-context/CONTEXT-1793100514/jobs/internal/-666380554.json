@@ -1,0 +1,18 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-666380554",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--801284430" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nfslist=\"$(df -h | awk -v path=\"$AC_SYSTEM\" -v usage=\"$pUsage\" '$6 ~ 'path' { gsub(\"\\\\%\",\"\");  if ($5 >= usage) print $0}' )\"\nbytes=$(echo $fslist | wc -c)\nif [ $bytes -eq 1 ]; then\n  exit 0\nelse\n  echo \"$fslist\"\n  exit 1\nfi",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "pUsage",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent--666380554",
+  "jobDescription" : "AC_SCRIPT_Maintenance_AC_CheckDiskUsage"
+}

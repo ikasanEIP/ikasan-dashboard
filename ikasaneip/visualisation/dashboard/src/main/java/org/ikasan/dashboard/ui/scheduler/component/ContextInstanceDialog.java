@@ -18,6 +18,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 
 public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
     private ContextInstanceWidget contextInstanceWidget;
@@ -26,10 +27,10 @@ public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
-                                 SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService) {
+                                 SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService, ContextProfileService contextProfileService) {
         this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService);
+            , schedulerJobService, logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService);
 
         this.setHeight("95vh");
         this.setWidth("90vw");

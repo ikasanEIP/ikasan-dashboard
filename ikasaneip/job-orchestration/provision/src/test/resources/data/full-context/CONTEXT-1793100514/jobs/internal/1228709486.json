@@ -1,0 +1,24 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "1228709486",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--305614098" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\necho \"ado_browse(\\\"code = 'Pub_CDW_BOND_EUCLOSE'\\\");\" | ac_evalform - | ac_trigger_ado.sh -\nif [ $UseBusinessDate == 0 ]; then\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/cdw/out ac_extract.sh -c Pub_CDW_BOND_EUCLOSE -t 160000 -i\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/ipv/out ac_blend_extract.sh -t 160000 -i -k 7 Pub_IPV_BOND_EUCLOSE,Pub_IPV_BOND_EUCLOSE_ORIG,Pub_IPV_BOND_EUCLOSE_PREV\nelse\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/cdw/out ac_extract.sh -d $BusinessDate -c Pub_CDW_BOND_EUCLOSE -t 160000 -i\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/ipv/out ac_blend_extract.sh -d $BusinessDate -t 160000 -i -k 7 Pub_IPV_BOND_EUCLOSE,Pub_IPV_BOND_EUCLOSE_ORIG,Pub_IPV_BOND_EUCLOSE_PREV\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-1228709486",
+  "jobDescription" : "AC_SCRIPT_Export_CDW_AnvilBondEUClose_1600"
+}
