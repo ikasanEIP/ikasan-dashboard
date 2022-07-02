@@ -11,12 +11,9 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ScheduledContextDraw2dAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
@@ -28,6 +25,7 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -47,6 +45,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     private String dynamicImagePath;
 
     private ContextInstance contextInstance;
+    private ContextTemplate parentContextTemplate;
 
     private boolean initialised = false;
 
@@ -134,7 +133,8 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     /**
      * @param contextInstance
      */
-    public void createSchedulerVisualisation(ContextInstance contextInstance) throws IOException {
+    public void createSchedulerVisualisation(ContextTemplate parentContext, ContextInstance contextInstance) throws IOException {
+        this.parentContextTemplate = parentContext;
         this.contextInstance = contextInstance;
         this.initialised = false;
         init();
@@ -222,7 +222,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
                     JobTemplateVisualisationDialog jobInstanceVisualisationDialog = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                         this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
-                    jobInstanceVisualisationDialog.createSchedulerVisualisation(this.contextInstance, contextInstance);
+                    jobInstanceVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextInstance);
                     jobInstanceVisualisationDialog.open();
                 }
                 catch (IOException e) {
