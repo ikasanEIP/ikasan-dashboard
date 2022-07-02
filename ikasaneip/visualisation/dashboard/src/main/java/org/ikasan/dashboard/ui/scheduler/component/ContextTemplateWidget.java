@@ -5,22 +5,26 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.StreamResource;
+import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.util.ContextExportZipUtils;
+import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -37,6 +41,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
@@ -49,6 +54,7 @@ public class ContextTemplateWidget extends Div {
 
     private ContextTemplateFilteringGrid contextTemplateFilteringGrid;
     private ScheduledContextService scheduledContextService;
+    private ContextProfileService contextProfileService;
     private IkasanAuthentication authentication;
 
     private SchedulerJobService schedulerJobService;
@@ -63,11 +69,13 @@ public class ContextTemplateWidget extends Div {
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
-                                 JobInitiationService jobInitiationService, String zipWorkingDirectory, ContextUploadInitialisationService contextUploadInitialisationService) {
+                                 JobInitiationService jobInitiationService, String zipWorkingDirectory, ContextUploadInitialisationService contextUploadInitialisationService,
+                                 ContextProfileService contextProfileService) {
 
         this.scheduledContextService = scheduledContextService;
         this.schedulerJobService = schedulerJobService;
         this.zipWorkingDirectory = zipWorkingDirectory;
+        this.contextProfileService = contextProfileService;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
@@ -81,16 +89,46 @@ public class ContextTemplateWidget extends Div {
         icon.setSize("12pt");
 
         HorizontalLayout headerLayout = new HorizontalLayout();
+        headerLayout.setWidth("100%");
         H4 contextTemplates = new H4("Context Templates");
         headerLayout.add(contextTemplates);
 
-        Button addContextButton = new Button("Add Context And Jobs");
+        HorizontalLayout actionButtonLayout = new HorizontalLayout();
+        actionButtonLayout.setMargin(false);
+
+        MenuBar quickAccessMenu = this.createQuickAccessMenu();
+//        quickAccessMenu.getElement().getStyle().set("position", "absolute");
+//        quickAccessMenu.getElement().getStyle().set("right", "30px");
+
+        Icon uploadIcon = VaadinIcon.UPLOAD_ALT.create();
+        uploadIcon.setSize("20pt");
+        Button addContextButton = new Button("Upload Context",uploadIcon);
+//        addContextButton.getElement().getStyle().set("position", "absolute");
+//        addContextButton.getElement().getStyle().set("right", "80px");
+        addContextButton.setIconAfterText(true);
         addContextButton.addClickListener(buttonClickEvent -> {
             ContextImportFileDialog importer = new ContextImportFileDialog(contextUploadInitialisationService);
             importer.open();
         });
 
-        div.add(headerLayout, addContextButton, this.contextTemplateFilteringGrid);
+        Icon newContextIcon = VaadinIcon.PLUS.create();
+        newContextIcon.setSize("20pt");
+        Button newContextButton = new Button("New Context",newContextIcon);
+//        newContextButton.getElement().getStyle().set("position", "absolute");
+//        newContextButton.getElement().getStyle().set("right", "120px");
+        newContextButton.setIconAfterText(true);
+        newContextButton.addClickListener(buttonClickEvent -> {
+            UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
+            underConstructionDialog.open();
+        });
+
+        actionButtonLayout.add(newContextButton, addContextButton, quickAccessMenu);
+        actionButtonLayout.getElement().getStyle().set("position", "absolute");
+        actionButtonLayout.getElement().getStyle().set("right", "30px");
+
+        headerLayout.add(actionButtonLayout);
+
+        div.add(headerLayout, this.contextTemplateFilteringGrid);
 
         this.contextTemplateFilteringGrid.init();
 
@@ -119,7 +157,7 @@ public class ContextTemplateWidget extends Div {
 
                 horizontalLayout.add(text);
                 return horizontalLayout;
-            })).setHeader("Context Name")
+            })).setHeader(getTranslation("table-header.context-name", UI.getCurrent().getLocale()))
             .setKey("moduleName")
             .setResizable(true)
             .setSortable(true)
@@ -132,7 +170,7 @@ public class ContextTemplateWidget extends Div {
 
             horizontalLayout.add(text);
             return horizontalLayout;
-        })).setHeader("Description")
+        })).setHeader(getTranslation("table-header.context-description", UI.getCurrent().getLocale()))
             .setResizable(true)
             .setFlexGrow(5);
 
@@ -140,78 +178,59 @@ public class ContextTemplateWidget extends Div {
         contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
-            Icon edit = VaadinIcon.EDIT.create();
+            Icon edit = IconDecorator.decorate(new Icon(VaadinIcon.EDIT), getTranslation("tooltip.manage-context", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             edit.setId("editScheduledJob");
-            edit.setSize("14pt");
-            edit.getStyle().set("cursor", "pointer");
-            edit.getElement().setAttribute("title", getTranslation("tooltip.edit-job", UI.getCurrent().getLocale()));
             ComponentSecurityVisibility.applySecurity(this.authentication,  edit, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
             edit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 ContextTemplateManagementDialog contextTemplateManagementDialog
                     = new ContextTemplateManagementDialog(this.scheduledContextService, scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-                    , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService);
+                    , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService);
                 contextTemplateManagementDialog.open();
             });
 
             layout.add(edit);
 
-            Icon view = VaadinIcon.EYE.create();
-            view.setSize("14pt");
-            view.getStyle().set("cursor", "pointer");
-            view.getElement().setAttribute("title", getTranslation("tooltip.view-job", UI.getCurrent().getLocale()));
+            Icon view = IconDecorator.decorate(new Icon(VaadinIcon.EYE), getTranslation("tooltip.view-context", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             ComponentSecurityVisibility.applySecurity(this.authentication, view, SecurityConstants.SCHEDULER_READ);
 
             view.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-
+                UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
+                underConstructionDialog.open();
             });
 
             layout.add(view);
 
-            Icon delete = VaadinIcon.TRASH.create();
-            delete.setSize("14pt");
-            delete.getStyle().set("cursor", "pointer");
-            delete.getElement().setAttribute("title", getTranslation("tooltip.delete-job", UI.getCurrent().getLocale()));
+            Icon delete = IconDecorator.decorate(new Icon(VaadinIcon.TRASH), getTranslation("tooltip.delete-context", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             ComponentSecurityVisibility.applySecurity(this.authentication, delete, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
             layout.add(delete);
 
             delete.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-
+                UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
+                underConstructionDialog.open();
             });
 
-            Icon clone = VaadinIcon.COPY.create();
-            clone.setSize("14pt");
-            clone.getStyle().set("cursor", "pointer");
-            clone.getElement().setAttribute("title", getTranslation("tooltip.clone-job", UI.getCurrent().getLocale()));
-            ComponentSecurityVisibility.applySecurity(this.authentication, delete, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
+            Icon clone = IconDecorator.decorate(new Icon(VaadinIcon.COPY), getTranslation("tooltip.clone-context", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            ComponentSecurityVisibility.applySecurity(this.authentication, clone, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
 
             layout.add(clone);
 
             clone.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-
+                UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
+                underConstructionDialog.open();
             });
 
-            Icon chart = VaadinIcon.CHART.create();
-            chart.setSize("14pt");
-            chart.getStyle().set("cursor", "pointer");
-            chart.getElement().setAttribute("title", getTranslation("tooltip.job-statistics", UI.getCurrent().getLocale()));
+            Icon chart = IconDecorator.decorate(new Icon(VaadinIcon.CHART), getTranslation("tooltip.contexts-statistics", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-
+                UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
+                underConstructionDialog.open();
             });
 
             layout.add(chart);
 
-            Icon export = VaadinIcon.DOWNLOAD_ALT.create();
-            export.setSize("14pt");
-            export.getStyle().set("cursor", "pointer");
-            export.getStyle().set("color", "black");
-            export.getElement().setAttribute("title", "Export Context and Jobs");
-            export.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-
-            });
-
+            Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("tooltip.export-jobs-and-associated-artifacts", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             StreamResource streamResource = new StreamResource(getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
                 try {
                     ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
@@ -223,6 +242,7 @@ public class ContextTemplateWidget extends Div {
                     return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
                 } catch (Exception e) {
                     e.printStackTrace();
+                    NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
                     return null;
                 }
             });
@@ -232,10 +252,7 @@ public class ContextTemplateWidget extends Div {
 
             layout.add(exportWrapper);
 
-            Icon newWindow = VaadinIcon.EXTERNAL_LINK.create();
-            newWindow.setSize("14pt");
-            newWindow.getStyle().set("cursor", "pointer");
-            newWindow.getElement().setAttribute("title", "Open in New Window");
+            Icon newWindow = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), getTranslation("tooltip.open-in-new-window", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             newWindow.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 String route = RouteConfiguration.forSessionScope()
                     .getUrl(ContextTemplateManagementView.class, scheduledContextRecord.getContextName());
@@ -286,5 +303,40 @@ public class ContextTemplateWidget extends Div {
 
         HeaderRow hr = contextTemplateFilteringGrid.appendHeaderRow();
         this.contextTemplateFilteringGrid.addGridFiltering(hr, contextSearchFilter::setContextName, "moduleName");
+    }
+
+    private MenuBar createQuickAccessMenu() {
+        MenuBar quickStartMenuBar = new MenuBar();
+        quickStartMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
+
+        MenuItem quickAccess = createQuickAccessButton(quickStartMenuBar, VaadinIcon.COG, "View");
+
+        SubMenu activeContextInstancesSubMenu = quickAccess.getSubMenu();
+        MenuItem activeContexts = activeContextInstancesSubMenu.addItem("Active Contexts");
+        SubMenu activeContextSubMenu = activeContexts.getSubMenu();
+
+        ContextMachineCache.instance().contextNames().forEach(name ->
+            activeContextSubMenu.addItem(name, menuItemClickEvent -> {
+                String route = RouteConfiguration.forSessionScope()
+                    .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
+                        .getByContextName(name).getContext().getId()+"_scheduledContextInstance");
+
+                getUI().ifPresent(ui -> ui.getPage().open(route));
+            })
+        );
+
+        return quickStartMenuBar;
+    }
+
+    private MenuItem createQuickAccessButton(MenuBar menu, VaadinIcon iconName, String ariaLabel) {
+        Icon icon = new Icon(iconName);
+        icon.setSize("20pt");
+        Button quickAccessButton = new Button("Quick Access", icon);
+        quickAccessButton.setIconAfterText(true);
+
+        MenuItem item = menu.addItem(quickAccessButton);
+        item.getElement().setAttribute("aria-label", ariaLabel);
+
+        return item;
     }
 }

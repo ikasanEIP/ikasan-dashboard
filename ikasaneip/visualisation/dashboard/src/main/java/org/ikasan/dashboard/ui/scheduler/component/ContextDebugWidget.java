@@ -16,7 +16,7 @@ import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
+import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerInstanceVisualisation;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
@@ -56,7 +56,7 @@ public class ContextDebugWidget extends Div {
     private JobInitiationService jobInitiationService;
 
     protected AceEditor aceEditor;
-    protected SchedulerVisualisation schedulerVisualisation;
+    protected SchedulerInstanceVisualisation schedulerInstanceVisualisation;
     private ContextInstanceAuditWidget contextInstanceAuditWidget;
 
     private Tab fullContextInstance;
@@ -105,12 +105,12 @@ public class ContextDebugWidget extends Div {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.jobInitiationService = jobInitiationService;
 
-        this.schedulerVisualisation = new SchedulerVisualisation(".", moduleMetaDataService, scheduledProcessManagementService, configurationRestService,
+        this.schedulerInstanceVisualisation = new SchedulerInstanceVisualisation(".", moduleMetaDataService, scheduledProcessManagementService, configurationRestService,
             moduleControlRestService,  metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, schedulerJobInstanceService, jobInitiationService);
 
-        this.schedulerVisualisation.setWidthFull();
-        this.schedulerVisualisation.setHeight("1000px");
-        this.schedulerVisualisation.setVisible(false);
+        this.schedulerInstanceVisualisation.setWidthFull();
+        this.schedulerInstanceVisualisation.setHeight("1000px");
+        this.schedulerInstanceVisualisation.setVisible(false);
 
         this.contextInstanceAuditWidget = new ContextInstanceAuditWidget(contextInstanceService);
         this.contextInstanceAuditWidget.setVisible(false);
@@ -139,7 +139,7 @@ public class ContextDebugWidget extends Div {
                     ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
 
                     if (contextMachine != null) {
-                        this.schedulerVisualisation.createSchedulerVisualisation(contextMachine.getContext());
+                        this.schedulerInstanceVisualisation.createSchedulerVisualisation(contextMachine.getContext());
                         controlsLayout.remove(this.dryRunModeCheckBox);
                         this.dryRunModeCheckBox = new Checkbox("Dry run mode");
                         controlsLayout.add(this.dryRunModeCheckBox);
@@ -212,7 +212,7 @@ public class ContextDebugWidget extends Div {
                 ContextMachineCache.instance().put(contextMachine);
 
 
-                this.schedulerVisualisation.createSchedulerVisualisation(contextMachine.getContext());
+                this.schedulerInstanceVisualisation.createSchedulerVisualisation(contextMachine.getContext());
                 this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextMachine.getContext());
 
                 if(tabs.getSelectedTab().equals(this.fullContextInstance)) {
@@ -287,7 +287,7 @@ public class ContextDebugWidget extends Div {
                         this.aceEditor.setValue("");
                     }
                     this.aceEditor.setVisible(true);
-                    this.schedulerVisualisation.setVisible(false);
+                    this.schedulerInstanceVisualisation.setVisible(false);
                     this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.contextStatus)) {
@@ -310,23 +310,23 @@ public class ContextDebugWidget extends Div {
                         this.aceEditor.setValue("");
                     }
                     this.aceEditor.setVisible(true);
-                    this.schedulerVisualisation.setVisible(false);
+                    this.schedulerInstanceVisualisation.setVisible(false);
                     this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.contextEvents)) {
                     this.aceEditor.setValue(this.events.toString());
                     this.aceEditor.setVisible(true);
-                    this.schedulerVisualisation.setVisible(false);
+                    this.schedulerInstanceVisualisation.setVisible(false);
                     this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.visualisation)) {
                     this.aceEditor.setVisible(false);
-                    this.schedulerVisualisation.setVisible(true);
+                    this.schedulerInstanceVisualisation.setVisible(true);
                     this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.contextAudit)) {
                     this.aceEditor.setVisible(false);
-                    this.schedulerVisualisation.setVisible(false);
+                    this.schedulerInstanceVisualisation.setVisible(false);
                     this.contextInstanceAuditWidget.setVisible(true);
                 }
             }
@@ -338,7 +338,7 @@ public class ContextDebugWidget extends Div {
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(tabs);
 
-        div.add(controlsLayout, tabLayout, this.aceEditor, this.schedulerVisualisation, this.contextInstanceAuditWidget);
+        div.add(controlsLayout, tabLayout, this.aceEditor, this.schedulerInstanceVisualisation, this.contextInstanceAuditWidget);
 
         this.setSizeFull();
         this.add(div);

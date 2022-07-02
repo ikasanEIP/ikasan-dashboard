@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-140852668",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-1058846067" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\n$AC_SYSTEM/bin/ac_reduce -b -300 ADMN\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent--140852668",
+  "jobDescription" : "AC_SCRIPT_Maintenance_AC_ReduceTS_ADMN"
+}

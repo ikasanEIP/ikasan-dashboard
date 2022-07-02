@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-801842677",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--707156913" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "email job",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent--801842677",
+  "jobDescription" : "GLOBAL.System_Mail_Send"
+}

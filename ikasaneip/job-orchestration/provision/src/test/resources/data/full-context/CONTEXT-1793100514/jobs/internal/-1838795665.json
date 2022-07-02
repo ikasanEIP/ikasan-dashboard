@@ -1,0 +1,18 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-1838795665",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--1097860889" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nsleep 12s\t\nierun BBTM",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent--1838795665",
+  "jobDescription" : "AC_SCRIPT_Interface_Bloomberg_TOMS_FX"
+}

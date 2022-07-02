@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "2127081258_ScheduledJob_16:15:00",
+  "contextId" : "-1793100514",
+  "startupControlType" : "AUTOMATIC",
+  "cronExpression" : "0 15 16 ? * MON,TUE,WED,THU,FRI *",
+  "ignoreMisfire" : true,
+  "eager" : false,
+  "maxEagerCallbacks" : 0,
+  "persistentRecovery" : true,
+  "recoveryTolerance" : 1800000,
+  "identifier" : "scheduler-agent-2127081258_ScheduledJob_16:15:00",
+  "jobDescription" : "Quartz scheduled job - 2127081258_ScheduledJob_16:15:00 firing on cron schedule (0 15 16 ? * MON,TUE,WED,THU,FRI *)"
+}

@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-1645671134",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--314721163" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nac_bloomberg_persecurity.sh -c Req_BB_USDDesk_NY_Futures -i\nac_bloomberg_persecurity.sh -c Req_BB_USDDesk_NY_AllUST -i\nac_bloomberg_persecurity.sh -c Req_BB_USDDesk_NY_BenchUST -i\nac_bloomberg_persecurity.sh -c Req_BB_USDDesk_NY_Swaps -i \n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent--1645671134",
+  "jobDescription" : "AC_SCRIPT_PriceRequest_BB_USDDesk"
+}

@@ -1,0 +1,21 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "1227656246",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--459599374" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nif [ $UseBusinessDate == 0 ]; then\n  listado CURV_ACTIVE_ALL | ac_compute_curve.sh -\nelse\n  listado CURV_ACTIVE_ALL | ac_compute_curve.sh -d $BusinessDate -\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-1227656246",
+  "jobDescription" : "AC_SCRIPT_CURV_StoreCurvePublicationData"
+}

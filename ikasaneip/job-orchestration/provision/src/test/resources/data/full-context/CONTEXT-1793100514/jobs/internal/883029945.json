@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "883029945",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--1178199719" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "\nimport java.util.Iterator;\nimport com.redwood.scheduler.api.model.*;\n\n{\n Partition p = jcsSession.getPartitionByName(\"%Partition%\");\n String eventName = null;\n  \nString sql = \"select tv1.* from Table t\" \n+ \" join Partition p on t.Partition = p.UniqueId AND p.Name = ?\"\n+ \" join TableValue tv1 on tv1.Table = t.UniqueId and tv1.SearchColumnName = ?\"\n+ \" join TableValue tv2 on tv2.Table = t.UniqueId and tv2.SearchColumnName = ? and tv1.SearchKey = tv2.SearchKey\"\n+ \" where t.Name = ? and tv2.ColumnValue  IN (?)\";\n  \n//jcsOut.println(sql);\n   Iterator it = jcsSession.executeObjectQuery(sql, new Object [] {\"%Partition%\",\"EVENTNAME\",\"AUTOCLEAR\",\"AC_EVENT\",\"1\"});\n   while (it.hasNext())\n   {\n     TableValue tv = (TableValue) it.next();\n     eventName = tv.getColumnValue();\n     //jcsOut.println(eventName);\n\t clearEvents(p,eventName);\n\t jcsSession.persist();\n   }\n\n}\n\nvoid clearEvents(Partition p,String eventName)\n{\n  for (Iterator it = p.getEventDefinitionByName(eventName).getEvents(); it.hasNext();)\n  {\n     ((Event)it.next()).clear();\n  }\n  return;\n}",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-883029945",
+  "jobDescription" : "AC_SCRIPT_Maintenance_CR_ClearEvents"
+}

@@ -1,0 +1,18 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "2127077414",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--573669206" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nac_snap_page.sh -l RT_PAGES_1500 -t RT_EOD",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-2127077414",
+  "jobDescription" : "AC_SCRIPT_Interface_Reuters_Shredder_1500"
+}
