@@ -9,15 +9,10 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.scheduler.component.FileEventJobInstanceDialog;
-import org.ikasan.dashboard.ui.scheduler.component.InternalEventDrivenJobInstanceDialog;
-import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobInstanceDialog;
+import org.ikasan.dashboard.ui.scheduler.component.*;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ScheduledContextDraw2dAdapter;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
@@ -29,8 +24,12 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
@@ -44,7 +43,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
 
     private Logger logger = LoggerFactory.getLogger(JobTemplateVisualisationDialog.class);
 
-    private Registration schedulerJobStateChangeRegistration;
+//    private Registration schedulerJobStateChangeRegistration;
 
     private DesignerCanvas designerCanvas;
     private VerticalLayout layout;
@@ -53,7 +52,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
 
     private boolean initialised = false;
 
-    private ContextInstance rootContextInstance;
+    private ContextTemplate rootContextTemplate;
     private ContextInstance contextInstance;
 
     private String dynamicImagePath = ".";
@@ -135,8 +134,8 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
     /**
      * @param contextInstance
      */
-    public void createSchedulerVisualisation(ContextInstance rootContextInstance, ContextInstance contextInstance) throws IOException {
-        this.rootContextInstance = rootContextInstance;
+    public void createSchedulerVisualisation(ContextTemplate rootContextTemplate, ContextInstance contextInstance) throws IOException {
+        this.rootContextTemplate = rootContextTemplate;
         this.contextInstance = contextInstance;
         this.initialised = false;
         init();
@@ -227,37 +226,31 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         logger.info(canvasItemDoubleClickEvent.toString());
         SchedulerJobInstance schedulerJob = this.contextInstance.getScheduledJobsMap().get(canvasItemDoubleClickEvent.getFigure().getIdentifier());
 
-        SchedulerJobInstanceRecord schedulerJobRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName
-            (this.rootContextInstance.getId(), schedulerJob.getJobName(), this.contextInstance.getName());
+        SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextIdAndJobName
+            (this.rootContextTemplate.getName(), schedulerJob.getJobName());
 
-            if(schedulerJobRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
-            InternalEventDrivenJobInstanceDialog internalEventDrivenJobInstanceDialog = new InternalEventDrivenJobInstanceDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
-                , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService, this.rootContextInstance
-                , this.jobInitiationService, moduleMetaDataService, this.logStreamingService);
+        if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
+            InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
+                , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService);
 
-            internalEventDrivenJobInstanceDialog.setJob(schedulerJobRecord);
-            internalEventDrivenJobInstanceDialog.open();
+            internalEventDrivenJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
+            internalEventDrivenJobDialog.open();
         }
-        else if(schedulerJobRecord.getSchedulerJobInstance() instanceof FileEventDrivenJobInstance) {
-            FileEventJobInstanceDialog fileEventJobDialog = new FileEventJobInstanceDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
-                , this.jobInitiationService, this.systemEventLogger, this.schedulerJobInstanceService);
-            fileEventJobDialog.setJob(schedulerJobRecord);
+        else if(schedulerJobRecord.getJob() instanceof FileEventDrivenJob) {
+            FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName()), this.scheduledProcessManagementService
+                , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+            fileEventJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
 
             fileEventJobDialog.open();
         }
         else {
-            QuartzDrivenScheduledJobInstanceDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobInstanceDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
-                , this.jobInitiationService, systemEventLogger, this.schedulerJobInstanceService);
-            quartzDrivenScheduledJobDialog.setJob(schedulerJobRecord);
+            QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
+                , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
+                , systemEventLogger, this.schedulerJobService);
+            quartzDrivenScheduledJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
 
             quartzDrivenScheduledJobDialog.open();
         }
-
-//        JobContextMenu jobContextMenu = new JobContextMenu(this.contextInstance.getScheduledJobsMap().get(canvasItemDoubleClickEvent.getFigure().getIdentifier()),
-//            this.systemEventLogger, this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService,
-//            this.moduleControlRestService, this.metaDataRestService, this.schedulerJobService, this.rootContextInstance, this.contextInstance,
-//            this.logStreamingService, schedulerJobInstanceService);
-//        jobContextMenu.open();
     }
 
     @Override
@@ -273,22 +266,22 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
-        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(schedulerJobInstanceStateChangeEvent -> {
-            if (schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
-                logger.info("Updating scheduler visualisation job status. Scheduler Job Instance[{}], Status[{}], Status Colour[{}]",
-                    schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
-                    StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
-                ui.access(() ->
-                    this.designerCanvas.setBackgroundColor(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier() + "_status"
-                        , StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus())));
-            }
-        });
+//        UI ui = attachEvent.getUI();
+//        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(schedulerJobInstanceStateChangeEvent -> {
+//            if (schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
+//                logger.info("Updating scheduler visualisation job status. Scheduler Job Instance[{}], Status[{}], Status Colour[{}]",
+//                    schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
+//                    StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
+//                ui.access(() ->
+//                    this.designerCanvas.setBackgroundColor(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier() + "_status"
+//                        , StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus())));
+//            }
+//        });
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        this.schedulerJobStateChangeRegistration.remove();
-        this.schedulerJobStateChangeRegistration = null;
+//        this.schedulerJobStateChangeRegistration.remove();
+//        this.schedulerJobStateChangeRegistration = null;
     }
 }
