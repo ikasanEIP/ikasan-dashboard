@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-62870497",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-1058846067" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\n$AC_SYSTEM/local/bin/ac_static_purge.sh\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent--62870497",
+  "jobDescription" : "AC_SCRIPT_Maintenance_AC_PurgeStatic"
+}

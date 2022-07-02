@@ -39,6 +39,7 @@ import java.util.function.Function;
 
 @Tag("div")
 @StyleSheet("./org/ikasan/draw2d/designer.css")
+@StyleSheet("./org/ikasan/draw2d/spinner.css")
 public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnterObserver {
 
     Logger logger = LoggerFactory.getLogger(DesignerCanvas.class);
@@ -93,6 +94,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery.js");
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/jquery-ui.js");
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/draw2d.js");
+        UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/spinner.umd.js");
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/designer-connector-flow.js");
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/mousetrap.min.js");
         UI.getCurrent().getPage().addJavaScript("./org/ikasan/draw2d/view.js");

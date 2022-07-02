@@ -1,0 +1,18 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "7520643",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--1178199719" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "\nimport java.util.Iterator;\nimport java.util.Date;\nimport java.text.SimpleDateFormat;\nimport com.redwood.scheduler.api.model.*;\n{\n  String sql = \"select tv.* from TableValue tv join Table t on tv.Table = t.UniqueId join Partition p on t.Partition = p.UniqueId where t.Name = ? and p.Name = ? and tv.SearchColumnName = ?\";\n\n   Iterator it = jcsSession.executeObjectQuery(sql, new Object [] {\"AC_BUSINESSDATE\",\"%Partition%\",\"BUSINESSDATE\"});\n   if (it.hasNext())\n   {\n     TableValue tv = (TableValue) it.next();\n\t SimpleDateFormat dateFormat = new SimpleDateFormat(\"yyyy/MM/dd\");\n\t Date businessDate = dateFormat.parse(P_BUSINESSDATE.toString());\n\t tv.setColumnValue(dateFormat.format(businessDate));\n   }\n\n   jcsSession.persist();\n}",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "P_BUSINESSDATE",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-7520643",
+  "jobDescription" : "AC_SCRIPT_Maintenance_CR_SetBusinessDate"
+}

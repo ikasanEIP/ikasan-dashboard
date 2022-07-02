@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-1851376752",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--707156913" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nac_get_file_trans.pl -p report_ts_xml.param | ac_filter_trans_validation.pl - | ac_group_trans_validation.pl - | ac_format_file_trans.pl - > $AC_REPDIR/validation_report_$(date +%F_%H%M%S)\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent--1851376752",
+  "jobDescription" : "AC_SCRIPT_Maintenance_AC_ValidationLogExtract"
+}

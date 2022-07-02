@@ -22,7 +22,6 @@ import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
-import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -42,8 +41,6 @@ import java.util.UUID;
 public class SchedulerVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener
     , CanvasItemDoubleClickEventListener {
     private Logger logger = LoggerFactory.getLogger(SchedulerVisualisation.class);
-
-    private Registration contextInstanceStateChangeRegistration;
 
     private DesignerCanvas designerCanvas;
 
@@ -131,6 +128,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
         this.setMargin(false);
         this.setSpacing(false);
         this.setSizeFull();
+        this.setId("schedulerVisualisation");
     }
 
     /**
@@ -221,11 +219,11 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
             if(contextInstance.getScheduledJobs() != null) {
                 try {
-                    JobVisualisationDialog jobVisualisationDialog = new JobVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+                    JobTemplateVisualisationDialog jobInstanceVisualisationDialog = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                         this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
-                    jobVisualisationDialog.createSchedulerVisualisation(this.contextInstance, contextInstance);
-                    jobVisualisationDialog.open();
+                    jobInstanceVisualisationDialog.createSchedulerVisualisation(this.contextInstance, contextInstance);
+                    jobInstanceVisualisationDialog.open();
                 }
                 catch (IOException e) {
                     e.printStackTrace();
@@ -233,8 +231,8 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             }
             else {
                 try {
-                    ContextInstanceVisualisationDialog contextInstanceVisualisationDialog
-                        = new ContextInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+                    ContextTemplateVisualisationDialog contextInstanceVisualisationDialog
+                        = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                         this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
                     contextInstanceVisualisationDialog.createSchedulerVisualisation(this.contextInstance, contextInstance);
@@ -282,30 +280,6 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     protected void onAttach(AttachEvent attachEvent) {
         if(this.designerCanvas != null){
             this.redraw();
-        }
-
-        UI ui = attachEvent.getUI();
-
-        contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-            if (contextInstanceStateChangeEvent.getContextInstance() != null) {
-                logger.info("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
-                    contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
-                    StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
-                ui.access(() -> {
-                    if(this.designerCanvas != null) {
-                    this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName() + "_status"
-                        , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
-                    }
-                });
-            }
-        });
-    }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent) {
-        if(this.contextInstanceStateChangeRegistration != null) {
-            this.contextInstanceStateChangeRegistration.remove();
-            this.contextInstanceStateChangeRegistration = null;
         }
     }
 }

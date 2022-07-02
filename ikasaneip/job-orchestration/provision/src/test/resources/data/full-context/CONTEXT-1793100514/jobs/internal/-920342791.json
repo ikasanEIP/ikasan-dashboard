@@ -1,0 +1,24 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-920342791",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--1787814039", "CONTEXT--1000292296" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nif [ $UseBusinessDate == 0 ]; then\n  listado -e C0_PC_BND | ac_consolidate_prices.pl -c Pc_MultiSource_Bonds_1630 -t 163000 -\nelse\n  listado -e C0_PC_BND | ac_consolidate_prices.pl -d $BusinessDate -c Pc_MultiSource_Bonds_1630 -t 163000 -\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent--920342791",
+  "jobDescription" : "AC_SCRIPT_PriceConsolidate_Bond_1600"
+}

@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-@Ignore
+//@Ignore
 public class ContextProvisionHelperTest extends AbstractTest {
 
     private SolrModuleMetadataDao solrModuleMetadataDao = new SolrModuleMetadataDao();
@@ -101,17 +101,21 @@ public class ContextProvisionHelperTest extends AbstractTest {
 
         List<SchedulerJob> schedulerJobs = new ArrayList<>();
 
-        loadFileJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-369160711/jobs/file");
-        loadCommandJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-369160711/jobs/internal");
-        loadQuartzJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-369160711/jobs/quartz");
+//        loadFileJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-369160711/jobs/file");
+//        loadCommandJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-369160711/jobs/internal");
+//        loadQuartzJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-369160711/jobs/quartz");
+//
+//        loadFileJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1436221681/jobs/file");
+//        loadCommandJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1436221681/jobs/internal");
+//        loadQuartzJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1436221681/jobs/quartz");
+//
+//        loadFileJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1447508514/jobs/file");
+//        loadCommandJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1447508514/jobs/internal");
+//        loadQuartzJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1447508514/jobs/quartz");
 
-        loadFileJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1436221681/jobs/file");
-        loadCommandJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1436221681/jobs/internal");
-        loadQuartzJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1436221681/jobs/quartz");
-
-        loadFileJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1447508514/jobs/file");
-        loadCommandJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1447508514/jobs/internal");
-        loadQuartzJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1447508514/jobs/quartz");
+        loadFileJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1793100514/jobs/file");
+        loadCommandJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1793100514/jobs/internal");
+        loadQuartzJobs(schedulerJobs, "./src/test/resources/data/full-context/CONTEXT-1793100514/jobs/quartz");
 
         this.provisionJobs(schedulerJobs);
 

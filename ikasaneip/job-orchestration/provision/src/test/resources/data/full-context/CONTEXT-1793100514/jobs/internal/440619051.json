@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "440619051",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--1178199719" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "\nimport com.redwood.scheduler.api.model.*;\nimport java.util.Iterator;\nimport java.util.concurrent.TimeUnit;\nimport java.io.IOException;\nimport java.io.*;\nimport java.math.*;\nimport java.util.Date;\nimport java.text.SimpleDateFormat;\nimport java.util.GregorianCalendar;\n{\nString output = \"\";\nTableValue tv = null;\nString eventName = null;\nJobParameter jp = null;\n// scheduled/chained/held jobs with no events\nString sqlScheduledJob = \"select jp.* from JobDefinition jd\"\n+ \" join Partition p on jd.Partition = p.UniqueId AND p.Name = ?\"\n+ \" join Job jo on jd.UniqueId = jo.JobDefinition\"\n+ \" join JobParameter jp on jo.UniqueId = jp.Job\"\n+ \" where jd.Name ='AC_CHAIN_Validation_CheckSuspect'\"\n+ \" and jo.Status IN ('S','P','H')\"\n+ \" and jo.UniqueId NOT IN (select distinct jwe.Job from JobWaitEvent jwe)\";\n\n    Iterator it1 = jcsSession.executeObjectQuery(JobParameter.TYPE,sqlScheduledJob, new Object [] {\"%Partition%\"});\n    while (it1.hasNext())\n    {\n      jp = (JobParameter) it1.next();\n// map report (eg. BOND) to events       \nString sqlEventMapping = \"select tv3.* from Table t\"\n+ \" join Partition p on t.Partition = p.UniqueId AND p.Name = ?\"\n+ \" join TableValue tv1 on tv1.Table = t.UniqueId and tv1.ColumnName = ? and tv1.ColumnValue = ?\"\n+ \" join TableValue tv2 on tv2.Table = t.UniqueId and tv2.ColumnName = ? and tv1.SearchKey = tv2.SearchKey\"\n+ \" join TableValue tv3 on tv3.Table = t.UniqueId and tv3.ColumnName = ? and tv1.SearchKey = tv3.SearchKey\"\n+ \" where t.Name = ? and tv2.ColumnValue = ?\";\n   \n      Iterator it2 = jcsSession.executeObjectQuery(TableValue.TYPE,sqlEventMapping, new Object [] {\"%Partition%\",\"JobName\",\"AC_CHAIN_Validation_CheckSuspect\",\"ParameterValue\",\"EventName\",\"AC_JOBEVENT\",jp.getInValueString()});\n      while (it2.hasNext())\n      {\n        tv = (TableValue) it2.next();\n        eventName = tv.getColumnValue();\n        addEventToJob(jp.getJob().getJobId(),eventName);\n      }\n    }\n}\n\nvoid addEventToJob (Long jobId,String eventName) throws Exception \n{\n  jcsOut.println(eventName);\n  jcsOut.println(jobId);\n  Job j = jcsSession.getJobByJobId(jobId);\n  Partition p = jcsSession.getPartitionByName(\"%Partition%\"); \n  JobWaitEvent jwe = j.createJobWaitEvent();\n  jcsSession.getEventDefinitionByName(eventName);\n  jwe.setEventDefinition(jcsSession.getEventDefinitionByName(p,eventName)); \n  jwe.setClearsEvent(false);\n  jcsSession.persist();\n}\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-440619051",
+  "jobDescription" : "AC_SCRIPT_Maintenance_CR_AttachEvents"
+}

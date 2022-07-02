@@ -1,0 +1,18 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-392540067",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-1058846067" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nac_dir_cleanup.sh -d $RetentionPeriodDays -l $AC_SYSTEM/data/vendor_files/ -b\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "RetentionPeriodDays",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent--392540067",
+  "jobDescription" : "AC_SCRIPT_Maintenance_AC_PurgeFile_vendorfiles"
+}

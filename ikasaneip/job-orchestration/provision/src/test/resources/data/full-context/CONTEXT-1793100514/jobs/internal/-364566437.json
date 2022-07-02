@@ -1,0 +1,24 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-364566437",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-1897799547" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "#!/bin/sh\nsource $HOME/.bash_profile;\n\ncd $AC_SYSTEM/interfaces/RAPT/scripts\n\nGATEWAY=\"/opt/mhi-ac/gateway/dev2/Raptor/in\"\nDATE=`date +%Y-%m-%d`\nTIME=\"16:00:00\"\nHOST=\"etrading.uk.mizuho-sc.com\"\nPORT=\"443\"\n\nfunction getRaptorFile\n{\n  CONFIG_ID=$1\n  FILENAME=\"spotAdjustments_${DATE//-/}${TIME//:/}_${CONFIG_ID}.xml\" ;\n\n  if [ ! $UseBusinessDate == 0 ]; then\n    $DATE = $BusinessDate;\n  fi\n\n  echo $FILENAME ;\n  ./getRaptorRestConvexityData.pl ../config/RaptorSnapConvexityConfig.xml $CONFIG_ID -d $DATE -t $TIME -h $HOST -p $PORT -o XML > $GATEWAY/$FILENAME\n}\n\nif [ $Live -eq 1 ]\nthen\n  getRaptorFile EUR-LIVE\n  getRaptorFile USD-LIVE\n  getRaptorFile GBP-LIVE\n  getRaptorFile GBPSONIA-LIVE\nelse\n  getRaptorFile EUR\n  getRaptorFile USD\n  getRaptorFile GBP\n  getRaptorFile GBPSONIA\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "Live",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent--364566437",
+  "jobDescription" : "AC_SCRIPT_PriceRequest_RA_CMA_1600"
+}

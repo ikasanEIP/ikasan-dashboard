@@ -1,0 +1,18 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-1781745411",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--568415551" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nfile=$AC_SYSTEM/apps/$Service/app-stop.sh\nif test -f \"$file\"; then\n    echo `$file`\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "Service",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent--1781745411",
+  "jobDescription" : "AC_SCRIPT_Maintenance_MS_StopService"
+}
