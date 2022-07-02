@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-678144586",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--1036158204", "CONTEXT--1000292296" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\necho \"list_contents('C0_MURX_SCPR_BOND_1600','EVAL_DERIVED');\" | ac_evalform - > /dev/null 2>&1 &\necho \"list_contents('C0_MURX_SCPR_EQUITY_1600','EVAL_DERIVED');\" | ac_evalform - > /dev/null 2>&1 &\necho \"list_contents('C0_MURX_SCPR_EQUITYINDEX','EVAL_DERIVED');\" | ac_evalform - > /dev/null 2>&1 &\necho \"list_contents('C0_MURX_SCPR_FUTURE','EVAL_DERIVED');\" | ac_evalform - > /dev/null 2>&1 &\nwait\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent--678144586",
+  "jobDescription" : "AC_SCRIPT_DerivedList_SecurityPrice_1600"
+}

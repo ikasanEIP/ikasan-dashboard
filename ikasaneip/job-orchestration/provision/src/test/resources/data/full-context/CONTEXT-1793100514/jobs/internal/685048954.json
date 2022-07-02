@@ -1,0 +1,27 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "685048954",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--825913992" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "import java.util.Iterator;\n\timport java.lang.Long;\n\timport com.redwood.scheduler.api.model.*;\n{\nString query = \"select fe.* from Job\\n\"\n+\"join JobWaitEvent jwe on jwe.Job = Job.UniqueId\\n\"\n+\"join Event ev on ev.UniqueId = jwe.RaisedEvent\\n\" \n+\"join FileEvent fe on fe.Event = ev.UniqueId \\n\"\n+\"join EventDefinition ed on ed.UniqueId = ev.EventDefinition\\n\"\n+\"join FileEventDefinition fed on fed.EventDefinition = ed.UniqueId\\n\"\n+\"where Job.JobId = \" + pProcessId;\n\nPartition partition = jcsSession.getPartitionByName(\"%Partition%\");\nJobDefinition jobDefinition  = jcsSession.getJobDefinitionByName(partition,pDeliverScript); \n\nif (jobDefinition != null)\n{    \n\tfor (Iterator it = jcsSession.executeObjectQuery(query,null); it.hasNext(); )\n\t{\n\t\tFileEvent fileEvent = (FileEvent) it.next();\n\t\tString sourceFilepath = fileEvent.getOriginalPath();\n\t\tString destinationFolderpath = \"/opt/mhi-ac/gateway/dev2/vendor_files/\"+pSubfolder;\n\t\tjcsOut.println(sourceFilepath);\n\t\tjcsOut.println(destinationFolderpath);\n\t\tjcsOut.println(pDeliverScript);\n\t\tJob process = jobDefinition.prepare();\n\t\tprocess.getJobParameterByName(\"pSourceFilepath\").setInValueString(sourceFilepath);\n\t\tprocess.getJobParameterByName(\"pDestinationFolderpath\").setInValueString(destinationFolderpath);\n\n\t\tfor (Iterator it2 = process.getJobParameters(); it2.hasNext(); )\n\t\t{\n\t\t  JobParameter param = (JobParameter) it2.next();\n\t\t  JobDefinitionParameter jobDefinitionParameter = (JobDefinitionParameter) param.getJobDefinitionParameter();\n\t\t  String parameterName = jobDefinitionParameter.getName();\n\t\t  if (jobDefinitionParameter.getDisplayOrder().longValue() == 2)\n\t\t  {\n\t\t    jcsOut.println(parameterName);\n\t\t    process.getJobParameterByName(parameterName).setInValueString(pDeliverScriptParameter);\n\t\t    jcsOut.println(pDeliverScriptParameter);\n\t\t  }\n\t\t}\n\t\t\n\t\tQueue queue = jcsSession.getQueueByName(partition, \"%Partition%.%Queue%\");\n\t\tprocess.setQueue(queue);\n\t  \n\t\tjcsSession.persist();\n\t}\n}\nelse\n{\n\tjcsOut.println(\"Unknown delivery script\");\n}\n}",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "pProcessId",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "pSubfolder",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "pDeliverScript",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "pDeliverScriptParameter",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-685048954",
+  "jobDescription" : "AC_SCRIPT_Gatekeeper_Deliver"
+}

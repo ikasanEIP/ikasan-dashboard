@@ -1,0 +1,14 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-489445166_ScheduledJob_AC_READWRITE_TW",
+  "contextId" : "-1793100514",
+  "startupControlType" : "AUTOMATIC",
+  "cronExpression" : "0 0 23 ? * * *",
+  "ignoreMisfire" : true,
+  "eager" : false,
+  "maxEagerCallbacks" : 0,
+  "persistentRecovery" : true,
+  "recoveryTolerance" : 1800000,
+  "identifier" : "scheduler-agent--489445166_ScheduledJob_AC_READWRITE_TW",
+  "jobDescription" : "Quartz scheduled job - -489445166_ScheduledJob_AC_READWRITE_TW firing on cron schedule (0 0 23 ? * * *)"
+}

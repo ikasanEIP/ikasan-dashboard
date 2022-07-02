@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class SchedulerStatusWidget extends Div {
@@ -182,7 +184,8 @@ public class SchedulerStatusWidget extends Div {
 
         this.add(div);
 
-        this.recalculate();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> this.recalculate());
     }
 
     /**

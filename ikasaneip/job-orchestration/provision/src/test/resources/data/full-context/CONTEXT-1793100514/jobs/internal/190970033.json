@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "190970033",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-981696305" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nac_bloomberg_persecurity.sh -c Req_BB_Future -i\nac_bloomberg_persecurity.sh -c Req_BB_Index_Future -i\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-190970033",
+  "jobDescription" : "AC_SCRIPT_PriceRequest_BB_Futures_1600"
+}

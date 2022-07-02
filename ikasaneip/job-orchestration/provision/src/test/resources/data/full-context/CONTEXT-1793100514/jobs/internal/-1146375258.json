@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-1146375258",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-981696305" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nac_bloomberg_persecurity.sh -c Req_BB_Credit_Default_Swap_Index -i\nac_bloomberg_persecurity.sh -c Req_BB_Credit_Default_Swap_Single_Name -i\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent--1146375258",
+  "jobDescription" : "AC_SCRIPT_PriceRequest_BB_CreditDefaultSwap_1600"
+}

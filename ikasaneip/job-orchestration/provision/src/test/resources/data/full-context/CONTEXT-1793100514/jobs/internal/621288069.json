@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "621288069",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--172317887" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nreplication=0\nif [ $replication -eq 1 ]; then\n  # Production, DR and IAT\n  acmon -a -t 5 5\n  rc=$?\n  if [ \"_$rc\" = \"_0\" ] ; then\n    # check status of configured replicaiton clients\n    acmon_repl_client.sh\n  fi\nelse\n  acmon -q -u -t 5 5\n  rc=$?\nfi\n\nif [ \"_$rc\" != \"_0\" ] ; then\n  exit $rc\nfi",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-621288069",
+  "jobDescription" : "AC_SCRIPT_Maintenance_AC_CheckEnvironment"
+}
