@@ -3,31 +3,22 @@ package org.ikasan.dashboard.ui.scheduler.component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.contextmenu.MenuItem;
-import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.menubar.MenuBar;
-import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.router.RouteConfiguration;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
-import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
-import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
-import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
@@ -75,7 +66,7 @@ public class ContextTemplateManagementWidget extends Div {
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
     private TextField endWindowCronExpressionTf;
-    private ComboBox<String> viewContexts;
+    private ComboBox<String> contextViews;
 
     private Div schedulerVisualisationDiv;
 
@@ -270,55 +261,11 @@ public class ContextTemplateManagementWidget extends Div {
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService) {
+
+        this.initialiseContextViewCombo();
+
         this.schedulerVisualisationDiv = new Div();
         this.schedulerVisualisationDiv.setSizeFull();
-
-        this.viewContexts = new ComboBox<>("Context Views");
-        this.viewContexts.getElement().getStyle().set("position", "absolute");
-        this.viewContexts.getElement().getStyle().set("right", "45px");
-        this.viewContexts.setWidth("550px");
-
-        ContextProfileSearchFilter searchFilter = new SolrContextProfileSearchFilterImpl();
-        searchFilter.setContextName(this.contextTemplate.getName());
-
-        SearchResults<ContextProfileRecord> contextProfileRecords = this.contextProfileService
-            .findByFilter(searchFilter, -1, -1, null, null);
-
-        List<String> items = new ArrayList<>();
-        AtomicReference<String> defaultContext = new AtomicReference<>();
-        if(!contextProfileRecords.getResultList().isEmpty()) {
-            contextProfileRecords.getResultList().forEach(record -> {
-                if(record.getOwner() != null &&
-                    record.getOwner().equals(this.authentication.getName())) {
-                    defaultContext.set(record.getContextProfile().getDefaultContext());
-                }
-                else if(record.getOwner() != null && defaultContext.get() == null && record.getOwner().equals(ContextProfileRecord.SYSTEM_OWNER)){
-                    defaultContext.set(record.getContextProfile().getDefaultContext());
-                }
-
-                record.getContextProfile().getSubContexts().forEach(profile -> items.add(profile));
-            });
-        }
-
-        this.viewContexts.setItems(items);
-
-        if(defaultContext.get() != null) {
-            this.viewContexts.setValue(defaultContext.get());
-        }
-        else if(items.size() > 0) {
-            this.viewContexts.setValue(items.get(0));
-        }
-
-        ContextService contextService = new ContextService();
-
-        this.viewContexts.addValueChangeListener(event -> {
-            try {
-                this.schedulerVisualisation.createSchedulerVisualisation(contextService.getContextInstance(contextService.getContextTemplateString(this.contextTemplate.getContextsMap().get(this.viewContexts.getValue()))));
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
 
         this.schedulerVisualisation = new SchedulerVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
@@ -326,15 +273,16 @@ public class ContextTemplateManagementWidget extends Div {
         this.schedulerVisualisation.setWidthFull();
         this.schedulerVisualisation.setHeight("75vh");
 
+        ContextService contextService = new ContextService();
         try {
-            if(this.viewContexts.getValue() != null) {
-                this.schedulerVisualisation.createSchedulerVisualisation(contextService.getContextInstance(contextService.getContextTemplateString(this.contextTemplate.getContextsMap().get(this.viewContexts.getValue()))));
+            if(this.contextViews.getValue() != null) {
+                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, contextService.getContextInstance(contextService.getContextTemplateString(this.contextTemplate.getContextsMap().get(this.contextViews.getValue()))));
             }
             else {
-                this.schedulerVisualisation.createSchedulerVisualisation(contextService.getContextInstance(contextService.getContextTemplateString(this.contextTemplate)));
+                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, contextService.getContextInstance(contextService.getContextTemplateString(this.contextTemplate)));
             }
 
-            this.schedulerVisualisationDiv.add(this.viewContexts, this.schedulerVisualisation, descriptionTa);
+            this.schedulerVisualisationDiv.add(this.contextViews, this.schedulerVisualisation, descriptionTa);
         }
         catch (IOException e) {
             // todo raise message
@@ -377,5 +325,54 @@ public class ContextTemplateManagementWidget extends Div {
         this.contextTemplateStatisticsWidget.setHeight("75vh");
         this.contextTemplateStatisticsWidget.setVisible(false);
 
+    }
+
+    private void initialiseContextViewCombo() {
+        this.contextViews = new ComboBox<>("Context Views");
+        this.contextViews.getElement().getStyle().set("position", "absolute");
+        this.contextViews.getElement().getStyle().set("right", "45px");
+        this.contextViews.setWidth("550px");
+
+        ContextProfileSearchFilter searchFilter = new SolrContextProfileSearchFilterImpl();
+        searchFilter.setContextName(this.contextTemplate.getName());
+
+        SearchResults<ContextProfileRecord> contextProfileRecords = this.contextProfileService
+            .findByFilter(searchFilter, -1, -1, null, null);
+
+        List<String> items = new ArrayList<>();
+        AtomicReference<String> defaultContext = new AtomicReference<>();
+        if(!contextProfileRecords.getResultList().isEmpty()) {
+            contextProfileRecords.getResultList().forEach(record -> {
+                if(record.getOwner() != null &&
+                    record.getOwner().equals(this.authentication.getName())) {
+                    defaultContext.set(record.getContextProfile().getDefaultContext());
+                }
+                else if(record.getOwner() != null && defaultContext.get() == null && record.getOwner().equals(ContextProfileRecord.SYSTEM_OWNER)){
+                    defaultContext.set(record.getContextProfile().getDefaultContext());
+                }
+
+                record.getContextProfile().getSubContexts().forEach(profile -> items.add(profile));
+            });
+        }
+
+        this.contextViews.setItems(items);
+
+        if(defaultContext.get() != null) {
+            this.contextViews.setValue(defaultContext.get());
+        }
+        else if(items.size() > 0) {
+            this.contextViews.setValue(items.get(0));
+        }
+
+        ContextService contextService = new ContextService();
+
+        this.contextViews.addValueChangeListener(event -> {
+            try {
+                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, contextService.getContextInstance(contextService.getContextTemplateString(this.contextTemplate.getContextsMap().get(this.contextViews.getValue()))));
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }
