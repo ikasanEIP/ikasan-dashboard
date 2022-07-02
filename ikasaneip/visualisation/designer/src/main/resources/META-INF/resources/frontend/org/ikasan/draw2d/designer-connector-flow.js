@@ -546,7 +546,7 @@ window.Vaadin.Flow.designerConnector = {
 
             let reader = new draw2d.io.json.Reader();
 
-            let target = document.getElementById('schedulerVisualisation');
+            let target = document.getElementById(canvasName);
             let spinner = new Spin.Spinner(opts).spin(target);
             await new Promise(r => setTimeout(r, 100));
 
