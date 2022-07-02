@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-1178318400",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--707156913" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\n$AC_SYSTEM/local/bin/ac_reset_suspects.sh",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent--1178318400",
+  "jobDescription" : "AC_SCRIPT_Maintenance_AC_ValidationClearOutstanding"
+}

@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-742746991",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--663833459" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\necho \"ado_browse(\\\"code like 'Req_BB_Anvil_BondEUClose%'\\\");\" | ac_evalform - | ac_trigger_ado.sh -",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent--742746991",
+  "jobDescription" : "AC_SCRIPT_RefreshADO_ADMN_BloombergRequestAnvilBondEUClose"
+}

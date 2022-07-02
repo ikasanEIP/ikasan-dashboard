@@ -1,0 +1,16 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "509550682",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-981669397" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nac_bloomberg_persecurity.sh -c Req_BB_Index_AsiaClose -i\nac_bloomberg_persecurity.sh -c Req_BB_Index_AsiaClose_GetData -i\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "daysOfWeekToRun" : [ 3, 4, 5, 6 ],
+  "identifier" : "scheduler-agent-509550682",
+  "jobDescription" : "AC_SCRIPT_PriceRequest_BB_Fixing_TueFri_0900"
+}

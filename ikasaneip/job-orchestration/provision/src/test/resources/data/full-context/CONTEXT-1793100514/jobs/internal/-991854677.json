@@ -1,0 +1,24 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-991854677",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-176164463" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nstagingFolderpath=$(echo '/opt/mhi-ac/gateway/dev2/ipv/staging/')\ndatefolderstaging=$stagingFolderpath/archive/$(date +\"%Y%m%d\")\n[ -d \"$stagingFolderpath/archive\" ] || mkdir \"$stagingFolderpath/archive\"\n[ -d \"$stagingFolderpath/archive/$(date +\"%Y%m%d\")\" ] || mkdir \"$stagingFolderpath/archive/$(date +\"%Y%m%d\")\"\nfind $stagingFolderpath -maxdepth 1 -name \"*.*\" -exec mv -f {} $datefolderstaging \\;\nif [ $UseBusinessDate == 0 ]; then\n  cd $AC_SYSTEM/apps/mds-ipv\n  $AC_SYSTEM/apps/mds-ipv/app-start.sh -e DEV2 -a \"-s\"\nelse\n  cd $AC_SYSTEM/apps/mds-ipv\n  $AC_SYSTEM/apps/mds-ipv/app-start.sh -e DEV2 -a \"-s -d $BusinessDate\"\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent--991854677",
+  "jobDescription" : "AC_SCRIPT_IPV_Derivatives_Generate_Staging"
+}

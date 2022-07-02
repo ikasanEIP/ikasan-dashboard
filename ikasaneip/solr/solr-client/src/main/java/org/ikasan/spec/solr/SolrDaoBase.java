@@ -11,6 +11,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SearchResultsImpl;
+import org.ikasan.solr.util.SolrSpecialCharacterEscapeUtil;
 import org.ikasan.solr.util.SolrTokenizerQueryBuilder;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
@@ -54,6 +55,8 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     public static final String STATUS = "status";
     public static final String MODIFIED_BY = "modifiedBy";
     public static final String CHILD_CONTEXT_NAME = "childContextName";
+    public static final String ACCESS_ROLES = "accessRoles";
+    public static final String ACCESS_USERS = "accessUsers";
 
 
     public static final String AND = " AND ";
@@ -364,7 +367,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         {
             predicateBuffer.append(field + COLON);
 
-            predicateBuffer.append(value).append(" ");
+            predicateBuffer.append(SolrSpecialCharacterEscapeUtil.escape(value)) .append(" ");
         }
 
         return predicateBuffer;
