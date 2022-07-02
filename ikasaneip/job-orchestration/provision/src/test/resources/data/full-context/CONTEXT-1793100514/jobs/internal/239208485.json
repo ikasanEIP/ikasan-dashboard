@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "239208485",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--663833459" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\necho \"ado_browse(\\\"code = 'ANVIL_MHIRepoBonds'\\\");\" | ac_evalform - | ac_trigger_ado.sh -",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-239208485",
+  "jobDescription" : "AC_SCRIPT_RefreshADO_SOII_AnvilBondEUClose"
+}

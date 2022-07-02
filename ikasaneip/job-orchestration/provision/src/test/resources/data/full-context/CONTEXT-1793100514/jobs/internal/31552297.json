@@ -1,0 +1,18 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "31552297",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--2014144101" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\ncd $AC_SYSTEM/interfaces/CDWI/scripts;\n./getCdwAssets.sh",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-31552297",
+  "jobDescription" : "AC_SCRIPT_Interface_CDW_Assets"
+}

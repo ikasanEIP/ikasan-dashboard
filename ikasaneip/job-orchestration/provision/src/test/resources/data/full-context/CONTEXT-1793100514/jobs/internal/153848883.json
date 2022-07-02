@@ -1,0 +1,27 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "153848883",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--1000292296" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nsource $HOME/.bash_profile;\nif [ $UseMDSExtract == 1 ]; then\n    if [ $UseBusinessDate == 0 ]; then\n      $AC_SYSTEM/apps/mds-ac-extract/app-start.sh -e DEV2 -a \"-x Pub_MURX_SCPR_1700 -t 163000\"\n    else\n      $AC_SYSTEM/apps/mds-ac-extract/app-start.sh -e DEV2 -a \"-x Pub_MURX_SCPR_1700 -d $BusinessDate -t 163000\"\n    fi\nelse\n    if [ $UseBusinessDate == 0 ]; then\n      AC_REPDIR=/opt/mhi-ac/gateway/dev2/murex/out ac_extract.sh -c Pub_MURX_SCPR_BND_1700,Pub_MURX_SCPR_LOAN -t 163000 -i\n    else\n      AC_REPDIR=/opt/mhi-ac/gateway/dev2/murex/out ac_extract.sh -d $BusinessDate -c Pub_MURX_SCPR_BND_1700,Pub_MURX_SCPR_LOAN,Pub_MURX_SCPR_EQS_CB -t 163000 -i\n    fi\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseMDSExtract",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-153848883",
+  "jobDescription" : "AC_SCRIPT_Export_MX_SCPR_1700"
+}

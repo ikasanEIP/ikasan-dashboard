@@ -1,0 +1,24 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "1463500155",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-97490933" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nAC_REPDIR=/opt/mhi-ac/gateway/dev2/cdw/out\necho \"ado_browse(\\\"code = 'Pub_CDW_SWAPTION'\\\")\" | ac_evalform - | ac_trigger_ado.sh -\nif [ $UseBusinessDate == 0 ]; then\n  AC_ADMN_PUB_SEP=\"|\" ac_extract.sh -c Pub_CDW_SWAPTION -n -i\nelse\n  AC_ADMN_PUB_SEP=\"|\" ac_extract.sh -d $BusinessDate -c Pub_CDW_SWAPTION -n -i\nfi  \n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent-1463500155",
+  "jobDescription" : "AC_SCRIPT_Export_CDW_SwaptionVolatility_1600"
+}

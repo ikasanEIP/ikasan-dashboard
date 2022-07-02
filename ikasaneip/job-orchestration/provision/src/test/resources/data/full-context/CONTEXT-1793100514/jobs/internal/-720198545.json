@@ -1,0 +1,24 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-720198545",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-427044378" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nif [ $UseBusinessDate == 0 ]; then\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/cdw/out ac_extract.sh -c Pub_CDW_INDICES_1600 -i\nelse\n  AC_REPDIR=/opt/mhi-ac/gateway/dev2/cdw/out ac_extract.sh -d $BusinessDate -c Pub_CDW_INDICES_1600 -i\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent--720198545",
+  "jobDescription" : "AC_SCRIPT_Export_CDW_Index_1600"
+}

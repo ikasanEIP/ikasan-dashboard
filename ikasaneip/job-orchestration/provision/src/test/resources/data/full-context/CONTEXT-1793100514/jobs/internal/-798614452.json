@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-798614452",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-981696305" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nac_bloomberg_persecurity.sh -c Req_BB_FRA -i\nac_bloomberg_persecurity.sh -c Req_BB_FRARolling -i\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent--798614452",
+  "jobDescription" : "AC_SCRIPT_PriceRequest_BB_FRA_1600"
+}

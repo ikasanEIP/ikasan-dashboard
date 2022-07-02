@@ -1,0 +1,24 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "-931652610",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT--1973132614", "CONTEXT-427017470", "CONTEXT-840251596", "CONTEXT-427044378" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nif [ $UseBusinessDate == 0 ]; then\n  listado -e C0_PC_FIX_0930 | ac_consolidate_prices.pl -c Pc_MultiSource_1 -t 093000 -\nelse\n  listado -e C0_PC_FIX_0930 | ac_consolidate_prices.pl -d $BusinessDate -c Pc_MultiSource_1 -t 093000 -\nfi\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ {
+    "name" : "ErrorSearch",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "BusinessDate",
+    "type" : "java.lang.String"
+  }, {
+    "name" : "UseBusinessDate",
+    "type" : "java.lang.String"
+  } ],
+  "identifier" : "scheduler-agent--931652610",
+  "jobDescription" : "AC_SCRIPT_PriceConsolidate_Index_0900"
+}

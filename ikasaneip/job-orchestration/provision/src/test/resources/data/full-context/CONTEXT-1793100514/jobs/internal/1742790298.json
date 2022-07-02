@@ -1,0 +1,15 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "1742790298",
+  "contextId" : "-1793100514",
+  "childContextIds" : [ "CONTEXT-981696305" ],
+  "startupControlType" : "AUTOMATIC",
+  "successfulReturnCodes" : [ "0" ],
+  "workingDirectory" : "",
+  "commandLine" : "source $HOME/.bash_profile;\nac_bloomberg_persecurity.sh -c Req_BB_Index -i\nac_bloomberg_persecurity.sh -c Req_BB_Fixing -i\nac_bloomberg_persecurity.sh -c Req_BB_EquityIndex -i\nac_bloomberg_persecurity.sh -c Req_BB_IndexGetData -i\n",
+  "minExecutionTime" : 2000,
+  "maxExecutionTime" : 20000,
+  "contextParameters" : [ ],
+  "identifier" : "scheduler-agent-1742790298",
+  "jobDescription" : "AC_SCRIPT_PriceRequest_BB_Fixing_1600"
+}

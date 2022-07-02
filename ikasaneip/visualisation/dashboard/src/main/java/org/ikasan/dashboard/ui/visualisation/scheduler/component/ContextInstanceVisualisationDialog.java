@@ -229,12 +229,12 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
 
         if(contextInstance.getScheduledJobs() != null) {
             try {
-                JobVisualisationDialog jobVisualisationDialog = new JobVisualisationDialog(this.moduleMetaDataService,
+                JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService,
                     this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
                     this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
                     this.schedulerJobInstanceService, this.jobInitiationService);
-                jobVisualisationDialog.createSchedulerVisualisation(rootContextInstance, contextInstance);
-                jobVisualisationDialog.open();
+                jobInstanceVisualisationDialog.createSchedulerVisualisation(rootContextInstance, contextInstance);
+                jobInstanceVisualisationDialog.open();
             }
             catch (IOException e) {
                 e.printStackTrace();
@@ -283,7 +283,9 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        this.contextInstanceStateChangeRegistration.remove();
-        this.contextInstanceStateChangeRegistration = null;
+        if(this.contextInstanceStateChangeRegistration != null) {
+            this.contextInstanceStateChangeRegistration.remove();
+            this.contextInstanceStateChangeRegistration = null;
+        }
     }
 }
