@@ -4,13 +4,17 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.leansoft.bigqueue.IBigQueue;
+import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.spec.bigqueue.BigQueueMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,7 +27,7 @@ public class InboundScheduledEventBroker {
     private ListenableFuture<byte[]> listenableFuture;
     private ObjectMapper objectMapper;
 
-
+    // TODO Question if this is used at all
     public InboundScheduledEventBroker(IBigQueue inboundQueue) {
         this.inboundQueue = inboundQueue;
         this.bigQueueListenerExecutor = Executors.newSingleThreadExecutor();
@@ -82,7 +86,13 @@ public class InboundScheduledEventBroker {
 //                    throw new RuntimeException(String.format("Could not get context instance[%s] from ContextMachineCache", "test"));
                 }
 
-                contextMachine.eventReceived(new String(event));
+                BigQueueMessage bigQueueMessage =
+                    new BigQueueMessageBuilder()
+                        .withMessage(contextualisedScheduledProcessEventInstance)
+                        .withMessageProperties(getProperties(contextualisedScheduledProcessEventInstance))
+                        .build();
+
+                contextMachine.eventReceived(new String(objectMapper.writeValueAsBytes(bigQueueMessage)));
 
                 inboundQueue.dequeue();
                 inboundQueue.gc();
@@ -94,6 +104,16 @@ public class InboundScheduledEventBroker {
             finally {
                 addInboundListener();
             }
+        }
+        private Map<String, String> getProperties(ContextualisedScheduledProcessEventImpl event) {
+            Map<String, String> map = new HashMap<>();
+            if (event.getContextId() != null) {
+                map.put("contextName", event.getContextId());
+            }
+            if (event.getContextInstanceId() != null) {
+                map.put("contextInstanceId", event.getContextInstanceId());
+            }
+            return map;
         }
     }
 }

@@ -72,7 +72,7 @@ public class ScheduledProcessEventInboundFlowFactory
     public Flow scheduledProcessEventInboundFlow() throws IOException {
         return builderFactory.getModuleBuilder(moduleName).getFlowBuilder("Scheduled Process Event Inbound Flow")
             .withDescription("Scheduled Process Event Inbound Flow")
-            .consumer("Scheduled Consumer", scheduledProcessEventInboundFlowComponentFactory.getOutboundBigQueueConsumer())
+            .consumer("Scheduled Consumer", scheduledProcessEventInboundFlowComponentFactory.getInboundBigQueueConsumer())
             .producer("Dashboard Producer", scheduledProcessEventInboundFlowComponentFactory.getScheduledStatusProducer())
             .build();
     }

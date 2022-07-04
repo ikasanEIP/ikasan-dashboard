@@ -4,6 +4,7 @@ import static org.ikasan.job.orchestration.core.machine.ContextMachineTestHelper
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.job.orchestration.JobLockCacheServiceTestImpl;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.validation.ContextTemplateValidator;
@@ -12,15 +13,14 @@ import org.ikasan.job.orchestration.core.AbstractTest;
 import org.ikasan.job.orchestration.core.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
-import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.spec.bigqueue.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.json.JSONException;
 import org.junit.After;
 import org.junit.Assert;
@@ -1630,23 +1630,28 @@ public class ContextMachineTest extends AbstractTest {
 
         ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
             "agentName3", true);
-        contextMachine.eventReceived(objectMapper.writeValueAsString(eventInstance));
+        BigQueueMessage bigQueueMessage = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(eventInstance)).build();
+        contextMachine.eventReceived(objectMapper.writeValueAsString(bigQueueMessage));
 
         eventInstance = scheduledProcessEventInstance("jobName1",
             "agentName1", true);
-        contextMachine.eventReceived(objectMapper.writeValueAsString(eventInstance));
+        bigQueueMessage = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(eventInstance)).build();
+        contextMachine.eventReceived(objectMapper.writeValueAsString(bigQueueMessage));
 
         eventInstance = scheduledProcessEventInstance("jobName2",
             "agentName2", true);
-        contextMachine.eventReceived(objectMapper.writeValueAsString(eventInstance));
+        bigQueueMessage = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(eventInstance)).build();
+        contextMachine.eventReceived(objectMapper.writeValueAsString(bigQueueMessage));
 
         eventInstance = scheduledProcessEventInstance("jobName4",
             "agentName4", true);
-        contextMachine.eventReceived(objectMapper.writeValueAsString(eventInstance));
+        bigQueueMessage = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(eventInstance)).build();
+        contextMachine.eventReceived(objectMapper.writeValueAsString(bigQueueMessage));
 
         eventInstance = scheduledProcessEventInstance("jobName5",
             "agentName5", true);
-        contextMachine.eventReceived(objectMapper.writeValueAsString(eventInstance));
+        bigQueueMessage = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(eventInstance)).build();
+        contextMachine.eventReceived(objectMapper.writeValueAsString(bigQueueMessage));
 
         Thread.sleep(1000);
 
