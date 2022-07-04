@@ -248,8 +248,9 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             .bind(InternalEventDrivenJob::getWorkingDirectory, InternalEventDrivenJob::setWorkingDirectory);
         formLayout.add(workingDirectoryTf, 2);
 
-        Icon calendarIcon = IconDecorator.decorate(new Icon(VaadinIcon.CALENDAR), getTranslation("label.day-of-week-to-run", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
-        calendarIcon.addClickListener(event -> {
+        Button executionDaysButton = new Button(getTranslation("button.execution-days", UI.getCurrent().getLocale()), new Icon(VaadinIcon.CALENDAR));
+        executionDaysButton.setIconAfterText(true);
+        executionDaysButton.addClickListener(event -> {
             DayOfWeekJobDialog dayOfWeekJobDialog = new DayOfWeekJobDialog(this.internalEventDrivenJob.getDaysOfWeekToRun() == null
                 ? null : new ArrayList<>(this.internalEventDrivenJob.getDaysOfWeekToRun()), true);
             dayOfWeekJobDialog.open();
@@ -261,8 +262,9 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             });
         });
 
-        Icon parametersIcon = IconDecorator.decorate(new Icon(VaadinIcon.SLIDERS), getTranslation("label.job-parameters", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
-        parametersIcon.addClickListener(event -> {
+        Button parametersButton = new Button(getTranslation("button.parameters", UI.getCurrent().getLocale()), new Icon(VaadinIcon.SLIDERS));
+        parametersButton.setIconAfterText(true);
+        parametersButton.addClickListener(event -> {
             ContextParameterDialog contextParameterDialog = new ContextParameterDialog(true);
             contextParameterDialog.initParams(this.internalEventDrivenJob.getContextParameters() == null ? new ArrayList<>() : this.internalEventDrivenJob.getContextParameters());
             contextParameterDialog.open();
@@ -274,8 +276,9 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             });
         });
 
-        Icon successfulReturnCodesIcon = IconDecorator.decorate(new Icon(VaadinIcon.CHECK), getTranslation("label.successful-return-codes", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
-        successfulReturnCodesIcon.addClickListener(event -> {
+        Button successfulReturnCodesButton = new Button(getTranslation("button.return-codes", UI.getCurrent().getLocale()), new Icon(VaadinIcon.CHECK));
+        successfulReturnCodesButton.setIconAfterText(true);
+        successfulReturnCodesButton.addClickListener(event -> {
             SuccessfulReturnCodesDialog successfulReturnCodesDialog = new SuccessfulReturnCodesDialog(true);
             successfulReturnCodesDialog.initReturnCodes(this.internalEventDrivenJob.getSuccessfulReturnCodes());
             successfulReturnCodesDialog.open();
@@ -287,30 +290,30 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             });
         });
 
-        Icon downloadIcon = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
-        StreamResource streamResource = new StreamResource(this.internalEventDrivenJob.getJobName()+".json"
-            , () -> {
-            try {
-                return new ByteArrayInputStream(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(this.internalEventDrivenJob));
-            }
-            catch (JsonProcessingException e) {
-                e.printStackTrace();
-                return null;
-            }
-        });
-
-        FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
-        buttonWrapper.wrapComponent(downloadIcon);
-
-        Icon externalIcon = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), getTranslation("label.expand-text-editor", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
+//        Icon downloadIcon = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
+//        StreamResource streamResource = new StreamResource(this.internalEventDrivenJob.getJobName()+".json"
+//            , () -> {
+//            try {
+//                return new ByteArrayInputStream(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(this.internalEventDrivenJob));
+//            }
+//            catch (JsonProcessingException e) {
+//                e.printStackTrace();
+//                return null;
+//            }
+//        });
+//
+//        FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
+//        buttonWrapper.wrapComponent(downloadIcon);
+//
+//        Icon externalIcon = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), getTranslation("label.expand-text-editor", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
 
         HorizontalLayout horizontalLayout = new HorizontalLayout();
-        horizontalLayout.add(calendarIcon, parametersIcon, successfulReturnCodesIcon, buttonWrapper, externalIcon);
+        horizontalLayout.add(executionDaysButton, parametersButton, successfulReturnCodesButton);
 
         VerticalLayout newButtonLayout = new VerticalLayout();
         newButtonLayout.setWidth("100%");
         newButtonLayout.add(horizontalLayout);
-        newButtonLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, horizontalLayout);
+//        newButtonLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, horizontalLayout);
 
         formLayout.add(newButtonLayout, 2);
 

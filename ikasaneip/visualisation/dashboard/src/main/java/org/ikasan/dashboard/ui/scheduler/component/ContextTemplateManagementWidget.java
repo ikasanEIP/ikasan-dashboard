@@ -37,6 +37,7 @@ import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -51,6 +52,7 @@ public class ContextTemplateManagementWidget extends Div {
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private ContextProfileService contextProfileService;
+    private JobProvisionService jobProvisionService;
     private FormLayout formLayout;
     private IkasanAuthentication authentication;
 
@@ -72,8 +74,8 @@ public class ContextTemplateManagementWidget extends Div {
 
     private Tab visualisationTab;
     private Tab rawContextTab;
-    private Tab instancesTab;
-    private Tab jobsTab;
+    private Tab contextInstancesTab;
+    private Tab jobTemplatesTab;
     private Tab statisticsTab;
     private Tabs tabs;
 
@@ -91,7 +93,7 @@ public class ContextTemplateManagementWidget extends Div {
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
-                                           JobInitiationService jobInitiationService, ContextProfileService contextProfileService) {
+                                           JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobProvisionService jobProvisionService) {
 
         this.scheduledContextService = scheduledContextService;
         this.scheduledContextInstanceService = scheduledContextInstanceService;
@@ -100,6 +102,7 @@ public class ContextTemplateManagementWidget extends Div {
         this.contextTemplate = contextTemplate;
         this.jobInitiationService = jobInitiationService;
         this.contextProfileService = contextProfileService;
+        this.jobProvisionService = jobProvisionService;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -116,14 +119,14 @@ public class ContextTemplateManagementWidget extends Div {
                       LogStreamingService logStreamingService, JobInitiationService jobInitiationService) {
         Binder<ContextTemplate> binder = new Binder<>(ContextTemplate.class);
 
-        this.contextNameTf = new TextField("Context Name");
+        this.contextNameTf = new TextField(getTranslation("label.context-name", UI.getCurrent().getLocale()));
         binder.forField(contextNameTf)
             .bind(ContextTemplate::getName, ContextTemplate::setName);
-        this.descriptionTa = new TextArea("Description");
+        this.descriptionTa = new TextArea(getTranslation("label.context-description", UI.getCurrent().getLocale()));
         binder.forField(descriptionTa)
             .bind(ContextTemplate::getDescription, ContextTemplate::setDescription);
 
-        Icon startWindowCronBuilderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), "Build cron expression", "14pt", "rgba(241, 90, 35, 1.0)");
+        Icon startWindowCronBuilderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), getTranslation("tooltip.build-cron-expression", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
         startWindowCronBuilderIcon.addClickListener(event -> {
             CronBuilderDialog dialog = new CronBuilderDialog();
             dialog.init(this.startWindowCronExpressionTf.getValue());
@@ -135,12 +138,13 @@ public class ContextTemplateManagementWidget extends Div {
                 }
             });
         });
-        this.startWindowCronExpressionTf = new TextField("Time Window Start");
+
+        this.startWindowCronExpressionTf = new TextField(getTranslation("label.time-window-start", UI.getCurrent().getLocale()));
         this.startWindowCronExpressionTf.setSuffixComponent(startWindowCronBuilderIcon);
         binder.forField(startWindowCronExpressionTf)
             .bind(ContextTemplate::getTimeWindowStart, ContextTemplate::setTimeWindowStart);
 
-        Icon endWindowCronBuilderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), "Build cron expression", "14pt", "rgba(241, 90, 35, 1.0)");
+        Icon endWindowCronBuilderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), getTranslation("tooltip.build-cron-expression", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
         endWindowCronBuilderIcon.addClickListener(event -> {
             CronBuilderDialog dialog = new CronBuilderDialog();
             dialog.init(this.endWindowCronExpressionTf.getValue());
@@ -152,7 +156,7 @@ public class ContextTemplateManagementWidget extends Div {
                 }
             });
         });
-        this.endWindowCronExpressionTf = new TextField("Time Window End");
+        this.endWindowCronExpressionTf = new TextField(getTranslation("label.time-window-end", UI.getCurrent().getLocale()));
         this.endWindowCronExpressionTf.setSuffixComponent(endWindowCronBuilderIcon);
         binder.forField(endWindowCronExpressionTf)
             .bind(ContextTemplate::getTimeWindowEnd, ContextTemplate::setTimeWindowEnd);
@@ -179,19 +183,19 @@ public class ContextTemplateManagementWidget extends Div {
     }
 
     private void initialiseTabs() {
-        this.visualisationTab = new Tab("Visualisation");
-        this.rawContextTab = new Tab("JSON");
-        this.instancesTab = new Tab("Instances");
-        this.jobsTab = new Tab("Jobs");
-        this.statisticsTab = new Tab("Statistics");
+        this.visualisationTab = new Tab(getTranslation("tab.visualisation", UI.getCurrent().getLocale()));
+        this.rawContextTab = new Tab(getTranslation("tab.json-raw-format", UI.getCurrent().getLocale()));
+        this.contextInstancesTab = new Tab(getTranslation("tab.context-instances", UI.getCurrent().getLocale()));
+        this.jobTemplatesTab = new Tab(getTranslation("tab.job-templates", UI.getCurrent().getLocale()));
+        this.statisticsTab = new Tab(getTranslation("tab.statistics", UI.getCurrent().getLocale()));
 
         this.tabs = new Tabs();
         this.tabs.add(this.visualisationTab, this.rawContextTab
-            , this.instancesTab, this.jobsTab, this.statisticsTab);
+            , this.contextInstancesTab, this.jobTemplatesTab, this.statisticsTab);
 
         tabs.addSelectedChangeListener(event -> {
             try {
-                if(tabs.getSelectedTab().equals(this.instancesTab)) {
+                if(tabs.getSelectedTab().equals(this.contextInstancesTab)) {
                     this.aceEditor.setVisible(false);
                     this.schedulerVisualisationDiv.setVisible(false);
                     this.contextInstanceGridWidget.setVisible(true);
@@ -219,7 +223,7 @@ public class ContextTemplateManagementWidget extends Div {
                     this.schedulerJobGridWidget.setVisible(false);
                     this.contextTemplateStatisticsWidget.setVisible(false);
                 }
-                else if(tabs.getSelectedTab().equals(this.jobsTab)) {
+                else if(tabs.getSelectedTab().equals(this.jobTemplatesTab)) {
                     this.aceEditor.setVisible(false);
                     this.schedulerVisualisationDiv.setVisible(false);
                     this.contextInstanceGridWidget.setVisible(false);
@@ -282,7 +286,7 @@ public class ContextTemplateManagementWidget extends Div {
                 this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, contextService.getContextInstance(contextService.getContextTemplateString(this.contextTemplate)));
             }
 
-            this.schedulerVisualisationDiv.add(this.contextViews, this.schedulerVisualisation, descriptionTa);
+            this.schedulerVisualisationDiv.add(this.contextViews, this.schedulerVisualisation);
         }
         catch (IOException e) {
             // todo raise message
@@ -308,7 +312,8 @@ public class ContextTemplateManagementWidget extends Div {
                                                      MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobGridWidget = new SchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
-            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate, this.jobInitiationService);
+            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate,
+            this.jobInitiationService, this.jobProvisionService);
         this.schedulerJobGridWidget.setWidthFull();
         this.schedulerJobGridWidget.setHeight("75vh");
         this.schedulerJobGridWidget.setVisible(false);
@@ -328,7 +333,7 @@ public class ContextTemplateManagementWidget extends Div {
     }
 
     private void initialiseContextViewCombo() {
-        this.contextViews = new ComboBox<>("Context Views");
+        this.contextViews = new ComboBox<>(getTranslation("label.context-views", UI.getCurrent().getLocale()));
         this.contextViews.getElement().getStyle().set("position", "absolute");
         this.contextViews.getElement().getStyle().set("right", "45px");
         this.contextViews.setWidth("550px");

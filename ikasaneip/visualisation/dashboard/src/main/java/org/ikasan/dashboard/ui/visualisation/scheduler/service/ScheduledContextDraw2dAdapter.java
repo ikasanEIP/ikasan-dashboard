@@ -401,7 +401,8 @@ public class ScheduledContextDraw2dAdapter {
         AtomicBoolean isTerminal = new AtomicBoolean(true);
 
         jobDependencies.forEach(jobDependency -> {
-            if(jobDependency.getLogicalGrouping().getAnd() != null) {
+
+            if(jobDependency.getLogicalGrouping() != null && jobDependency.getLogicalGrouping().getAnd() != null) {
                 jobDependency.getLogicalGrouping().getAnd().forEach(and -> {
                     if (and.getIdentifier().equals(schedulerJob.getIdentifier())) {
                         isTerminal.set(false);
@@ -409,7 +410,7 @@ public class ScheduledContextDraw2dAdapter {
                 });
             }
 
-            if(jobDependency.getLogicalGrouping().getOr() != null) {
+            if(jobDependency.getLogicalGrouping() != null && jobDependency.getLogicalGrouping().getOr() != null) {
                 jobDependency.getLogicalGrouping().getOr().forEach(or -> {
                     if (or.getIdentifier().equals(schedulerJob.getIdentifier())) {
                         isTerminal.set(false);
@@ -417,7 +418,7 @@ public class ScheduledContextDraw2dAdapter {
                 });
             }
 
-            if(jobDependency.getLogicalGrouping().getNot() != null) {
+            if(jobDependency.getLogicalGrouping() != null && jobDependency.getLogicalGrouping().getNot() != null) {
                 jobDependency.getLogicalGrouping().getNot().forEach(not -> {
                     if(not.getIdentifier().equals(schedulerJob.getIdentifier())) {
                         isTerminal.set(false);
