@@ -42,6 +42,7 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
@@ -55,6 +56,7 @@ public class ContextTemplateWidget extends Div {
     private ContextTemplateFilteringGrid contextTemplateFilteringGrid;
     private ScheduledContextService scheduledContextService;
     private ContextProfileService contextProfileService;
+    private JobProvisionService jobProvisionService;
     private IkasanAuthentication authentication;
 
     private SchedulerJobService schedulerJobService;
@@ -70,12 +72,13 @@ public class ContextTemplateWidget extends Div {
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
                                  JobInitiationService jobInitiationService, String zipWorkingDirectory, ContextUploadInitialisationService contextUploadInitialisationService,
-                                 ContextProfileService contextProfileService) {
+                                 ContextProfileService contextProfileService, JobProvisionService jobProvisionService) {
 
         this.scheduledContextService = scheduledContextService;
         this.schedulerJobService = schedulerJobService;
         this.zipWorkingDirectory = zipWorkingDirectory;
         this.contextProfileService = contextProfileService;
+        this.jobProvisionService = jobProvisionService;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
@@ -97,14 +100,9 @@ public class ContextTemplateWidget extends Div {
         actionButtonLayout.setMargin(false);
 
         MenuBar quickAccessMenu = this.createQuickAccessMenu();
-//        quickAccessMenu.getElement().getStyle().set("position", "absolute");
-//        quickAccessMenu.getElement().getStyle().set("right", "30px");
 
         Icon uploadIcon = VaadinIcon.UPLOAD_ALT.create();
-        uploadIcon.setSize("20pt");
         Button addContextButton = new Button("Upload Context",uploadIcon);
-//        addContextButton.getElement().getStyle().set("position", "absolute");
-//        addContextButton.getElement().getStyle().set("right", "80px");
         addContextButton.setIconAfterText(true);
         addContextButton.addClickListener(buttonClickEvent -> {
             ContextImportFileDialog importer = new ContextImportFileDialog(contextUploadInitialisationService);
@@ -112,10 +110,7 @@ public class ContextTemplateWidget extends Div {
         });
 
         Icon newContextIcon = VaadinIcon.PLUS.create();
-        newContextIcon.setSize("20pt");
         Button newContextButton = new Button("New Context",newContextIcon);
-//        newContextButton.getElement().getStyle().set("position", "absolute");
-//        newContextButton.getElement().getStyle().set("right", "120px");
         newContextButton.setIconAfterText(true);
         newContextButton.addClickListener(buttonClickEvent -> {
             UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
@@ -186,7 +181,8 @@ public class ContextTemplateWidget extends Div {
                 ContextTemplateManagementDialog contextTemplateManagementDialog
                     = new ContextTemplateManagementDialog(this.scheduledContextService, scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-                    , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService);
+                    , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService
+                    , this.jobProvisionService);
                 contextTemplateManagementDialog.open();
             });
 
@@ -309,10 +305,10 @@ public class ContextTemplateWidget extends Div {
         MenuBar quickStartMenuBar = new MenuBar();
         quickStartMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
 
-        MenuItem quickAccess = createQuickAccessButton(quickStartMenuBar, VaadinIcon.COG, "View");
+        MenuItem quickAccess = createQuickAccessButton(quickStartMenuBar, VaadinIcon.COG, getTranslation("menu-item.quick-access", UI.getCurrent().getLocale()));
 
         SubMenu activeContextInstancesSubMenu = quickAccess.getSubMenu();
-        MenuItem activeContexts = activeContextInstancesSubMenu.addItem("Active Contexts");
+        MenuItem activeContexts = activeContextInstancesSubMenu.addItem(getTranslation("menu-item.active-contexts", UI.getCurrent().getLocale()));
         SubMenu activeContextSubMenu = activeContexts.getSubMenu();
 
         ContextMachineCache.instance().contextNames().forEach(name ->
@@ -328,14 +324,12 @@ public class ContextTemplateWidget extends Div {
         return quickStartMenuBar;
     }
 
-    private MenuItem createQuickAccessButton(MenuBar menu, VaadinIcon iconName, String ariaLabel) {
+    private MenuItem createQuickAccessButton(MenuBar menu, VaadinIcon iconName, String label) {
         Icon icon = new Icon(iconName);
-        icon.setSize("20pt");
-        Button quickAccessButton = new Button("Quick Access", icon);
+        Button quickAccessButton = new Button(label, icon);
         quickAccessButton.setIconAfterText(true);
 
         MenuItem item = menu.addItem(quickAccessButton);
-        item.getElement().setAttribute("aria-label", ariaLabel);
 
         return item;
     }

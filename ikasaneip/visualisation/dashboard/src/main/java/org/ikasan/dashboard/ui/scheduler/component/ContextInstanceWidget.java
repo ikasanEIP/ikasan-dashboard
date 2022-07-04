@@ -5,6 +5,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
@@ -32,6 +33,7 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -44,10 +46,16 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
+import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ContextInstanceWidget extends Div {
 
@@ -65,6 +73,8 @@ public class ContextInstanceWidget extends Div {
     private ContextInstanceAuditWidget contextInstanceAuditWidget;
     private JobInitiationService jobInitiationService;
     private ContextProfileService contextProfileService;
+
+    private Div schedulerVisualisationDiv;
 
     private TextField contextInstanceId;
     private TextField contextInstanceStatus;
@@ -84,6 +94,8 @@ public class ContextInstanceWidget extends Div {
     private ContextTemplate contextTemplate;
 
     private SchedulerStatusDiv statusDiv;
+
+    private ComboBox<String> contextViews;
 
     /**
      * Constructor
@@ -220,7 +232,7 @@ public class ContextInstanceWidget extends Div {
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(this.tabs);
         this.getStyle().set("padding-top", "0px");
-        this.add(this.formLayout, tabLayout, this.aceEditor, this.schedulerInstanceVisualisation
+        this.add(this.formLayout, tabLayout, this.aceEditor, this.schedulerVisualisationDiv
             , this.schedulerJobInstanceGridWidget, this.contextTemplateStatisticsWidget, this.contextInstanceAuditWidget);
     }
 
@@ -239,35 +251,35 @@ public class ContextInstanceWidget extends Div {
             try {
                 if(tabs.getSelectedTab().equals(this.statisticsTab)) {
                     this.aceEditor.setVisible(false);
-                    this.schedulerInstanceVisualisation.setVisible(false);
+                    this.schedulerVisualisationDiv.setVisible(false);
                     this.schedulerJobInstanceGridWidget.setVisible(false);
                     this.contextTemplateStatisticsWidget.setVisible(true);
                     this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.rawContextTab)) {
                     this.aceEditor.setVisible(true);
-                    this.schedulerInstanceVisualisation.setVisible(false);
+                    this.schedulerVisualisationDiv.setVisible(false);
                     this.schedulerJobInstanceGridWidget.setVisible(false);
                     this.contextTemplateStatisticsWidget.setVisible(false);
                     this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.visualisationTab)) {
                     this.aceEditor.setVisible(false);
-                    this.schedulerInstanceVisualisation.setVisible(true);
+                    this.schedulerVisualisationDiv.setVisible(true);
                     this.schedulerJobInstanceGridWidget.setVisible(false);
                     this.contextTemplateStatisticsWidget.setVisible(false);
                     this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.jobsTab)) {
                     this.aceEditor.setVisible(false);
-                    this.schedulerInstanceVisualisation.setVisible(false);
+                    this.schedulerVisualisationDiv.setVisible(false);
                     this.schedulerJobInstanceGridWidget.setVisible(true);
                     this.contextTemplateStatisticsWidget.setVisible(false);
                     this.contextInstanceAuditWidget.setVisible(false);
                 }
                 else if(tabs.getSelectedTab().equals(this.auditTab)) {
                     this.aceEditor.setVisible(false);
-                    this.schedulerInstanceVisualisation.setVisible(false);
+                    this.schedulerVisualisationDiv.setVisible(false);
                     this.schedulerJobInstanceGridWidget.setVisible(false);
                     this.contextTemplateStatisticsWidget.setVisible(false);
                     this.contextInstanceAuditWidget.setVisible(true);
@@ -307,6 +319,11 @@ public class ContextInstanceWidget extends Div {
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService) {
+        this.initialiseContextViewCombo();
+
+        this.schedulerVisualisationDiv = new Div();
+        this.schedulerVisualisationDiv.setSizeFull();
+
         this.schedulerInstanceVisualisation = new SchedulerInstanceVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
             , this.schedulerJobInstanceService, this.jobInitiationService);
@@ -315,15 +332,69 @@ public class ContextInstanceWidget extends Div {
 
         try {
             if(ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()) != null) {
-                this.schedulerInstanceVisualisation.createSchedulerVisualisation(ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext());
+                this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+            }
+
+            if(this.contextViews.getValue() != null) {
+                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance.getContextsMap().get(this.contextViews.getValue()));
             }
             else {
-                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance);
+                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance);
             }
         }
         catch (IOException e) {
             e.printStackTrace();
         }
+
+        this.schedulerVisualisationDiv.add(this.contextViews, this.schedulerInstanceVisualisation);
+    }
+
+
+    private void initialiseContextViewCombo() {
+        this.contextViews = new ComboBox<>("Context Views");
+        this.contextViews.getElement().getStyle().set("position", "absolute");
+        this.contextViews.getElement().getStyle().set("right", "45px");
+        this.contextViews.setWidth("550px");
+
+        ContextProfileSearchFilter searchFilter = new SolrContextProfileSearchFilterImpl();
+        searchFilter.setContextName(this.contextTemplate.getName());
+
+        SearchResults<ContextProfileRecord> contextProfileRecords = this.contextProfileService
+            .findByFilter(searchFilter, -1, -1, null, null);
+
+        List<String> items = new ArrayList<>();
+        AtomicReference<String> defaultContext = new AtomicReference<>();
+        if(!contextProfileRecords.getResultList().isEmpty()) {
+            contextProfileRecords.getResultList().forEach(record -> {
+                if(record.getOwner() != null &&
+                    record.getOwner().equals(this.authentication.getName())) {
+                    defaultContext.set(record.getContextProfile().getDefaultContext());
+                }
+                else if(record.getOwner() != null && defaultContext.get() == null && record.getOwner().equals(ContextProfileRecord.SYSTEM_OWNER)){
+                    defaultContext.set(record.getContextProfile().getDefaultContext());
+                }
+
+                record.getContextProfile().getSubContexts().forEach(profile -> items.add(profile));
+            });
+        }
+
+        this.contextViews.setItems(items);
+
+        if(defaultContext.get() != null) {
+            this.contextViews.setValue(defaultContext.get());
+        }
+        else if(items.size() > 0) {
+            this.contextViews.setValue(items.get(0));
+        }
+
+        this.contextViews.addValueChangeListener(event -> {
+            try {
+                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, contextInstance.getContextsMap().get(this.contextViews.getValue()));
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
 

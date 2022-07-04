@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.ui.scheduler.util;
+package org.ikasan.job.orchestration.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -13,34 +13,36 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static org.ikasan.dashboard.ui.scheduler.util.ContextImportExportConstants.*;
+import static org.ikasan.job.orchestration.util.ContextImportExportConstants.*;
+
 
 public final class ContextImportZipUtils {
     private static final Logger LOG = LoggerFactory.getLogger(ContextImportZipUtils.class);
 
     public static ImmutablePair<ContextTemplate, List<SchedulerJob>> extractZipFile(InputStream inputStream) {
         List<SchedulerJob> contextJobs = new ArrayList<>();
-        ContextTemplate[] contextTemplate = new ContextTemplate[1];
+        AtomicReference<ContextTemplate> contextTemplate = new AtomicReference<>();
         try {
             ContextService contextService = new ContextService();
-            String[] parentDirectory = new String[1];
+            AtomicReference<String> parentDirectory = new AtomicReference<>();
             readZipInputStream(inputStream, (entry, outputStream) -> {
                     // 1st entry is the parent Directory
-                    if (parentDirectory[0] == null) {
-                        parentDirectory[0] = entry.getName();
+                    if (parentDirectory.get() == null) {
+                        parentDirectory.set(entry.getName());
                     }
-                    String contextDirectory = parentDirectory[0] + CONTEXT_DIR + File.separator;
-                    String fileJobsDirectory = parentDirectory[0] + JOBS_DIR + File.separator + FILE_DIR + File.separator;
-                    String internalJobsDirectory = parentDirectory[0] + JOBS_DIR + File.separator + INTERNAL_DIR + File.separator;
-                    String quartzJobsDirectory = parentDirectory[0] + JOBS_DIR + File.separator + QUARTZ_DIR + File.separator;
+                    String contextDirectory = parentDirectory + CONTEXT_DIR + File.separator;
+                    String fileJobsDirectory = parentDirectory + JOBS_DIR + File.separator + FILE_DIR + File.separator;
+                    String internalJobsDirectory = parentDirectory + JOBS_DIR + File.separator + INTERNAL_DIR + File.separator;
+                    String quartzJobsDirectory = parentDirectory + JOBS_DIR + File.separator + QUARTZ_DIR + File.separator;
 
                     if (!entry.isDirectory() && entry.getName().startsWith(contextDirectory)
                         && entry.getName().endsWith(".json")) {
-                        contextTemplate[0] = (ContextTemplate) getJob(CONTEXT_TEMPLATE, outputStream.toString(), contextService);
+                        contextTemplate.set((ContextTemplate) getJob(CONTEXT_TEMPLATE, outputStream.toString(), contextService));
                     } else if (!entry.isDirectory() && entry.getName().startsWith(fileJobsDirectory)
                         && entry.getName().endsWith(".json")) {
                         contextJobs.add((SchedulerJob) getJob(FILE_DIR, outputStream.toString(), contextService));
@@ -58,7 +60,7 @@ public final class ContextImportZipUtils {
             throw new RuntimeException(e);
         }
 
-        return new ImmutablePair<>(contextTemplate[0], contextJobs);
+        return new ImmutablePair<>(contextTemplate.get(), contextJobs);
     }
 
     private static void readZipInputStream(InputStream inputStream, BiConsumer<ZipEntry, ByteArrayOutputStream> biConsumer) {

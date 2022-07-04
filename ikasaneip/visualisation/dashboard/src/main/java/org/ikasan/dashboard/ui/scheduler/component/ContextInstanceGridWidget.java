@@ -4,16 +4,17 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
-import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
@@ -27,7 +28,6 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 
 public class ContextInstanceGridWidget extends Div {
 
-    private ContextInstanceFilteringGrid contextTemplateFilteringGrid;
+    private ContextInstanceFilteringGrid contextInstanceFilteringGrid;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private IkasanAuthentication authentication;
     private ContextTemplate contextTemplate;
@@ -63,23 +63,21 @@ public class ContextInstanceGridWidget extends Div {
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.contextTemplate = contextTemplate;
         this.jobInitiationService = jobInitiationService;
+        this.contextProfileService = contextProfileService;
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService);
 
-        Div div = new Div();
-        div.setSizeFull();
+        VerticalLayout layout = new VerticalLayout();
+        layout.setSizeFull();
+        layout.setMargin(false);
+        layout.setSpacing(false);
+        layout.setPadding(false);
+        layout.add(this.createButtonLayout(), this.contextInstanceFilteringGrid);
 
+        this.contextInstanceFilteringGrid.init();
 
-        Icon icon = VaadinIcon.SEARCH.create();
-        icon.setSize("12pt");
-
-
-        div.add(this.contextTemplateFilteringGrid);
-
-        this.contextTemplateFilteringGrid.init();
-
-        this.add(div);
+        this.add(layout);
         this.setSizeFull();
     }
 
@@ -90,15 +88,16 @@ public class ContextInstanceGridWidget extends Div {
         // Create a modulesGrid bound to the list
         ContextInstanceSearchFilter contextInstanceSearchFilter = new SolrContextInstanceSearchFilterImpl();
         contextInstanceSearchFilter.setContextSearchFilter(contextTemplate.getName());
-        contextTemplateFilteringGrid = new ContextInstanceFilteringGrid(this.scheduledContextInstanceService, contextInstanceSearchFilter);
-        contextTemplateFilteringGrid.removeAllColumns();
-        contextTemplateFilteringGrid.setVisible(true);
-        contextTemplateFilteringGrid.setWidthFull();
-        contextTemplateFilteringGrid.setHeight("1000px");
-        contextTemplateFilteringGrid.setContextName(contextTemplate.getName());
+        contextInstanceFilteringGrid = new ContextInstanceFilteringGrid(this.scheduledContextInstanceService, contextInstanceSearchFilter);
+        contextInstanceFilteringGrid.getElement().getStyle().set("margin-top", "40px");
+        contextInstanceFilteringGrid.removeAllColumns();
+        contextInstanceFilteringGrid.setVisible(true);
+        contextInstanceFilteringGrid.setWidthFull();
+        contextInstanceFilteringGrid.setHeight("1000px");
+        contextInstanceFilteringGrid.setContextName(contextTemplate.getName());
 
 
-        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
+        contextInstanceFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
             Text text = new Text(scheduledContextInstanceRecord.getContextInstanceId());
@@ -111,7 +110,7 @@ public class ContextInstanceGridWidget extends Div {
             .setKey("componentName")
             .setFlexGrow(2);
 
-        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
+        contextInstanceFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
             Icon view = VaadinIcon.EYE.create();
@@ -170,7 +169,7 @@ public class ContextInstanceGridWidget extends Div {
             .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
             .setFlexGrow(2);
 
-        this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
+        this.contextInstanceFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
             "<div>[[item.start-date-time]]</div>")
             .withProperty("start-date-time",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getContextInstance().getStartTime())))
@@ -180,7 +179,7 @@ public class ContextInstanceGridWidget extends Div {
             .setSortable(true)
             .setFlexGrow(3);
 
-        this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
+        this.contextInstanceFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
             "<div>[[item.end-date-time]]</div>")
             .withProperty("end-date-time",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getContextInstance().getEndTime())))
@@ -190,7 +189,7 @@ public class ContextInstanceGridWidget extends Div {
             .setSortable(true)
             .setFlexGrow(3);
 
-        this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
+        this.contextInstanceFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
             "<div>[[item.created-date-time]]</div>")
             .withProperty("created-date-time",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
@@ -200,7 +199,7 @@ public class ContextInstanceGridWidget extends Div {
             .setSortable(true)
             .setFlexGrow(3);
 
-        this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
+        this.contextInstanceFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
             "<div>[[item.modified-date-time]]</div>")
             .withProperty("modified-date-time",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
@@ -210,7 +209,7 @@ public class ContextInstanceGridWidget extends Div {
             .setSortable(true)
             .setFlexGrow(3);
 
-        contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
+        contextInstanceFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
             Text text = new Text(scheduledContextInstanceRecord.getStatus());
@@ -224,11 +223,32 @@ public class ContextInstanceGridWidget extends Div {
             .setFlexGrow(2);
 
         // Add filtering to the relevant columns.
-        HeaderRow hr = contextTemplateFilteringGrid.appendHeaderRow();
-        this.contextTemplateFilteringGrid.addGridFiltering(hr, contextInstanceSearchFilter::setContextInstanceId, "componentName");
-        this.contextTemplateFilteringGrid.addDateGridFiltering(hr, contextInstanceSearchFilter::setCreatedTimestamp, "timestamp");
-        this.contextTemplateFilteringGrid.addDateGridFiltering(hr, contextInstanceSearchFilter::setModifiedTimestamp, "modifiedTimestamp");
-        this.contextTemplateFilteringGrid.addSelectGridFiltering(hr, contextInstanceSearchFilter::setStatus
+        HeaderRow hr = contextInstanceFilteringGrid.appendHeaderRow();
+        this.contextInstanceFilteringGrid.addGridFiltering(hr, contextInstanceSearchFilter::setContextInstanceId, "componentName");
+        this.contextInstanceFilteringGrid.addDateGridFiltering(hr, contextInstanceSearchFilter::setCreatedTimestamp, "timestamp");
+        this.contextInstanceFilteringGrid.addDateGridFiltering(hr, contextInstanceSearchFilter::setModifiedTimestamp, "modifiedTimestamp");
+        this.contextInstanceFilteringGrid.addSelectGridFiltering(hr, contextInstanceSearchFilter::setStatus
             , Arrays.asList(InstanceStatus.values()).stream().map(instanceStatus -> instanceStatus.name()).collect(Collectors.toList()), "status");
+    }
+
+    private HorizontalLayout createButtonLayout() {
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.setMargin(false);
+        buttonLayout.setPadding(false);
+        buttonLayout.getElement().getStyle().set("position", "absolute");
+        buttonLayout.getElement().getStyle().set("right", "30px");
+        buttonLayout.getElement().getStyle().set("margin-top", "0px");
+        buttonLayout.add(this.createRefreshButton());
+
+        return buttonLayout;
+    }
+
+    private Button createRefreshButton() {
+        Button refreshJobsButton = new Button(getTranslation("button.refresh", UI.getCurrent().getLocale()), VaadinIcon.REFRESH.create());
+        refreshJobsButton.setIconAfterText(true);
+
+        refreshJobsButton.addClickListener(event -> this.contextInstanceFilteringGrid.init());
+
+        return refreshJobsButton;
     }
 }
