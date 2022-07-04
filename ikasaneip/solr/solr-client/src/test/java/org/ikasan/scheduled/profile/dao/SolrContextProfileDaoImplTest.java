@@ -1,10 +1,12 @@
 package org.ikasan.scheduled.profile.dao;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.profile.model.SolrContextProfileImpl;
 import org.ikasan.scheduled.profile.model.SolrContextProfileRecordImpl;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
@@ -206,8 +208,8 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
-    @Ignore
-    public void test() {
+//    @Ignore
+    public void test() throws JsonProcessingException {
         SolrContextProfileDaoImpl dao = new SolrContextProfileDaoImpl();
         dao.initStandalone("http://localhost:8983/solr", 30);
         dao.setSolrUsername("ikasan");
@@ -226,8 +228,9 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
 
         solrContextProfileRecord.setContextProfile(solrContextProfile);
 
-        dao.save(solrContextProfileRecord);
+//        dao.save(solrContextProfileRecord);
 
+        System.out.println(ObjectMapperFactory.newInstance().writerWithDefaultPrettyPrinter().writeValueAsString(solrContextProfileRecord));
     }
 
     private void addRecords(int num) {

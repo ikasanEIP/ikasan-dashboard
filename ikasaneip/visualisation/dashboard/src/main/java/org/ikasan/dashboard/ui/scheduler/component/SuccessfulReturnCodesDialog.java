@@ -74,22 +74,24 @@ public class SuccessfulReturnCodesDialog extends AbstractCloseableResizableDialo
             new FormLayout.ResponsiveStep("500px", 3)
         );
 
-        successfulReturnCodes.forEach(contextParameter -> {
-            SuccessfulReturnCodeHolder successfulReturnCodeHolder = new SuccessfulReturnCodeHolder(contextParameter);
+        if(successfulReturnCodes != null) {
+            successfulReturnCodes.forEach(contextParameter -> {
+                SuccessfulReturnCodeHolder successfulReturnCodeHolder = new SuccessfulReturnCodeHolder(contextParameter);
 
-            formLayout.add(successfulReturnCodeHolder.getReturnCode()
-                , successfulReturnCodeHolder.getRemoveIcon());
-            formLayout.setColspan(successfulReturnCodeHolder.getReturnCode(), 2);
+                formLayout.add(successfulReturnCodeHolder.getReturnCode()
+                    , successfulReturnCodeHolder.getRemoveIcon());
+                formLayout.setColspan(successfulReturnCodeHolder.getReturnCode(), 2);
 
-            successfulReturnCodeHolder.getRemoveIcon().addClickListener(event -> {
-               formLayout.remove(successfulReturnCodeHolder.getReturnCode()
-                   , successfulReturnCodeHolder.getRemoveIcon());
+                successfulReturnCodeHolder.getRemoveIcon().addClickListener(event -> {
+                    formLayout.remove(successfulReturnCodeHolder.getReturnCode()
+                        , successfulReturnCodeHolder.getRemoveIcon());
 
-               successfulReturnCodeHolders.remove(successfulReturnCodeHolder);
+                    successfulReturnCodeHolders.remove(successfulReturnCodeHolder);
+                });
+
+                successfulReturnCodeHolders.add(successfulReturnCodeHolder);
             });
-
-            successfulReturnCodeHolders.add(successfulReturnCodeHolder);
-        });
+        }
 
         Icon addIcon = IconDecorator.decorate(VaadinIcon.PLUS.create(), getTranslation("label.add-return-code", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
         addIcon.getElement().getStyle().set("margin-left", "auto");
