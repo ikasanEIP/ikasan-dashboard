@@ -1,12 +1,13 @@
 package org.ikasan.job.orchestration.integration.inbound.component.endpoint;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
-import org.ikasan.job.orchestration.integration.StartupApplicationListener;
 import org.ikasan.job.orchestration.integration.inbound.component.endpoint.configuration.ScheduleProcessInboundProducerConfiguration;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.spec.bigqueue.BigQueueMessage;
 import org.ikasan.spec.component.endpoint.EndpointException;
 import org.ikasan.spec.component.endpoint.Producer;
 import org.ikasan.spec.configuration.ConfiguredResource;
@@ -25,10 +26,15 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
     @Override
     public void invoke(String payload) throws EndpointException {
         try {
+            BigQueueMessage bigQueueMessage = objectMapper.readValue(payload, BigQueueMessageImpl.class);
+            String message = (String) bigQueueMessage.getMessage();
+
             ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent
-                = objectMapper.readValue(payload, ContextualisedScheduledProcessEventImpl.class);
+                = objectMapper.readValue(message, ContextualisedScheduledProcessEventImpl.class);
             ContextMachine contextMachine = ContextMachineCache.instance()
                 .getByContextName(contextualisedScheduledProcessEvent.getContextId());
+
+            // put the payload straight onto the queue as it is a big message already created by ScheduledProcessEventController
             contextMachine.eventReceived(payload);
         }
         catch (Exception e) {

@@ -2,19 +2,20 @@ package org.ikasan.job.orchestration.core.listener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.AbstractTest;
 import org.ikasan.job.orchestration.core.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
-import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.spec.bigqueue.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -72,11 +73,12 @@ public class SchedulerJobInstanceStateChangeEventListenerTest extends AbstractTe
             Assert.assertEquals(InstanceStatus.COMPLETE, event.getPreviousStatus());
         });
 
-        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
-            "agentName3", true);
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName5",
+            "agentName5", true);
 
-        ObjectMapper mapper = new ObjectMapper();
-        contextMachine.eventReceived(mapper.writeValueAsString(eventInstance));
+        ObjectMapper mapper = ObjectMapperFactory.newInstance();
+        BigQueueMessage message = new BigQueueMessageBuilder().withMessage(mapper.writeValueAsString(eventInstance)).build();
+        contextMachine.eventReceived(mapper.writeValueAsString(message));
 
         Thread.sleep(1000);
         contextMachine.teardown();
