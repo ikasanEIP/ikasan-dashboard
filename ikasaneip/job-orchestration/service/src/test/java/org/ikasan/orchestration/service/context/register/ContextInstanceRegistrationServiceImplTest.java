@@ -177,6 +177,8 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(moduleMetadataService).findById(AGENT_NAME + "1");
         verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
         verify(jobLockCacheService).get();
+        verify(contextParametersInstanceService).populateContextParameters();
+        verify(contextParametersInstanceService).getAllContextParameters(contextName);
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -340,6 +342,8 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(schedulerJobInstanceService).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
         verify(jobLockCacheService, times(1)).get();
+        verify(contextParametersInstanceService).populateContextParameters();
+        verify(contextParametersInstanceService).getAllContextParameters(contextName);
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();

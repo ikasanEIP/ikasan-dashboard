@@ -43,9 +43,14 @@ package org.ikasan.job.orchestration.rest.dashboard;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leansoft.bigqueue.IBigQueue;
+import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
+import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.job.orchestration.rest.dashboard.model.scheduled.ScheduledProcessEventImpl;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.spec.bigqueue.BigQueueMessage;
 import org.ikasan.spec.persistence.BatchInsert;
+import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +62,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Module application implementing the REST contract
@@ -86,7 +93,7 @@ public class ScheduledProcessEventController
         {
             throw new IllegalArgumentException("inboundQueue cannot be null!");
         }
-        this.mapper = new ObjectMapper();
+        this.mapper = ObjectMapperFactory.newInstance();
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
@@ -120,7 +127,14 @@ public class ScheduledProcessEventController
         try
         {
             logger.info("Received - {}", scheduledProcessEventPayload);
-            this.inboundQueue.enqueue(scheduledProcessEventPayload.getBytes());
+
+            BigQueueMessage bigQueueMessage =
+                new BigQueueMessageBuilder()
+                    .withMessage(scheduledProcessEventPayload)
+                    .withMessageProperties(getProperties(scheduledProcessEventPayload))
+                    .build();
+
+            this.inboundQueue.enqueue(mapper.writeValueAsBytes(bigQueueMessage));
         }
         catch (Exception e)
         {
@@ -130,5 +144,22 @@ public class ScheduledProcessEventController
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    private Map<String, String> getProperties(String scheduledProcessEventPayload) {
+        Map<String, String> map = new HashMap<>();
+        try {
+            ContextualisedScheduledProcessEvent scheduledProcessEvent
+                = mapper.readValue(scheduledProcessEventPayload, ContextualisedScheduledProcessEventImpl.class);
+            if (scheduledProcessEvent.getContextId() != null) {
+                map.put("contextName", scheduledProcessEvent.getContextId());
+            }
+            if (scheduledProcessEvent.getContextInstanceId() != null) {
+                map.put("contextInstanceId", scheduledProcessEvent.getContextInstanceId());
+            }
+        } catch (Exception e) {
+            logger.warn("Could not deserialise payload " + scheduledProcessEventPayload);
+        }
+        return map;
     }
 }
