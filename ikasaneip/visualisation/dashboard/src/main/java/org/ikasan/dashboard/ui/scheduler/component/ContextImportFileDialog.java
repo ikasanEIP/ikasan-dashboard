@@ -14,7 +14,7 @@ import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.scheduler.util.ContextImportZipUtils;
+import org.ikasan.job.orchestration.util.ContextImportZipUtils;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ContextUploadInitialisationService;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;

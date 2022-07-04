@@ -108,7 +108,12 @@ public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
 
         select.addValueChangeListener(ev-> {
 
-            setFilter.accept(ev.getValue().getValue());
+            if(ev.getValue() != null) {
+                setFilter.accept(ev.getValue().getValue());
+            }
+            else {
+                setFilter.accept(null);
+            }
 
             filteredDataProvider.refreshAll();
         });
@@ -213,7 +218,7 @@ public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
         this.searchFilter.setContextSearchFilter(contextName);
     }
 
-    public void refreshItem(SchedulerJobRecord schedulerJobRecord) {
+    public void refresh() {
         this.dataProvider.refreshAll();
         this.filteredDataProvider.refreshAll();
     }
