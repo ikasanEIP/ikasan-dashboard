@@ -8,6 +8,9 @@ import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
+import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
@@ -18,6 +21,7 @@ import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecor
 import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.spec.bigqueue.BigQueueMessage;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
@@ -35,7 +39,10 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -67,6 +74,10 @@ public class ContextMachine {
     private String queueDir;
     private JobLockCache jobLockCache;
 
+    private OutboundQueueMessageRunner outboundQueueMessageRunner;
+
+    private InboundQueueMessageRunner inboundQueueMessageRunner;
+
     // todo clean up the transient queues once a context is complete.
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
                           Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstances, String queueDir,
@@ -96,19 +107,25 @@ public class ContextMachine {
      * @throws IOException
      */
     public void init() throws IOException {
-        String inboundQueueName = "inbound-"+this.contextInstance.getId()+"-queue";
-        String outboundQueueName = "outbound-"+this.contextInstance.getId()+"-queue";
+        String inboundQueueName = getInboundQueueName();
+        String outboundQueueName = getOutboundQueueName();
         this.inboundQueue = new BigQueueImpl(this.queueDir, inboundQueueName);
         this.outboundQueue = new BigQueueImpl(this.queueDir, outboundQueueName);
 
-        inboundListenableFuture = this.inboundQueue.peekAsync();
-        inboundListenableFuture.addListener(new InboundQueueMessageRunner(), this.contextExecutor);
-
+        this.addInboundListener();
         this.addOutboundListener();
         this.saveContext();
 
         this.attempts = 0;
         this.maxWait = 10000L;
+    }
+
+    private String getOutboundQueueName() {
+        return "outbound-" + this.contextInstance.getId() + "-queue";
+    }
+
+    private String getInboundQueueName() {
+        return "inbound-" + this.contextInstance.getId() + "-queue";
     }
 
     /**
@@ -140,34 +157,67 @@ public class ContextMachine {
      * @throws IOException
      */
     public void teardown() throws IOException {
-        if (this.inboundQueue != null && this.outboundQueue != null) {
-            this.inboundQueue.close();
-            this.outboundQueue.close();
-        }
-        this.statusListenerExecutor.shutdownNow();
-        this.contextExecutor.shutdownNow();
-        this.schedulerInitiatorEventRaisedListenerExecutor.shutdownNow();
+        try {
+            if (this.inboundQueue != null) {
+                this.inboundQueueMessageRunner.stop();
+                this.inboundQueue.close();
+            }
+            if (this.outboundQueue != null) {
+                this.outboundQueueMessageRunner.stop();
+                this.outboundQueue.close();
+            }
 
-        this.contextInstance = null;
-        this.jobLogicMachine = null;
-        this.statusConverter = null;
-        this.contextInstanceStateChangeEventListeners = null;
-        this.statusListenerExecutor = null;
-        this.schedulerInitiatorEventRaisedListenerExecutor = null;
-        this.objectMapper = null;
-        this.scheduledContextInstanceService = null;
-        this.schedulerJobInitiationEventRaisedListener = null;
-        this.context = null;
-        this.dryRunParameters = null;
-        this.internalEventDrivenJobInstances = null;
-        this.agents = null;
-        this.queueDir = null;
-        this.jobLockCache = null;
-        this.contextExecutor = null;
-        this.inboundListenableFuture = null;
-        this.outboundListenableFuture = null;
-        this.inboundQueue = null;
-        this.outboundQueue = null;
+            this.statusListenerExecutor.shutdownNow();
+            this.contextExecutor.shutdownNow();
+            this.schedulerInitiatorEventRaisedListenerExecutor.shutdownNow();
+
+            if (contextInstanceStateChangeEventListeners != null) {
+                contextInstanceStateChangeEventListeners.clear();
+                this.contextInstanceStateChangeEventListeners = null;
+            }
+
+            this.statusListenerExecutor = null;
+            this.schedulerInitiatorEventRaisedListenerExecutor = null;
+
+            this.objectMapper = null;
+            this.scheduledContextInstanceService = null;
+
+            this.schedulerJobInitiationEventRaisedListener = null;
+            this.context = null;
+            this.dryRunParameters = null;
+            this.internalEventDrivenJobInstances = null;
+            this.agents = null;
+            this.jobLockCache = null;
+            this.contextExecutor = null;
+
+            this.inboundListenableFuture = null;
+            this.outboundListenableFuture = null;
+
+            if (this.inboundQueue != null) {
+                this.inboundQueue.removeAll();
+                this.inboundQueue.gc();
+                if (Files.exists(Paths.get(this.queueDir + File.separator + getInboundQueueName()))) {
+                    FileUtils.forceDelete(new File(this.queueDir + File.separator + getInboundQueueName()));
+                }
+            }
+            if (this.outboundQueue != null) {
+                this.outboundQueue.removeAll();
+                this.outboundQueue.gc();
+                if (Files.exists(Paths.get(this.queueDir + File.separator + getOutboundQueueName()))) {
+                    FileUtils.forceDelete(new File(this.queueDir + File.separator + getOutboundQueueName()));
+                }
+            }
+
+            this.inboundQueue = null;
+            this.outboundQueue = null;
+            this.queueDir = null;
+
+            this.contextInstance = null;
+            this.jobLogicMachine = null;
+            this.statusConverter = null;
+        } catch (Exception e) {
+            logger.warn(String.format("Could tear down context machine: Error [%s]", e.getMessage()));
+        }
     }
 
     /**
@@ -180,11 +230,11 @@ public class ContextMachine {
 
     /**
      *
-     * @param scheduledProcessEvent
+     * @param bigQueueMessage
      * @return
      */
-    public void eventReceived(String scheduledProcessEvent) throws IOException {
-        this.inboundQueue.enqueue(scheduledProcessEvent.getBytes());
+    public void eventReceived(String bigQueueMessage) throws IOException {
+        this.inboundQueue.enqueue(bigQueueMessage.getBytes());
     }
 
 
@@ -369,7 +419,15 @@ public class ContextMachine {
         SchedulerJobInitiationEvent event = this.contextInstance.getHeldJobs().get(jobIdentifier+ "_" + childContextName);
         if(event != null) {
             this.contextInstance.getHeldJobs().remove(jobIdentifier + "_" + childContextName);
-            String serialised = objectMapper.writeValueAsString(event);
+
+            BigQueueMessage bigQueueMessage
+                = new BigQueueMessageBuilder<>()
+                .withMessage(event)
+                .withMessageProperties(Map.of("contextName", this.context.getName(),
+                                              "contextInstanceId", this.contextInstance.getId()))
+                .build();
+
+            String serialised = objectMapper.writeValueAsString(bigQueueMessage);
             logger.info("Enqueue job initiation event: " + serialised);
             outboundQueue.enqueue(serialised.getBytes());
             logger.info("Outbound queue size: " + outboundQueue.size());
@@ -656,25 +714,41 @@ public class ContextMachine {
     }
 
     protected class InboundQueueMessageRunner implements Runnable {
+        private final AtomicBoolean running = new AtomicBoolean(true);
 
         @Override
         public void run() {
             try {
+                if (!this.running.get()) {
+                    return;
+                }
+
                 byte[] event = inboundQueue.peek();
 
                 if(event == null) {
                     return;
                 }
 
+                BigQueueMessage<ContextualisedScheduledProcessEvent> bigQueueMessage
+                     = objectMapper.readValue(event, BigQueueMessageImpl.class);
+
                 ContextualisedScheduledProcessEvent scheduledProcessEvent
-                    = objectMapper.readValue(event, ContextualisedScheduledProcessEventImpl.class);
+                    = objectMapper.readValue(String.valueOf(bigQueueMessage.getMessage()), ContextualisedScheduledProcessEventImpl.class);
 
                 List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents = eventReceived(scheduledProcessEvent);
 
                 saveContext();
 
                 for(SchedulerJobInitiationEvent schedulerJobInitiationEvent: schedulerJobInitiationEvents) {
-                    String serialised = objectMapper.writeValueAsString(schedulerJobInitiationEvent);
+
+                    BigQueueMessage<SchedulerJobInitiationEvent> outgoingBigQueueMessage
+                        = new BigQueueMessageBuilder<SchedulerJobInitiationEvent>().withMessage(schedulerJobInitiationEvent)
+                        .withMessageProperties(
+                            Map.of("contextName", schedulerJobInitiationEvent.getContextId(),
+                                "contextInstanceId", schedulerJobInitiationEvent.getContextInstanceId()))
+                        .build();
+
+                    String serialised = objectMapper.writeValueAsString(outgoingBigQueueMessage);
                     logger.info("Enqueue job initiation event: " + serialised);
                     outboundQueue.enqueue(serialised.getBytes());
                     logger.info("Outbound queue size: " + outboundQueue.size());
@@ -688,26 +762,40 @@ public class ContextMachine {
                 e.printStackTrace();
             }
             finally {
-                inboundListenableFuture = inboundQueue.peekAsync();
-                inboundListenableFuture.addListener(new InboundQueueMessageRunner(), contextExecutor);
+                addInboundListener();
             }
+        }
+
+        public void stop() {
+            this.running.set(false);
+        }
+
+        public void start() {
+            this.running.set(true);
         }
     }
 
     protected class OutboundQueueMessageRunner implements Runnable {
+        private final AtomicBoolean running = new AtomicBoolean(true);
 
         @Override
         public void run() {
+            if (!this.running.get()) {
+                return;
+            }
+
             boolean exception = false;
-            SchedulerJobInitiationEventImpl schedulerJobInitiationEvent = null;
+            BigQueueMessage bigQueueMessage = null;
             try {
                 byte[] event = outboundQueue.peek();
                 if(event == null) {
                     return;
                 }
 
-                schedulerJobInitiationEvent
-                    = objectMapper.readValue(event, SchedulerJobInitiationEventImpl.class);
+                bigQueueMessage = objectMapper.readValue(event, BigQueueMessageImpl.class);
+                String messageAsString = new String(objectMapper.writeValueAsBytes(bigQueueMessage.getMessage()));
+                SchedulerJobInitiationEvent schedulerJobInitiationEvent
+                    = objectMapper.readValue(messageAsString, SchedulerJobInitiationEventImpl.class);
 
                 if(schedulerJobInitiationEventRaisedListener != null) {
                     schedulerJobInitiationEventRaisedListener.onSchedulerJobInitiationEventRaised(schedulerJobInitiationEvent);
@@ -743,7 +831,7 @@ public class ContextMachine {
                     try {
                         outboundQueue.dequeue();
                         outboundQueue.gc();
-                        logger.info("Dequeue job initiation event: " + schedulerJobInitiationEvent);
+                        logger.info("Dequeue event: " + bigQueueMessage);
                         logger.info("Outbound queue size: " + outboundQueue.size());
                     }
                     catch (IOException e) {
@@ -754,10 +842,25 @@ public class ContextMachine {
                 addOutboundListener();
             }
         }
+
+        public void stop() {
+            this.running.set(false);
+        }
+
+        public void start() {
+            this.running.set(true);
+        }
+    }
+
+    private void addInboundListener() {
+        inboundListenableFuture = this.inboundQueue.peekAsync();
+        this.inboundQueueMessageRunner = new InboundQueueMessageRunner();
+        inboundListenableFuture.addListener(inboundQueueMessageRunner, this.contextExecutor);
     }
 
     protected void addOutboundListener() {
         outboundListenableFuture = outboundQueue.peekAsync();
-        outboundListenableFuture.addListener(new OutboundQueueMessageRunner(), schedulerInitiatorEventRaisedListenerExecutor);
+        this.outboundQueueMessageRunner = new OutboundQueueMessageRunner();
+        outboundListenableFuture.addListener(outboundQueueMessageRunner, schedulerInitiatorEventRaisedListenerExecutor);
     }
 }

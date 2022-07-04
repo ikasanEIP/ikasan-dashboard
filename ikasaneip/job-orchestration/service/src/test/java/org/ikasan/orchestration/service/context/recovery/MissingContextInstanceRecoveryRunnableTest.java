@@ -215,6 +215,8 @@ public class MissingContextInstanceRecoveryRunnableTest {
         verify(schedulerJobInstanceService).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(scheduledContextInstanceService, times(2)).save(any());
         verify(jobLockCacheService).get();
+        verify(contextParametersInstanceService).populateContextParameters();
+        verify(contextParametersInstanceService).getAllContextParameters(contextName);
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,

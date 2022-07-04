@@ -155,6 +155,9 @@ public abstract class ContextInstanceServiceBase {
         contextMachine.addSchedulerJobStateChangeEventListener(event ->
             this.schedulerJobInstanceService.update(event.getSchedulerJobInstance()));
 
+        // set the parameters on the instance every time
+        setContextParametersOnInstance(instance);
+
         if (isInitialContextInstantiation) {
             populateParamsWithAgent(instance, agents);
             this.saveContextInstance(instance, InstanceStatus.WAITING);
@@ -226,13 +229,16 @@ public abstract class ContextInstanceServiceBase {
 
     private void populateParamsWithAgent(ContextInstance contextInstance, HashMap<String, ModuleMetaData> agents) {
         if (!agents.keySet().isEmpty()) {
-            contextParametersInstanceService.populateContextParameters();
-            List<ContextParameterInstance> allContextParameters = contextParametersInstanceService.getAllContextParameters(contextInstance.getName());
-            contextInstance.setContextParameters(allContextParameters);
             for (String key : agents.keySet()) {
                 ModuleMetaData agent = agents.get(key);
                 contextParametersUpdateService.publish(agent.getUrl(), contextInstance);
             }
         }
+    }
+
+    private void setContextParametersOnInstance(ContextInstance contextInstance) {
+        contextParametersInstanceService.populateContextParameters();
+        List<ContextParameterInstance> allContextParameters = contextParametersInstanceService.getAllContextParameters(contextInstance.getName());
+        contextInstance.setContextParameters(allContextParameters);
     }
 }
