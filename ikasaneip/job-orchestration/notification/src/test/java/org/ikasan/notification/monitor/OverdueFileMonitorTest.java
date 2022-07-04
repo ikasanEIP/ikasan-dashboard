@@ -2,6 +2,7 @@ package org.ikasan.notification.monitor;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
@@ -13,6 +14,7 @@ import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.notification.NotificationConfiguration;
 import org.ikasan.notification.monitor.mock.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.notification.monitor.mock.SchedulerJobServiceTestImpl;
+import org.ikasan.spec.bigqueue.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -91,7 +93,8 @@ public class OverdueFileMonitorTest {
 
         Monitor overdueFileMonitor = notificationConfiguration.overdueFileMonitor(Arrays.asList(new TestNotifier()));
 
-        ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(scheduledProcessEvent1));
+        BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
+        ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(60, TimeUnit.SECONDS).await()
             .during(29, TimeUnit.SECONDS)
@@ -116,7 +119,8 @@ public class OverdueFileMonitorTest {
         Monitor overdueFileMonitor = new OverdueFileMonitorImpl(30, executorService, new SchedulerJobServiceTestImpl());
         overdueFileMonitor.setNotifiers(Arrays.asList(new TestNotifier()));
 
-        ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(scheduledProcessEvent1));
+        BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
+        ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
 
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(60, TimeUnit.SECONDS).await()

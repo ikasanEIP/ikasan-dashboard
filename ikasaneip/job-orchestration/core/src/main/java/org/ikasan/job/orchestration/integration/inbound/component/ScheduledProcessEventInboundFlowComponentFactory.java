@@ -109,8 +109,9 @@ public class ScheduledProcessEventInboundFlowComponentFactory
 
 
     @DependsOn("inboundQueue")
-    public Consumer getOutboundBigQueueConsumer() throws IOException {
-        BigQueueConsumer consumer = new BigQueueConsumer(inboundQueue, new SimpleStringSerialiser(), true);
+    public Consumer getInboundBigQueueConsumer() {
+        BigQueueConsumer consumer = new BigQueueConsumer(inboundQueue, true);
+        consumer.setSerialiser(new SimpleStringSerialiser());
         return consumer;
     }
 
