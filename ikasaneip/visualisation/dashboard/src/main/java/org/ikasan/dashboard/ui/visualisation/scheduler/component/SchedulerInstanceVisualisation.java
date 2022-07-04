@@ -64,6 +64,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
     private LogStreamingService logStreamingService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private JobInitiationService jobInitiationService;
+    private ContextInstance parentContextInstance;
 
 
     public SchedulerInstanceVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
@@ -134,9 +135,13 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
     }
 
     /**
+     *
+     * @param parentContextInstance
      * @param contextInstance
+     * @throws IOException
      */
-    public void createSchedulerVisualisation(ContextInstance contextInstance) throws IOException {
+    public void createSchedulerVisualisation(ContextInstance parentContextInstance, ContextInstance contextInstance) throws IOException {
+        this.parentContextInstance = parentContextInstance;
         this.contextInstance = contextInstance;
         this.initialised = false;
         init();
@@ -224,7 +229,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
                     JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                         this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
-                    jobInstanceVisualisationDialog.createSchedulerVisualisation(this.contextInstance, contextInstance);
+                    jobInstanceVisualisationDialog.createSchedulerVisualisation(this.parentContextInstance, contextInstance);
                     jobInstanceVisualisationDialog.open();
                 }
                 catch (IOException e) {
@@ -237,7 +242,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
                         = new ContextInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                         this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
-                    contextInstanceVisualisationDialog.createSchedulerVisualisation(this.contextInstance, contextInstance);
+                    contextInstanceVisualisationDialog.createSchedulerVisualisation(this.parentContextInstance, contextInstance);
                     contextInstanceVisualisationDialog.open();
                 }
                 catch (IOException e) {

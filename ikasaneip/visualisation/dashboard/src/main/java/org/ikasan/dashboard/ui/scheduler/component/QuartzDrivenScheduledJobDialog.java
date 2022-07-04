@@ -197,7 +197,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
             this.agentCb.setEnabled(false);
         }
         formBinder.forField(this.agentCb)
-            .withValidator(agentValue -> !agentValue.isEmpty(), getTranslation("error.missing-agent", UI.getCurrent().getLocale()))
+            .withValidator(agentValue -> agentValue != null && !agentValue.isEmpty(), getTranslation("error.missing-agent", UI.getCurrent().getLocale()))
             .bind(QuartzScheduleDrivenJob::getAgentName, QuartzScheduleDrivenJob::setAgentName);
         formLayout.add(agentCb);
 

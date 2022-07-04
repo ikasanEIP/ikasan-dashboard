@@ -62,7 +62,7 @@ public class ContextInstanceAuditWidget extends Div {
         HorizontalLayout layout = new HorizontalLayout();
 
 
-        Button refresh = new Button("Refresh");
+        Button refresh = new Button(getTranslation("button.refresh", UI.getCurrent().getLocale()));
         refresh.setIcon(VaadinIcon.REFRESH.create());
         refresh.setIconAfterText(true);
         refresh.addClickListener(event -> this.contextInstanceAuditFilteringGrid.init());

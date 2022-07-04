@@ -44,6 +44,7 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,6 +134,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private ContextUploadInitialisationService contextUploadInitialisationService;
 
+    @Resource
+    private JobProvisionService jobProvisionService;
+
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
     private UpcomingJobExecutionsWidget upcomingJobExecutionsWidget;
@@ -189,7 +193,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.contextTemplateWidget = new ContextTemplateWidget(this.scheduledContextService, ".", this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService,
-            this.zipWorkingDirectory, this.contextUploadInitialisationService, this.contextProfileService);
+            this.zipWorkingDirectory, this.contextUploadInitialisationService, this.contextProfileService, this.jobProvisionService);
         this.contextTemplateWidget.setVisible(false);
 
 
@@ -226,10 +230,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         IronIcon addIcon = IronIcons.ADD.create();
         addIcon.setSize("16pt");
 
-//        MenuBar quickAccessMenu = this.createQuickAccessMenu();
-//        quickAccessMenu.getElement().getStyle().set("position", "absolute");
-//        quickAccessMenu.getElement().getStyle().set("right", "30px");
-
         HorizontalLayout tabsLayout = new HorizontalLayout();
         tabsLayout.setMargin(false);
         tabsLayout.add(tabs);
@@ -263,38 +263,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.contextDebugBoard.addRow(this.contextDebugWidget);
             initialised = true;
         }
-    }
-
-    private MenuBar createQuickAccessMenu() {
-        MenuBar quickStartMenuBar = new MenuBar();
-        quickStartMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
-
-        MenuItem quickAccess = createIconItem(quickStartMenuBar, VaadinIcon.COG, "View");
-
-        SubMenu activeContextInstancesSubMenu = quickAccess.getSubMenu();
-        MenuItem activeContexts = activeContextInstancesSubMenu.addItem("Active Contexts");
-        SubMenu activeContextSubMenu = activeContexts.getSubMenu();
-
-        ContextMachineCache.instance().contextNames().forEach(name ->
-            activeContextSubMenu.addItem(name, menuItemClickEvent -> {
-                String route = RouteConfiguration.forSessionScope()
-                    .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
-                        .getByContextName(name).getContext().getId()+"_scheduledContextInstance");
-
-                getUI().ifPresent(ui -> ui.getPage().open(route));
-            })
-        );
-
-        return quickStartMenuBar;
-    }
-
-    private MenuItem createIconItem(MenuBar menu, VaadinIcon iconName, String ariaLabel) {
-        Icon icon = new Icon(iconName);
-        icon.setSize("20pt");
-        MenuItem item = menu.addItem(icon);
-        item.getElement().setAttribute("aria-label", ariaLabel);
-
-        return item;
     }
 }
 
