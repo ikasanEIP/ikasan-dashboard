@@ -1,4 +1,4 @@
-package org.ikasan.dashboard.ui.scheduler.util;
+package org.ikasan.job.orchestration.util;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;

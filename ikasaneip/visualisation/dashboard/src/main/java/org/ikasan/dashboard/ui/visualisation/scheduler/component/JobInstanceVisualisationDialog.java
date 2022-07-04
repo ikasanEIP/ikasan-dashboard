@@ -230,7 +230,7 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
         SchedulerJobInstanceRecord schedulerJobRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName
             (this.rootContextInstance.getId(), schedulerJob.getJobName(), this.contextInstance.getName());
 
-            if(schedulerJobRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
+        if(schedulerJobRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
             InternalEventDrivenJobInstanceDialog internalEventDrivenJobInstanceDialog = new InternalEventDrivenJobInstanceDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
                 , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService, this.rootContextInstance
                 , this.jobInitiationService, moduleMetaDataService, this.logStreamingService);

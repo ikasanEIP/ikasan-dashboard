@@ -69,7 +69,7 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
 
         logger.debug("query: " + solrQuery);
 
-        return this.findByQuery(solrQuery, SolrSchedulerJobRecordImpl.class);
+        return this.findByQuery(solrQuery, SolrSchedulerJobRecordImpl.class, offset, limit);
     }
 
     @Override
