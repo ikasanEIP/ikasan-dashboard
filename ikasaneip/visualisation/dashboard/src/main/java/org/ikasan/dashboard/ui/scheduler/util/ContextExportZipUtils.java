@@ -21,7 +21,8 @@ import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static org.ikasan.dashboard.ui.scheduler.util.ContextImportExportConstants.*;
+import static org.ikasan.job.orchestration.util.ContextImportExportConstants.*;
+
 
 public final class ContextExportZipUtils {
     private static final Logger LOG = LoggerFactory.getLogger(ContextExportZipUtils.class);
