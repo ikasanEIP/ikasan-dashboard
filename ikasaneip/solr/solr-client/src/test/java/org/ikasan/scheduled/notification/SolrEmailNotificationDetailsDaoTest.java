@@ -70,7 +70,7 @@ public class SolrEmailNotificationDetailsDaoTest extends SolrTestCaseJ4 {
             init(server);
 
             Map<String,String> emailTemplateParameters = new HashMap<>();
-            emailTemplateParameters.put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK.name(), "link-1");
+            emailTemplateParameters.put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK_1.name(), "link-1");
             emailTemplateParameters.put(EmailNotificationTemplateParameters.EMAIL_BODY_TEXT.name(), "text-1");
 
             EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
@@ -96,7 +96,7 @@ public class SolrEmailNotificationDetailsDaoTest extends SolrTestCaseJ4 {
             Assert.assertEquals("email-body-1", foundEmailNotificationDetails.getEmailBody());
             Assert.assertEquals("email-subject-1", foundEmailNotificationDetails.getEmailSubject());
             Assert.assertEquals(false, foundEmailNotificationDetails.isHtml());
-            Assert.assertEquals("link-1", foundEmailNotificationDetails.getEmailNotificationTemplateParameters().get(EmailNotificationTemplateParameters.EMAIL_BODY_LINK.name()));
+            Assert.assertEquals("link-1", foundEmailNotificationDetails.getEmailNotificationTemplateParameters().get(EmailNotificationTemplateParameters.EMAIL_BODY_LINK_1.name()));
             Assert.assertEquals("text-1", foundEmailNotificationDetails.getEmailNotificationTemplateParameters().get(EmailNotificationTemplateParameters.EMAIL_BODY_TEXT.name()));
             Assert.assertNull(foundEmailNotificationDetails.getEmailNotificationTemplateParameters().get(EmailNotificationTemplateParameters.EMAIL_SUBJECT_LINK.name()));
 
