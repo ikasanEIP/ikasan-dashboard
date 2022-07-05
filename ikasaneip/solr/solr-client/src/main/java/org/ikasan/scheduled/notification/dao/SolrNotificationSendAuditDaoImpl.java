@@ -51,13 +51,24 @@ public class SolrNotificationSendAuditDaoImpl extends SolrDaoBase<NotificationSe
     }
 
     private String generateId(NotificationSendAuditRecord notificationSendAuditRecord) {
-        StringBuffer sb = new StringBuffer(notificationSendAuditRecord.getNotificationSendAudit().getContextInstanceId());
+
+        return generateId(notificationSendAuditRecord.getNotificationSendAudit().getContextInstanceId(),
+                          notificationSendAuditRecord.getNotificationSendAudit().getContextName(),
+                          notificationSendAuditRecord.getNotificationSendAudit().getJobName(),
+                          notificationSendAuditRecord.getNotificationSendAudit().getMonitorType(),
+                          notificationSendAuditRecord.getNotificationSendAudit().getNotifierType());
+    }
+
+    private String generateId(String contextInstanceId, String contextName, String jobName, String monitorType, String notifierType) {
+        StringBuffer sb = new StringBuffer(contextInstanceId);
         sb.append("_");
-        sb.append(notificationSendAuditRecord.getNotificationSendAudit().getJobName());
+        sb.append(contextName);
         sb.append("_");
-        sb.append(notificationSendAuditRecord.getNotificationSendAudit().getMonitorType());
+        sb.append(jobName);
         sb.append("_");
-        sb.append(notificationSendAuditRecord.getNotificationSendAudit().getNotifierType());
+        sb.append(monitorType);
+        sb.append("_");
+        sb.append(notifierType);
         return sb.toString();
     }
 
@@ -66,8 +77,8 @@ public class SolrNotificationSendAuditDaoImpl extends SolrDaoBase<NotificationSe
     }
 
     @Override
-    public NotificationSendAuditRecord find(String contextInstanceId, String jobName, String monitorType, String notifierType) {
-        SolrQuery query = super.buildIdQuery(contextInstanceId+"_"+jobName+"_"+monitorType+"_"+notifierType, NOTIFICATION_SEND_AUDIT);
+    public NotificationSendAuditRecord find(String contextInstanceId, String contextName, String jobName, String monitorType, String notifierType) {
+        SolrQuery query = super.buildIdQuery(generateId(contextInstanceId,contextName,jobName,monitorType,notifierType), NOTIFICATION_SEND_AUDIT);
 
         logger.debug("query: " + query);
 
