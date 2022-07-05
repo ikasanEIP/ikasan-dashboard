@@ -20,8 +20,8 @@ public class SolrNotificationSendAuditServiceImpl extends SolrServiceBase implem
     }
 
     @Override
-    public NotificationSendAuditRecord find(String contextInstanceId, String jobName, String monitorType, String notifierType) {
-        return this.dao.find(contextInstanceId, jobName, monitorType, notifierType);
+    public NotificationSendAuditRecord find(String contextInstanceId, String contextName, String jobName, String monitorType, String notifierType) {
+        return this.dao.find(contextInstanceId, contextName, jobName, monitorType, notifierType);
     }
 
     @Override

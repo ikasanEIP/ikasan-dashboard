@@ -58,11 +58,13 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
     private EmailNotificationDetailsService<EmailNotificationDetailsRecord> emailNotificationDetailsService;
     private NotificationSendAuditService<NotificationSendAuditRecord> notificationSendAuditService;
     private TemplateEngine templateEngine;
+    private String mailLinkUrl;
 
-    public EmailNotifier(EmailNotificationDetailsService emailNotificationDetailsService, NotificationSendAuditService notificationSendAuditService, TemplateEngine templateEngine) {
+    public EmailNotifier(EmailNotificationDetailsService emailNotificationDetailsService, NotificationSendAuditService notificationSendAuditService, TemplateEngine templateEngine, String mailLinkUrl) {
         this.emailNotificationDetailsService = emailNotificationDetailsService;
         this.notificationSendAuditService = notificationSendAuditService;
         this.templateEngine = templateEngine;
+        this.mailLinkUrl = mailLinkUrl;
     }
 
     @Override
@@ -74,7 +76,7 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
             EmailNotificationDetails emailNotificationDetails = emailNotificationDetailsRecord.getEmailNotificationDetails();
 
             NotificationSendAuditRecord notificationSendAuditRecord = notificationSendAuditService.find(notificationDetails.getContextInstanceId(),
-                notificationDetails.getJobName(), notificationDetails.getMonitorType().name(), NotificationType.EMAIL.name());
+                notificationDetails.getContextName(), notificationDetails.getJobName(), notificationDetails.getMonitorType().name(), NotificationType.EMAIL.name());
 
             if (notificationSendAuditRecord == null || notificationSendAuditRecord.getNotificationSendAudit() == null ||
                   !notificationSendAuditRecord.getNotificationSendAudit().isNotificationSend()) {
@@ -83,12 +85,12 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
                 ctx.setVariable("emailNotificationDetails", emailNotificationDetails);
 
                 if (StringUtils.isNotBlank(emailNotificationDetails.getEmailBodyTemplate())) {
-                    // todo fix this
-                    emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK.name(), "link-1");
+                    emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK_1.name(), createMailLink(notificationDetails, false));
+                    emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK_2.name(), createMailLink(notificationDetails, true));
                     emailNotificationDetails.setEmailBody(this.templateEngine.process(emailNotificationDetails.getEmailBodyTemplate(), ctx));
                 }
                 if (StringUtils.isNotBlank(emailNotificationDetails.getEmailSubjectTemplate())) {
-                    emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_SUBJECT_LINK.name(), "link-2");
+                    emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_SUBJECT_LINK.name(), "link-3");
                     emailNotificationDetails.setEmailSubject(this.templateEngine.process(emailNotificationDetails.getEmailSubjectTemplate(), ctx));
                 }
 
@@ -98,6 +100,7 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
                 NotificationSendAudit notificationSendAudit = new SolrNotificationSendAudit();
                 notificationSendAudit.setContextInstanceId(notificationDetails.getContextInstanceId());
                 notificationSendAudit.setJobName(notificationDetails.getJobName());
+                notificationSendAudit.setContextName(notificationDetails.getContextName());
                 notificationSendAudit.setMonitorType(notificationDetails.getMonitorType().name());
                 notificationSendAudit.setNotifierType(NotificationType.EMAIL.name());
                 notificationSendAudit.setNotificationSend(true);
@@ -109,5 +112,10 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
                 notificationSendAuditService.save(record);
             }
         }
+    }
+
+    private String createMailLink(GenericNotificationDetails notificationDetails, boolean isErrorLog) {
+        // http://localhost:9090/schedulerJobLogFile/526879ab-58e7-4cd7-8661-2d48baf47d40:CONTEXT-140537370:97656185:true
+        return mailLinkUrl+notificationDetails.getContextInstanceId()+":"+notificationDetails.getContextName()+":"+notificationDetails.getJobName()+":"+isErrorLog;
     }
 }

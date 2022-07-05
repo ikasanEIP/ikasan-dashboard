@@ -40,14 +40,17 @@
  */
 package org.ikasan.job.orchestration.rest.dashboard;
 
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
+import org.ikasan.job.orchestration.rest.dashboard.model.scheduled.EmailNotificationDetailsRecordImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsWrapper;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.slf4j.Logger;
@@ -56,6 +59,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author Ikasan Development Team
@@ -88,7 +95,11 @@ public class EmailNotificationDetailsController
         {
             EmailNotificationDetails emailNotificationDetails = this.mapper.readValue(emailNotificationDetailsJsonPayload, EmailNotificationDetailsImpl.class);
 
-            this.emailNotificationDetailsService.save(emailNotificationDetails);
+            EmailNotificationDetailsRecord record = new EmailNotificationDetailsRecordImpl();
+            record.setEmailNotificationDetails(emailNotificationDetails);
+            record.setModifiedTimestamp(new Date().getTime());
+
+            this.emailNotificationDetailsService.save(record);
         }
         catch (Exception e)
         {
@@ -119,7 +130,16 @@ public class EmailNotificationDetailsController
 
             EmailNotificationDetailsWrapper wrapper = objectMapper.readValue(emailNotificationDetailsWrapper, EmailNotificationDetailsWrapper.class);
 
-            this.emailNotificationDetailsService.save(wrapper.getEmailNotificationDetails());
+            List<EmailNotificationDetailsRecord> records = new ArrayList<>();
+
+            for (EmailNotificationDetails details : wrapper.getEmailNotificationDetails()) {
+                EmailNotificationDetailsRecord record = new EmailNotificationDetailsRecordImpl();
+                record.setEmailNotificationDetails(details);
+                record.setModifiedTimestamp(new Date().getTime());
+                records.add(record);
+            }
+
+            this.emailNotificationDetailsService.save(records);
         }
         catch (Exception e)
         {

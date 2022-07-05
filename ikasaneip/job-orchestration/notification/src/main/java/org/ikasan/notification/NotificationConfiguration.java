@@ -40,12 +40,15 @@ public class NotificationConfiguration {
     @Value("${scheduler.notification.file.overdue.tolerance.minutes:30}")
     private Integer fileArrivalToleranceInMinutes;
 
+    @Value("${mail.link.url}")
+    private String mailLinkUrl;
+
     /** default executor service is a single thread executor */
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Bean
-    public EmailNotifier emailNotifier(TemplateEngine emailTemplateEngine, EmailNotifierConfiguration emailConfiguration) {
-        EmailNotifier emailNotifier = new EmailNotifier(emailNotificationDetailsService, notificationSendAuditService, emailTemplateEngine);
+    public EmailNotifier notificationEmailNotifier(TemplateEngine emailTemplateEngine, EmailNotifierConfiguration emailConfiguration) {
+        EmailNotifier emailNotifier = new EmailNotifier(emailNotificationDetailsService, notificationSendAuditService, emailTemplateEngine, mailLinkUrl);
         emailNotifier.setConfiguration(emailConfiguration);
         return emailNotifier;
     }
@@ -65,13 +68,13 @@ public class NotificationConfiguration {
     }
 
     @Bean
-    public List<Notifier> stateChangeNotifiers(EmailNotifier emailNotifier) {
-        return Arrays.asList(emailNotifier);
+    public List<Notifier> stateChangeNotifiers(EmailNotifier notificationEmailNotifier) {
+        return Arrays.asList(notificationEmailNotifier);
     }
 
     @Bean
-    public List<Notifier> overdueFileNotifiers(EmailNotifier emailNotifier) {
-        return Arrays.asList(emailNotifier);
+    public List<Notifier> overdueFileNotifiers(EmailNotifier notificationEmailNotifier) {
+        return Arrays.asList(notificationEmailNotifier);
     }
 
     @Bean

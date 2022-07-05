@@ -110,7 +110,10 @@ public class SolrClientAutoConfiguration {
         dao.setSolrUsername(solrUsername);
         dao.setSolrPassword(solrPassword);
 
-        return new SolrEmailNotificationDetailsServiceImpl(dao);
+        SolrEmailNotificationDetailsServiceImpl service = new SolrEmailNotificationDetailsServiceImpl(dao);
+        service.setSolrPassword(solrPassword);
+        service.setSolrUsername(solrUsername);
+        return service;
     }
 
     @Bean
@@ -120,7 +123,10 @@ public class SolrClientAutoConfiguration {
         dao.setSolrUsername(solrUsername);
         dao.setSolrPassword(solrPassword);
 
-        return new SolrNotificationSendAuditServiceImpl(dao);
+        SolrNotificationSendAuditServiceImpl service = new SolrNotificationSendAuditServiceImpl(dao);
+        service.setSolrPassword(solrPassword);
+        service.setSolrUsername(solrUsername);
+        return service;
     }
 
     @Bean
