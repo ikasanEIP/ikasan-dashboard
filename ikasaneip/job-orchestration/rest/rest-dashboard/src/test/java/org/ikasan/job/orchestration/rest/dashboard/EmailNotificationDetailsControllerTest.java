@@ -7,6 +7,7 @@ import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsI
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsWrapperImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsWrapper;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationTemplateParameters;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
@@ -50,7 +51,7 @@ public class EmailNotificationDetailsControllerTest extends AbstractRestMvcTest
     @Autowired
     WebApplicationContext webApplicationContext;
     @Autowired
-    EmailNotificationDetailsService<EmailNotificationDetails> emailNotificationDetailsService;
+    EmailNotificationDetailsService<EmailNotificationDetailsRecord> emailNotificationDetailsService;
 
     @BeforeEach
     @Before
@@ -71,10 +72,11 @@ public class EmailNotificationDetailsControllerTest extends AbstractRestMvcTest
         int status = mvcResult.getResponse().getStatus();
         assertEquals(HttpStatus.OK.value(), status);
 
-        EmailNotificationDetails details = emailNotificationDetailsService.findByJobNameAndMonitorType("job-from-template-1","context-from-template-1","ERROR");
+        EmailNotificationDetailsRecord record = emailNotificationDetailsService.findByJobNameAndMonitorType("job-from-template-1","context-from-template-1","ERROR");
 
-        assertNotNull(details);
-        assertEquals("subject-from-template-1", details.getEmailSubject());
+        assertNotNull(record);
+        assertNotNull(record.getEmailNotificationDetails());
+        assertEquals("subject-from-template-1", record.getEmailNotificationDetails().getEmailSubject());
     }
 
     @Test
@@ -104,7 +106,8 @@ public class EmailNotificationDetailsControllerTest extends AbstractRestMvcTest
         distributionList.add("email-2");
         emailDetails.setEmailSendTo(distributionList);
         Map<String,String> params = new HashMap<>();
-        params.put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK.name(), "link-1");
+        params.put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK_1.name(), "link-1");
+        params.put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK_2.name(), "link-2");
         emailDetails.setEmailNotificationTemplateParameters(params);
 
         emailNotificationDetails.add(emailDetails);
@@ -118,10 +121,11 @@ public class EmailNotificationDetailsControllerTest extends AbstractRestMvcTest
         int status = mvcResult.getResponse().getStatus();
         assertEquals(HttpStatus.OK.value(), status);
 
-        EmailNotificationDetails details = emailNotificationDetailsService.findByJobNameAndMonitorType("job-1","context-1","ERROR");
+        EmailNotificationDetailsRecord record = emailNotificationDetailsService.findByJobNameAndMonitorType("job-1","context-1","ERROR");
 
-        assertNotNull(details);
-        assertEquals("subject-1", details.getEmailSubject());
+        assertNotNull(record);
+        assertNotNull(record.getEmailNotificationDetails());
+        assertEquals("subject-1", record.getEmailNotificationDetails().getEmailSubject());
     }
 
     @Test

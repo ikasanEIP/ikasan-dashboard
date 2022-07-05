@@ -8,6 +8,8 @@ public class SolrNotificationSendAudit implements NotificationSendAudit {
 
     private String contextInstanceId;
 
+    private String contextName;
+
     private String monitorType;
 
     private String notifierType;
@@ -17,10 +19,11 @@ public class SolrNotificationSendAudit implements NotificationSendAudit {
     public SolrNotificationSendAudit() {
     }
 
-    public SolrNotificationSendAudit(String jobName, String contextInstanceId, String monitorType, String notifierType, boolean isNotificationSend) {
+    public SolrNotificationSendAudit(String jobName, String contextInstanceId, String contextName, String monitorType, String notifierType, boolean isNotificationSend) {
         this.jobName = jobName;
         this.monitorType = monitorType;
         this.contextInstanceId = contextInstanceId;
+        this.contextName = contextName;
         this.notifierType = notifierType;
         this.isNotificationSend = isNotificationSend;
     }
@@ -76,10 +79,21 @@ public class SolrNotificationSendAudit implements NotificationSendAudit {
     }
 
     @Override
+    public String getContextName() {
+        return contextName;
+    }
+
+    @Override
+    public void setContextName(String contextName) {
+        this.contextName = contextName;
+    }
+
+    @Override
     public String toString() {
         return "SolrNotificationSendAudit{" +
                 "jobName='" + jobName + '\'' +
                 ", contextInstanceId='" + contextInstanceId + '\'' +
+                ", contextName='" + contextName + '\'' +
                 ", monitorType='" + monitorType + '\'' +
                 ", notifierType='" + notifierType + '\'' +
                 ", isNotificationSend=" + isNotificationSend +

@@ -13,6 +13,7 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
+import org.ikasan.spec.search.SearchResults;
 import org.joda.time.DateTime;
 import org.quartz.TriggerUtils;
 import org.quartz.impl.triggers.CronTriggerImpl;
@@ -45,7 +46,7 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
      */
     public OverdueFileMonitorImpl(Integer fileArrivalToleranceInMinutes, ExecutorService executorService, SchedulerJobService schedulerJobService) {
         super(executorService);
-        LOG.info("StateChangeMonitorImpl is being created!");
+        LOG.info("OverdueFileMonitorImpl is being created!");
 
         this.fileArrivalToleranceInMinutes = fileArrivalToleranceInMinutes;
         this.schedulerJobService = schedulerJobService;
@@ -79,12 +80,16 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
                     throw new StopNotificationRunnerException(contextInstance.getName()+" is already Complete, stopping the OverdueFileNotificationsRunner");
                 }
 
-                if (contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.RUNNING.toString())) {
+                if (contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.RUNNING.toString()) ||
+                    contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.ERROR.toString()) ||
+                    contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.WAITING.toString()) ||
+                    contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.RELEASED.toString())) {
 
                     DateTime dateTime = new DateTime().withHourOfDay(1).withMinuteOfHour(0).withSecondOfMinute(0);
 
-                    for (SchedulerJobInstance schedulerJobInstance : contextInstance.getScheduledJobs()) {
-                        SchedulerJobRecord schedulerJobRecord = schedulerJobService.findByContextIdAndJobName(schedulerJobInstance.getContextId(), schedulerJobInstance.getJobName());
+                    SearchResults<SchedulerJobRecord> searchResults = schedulerJobService.findByContext(contextInstance.getName(), 10000, 0);
+
+                    for (SchedulerJobRecord schedulerJobRecord : searchResults.getResultList()) {
 
                         SchedulerJob job  = schedulerJobRecord.getJob();
 
@@ -92,8 +97,8 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
 
                             FileEventDrivenJob fileEventDrivenJob = (FileEventDrivenJob) job;
                             if (isJobOverdued(dateTime.toDate(), fileEventDrivenJob.getCronExpression())) {
-                                GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(fileEventDrivenJob.getContextId(),
-                                    fileEventDrivenJob.getJobName(), schedulerJobInstance.getContextInstanceId(), MonitorType.OVERDUE, InstanceStatus.ERROR);
+                                GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(fileEventDrivenJob.getChildContextIds().get(0),
+                                    fileEventDrivenJob.getJobName(), contextInstance.getId(), MonitorType.OVERDUE, InstanceStatus.ERROR);
 
                                 invoke(genericNotificationDetails);
                             }
