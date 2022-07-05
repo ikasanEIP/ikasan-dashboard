@@ -69,6 +69,7 @@ public class SolrNotificationSendAuditDaoTest extends SolrTestCaseJ4 {
             notificationSendAudit.setMonitorType("ERROR");
             notificationSendAudit.setNotifierType("Email");
             notificationSendAudit.setContextInstanceId("instance-1");
+            notificationSendAudit.setContextName("name-1");
             notificationSendAudit.setNotificationSend(true);
 
             NotificationSendAuditRecord record = new SolrNotificationSendAuditRecord();
@@ -77,16 +78,17 @@ public class SolrNotificationSendAuditDaoTest extends SolrTestCaseJ4 {
 
             this.dao.save(record);
 
-            NotificationSendAuditRecord found = this.dao.find("instance-1", "job-1", "ERROR", "Email");
+            NotificationSendAuditRecord found = this.dao.find("instance-1", "name-1","job-1", "ERROR", "Email");
             NotificationSendAudit foundNotificationSendAudit = found.getNotificationSendAudit();
 
             Assert.assertEquals("job-1", foundNotificationSendAudit.getJobName());
             Assert.assertEquals("instance-1", foundNotificationSendAudit.getContextInstanceId());
+            Assert.assertEquals("name-1", foundNotificationSendAudit.getContextName());
             Assert.assertEquals("ERROR", foundNotificationSendAudit.getMonitorType());
             Assert.assertEquals("Email", foundNotificationSendAudit.getNotifierType());
             Assert.assertEquals(true, foundNotificationSendAudit.isNotificationSend());
 
-            Assert.assertNull(this.dao.find("bad-instance-1", "job-1", "ERROR", "Email"));
+            Assert.assertNull(this.dao.find("bad-instance-1", "name-1","job-1", "ERROR", "Email"));
         }
     }
 

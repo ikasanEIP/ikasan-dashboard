@@ -51,6 +51,7 @@ import org.ikasan.rest.dashboard.JwtTokenUtil;
 import org.ikasan.security.service.UserService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.scheduled.reset.ContextResetService;
 import org.springframework.context.annotation.Bean;
@@ -77,6 +78,9 @@ public class IkasanRestAutoConfiguration {
     @Resource
     private ContextResetService contextResetService;
 
+    @Resource
+    private EmailNotificationDetailsService emailNotificationDetailsService;
+
     @Bean
     public ScheduledProcessEventController scheduledProcessEventController() {
         return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert, this.inboundQueue);
@@ -85,6 +89,11 @@ public class IkasanRestAutoConfiguration {
     @Bean
     SchedulerJobProvisionController schedulerJobProvisionController() {
         return new SchedulerJobProvisionController(this.jobProvisionService);
+    }
+
+    @Bean
+    EmailNotificationDetailsController emailNotificationDetailsController() {
+        return new EmailNotificationDetailsController(this.emailNotificationDetailsService);
     }
 
     @Bean

@@ -71,7 +71,7 @@ public class NotificationProvisionRestServiceImplTest extends AbstractTest {
         details.setEmailSubject("subject-1");
         details.setEmailSendTo(Arrays.asList("email-1","email-2"));
         Map<String,String> params = new HashMap<>();
-        params.put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK.name(), "link-1");
+        params.put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK_1.name(), "link-1");
         details.setEmailNotificationTemplateParameters(params);
 
         emailNotificationDetails.add(details);

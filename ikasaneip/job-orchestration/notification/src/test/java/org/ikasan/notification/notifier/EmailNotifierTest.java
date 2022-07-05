@@ -73,7 +73,7 @@ public class EmailNotifierTest {
                 }
             }
 
-        emailNotifier = new EmailNotifier(emailNotificationDetailsService, notificationSendAuditService, emailTemplateEngine());
+        emailNotifier = new EmailNotifier(emailNotificationDetailsService, notificationSendAuditService, emailTemplateEngine(), "http://localhost:9090/schedulerJobLogFile/");
         emailNotifier.setConfiguration(getConfiguration());
     }
 
@@ -121,7 +121,7 @@ public class EmailNotifierTest {
         mockery.checking(new Expectations(){{
             oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "context-id-1","ERROR");
             will(returnValue(emailNotificationDetailsRecord));
-            oneOf(notificationSendAuditService).find("context-instance-id-1", "job-1", "ERROR", "EMAIL");
+            oneOf(notificationSendAuditService).find("context-instance-id-1", "context-id-1","job-1", "ERROR", "EMAIL");
             will(returnValue(null));
             oneOf(notificationSendAuditService).save(with(any(NotificationSendAuditRecord.class)));
         }});
@@ -166,7 +166,7 @@ public class EmailNotifierTest {
         mockery.checking(new Expectations(){{
             oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "context-id-1","ERROR");
             will(returnValue(record));
-            oneOf(notificationSendAuditService).find("context-instance-id-1", "job-1", "ERROR", "EMAIL");
+            oneOf(notificationSendAuditService).find("context-instance-id-1", "context-id-1","job-1", "ERROR", "EMAIL");
             will(returnValue(null));
             oneOf(notificationSendAuditService).save(with(any(NotificationSendAuditRecord.class)));
         }});
@@ -217,7 +217,7 @@ public class EmailNotifierTest {
         mockery.checking(new Expectations(){{
             oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "context-id-1","ERROR");
             will(returnValue(record));
-            oneOf(notificationSendAuditService).find("context-instance-id-1", "job-1", "ERROR", "EMAIL");
+            oneOf(notificationSendAuditService).find("context-instance-id-1", "context-id-1","job-1", "ERROR", "EMAIL");
             will(returnValue(null));
             oneOf(notificationSendAuditService).save(with(any(NotificationSendAuditRecord.class)));
         }});
@@ -239,7 +239,8 @@ public class EmailNotifierTest {
         BodyPart bodyPart = mimeMultipart.getBodyPart(0);
         String content = (String)bodyPart.getContent();
         Assert.assertTrue(content.contains("from template body text!"));
-        Assert.assertTrue(content.contains("You can access to log files : link-1"));
+        Assert.assertTrue(content.contains("You can access to log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:context-id-1:job-1:false"));
+        Assert.assertTrue(content.contains("Error log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:context-id-1:job-1:true"));
         Assert.assertEquals("subject-1", mimeMessage.getSubject());
 
     }
@@ -276,7 +277,7 @@ public class EmailNotifierTest {
         mockery.checking(new Expectations(){{
             oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "context-id-1","ERROR");
             will(returnValue(emailNotificationDetailsRecord));
-            oneOf(notificationSendAuditService).find("context-instance-id-1", "job-1", "ERROR", "EMAIL");
+            oneOf(notificationSendAuditService).find("context-instance-id-1", "context-id-1","job-1", "ERROR", "EMAIL");
             will(returnValue(notificationSendAuditRecord));
         }});
 
@@ -318,7 +319,7 @@ public class EmailNotifierTest {
         mockery.checking(new Expectations(){{
             oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "context-id-1","ERROR");
             will(returnValue(emailNotificationDetailsRecord));
-            oneOf(notificationSendAuditService).find("context-instance-id-1", "job-1", "ERROR", "EMAIL");
+            oneOf(notificationSendAuditService).find("context-instance-id-1", "context-id-1","job-1", "ERROR", "EMAIL");
             will(returnValue(notificationSendAuditRecord));
             oneOf(notificationSendAuditService).save(with(any(NotificationSendAuditRecord.class)));
         }});
