@@ -182,7 +182,7 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
                     final UI current = UI.getCurrent();
 
                     ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(true);
-                    progressIndicatorDialog.open(getTranslation("notification.re-submitting-hospital-event", UI.getCurrent().getLocale()));
+                    progressIndicatorDialog.open(getTranslation("notification.re-submitting-hospital-event", UI.getCurrent().getLocale()), null);
 
                     Executor executor = Executors.newSingleThreadExecutor();
                     executor.execute(() ->
@@ -236,7 +236,7 @@ public class HospitalDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
                     final UI current = UI.getCurrent();
 
                     ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(true);
-                    progressIndicatorDialog.open(String.format(getTranslation("notification.ignoring-hospital-event", UI.getCurrent().getLocale())));
+                    progressIndicatorDialog.open(String.format(getTranslation("notification.ignoring-hospital-event", UI.getCurrent().getLocale())), null);
 
                     Executor executor = Executors.newSingleThreadExecutor();
                     executor.execute(() ->

@@ -137,7 +137,7 @@ public class ReplayDialog extends AbstractEntityViewDialog<IkasanSolrDocument>
                     ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(true);
 
                     progressIndicatorDialog.open(current.getTranslation("message.replaying-event"
-                        , UI.getCurrent().getLocale()));
+                        , UI.getCurrent().getLocale()), null);
 
                     Executor executor = Executors.newSingleThreadExecutor();
                     executor.execute(() -> {

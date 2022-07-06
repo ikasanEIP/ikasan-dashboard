@@ -11,20 +11,17 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.job.orchestration.util.ContextImportZipUtils;
-import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.context.service.ContextUploadInitialisationService;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.context.model.ContextBundle;
+import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 // TODO write a vaadin test if we keep this dialogue
 public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
@@ -32,11 +29,11 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
 
     private byte[] contextZipFile;
 
-    private ContextUploadInitialisationService contextUploadInitialisationService;
+    private ContextProvisionService contextProvisionService;
 
-    public ContextImportFileDialog(ContextUploadInitialisationService contextUploadInitialisationService) {
-        this.contextUploadInitialisationService = contextUploadInitialisationService;
-        if (this.contextUploadInitialisationService == null) {
+    public ContextImportFileDialog(ContextProvisionService contextProvisionService) {
+        this.contextProvisionService = contextProvisionService;
+        if (this.contextProvisionService == null) {
             throw new IllegalArgumentException("contextUploadInitialisationService cannot be null!");
         }
         this.init();
@@ -77,11 +74,10 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
         Button saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
             try {
-                ImmutablePair<ContextTemplate, List<SchedulerJob>> pair
+                ContextBundle contextBundle
                     = ContextImportZipUtils.extractZipFile(new ByteArrayInputStream(contextZipFile));
-                ContextTemplate contextTemplate = pair.getLeft();
-                List<SchedulerJob> contextJobs = pair.getRight();
-                this.contextUploadInitialisationService.uploadContextAndJobs(contextTemplate, contextJobs);
+
+                this.contextProvisionService.provisionContext(contextBundle);
 
             } catch (Exception e) {
                 LOG.warn("Could not upload context and jobs error " + e.getMessage());

@@ -49,22 +49,22 @@ public class MultiFlowControlPanel extends ControlPanel {
 
         if(action.equals(START))
         {
-            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.starting-flow", UI.getCurrent().getLocale()), flows.size() == 1 ? flows.stream().findFirst().get().getName() : "All Selected Flows"));
+            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.starting-flow", UI.getCurrent().getLocale()), flows.size() == 1 ? flows.stream().findFirst().get().getName() : "All Selected Flows"), null);
             performAction(progressIndicatorDialog, action, flows);
         }
         else if(action.equals(STOP))
         {
-            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.stopping-flow", UI.getCurrent().getLocale()), flows.size() == 1 ? flows.stream().findFirst().get().getName() : "All Selected Flows"));
+            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.stopping-flow", UI.getCurrent().getLocale()), flows.size() == 1 ? flows.stream().findFirst().get().getName() : "All Selected Flows"), null);
             performAction(progressIndicatorDialog, action, flows);
         }
         else if(action.equals(PAUSE))
         {
-            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.pausing-flow", UI.getCurrent().getLocale()), flows.size() == 1 ? flows.stream().findFirst().get().getName() : "All Selected Flows"));
+            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.pausing-flow", UI.getCurrent().getLocale()), flows.size() == 1 ? flows.stream().findFirst().get().getName() : "All Selected Flows"), null);
             performAction(progressIndicatorDialog, action, flows);
         }
         else if(action.equals(START_PAUSE))
         {
-            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.start-pause-flow", UI.getCurrent().getLocale()), flows.size() == 1 ? flows.stream().findFirst().get().getName() : "All Selected Flows"));
+            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.start-pause-flow", UI.getCurrent().getLocale()), flows.size() == 1 ? flows.stream().findFirst().get().getName() : "All Selected Flows"), null);
             performAction(progressIndicatorDialog, action, flows);
         }
     }
