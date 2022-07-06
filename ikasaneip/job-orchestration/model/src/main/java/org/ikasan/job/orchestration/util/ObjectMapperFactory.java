@@ -12,6 +12,8 @@ import org.ikasan.job.orchestration.model.instance.*;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
+import org.ikasan.job.orchestration.model.profile.ContextProfileImpl;
+import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
@@ -20,6 +22,8 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.profile.model.ContextProfile;
+import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,6 +62,9 @@ public class ObjectMapperFactory {
             .addAbstractTypeMapping(SchedulerJobInitiationEvent.class, SchedulerJobInitiationEventImpl.class)
             .addAbstractTypeMapping(InternalEventDrivenJob.class, InternalEventDrivenJobImpl.class)
             .addAbstractTypeMapping(InternalEventDrivenJobInstance.class, InternalEventDrivenJobInstanceImpl.class)
+            .addAbstractTypeMapping(ContextProfileRecord.class, ContextProfileRecordImpl.class)
+            .addAbstractTypeMapping(ContextProfile.class, ContextProfileImpl.class)
+            .addAbstractTypeMapping(ContextBundle.class, ContextBundleImpl.class)
             .addAbstractTypeMapping(JobLock.class, JobLockImpl.class)
             .addAbstractTypeMapping(JobLockInstance.class, JobLockInstanceImpl.class)
             .addAbstractTypeMapping(List.class, ArrayList.class)

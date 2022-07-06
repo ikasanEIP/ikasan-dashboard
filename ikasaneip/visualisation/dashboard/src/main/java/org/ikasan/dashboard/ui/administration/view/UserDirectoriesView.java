@@ -384,7 +384,7 @@ public class UserDirectoriesView extends VerticalLayout implements BeforeEnterOb
         {
             ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(false);
 
-            progressIndicatorDialog.open("Synchronising User Directory");
+            progressIndicatorDialog.open("Synchronising User Directory", null);
 
             final UI current = UI.getCurrent();
             Executor executor = Executors.newSingleThreadExecutor();

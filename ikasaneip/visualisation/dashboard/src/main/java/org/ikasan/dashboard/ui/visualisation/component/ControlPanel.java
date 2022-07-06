@@ -214,22 +214,22 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
 
         if(action.equals(START))
         {
-            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.starting-flow", UI.getCurrent().getLocale()), currentFlow.getName()));
+            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.starting-flow", UI.getCurrent().getLocale()), currentFlow.getName()), null);
             performAction(progressIndicatorDialog, action);
         }
         else if(action.equals(STOP))
         {
-            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.stopping-flow", UI.getCurrent().getLocale()), currentFlow.getName()));
+            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.stopping-flow", UI.getCurrent().getLocale()), currentFlow.getName()), null);
             performAction(progressIndicatorDialog, action);
         }
         else if(action.equals(PAUSE))
         {
-            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.pausing-flow", UI.getCurrent().getLocale()), currentFlow.getName()));
+            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.pausing-flow", UI.getCurrent().getLocale()), currentFlow.getName()), null);
             performAction(progressIndicatorDialog, action);
         }
         else if(action.equals(START_PAUSE))
         {
-            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.start-pause-flow", UI.getCurrent().getLocale()), currentFlow.getName()));
+            progressIndicatorDialog.open(String.format(getTranslation("progress-indicator.start-pause-flow", UI.getCurrent().getLocale()), currentFlow.getName()), null);
             performAction(progressIndicatorDialog, action);
         }
     }

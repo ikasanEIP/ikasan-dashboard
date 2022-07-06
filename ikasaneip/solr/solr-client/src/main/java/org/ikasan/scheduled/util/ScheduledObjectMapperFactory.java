@@ -12,6 +12,8 @@ import org.ikasan.scheduled.instance.model.*;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrJobLockHolderImpl;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
+import org.ikasan.scheduled.profile.model.SolrContextProfileImpl;
+import org.ikasan.scheduled.profile.model.SolrContextProfileRecordImpl;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
@@ -20,6 +22,8 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.profile.model.ContextProfile;
+import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,6 +67,8 @@ public class ScheduledObjectMapperFactory {
             .addAbstractTypeMapping(FileEventDrivenJobInstance.class, SolrFileEventDrivenJobInstanceImpl.class)
             .addAbstractTypeMapping(QuartzScheduleDrivenJobInstance.class, SolrQuartzScheduleDrivenJobInstanceImpl.class)
             .addAbstractTypeMapping(JobLockHolder.class, SolrJobLockHolderImpl.class)
+            .addAbstractTypeMapping(ContextProfile.class, SolrContextProfileImpl.class)
+            .addAbstractTypeMapping(ContextProfileRecord.class, SolrContextProfileRecordImpl.class)
             .addAbstractTypeMapping(List.class, ArrayList.class)
             .addAbstractTypeMapping(Map.class, HashMap.class);
 
