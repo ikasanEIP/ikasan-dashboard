@@ -38,7 +38,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * ====================================================================
  */
-package org.ikasan.job.orchestration.rest.dashboard.context.reset;
+package org.ikasan.job.orchestration.rest.dashboard;
 
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.spec.scheduled.reset.ContextResetService;

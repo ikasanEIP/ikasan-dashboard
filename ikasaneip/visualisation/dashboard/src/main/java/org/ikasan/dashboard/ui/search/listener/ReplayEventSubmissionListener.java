@@ -90,12 +90,12 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
                 if (selected)
                 {
                     progressIndicatorDialog.open(String.format(i18NProvider.getTranslation("message.replay-number-of-events"
-                        , current.getLocale()), searchResultsGrid.getResultSize()));
+                        , current.getLocale()), searchResultsGrid.getResultSize()), null);
                 }
                 else
                 {
                     progressIndicatorDialog.open(String.format(i18NProvider.getTranslation("message.replay-number-of-events"
-                        , current.getLocale()), this.selectionItems.size()));
+                        , current.getLocale()), this.selectionItems.size()), null);
                 }
 
                 Executor executor = Executors.newSingleThreadExecutor();

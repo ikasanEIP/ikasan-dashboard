@@ -39,7 +39,7 @@
  * ====================================================================
  */
 
-package org.ikasan.job.orchestration.rest.dashboard.context.status;
+package org.ikasan.job.orchestration.rest.dashboard;
 
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
