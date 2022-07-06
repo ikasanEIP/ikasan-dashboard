@@ -1,4 +1,4 @@
-package org.ikasan.orchestration.service.context.upload;
+package org.ikasan.job.orchestration.provision.context;
 
 import com.esotericsoftware.minlog.Log;
 import org.ikasan.job.orchestration.context.register.ContextInstanceEndJob;
@@ -10,15 +10,16 @@ import org.ikasan.scheduler.ScheduledJobFactory;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.module.ModuleType;
+import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
-import org.ikasan.spec.scheduled.context.service.ContextUploadInitialisationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobWrapper;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.slf4j.Logger;
@@ -33,9 +34,9 @@ import java.util.stream.Collectors;
 import static org.ikasan.job.orchestration.context.register.ContextInstanceEndJob.END_JOB_EXTENSION;
 import static org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker.withinOperatingWindow;
 
-public class ContextUploadInitialisationServiceImpl extends AbstractDashboardSchedulerService implements ContextUploadInitialisationService {
+public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerService implements ContextProvisionService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ContextUploadInitialisationServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ContextProvisionServiceImpl.class);
 
     private ScheduledContextService scheduledContextService;
     private ModuleMetaDataService moduleMetadataService;
@@ -44,14 +45,14 @@ public class ContextUploadInitialisationServiceImpl extends AbstractDashboardSch
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
     private boolean uploadProvisionJobs;
 
-    public ContextUploadInitialisationServiceImpl(Scheduler scheduler,
-                                                  ScheduledJobFactory scheduledJobFactory,
-                                                  ScheduledContextService scheduledContextService,
-                                                  ModuleMetaDataService moduleMetadataService,
-                                                  SchedulerJobService schedulerJobService,
-                                                  JobProvisionModuleService jobProvisionModuleRestService,
-                                                  ContextInstanceRegistrationService contextInstanceRegistrationService,
-                                                  boolean uploadProvisionJobs) {
+    public ContextProvisionServiceImpl(Scheduler scheduler,
+                                       ScheduledJobFactory scheduledJobFactory,
+                                       ScheduledContextService scheduledContextService,
+                                       ModuleMetaDataService moduleMetadataService,
+                                       SchedulerJobService schedulerJobService,
+                                       JobProvisionModuleService jobProvisionModuleRestService,
+                                       ContextInstanceRegistrationService contextInstanceRegistrationService,
+                                       boolean uploadProvisionJobs) {
 
         super(scheduler, scheduledJobFactory);
 
@@ -84,27 +85,27 @@ public class ContextUploadInitialisationServiceImpl extends AbstractDashboardSch
         // does nothing here as we just want to add jobs
     }
 
-    public void uploadContextAndJobs(ContextTemplate contextTemplate, List<SchedulerJob> contextJobs) {
+    public void provisionContext(ContextBundle contextBundle) {
         try {
             // TODO need to expand validate
-            validate(contextTemplate, contextJobs);
+            validate(contextBundle.getContextTemplate(), contextBundle.getSchedulerJobs());
             // delete all the jobs if they exist
-            deleteAllJobs(contextTemplate.getName());
+            deleteAllJobs(contextBundle.getContextTemplate().getName());
             // save the jobs
-            saveJobs(contextJobs);
+            saveJobs(contextBundle.getSchedulerJobs());
             // saveContext
-            saveContext(contextTemplate);
+            saveContext(contextBundle.getContextTemplate());
             // provision the jobs
             if (uploadProvisionJobs) {
-                provisionJobs(contextJobs);
+                provisionJobs(contextBundle.getSchedulerJobs());
             }
             // register the jobs
-            registerContext(contextTemplate);
+            registerContext(contextBundle.getContextTemplate());
 
-            if (withinOperatingWindow(contextTemplate.getTimeWindowStart(), contextTemplate.getTimeWindowEnd(), new Date())) {
+            if (withinOperatingWindow(contextBundle.getContextTemplate().getTimeWindowStart(), contextBundle.getContextTemplate().getTimeWindowEnd(), new Date())) {
                 // todo ? should we remove it if it already exists?
                 // NOTE: this will create a new context machine and instance and initialise it so overwriting existing context machine
-                contextInstanceRegistrationService.register(contextTemplate.getName());
+                contextInstanceRegistrationService.register(contextBundle.getContextTemplate().getName());
             }
         } catch (Exception e) {
             String message = String.format("Could not upload context and jobs. Error [%s]", e.getMessage());

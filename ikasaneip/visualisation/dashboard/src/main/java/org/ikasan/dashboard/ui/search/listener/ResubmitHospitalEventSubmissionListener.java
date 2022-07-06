@@ -79,10 +79,10 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
 
                 if (selected) {
                     progressIndicatorDialog.open(String.format(String.format(getTranslation("message.resubmitting-exclusions", UI.getCurrent().getLocale())
-                        , searchResultsGrid.getResultSize())));
+                        , searchResultsGrid.getResultSize())), null);
                 } else {
                     progressIndicatorDialog.open(String.format(String.format(getTranslation("message.resubmitting-exclusions", UI.getCurrent().getLocale())
-                        , super.getNumberOfSeletedItems())));
+                        , super.getNumberOfSeletedItems())), null);
                 }
 
                 final UI current = UI.getCurrent();
