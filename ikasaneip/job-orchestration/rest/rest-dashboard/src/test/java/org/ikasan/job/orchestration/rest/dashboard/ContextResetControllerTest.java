@@ -1,4 +1,4 @@
-package org.ikasan.job.orchestration.rest.dashboard.context.reset;
+package org.ikasan.job.orchestration.rest.dashboard;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
+import org.ikasan.job.orchestration.rest.dashboard.ContextResetController;
 import org.ikasan.spec.scheduled.reset.ContextResetService;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
@@ -29,11 +30,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @SpringBootTest(classes = ContextResetController.class)
 @WebAppConfiguration
 @EnableWebMvc
-@ContextConfiguration(
-    {
-        "/substitute-components.xml"
-    }
-)
 public class ContextResetControllerTest {
     protected MockMvc mvc;
 

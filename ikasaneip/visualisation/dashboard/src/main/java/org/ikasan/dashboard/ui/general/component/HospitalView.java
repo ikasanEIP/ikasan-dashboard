@@ -194,7 +194,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
                     final UI current = UI.getCurrent();
 
                     ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(true);
-                    progressIndicatorDialog.open(getTranslation("notification.re-submitting-hospital-event", UI.getCurrent().getLocale()));
+                    progressIndicatorDialog.open(getTranslation("notification.re-submitting-hospital-event", UI.getCurrent().getLocale()), null);
 
                     ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(ikasanSolrDocument.getModuleName());
                     boolean result = this.resubmissionRestService.resubmit(moduleMetaData.getUrl(), ikasanSolrDocument.getModuleName(),
@@ -242,7 +242,7 @@ public class HospitalView extends AbstractEntityView<IkasanSolrDocument> impleme
                     final UI current = UI.getCurrent();
 
                     ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(true);
-                    progressIndicatorDialog.open(getTranslation("notification.ignoring-hospital-event", UI.getCurrent().getLocale()));
+                    progressIndicatorDialog.open(getTranslation("notification.ignoring-hospital-event", UI.getCurrent().getLocale()), null);
 
                     ModuleMetaData moduleMetaData = this.moduleMetadataService.findById(ikasanSolrDocument.getModuleName());
                     boolean result = this.resubmissionRestService.resubmit(moduleMetaData.getUrl(), ikasanSolrDocument.getModuleName(),

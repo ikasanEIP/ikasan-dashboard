@@ -35,13 +35,13 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
-import org.ikasan.spec.scheduled.context.service.ContextUploadInitialisationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
@@ -71,7 +71,7 @@ public class ContextTemplateWidget extends Div {
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
-                                 JobInitiationService jobInitiationService, String zipWorkingDirectory, ContextUploadInitialisationService contextUploadInitialisationService,
+                                 JobInitiationService jobInitiationService, String zipWorkingDirectory, ContextProvisionService contextProvisionService,
                                  ContextProfileService contextProfileService, JobProvisionService jobProvisionService) {
 
         this.scheduledContextService = scheduledContextService;
@@ -105,7 +105,7 @@ public class ContextTemplateWidget extends Div {
         Button addContextButton = new Button("Upload Context",uploadIcon);
         addContextButton.setIconAfterText(true);
         addContextButton.addClickListener(buttonClickEvent -> {
-            ContextImportFileDialog importer = new ContextImportFileDialog(contextUploadInitialisationService);
+            ContextImportFileDialog importer = new ContextImportFileDialog(contextProvisionService);
             importer.open();
         });
 

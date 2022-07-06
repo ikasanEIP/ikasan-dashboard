@@ -202,13 +202,13 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
 
         results = this.solrContextProfileDao.findByFilter(filter, -1, -1, null, null);
 
-        Assert.assertEquals(0, results.getTotalNumberOfResults());
-        Assert.assertEquals(0, results.getResultList().size());
+        Assert.assertEquals(1, results.getTotalNumberOfResults());
+        Assert.assertEquals(1, results.getResultList().size());
 
     }
 
     @Test
-//    @Ignore
+    @Ignore
     public void test() throws JsonProcessingException {
         SolrContextProfileDaoImpl dao = new SolrContextProfileDaoImpl();
         dao.initStandalone("http://localhost:8983/solr", 30);
@@ -238,7 +238,7 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
             SolrContextProfileRecordImpl solrContextProfileRecord = new SolrContextProfileRecordImpl();
             solrContextProfileRecord.setProfileName("profileName"+i);
             solrContextProfileRecord.setContextName("contextName"+i);
-            solrContextProfileRecord.setOwner("owner"+i);
+            solrContextProfileRecord.setOwner("SYSTEM_OWNER");
             solrContextProfileRecord.setModifiedBy("modifiedBy");
             solrContextProfileRecord.setAccessRoles(List.of("role"+i));
             solrContextProfileRecord.setAccessUsers(List.of("user"+i));

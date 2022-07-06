@@ -1,5 +1,6 @@
-package org.ikasan.orchestration.service.context.upload;
+package org.ikasan.job.orchestration.provision.context;
 
+import org.ikasan.job.orchestration.model.context.ContextBundleImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
@@ -9,6 +10,7 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.module.ModuleType;
+import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -40,7 +42,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ContextUploadInitialisationServiceImplTest {
+public class ContextProvisionServiceImplTest {
     @Mock
     private Scheduler scheduler;
     @Mock
@@ -56,11 +58,11 @@ public class ContextUploadInitialisationServiceImplTest {
     @Mock
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
 
-    private ContextUploadInitialisationServiceImpl service;
+    private ContextProvisionServiceImpl service;
 
     @Before
     public void setUp() {
-        service = new ContextUploadInitialisationServiceImpl(
+        service = new ContextProvisionServiceImpl(
             scheduler, scheduledJobFactory, scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, true
         );
@@ -68,12 +70,14 @@ public class ContextUploadInitialisationServiceImplTest {
 
     @Test(expected = RuntimeException.class)
     public void should_validate_not_null_context() {
-        service.uploadContextAndJobs(null, Collections.emptyList());
+        ContextBundle contextBundle = new ContextBundleImpl(null, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+        service.provisionContext(contextBundle);
     }
 
     @Test(expected = RuntimeException.class)
     public void should_validate_not_null_jobs() {
-        service.uploadContextAndJobs(new ContextTemplateImpl(), null);
+        ContextBundle contextBundle = new ContextBundleImpl(new ContextTemplateImpl(), null, Collections.EMPTY_LIST);
+        service.provisionContext(contextBundle);
     }
 
     @Test
@@ -105,7 +109,8 @@ public class ContextUploadInitialisationServiceImplTest {
         endDetail.setName("ContextName-EndJob");
         when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
 
-        service.uploadContextAndJobs(contextTemplate, contextJobs);
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST);
+        service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
         verify(schedulerJobService).save(contextJobs);
@@ -163,7 +168,8 @@ public class ContextUploadInitialisationServiceImplTest {
         endDetail.setName("ContextName-EndJob");
         when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
 
-        service.uploadContextAndJobs(contextTemplate, contextJobs);
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST);
+        service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
         verify(schedulerJobService).save(contextJobs);
@@ -219,7 +225,8 @@ public class ContextUploadInitialisationServiceImplTest {
         endDetail.setName("ContextName-EndJob");
         when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
 
-        service.uploadContextAndJobs(contextTemplate, contextJobs);
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST);
+        service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
         verify(schedulerJobService).save(contextJobs);

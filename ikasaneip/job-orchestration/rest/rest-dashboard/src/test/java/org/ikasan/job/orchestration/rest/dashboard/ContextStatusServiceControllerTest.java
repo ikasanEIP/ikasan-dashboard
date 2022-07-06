@@ -1,10 +1,11 @@
-package org.ikasan.job.orchestration.rest.dashboard.context.status;
+package org.ikasan.job.orchestration.rest.dashboard;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
+import org.ikasan.job.orchestration.rest.dashboard.ContextStatusServiceController;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
@@ -28,11 +29,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @SpringBootTest(classes = ContextStatusServiceController.class)
 @WebAppConfiguration
 @EnableWebMvc
-@ContextConfiguration(
-    {
-        "/substitute-components.xml"
-    }
-)
 public class ContextStatusServiceControllerTest {
 
     protected MockMvc mvc;

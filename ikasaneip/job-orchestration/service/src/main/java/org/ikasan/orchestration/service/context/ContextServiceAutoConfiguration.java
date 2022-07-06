@@ -10,7 +10,6 @@ import org.ikasan.scheduler.CachingScheduledJobFactory;
 import org.ikasan.scheduler.SchedulerFactory;
 import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
@@ -20,8 +19,6 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
-import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
-import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -96,26 +93,6 @@ public class ContextServiceAutoConfiguration {
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster
-        );
-    }
-
-    @Bean
-    public ContextUploadInitialisationServiceImpl contextUploadInitialisationService(
-        ScheduledContextService scheduledContextService,
-        ModuleMetaDataService moduleMetadataService,
-        SchedulerJobService schedulerJobService,
-        JobProvisionModuleService jobProvisionModuleRestService,
-        ContextInstanceRegistrationService contextInstanceRegistrationService) {
-
-        return new ContextUploadInitialisationServiceImpl(
-            SchedulerFactory.getInstance().getScheduler(),
-            CachingScheduledJobFactory.getInstance(),
-            scheduledContextService,
-            moduleMetadataService,
-            schedulerJobService,
-            jobProvisionModuleRestService,
-            contextInstanceRegistrationService,
-            uploadProvisionJobs
         );
     }
 
