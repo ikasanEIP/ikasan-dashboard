@@ -7,5 +7,5 @@ public final class ContextImportExportConstants {
     public static final String FILE_DIR = "file";
     public static final String INTERNAL_DIR = "internal";
     public static final String QUARTZ_DIR = "quartz";
-    public static final String PROFILE_DIR = "profile";
+    public static final String PROFILE_DIR = "profiles";
 }

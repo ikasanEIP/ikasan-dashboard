@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-//@Ignore
+@Ignore
 public class ContextProvisionHelperTest extends AbstractTest {
 
     private SolrModuleMetadataDao solrModuleMetadataDao = new SolrModuleMetadataDao();

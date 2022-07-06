@@ -313,7 +313,7 @@ public class SchedulerJobGridWidget extends Div {
     }
 
     private Button createProvisionButton() {
-        Button provisionJobsButton = new Button("Provision Jobs", VaadinIcon.BOAT.create());
+        Button provisionJobsButton = new Button("Provision Jobs", VaadinIcon.COGS.create());
         provisionJobsButton.setIconAfterText(true);
 
         provisionJobsButton.addClickListener(event -> {
@@ -328,8 +328,8 @@ public class SchedulerJobGridWidget extends Div {
             confirmDialog.addConfirmListener(confirmEvent -> {
                 ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
                 dialog.setWidth("600px");
-                dialog.setHeight("400px");
-                dialog.open("Provisioning Jobs");
+                dialog.setHeight("250px");
+                dialog.open("Provisioning Jobs", "Please be patient. This may take a few minutes.");
 
                 final UI current = UI.getCurrent();
                 Executor executor = Executors.newSingleThreadExecutor();
@@ -426,10 +426,13 @@ public class SchedulerJobGridWidget extends Div {
                     }
                     catch (Exception e) {
                         e.printStackTrace();
-                        current.access(() ->NotificationHelper.showErrorNotification("An error has occurred provisioning jobs. Please contact Ikasan support."));
+                        current.access(() -> NotificationHelper.showErrorNotification("An error has occurred provisioning jobs! Please contact Ikasan support."));
                     }
                     finally {
-                        current.access(() -> dialog.close());
+                        current.access(() -> {
+                            dialog.close();
+                            NotificationHelper.showUserNotification("Successfully provisioned jobs!");
+                        });
                     }
                 });
 

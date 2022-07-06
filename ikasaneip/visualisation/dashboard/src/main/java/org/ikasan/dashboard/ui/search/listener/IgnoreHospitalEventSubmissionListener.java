@@ -83,10 +83,10 @@ public class IgnoreHospitalEventSubmissionListener extends HospitalEventActionLi
 
                 if (selected) {
                     progressIndicatorDialog.open(String.format(getTranslation("message.ignoring-exclusions", UI.getCurrent().getLocale())
-                        , searchResultsGrid.getResultSize()));
+                        , searchResultsGrid.getResultSize()), null);
                 } else {
                     progressIndicatorDialog.open(String.format(getTranslation("message.ignoring-exclusions", UI.getCurrent().getLocale())
-                        , super.getNumberOfSeletedItems()));
+                        , super.getNumberOfSeletedItems()), null);
                 }
 
                 final UI current = UI.getCurrent();
