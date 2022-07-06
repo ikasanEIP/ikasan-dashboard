@@ -7,7 +7,6 @@ import org.ikasan.job.orchestration.model.notification.MonitorType;
 import org.ikasan.notification.exception.StopNotificationRunnerException;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
@@ -31,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificationDetails> implements Monitor<GenericNotificationDetails> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(StateChangeMonitorImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OverdueFileMonitorImpl.class);
 
     private SchedulerJobService schedulerJobService;
 

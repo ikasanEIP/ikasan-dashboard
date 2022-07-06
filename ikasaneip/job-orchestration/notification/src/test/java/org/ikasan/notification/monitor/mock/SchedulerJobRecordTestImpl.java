@@ -37,7 +37,7 @@ public class SchedulerJobRecordTestImpl implements SchedulerJobRecord {
     @Override
     public SchedulerJob getJob() {
         FileEventDrivenJob fileEventDrivenJob = new SolrFileEventDrivenJobImpl();
-        fileEventDrivenJob.setCronExpression("0 0/1 08-23 ? * MON-SUN *");
+        fileEventDrivenJob.setCronExpression("0 0/1 05-23 ? * MON-SUN *");
         fileEventDrivenJob.setChildContextIds(Arrays.asList("context-instance-1"));
         return fileEventDrivenJob;
     }
