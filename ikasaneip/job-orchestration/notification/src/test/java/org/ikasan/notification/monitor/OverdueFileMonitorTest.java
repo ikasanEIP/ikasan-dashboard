@@ -47,9 +47,13 @@ public class OverdueFileMonitorTest {
 
     private ObjectMapper objectMapper;
 
+    private ContextMachine contextMachine1;
+
     @After
     public void tearDown() {
         DateTimeUtils.setCurrentMillisSystem();
+
+        ContextMachineCache.instance().remove(contextMachine1);
     }
 
     @Before
@@ -72,7 +76,7 @@ public class OverdueFileMonitorTest {
         contextInstance1.setScheduledJobs(Arrays.asList(schedulerJobInstance1));
         contextInstance1.setJobDependencies(new ArrayList<>());
 
-        ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,"./target",null,null, null);
+        contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,"./target",null,null, null);
         contextMachine1.init();
 
         ContextMachineCache.instance().put(contextMachine1);
