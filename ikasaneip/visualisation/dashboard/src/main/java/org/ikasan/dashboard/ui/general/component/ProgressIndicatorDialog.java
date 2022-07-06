@@ -5,6 +5,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.html.H2;
@@ -21,7 +22,7 @@ public class ProgressIndicatorDialog extends Dialog
         this.showCancelButton = showCancelButton;
     }
 
-    public void open(String label)
+    public void open(String label, String text)
     {
         this.setCloseOnEsc(false);
         this.setCloseOnOutsideClick(false);
@@ -43,6 +44,13 @@ public class ProgressIndicatorDialog extends Dialog
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, cancelButton);
 
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, h2);
+
+        if(text != null) {
+            Label textLabel = new Label(text);
+            layout.add(textLabel);
+            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, textLabel);
+        }
+
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, progressBar);
         layout.setSizeFull();
 
