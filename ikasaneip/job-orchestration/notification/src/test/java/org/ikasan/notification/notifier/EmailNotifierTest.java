@@ -203,7 +203,7 @@ public class EmailNotifierTest {
         emailNotificationDetails.setEmailSendTo(Arrays.asList("to-1"));
         emailNotificationDetails.setEmailBody("body-1");
         emailNotificationDetails.setEmailSubject("subject-1");
-        emailNotificationDetails.setEmailBodyTemplate("src/main/resources/templates/notification-overdue-email-body-template.txt");
+        emailNotificationDetails.setEmailBodyTemplate("src/main/resources/templates/notification-error-email-body-template.txt");
         emailNotificationDetails.setHtml(false);
 
         Map<String,String> templateParams = new HashMap<>();
