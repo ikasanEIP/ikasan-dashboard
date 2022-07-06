@@ -1,9 +1,11 @@
 package org.ikasan.notification.monitor.mock;
 
+import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SchedulerJobServiceTestImpl implements SchedulerJobService {
@@ -25,7 +27,11 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
 
     @Override
     public SearchResults findByContext(String contextId, int limit, int offset) {
-        return null;
+        List<SchedulerJobRecord> list = new ArrayList<>();
+        list.add(new SchedulerJobRecordTestImpl());
+
+        SearchResults<SchedulerJobRecord> results = new SearchResultsImpl(list,1,100);
+        return results;
     }
 
     @Override
