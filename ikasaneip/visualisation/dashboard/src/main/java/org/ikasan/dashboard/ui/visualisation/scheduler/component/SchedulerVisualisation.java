@@ -12,22 +12,25 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.scheduler.service.ScheduledContextDraw2dAdapter;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextDraw2dAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
+import org.ikasan.job.orchestration.model.context.ContextImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
@@ -44,12 +47,12 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
     private String dynamicImagePath;
 
-    private ContextInstance contextInstance;
+    private ContextTemplate contextTemplate;
     private ContextTemplate parentContextTemplate;
 
     private boolean initialised = false;
 
-    private ScheduledContextDraw2dAdapter adapter = new ScheduledContextDraw2dAdapter();
+    private ContextDraw2dAdapter adapter = new ContextDraw2dAdapter();
 
     private ModuleMetaDataService moduleMetaDataService;
     private ScheduledProcessManagementService scheduledProcessManagementService;
@@ -131,24 +134,24 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     }
 
     /**
-     * @param contextInstance
+     * @param contextTemplate
      */
-    public void createSchedulerVisualisation(ContextTemplate parentContext, ContextInstance contextInstance) throws IOException {
+    public void createSchedulerVisualisation(ContextTemplate parentContext, ContextTemplate contextTemplate) throws IOException {
         this.parentContextTemplate = parentContext;
-        this.contextInstance = contextInstance;
+        this.contextTemplate = contextTemplate;
         this.initialised = false;
         init();
     }
 
     private void init() throws IOException {
-        if(!initialised && contextInstance != null) {
+        if(!initialised && contextTemplate != null) {
 
             if (this.designerCanvas != null) {
                 this.removeAll();
             }
 
             this.designerCanvas = new DesignerCanvas("canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, true);
-            this.designerCanvas.setCanvasJson(adapter.adaptContext(contextInstance));
+            this.designerCanvas.setCanvasJson(adapter.adaptContext((ContextImpl<ContextTemplate, ContextParameter, SchedulerJob, JobLock>)contextTemplate));
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
 
@@ -214,16 +217,16 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
 
         if(canvasItemDoubleClickEvent.getFigure().getIdentifier() != null) {
-            ContextInstance contextInstance = ContextHelper.getChildContextInstance(canvasItemDoubleClickEvent.getFigure().getIdentifier(),
-                this.contextInstance);
+            ContextTemplate contextTemplate = ContextHelper.getChildContextTemplate(canvasItemDoubleClickEvent.getFigure().getIdentifier(),
+                this.contextTemplate);
 
-            if(contextInstance.getScheduledJobs() != null) {
+            if(contextTemplate.getScheduledJobs() != null) {
                 try {
-                    JobTemplateVisualisationDialog jobInstanceVisualisationDialog = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+                    JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                         this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
-                    jobInstanceVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextInstance);
-                    jobInstanceVisualisationDialog.open();
+                    jobTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
+                    jobTemplateVisualisationDialog.open();
                 }
                 catch (IOException e) {
                     e.printStackTrace();
@@ -231,12 +234,12 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             }
             else {
                 try {
-                    ContextTemplateVisualisationDialog contextInstanceVisualisationDialog
+                    ContextTemplateVisualisationDialog contextTemplateVisualisationDialog
                         = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                         this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
-                    contextInstanceVisualisationDialog.createSchedulerVisualisation(this.contextInstance, contextInstance);
-                    contextInstanceVisualisationDialog.open();
+                    contextTemplateVisualisationDialog.createSchedulerVisualisation(this.contextTemplate, contextTemplate);
+                    contextTemplateVisualisationDialog.open();
                 }
                 catch (IOException e) {
                     e.printStackTrace();
