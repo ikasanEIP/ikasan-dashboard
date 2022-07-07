@@ -7,14 +7,12 @@ import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.layout.mxCompactTreeLayout;
 import com.mxgraph.model.mxCell;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
-import org.ikasan.designer.builder.ConnectionBuilder;
-import org.ikasan.designer.builder.DiagramBuilder;
-import org.ikasan.designer.builder.LabelBuilder;
-import org.ikasan.designer.builder.RectangleBuilder;
+import org.ikasan.designer.builder.*;
 import org.ikasan.designer.model.*;
-import org.ikasan.spec.scheduled.context.model.JobDependency;
+import org.ikasan.job.orchestration.model.context.ContextImpl;
+import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.jgrapht.ext.JGraphXAdapter;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -29,27 +27,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ScheduledContextDraw2dAdapter {
+public class ContextDraw2dAdapter {
 
-    Logger logger = LoggerFactory.getLogger(ScheduledContextDraw2dAdapter.class);
+    Logger logger = LoggerFactory.getLogger(ContextDraw2dAdapter.class);
 
-    public String adaptJobs(ContextInstance contextInstance) {
+    public String adaptJobs(Context context) {
         DefaultDirectedGraph<Object, DefaultEdge> graph
             = new DefaultDirectedGraph<>(NoEdgeLabel.class);
 
         DiagramBuilder diagramBuilder = new DiagramBuilder();
 
-        if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
-            contextInstance.getScheduledJobs().forEach(job -> {
-                graph.addVertex(job.getIdentifier());
+        if(context.getScheduledJobs() != null && !context.getScheduledJobs().isEmpty()) {
+            context.getScheduledJobs().forEach(job -> {
+                graph.addVertex(((SchedulerJob)job).getIdentifier());
 
                 String image = "frontend/images/and.png";
-                if(this.isTerminalJob(job, contextInstance.getJobDependencies())) {
+                if(this.isTerminalJob((SchedulerJob)job, context.getJobDependencies())) {
                     image = "frontend/images/terminal.png";
                 }
 
                 diagramBuilder.addItem(diagramBuilder.getImageBuilder()
-                    .withId(job.getIdentifier())
+                    .withId(((SchedulerJob)job).getIdentifier())
                     .withHeight(100)
                     .withWidth(100)
                     .withPath(image)
@@ -57,10 +55,10 @@ public class ScheduledContextDraw2dAdapter {
                     .build());
             });
 
-            contextInstance.getJobDependencies().forEach(jobDependency -> {
-                if (jobDependency.getLogicalGrouping() != null && jobDependency.getLogicalGrouping().getAnd() != null) {
-                    jobDependency.getLogicalGrouping().getAnd().forEach(and -> {
-                        graph.addEdge(and.getIdentifier(), jobDependency.getJobIdentifier());
+            context.getJobDependencies().forEach(jobDependency -> {
+                if (((JobDependency)jobDependency).getLogicalGrouping() != null && ((JobDependency)jobDependency).getLogicalGrouping().getAnd() != null) {
+                    ((JobDependency)jobDependency).getLogicalGrouping().getAnd().forEach(and -> {
+                        graph.addEdge(and.getIdentifier(), ((JobDependency)jobDependency).getJobIdentifier());
 
                         ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
                         connectionBuilder.withSource(
@@ -72,7 +70,7 @@ public class ScheduledContextDraw2dAdapter {
 
                         connectionBuilder.withTarget(
                             diagramBuilder.getConnectionDetailsBuilder()
-                                .withNode(jobDependency.getJobIdentifier())
+                                .withNode(((JobDependency)jobDependency).getJobIdentifier())
                                 .withPort("leftHybridTarget")
                                 .withDecoration("draw2d.decoration.connection.ArrowDecorator")
                                 .build()
@@ -82,10 +80,10 @@ public class ScheduledContextDraw2dAdapter {
                     });
                 }
 
-                if (jobDependency.getLogicalGrouping() != null && jobDependency.getLogicalGrouping().getLogicalGrouping() != null
-                    && jobDependency.getLogicalGrouping().getLogicalGrouping().getOr() != null) {
-                    jobDependency.getLogicalGrouping().getLogicalGrouping().getOr().forEach(or -> {
-                        graph.addEdge(or.getIdentifier(), jobDependency.getJobIdentifier());
+                if (((JobDependency)jobDependency).getLogicalGrouping() != null && ((JobDependency)jobDependency).getLogicalGrouping().getLogicalGrouping() != null
+                    && ((JobDependency)jobDependency).getLogicalGrouping().getLogicalGrouping().getOr() != null) {
+                    ((JobDependency)jobDependency).getLogicalGrouping().getLogicalGrouping().getOr().forEach(or -> {
+                        graph.addEdge(or.getIdentifier(), ((JobDependency)jobDependency).getJobIdentifier());
 
                         ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
                         connectionBuilder.withSource(
@@ -97,7 +95,7 @@ public class ScheduledContextDraw2dAdapter {
 
                         connectionBuilder.withTarget(
                             diagramBuilder.getConnectionDetailsBuilder()
-                                .withNode(jobDependency.getJobIdentifier())
+                                .withNode(((JobDependency)jobDependency).getJobIdentifier())
                                 .withPort("leftHybridTarget")
                                 .withDecoration("draw2d.decoration.connection.ArrowDecorator")
                                 .build()
@@ -144,23 +142,26 @@ public class ScheduledContextDraw2dAdapter {
                         ((PositionedItem) item).setX(cell.getGeometry().getX() + 600);
                         ((PositionedItem) item).setY(cell.getGeometry().getY() + 600);
 
-                        if(isTerminalJob(contextInstance.getScheduledJobsMap().get(((PositionedItem) item).getId())
-                            , contextInstance.getJobDependencies())) {
-                            imageOverlay.add(diagramBuilder.getCircleBuilder()
-                                .withBgColor(StatusColours.getInstanceStatusColour(contextInstance.getScheduledJobsMap()
-                                    .get(((PositionedItem) item).getId()).getStatus()))
+                        if(isTerminalJob((SchedulerJob) context.getScheduledJobsMap().get(((PositionedItem) item).getId())
+                            , context.getJobDependencies())) {
+                            CircleBuilder cb = diagramBuilder.getCircleBuilder()
                                 .withId(((PositionedItem) item).getId() + "_status")
                                 .withTopAndBottomPorts()
                                 .withWidth(100)
                                 .withHeight(100)
                                 .withStroke(0)
                                 .withX(((PositionedItem) item).getX())
-                                .withY(((PositionedItem) item).getY()).build());
+                                .withY(((PositionedItem) item).getY());
+
+                            if(context.getScheduledJobsMap().get(((PositionedItem) item).getId()) instanceof SchedulerJobInstance) {
+                                cb.withBgColor(StatusColours.getInstanceStatusColour(((SchedulerJobInstance)context.getScheduledJobsMap()
+                                    .get(((PositionedItem) item).getId())).getStatus()));
+                            }
+
+                            imageOverlay.add(cb.build());
                         }
                         else {
-                            imageOverlay.add(diagramBuilder.getRectangleBuilder()
-                                .withBgColor(StatusColours.getInstanceStatusColour(contextInstance.getScheduledJobsMap()
-                                    .get(((PositionedItem) item).getId()).getStatus()))
+                            RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
                                 .withId(((PositionedItem) item).getId() + "_status")
                                 .withTopAndBottomPorts()
                                 .withWidth(100)
@@ -168,11 +169,18 @@ public class ScheduledContextDraw2dAdapter {
                                 .withStroke(0)
                                 .withRadius(20)
                                 .withX(((PositionedItem) item).getX())
-                                .withY(((PositionedItem) item).getY()).build());
+                                .withY(((PositionedItem) item).getY());
+
+                            if(context.getScheduledJobsMap().get(((PositionedItem) item).getId()) instanceof SchedulerJobInstance) {
+                              rb.withBgColor(StatusColours.getInstanceStatusColour(((SchedulerJobInstance)context.getScheduledJobsMap()
+                                    .get(((PositionedItem) item).getId())).getStatus()));
+                            }
+
+                            imageOverlay.add(rb.build());
                         }
 
-                        labels.add(new LabelBuilder().withText(contextInstance.getScheduledJobsMap()
-                            .get(((PositionedItem) item).getId()).getJobName())
+                        labels.add(new LabelBuilder().withText(((SchedulerJob) context.getScheduledJobsMap()
+                            .get(((PositionedItem) item).getId())).getJobName())
                             .withX(((PositionedItem) item).getX() - 15)
                             .withY(((PositionedItem) item).getY() + 110)
                             .build());
@@ -204,16 +212,16 @@ public class ScheduledContextDraw2dAdapter {
         return null;
     }
 
-    public String adaptContext(ContextInstance contextInstance) {
+        public String adaptContext(Context context) {
         DefaultDirectedGraph<Object, DefaultEdge> graph
             = new DefaultDirectedGraph<>(NoEdgeLabel.class);
 
         DiagramBuilder diagramBuilder = new DiagramBuilder();
 
-        graph.addVertex(contextInstance.getName());
+        graph.addVertex(context.getName());
 
         Image root = diagramBuilder.getImageBuilder()
-            .withId(contextInstance.getName())
+            .withId(context.getName())
             .withHeight(100)
             .withWidth(100)
             .withPath("frontend/images/trunk.png")
@@ -222,18 +230,18 @@ public class ScheduledContextDraw2dAdapter {
 
         diagramBuilder.addItem(root);
 
-        Map<String, ContextInstance> contextInstanceMap = new HashMap<>();
+        Map<String, Context> contextMap = new HashMap<>();
 
-        contextInstanceMap.put(contextInstance.getName(), contextInstance);
+        contextMap.put(context.getName(), context);
 
-        contextInstance.getContexts().forEach(c -> {
-            graph.addVertex(c.getName());
-            graph.addEdge(contextInstance.getName(), c.getName());
+        context.getContexts().forEach(c -> {
+            graph.addVertex(((Context)c).getName());
+            graph.addEdge(context.getName(), ((Context)c).getName());
 
-            contextInstanceMap.put(c.getName(), c);
+            contextMap.put(((Context)c).getName(), (Context)c);
 
             Image branch = diagramBuilder.getImageBuilder()
-                .withId(c.getName())
+                .withId(((Context)c).getName())
                 .withHeight(100)
                 .withWidth(100)
                 .withPath("frontend/images/branch.png")
@@ -260,7 +268,7 @@ public class ScheduledContextDraw2dAdapter {
 
             diagramBuilder.addItem(connectionBuilder.build());
 
-            this.manageContext(c, graph, diagramBuilder, contextInstanceMap);
+            this.manageContext((Context) c, graph, diagramBuilder, contextMap);
         });
 
         JGraphXAdapter<Object, DefaultEdge> jGraphXAdapter
@@ -299,13 +307,16 @@ public class ScheduledContextDraw2dAdapter {
                     ((PositionedItem) item).setY(cell.getGeometry().getY() + 600);
 
                     RectangleBuilder rb = diagramBuilder.getRectangleBuilder();
-                    rb.withBgColor(StatusColours.getInstanceStatusColour(contextInstanceMap.get(((PositionedItem) item).getId()).getStatus()))
-                        .withId(((PositionedItem) item).getId() + "_status")
+                    rb.withId(((PositionedItem) item).getId() + "_status")
                         .withTopAndBottomPorts()
                         .withWidth(90)
                         .withHeight(90)
                         .withX(((PositionedItem)item).getX() + 5)
                         .withY(((PositionedItem)item).getY() + 5);
+
+                    if(contextMap.get(((PositionedItem) item).getId()) instanceof ContextInstance) {
+                        rb.withBgColor(StatusColours.getInstanceStatusColour(((ContextInstance)contextMap.get(((PositionedItem) item).getId())).getStatus()));
+                    }
 
                     imageOverlay.add(rb.build());
 
@@ -337,17 +348,17 @@ public class ScheduledContextDraw2dAdapter {
         return result;
     }
 
-    private void manageContext(ContextInstance contextInstance, DefaultDirectedGraph<Object, DefaultEdge> graph,
-                               DiagramBuilder diagramBuilder, Map<String, ContextInstance> contextInstanceMap) {
+    private void manageContext(Context contextInstance, DefaultDirectedGraph<Object, DefaultEdge> graph,
+                               DiagramBuilder diagramBuilder,Map<String, Context> contextInstanceMap) {
 
         if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
             contextInstance.getContexts().forEach(c -> {
-                contextInstanceMap.put(c.getName(), c);
-                graph.addVertex(c.getName());
-                graph.addEdge(contextInstance.getName(), c.getName());
+                contextInstanceMap.put(((Context)c).getName(), (Context)c);
+                graph.addVertex(((Context)c).getName());
+                graph.addEdge(contextInstance.getName(), ((Context)c).getName());
 
                 Image branch = diagramBuilder.getImageBuilder()
-                    .withId(c.getName())
+                    .withId(((Context)c).getName())
                     .withHeight(100)
                     .withWidth(100)
                     .withPath("frontend/images/branch.png")
@@ -374,7 +385,7 @@ public class ScheduledContextDraw2dAdapter {
 
                 diagramBuilder.addItem(connectionBuilder.build());
 
-                this.manageContext(c, graph, diagramBuilder, contextInstanceMap);
+                this.manageContext((Context)c, graph, diagramBuilder, contextInstanceMap);
             });
         }
     }
