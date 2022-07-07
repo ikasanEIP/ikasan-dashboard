@@ -7,12 +7,14 @@ import com.vaadin.componentfactory.TooltipPosition;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.scheduler.service.ScheduledContextDraw2dAdapter;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextDraw2dAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
@@ -22,6 +24,7 @@ import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -48,7 +51,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
     private DesignerCanvas designerCanvas;
     private VerticalLayout layout;
 
-    private ScheduledContextDraw2dAdapter adapter = new ScheduledContextDraw2dAdapter();
+    private ContextDraw2dAdapter adapter = new ContextDraw2dAdapter();
 
     private boolean initialised = false;
 
@@ -67,6 +70,8 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
     private SchedulerJobService schedulerJobService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private JobInitiationService jobInitiationService;
+
+    private ContextService contextService = new ContextService();
 
     public ContextInstanceVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -127,6 +132,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
         }
 
         layout = new VerticalLayout();
+
         layout.setSizeFull();
         super.content.add(layout);
     }
@@ -155,8 +161,42 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
 
             this.designerCanvas.manageClickableItems();
 
+            ContextInstance parentContextInstance = contextService.getParent(this.rootContextInstance, this.contextInstance);
+
+            if(parentContextInstance != null) {
+                Button gotoParentButton = new Button("Go to Parent - " + parentContextInstance.getName(), VaadinIcon.ARROW_UP.create());
+                gotoParentButton.setIconAfterText(true);
+                gotoParentButton.addClickListener(buttonClickEvent -> {
+                    if (this.contextInstance != null && this.rootContextInstance != null) {
+                        this.contextInstance = contextService.getParent(this.rootContextInstance, this.contextInstance);
+
+                        if (this.contextInstance != null) {
+                            try {
+                                this.close();
+                                ContextInstanceVisualisationDialog contextInstanceVisualisationDialog
+                                    = new ContextInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
+                                    , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService
+                                    , this.schedulerJobInstanceService, this.jobInitiationService);
+
+                                contextInstanceVisualisationDialog.createSchedulerVisualisation(this.rootContextInstance, this.contextInstance);
+                                contextInstanceVisualisationDialog.open();
+
+                                this.close();
+                            }
+                            catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+
+                layout.add(gotoParentButton);
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, gotoParentButton);
+            }
+
             this.layout.add(initCanvasActions(), designerCanvas);
 
+            super.title.setText(this.contextInstance.getName());
             this.initialised = true;
         }
     }

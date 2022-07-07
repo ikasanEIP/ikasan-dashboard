@@ -4,14 +4,10 @@ import org.ikasan.dashboard.AbstractTest;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.junit.Test;
-import org.skyscreamer.jsonassert.Customization;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 import java.io.IOException;
 
-public class ScheduledContextDraw2dAdapterTest extends AbstractTest {
+public class ContextDraw2DAdapterTest extends AbstractTest {
 
     private ContextService contextService = new ContextService();
 
@@ -19,7 +15,7 @@ public class ScheduledContextDraw2dAdapterTest extends AbstractTest {
     public void test_context_machine() throws IOException {
         ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/contexts/CONTEXT-36916071.json"));
 
-        ScheduledContextDraw2dAdapter adapter = new ScheduledContextDraw2dAdapter();
+        ContextDraw2dAdapter adapter = new ContextDraw2dAdapter();
         String json = adapter.adaptContext(context);
 
         // todo sort out assertion
