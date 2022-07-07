@@ -208,6 +208,24 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
+    public void test_delete_by_context_name() {
+        this.addRecords(100);
+
+        SearchResults<ContextProfileRecord> results = this.solrContextProfileDao.findByFilter(new SolrContextProfileSearchFilterImpl(), -1, -1, null, null);
+
+        Assert.assertEquals(100, results.getTotalNumberOfResults());
+        Assert.assertEquals(100, results.getResultList().size());
+
+
+        this.solrContextProfileDao.deleteByContextName("contextName10");
+
+        results = this.solrContextProfileDao.findByFilter(new SolrContextProfileSearchFilterImpl(), -1, -1, null, null);
+
+        Assert.assertEquals(99, results.getTotalNumberOfResults());
+        Assert.assertEquals(99, results.getResultList().size());
+    }
+
+    @Test
     @Ignore
     public void test() throws JsonProcessingException {
         SolrContextProfileDaoImpl dao = new SolrContextProfileDaoImpl();

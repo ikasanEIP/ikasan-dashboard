@@ -1,16 +1,20 @@
 package org.ikasan.scheduled.profile.service;
 
+import org.ikasan.scheduled.profile.dao.SolrContextProfileDaoImpl;
+import org.ikasan.scheduled.profile.model.SolrContextProfileImpl;
 import org.ikasan.spec.scheduled.profile.dao.ContextProfileDao;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.search.SearchResults;
 
+import java.util.List;
+
 public class SolrContextProfileServiceImpl implements ContextProfileService {
 
-    private ContextProfileDao contextProfileDao;
+    private SolrContextProfileDaoImpl contextProfileDao;
 
-    public SolrContextProfileServiceImpl(ContextProfileDao contextProfileDao) {
+    public SolrContextProfileServiceImpl(SolrContextProfileDaoImpl contextProfileDao) {
         this.contextProfileDao = contextProfileDao;
 
         if(this.contextProfileDao == null) {
@@ -22,6 +26,14 @@ public class SolrContextProfileServiceImpl implements ContextProfileService {
     public void save(ContextProfileRecord contextProfileRecord) {
         this.contextProfileDao.save(contextProfileRecord);
     }
+
+    @Override
+    public void save(List<ContextProfileRecord> records) {
+        this.contextProfileDao.save(records);
+    }
+
+    @Override
+    public void deleteByContextName(String contextName) { this.contextProfileDao.deleteByContextName(contextName); }
 
     @Override
     public ContextProfileRecord findById(String id) {
