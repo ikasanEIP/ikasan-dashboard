@@ -24,7 +24,9 @@ import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.server.StreamResource;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
-import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.IconDecorator;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
@@ -40,8 +42,6 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -52,7 +52,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -158,7 +157,7 @@ public class SchedulerJobGridWidget extends Div {
         schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
-            Icon delete = IconDecorator.decorate(new Icon(VaadinIcon.TRASH), "Delete job template", "14pt", "rgba(0, 0, 0, 1.0)");
+            Icon delete = IconDecorator.decorate(new Icon(VaadinIcon.TRASH), getTranslation("tooltip.delete-job-template", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             delete.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setCancelable(true);
@@ -319,9 +318,8 @@ public class SchedulerJobGridWidget extends Div {
         provisionJobsButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setCancelable(true);
-            confirmDialog.setHeader("Provision Jobs");
-            confirmDialog.setText("By confirming, all job templates that are associated with this context template will " +
-                "be provisioned on the scheduler agents that they are associated with.");
+            confirmDialog.setHeader(getTranslation("confirm-dialog.provision-job-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.provision-job-body", UI.getCurrent().getLocale()));
 
             confirmDialog.open();
 
@@ -329,7 +327,8 @@ public class SchedulerJobGridWidget extends Div {
                 ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
                 dialog.setWidth("600px");
                 dialog.setHeight("250px");
-                dialog.open("Provisioning Jobs", "Please be patient. This may take a few minutes.");
+                dialog.open(getTranslation("progress-dialog.provision-job-header", UI.getCurrent().getLocale()),
+                    getTranslation("progress-dialog.provision-job-body", UI.getCurrent().getLocale()));
 
                 final UI current = UI.getCurrent();
                 Executor executor = Executors.newSingleThreadExecutor();
@@ -426,12 +425,12 @@ public class SchedulerJobGridWidget extends Div {
                     }
                     catch (Exception e) {
                         e.printStackTrace();
-                        current.access(() -> NotificationHelper.showErrorNotification("An error has occurred provisioning jobs! Please contact Ikasan support."));
+                        current.access(() -> NotificationHelper.showErrorNotification(getTranslation("error.provisioning-jobs", UI.getCurrent().getLocale())));
                     }
                     finally {
                         current.access(() -> {
                             dialog.close();
-                            NotificationHelper.showUserNotification("Successfully provisioned jobs!");
+                            NotificationHelper.showUserNotification(getTranslation("notification.provisioned-jobs", UI.getCurrent().getLocale()));
                         });
                     }
                 });
@@ -452,9 +451,9 @@ public class SchedulerJobGridWidget extends Div {
         MenuItem activeContexts = activeContextInstancesSubMenu.addItem(getTranslation("menu-item.job-type", UI.getCurrent().getLocale()));
         SubMenu activeContextSubMenu = activeContexts.getSubMenu();
 
-        activeContextSubMenu.addItem("Command Execution Job", event -> {});
-        activeContextSubMenu.addItem("File Watcher Job", event -> {});
-        activeContextSubMenu.addItem("Scheduled Job", event -> {});
+        activeContextSubMenu.addItem("Command Execution Job", event -> {UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog(); underConstructionDialog.open();});
+        activeContextSubMenu.addItem("File Watcher Job", event -> {UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog(); underConstructionDialog.open();});
+        activeContextSubMenu.addItem("Scheduled Job", event -> {UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog(); underConstructionDialog.open();});
 
         return uploadJobMenuBar;
     }
