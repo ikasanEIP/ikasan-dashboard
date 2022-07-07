@@ -279,11 +279,11 @@ public class ContextTemplateManagementWidget extends Div {
 
         ContextService contextService = new ContextService();
         try {
-            if(this.contextViews.getValue() != null) {
-                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, contextService.getContextInstance(contextService.getContextTemplateString(this.contextTemplate.getContextsMap().get(this.contextViews.getValue()))));
+            if(this.contextViews.getValue() != null && !this.contextViews.getValue().equals(this.contextTemplate.getName())) {
+                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate.getContextsMap().get(this.contextViews.getValue()))));
             }
             else {
-                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, contextService.getContextInstance(contextService.getContextTemplateString(this.contextTemplate)));
+                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate)));
             }
 
             this.schedulerVisualisationDiv.add(this.contextViews, this.schedulerVisualisation);
@@ -373,7 +373,14 @@ public class ContextTemplateManagementWidget extends Div {
 
         this.contextViews.addValueChangeListener(event -> {
             try {
-                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, contextService.getContextInstance(contextService.getContextTemplateString(this.contextTemplate.getContextsMap().get(this.contextViews.getValue()))));
+                if (this.contextTemplate.getName().equals(event.getValue())) {
+                    this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate
+                        , contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate)));
+                }
+                else {
+                    this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate
+                        , contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate.getContextsMap().get(this.contextViews.getValue()))));
+                }
             }
             catch (IOException e) {
                 e.printStackTrace();

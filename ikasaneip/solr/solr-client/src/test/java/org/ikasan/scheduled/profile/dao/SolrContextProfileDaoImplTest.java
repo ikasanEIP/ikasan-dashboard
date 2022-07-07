@@ -226,7 +226,7 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
-    @Ignore
+//    @Ignore
     public void test() throws JsonProcessingException {
         SolrContextProfileDaoImpl dao = new SolrContextProfileDaoImpl();
         dao.initStandalone("http://localhost:8983/solr", 30);
@@ -242,11 +242,11 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
         solrContextProfileRecord.setAccessUsers(List.of());
 
         SolrContextProfileImpl solrContextProfile = new SolrContextProfileImpl();
-        solrContextProfile.setSubContexts(List.of("CONTEXT-1436221681", "CONTEXT-1447508514", "CONTEXT-369160711", "CONTEXT-1677625082", "CONTEXT--2014137964", "CONTEXT-1500699512"));
+        solrContextProfile.setSubContexts(List.of("CONTEXT-1436221681", "CONTEXT-1447508514", "CONTEXT-369160711", "CONTEXT-1677625082", "CONTEXT--2014137964", "CONTEXT-1500699512", "-1793100514"));
 
         solrContextProfileRecord.setContextProfile(solrContextProfile);
 
-//        dao.save(solrContextProfileRecord);
+        dao.save(solrContextProfileRecord);
 
         System.out.println(ObjectMapperFactory.newInstance().writerWithDefaultPrettyPrinter().writeValueAsString(solrContextProfileRecord));
     }
