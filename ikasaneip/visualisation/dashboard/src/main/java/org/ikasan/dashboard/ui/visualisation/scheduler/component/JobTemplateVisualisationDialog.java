@@ -7,17 +7,20 @@ import com.vaadin.componentfactory.TooltipPosition;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.scheduler.component.*;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.scheduler.service.ScheduledContextDraw2dAdapter;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextDraw2dAdapter;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
+import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -25,10 +28,10 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -48,12 +51,12 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
     private DesignerCanvas designerCanvas;
     private VerticalLayout layout;
 
-    private ScheduledContextDraw2dAdapter adapter = new ScheduledContextDraw2dAdapter();
+    private ContextDraw2dAdapter adapter = new ContextDraw2dAdapter();
 
     private boolean initialised = false;
 
     private ContextTemplate rootContextTemplate;
-    private ContextInstance contextInstance;
+    private ContextTemplate contextTemplate;
 
     private String dynamicImagePath = ".";
 
@@ -67,6 +70,8 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
     private LogStreamingService logStreamingService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private JobInitiationService jobInitiationService;
+
+    private ContextService contextService = new ContextService();
 
     public JobTemplateVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -132,28 +137,61 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
     }
 
     /**
-     * @param contextInstance
+     * @param contextTemplate
      */
-    public void createSchedulerVisualisation(ContextTemplate rootContextTemplate, ContextInstance contextInstance) throws IOException {
+    public void createSchedulerVisualisation(ContextTemplate rootContextTemplate, ContextTemplate contextTemplate) throws IOException {
         this.rootContextTemplate = rootContextTemplate;
-        this.contextInstance = contextInstance;
+        this.contextTemplate = contextTemplate;
         this.initialised = false;
         init();
     }
 
     private void init() throws IOException{
-        if(!initialised && this.contextInstance != null) {
+        if(!initialised && this.contextTemplate != null) {
 
             if (this.designerCanvas != null) {
                 this.removeAll();
             }
 
             this.designerCanvas = new DesignerCanvas("job-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, true);
-            this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextInstance));
+            this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextTemplate));
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
 
             this.designerCanvas.manageClickableItems();
+
+            ContextTemplate parentContextInstance = contextService.getParent(this.rootContextTemplate, this.contextTemplate);
+
+            if(parentContextInstance != null) {
+                Button gotoParentButton = new Button("Go to Parent - " + parentContextInstance.getName(), VaadinIcon.ARROW_UP.create());
+                gotoParentButton.setIconAfterText(true);
+                gotoParentButton.addClickListener(buttonClickEvent -> {
+                    if (this.contextTemplate != null && this.rootContextTemplate != null) {
+                        this.contextTemplate = contextService.getParent(this.rootContextTemplate, this.contextTemplate);
+
+                        if (this.contextTemplate != null) {
+                            try {
+                                this.close();
+                                ContextTemplateVisualisationDialog contextTemplateVisualisationDialog
+                                    = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
+                                    , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService
+                                    , this.schedulerJobInstanceService, this.jobInitiationService);
+
+                                contextTemplateVisualisationDialog.createSchedulerVisualisation(this.rootContextTemplate, this.contextTemplate);
+                                contextTemplateVisualisationDialog.open();
+
+                                this.close();
+                            }
+                            catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+
+                layout.add(gotoParentButton);
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, gotoParentButton);
+            }
 
             this.layout.add(initCanvasActions(), designerCanvas);
 
@@ -224,7 +262,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
     @Override
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
         logger.info(canvasItemDoubleClickEvent.toString());
-        SchedulerJobInstance schedulerJob = this.contextInstance.getScheduledJobsMap().get(canvasItemDoubleClickEvent.getFigure().getIdentifier());
+        SchedulerJob schedulerJob = this.contextTemplate.getScheduledJobsMap().get(canvasItemDoubleClickEvent.getFigure().getIdentifier());
 
         SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextIdAndJobName
             (this.rootContextTemplate.getName(), schedulerJob.getJobName());
@@ -258,7 +296,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         logger.info(canvasItemRightClickEvent.toString());
 
 //        JobContextMenu jobContextMenu = new JobContextMenu(canvasItemRightClickEvent.getClickLocationX(), canvasItemRightClickEvent.getClickLocationY(),
-//            this.contextInstance.getScheduledJobsMap().get(canvasItemRightClickEvent.getFigure().getIdentifier()), this.systemEventLogger,
+//            this.contextTemplate.getScheduledJobsMap().get(canvasItemRightClickEvent.getFigure().getIdentifier()), this.systemEventLogger,
 //            this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
 //            this.metaDataRestService, this.schedulerJobService);
 //        jobContextMenu.open();

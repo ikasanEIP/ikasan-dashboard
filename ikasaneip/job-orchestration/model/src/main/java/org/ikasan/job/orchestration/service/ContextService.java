@@ -8,11 +8,14 @@ import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ContextService {
     private ObjectMapper objectMapper;
@@ -75,5 +78,61 @@ public class ContextService {
 
     public ContextProfileRecord getContextProfileRecord(String contextProfileRecord) throws JsonProcessingException {
         return objectMapper.readValue(contextProfileRecord, ContextProfileRecordImpl.class);
+    }
+
+    public ContextTemplate getParent(ContextTemplate context, ContextTemplate currentContext) {
+        AtomicReference<ContextTemplate> parent = new AtomicReference<>();
+
+        if(context.getContexts() != null) {
+            context.getContexts().forEach(c -> {
+                if (c.getName().equals(currentContext.getName())) {
+                    parent.set(context);
+                }
+            });
+
+            if(parent.get() != null) {
+                return parent.get();
+            }
+            else {
+                context.getContexts().forEach(c ->
+                {
+                    ContextTemplate parentContext = getParent(c, currentContext);
+
+                    if(parentContext != null) {
+                        parent.set(parentContext);
+                    }
+                });
+            }
+        }
+
+        return parent.get();
+    }
+
+    public ContextInstance getParent(ContextInstance context, ContextInstance currentContext) {
+        AtomicReference<ContextInstance> parent = new AtomicReference<>();
+
+        if(context.getContexts() != null) {
+            context.getContexts().forEach(c -> {
+                if (c.getName().equals(currentContext.getName())) {
+                    parent.set(context);
+                }
+            });
+
+            if(parent.get() != null) {
+                return parent.get();
+            }
+            else {
+                context.getContexts().forEach(c ->
+                {
+                    ContextInstance parentContext = getParent(c, currentContext);
+
+                    if(parentContext != null) {
+                        parent.set(parentContext);
+                    }
+                });
+            }
+        }
+
+        return parent.get();
     }
 }
