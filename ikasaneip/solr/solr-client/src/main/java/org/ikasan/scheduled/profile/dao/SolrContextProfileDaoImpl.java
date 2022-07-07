@@ -6,6 +6,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
 import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
+import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.joblock.dao.SolrJobLockCacheDaoImpl;
 import org.ikasan.scheduled.profile.model.SolrContextProfileImpl;
 import org.ikasan.scheduled.profile.model.SolrContextProfileRecordImpl;
@@ -75,6 +76,17 @@ public class SolrContextProfileDaoImpl extends SolrDaoBase<ContextProfileRecord>
 
         LOG.debug(String.format("Converted JobLockCacheRecord to SolrDocument[%s]", document));
         return document;
+    }
+
+    @Override
+    public void deleteByContextName(String contextName) {
+        StringBuffer queryBuffer = new StringBuffer();
+        queryBuffer.append(TYPE + COLON);
+        queryBuffer.append("\"").append(CONTEXT_PROFILE_TYPE).append("\" ");
+        queryBuffer.append(AND).append(" ").append(COMPONENT_NAME).append(COLON);
+        queryBuffer.append("\"").append(contextName).append("\" ");
+
+        super.deleteByQuery(queryBuffer.toString());
     }
 
     @Override
