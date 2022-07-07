@@ -12,23 +12,20 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.scheduler.service.ScheduledContextDraw2dAdapter;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextDraw2dAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
-import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -48,12 +45,12 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
     private DesignerCanvas designerCanvas;
     private VerticalLayout layout;
 
-    private ScheduledContextDraw2dAdapter adapter = new ScheduledContextDraw2dAdapter();
+    private ContextDraw2dAdapter adapter = new ContextDraw2dAdapter();
 
     private boolean initialised = false;
 
-    private ContextInstance rootContextInstance;
-    private ContextInstance contextInstance;
+    private ContextTemplate rootContextTemplate;
+    private ContextTemplate contextTemplate;
     private LogStreamingService logStreamingService;
 
     private String dynamicImagePath = ".";
@@ -131,25 +128,22 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
         super.content.add(layout);
     }
 
-    /**
-     * @param contextInstance
-     */
-    public void createSchedulerVisualisation(ContextInstance rootContextInstance, ContextInstance contextInstance) throws IOException {
-        this.rootContextInstance = rootContextInstance;
-        this.contextInstance = contextInstance;
+    public void createSchedulerVisualisation(ContextTemplate rootContextTemplate, ContextTemplate contextTemplate) throws IOException {
+        this.rootContextTemplate = rootContextTemplate;
+        this.contextTemplate = rootContextTemplate;
         this.initialised = false;
         init();
     }
 
     private void init() throws IOException{
-        if(!initialised && this.contextInstance != null) {
+        if(!initialised && this.contextTemplate != null) {
 
             if (this.designerCanvas != null) {
                 this.removeAll();
             }
 
             this.designerCanvas = new DesignerCanvas("context-viewport"+ UUID.randomUUID().toString(), this.dynamicImagePath, true);
-            this.designerCanvas.setCanvasJson(adapter.adaptContext(contextInstance));
+            this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
 
@@ -224,16 +218,16 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
     @Override
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
         logger.info(canvasItemDoubleClickEvent.toString());
-        ContextInstance contextInstance = ContextHelper.getChildContextInstance(canvasItemDoubleClickEvent.getFigure().getIdentifier(),
-            this.contextInstance);
+        ContextTemplate contextTemplate = ContextHelper.getChildContextTemplate(canvasItemDoubleClickEvent.getFigure().getIdentifier(),
+            this.contextTemplate);
 
-        if(contextInstance.getScheduledJobs() != null) {
+        if(contextTemplate.getScheduledJobs() != null) {
             try {
-                JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService,
+                JobTemplateVisualisationDialog jobInstanceVisualisationDialog = new JobTemplateVisualisationDialog(this.moduleMetaDataService,
                     this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
                     this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
                     this.schedulerJobInstanceService, this.jobInitiationService);
-                jobInstanceVisualisationDialog.createSchedulerVisualisation(rootContextInstance, contextInstance);
+                jobInstanceVisualisationDialog.createSchedulerVisualisation(rootContextTemplate, contextTemplate);
                 jobInstanceVisualisationDialog.open();
             }
             catch (IOException e) {
@@ -247,7 +241,7 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
                     this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
                     this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
                     this.schedulerJobInstanceService, this.jobInitiationService);
-                contextInstanceVisualisationDialog.createSchedulerVisualisation(this.rootContextInstance, contextInstance);
+                contextInstanceVisualisationDialog.createSchedulerVisualisation(this.rootContextTemplate, contextTemplate);
                 contextInstanceVisualisationDialog.open();
             }
             catch (IOException e) {
@@ -266,19 +260,19 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
         UI ui = attachEvent.getUI();
         this.initialised = false;
 
-        if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-            logger.info("Adding context visualisation dialog as context sate change event listener for context[{}], context identifier[{}].");
-            contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-                if (contextInstanceStateChangeEvent.getContextInstance() != null) {
-                    logger.info("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
-                        contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
-                        StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
-                    ui.access(() ->
-                        this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName()
-                            , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus())));
-                }
-            });
-        }
+//        if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextTemplate.getId())) {
+//            logger.info("Adding context visualisation dialog as context sate change event listener for context[{}], context identifier[{}].");
+//            contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
+//                if (contextInstanceStateChangeEvent.getContextInstance() != null) {
+//                    logger.info("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
+//                        contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
+//                        StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
+//                    ui.access(() ->
+//                        this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName()
+//                            , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus())));
+//                }
+//            });
+//        }
     }
 
     @Override

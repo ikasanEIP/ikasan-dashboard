@@ -335,7 +335,7 @@ public class ContextInstanceWidget extends Div {
                 this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
             }
 
-            if(this.contextViews.getValue() != null) {
+            if(this.contextViews.getValue() != null && !this.contextViews.getValue().equals(this.contextInstance.getName())) {
                 this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance.getContextsMap().get(this.contextViews.getValue()));
             }
             else {
@@ -343,6 +343,7 @@ public class ContextInstanceWidget extends Div {
             }
         }
         catch (IOException e) {
+            NotificationHelper.showErrorNotification(getTranslation("error.rendering-context", UI.getCurrent().getLocale()));
             e.printStackTrace();
         }
 
@@ -389,9 +390,16 @@ public class ContextInstanceWidget extends Div {
 
         this.contextViews.addValueChangeListener(event -> {
             try {
-                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, contextInstance.getContextsMap().get(this.contextViews.getValue()));
+                if (this.contextTemplate.getName().equals(event.getValue())) {
+                    this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance
+                        , this.contextInstance);
+                }
+                else {
+                    this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, contextInstance.getContextsMap().get(this.contextViews.getValue()));
+                }
             }
             catch (IOException e) {
+                NotificationHelper.showErrorNotification(getTranslation("error.rendering-context", UI.getCurrent().getLocale()));
                 e.printStackTrace();
             }
         });

@@ -13,7 +13,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.scheduler.service.ScheduledContextDraw2dAdapter;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextDraw2dAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
@@ -52,7 +52,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
 
     private boolean initialised = false;
 
-    private ScheduledContextDraw2dAdapter adapter = new ScheduledContextDraw2dAdapter();
+    private ContextDraw2dAdapter adapter = new ContextDraw2dAdapter();
 
     private ModuleMetaDataService moduleMetaDataService;
     private ScheduledProcessManagementService scheduledProcessManagementService;
