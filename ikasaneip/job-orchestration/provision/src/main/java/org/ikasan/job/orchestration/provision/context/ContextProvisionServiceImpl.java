@@ -19,6 +19,8 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobWrapper;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
@@ -43,6 +45,7 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
     private SchedulerJobService schedulerJobService;
     private JobProvisionModuleService jobProvisionModuleRestService;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
+    private ContextProfileService contextProfileService;
     private boolean uploadProvisionJobs;
 
     public ContextProvisionServiceImpl(Scheduler scheduler,
@@ -52,6 +55,7 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
                                        SchedulerJobService schedulerJobService,
                                        JobProvisionModuleService jobProvisionModuleRestService,
                                        ContextInstanceRegistrationService contextInstanceRegistrationService,
+                                       ContextProfileService contextProfileService,
                                        boolean uploadProvisionJobs) {
 
         super(scheduler, scheduledJobFactory);
@@ -76,6 +80,10 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
         if (this.contextInstanceRegistrationService == null) {
             throw new IllegalArgumentException("contextInstanceRegistrationService cannot be null!");
         }
+        this.contextProfileService = contextProfileService;
+        if (this.contextProfileService == null) {
+            throw new IllegalArgumentException("contextProfileService cannot be null!");
+        }
 
         this.uploadProvisionJobs = uploadProvisionJobs;
     }
@@ -88,19 +96,25 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
     public void provisionContext(ContextBundle contextBundle) {
         try {
             // TODO need to expand validate
-            validate(contextBundle.getContextTemplate(), contextBundle.getSchedulerJobs());
+            this.validate(contextBundle.getContextTemplate(), contextBundle.getSchedulerJobs());
             // delete all the jobs if they exist
-            deleteAllJobs(contextBundle.getContextTemplate().getName());
+            this.deleteAllJobs(contextBundle.getContextTemplate().getName());
+            // delete the context profiles
+            this.deleteContextProfiles(contextBundle.getContextTemplate().getName());
             // save the jobs
-            saveJobs(contextBundle.getSchedulerJobs());
+            this.saveJobs(contextBundle.getSchedulerJobs());
             // saveContext
-            saveContext(contextBundle.getContextTemplate());
-            // provision the jobs
-            if (uploadProvisionJobs) {
+            this.saveContext(contextBundle.getContextTemplate());
+            // provision the context profiles
+            if(contextBundle.getContextProfiles() != null &&
+                !contextBundle.getContextProfiles().isEmpty()) {
+                this.saveContextProfiles(contextBundle.getContextProfiles());
+            }
+            if (this.uploadProvisionJobs) {
                 provisionJobs(contextBundle.getSchedulerJobs());
             }
             // register the jobs
-            registerContext(contextBundle.getContextTemplate());
+            this.registerContext(contextBundle.getContextTemplate());
 
             if (withinOperatingWindow(contextBundle.getContextTemplate().getTimeWindowStart(), contextBundle.getContextTemplate().getTimeWindowEnd(), new Date())) {
                 // todo ? should we remove it if it already exists?
@@ -192,10 +206,18 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
     }
 
     private void saveJobs(List<SchedulerJob> contextJobs) {
-        schedulerJobService.save(contextJobs);
+        this.schedulerJobService.save(contextJobs);
     }
 
     private void deleteAllJobs(String contextName) {
-        schedulerJobService.deleteByContextName(contextName);
+        this.schedulerJobService.deleteByContextName(contextName);
+    }
+
+    private void saveContextProfiles(List<ContextProfileRecord> contextProfileRecords) {
+        this.contextProfileService.save(contextProfileRecords);
+    }
+
+    private void deleteContextProfiles(String contextName) {
+        this.contextProfileService.deleteByContextName(contextName);
     }
 }
