@@ -1,24 +1,12 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
-import com.flowingcode.vaadin.addons.ironicons.IronIcons;
-import com.vaadin.componentfactory.Tooltip;
-import com.vaadin.componentfactory.TooltipAlignment;
-import com.vaadin.componentfactory.TooltipPosition;
-import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextDraw2dAdapter;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
-import org.ikasan.designer.DesignerCanvas;
-import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
-import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
-import org.ikasan.designer.event.CanvasItemRightClickEvent;
-import org.ikasan.designer.event.CanvasItemRightClickEventListener;
+import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -33,19 +21,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.UUID;
 
-public class ContextTemplateVisualisationDialog extends AbstractCloseableResizableDialog implements CanvasItemRightClickEventListener
-    , CanvasItemDoubleClickEventListener {
+public class ContextTemplateVisualisationDialog extends AbstractCloseableResizableDialog {
 
     private Logger logger = LoggerFactory.getLogger(ContextTemplateVisualisationDialog.class);
-
-    private Registration contextInstanceStateChangeRegistration;
-
-    private DesignerCanvas designerCanvas;
     private VerticalLayout layout;
-
-    private ContextDraw2dAdapter adapter = new ContextDraw2dAdapter();
 
     private boolean initialised = false;
 
@@ -64,6 +44,10 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
     private SchedulerJobService schedulerJobService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private JobInitiationService jobInitiationService;
+
+    private ContextService contextService = new ContextService();
+
+    private SchedulerVisualisation schedulerVisualisation;
 
     public ContextTemplateVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -130,156 +114,57 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
 
     public void createSchedulerVisualisation(ContextTemplate rootContextTemplate, ContextTemplate contextTemplate) throws IOException {
         this.rootContextTemplate = rootContextTemplate;
-        this.contextTemplate = rootContextTemplate;
+        this.contextTemplate = contextTemplate;
         this.initialised = false;
-        init();
+
+        this.schedulerVisualisation = new SchedulerVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
+            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
+            this.schedulerJobInstanceService, this.jobInitiationService);
+
+        schedulerVisualisation.createSchedulerVisualisation(rootContextTemplate, contextTemplate, this);
+
+        initParentNavigation();
+
+        this.layout.add(schedulerVisualisation);
     }
 
-    private void init() throws IOException{
+    private void initParentNavigation() {
         if(!initialised && this.contextTemplate != null) {
 
-            if (this.designerCanvas != null) {
-                this.removeAll();
+            ContextTemplate parentContextTemplate = contextService.getParent(this.rootContextTemplate, this.contextTemplate);
+
+            if(parentContextTemplate != null) {
+                Button gotoParentButton = new Button("Go to Parent - " + parentContextTemplate.getName(), VaadinIcon.ARROW_UP.create());
+                gotoParentButton.setIconAfterText(true);
+                gotoParentButton.addClickListener(buttonClickEvent -> {
+                    if (this.contextTemplate != null && this.rootContextTemplate != null) {
+                        this.contextTemplate = contextService.getParent(this.rootContextTemplate, this.contextTemplate);
+
+                        if (this.contextTemplate != null) {
+                            try {
+                                this.close();
+                                ContextTemplateVisualisationDialog contextTemplateVisualisationDialog
+                                    = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
+                                    , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService
+                                    , this.schedulerJobInstanceService, this.jobInitiationService);
+
+                                contextTemplateVisualisationDialog.createSchedulerVisualisation(this.rootContextTemplate, this.contextTemplate);
+                                contextTemplateVisualisationDialog.open();
+
+                                this.close();
+                            }
+                            catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+
+                layout.add(gotoParentButton);
+                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, gotoParentButton);
             }
-
-            this.designerCanvas = new DesignerCanvas("context-viewport"+ UUID.randomUUID().toString(), this.dynamicImagePath, true);
-            this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
-            this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
-            this.designerCanvas.addCanvasItemRightClickEventListener(this);
-
-            this.designerCanvas.manageClickableItems();
-
-            this.layout.add(initCanvasActions(), designerCanvas);
 
             this.initialised = true;
-        }
-    }
-
-    protected Component initCanvasActions() {
-        HorizontalLayout actions = new HorizontalLayout();
-        actions.setSpacing(false);
-        actions.setPadding(false);
-        actions.setId("canvas-actions");
-
-        // Zoom in
-        Button zoomInButton = new Button();
-        zoomInButton.getElement().appendChild(IronIcons.ZOOM_IN.create().getElement());
-        zoomInButton.addClickListener(event -> this.designerCanvas.zoomIn());
-        Tooltip zoomInButtonTooltip = getTooltip(zoomInButton, getTranslation("tooltip.zoom-in", UI.getCurrent().getLocale())
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(zoomInButton, zoomInButtonTooltip);
-
-        // Zoom out
-        Button zoomOutButton = new Button();
-        zoomOutButton.getElement().appendChild(IronIcons.ZOOM_OUT.create().getElement());
-        zoomOutButton.addClickListener(event -> this.designerCanvas.zoomOut());
-        Tooltip zoomOutButtonTooltip = getTooltip(zoomOutButton, getTranslation("tooltip.zoom-out", UI.getCurrent().getLocale())
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(zoomOutButton, zoomOutButtonTooltip);
-
-        // Export as selected format
-        Button download = new Button();
-        download.getElement().appendChild(IronIcons.FILE_DOWNLOAD.create().getElement());
-        Tooltip downloadTooltip = getTooltip(download, getTranslation("tooltip.export-png", UI.getCurrent().getLocale())
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(download, downloadTooltip);
-        download.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-            this.exportPng();
-        });
-
-        return actions;
-    }
-
-    public static Tooltip getTooltip(Component component, String message, TooltipPosition position, TooltipAlignment alignment)
-    {
-        Tooltip tooltip = new Tooltip();
-
-        tooltip.getElement().getStyle().set("background-color", "#232F34");
-        tooltip.getElement().getStyle().set("color", "#FFFFFF");
-        tooltip.getElement().getStyle().set("border-radius", "10px");
-        tooltip.getElement().getStyle().set("padding", "10px");
-        tooltip.getElement().getStyle().set("font-size", "8pt");
-        tooltip.getElement().getStyle().set("z-index", "100");
-
-        tooltip.attachToComponent(component);
-
-        tooltip.setPosition(position);
-        tooltip.setAlignment(alignment);
-
-        tooltip.add(new Paragraph(message));
-
-        return tooltip;
-    }
-
-    public void exportPng(){
-        this.designerCanvas.exportPng();
-    }
-
-    @Override
-    public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
-        logger.info(canvasItemDoubleClickEvent.toString());
-        ContextTemplate contextTemplate = ContextHelper.getChildContextTemplate(canvasItemDoubleClickEvent.getFigure().getIdentifier(),
-            this.contextTemplate);
-
-        if(contextTemplate.getScheduledJobs() != null) {
-            try {
-                JobTemplateVisualisationDialog jobInstanceVisualisationDialog = new JobTemplateVisualisationDialog(this.moduleMetaDataService,
-                    this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                    this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
-                    this.schedulerJobInstanceService, this.jobInitiationService);
-                jobInstanceVisualisationDialog.createSchedulerVisualisation(rootContextTemplate, contextTemplate);
-                jobInstanceVisualisationDialog.open();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        else {
-            try {
-                ContextTemplateVisualisationDialog contextInstanceVisualisationDialog
-                    = new ContextTemplateVisualisationDialog(this.moduleMetaDataService,
-                    this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                    this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
-                    this.schedulerJobInstanceService, this.jobInitiationService);
-                contextInstanceVisualisationDialog.createSchedulerVisualisation(this.rootContextTemplate, contextTemplate);
-                contextInstanceVisualisationDialog.open();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @Override
-    public void rightClickEvent(CanvasItemRightClickEvent canvasItemRightClickEvent) {
-        logger.info(canvasItemRightClickEvent.toString());
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
-        this.initialised = false;
-
-//        if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextTemplate.getId())) {
-//            logger.info("Adding context visualisation dialog as context sate change event listener for context[{}], context identifier[{}].");
-//            contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-//                if (contextInstanceStateChangeEvent.getContextInstance() != null) {
-//                    logger.info("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
-//                        contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
-//                        StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
-//                    ui.access(() ->
-//                        this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName()
-//                            , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus())));
-//                }
-//            });
-//        }
-    }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent) {
-        if(this.contextInstanceStateChangeRegistration != null) {
-            this.contextInstanceStateChangeRegistration.remove();
-            this.contextInstanceStateChangeRegistration = null;
         }
     }
 }

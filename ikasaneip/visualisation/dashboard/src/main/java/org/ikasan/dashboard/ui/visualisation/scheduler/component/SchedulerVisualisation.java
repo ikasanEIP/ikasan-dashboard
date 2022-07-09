@@ -6,11 +6,20 @@ import com.vaadin.componentfactory.TooltipAlignment;
 import com.vaadin.componentfactory.TooltipPosition;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
+import org.ikasan.dashboard.ui.scheduler.component.EditMode;
+import org.ikasan.dashboard.ui.scheduler.component.FileEventJobDialog;
+import org.ikasan.dashboard.ui.scheduler.component.InternalEventDrivenJobDialog;
+import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobDialog;
+import org.ikasan.dashboard.ui.util.IconDecorator;
+import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextDraw2dAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
@@ -30,7 +39,10 @@ import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
@@ -65,6 +77,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private JobInitiationService jobInitiationService;
 
+    private Dialog parent;
 
     public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -136,9 +149,10 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     /**
      * @param contextTemplate
      */
-    public void createSchedulerVisualisation(ContextTemplate parentContext, ContextTemplate contextTemplate) throws IOException {
+    public void createSchedulerVisualisation(ContextTemplate parentContext, ContextTemplate contextTemplate, Dialog parent) throws IOException {
         this.parentContextTemplate = parentContext;
         this.contextTemplate = contextTemplate;
+        this.parent = parent;
         this.initialised = false;
         init();
     }
@@ -151,7 +165,14 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             }
 
             this.designerCanvas = new DesignerCanvas("canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, true);
-            this.designerCanvas.setCanvasJson(adapter.adaptContext((ContextImpl<ContextTemplate, ContextParameter, SchedulerJob, JobLock>)contextTemplate));
+
+            if(contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
+                this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
+            }
+            else if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
+                this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextTemplate));
+            }
+
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
 
@@ -165,36 +186,30 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
     protected Component initCanvasActions() {
         HorizontalLayout actions = new HorizontalLayout();
-        actions.setSpacing(false);
-        actions.setPadding(false);
+        actions.setHeight("40px");
         actions.setId("canvas-actions");
 
         // Zoom in
-        Button zoomInButton = new Button();
-        zoomInButton.getElement().appendChild(IronIcons.ZOOM_IN.create().getElement());
-        zoomInButton.addClickListener(event -> this.designerCanvas.zoomIn());
-        Tooltip zoomInButtonTooltip = getTooltip(zoomInButton, getTranslation("tooltip.zoom-in", UI.getCurrent().getLocale())
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(zoomInButton, zoomInButtonTooltip);
+        IronIcons.Icon zoomIn = IconDecorator.decorate(IronIcons.ZOOM_IN.create(), getTranslation("tooltip.zoom-in", UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
+        zoomIn.addClickListener(event -> this.designerCanvas.zoomIn());
+        actions.add(zoomIn);
 
         // Zoom out
-        Button zoomOutButton = new Button();
-        zoomOutButton.getElement().appendChild(IronIcons.ZOOM_OUT.create().getElement());
-        zoomOutButton.addClickListener(event -> this.designerCanvas.zoomOut());
-        Tooltip zoomOutButtonTooltip = getTooltip(zoomOutButton, getTranslation("tooltip.zoom-out", UI.getCurrent().getLocale())
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(zoomOutButton, zoomOutButtonTooltip);
+        IronIcons.Icon zoomOut = IconDecorator.decorate(IronIcons.ZOOM_OUT.create(), getTranslation("tooltip.zoom-out", UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
+        zoomOut.addClickListener(event -> this.designerCanvas.zoomOut());
+        actions.add(zoomOut);
 
-        // Export as selected format
-        Button download = new Button();
-        download.getElement().appendChild(IronIcons.FILE_DOWNLOAD.create().getElement());
-        Tooltip downloadTooltip = getTooltip(download, getTranslation("tooltip.export-png", UI.getCurrent().getLocale())
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(download, downloadTooltip);
-        download.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-            this.exportPng();
-        });
+//        // Export as selected format
+//        Button download = new Button();
+//        download.getElement().appendChild(IronIcons.FILE_DOWNLOAD.create().getElement());
+//        Tooltip downloadTooltip = getTooltip(download, getTranslation("tooltip.export-png", UI.getCurrent().getLocale())
+//            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
+//        actions.add(download, downloadTooltip);
+//        download.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
+//            this.exportPng();
+//        });
 
+        actions.setVerticalComponentAlignment(Alignment.END, zoomIn, zoomOut);
         return actions;
     }
 
@@ -220,30 +235,14 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             ContextTemplate contextTemplate = ContextHelper.getChildContextTemplate(canvasItemDoubleClickEvent.getFigure().getIdentifier(),
                 this.contextTemplate);
 
-            if(contextTemplate.getScheduledJobs() != null) {
-                try {
-                    JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
-                        this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
-                        this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
-                    jobTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
-                    jobTemplateVisualisationDialog.open();
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
+            if(contextTemplate != null && contextTemplate.getScheduledJobs() != null) {
+                this.openJobVisualisation(contextTemplate);
+            }
+            else if(contextTemplate != null) {
+                this.openContextVisualisation(contextTemplate);
             }
             else {
-                try {
-                    ContextTemplateVisualisationDialog contextTemplateVisualisationDialog
-                        = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
-                        this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
-                        this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
-                    contextTemplateVisualisationDialog.createSchedulerVisualisation(this.contextTemplate, contextTemplate);
-                    contextTemplateVisualisationDialog.open();
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
+                this.openJobDialog(canvasItemDoubleClickEvent.getFigure().getIdentifier());
             }
         }
     }
@@ -258,25 +257,69 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
         this.designerCanvas.exportPng();
     }
 
-    public static Tooltip getTooltip(Component component, String message, TooltipPosition position, TooltipAlignment alignment)
-    {
-        Tooltip tooltip = new Tooltip();
+    private void openJobVisualisation(ContextTemplate contextTemplate) {
+        try {
+            JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
+                this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
+            jobTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
+            jobTemplateVisualisationDialog.open();
 
-        tooltip.getElement().getStyle().set("background-color", "#232F34");
-        tooltip.getElement().getStyle().set("color", "#FFFFFF");
-        tooltip.getElement().getStyle().set("border-radius", "10px");
-        tooltip.getElement().getStyle().set("padding", "10px");
-        tooltip.getElement().getStyle().set("font-size", "8pt");
-        tooltip.getElement().getStyle().set("z-index", "100");
+            if(parent != null) {
+                parent.close();
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-        tooltip.attachToComponent(component);
+    private void openContextVisualisation(ContextTemplate contextTemplate) {
+        try {
+            ContextTemplateVisualisationDialog contextTemplateVisualisationDialog
+                = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
+                this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
+            contextTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
+            contextTemplateVisualisationDialog.open();
 
-        tooltip.setPosition(position);
-        tooltip.setAlignment(alignment);
+            if(parent != null) {
+                parent.close();
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-        tooltip.add(new Paragraph(message));
+    private void openJobDialog(String identifier) {
+        SchedulerJob schedulerJob = this.contextTemplate.getScheduledJobsMap().get(identifier);
 
-        return tooltip;
+        SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextIdAndJobName
+            (this.parentContextTemplate.getName(), schedulerJob.getJobName());
+
+        if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
+            InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
+                , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService);
+
+            internalEventDrivenJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
+            internalEventDrivenJobDialog.open();
+        }
+        else if(schedulerJobRecord.getJob() instanceof FileEventDrivenJob) {
+            FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName()), this.scheduledProcessManagementService
+                , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+            fileEventJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
+
+            fileEventJobDialog.open();
+        }
+        else {
+            QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
+                , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
+                , systemEventLogger, this.schedulerJobService);
+            quartzDrivenScheduledJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
+
+            quartzDrivenScheduledJobDialog.open();
+        }
     }
 
     @Override
