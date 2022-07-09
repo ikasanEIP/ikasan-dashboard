@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.util;
 
 public class IkasanColours {
     public static final String IKASAN_ORANGE = "rgba(241, 90, 35, 1.0)";
+    public static final String IKASAN_ORANGE_50 = "rgba(241, 90, 35, 0.5)";
     public static final String SCHEDULER_ON_HOLD = "#BB66B7";
     public static final String SCHEDULER_RELEASED = "#ceb331";
     public static final String SCHEDULER_COMPLETE = "#66bb6a";
