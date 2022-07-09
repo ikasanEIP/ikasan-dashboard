@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.layout.mxCompactTreeLayout;
 import com.mxgraph.model.mxCell;
+import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.designer.builder.*;
 import org.ikasan.designer.model.*;
@@ -157,6 +158,9 @@ public class ContextDraw2dAdapter {
                                 cb.withBgColor(StatusColours.getInstanceStatusColour(((SchedulerJobInstance)context.getScheduledJobsMap()
                                     .get(((PositionedItem) item).getId())).getStatus()));
                             }
+                            else {
+                                cb.withBgColor(IkasanColours.IKASAN_ORANGE_50);
+                            }
 
                             imageOverlay.add(cb.build());
                         }
@@ -174,6 +178,9 @@ public class ContextDraw2dAdapter {
                             if(context.getScheduledJobsMap().get(((PositionedItem) item).getId()) instanceof SchedulerJobInstance) {
                               rb.withBgColor(StatusColours.getInstanceStatusColour(((SchedulerJobInstance)context.getScheduledJobsMap()
                                     .get(((PositionedItem) item).getId())).getStatus()));
+                            }
+                            else {
+                                rb.withBgColor(IkasanColours.IKASAN_ORANGE_50);
                             }
 
                             imageOverlay.add(rb.build());
@@ -316,6 +323,9 @@ public class ContextDraw2dAdapter {
 
                     if(contextMap.get(((PositionedItem) item).getId()) instanceof ContextInstance) {
                         rb.withBgColor(StatusColours.getInstanceStatusColour(((ContextInstance)contextMap.get(((PositionedItem) item).getId())).getStatus()));
+                    }
+                    else {
+                        rb.withBgColor(IkasanColours.IKASAN_ORANGE_50);
                     }
 
                     imageOverlay.add(rb.build());
