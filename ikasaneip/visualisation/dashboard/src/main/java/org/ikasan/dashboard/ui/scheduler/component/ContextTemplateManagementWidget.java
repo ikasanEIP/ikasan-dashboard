@@ -280,10 +280,10 @@ public class ContextTemplateManagementWidget extends Div {
         ContextService contextService = new ContextService();
         try {
             if(this.contextViews.getValue() != null && !this.contextViews.getValue().equals(this.contextTemplate.getName())) {
-                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate.getContextsMap().get(this.contextViews.getValue()))));
+                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate.getContextsMap().get(this.contextViews.getValue()))), null);
             }
             else {
-                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate)));
+                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate)), null);
             }
 
             this.schedulerVisualisationDiv.add(this.contextViews, this.schedulerVisualisation);
@@ -375,11 +375,11 @@ public class ContextTemplateManagementWidget extends Div {
             try {
                 if (this.contextTemplate.getName().equals(event.getValue())) {
                     this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate
-                        , contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate)));
+                        , contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate)), null);
                 }
                 else {
                     this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate
-                        , contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate.getContextsMap().get(this.contextViews.getValue()))));
+                        , contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate.getContextsMap().get(this.contextViews.getValue()))), null);
                 }
             }
             catch (IOException e) {

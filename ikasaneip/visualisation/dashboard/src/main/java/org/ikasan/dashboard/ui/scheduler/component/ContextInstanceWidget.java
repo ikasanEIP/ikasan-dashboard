@@ -336,10 +336,10 @@ public class ContextInstanceWidget extends Div {
             }
 
             if(this.contextViews.getValue() != null && !this.contextViews.getValue().equals(this.contextInstance.getName())) {
-                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance.getContextsMap().get(this.contextViews.getValue()));
+                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance.getContextsMap().get(this.contextViews.getValue()), null);
             }
             else {
-                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance);
+                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance, null);
             }
         }
         catch (IOException e) {
@@ -392,10 +392,11 @@ public class ContextInstanceWidget extends Div {
             try {
                 if (this.contextTemplate.getName().equals(event.getValue())) {
                     this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance
-                        , this.contextInstance);
+                        , this.contextInstance, null);
                 }
                 else {
-                    this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, contextInstance.getContextsMap().get(this.contextViews.getValue()));
+                    this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance
+                        , contextInstance.getContextsMap().get(this.contextViews.getValue()), null);
                 }
             }
             catch (IOException e) {

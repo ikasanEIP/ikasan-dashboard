@@ -139,7 +139,7 @@ public class ContextDebugWidget extends Div {
                     ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
 
                     if (contextMachine != null) {
-                        this.schedulerInstanceVisualisation.createSchedulerVisualisation(contextMachine.getContext(), contextMachine.getContext());
+                        this.schedulerInstanceVisualisation.createSchedulerVisualisation(contextMachine.getContext(), contextMachine.getContext(), null);
                         controlsLayout.remove(this.dryRunModeCheckBox);
                         this.dryRunModeCheckBox = new Checkbox("Dry run mode");
                         controlsLayout.add(this.dryRunModeCheckBox);
@@ -212,7 +212,7 @@ public class ContextDebugWidget extends Div {
                 ContextMachineCache.instance().put(contextMachine);
 
 
-                this.schedulerInstanceVisualisation.createSchedulerVisualisation(contextMachine.getContext(), contextMachine.getContext());
+                this.schedulerInstanceVisualisation.createSchedulerVisualisation(contextMachine.getContext(), contextMachine.getContext(), null);
                 this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextMachine.getContext());
 
                 if(tabs.getSelectedTab().equals(this.fullContextInstance)) {
