@@ -1,30 +1,11 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
-import com.flowingcode.vaadin.addons.ironicons.IronIcons;
-import com.vaadin.componentfactory.Tooltip;
-import com.vaadin.componentfactory.TooltipAlignment;
-import com.vaadin.componentfactory.TooltipPosition;
-import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
-import org.ikasan.dashboard.ui.scheduler.component.FileEventJobInstanceDialog;
-import org.ikasan.dashboard.ui.scheduler.component.InternalEventDrivenJobInstanceDialog;
-import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobInstanceDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextDraw2dAdapter;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
-import org.ikasan.designer.DesignerCanvas;
-import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
-import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
-import org.ikasan.designer.event.CanvasItemRightClickEvent;
-import org.ikasan.designer.event.CanvasItemRightClickEventListener;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -40,19 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.UUID;
 
-public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDialog implements CanvasItemRightClickEventListener
-    , CanvasItemDoubleClickEventListener {
+public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDialog {
 
     private Logger logger = LoggerFactory.getLogger(JobInstanceVisualisationDialog.class);
 
-    private Registration schedulerJobStateChangeRegistration;
-
-    private DesignerCanvas designerCanvas;
     private VerticalLayout layout;
-
-    private ContextDraw2dAdapter adapter = new ContextDraw2dAdapter();
 
     private boolean initialised = false;
 
@@ -73,6 +47,8 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
     private JobInitiationService jobInitiationService;
 
     private ContextService contextService = new ContextService();
+
+    private SchedulerInstanceVisualisation schedulerInstanceVisualisation;
 
     public JobInstanceVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -144,23 +120,20 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
         this.rootContextInstance = rootContextInstance;
         this.contextInstance = contextInstance;
         this.initialised = false;
-        init();
+
+        initParentNavigation();
+
+        this.schedulerInstanceVisualisation = new SchedulerInstanceVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
+            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
+            this.schedulerJobInstanceService, this.jobInitiationService);
+
+        this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.rootContextInstance, this.contextInstance, this);
+
+        this.layout.add(this.schedulerInstanceVisualisation);
     }
 
-    private void init() throws IOException{
+    private void initParentNavigation() throws IOException{
         if(!initialised && this.contextInstance != null) {
-
-            if (this.designerCanvas != null) {
-                this.removeAll();
-            }
-
-            this.designerCanvas = new DesignerCanvas("job-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, true);
-            this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextInstance));
-            this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
-            this.designerCanvas.addCanvasItemRightClickEventListener(this);
-
-            this.designerCanvas.manageClickableItems();
-
             ContextInstance parentContextInstance = contextService.getParent(this.rootContextInstance, this.contextInstance);
 
             if(parentContextInstance != null) {
@@ -184,6 +157,7 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
                                 this.close();
                             }
                             catch (IOException e) {
+                                // todo notification message
                                 e.printStackTrace();
                             }
                         }
@@ -194,139 +168,7 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
                 layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, gotoParentButton);
             }
 
-            this.layout.add(initCanvasActions(), designerCanvas);
-
             this.initialised = true;
         }
-    }
-
-    protected Component initCanvasActions() {
-        HorizontalLayout actions = new HorizontalLayout();
-        actions.setSpacing(false);
-        actions.setPadding(false);
-        actions.setId("canvas-actions");
-
-        // Zoom in
-        Button zoomInButton = new Button();
-        zoomInButton.getElement().appendChild(IronIcons.ZOOM_IN.create().getElement());
-        zoomInButton.addClickListener(event -> this.designerCanvas.zoomIn());
-        Tooltip zoomInButtonTooltip = getTooltip(zoomInButton, getTranslation("tooltip.zoom-in", UI.getCurrent().getLocale())
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(zoomInButton, zoomInButtonTooltip);
-
-        // Zoom out
-        Button zoomOutButton = new Button();
-        zoomOutButton.getElement().appendChild(IronIcons.ZOOM_OUT.create().getElement());
-        zoomOutButton.addClickListener(event -> this.designerCanvas.zoomOut());
-        Tooltip zoomOutButtonTooltip = getTooltip(zoomOutButton, getTranslation("tooltip.zoom-out", UI.getCurrent().getLocale())
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(zoomOutButton, zoomOutButtonTooltip);
-
-        // Export as selected format
-        Button download = new Button();
-        download.getElement().appendChild(IronIcons.FILE_DOWNLOAD.create().getElement());
-        Tooltip downloadTooltip = getTooltip(download, getTranslation("tooltip.export-png", UI.getCurrent().getLocale())
-            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-        actions.add(download, downloadTooltip);
-        download.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-            this.exportPng();
-        });
-
-        return actions;
-    }
-
-    public static Tooltip getTooltip(Component component, String message, TooltipPosition position, TooltipAlignment alignment)
-    {
-        Tooltip tooltip = new Tooltip();
-
-        tooltip.getElement().getStyle().set("background-color", "#232F34");
-        tooltip.getElement().getStyle().set("color", "#FFFFFF");
-        tooltip.getElement().getStyle().set("border-radius", "10px");
-        tooltip.getElement().getStyle().set("padding", "10px");
-        tooltip.getElement().getStyle().set("font-size", "8pt");
-        tooltip.getElement().getStyle().set("z-index", "100");
-
-        tooltip.attachToComponent(component);
-
-        tooltip.setPosition(position);
-        tooltip.setAlignment(alignment);
-
-        tooltip.add(new Paragraph(message));
-
-        return tooltip;
-    }
-
-    public void exportPng(){
-        this.designerCanvas.exportPng();
-    }
-
-    @Override
-    public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
-        logger.info(canvasItemDoubleClickEvent.toString());
-        SchedulerJobInstance schedulerJob = this.contextInstance.getScheduledJobsMap().get(canvasItemDoubleClickEvent.getFigure().getIdentifier());
-
-        SchedulerJobInstanceRecord schedulerJobRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName
-            (this.rootContextInstance.getId(), schedulerJob.getJobName(), this.contextInstance.getName());
-
-        if(schedulerJobRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
-            InternalEventDrivenJobInstanceDialog internalEventDrivenJobInstanceDialog = new InternalEventDrivenJobInstanceDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
-                , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService, this.rootContextInstance
-                , this.jobInitiationService, moduleMetaDataService, this.logStreamingService);
-
-            internalEventDrivenJobInstanceDialog.setJob(schedulerJobRecord);
-            internalEventDrivenJobInstanceDialog.open();
-        }
-        else if(schedulerJobRecord.getSchedulerJobInstance() instanceof FileEventDrivenJobInstance) {
-            FileEventJobInstanceDialog fileEventJobDialog = new FileEventJobInstanceDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
-                , this.jobInitiationService, this.systemEventLogger, this.schedulerJobInstanceService);
-            fileEventJobDialog.setJob(schedulerJobRecord);
-
-            fileEventJobDialog.open();
-        }
-        else {
-            QuartzDrivenScheduledJobInstanceDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobInstanceDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
-                , this.jobInitiationService, systemEventLogger, this.schedulerJobInstanceService);
-            quartzDrivenScheduledJobDialog.setJob(schedulerJobRecord);
-
-            quartzDrivenScheduledJobDialog.open();
-        }
-
-//        JobContextMenu jobContextMenu = new JobContextMenu(this.contextInstance.getScheduledJobsMap().get(canvasItemDoubleClickEvent.getFigure().getIdentifier()),
-//            this.systemEventLogger, this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService,
-//            this.moduleControlRestService, this.metaDataRestService, this.schedulerJobService, this.rootContextInstance, this.contextInstance,
-//            this.logStreamingService, schedulerJobInstanceService);
-//        jobContextMenu.open();
-    }
-
-    @Override
-    public void rightClickEvent(CanvasItemRightClickEvent canvasItemRightClickEvent) {
-        logger.info(canvasItemRightClickEvent.toString());
-
-//        JobContextMenu jobContextMenu = new JobContextMenu(canvasItemRightClickEvent.getClickLocationX(), canvasItemRightClickEvent.getClickLocationY(),
-//            this.contextInstance.getScheduledJobsMap().get(canvasItemRightClickEvent.getFigure().getIdentifier()), this.systemEventLogger,
-//            this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-//            this.metaDataRestService, this.schedulerJobService);
-//        jobContextMenu.open();
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        UI ui = attachEvent.getUI();
-        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(schedulerJobInstanceStateChangeEvent -> {
-            if (schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
-                logger.info("Updating scheduler visualisation job status. Scheduler Job Instance[{}], Status[{}], Status Colour[{}]",
-                    schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
-                    StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
-                ui.access(() ->
-                    this.designerCanvas.setBackgroundColor(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier() + "_status"
-                        , StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus())));
-            }
-        });
-    }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent) {
-        this.schedulerJobStateChangeRegistration.remove();
-        this.schedulerJobStateChangeRegistration = null;
     }
 }
