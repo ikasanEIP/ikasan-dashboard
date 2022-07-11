@@ -1,6 +1,8 @@
 package org.ikasan.job.orchestration.core.machine;
 
 import static org.ikasan.job.orchestration.core.machine.ContextMachineTestHelper.createInternalJobsMap;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -15,7 +17,7 @@ import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEv
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.spec.bigqueue.BigQueueMessage;
+import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -29,7 +31,10 @@ import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1658,7 +1663,16 @@ public class ContextMachineTest extends AbstractTest {
         JSONAssert.assertEquals(loadDataFile("/data/machine/result/job5-success-context-status.json")
             , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
 
+        String outboundQueueName = "outbound-" + contextInstance.getId() + "-queue";
+        String inboundQueueName = "inbound-" + contextInstance.getId() + "-queue";
+
+        assertTrue(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName)));
+        assertTrue(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName)));
+
         contextMachine.teardown();
+
+        assertFalse(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName)));
+        assertFalse(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName)));
     }
 
     @Test
