@@ -10,6 +10,8 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.ui.scheduler.component.ContextTemplateManagementWidget;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.security.service.SecurityService;
+import org.ikasan.security.service.UserService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -87,6 +89,12 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     @Resource
     private JobProvisionService jobProvisionService;
 
+    @Resource
+    private UserService userService;
+
+    @Resource
+    private SecurityService securityService;
+
     private ContextTemplateManagementWidget contextTemplateManagementWidget;
 
     private ContextTemplate contextTemplate;
@@ -108,7 +116,7 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
         this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, ""
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
-            , this.jobProvisionService);
+            , this.jobProvisionService, this.userService, this.securityService);
 
         H2 contextTemplateManagementLabel = new H2(String.format(getTranslation("label.context-template-management", UI.getCurrent().getLocale())));
         this.add(contextTemplateManagementLabel, this.contextTemplateManagementWidget);
