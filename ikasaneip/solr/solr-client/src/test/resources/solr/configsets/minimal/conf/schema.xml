@@ -57,7 +57,7 @@
     <field name="status" type="strings" multiValued="false" stored="true"/>
     <field name="modifiedBy" type="strings" multiValued="false" stored="true"/>
     <field name="childContextName" type="strings" multiValued="false" stored="true"/>
-    <field name="accessRoles" type="strings" multiValued="false" stored="true"/>
+    <field name="accessGroups" type="strings" multiValued="false" stored="true"/>
     <field name="accessUsers" type="strings" multiValued="false" stored="true"/>
 
 </schema>

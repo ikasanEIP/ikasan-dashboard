@@ -27,6 +27,8 @@ import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.security.service.SecurityService;
+import org.ikasan.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -72,7 +74,8 @@ public class ContextTemplateWidget extends Div {
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
                                  JobInitiationService jobInitiationService, String zipWorkingDirectory, ContextProvisionService contextProvisionService,
-                                 ContextProfileService contextProfileService, JobProvisionService jobProvisionService) {
+                                 ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
+                                 SecurityService securityService) {
 
         this.scheduledContextService = scheduledContextService;
         this.schedulerJobService = schedulerJobService;
@@ -83,7 +86,8 @@ public class ContextTemplateWidget extends Div {
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, scheduledContextInstanceService, schedulerJobInstanceService, jobInitiationService);
+            , schedulerJobService, logStreamingService, scheduledContextInstanceService, schedulerJobInstanceService, jobInitiationService
+            , userService, securityService);
 
         Div div = new Div();
         div.setSizeFull();
@@ -135,7 +139,7 @@ public class ContextTemplateWidget extends Div {
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                               LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
-                              JobInitiationService jobInitiationService) {
+                              JobInitiationService jobInitiationService, UserService userService, SecurityService securityService) {
         // Create a modulesGrid bound to the list
         ScheduledContextSearchFilter contextSearchFilter = new ScheduledContextSearchFilterImpl();
         contextTemplateFilteringGrid = new ContextTemplateFilteringGrid(this.scheduledContextService, contextSearchFilter);
@@ -182,7 +186,7 @@ public class ContextTemplateWidget extends Div {
                     = new ContextTemplateManagementDialog(this.scheduledContextService, scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService
-                    , this.jobProvisionService);
+                    , this.jobProvisionService, userService, securityService);
                 contextTemplateManagementDialog.open();
             });
 

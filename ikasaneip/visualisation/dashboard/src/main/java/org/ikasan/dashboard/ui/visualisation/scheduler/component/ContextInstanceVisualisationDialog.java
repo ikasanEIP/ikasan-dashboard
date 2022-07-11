@@ -1,21 +1,19 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
-import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
+import org.ikasan.dashboard.ui.scheduler.component.SchedulerStatusDiv;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
-import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
-import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
-import org.ikasan.designer.event.CanvasItemRightClickEvent;
-import org.ikasan.designer.event.CanvasItemRightClickEventListener;
-import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -35,6 +33,8 @@ import java.io.IOException;
 public class ContextInstanceVisualisationDialog extends AbstractCloseableResizableDialog {
 
     private Logger logger = LoggerFactory.getLogger(ContextInstanceVisualisationDialog.class);
+
+    private Registration contextInstanceStateChangeRegistration;
 
     private VerticalLayout layout;
 
@@ -60,12 +60,14 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
 
     private ContextService contextService = new ContextService();
 
+    private SchedulerStatusDiv statusDiv;
+
     public ContextInstanceVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                               LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                                               JobInitiationService jobInitiationService) {
-        this.setHeight("90%");
+        this.setHeight("95%");
         this.setWidth("90%");
 
         this.moduleMetaDataService = moduleMetaDataService;
@@ -118,10 +120,11 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
             throw new IllegalArgumentException("jobInitiationService cannot be null!");
         }
 
-        layout = new VerticalLayout();
+        this.layout = new VerticalLayout();
+        this.layout.getStyle().set("padding-top", "0px");
 
-        layout.setSizeFull();
-        super.content.add(layout);
+        this.layout.setSizeFull();
+        super.content.add(this.layout);
     }
 
     /**
@@ -132,7 +135,15 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
         this.contextInstance = contextInstance;
 
         this.initialised = false;
-        initParentNavigation();
+
+        this.statusDiv = new SchedulerStatusDiv();
+        this.statusDiv.setHeight("45px");
+        this.statusDiv.setWidth("100%");
+        this.statusDiv.setStatus(this.contextInstance.getStatus());
+
+        this.layout.add(this.statusDiv);
+
+        this.initParentNavigation();
 
         this.schedulerInstanceVisualisation =  new SchedulerInstanceVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
@@ -183,5 +194,25 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
         }
     }
 
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        UI ui = attachEvent.getUI();
 
+        contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
+            if (contextInstanceStateChangeEvent.getContextInstance() != null &&
+                contextInstanceStateChangeEvent.getContextInstance().getName().equals(this.contextInstance.getName())) {
+                ui.access(() -> {
+                    this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
+                });
+            }
+        });
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        if(this.contextInstanceStateChangeRegistration != null) {
+            this.contextInstanceStateChangeRegistration.remove();
+            this.contextInstanceStateChangeRegistration = null;
+        }
+    }
 }
