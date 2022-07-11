@@ -3,11 +3,15 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
+import org.ikasan.dashboard.ui.scheduler.component.ContextViewManagementDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.security.service.SecurityService;
+import org.ikasan.security.service.UserService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -17,6 +21,7 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +49,9 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
     private SchedulerJobService schedulerJobService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private JobInitiationService jobInitiationService;
+    private ContextProfileService contextProfileService;
+    private UserService userService;
+    private SecurityService securityService;
 
     private ContextService contextService = new ContextService();
 
@@ -53,7 +61,8 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
                                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                               LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
-                                              JobInitiationService jobInitiationService) {
+                                              JobInitiationService jobInitiationService, ContextProfileService contextProfileService, UserService userService,
+                                              SecurityService securityService) {
         this.setHeight("90%");
         this.setWidth("90%");
 
@@ -107,6 +116,21 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
             throw new IllegalArgumentException("jobInitiationService cannot be null!");
         }
 
+        this.contextProfileService = contextProfileService;
+        if(this.contextProfileService == null) {
+            throw new IllegalArgumentException("contextProfileService cannot be null!");
+        }
+
+        this.userService = userService;
+        if(this.userService == null) {
+            throw new IllegalArgumentException("userService cannot be null!");
+        }
+
+        this.securityService = securityService;
+        if(this.securityService == null) {
+            throw new IllegalArgumentException("securityService cannot be null!");
+        }
+
         layout = new VerticalLayout();
         layout.setSizeFull();
         super.content.add(layout);
@@ -119,16 +143,20 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
 
         this.schedulerVisualisation = new SchedulerVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
-            this.schedulerJobInstanceService, this.jobInitiationService);
+            this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService);
 
         schedulerVisualisation.createSchedulerVisualisation(rootContextTemplate, contextTemplate, this);
 
         initParentNavigation();
 
         this.layout.add(schedulerVisualisation);
+
+        super.title.setText(this.contextTemplate.getName());
     }
 
     private void initParentNavigation() {
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+
         if(!initialised && this.contextTemplate != null) {
 
             ContextTemplate parentContextTemplate = contextService.getParent(this.rootContextTemplate, this.contextTemplate);
@@ -146,7 +174,7 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
                                 ContextTemplateVisualisationDialog contextTemplateVisualisationDialog
                                     = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
                                     , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService
-                                    , this.schedulerJobInstanceService, this.jobInitiationService);
+                                    , this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService);
 
                                 contextTemplateVisualisationDialog.createSchedulerVisualisation(this.rootContextTemplate, this.contextTemplate);
                                 contextTemplateVisualisationDialog.open();
@@ -160,10 +188,24 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
                     }
                 });
 
-                layout.add(gotoParentButton);
-                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, gotoParentButton);
+                buttonLayout.add(gotoParentButton);
             }
 
+            Button addContextViewButton = new Button("Add As Context View", VaadinIcon.PLUS.create());
+            addContextViewButton.setIconAfterText(true);
+            addContextViewButton.getElement().getStyle().set("position", "absolute");
+            addContextViewButton.getElement().getStyle().set("right", "45px");
+
+            addContextViewButton.addClickListener(event -> {
+                ContextViewManagementDialog contextViewManagementDialog = new ContextViewManagementDialog(this.contextProfileService, this.userService,
+                    this.securityService, this.systemEventLogger, this.rootContextTemplate.getName(), this.contextTemplate.getName());
+                contextViewManagementDialog.open();
+            });
+
+            buttonLayout.add(addContextViewButton);
+
+            this.layout.add(buttonLayout);
+            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
             this.initialised = true;
         }
     }

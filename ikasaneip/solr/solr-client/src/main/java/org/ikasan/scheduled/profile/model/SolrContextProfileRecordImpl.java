@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
-import org.ikasan.scheduled.joblock.model.SolrJobLockCacheDataImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
@@ -31,8 +30,8 @@ public class SolrContextProfileRecordImpl implements ContextProfileRecord {
     @Field(SolrDaoBase.PAYLOAD_CONTENT)
     private String contextProfile;
 
-    @Field(SolrDaoBase.ACCESS_ROLES)
-    private String accessRoles;
+    @Field(SolrDaoBase.ACCESS_GROUPS)
+    private String accessGroups;
 
     @Field(SolrDaoBase.ACCESS_USERS)
     private String accessUsers;
@@ -98,23 +97,23 @@ public class SolrContextProfileRecordImpl implements ContextProfileRecord {
     }
 
     @Override
-    public List<String> getAccessRoles() {
-        if(this.accessRoles == null) return null;
+    public List<String> getAccessGroups() {
+        if(this.accessGroups == null) return null;
         try {
-            return objectMapper.readValue(this.accessRoles, ArrayList.class);
+            return objectMapper.readValue(this.accessGroups, ArrayList.class);
         }
         catch (JsonProcessingException e) {
-            throw new SolrEntityConversionException("Could not convert string to entity: " + this.accessRoles, e);
+            throw new SolrEntityConversionException("Could not convert string to entity: " + this.accessGroups, e);
         }
     }
 
     @Override
-    public void setAccessRoles(List<String> accessRoles) {
+    public void setAccessGroups(List<String> accessGroups) {
         try {
-            this.accessRoles = objectMapper.writeValueAsString(accessRoles);
+            this.accessGroups = objectMapper.writeValueAsString(accessGroups);
         }
         catch (JsonProcessingException e) {
-            throw new SolrEntityConversionException("Could not convert entity to string: " + accessRoles, e);
+            throw new SolrEntityConversionException("Could not convert entity to string: " + accessGroups, e);
         }
     }
 

@@ -10,7 +10,6 @@ import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.profile.model.SolrContextProfileImpl;
 import org.ikasan.scheduled.profile.model.SolrContextProfileRecordImpl;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
-import org.ikasan.spec.scheduled.profile.dao.ContextProfileDao;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.*;
@@ -74,7 +73,7 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
         Assert.assertEquals("contextName", found.getContextName());
         Assert.assertEquals("owner", found.getOwner());
         Assert.assertEquals(0, found.getContextProfile().getSubContexts().size());
-        Assert.assertEquals(0, found.getAccessRoles().size());
+        Assert.assertEquals(0, found.getAccessGroups().size());
         Assert.assertEquals(0, found.getAccessUsers().size());
         Assert.assertEquals("modifiedBy", found.getModifiedBy());
 
@@ -88,7 +87,7 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
         solrContextProfileRecord.setContextName("contextName");
         solrContextProfileRecord.setOwner("owner");
         solrContextProfileRecord.setModifiedBy("modifiedBy");
-        solrContextProfileRecord.setAccessRoles(List.of("role1"));
+        solrContextProfileRecord.setAccessGroups(List.of("role1"));
         solrContextProfileRecord.setAccessUsers(List.of("user1"));
 
         SolrContextProfileImpl solrContextProfile = new SolrContextProfileImpl();
@@ -106,7 +105,7 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
         Assert.assertEquals("contextName", found.getContextName());
         Assert.assertEquals("owner", found.getOwner());
         Assert.assertEquals(2, found.getContextProfile().getSubContexts().size());
-        Assert.assertEquals(1, found.getAccessRoles().size());
+        Assert.assertEquals(1, found.getAccessGroups().size());
         Assert.assertEquals(1, found.getAccessUsers().size());
         Assert.assertEquals("modifiedBy", found.getModifiedBy());
 
@@ -184,7 +183,7 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
         filter = new SolrContextProfileSearchFilterImpl();
         filter.setProfileName("profileName18");
         filter.setContextName("contextName18");
-        filter.setOwner("owner18");
+        filter.setOwner("SYSTEM_OWNER");
         filter.setUser("user1");
         filter.setAccessRoles(List.of("role18", "role19"));
 
@@ -202,8 +201,8 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
 
         results = this.solrContextProfileDao.findByFilter(filter, -1, -1, null, null);
 
-        Assert.assertEquals(1, results.getTotalNumberOfResults());
-        Assert.assertEquals(1, results.getResultList().size());
+        Assert.assertEquals(0, results.getTotalNumberOfResults());
+        Assert.assertEquals(0, results.getResultList().size());
 
     }
 
@@ -226,7 +225,7 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
-//    @Ignore
+    @Ignore
     public void test() throws JsonProcessingException {
         SolrContextProfileDaoImpl dao = new SolrContextProfileDaoImpl();
         dao.initStandalone("http://localhost:8983/solr", 30);
@@ -238,10 +237,11 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
         solrContextProfileRecord.setContextName("-1793100514");
         solrContextProfileRecord.setOwner(ContextProfileRecord.SYSTEM_OWNER);
         solrContextProfileRecord.setModifiedBy("admin");
-        solrContextProfileRecord.setAccessRoles(List.of());
+        solrContextProfileRecord.setAccessGroups(List.of());
         solrContextProfileRecord.setAccessUsers(List.of());
 
         SolrContextProfileImpl solrContextProfile = new SolrContextProfileImpl();
+        solrContextProfile.setDefaultContext("CONTEXT-1436221681");
         solrContextProfile.setSubContexts(List.of("CONTEXT-1436221681", "CONTEXT-1447508514", "CONTEXT-369160711", "CONTEXT-1677625082", "CONTEXT--2014137964", "CONTEXT-1500699512", "-1793100514"));
 
         solrContextProfileRecord.setContextProfile(solrContextProfile);
@@ -258,7 +258,7 @@ public class SolrContextProfileDaoImplTest extends SolrTestCaseJ4 {
             solrContextProfileRecord.setContextName("contextName"+i);
             solrContextProfileRecord.setOwner("SYSTEM_OWNER");
             solrContextProfileRecord.setModifiedBy("modifiedBy");
-            solrContextProfileRecord.setAccessRoles(List.of("role"+i));
+            solrContextProfileRecord.setAccessGroups(List.of("role"+i));
             solrContextProfileRecord.setAccessUsers(List.of("user"+i));
 
             SolrContextProfileImpl solrContextProfile = new SolrContextProfileImpl();
