@@ -76,6 +76,8 @@ public class ContextInstanceWidget extends Div {
     private ContextInstanceAuditWidget contextInstanceAuditWidget;
     private JobInitiationService jobInitiationService;
     private ContextProfileService contextProfileService;
+    private ConfigurationService configurationRestService;
+    private ModuleControlService moduleControlRestService;
 
     private Div schedulerVisualisationDiv;
 
@@ -118,6 +120,7 @@ public class ContextInstanceWidget extends Div {
         this.contextTemplate = contextTemplate;
         this.jobInitiationService = jobInitiationService;
         this.contextProfileService = contextProfileService;
+        this.configurationRestService = configurationRestService;
 
         this.init(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
@@ -374,7 +377,7 @@ public class ContextInstanceWidget extends Div {
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobInstanceGridWidget = new SchedulerJobInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextInstance, this.schedulerJobInstanceService,
-            this.jobInitiationService);
+            this.jobInitiationService, this.configurationRestService, metaDataRestService);
         this.schedulerJobInstanceGridWidget.setWidthFull();
         this.schedulerJobInstanceGridWidget.setHeight("75vh");
         this.schedulerJobInstanceGridWidget.setVisible(false);
