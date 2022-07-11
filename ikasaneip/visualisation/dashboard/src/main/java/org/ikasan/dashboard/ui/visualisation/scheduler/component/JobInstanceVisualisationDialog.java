@@ -1,11 +1,17 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
+import org.ikasan.dashboard.ui.scheduler.component.SchedulerStatusDiv;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -13,7 +19,7 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -25,6 +31,8 @@ import java.io.IOException;
 public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDialog {
 
     private Logger logger = LoggerFactory.getLogger(JobInstanceVisualisationDialog.class);
+
+    private Registration contextInstanceStateChangeRegistration;
 
     private VerticalLayout layout;
 
@@ -50,12 +58,14 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
 
     private SchedulerInstanceVisualisation schedulerInstanceVisualisation;
 
+    private SchedulerStatusDiv statusDiv;
+
     public JobInstanceVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                           SchedulerJobService schedulerJobService, LogStreamingService logStreamingService,
                                           SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService) {
-        this.setHeight("90%");
+        this.setHeight("95%");
         this.setWidth("90%");
 
         this.moduleMetaDataService = moduleMetaDataService;
@@ -109,6 +119,7 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
         }
 
         layout = new VerticalLayout();
+        this.layout.getStyle().set("padding-top", "0px");
         layout.setSizeFull();
         super.content.add(layout);
     }
@@ -120,6 +131,13 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
         this.rootContextInstance = rootContextInstance;
         this.contextInstance = contextInstance;
         this.initialised = false;
+
+        this.statusDiv = new SchedulerStatusDiv();
+        this.statusDiv.setHeight("45px");
+        this.statusDiv.setWidth("100%");
+        this.statusDiv.setStatus(this.contextInstance.getStatus());
+
+        this.layout.add(this.statusDiv);
 
         initParentNavigation();
 
@@ -169,6 +187,28 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
             }
 
             this.initialised = true;
+        }
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        UI ui = attachEvent.getUI();
+
+        contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
+            if (contextInstanceStateChangeEvent.getContextInstance() != null &&
+                contextInstanceStateChangeEvent.getContextInstance().getName().equals(this.contextInstance.getName())) {
+                ui.access(() -> {
+                    this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
+                });
+            }
+        });
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        if(this.contextInstanceStateChangeRegistration != null) {
+            this.contextInstanceStateChangeRegistration.remove();
+            this.contextInstanceStateChangeRegistration = null;
         }
     }
 }

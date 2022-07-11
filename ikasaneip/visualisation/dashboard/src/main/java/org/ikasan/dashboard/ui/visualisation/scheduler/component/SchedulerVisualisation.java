@@ -30,6 +30,8 @@ import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
 import org.ikasan.job.orchestration.model.context.ContextImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.security.service.SecurityService;
+import org.ikasan.security.service.UserService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -45,6 +47,7 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,6 +79,9 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     private LogStreamingService logStreamingService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private JobInitiationService jobInitiationService;
+    private ContextProfileService contextProfileService;
+    private UserService userService;
+    private SecurityService securityService;
 
     private Dialog parent;
 
@@ -83,7 +89,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                   LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
-                                  JobInitiationService jobInitiationService) {
+                                  JobInitiationService jobInitiationService, ContextProfileService contextProfileService, UserService userService, SecurityService securityService) {
 
         this.dynamicImagePath = dynamicImagePath;
         if (this.dynamicImagePath == null) {
@@ -138,6 +144,21 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
         this.jobInitiationService = jobInitiationService;
         if(this.jobInitiationService == null) {
             throw new IllegalArgumentException("jobInitiationService cannot be null!");
+        }
+
+        this.contextProfileService = contextProfileService;
+        if(this.contextProfileService == null) {
+            throw new IllegalArgumentException("contextProfileService cannot be null!");
+        }
+
+        this.userService = userService;
+        if(this.userService == null) {
+            throw new IllegalArgumentException("userService cannot be null!");
+        }
+
+        this.securityService = securityService;
+        if(this.securityService == null) {
+            throw new IllegalArgumentException("securityService cannot be null!");
         }
 
         this.setMargin(false);
@@ -261,7 +282,8 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
         try {
             JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
-                this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
+                this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService,
+                this.contextProfileService, this.userService, this.securityService);
             jobTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
             jobTemplateVisualisationDialog.open();
 
@@ -279,7 +301,8 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             ContextTemplateVisualisationDialog contextTemplateVisualisationDialog
                 = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
-                this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
+                this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService,
+                this.contextProfileService, this.userService, this.securityService);
             contextTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
             contextTemplateVisualisationDialog.open();
 

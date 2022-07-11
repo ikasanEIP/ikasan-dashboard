@@ -10,6 +10,8 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -27,6 +29,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerInstanceVisualisation;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
@@ -174,7 +177,8 @@ public class ContextInstanceWidget extends Div {
         VerticalLayout buttonLayout = new VerticalLayout();
         buttonLayout.setWidth("100%");
 
-        Button resetButton = new Button("Reset Context");
+        Button resetButton = new Button(getTranslation("button.reset-context", UI.getCurrent().getLocale()), VaadinIcon.TIME_BACKWARD.create());
+        resetButton.setIconAfterText(true);
         resetButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
         resetButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
@@ -204,7 +208,7 @@ public class ContextInstanceWidget extends Div {
                         resetButton.setVisible(false);
                     }
                     catch (Exception e) {
-                        NotificationHelper.showErrorNotification("An error has occurred attempting to reset the context! Please contact Ikasan support.");
+                        NotificationHelper.showErrorNotification(getTranslation("error.reset-context", UI.getCurrent().getLocale()));
                     }
                 }
             });
@@ -319,8 +323,6 @@ public class ContextInstanceWidget extends Div {
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService) {
-        this.initialiseContextViewCombo();
-
         this.schedulerVisualisationDiv = new Div();
         this.schedulerVisualisationDiv.setSizeFull();
 
@@ -331,79 +333,38 @@ public class ContextInstanceWidget extends Div {
         this.schedulerInstanceVisualisation.setHeight("75vh");
 
         try {
-            if(ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()) != null) {
-                this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
-            }
+            ContextProfileSearchFilter searchFilter = new SolrContextProfileSearchFilterImpl();
+            searchFilter.setContextName(this.contextTemplate.getName());
+            searchFilter.setOwner(ContextProfileRecord.SYSTEM_OWNER);
 
-            if(this.contextViews.getValue() != null && !this.contextViews.getValue().equals(this.contextInstance.getName())) {
-                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance.getContextsMap().get(this.contextViews.getValue()), null);
+            SearchResults<ContextProfileRecord> results = this.contextProfileService.findByFilter(searchFilter, -1, -1, null, null);
+
+            if(results.getResultList().size() > 0 && results.getResultList().get(0).getContextProfile().getDefaultContext() != null
+                && !results.getResultList().get(0).getContextProfile().getDefaultContext().isEmpty()){
+                ContextInstance childContextInstance = ContextHelper.getChildContextInstance(results.getResultList()
+                    .get(0).getContextProfile().getDefaultContext(), this.contextInstance);
+
+                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, childContextInstance, null);
             }
             else {
                 this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance, null);
             }
+
+            this.schedulerVisualisationDiv.add(contextViewMenuBar(), this.schedulerInstanceVisualisation);
         }
         catch (IOException e) {
-            NotificationHelper.showErrorNotification(getTranslation("error.rendering-context", UI.getCurrent().getLocale()));
+            // todo raise message
             e.printStackTrace();
         }
-
-        this.schedulerVisualisationDiv.add(this.contextViews, this.schedulerInstanceVisualisation);
     }
 
 
-    private void initialiseContextViewCombo() {
-        this.contextViews = new ComboBox<>("Context Views");
-        this.contextViews.getElement().getStyle().set("position", "absolute");
-        this.contextViews.getElement().getStyle().set("right", "45px");
-        this.contextViews.setWidth("550px");
+    private MenuBar contextViewMenuBar() {
+        MenuBar contextViewsMenuBar = new ContextInstanceViewMenuBar(this.contextInstance, this.contextProfileService, this.schedulerInstanceVisualisation);
+        contextViewsMenuBar.getElement().getStyle().set("position", "absolute");
+        contextViewsMenuBar.getElement().getStyle().set("right", "35px");
 
-        ContextProfileSearchFilter searchFilter = new SolrContextProfileSearchFilterImpl();
-        searchFilter.setContextName(this.contextTemplate.getName());
-
-        SearchResults<ContextProfileRecord> contextProfileRecords = this.contextProfileService
-            .findByFilter(searchFilter, -1, -1, null, null);
-
-        List<String> items = new ArrayList<>();
-        AtomicReference<String> defaultContext = new AtomicReference<>();
-        if(!contextProfileRecords.getResultList().isEmpty()) {
-            contextProfileRecords.getResultList().forEach(record -> {
-                if(record.getOwner() != null &&
-                    record.getOwner().equals(this.authentication.getName())) {
-                    defaultContext.set(record.getContextProfile().getDefaultContext());
-                }
-                else if(record.getOwner() != null && defaultContext.get() == null && record.getOwner().equals(ContextProfileRecord.SYSTEM_OWNER)){
-                    defaultContext.set(record.getContextProfile().getDefaultContext());
-                }
-
-                record.getContextProfile().getSubContexts().forEach(profile -> items.add(profile));
-            });
-        }
-
-        this.contextViews.setItems(items);
-
-        if(defaultContext.get() != null) {
-            this.contextViews.setValue(defaultContext.get());
-        }
-        else if(items.size() > 0) {
-            this.contextViews.setValue(items.get(0));
-        }
-
-        this.contextViews.addValueChangeListener(event -> {
-            try {
-                if (this.contextTemplate.getName().equals(event.getValue())) {
-                    this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance
-                        , this.contextInstance, null);
-                }
-                else {
-                    this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance
-                        , contextInstance.getContextsMap().get(this.contextViews.getValue()), null);
-                }
-            }
-            catch (IOException e) {
-                NotificationHelper.showErrorNotification(getTranslation("error.rendering-context", UI.getCurrent().getLocale()));
-                e.printStackTrace();
-            }
-        });
+        return contextViewsMenuBar;
     }
 
 
