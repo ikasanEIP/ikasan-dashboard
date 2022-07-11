@@ -52,8 +52,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class ContextUploadDialog extends AbstractCloseableResizableDialog
-{
+public class ContextUploadDialog extends AbstractCloseableResizableDialog {
     Logger logger = LoggerFactory.getLogger(ContextUploadDialog.class);
 
     private byte[] contextFile;

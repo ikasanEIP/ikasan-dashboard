@@ -2,11 +2,15 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
@@ -19,9 +23,12 @@ import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
+import org.ikasan.security.service.SecurityService;
+import org.ikasan.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -42,9 +49,6 @@ import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class ContextTemplateManagementWidget extends Div {
 
@@ -53,6 +57,9 @@ public class ContextTemplateManagementWidget extends Div {
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private ContextProfileService contextProfileService;
     private JobProvisionService jobProvisionService;
+    private UserService userService;
+    private SecurityService securityService;
+
     private FormLayout formLayout;
     private IkasanAuthentication authentication;
 
@@ -68,7 +75,7 @@ public class ContextTemplateManagementWidget extends Div {
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
     private TextField endWindowCronExpressionTf;
-    private ComboBox<String> contextViews;
+    private MenuBar contextViewsMenuBar;
 
     private Div schedulerVisualisationDiv;
 
@@ -93,7 +100,8 @@ public class ContextTemplateManagementWidget extends Div {
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
-                                           JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobProvisionService jobProvisionService) {
+                                           JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobProvisionService jobProvisionService,
+                                           UserService userService, SecurityService securityService) {
 
         this.scheduledContextService = scheduledContextService;
         this.scheduledContextInstanceService = scheduledContextInstanceService;
@@ -103,6 +111,8 @@ public class ContextTemplateManagementWidget extends Div {
         this.jobInitiationService = jobInitiationService;
         this.contextProfileService = contextProfileService;
         this.jobProvisionService = jobProvisionService;
+        this.userService = userService;
+        this.securityService = securityService;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -266,27 +276,34 @@ public class ContextTemplateManagementWidget extends Div {
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService) {
 
-        this.initialiseContextViewCombo();
-
         this.schedulerVisualisationDiv = new Div();
         this.schedulerVisualisationDiv.setSizeFull();
 
         this.schedulerVisualisation = new SchedulerVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
-            , this.schedulerJobInstanceService, this.jobInitiationService);
+            , this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService);
         this.schedulerVisualisation.setWidthFull();
         this.schedulerVisualisation.setHeight("75vh");
 
-        ContextService contextService = new ContextService();
         try {
-            if(this.contextViews.getValue() != null && !this.contextViews.getValue().equals(this.contextTemplate.getName())) {
-                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate.getContextsMap().get(this.contextViews.getValue()))), null);
+            ContextProfileSearchFilter searchFilter = new SolrContextProfileSearchFilterImpl();
+            searchFilter.setContextName(this.contextTemplate.getName());
+            searchFilter.setOwner(ContextProfileRecord.SYSTEM_OWNER);
+
+            SearchResults<ContextProfileRecord> results = this.contextProfileService.findByFilter(searchFilter, -1, -1, null, null);
+
+            if(results.getResultList().size() > 0 && results.getResultList().get(0).getContextProfile().getDefaultContext() != null
+                && !results.getResultList().get(0).getContextProfile().getDefaultContext().isEmpty()){
+                ContextTemplate childContextTemplate = ContextHelper.getChildContextTemplate(results.getResultList()
+                    .get(0).getContextProfile().getDefaultContext(), this.contextTemplate);
+
+                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, childContextTemplate, null);
             }
             else {
-                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate)), null);
+                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, this.contextTemplate, null);
             }
 
-            this.schedulerVisualisationDiv.add(this.contextViews, this.schedulerVisualisation);
+            this.schedulerVisualisationDiv.add(this.contextViewMenuBar(), this.schedulerVisualisation);
         }
         catch (IOException e) {
             // todo raise message
@@ -332,59 +349,11 @@ public class ContextTemplateManagementWidget extends Div {
 
     }
 
-    private void initialiseContextViewCombo() {
-        this.contextViews = new ComboBox<>(getTranslation("label.context-views", UI.getCurrent().getLocale()));
-        this.contextViews.getElement().getStyle().set("position", "absolute");
-        this.contextViews.getElement().getStyle().set("right", "45px");
-        this.contextViews.setWidth("550px");
+    private MenuBar contextViewMenuBar() {
+        MenuBar contextViewsMenuBar = new ContextTemplateViewMenuBar(this.contextTemplate, this.contextProfileService, this.schedulerVisualisation);
+        contextViewsMenuBar.getElement().getStyle().set("position", "absolute");
+        contextViewsMenuBar.getElement().getStyle().set("right", "45px");
 
-        ContextProfileSearchFilter searchFilter = new SolrContextProfileSearchFilterImpl();
-        searchFilter.setContextName(this.contextTemplate.getName());
-
-        SearchResults<ContextProfileRecord> contextProfileRecords = this.contextProfileService
-            .findByFilter(searchFilter, -1, -1, null, null);
-
-        List<String> items = new ArrayList<>();
-        AtomicReference<String> defaultContext = new AtomicReference<>();
-        if(!contextProfileRecords.getResultList().isEmpty()) {
-            contextProfileRecords.getResultList().forEach(record -> {
-                if(record.getOwner() != null &&
-                    record.getOwner().equals(this.authentication.getName())) {
-                    defaultContext.set(record.getContextProfile().getDefaultContext());
-                }
-                else if(record.getOwner() != null && defaultContext.get() == null && record.getOwner().equals(ContextProfileRecord.SYSTEM_OWNER)){
-                    defaultContext.set(record.getContextProfile().getDefaultContext());
-                }
-
-                record.getContextProfile().getSubContexts().forEach(profile -> items.add(profile));
-            });
-        }
-
-        this.contextViews.setItems(items);
-
-        if(defaultContext.get() != null) {
-            this.contextViews.setValue(defaultContext.get());
-        }
-        else if(items.size() > 0) {
-            this.contextViews.setValue(items.get(0));
-        }
-
-        ContextService contextService = new ContextService();
-
-        this.contextViews.addValueChangeListener(event -> {
-            try {
-                if (this.contextTemplate.getName().equals(event.getValue())) {
-                    this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate
-                        , contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate)), null);
-                }
-                else {
-                    this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate
-                        , contextService.getContextTemplate(contextService.getContextTemplateString(this.contextTemplate.getContextsMap().get(this.contextViews.getValue()))), null);
-                }
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+        return contextViewsMenuBar;
     }
 }
