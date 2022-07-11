@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
-import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
-import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.joblock.dao.SolrJobLockCacheDaoImpl;
 import org.ikasan.scheduled.profile.model.SolrContextProfileImpl;
 import org.ikasan.scheduled.profile.model.SolrContextProfileRecordImpl;
@@ -46,11 +44,11 @@ public class SolrContextProfileDaoImpl extends SolrDaoBase<ContextProfileRecord>
 
             document.addField(PAYLOAD_CONTENT, OBJECT_MAPPER.writeValueAsString(event.getContextProfile()));
 
-            if(event.getAccessRoles() == null) {
-                document.addField(ACCESS_ROLES, OBJECT_MAPPER.writeValueAsString(List.of()));
+            if(event.getAccessGroups() == null) {
+                document.addField(ACCESS_GROUPS, OBJECT_MAPPER.writeValueAsString(List.of()));
             }
             else {
-                document.addField(ACCESS_ROLES, OBJECT_MAPPER.writeValueAsString(event.getAccessRoles()));
+                document.addField(ACCESS_GROUPS, OBJECT_MAPPER.writeValueAsString(event.getAccessGroups()));
             }
 
             if(event.getAccessUsers() == null) {
@@ -105,18 +103,12 @@ public class SolrContextProfileDaoImpl extends SolrDaoBase<ContextProfileRecord>
             .append(filter.getProfileName() != null && !filter.getProfileName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getProfileName()) : "*")
             .append(AND)
             .append(COMPONENT_NAME).append(COLON)
-            .append(filter.getContextName() != null && !filter.getContextName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getContextName()) : "*")
-            .append(AND)
-            .append(OPEN_BRACKET);
+            .append(filter.getContextName() != null && !filter.getContextName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getContextName()) : "*");
 
         if(filter.getOwner() != null && !filter.getOwner().isEmpty()) {
-            queryString.append(FLOW_NAME).append(COLON)
-                .append(SolrSpecialCharacterEscapeUtil.escape(filter.getOwner()))
-                .append(OR);
+            queryString.append(AND).append(FLOW_NAME).append(COLON)
+                .append(SolrSpecialCharacterEscapeUtil.escape(filter.getOwner()));
         }
-
-        queryString.append(FLOW_NAME).append(COLON).append(ContextProfileRecord.SYSTEM_OWNER)
-            .append(CLOSE_BRACKET);
 
         if(filter.getUser() != null && !filter.getUser().isEmpty()) {
             queryString.append(AND)
@@ -129,7 +121,7 @@ public class SolrContextProfileDaoImpl extends SolrDaoBase<ContextProfileRecord>
 
         if(filter.getAccessRoles() != null && !filter.getAccessRoles().isEmpty()) {
             queryString.append(AND)
-                .append(ACCESS_ROLES)
+                .append(ACCESS_GROUPS)
                 .append(COLON)
                 .append(OPEN_BRACKET);
 

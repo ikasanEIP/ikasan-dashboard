@@ -20,6 +20,8 @@ import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.security.service.SecurityService;
+import org.ikasan.security.service.UserService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -129,6 +131,12 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private JobProvisionService jobProvisionService;
 
+    @Resource
+    private UserService userService;
+
+    @Resource
+    private SecurityService securityService;
+
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
     private UpcomingJobExecutionsWidget upcomingJobExecutionsWidget;
@@ -184,8 +192,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
         this.contextTemplateWidget = new ContextTemplateWidget(this.scheduledContextService, ".", this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
-            this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService,
-            this.zipWorkingDirectory, this.contextProvisionService, this.contextProfileService, this.jobProvisionService);
+            this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
+            this.contextProfileService, this.jobProvisionService, userService, securityService);
         this.contextTemplateWidget.setVisible(false);
 
 

@@ -18,7 +18,7 @@ public class ContextProfileRecordImpl implements ContextProfileRecord {
     private String contextName;
     private String owner;
     private String contextProfile;
-    private String accessRoles;
+    private String accessGroups;
     private String accessUsers;
     private long createdDateTime;
     private long modifiedDateTime;
@@ -76,23 +76,23 @@ public class ContextProfileRecordImpl implements ContextProfileRecord {
     }
 
     @Override
-    public List<String> getAccessRoles() {
-        if(this.accessRoles == null) return null;
+    public List<String> getAccessGroups() {
+        if(this.accessGroups == null) return null;
         try {
-            return objectMapper.readValue(this.accessRoles, ArrayList.class);
+            return objectMapper.readValue(this.accessGroups, ArrayList.class);
         }
         catch (JsonProcessingException e) {
-            throw new EntityConversionException("Could not convert string to entity: " + this.accessRoles, e);
+            throw new EntityConversionException("Could not convert string to entity: " + this.accessGroups, e);
         }
     }
 
     @Override
-    public void setAccessRoles(List<String> accessRoles) {
+    public void setAccessGroups(List<String> accessGroups) {
         try {
-            this.accessRoles = objectMapper.writeValueAsString(accessRoles);
+            this.accessGroups = objectMapper.writeValueAsString(accessGroups);
         }
         catch (JsonProcessingException e) {
-            throw new EntityConversionException("Could not convert entity to string: " + accessRoles, e);
+            throw new EntityConversionException("Could not convert entity to string: " + accessGroups, e);
         }
     }
 
