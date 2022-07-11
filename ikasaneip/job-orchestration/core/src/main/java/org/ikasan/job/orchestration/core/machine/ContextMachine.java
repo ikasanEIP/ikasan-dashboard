@@ -8,9 +8,9 @@ import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
+import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagementServiceImpl;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
@@ -21,7 +21,8 @@ import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecor
 import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.spec.bigqueue.BigQueueMessage;
+import org.ikasan.spec.bigqueue.message.BigQueueMessage;
+import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
@@ -39,10 +40,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -193,19 +191,17 @@ public class ContextMachine {
             this.inboundListenableFuture = null;
             this.outboundListenableFuture = null;
 
+            BigQueueDirectoryManagementService bigQueueDirectoryManagementService
+                = new BigQueueDirectoryManagementServiceImpl(this.queueDir);
             if (this.inboundQueue != null) {
                 this.inboundQueue.removeAll();
                 this.inboundQueue.gc();
-                if (Files.exists(Paths.get(this.queueDir + File.separator + getInboundQueueName()))) {
-                    FileUtils.forceDelete(new File(this.queueDir + File.separator + getInboundQueueName()));
-                }
+                bigQueueDirectoryManagementService.deleteQueue(getInboundQueueName());
             }
             if (this.outboundQueue != null) {
                 this.outboundQueue.removeAll();
                 this.outboundQueue.gc();
-                if (Files.exists(Paths.get(this.queueDir + File.separator + getOutboundQueueName()))) {
-                    FileUtils.forceDelete(new File(this.queueDir + File.separator + getOutboundQueueName()));
-                }
+                bigQueueDirectoryManagementService.deleteQueue(getOutboundQueueName());
             }
 
             this.inboundQueue = null;

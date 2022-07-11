@@ -48,7 +48,7 @@ import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEv
 import org.ikasan.job.orchestration.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.job.orchestration.rest.dashboard.model.scheduled.ScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.spec.bigqueue.BigQueueMessage;
+import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;

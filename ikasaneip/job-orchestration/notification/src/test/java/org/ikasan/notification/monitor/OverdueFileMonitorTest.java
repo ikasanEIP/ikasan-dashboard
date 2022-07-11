@@ -14,7 +14,7 @@ import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.notification.NotificationConfiguration;
 import org.ikasan.notification.monitor.mock.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.notification.monitor.mock.SchedulerJobServiceTestImpl;
-import org.ikasan.spec.bigqueue.BigQueueMessage;
+import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
