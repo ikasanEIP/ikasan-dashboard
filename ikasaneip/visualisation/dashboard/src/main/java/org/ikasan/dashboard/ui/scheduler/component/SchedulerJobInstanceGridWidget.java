@@ -18,6 +18,8 @@ import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceVisualisationDialog;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
@@ -47,6 +49,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -66,6 +69,11 @@ public class SchedulerJobInstanceGridWidget extends Div {
     private JobInitiationService jobInitiationService;
     private ModuleMetaDataService moduleMetaDataService;
     private LogStreamingService logStreamingService;
+    private ScheduledProcessManagementService scheduledProcessManagementService;
+    private ConfigurationService configurationService;
+    private ModuleControlService moduleControlService;
+    private MetaDataService metaDataService;
+    private SchedulerJobService schedulerJobService;
 
     /**
      * Constructor
@@ -74,7 +82,8 @@ public class SchedulerJobInstanceGridWidget extends Div {
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                           LogStreamingService logStreamingService, ContextInstance contextInstance, SchedulerJobInstanceService schedulerJobInstanceService,
-                                          JobInitiationService jobInitiationService) {
+                                          JobInitiationService jobInitiationService, ConfigurationService configurationService,
+                                          MetaDataService metaDataService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
@@ -84,6 +93,11 @@ public class SchedulerJobInstanceGridWidget extends Div {
         this.jobInitiationService = jobInitiationService;
         this.moduleMetaDataService = moduleMetaDataService;
         this.logStreamingService = logStreamingService;
+        this.scheduledProcessManagementService = scheduledProcessManagementService;
+        this.configurationService = configurationService;
+        this.moduleControlService = moduleControlRestService;
+        this.metaDataService = metaDataService;
+        this.schedulerJobService = schedulerJobService;
 
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
@@ -344,6 +358,26 @@ public class SchedulerJobInstanceGridWidget extends Div {
             FileDownloadWrapper exportWrapper = new FileDownloadWrapper(streamResource);
             exportWrapper.wrapComponent(export);
             layout.add(exportWrapper);
+
+            Icon visualisation = IconDecorator.decorate(new Icon(VaadinIcon.SITEMAP), getTranslation("tooltip.open-visualisation", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            visualisation.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+                    this.configurationService, this.moduleControlService, this.metaDataService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
+                    this.schedulerJobInstanceService, this.jobInitiationService);
+
+                ContextInstance childContext = ContextHelper.getChildContextInstance(schedulerJobInstanceRecord.getChildContextName(), this.contextInstance);
+
+                try {
+                    jobInstanceVisualisationDialog.createSchedulerVisualisation(this.contextInstance, childContext);
+                    jobInstanceVisualisationDialog.open();
+                }
+                catch (IOException e) {
+                    // todo notification
+                    e.printStackTrace();
+                }
+            });
+
+            layout.add(visualisation);
 
             return layout;
         }))
