@@ -41,6 +41,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
@@ -60,6 +61,7 @@ public class ContextTemplateWidget extends Div {
     private ContextProfileService contextProfileService;
     private JobProvisionService jobProvisionService;
     private IkasanAuthentication authentication;
+    private JobUtilsService jobUtilsService;
 
     private SchedulerJobService schedulerJobService;
     private String zipWorkingDirectory;
@@ -75,13 +77,14 @@ public class ContextTemplateWidget extends Div {
                                  LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
                                  JobInitiationService jobInitiationService, String zipWorkingDirectory, ContextProvisionService contextProvisionService,
                                  ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
-                                 SecurityService securityService) {
+                                 SecurityService securityService, JobUtilsService jobUtilsService) {
 
         this.scheduledContextService = scheduledContextService;
         this.schedulerJobService = schedulerJobService;
         this.zipWorkingDirectory = zipWorkingDirectory;
         this.contextProfileService = contextProfileService;
         this.jobProvisionService = jobProvisionService;
+        this.jobUtilsService = jobUtilsService;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
@@ -186,7 +189,7 @@ public class ContextTemplateWidget extends Div {
                     = new ContextTemplateManagementDialog(this.scheduledContextService, scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService
-                    , this.jobProvisionService, userService, securityService);
+                    , this.jobProvisionService, userService, securityService, this.jobUtilsService);
                 contextTemplateManagementDialog.open();
             });
 

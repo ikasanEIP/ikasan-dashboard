@@ -41,6 +41,7 @@ import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
@@ -74,6 +75,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
     private ModuleControlService moduleControlService;
     private MetaDataService metaDataService;
     private SchedulerJobService schedulerJobService;
+    private JobUtilsService jobUtilsService;
 
     /**
      * Constructor
@@ -83,7 +85,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                           LogStreamingService logStreamingService, ContextInstance contextInstance, SchedulerJobInstanceService schedulerJobInstanceService,
                                           JobInitiationService jobInitiationService, ConfigurationService configurationService,
-                                          MetaDataService metaDataService) {
+                                          MetaDataService metaDataService, JobUtilsService jobUtilsService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
@@ -98,6 +100,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
         this.moduleControlService = moduleControlRestService;
         this.metaDataService = metaDataService;
         this.schedulerJobService = schedulerJobService;
+        this.jobUtilsService = jobUtilsService;
 
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
@@ -363,7 +366,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
             visualisation.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                     this.configurationService, this.moduleControlService, this.metaDataService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
-                    this.schedulerJobInstanceService, this.jobInitiationService);
+                    this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService);
 
                 ContextInstance childContext = ContextHelper.getChildContextInstance(schedulerJobInstanceRecord.getChildContextName(), this.contextInstance);
 
@@ -462,7 +465,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
             else if(event.getItem().getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)) {
                 InternalEventDrivenJobInstanceDialog internalEventDrivenJobDialog = new InternalEventDrivenJobInstanceDialog(moduleMetaDataService.findById(event.getItem().getSchedulerJobInstance().getAgentName())
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService, this.contextInstance
-                    , this.jobInitiationService, moduleMetaDataService, this.logStreamingService);
+                    , this.jobInitiationService, moduleMetaDataService, this.logStreamingService, this.jobUtilsService);
                 internalEventDrivenJobDialog.setJob(event.getItem());
 
                 internalEventDrivenJobDialog.open();

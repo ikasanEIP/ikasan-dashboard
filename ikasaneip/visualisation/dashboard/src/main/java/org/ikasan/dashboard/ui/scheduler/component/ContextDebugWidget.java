@@ -36,6 +36,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.slf4j.Logger;
@@ -54,6 +55,7 @@ public class ContextDebugWidget extends Div {
     private JobLockCacheService jobLockCacheService;
     private ContextParametersInstanceService contextParametersInstanceService;
     private JobInitiationService jobInitiationService;
+    private JobUtilsService jobUtilsService;
 
     protected AceEditor aceEditor;
     protected SchedulerInstanceVisualisation schedulerInstanceVisualisation;
@@ -91,7 +93,7 @@ public class ContextDebugWidget extends Div {
                               ScheduledContextInstanceService contextInstanceService, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                               SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, ContextParametersInstanceService contextParametersInstanceService,
-                              SchedulerJobInstanceService schedulerJobInstanceService) {
+                              SchedulerJobInstanceService schedulerJobInstanceService, JobUtilsService jobUtilsService) {
         Div div = new Div();
         div.addClassNames("card-counter");
         div.setHeight("100%");
@@ -104,9 +106,10 @@ public class ContextDebugWidget extends Div {
         this.queueDir = queueDir;
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.jobInitiationService = jobInitiationService;
+        this.jobUtilsService = jobUtilsService;
 
         this.schedulerInstanceVisualisation = new SchedulerInstanceVisualisation(".", moduleMetaDataService, scheduledProcessManagementService, configurationRestService,
-            moduleControlRestService,  metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, schedulerJobInstanceService, jobInitiationService);
+            moduleControlRestService,  metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, schedulerJobInstanceService, jobInitiationService, jobUtilsService);
 
         this.schedulerInstanceVisualisation.setWidthFull();
         this.schedulerInstanceVisualisation.setHeight("1000px");
