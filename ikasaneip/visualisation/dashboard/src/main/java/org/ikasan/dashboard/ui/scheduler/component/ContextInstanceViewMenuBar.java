@@ -15,6 +15,7 @@ import org.ikasan.dashboard.ui.scheduler.util.ContextViewUpdateEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
@@ -84,6 +85,10 @@ public class ContextInstanceViewMenuBar extends MenuBar {
             contextProfileRecord.getContextProfile().getSubContexts().forEach(s -> {
                 subMenu.addItem(s, menuItemClickEvent -> {
                     try {
+                        if(ContextMachineCache.instance().containsInstanceIdentifier(contextInstance.getId())) {
+                            this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(contextInstance.getId()).getContext();
+                        }
+
                         if (this.contextInstance.getName().equals(s)) {
                             this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance
                                 , this.contextInstance, null);
@@ -117,6 +122,10 @@ public class ContextInstanceViewMenuBar extends MenuBar {
             contextProfileRecord.getContextProfile().getSubContexts().forEach(s -> {
                 myMenuItemSubMenuItem.addItem(s, menuItemClickEvent -> {
                     try {
+                        if(ContextMachineCache.instance().containsInstanceIdentifier(contextInstance.getId())) {
+                            this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(contextInstance.getId()).getContext();
+                        }
+
                         if (this.contextInstance.getName().equals(s)) {
                             this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance
                                 , this.contextInstance, null);

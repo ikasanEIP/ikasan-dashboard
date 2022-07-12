@@ -30,6 +30,7 @@ import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
 import org.ikasan.designer.event.CanvasItemRightClickEvent;
 import org.ikasan.designer.event.CanvasItemRightClickEventListener;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -236,8 +237,13 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
 
         if(canvasItemDoubleClickEvent.getFigure().getIdentifier() != null) {
+
+            if(ContextMachineCache.instance().containsInstanceIdentifier(this.parentContextInstance.getId())) {
+                this.parentContextInstance = ContextMachineCache.instance().getByContextInstanceId(this.parentContextInstance.getId()).getContext();
+            }
+
             ContextInstance contextInstance = ContextHelper.getChildContextInstance(canvasItemDoubleClickEvent.getFigure().getIdentifier(),
-                this.contextInstance);
+                this.parentContextInstance);
 
             if(contextInstance != null && contextInstance.getScheduledJobs() != null) {
                 try {
@@ -324,6 +330,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
                 logger.info("Updating scheduler visualisation context status. Context Instance[{}], Status[{}], Status Colour[{}]",
                     contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
                     StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
+
                 ui.access(() -> {
                     if(this.designerCanvas != null) {
                     this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName() + "_status"
@@ -338,6 +345,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
                 logger.info("Updating scheduler visualisation job status. Scheduler Job Instance[{}], Status[{}], Status Colour[{}]",
                     schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
                     StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
+
                 ui.access(() -> {
                     if(this.designerCanvas != null) {
                         this.designerCanvas.setBackgroundColor(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier() + "_status"
