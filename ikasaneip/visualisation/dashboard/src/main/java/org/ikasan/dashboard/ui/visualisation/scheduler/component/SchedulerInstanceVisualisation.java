@@ -39,6 +39,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +74,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
     private LogStreamingService logStreamingService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private JobInitiationService jobInitiationService;
+    private JobUtilsService jobUtilsService;
     private ContextInstance parentContextInstance;
 
     private Dialog parent;
@@ -82,7 +84,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                           LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
-                                          JobInitiationService jobInitiationService) {
+                                          JobInitiationService jobInitiationService, JobUtilsService jobUtilsService) {
 
         this.dynamicImagePath = dynamicImagePath;
         if (this.dynamicImagePath == null) {
@@ -137,6 +139,11 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
         this.jobInitiationService = jobInitiationService;
         if(this.jobInitiationService == null) {
             throw new IllegalArgumentException("jobInitiationService cannot be null!");
+        }
+
+        this.jobUtilsService = jobUtilsService;
+        if(this.jobUtilsService == null) {
+            throw new IllegalArgumentException("jobUtilsService cannot be null!");
         }
 
         this.setMargin(false);
@@ -236,7 +243,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
                 try {
                     JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
-                        this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
+                        this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService);
                     jobInstanceVisualisationDialog.createSchedulerVisualisation(this.parentContextInstance, contextInstance);
                     jobInstanceVisualisationDialog.open();
 
@@ -253,7 +260,8 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
                     ContextInstanceVisualisationDialog contextInstanceVisualisationDialog
                         = new ContextInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
-                        this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService);
+                        this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService,
+                        this.jobUtilsService);
                     contextInstanceVisualisationDialog.createSchedulerVisualisation(this.parentContextInstance, contextInstance);
                     contextInstanceVisualisationDialog.open();
 
@@ -274,7 +282,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
                 if(schedulerJobRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
                     InternalEventDrivenJobInstanceDialog internalEventDrivenJobInstanceDialog = new InternalEventDrivenJobInstanceDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
                         , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService, this.parentContextInstance
-                        , this.jobInitiationService, moduleMetaDataService, this.logStreamingService);
+                        , this.jobInitiationService, moduleMetaDataService, this.logStreamingService, this.jobUtilsService);
 
                     internalEventDrivenJobInstanceDialog.setJob(schedulerJobRecord);
                     internalEventDrivenJobInstanceDialog.open();
