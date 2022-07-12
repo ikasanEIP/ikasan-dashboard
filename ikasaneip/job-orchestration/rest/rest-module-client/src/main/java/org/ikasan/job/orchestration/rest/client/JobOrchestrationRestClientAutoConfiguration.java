@@ -3,6 +3,7 @@ package org.ikasan.job.orchestration.rest.client;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,4 +35,9 @@ public class JobOrchestrationRestClientAutoConfiguration {
         return new JobInitiationServiceImpl(environment, httpComponentsClientHttpRequestFactory, this.fileJobSubmissionWaitTimeSeconds);
     }
 
+    @Bean
+    public JobUtilsService jobUtilsService(Environment environment
+        , HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
+        return new JobUtilsServiceImpl(environment, httpComponentsClientHttpRequestFactory);
+    }
 }

@@ -50,9 +50,11 @@ import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.client.RestClientException;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
@@ -84,6 +86,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     private Button enableButton;
     private Button holdButton;
     private Button releaseButton;
+    private Button submitButton;
+    private Button killButton;
 
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
@@ -116,6 +120,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
     private JobInitiationService jobInitiationService;
 
+    private JobUtilsService jobUtilsService;
+
     private SchedulerJobLogFileViewerDialog schedulerJobLogFileViewerDialog;
 
     private Button viewErrorLogButton;
@@ -145,7 +151,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                                                 MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                                 SchedulerJobInstanceService schedulerJobInstanceService, ContextInstance contextInstance,
                                                 JobInitiationService jobInitiationService, ModuleMetaDataService moduleMetaDataService,
-                                                LogStreamingService logStreamingService) {
+                                                LogStreamingService logStreamingService, JobUtilsService jobUtilsService) {
         super.showResize(false);
         super.title.setText(getTranslation("label.command-execution-job-instance", UI.getCurrent().getLocale()));
 
@@ -160,6 +166,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.jobInitiationService = jobInitiationService;
         this.moduleMetaDataService = moduleMetaDataService;
         this.logStreamingService = logStreamingService;
+        this.jobUtilsService = jobUtilsService;
 
         this.internalEventDrivenJobInstance = new SolrInternalEventDrivenJobInstanceImpl();
 
@@ -311,18 +318,42 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             });
         });
 
-        Button submitButton = new Button(getTranslation("button.submit", UI.getCurrent().getLocale()), new Icon(VaadinIcon.PAPERPLANE));
-        submitButton.setIconAfterText(true);
+        this.submitButton = new Button(getTranslation("button.submit", UI.getCurrent().getLocale()), new Icon(VaadinIcon.PAPERPLANE));
+        this.submitButton.setIconAfterText(true);
 
-        submitButton.addClickListener(event -> {
+        this.submitButton.addClickListener(event -> {
             InternalEventDrivenJobSubmissionDialog internalEventDrivenJobSubmissionDialog = new InternalEventDrivenJobSubmissionDialog(this.systemEventLogger,
                 this.moduleMetaDataService, this.contextInstance, this.jobInitiationService, this.internalEventDrivenJobInstance);
 
             internalEventDrivenJobSubmissionDialog.open();
         });
 
+        this.killButton = new Button(getTranslation("button.kill-job", UI.getCurrent().getLocale()), new Icon(VaadinIcon.CLOSE_BIG));
+        this.killButton.setIconAfterText(true);
+
+        if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.RUNNING)) {
+            this.killButton.setVisible(true);
+        }
+        else {
+            this.killButton.setVisible(false);
+        }
+
+        this.killButton.addClickListener(event -> {
+            try {
+                this.jobUtilsService.killJob(agent.getUrl(), scheduledProcessEvent.getPid(), true);
+            }
+            catch (Exception e) {
+                NotificationHelper.showErrorNotification("An error has occurred attempting to kill the job! Please contact Ikasan Support.");
+
+                return;
+            }
+
+            NotificationHelper.showUserNotification("The job was successfully killed");
+        });
+
+
         HorizontalLayout actionsLayout = new HorizontalLayout();
-        actionsLayout.add(holdButton, releaseButton, skipButton, enableButton, submitButton);
+        actionsLayout.add(holdButton, releaseButton, skipButton, enableButton, submitButton, killButton);
         actionsLayout.setMargin(false);
 
         VerticalLayout actionsButtonLayout = new VerticalLayout();
@@ -491,6 +522,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
         formLayout.add(commandLineTa, 2);
         commandLineTa.getStyle().set("minHeight", "100px");
+
+        this.setButtonVisibility();
 
         return formLayout;
     }
@@ -747,8 +780,53 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
                 this.viewOutputLogButton.setVisible(this.scheduledProcessEvent != null);
                 this.viewErrorLogButton.setVisible(this.scheduledProcessEvent != null);
+
+                this.setButtonVisibility();
             }
         });
+    }
+
+    private void setButtonVisibility() {
+        if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.RUNNING)) {
+            this.killButton.setVisible(true);
+            this.submitButton.setVisible(false);
+            this.holdButton.setVisible(false);
+            this.releaseButton.setVisible(false);
+            this.skipButton.setVisible(false);
+            this.enableButton.setVisible(false);
+        }
+        else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.ERROR)) {
+            this.killButton.setVisible(false);
+            this.submitButton.setVisible(true);
+            this.holdButton.setVisible(false);
+            this.releaseButton.setVisible(false);
+            this.skipButton.setVisible(false);
+            this.enableButton.setVisible(false);
+        }
+        else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.WAITING)) {
+            this.killButton.setVisible(false);
+            this.submitButton.setVisible(true);
+            this.holdButton.setVisible(true);
+            this.releaseButton.setVisible(false);
+            this.skipButton.setVisible(true);
+            this.enableButton.setVisible(false);
+        }
+        else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.ON_HOLD)) {
+            this.killButton.setVisible(false);
+            this.submitButton.setVisible(true);
+            this.holdButton.setVisible(false);
+            this.releaseButton.setVisible(true);
+            this.skipButton.setVisible(false);
+            this.enableButton.setVisible(false);
+        }
+        else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED)) {
+            this.killButton.setVisible(false);
+            this.submitButton.setVisible(true);
+            this.holdButton.setVisible(false);
+            this.releaseButton.setVisible(false);
+            this.skipButton.setVisible(false);
+            this.enableButton.setVisible(true);
+        }
     }
 
     @Override
