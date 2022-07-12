@@ -79,6 +79,23 @@ public class SchedulerJobInstanceGridWidget extends Div {
 
     /**
      * Constructor
+     *
+     * @param scheduledContextInstanceService
+     * @param dynamicImagePath
+     * @param moduleMetaDataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param schedulerJobService
+     * @param logStreamingService
+     * @param contextInstance
+     * @param schedulerJobInstanceService
+     * @param jobInitiationService
+     * @param configurationService
+     * @param metaDataService
+     * @param jobUtilsService
      */
     public SchedulerJobInstanceGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -367,6 +384,10 @@ public class SchedulerJobInstanceGridWidget extends Div {
                 JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                     this.configurationService, this.moduleControlService, this.metaDataService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
                     this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService);
+
+                if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                    this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+                }
 
                 ContextInstance childContext = ContextHelper.getChildContextInstance(schedulerJobInstanceRecord.getChildContextName(), this.contextInstance);
 
