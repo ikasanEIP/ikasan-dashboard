@@ -48,6 +48,7 @@ import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
@@ -78,6 +79,7 @@ public class ContextInstanceWidget extends Div {
     private ContextProfileService contextProfileService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
+    private JobUtilsService jobUtilsService;
 
     private Div schedulerVisualisationDiv;
 
@@ -111,7 +113,7 @@ public class ContextInstanceWidget extends Div {
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
-                                 ContextProfileService contextProfileService) {
+                                 ContextProfileService contextProfileService, JobUtilsService jobUtilsService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
@@ -121,6 +123,7 @@ public class ContextInstanceWidget extends Div {
         this.jobInitiationService = jobInitiationService;
         this.contextProfileService = contextProfileService;
         this.configurationRestService = configurationRestService;
+        this.jobUtilsService = jobUtilsService;
 
         this.init(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
@@ -331,7 +334,7 @@ public class ContextInstanceWidget extends Div {
 
         this.schedulerInstanceVisualisation = new SchedulerInstanceVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
-            , this.schedulerJobInstanceService, this.jobInitiationService);
+            , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService);
         this.schedulerInstanceVisualisation.setWidthFull();
         this.schedulerInstanceVisualisation.setHeight("75vh");
 
@@ -377,7 +380,7 @@ public class ContextInstanceWidget extends Div {
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobInstanceGridWidget = new SchedulerJobInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextInstance, this.schedulerJobInstanceService,
-            this.jobInitiationService, this.configurationRestService, metaDataRestService);
+            this.jobInitiationService, this.configurationRestService, metaDataRestService, this.jobUtilsService);
         this.schedulerJobInstanceGridWidget.setWidthFull();
         this.schedulerJobInstanceGridWidget.setHeight("75vh");
         this.schedulerJobInstanceGridWidget.setVisible(false);

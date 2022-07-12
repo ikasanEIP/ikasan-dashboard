@@ -5,9 +5,6 @@ import org.ikasan.orchestration.service.context.recovery.ContextInstanceRecovery
 import org.ikasan.orchestration.service.context.register.ContextInstanceRegistrationServiceImpl;
 import org.ikasan.orchestration.service.context.reset.ContextResetServiceImpl;
 import org.ikasan.orchestration.service.context.status.ContextStatusServiceImpl;
-import org.ikasan.orchestration.service.context.upload.ContextUploadInitialisationServiceImpl;
-import org.ikasan.scheduler.CachingScheduledJobFactory;
-import org.ikasan.scheduler.SchedulerFactory;
 import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;

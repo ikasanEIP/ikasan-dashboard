@@ -23,6 +23,7 @@ import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
@@ -93,6 +94,9 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     private UserService userService;
 
     @Resource
+    private JobUtilsService jobUtilsService;
+
+    @Resource
     private SecurityService securityService;
 
     private ContextTemplateManagementWidget contextTemplateManagementWidget;
@@ -116,7 +120,7 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
         this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, ""
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
-            , this.jobProvisionService, this.userService, this.securityService);
+            , this.jobProvisionService, this.userService, this.securityService, this.jobUtilsService);
 
         H2 contextTemplateManagementLabel = new H2(String.format(getTranslation("label.context-template-management", UI.getCurrent().getLocale())));
         this.add(contextTemplateManagementLabel, this.contextTemplateManagementWidget);

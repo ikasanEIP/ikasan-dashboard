@@ -34,6 +34,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -137,6 +138,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private SecurityService securityService;
 
+    @Resource
+    private JobUtilsService jobUtilsService;
+
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
     private UpcomingJobExecutionsWidget upcomingJobExecutionsWidget;
@@ -193,7 +197,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.contextTemplateWidget = new ContextTemplateWidget(this.scheduledContextService, ".", this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
-            this.contextProfileService, this.jobProvisionService, userService, securityService);
+            this.contextProfileService, this.jobProvisionService, userService, securityService, this.jobUtilsService);
         this.contextTemplateWidget.setVisible(false);
 
 
@@ -258,7 +262,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
                 , this.scheduledContextService, this.systemEventLogger, this.internalEventDrivenJobService, this.queueDirectory
                 , this.moduleMetaDataService, this.jobLockCacheService, this.contextInstanceService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.schedulerJobService,
-                this.logStreamingService, this.contextParametersInstanceService, this.schedulerJobInstanceService);
+                this.logStreamingService, this.contextParametersInstanceService, this.schedulerJobInstanceService, this.jobUtilsService);
 
             this.contextDebugBoard.addRow(this.contextDebugWidget);
             initialised = true;
