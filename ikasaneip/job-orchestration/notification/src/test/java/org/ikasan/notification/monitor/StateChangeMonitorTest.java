@@ -11,11 +11,11 @@ import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.notification.NotificationConfiguration;
 import org.ikasan.notification.monitor.mock.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.spec.bigqueue.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.service.ContextMachineUpdateBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
@@ -23,20 +23,32 @@ import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.assertEquals;
 
+@RunWith(MockitoJUnitRunner.class)
 public class StateChangeMonitorTest {
+
+    /** default executor service is a single thread executor */
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private  ObjectMapper objectMapper;
 
     private String result="test";
+
+    @Mock
+    ContextMachineUpdateBroadcaster contextMachineUpdateBroadcaster;
 
     @Before
     public void setup() throws IOException {
@@ -95,9 +107,9 @@ public class StateChangeMonitorTest {
         scheduledProcessEvent1.setSuccessful(false);
 
         // start test
-        NotificationConfiguration notificationConfiguration = new NotificationConfiguration();
+        Monitor stateChangeMonitor = new StateChangeMonitorImpl(executorService, contextMachineUpdateBroadcaster);
+        stateChangeMonitor.setNotifiers(Arrays.asList(new StateChangeMonitorTest.TestNotifier()));
 
-        Monitor stateChangeMonitor = notificationConfiguration.stateChangeMonitor(Arrays.asList(new TestNotifier()));
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
         ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
 
@@ -117,9 +129,9 @@ public class StateChangeMonitorTest {
         scheduledProcessEvent1.setSuccessful(true);
 
         // start test
-        NotificationConfiguration notificationConfiguration = new NotificationConfiguration();
+        Monitor stateChangeMonitor = new StateChangeMonitorImpl(executorService, contextMachineUpdateBroadcaster);
+        stateChangeMonitor.setNotifiers(Arrays.asList(new StateChangeMonitorTest.TestNotifier()));
 
-        Monitor stateChangeMonitor = notificationConfiguration.stateChangeMonitor(Arrays.asList(new TestNotifier()));
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
         ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
 
@@ -139,9 +151,8 @@ public class StateChangeMonitorTest {
         scheduledProcessEvent1.setSuccessful(false);
 
         // start test
-        NotificationConfiguration notificationConfiguration = new NotificationConfiguration();
-
-        Monitor stateChangeMonitor = notificationConfiguration.stateChangeMonitor(Arrays.asList(new TestNotifier()));
+        Monitor stateChangeMonitor = new StateChangeMonitorImpl(executorService, contextMachineUpdateBroadcaster);
+        stateChangeMonitor.setNotifiers(Arrays.asList(new StateChangeMonitorTest.TestNotifier()));
 
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
         ContextMachineCache.instance().getByContextName("context-instance-2").eventReceived( objectMapper.writeValueAsString(message));

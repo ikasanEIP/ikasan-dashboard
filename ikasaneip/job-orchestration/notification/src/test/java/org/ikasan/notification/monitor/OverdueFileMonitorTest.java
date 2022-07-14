@@ -11,12 +11,12 @@ import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.notification.NotificationConfiguration;
 import org.ikasan.notification.monitor.mock.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.notification.monitor.mock.SchedulerJobServiceTestImpl;
 import org.ikasan.spec.bigqueue.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.service.ContextMachineUpdateBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
@@ -25,8 +25,10 @@ import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.joda.time.DateTimeUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.*;
@@ -38,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.assertEquals;
 
+@RunWith(MockitoJUnitRunner.class)
 public class OverdueFileMonitorTest {
 
     /** default executor service is a single thread executor */
@@ -48,6 +51,9 @@ public class OverdueFileMonitorTest {
     private ObjectMapper objectMapper;
 
     private ContextMachine contextMachine1;
+
+    @Mock
+    ContextMachineUpdateBroadcaster contextMachineUpdateBroadcaster;
 
     @After
     public void tearDown() {
@@ -93,9 +99,8 @@ public class OverdueFileMonitorTest {
         scheduledProcessEvent1.setSuccessful(true);
 
         // start test
-        NotificationConfiguration notificationConfiguration = new NotificationConfiguration();
-
-        Monitor overdueFileMonitor = notificationConfiguration.overdueFileMonitor(Arrays.asList(new TestNotifier()));
+        Monitor overdueFileMonitor = new OverdueFileMonitorImpl(30, executorService, new SchedulerJobServiceTestImpl(), contextMachineUpdateBroadcaster);
+        overdueFileMonitor.setNotifiers(Arrays.asList(new TestNotifier()));
 
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
         ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
@@ -119,7 +124,7 @@ public class OverdueFileMonitorTest {
         DateTimeUtils.setCurrentMillisFixed(1490688000000L); // 09:00:00
 
          // start test
-        Monitor overdueFileMonitor = new OverdueFileMonitorImpl(30, executorService, new SchedulerJobServiceTestImpl());
+        Monitor overdueFileMonitor = new OverdueFileMonitorImpl(30, executorService, new SchedulerJobServiceTestImpl(), contextMachineUpdateBroadcaster);
         overdueFileMonitor.setNotifiers(Arrays.asList(new TestNotifier()));
 
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();

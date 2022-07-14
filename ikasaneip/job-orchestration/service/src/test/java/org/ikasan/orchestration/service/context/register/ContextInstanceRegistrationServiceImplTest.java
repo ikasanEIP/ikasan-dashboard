@@ -21,6 +21,7 @@ import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventLi
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.event.service.ContextMachineUpdateBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
@@ -82,6 +83,9 @@ public class ContextInstanceRegistrationServiceImplTest {
     ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster;
 
     @Mock
+    ContextMachineUpdateBroadcaster contextMachineUpdateBroadcaster;
+
+    @Mock
     SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
 
     private ContextInstanceRegistrationServiceImpl contextInstanceRegistrationService;
@@ -106,7 +110,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
         );
 
         TestUtils.resetContextMachineCache();
@@ -140,7 +145,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
         );
 
         assertNull(ContextMachineCache.instance().getByContextName(contextName));
@@ -187,6 +193,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
+        verify(contextMachineUpdateBroadcaster).broadcast(any(ContextInstance.class));
 
         verifyNoMoreInteractions(
             scheduledContextInstanceService,
@@ -199,7 +206,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobInstanceService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
@@ -278,6 +286,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
+        verify(contextMachineUpdateBroadcaster).broadcast(any(ContextInstance.class));
 
         verifyNoMoreInteractions(
             scheduledContextInstanceService,
@@ -290,7 +299,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobInstanceService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
@@ -353,6 +363,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp()
             <= System.currentTimeMillis());
+        verify(contextMachineUpdateBroadcaster).broadcast(any(ContextInstance.class));
 
         verifyNoMoreInteractions(
             scheduledContextInstanceService,
@@ -365,7 +376,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobInstanceService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
         );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
@@ -406,7 +418,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
         );
 
         assertNull(ContextMachineCache.instance().getByContextName(contextName));
@@ -455,7 +468,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             scheduledContextService,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
         );
 
         assertNull(ContextMachineCache.instance().getByContextName(contextName));

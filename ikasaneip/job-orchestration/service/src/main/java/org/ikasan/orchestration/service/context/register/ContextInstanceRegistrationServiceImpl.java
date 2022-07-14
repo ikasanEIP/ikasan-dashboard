@@ -53,6 +53,7 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.event.service.ContextMachineUpdateBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -78,7 +79,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                                                   ScheduledContextService scheduledContextService,
                                                   SchedulerJobInstanceService schedulerJobInstanceService,
                                                   ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
-                                                  SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
+                                                  SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
+                                                  ContextMachineUpdateBroadcaster contextMachineUpdateBroadcaster) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService,
@@ -90,7 +92,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             scheduledContextService,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster);
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster);
     }
 
 

@@ -11,6 +11,7 @@ import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.scheduler.model.CalendarConfiguration;
 import org.ikasan.dashboard.ui.util.DashboardCacheAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextInstanceStateChangeEventBroadcasterImpl;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextMachineUpdateBroadcasterImpl;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.SchedulerJobStateChangeEventBroadcasterImpl;
 import org.ikasan.error.reporting.dao.SolrErrorReportingServiceDao;
 import org.ikasan.error.reporting.service.SolrErrorReportingServiceImpl;
@@ -41,6 +42,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayEvent;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.event.service.ContextMachineUpdateBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.wiretap.WiretapEvent;
 import org.ikasan.systemevent.dao.SolrSystemEventDao;
@@ -377,6 +379,11 @@ public class DashboardComponentFactory
     @Bean
     public SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster() {
         return new SchedulerJobStateChangeEventBroadcasterImpl();
+    }
+
+    @Bean
+    public ContextMachineUpdateBroadcaster contextMachineUpdateBroadcaster() {
+        return new ContextMachineUpdateBroadcasterImpl();
     }
 
     @Bean

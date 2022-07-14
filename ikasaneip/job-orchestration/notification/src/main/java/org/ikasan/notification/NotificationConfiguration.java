@@ -4,6 +4,7 @@ import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.ikasan.notification.monitor.StateChangeMonitorImpl;
 import org.ikasan.notification.monitor.OverdueFileMonitorImpl;
 import org.ikasan.notification.notifier.EmailNotifier;
+import org.ikasan.spec.scheduled.event.service.ContextMachineUpdateBroadcaster;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
@@ -37,6 +38,9 @@ public class NotificationConfiguration {
     @Resource
     private NotificationSendAuditService notificationSendAuditService;
 
+    @Resource
+    private ContextMachineUpdateBroadcaster contextMachineUpdateBroadcaster;
+
     @Value("${scheduler.notification.file.overdue.tolerance.minutes:30}")
     private Integer fileArrivalToleranceInMinutes;
 
@@ -55,14 +59,14 @@ public class NotificationConfiguration {
 
     @Bean
     public Monitor stateChangeMonitor(List<Notifier> stateChangeNotifiers) {
-        Monitor monitor = new StateChangeMonitorImpl(executorService);
+        Monitor monitor = new StateChangeMonitorImpl(executorService, contextMachineUpdateBroadcaster);
         monitor.setNotifiers(stateChangeNotifiers);
         return monitor;
     }
 
     @Bean
     public Monitor overdueFileMonitor(List<Notifier> overdueFileNotifiers) {
-        Monitor monitor = new OverdueFileMonitorImpl(fileArrivalToleranceInMinutes, executorService, schedulerJobService);
+        Monitor monitor = new OverdueFileMonitorImpl(fileArrivalToleranceInMinutes, executorService, schedulerJobService, contextMachineUpdateBroadcaster);
         monitor.setNotifiers(overdueFileNotifiers);
         return monitor;
     }

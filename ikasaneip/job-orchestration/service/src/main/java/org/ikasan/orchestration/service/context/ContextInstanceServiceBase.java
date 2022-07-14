@@ -13,6 +13,7 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.event.service.ContextMachineUpdateBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
@@ -48,6 +49,7 @@ public abstract class ContextInstanceServiceBase {
     protected final SchedulerJobInstanceService schedulerJobInstanceService;
     protected final ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster;
     protected final SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
+    protected final ContextMachineUpdateBroadcaster contextMachineUpdateBroadcaster;
 
     protected final ObjectMapper objectMapper;
 
@@ -63,7 +65,8 @@ public abstract class ContextInstanceServiceBase {
                                       ScheduledContextService scheduledContextService,
                                       SchedulerJobInstanceService schedulerJobInstanceService,
                                       ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
-                                      SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
+                                      SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
+                                      ContextMachineUpdateBroadcaster contextMachineUpdateBroadcaster) {
         this.queueDirectory = queueDirectory;
         if (this.queueDirectory == null) {
             throw new IllegalArgumentException("queueDirectory cannot be null!");
@@ -111,6 +114,10 @@ public abstract class ContextInstanceServiceBase {
         this.schedulerJobStateChangeEventBroadcaster = schedulerJobStateChangeEventBroadcaster;
         if (this.schedulerJobStateChangeEventBroadcaster == null) {
             throw new IllegalArgumentException("schedulerJobStateChangeEventBroadcaster cannot be null!");
+        }
+        this.contextMachineUpdateBroadcaster = contextMachineUpdateBroadcaster;
+        if (this.contextMachineUpdateBroadcaster == null) {
+            throw new IllegalArgumentException("contextMachineUpdateBroadcaster cannot be null!");
         }
 
         this.objectMapper = ObjectMapperFactory.newInstance();
@@ -164,6 +171,9 @@ public abstract class ContextInstanceServiceBase {
         }
 
         ContextMachineCache.instance().put(contextMachine);
+
+        // broadcasting all newly created instances.
+        contextMachineUpdateBroadcaster.broadcast(instance);
     }
 
     protected void removeAgentInstances(ContextInstance instance) {

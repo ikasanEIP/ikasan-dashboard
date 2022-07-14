@@ -20,6 +20,7 @@ import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventLi
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.event.service.ContextMachineUpdateBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -87,6 +88,9 @@ public class ContextInstanceRecoveryServiceImplTest {
     SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
 
     @Mock
+    ContextMachineUpdateBroadcaster contextMachineUpdateBroadcaster;
+
+    @Mock
     private ExecutorService executor;
 
     private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
@@ -110,7 +114,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             scheduledContextService,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
         );
 
         ReflectionTestUtils.setField(contextInstanceRecoveryServiceImpl, "executor", executor);
@@ -152,7 +157,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             schedulerJobInstanceService,
             executor,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
             );
 
         // ensure no contexts
@@ -195,7 +201,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             schedulerJobInstanceService,
             executor,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
             );
 
         // ensure no contexts
@@ -232,7 +239,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             schedulerJobInstanceService,
             executor,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
             );
 
         // ensure no contexts
@@ -288,6 +296,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(jobLockCacheService, times(3)).get();
         verify(schedulerJobInstanceService, times(0)).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
         verify(scheduledContextInstanceService, times(3)).save(any(ScheduledContextInstanceRecord.class));
+        verify(contextMachineUpdateBroadcaster, times(3)).broadcast(any(ContextInstance.class));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -300,7 +309,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             schedulerJobInstanceService,
             executor,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
             );
 
         assertNotNull(ContextMachineCache.instance().getByContextName("ContextName1"));
@@ -340,6 +350,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(schedulerJobInstanceService, times(0)).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
         verify(contextParametersInstanceService).populateContextParameters();
         verify(contextParametersInstanceService).getAllContextParameters("ContextName1");
+        verify(contextMachineUpdateBroadcaster).broadcast(any(ContextInstance.class));
 
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService).save(contextInstanceCaptor.capture());
@@ -361,7 +372,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             schedulerJobInstanceService,
             executor,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
             );
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextName("ContextName1");
@@ -396,7 +408,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             schedulerJobInstanceService,
             executor,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
             );
 
         // ensure no contexts

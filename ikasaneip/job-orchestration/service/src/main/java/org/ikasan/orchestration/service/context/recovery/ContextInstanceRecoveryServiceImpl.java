@@ -47,6 +47,7 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRecoveryService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.event.service.ContextMachineUpdateBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -85,7 +86,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                               ScheduledContextService scheduledContextService,
                                               SchedulerJobInstanceService schedulerJobInstanceService,
                                               ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
-                                              SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
+                                              SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
+                                              ContextMachineUpdateBroadcaster contextMachineUpdateBroadcaster) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService,
@@ -97,7 +99,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
             scheduledContextService,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster);
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster);
     }
 
     public void recoverInstances() {
@@ -158,7 +161,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                 executor.execute(new MissingContextInstanceRecoveryRunnable(
                     this.queueDirectory, this.scheduledContextInstanceService, this.jobInitiationService, this.moduleMetadataService, this.internalEventDrivenJobService,
                     this.contextParametersInstanceService, this.contextParametersUpdateService, this.jobLockCacheService, this.scheduledContextService,
-                    scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster
+                    scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster,
+                    this.contextMachineUpdateBroadcaster
                 ));
             }
         }

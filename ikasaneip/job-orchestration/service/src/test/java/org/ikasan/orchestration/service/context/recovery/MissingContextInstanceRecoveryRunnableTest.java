@@ -19,6 +19,7 @@ import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventLi
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.event.service.ContextMachineUpdateBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
@@ -82,6 +83,8 @@ public class MissingContextInstanceRecoveryRunnableTest {
     @Mock
     SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
 
+    @Mock
+    ContextMachineUpdateBroadcaster contextMachineUpdateBroadcaster;
 
     private MissingContextInstanceRecoveryRunnable backFiller;
 
@@ -114,7 +117,8 @@ public class MissingContextInstanceRecoveryRunnableTest {
             record,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
         );
 
         assertEquals(0, ContextMachineCache.instance().contextNames().size());
@@ -156,6 +160,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
         verify(contextParametersUpdateService).publish(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
         verify(jobLockCacheService).get();
         verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
+        verify(contextMachineUpdateBroadcaster).broadcast(any(ContextInstance.class));
 
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
@@ -177,7 +182,8 @@ public class MissingContextInstanceRecoveryRunnableTest {
             scheduledContextInstanceService,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
         );
 
         assertNotNull(ContextMachineCache.instance().getByContextName(contextName));
@@ -217,6 +223,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
         verify(jobLockCacheService).get();
         verify(contextParametersInstanceService).populateContextParameters();
         verify(contextParametersInstanceService).getAllContextParameters(contextName);
+        verify(contextMachineUpdateBroadcaster).broadcast(any(ContextInstance.class));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -229,7 +236,8 @@ public class MissingContextInstanceRecoveryRunnableTest {
             scheduledContextInstanceService,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster
         );
 
         assertNotNull(ContextMachineCache.instance().getByContextName(contextName));

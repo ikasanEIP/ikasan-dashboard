@@ -6,6 +6,7 @@ import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.event.service.ContextMachineUpdateBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
@@ -34,7 +35,8 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
                                                   ScheduledContextRecord scheduledContextRecord,
                                                   SchedulerJobInstanceService schedulerJobInstanceService,
                                                   ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
-                                                  SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
+                                                  SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
+                                                  ContextMachineUpdateBroadcaster contextMachineUpdateBroadcaster) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService, moduleMetadataService,
@@ -45,7 +47,8 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
             scheduledContextService,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster);
+            schedulerJobStateChangeEventBroadcaster,
+            contextMachineUpdateBroadcaster);
 
         this.scheduledContextRecord = scheduledContextRecord;
     }

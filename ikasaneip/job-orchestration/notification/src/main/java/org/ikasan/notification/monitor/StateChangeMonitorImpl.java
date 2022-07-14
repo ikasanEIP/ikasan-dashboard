@@ -6,6 +6,8 @@ import org.ikasan.job.orchestration.model.notification.GenericNotificationDetail
 import org.ikasan.job.orchestration.model.notification.MonitorType;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.service.ContextMachineUpdateBroadcaster;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.slf4j.Logger;
@@ -14,18 +16,21 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 
-public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificationDetails> implements Monitor<GenericNotificationDetails> {
+public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificationDetails> implements Monitor<GenericNotificationDetails>, Consumer<ContextInstance> {
 
     private static final Logger LOG = LoggerFactory.getLogger(StateChangeMonitorImpl.class);
 
     private List<Future<?>> errorNotificationsExecutors = new ArrayList<>();
 
+    private ContextMachineUpdateBroadcaster contextMachineUpdateBroadcaster;
+
     /**
      * Constructor
      * @param executorService
      */
-    public StateChangeMonitorImpl(ExecutorService executorService) {
+    public StateChangeMonitorImpl(ExecutorService executorService, ContextMachineUpdateBroadcaster contextMachineUpdateBroadcaster) {
         super(executorService);
         LOG.info("StateChangeMonitorImpl is being created!");
 
@@ -35,12 +40,21 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
             errorNotificationsExecutors.add(Executors.newSingleThreadExecutor().submit(new ErrorNotificationsRunner(contextMachine)));
         }
         LOG.info(errorNotificationsExecutors.size() + " number of Contexts are being monitored now!");
+
+        contextMachineUpdateBroadcaster.register(this);
+        LOG.info("Registered to ContextMachineUpdateBroadcaster");
     }
 
     @Override
     public void invoke(final GenericNotificationDetails status)
     {
         super.invoke(status);
+    }
+
+    @Override
+    public void accept(ContextInstance contextInstance) {
+        errorNotificationsExecutors.add(Executors.newSingleThreadExecutor().submit(new ErrorNotificationsRunner( ContextMachineCache.instance().getByContextInstanceId(contextInstance.getId()) )));
+        LOG.info("Started monitoring of "+contextInstance.getName());
     }
 
     protected class ErrorNotificationsRunner implements Runnable, SchedulerJobInstanceStateChangeEventListener {
