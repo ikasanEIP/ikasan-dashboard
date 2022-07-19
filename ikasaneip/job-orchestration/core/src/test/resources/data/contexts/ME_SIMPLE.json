@@ -1,0 +1,433 @@
+{
+  "name" : "SIMPLE_MONTH_END",
+  "description" : "Context Template Description",
+  "contexts" : [ {
+    "name" : "SIMPLE_ME",
+    "jobDependencies" : [ {
+      "jobIdentifier" : "scheduler-agent-BE_MHI_EMIR_PFO",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+        }, {
+          "identifier" : "scheduler-agent-BE_MHEU_SCF_INT"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-BE_MHEU_AWV_LNB",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+        }, {
+          "identifier" : "scheduler-agent-BE_IPV_FBS_MHBK"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-BE_MHEU_SALES",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+        }, {
+          "identifier" : "scheduler-agent-BE_MHEU_AWV_LNB"
+        } ]
+      }
+    }, {
+      "jobIdentifier" : "scheduler-agent-BE_MHI_MIFID_RP",
+      "logicalGrouping" : {
+        "and" : [ {
+          "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+        }, {
+          "identifier" : "scheduler-agent-BE_MHEU_SALES"
+        } ]
+      }
+    } ],
+    "contexts" : [ {
+      "name" : "SIMPLE_ME_COPY",
+      "jobDependencies" : [ {
+        "jobIdentifier" : "scheduler-agent-BSP_MHIPLD_TMEC",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-SIMPLE_ME_COPY_ScheduledJob_09:30:00"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-BSP_MHITPA_TMEC",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-SIMPLE_ME_COPY_ScheduledJob_09:30:00"
+          }, {
+            "identifier" : "scheduler-agent-BSP_MHIPLD_TMEC"
+          } ]
+        }
+      } ],
+      "scheduledJobs" : [ {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BSP_MHIPLD_TMEC",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BSP_MHIPLD_TMEC"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "SIMPLE_ME_COPY_ScheduledJob_09:30:00",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-SIMPLE_ME_COPY_ScheduledJob_09:30:00"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BSP_MHITPA_TMEC",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BSP_MHITPA_TMEC"
+      } ]
+    }, {
+      "name" : "FX_SELLDOWN_SPOT_BOOKING",
+      "jobDependencies" : [ {
+        "jobIdentifier" : "scheduler-agent-BF_MHBK_FXSLLDW",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-BF_MHBK_FXSLUSD",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+          }, {
+            "identifier" : "scheduler-agent-BF_MHBK_FXSLLDW"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-BF_MHBK_FXDLTCC",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+          }, {
+            "identifier" : "scheduler-agent-BF_MHBK_FXSLUSD"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-BE_MHBK_FXSLLDW",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+          }, {
+            "identifier" : "scheduler-agent-BF_MHBK_FXDLTCC"
+          } ]
+        }
+      } ],
+      "scheduledJobs" : [ {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BF_MHBK_FXSLLDW",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BF_MHBK_FXSLLDW"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "SIMPLE_ME_ScheduledJob_06:01:00",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BF_MHBK_FXSLUSD",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BF_MHBK_FXSLUSD"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BF_MHBK_FXDLTCC",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BF_MHBK_FXDLTCC"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BE_MHBK_FXSLLDW",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BE_MHBK_FXSLLDW"
+      } ]
+    }, {
+      "name" : "AWV_REPORTING",
+      "jobDependencies" : [ {
+        "jobIdentifier" : "scheduler-agent-PRC_SCF_DETAILS",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-BE_MHEU_SCF_COM",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+          }, {
+            "identifier" : "scheduler-agent-PRC_SCF_DETAILS"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-BE_MHEU_SCF_INT",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+          }, {
+            "identifier" : "scheduler-agent-BE_MHEU_SCF_COM"
+          } ]
+        }
+      } ],
+      "scheduledJobs" : [ {
+        "agentName" : "scheduler-agent",
+        "jobName" : "PRC_SCF_DETAILS",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-PRC_SCF_DETAILS"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "SIMPLE_ME_ScheduledJob_06:01:00",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BE_MHEU_SCF_COM",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BE_MHEU_SCF_COM"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BE_MHEU_SCF_INT",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BE_MHEU_SCF_INT"
+      } ]
+    }, {
+      "name" : "IPV_PRU_PREP",
+      "jobDependencies" : [ {
+        "jobIdentifier" : "scheduler-agent-BSP_IPV_ALL_TR",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+          }, {
+            "identifier" : "scheduler-agent-BE_MHI_EMIR_PFO"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-BE_REPO_INT_ME",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+          }, {
+            "identifier" : "scheduler-agent-BF_MD_CRDCRV_ME"
+          }, {
+            "identifier" : "scheduler-agent-BF_MHI_SIMCDCRV"
+          }, {
+            "identifier" : "scheduler-agent-BF_SIM_REPO_ME"
+          }, {
+            "identifier" : "scheduler-agent-BF_MD_RTCRV_ME"
+          }, {
+            "identifier" : "scheduler-agent-BF_SIM_FWD_ME"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-BF_MD_CRDCRV_ME",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-BSP_IPV_ALL_TR"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-BF_MHI_SIMCDCRV",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-BSP_IPV_ALL_TR"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-BF_SIM_REPO_ME",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-BSP_IPV_ALL_TR"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-BF_MD_RTCRV_ME",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-BSP_IPV_ALL_TR"
+          } ]
+        }
+      }, {
+        "jobIdentifier" : "scheduler-agent-BF_SIM_FWD_ME",
+        "logicalGrouping" : {
+          "and" : [ {
+            "identifier" : "scheduler-agent-BSP_IPV_ALL_TR"
+          } ]
+        }
+      } ],
+      "scheduledJobs" : [ {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BSP_IPV_ALL_TR",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BSP_IPV_ALL_TR"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "SIMPLE_ME_ScheduledJob_06:01:00",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BE_MHI_EMIR_PFO",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BE_MHI_EMIR_PFO"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BE_REPO_INT_ME",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BE_REPO_INT_ME"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BF_MD_CRDCRV_ME",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BF_MD_CRDCRV_ME"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BF_MHI_SIMCDCRV",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BF_MHI_SIMCDCRV"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BF_SIM_REPO_ME",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BF_SIM_REPO_ME"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BF_MD_RTCRV_ME",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BF_MD_RTCRV_ME"
+      }, {
+        "agentName" : "scheduler-agent",
+        "jobName" : "BF_SIM_FWD_ME",
+        "startupControlType" : "AUTOMATIC",
+        "identifier" : "scheduler-agent-BF_SIM_FWD_ME"
+      } ]
+    }, {
+      "name" : "IPV_MHBK_PREP",
+      "contexts" : [ {
+        "name" : "IPV_MHBK_FEEDERS",
+        "jobDependencies" : [ {
+          "jobIdentifier" : "scheduler-agent-BF_MHBK_PLDEIPV",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "scheduler-agent-BE_REPO_INT_ME"
+            } ]
+          }
+        }, {
+          "jobIdentifier" : "scheduler-agent-BF_RTCRV_MHBK",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "scheduler-agent-BE_REPO_INT_ME"
+            } ]
+          }
+        }, {
+          "jobIdentifier" : "scheduler-agent-BF_SIMFIPV_MHBK",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "scheduler-agent-BE_REPO_INT_ME"
+            } ]
+          }
+        }, {
+          "jobIdentifier" : "scheduler-agent-BF_SIM_FWD_MHBK",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "scheduler-agent-BE_REPO_INT_ME"
+            } ]
+          }
+        }, {
+          "jobIdentifier" : "scheduler-agent-BF_SIM_REP_MHBK",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "scheduler-agent-BE_REPO_INT_ME"
+            } ]
+          }
+        } ],
+        "scheduledJobs" : [ {
+          "agentName" : "scheduler-agent",
+          "jobName" : "BE_REPO_INT_ME",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-BE_REPO_INT_ME"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "BF_MHBK_PLDEIPV",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-BF_MHBK_PLDEIPV"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "BF_RTCRV_MHBK",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-BF_RTCRV_MHBK"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "BF_SIMFIPV_MHBK",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-BF_SIMFIPV_MHBK"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "BF_SIM_FWD_MHBK",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-BF_SIM_FWD_MHBK"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "BF_SIM_REP_MHBK",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-BF_SIM_REP_MHBK"
+        } ]
+      }, {
+        "name" : "IPV_MHBK_EXTRACTIONS",
+        "jobDependencies" : [ {
+          "jobIdentifier" : "scheduler-agent-BE_IPV_FBS_MHBK",
+          "logicalGrouping" : {
+            "and" : [ {
+              "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+            } ]
+          }
+        } ],
+        "scheduledJobs" : [ {
+          "agentName" : "scheduler-agent",
+          "jobName" : "BE_IPV_FBS_MHBK",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-BE_IPV_FBS_MHBK"
+        }, {
+          "agentName" : "scheduler-agent",
+          "jobName" : "SIMPLE_ME_ScheduledJob_06:01:00",
+          "startupControlType" : "AUTOMATIC",
+          "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+        } ]
+      } ]
+    } ],
+    "scheduledJobs" : [ {
+      "agentName" : "scheduler-agent",
+      "jobName" : "BE_MHI_EMIR_PFO",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-BE_MHI_EMIR_PFO"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "SIMPLE_ME_ScheduledJob_06:01:00",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-SIMPLE_ME_ScheduledJob_06:01:00"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "BE_MHEU_SCF_INT",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-BE_MHEU_SCF_INT"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "BE_MHEU_AWV_LNB",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-BE_MHEU_AWV_LNB"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "BE_IPV_FBS_MHBK",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-BE_IPV_FBS_MHBK"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "BE_MHEU_SALES",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-BE_MHEU_SALES"
+    }, {
+      "agentName" : "scheduler-agent",
+      "jobName" : "BE_MHI_MIFID_RP",
+      "startupControlType" : "AUTOMATIC",
+      "identifier" : "scheduler-agent-BE_MHI_MIFID_RP"
+    } ]
+  } ],
+  "timeWindowStart" : "0 0 1 ? * * *",
+  "timeWindowEnd" : "0 0 23 ? * * *"
+}
