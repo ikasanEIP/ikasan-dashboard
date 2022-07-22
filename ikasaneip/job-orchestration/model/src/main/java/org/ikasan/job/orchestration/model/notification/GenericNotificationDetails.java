@@ -9,6 +9,7 @@ public class GenericNotificationDetails {
     private String contextInstanceId;
     private MonitorType monitorType;
     private InstanceStatus status;
+    private String message;
 
     public GenericNotificationDetails(String contextName, String jobName, String contextInstanceId, MonitorType monitorType, InstanceStatus status) {
         this.contextName = contextName;
@@ -36,5 +37,13 @@ public class GenericNotificationDetails {
 
     public String getContextInstanceId() {
         return contextInstanceId;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

@@ -5,13 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.notification.MonitorManagement;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.notification.NotificationConfiguration;
+import org.ikasan.notification.monitor.mock.ApplicationContextTestImpl;
 import org.ikasan.notification.monitor.mock.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -27,6 +28,8 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.with;
@@ -34,14 +37,28 @@ import static org.junit.Assert.assertEquals;
 
 public class StateChangeMonitorTest {
 
+    /** default executor service is a single thread executor */
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+
     private  ObjectMapper objectMapper;
 
     private String result="test";
+
+    Monitor stateChangeMonitor;
 
     @Before
     public void setup() throws IOException {
         objectMapper = ObjectMapperFactory.newInstance();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        stateChangeMonitor = new StateChangeMonitorImpl(executorService);
+        stateChangeMonitor.setNotifiers(Arrays.asList(new TestNotifier()));
+
+        MonitorManagement monitorManagement = new MonitorManagement();
+        monitorManagement.registerMonitor(stateChangeMonitor);
+
+        ApplicationContextTestImpl applicationContextTest = new ApplicationContextTestImpl();
+        applicationContextTest.setMonitorManagement(monitorManagement);
 
         ContextInstance contextInstance1 = new ContextInstanceImpl();
         contextInstance1.setName("context-instance-1");
@@ -59,6 +76,8 @@ public class StateChangeMonitorTest {
         contextInstance1.setJobDependencies(new ArrayList<>());
 
         ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,"./target",null,null, null);
+     //   contextMachine1.setApplicationContext(applicationContextTest);
+     //   contextMachine1.setMonitorManagement(monitorManagement);
         contextMachine1.init();
 
         ContextMachineCache.instance().put(contextMachine1);
@@ -80,6 +99,8 @@ public class StateChangeMonitorTest {
         contextInstance2.setJobDependencies(new ArrayList<>());
 
         ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, new ScheduledContextInstanceServiceTestImpl(), null,"./target",null,null, null);
+     //   contextMachine2.setApplicationContext(applicationContextTest);
+     //   contextMachine2.setMonitorManagement(monitorManagement);
         contextMachine2.init();
 
         ContextMachineCache.instance().put(contextMachine2);
@@ -94,10 +115,6 @@ public class StateChangeMonitorTest {
         scheduledProcessEvent1.setJobStarting(false);
         scheduledProcessEvent1.setSuccessful(false);
 
-        // start test
-        NotificationConfiguration notificationConfiguration = new NotificationConfiguration();
-
-        Monitor stateChangeMonitor = notificationConfiguration.stateChangeMonitor(Arrays.asList(new TestNotifier()));
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
         ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
 
@@ -116,10 +133,6 @@ public class StateChangeMonitorTest {
         scheduledProcessEvent1.setJobStarting(false);
         scheduledProcessEvent1.setSuccessful(true);
 
-        // start test
-        NotificationConfiguration notificationConfiguration = new NotificationConfiguration();
-
-        Monitor stateChangeMonitor = notificationConfiguration.stateChangeMonitor(Arrays.asList(new TestNotifier()));
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
         ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
 
@@ -137,11 +150,6 @@ public class StateChangeMonitorTest {
         scheduledProcessEvent1.setJobName("job-2");
         scheduledProcessEvent1.setJobStarting(true);
         scheduledProcessEvent1.setSuccessful(false);
-
-        // start test
-        NotificationConfiguration notificationConfiguration = new NotificationConfiguration();
-
-        Monitor stateChangeMonitor = notificationConfiguration.stateChangeMonitor(Arrays.asList(new TestNotifier()));
 
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
         ContextMachineCache.instance().getByContextName("context-instance-2").eventReceived( objectMapper.writeValueAsString(message));

@@ -5,5 +5,6 @@ public enum MonitorType {
     OVERDUE,
     ERROR,
     START,
-    COMPLETE
+    COMPLETE,
+    RUNNING_TIME
 }
