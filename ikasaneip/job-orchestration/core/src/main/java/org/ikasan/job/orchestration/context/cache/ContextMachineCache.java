@@ -38,6 +38,7 @@ public class ContextMachineCache
     {
         this.contextInstanceByContextNameCache.put(contextMachine.getContext().getName(), contextMachine);
         this.contextInstanceByContextInstanceIdCache.put(contextMachine.getContext().getId(), contextMachine);
+        contextMachine.registerToNotificationMonitors();
     }
 
 

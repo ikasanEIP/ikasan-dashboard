@@ -39,11 +39,11 @@ public final class ContextImportZipUtils {
                     if (parentDirectory.get() == null) {
                         parentDirectory.set(entry.getName());
                     }
-                    String contextDirectory = parentDirectory + CONTEXT_DIR + File.separator;
-                    String fileJobsDirectory = parentDirectory + JOBS_DIR + File.separator + FILE_DIR + File.separator;
-                    String internalJobsDirectory = parentDirectory + JOBS_DIR + File.separator + INTERNAL_DIR + File.separator;
-                    String quartzJobsDirectory = parentDirectory + JOBS_DIR + File.separator + QUARTZ_DIR + File.separator;
-                    String contextProfileDirectory = parentDirectory + PROFILE_DIR + File.separator;
+                    String contextDirectory = parentDirectory + CONTEXT_DIR + "/";
+                    String fileJobsDirectory = parentDirectory + JOBS_DIR + "/" + FILE_DIR + "/";
+                    String internalJobsDirectory = parentDirectory + JOBS_DIR + "/" + INTERNAL_DIR + "/";
+                    String quartzJobsDirectory = parentDirectory + JOBS_DIR + "/" + QUARTZ_DIR + "/";
+                    String contextProfileDirectory = parentDirectory + PROFILE_DIR + "/";
 
                     if (!entry.isDirectory() && entry.getName().startsWith(contextDirectory)
                         && entry.getName().endsWith(".json")) {
