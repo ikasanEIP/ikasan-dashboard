@@ -88,8 +88,6 @@ public class OverdueFileMonitorTest {
         applicationContextTest.setMonitorManagement(monitorManagement);
 
         contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,"./target",null,null, null);
-     //   contextMachine1.setApplicationContext(applicationContextTest);
-     //   contextMachine1.setMonitorManagement(monitorManagement);
         contextMachine1.init();
 
         ContextMachineCache.instance().put(contextMachine1);
