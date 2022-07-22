@@ -74,6 +74,12 @@
                     <groupId>javax.validation</groupId>
                     <artifactId>validation-api</artifactId>
                 </exclusion>
+                <!--
+                <exclusion>
+                    <groupId>org.ikasan</groupId>
+                    <artifactId>ikasan-uber-spec</artifactId>
+                </exclusion>
+                -->
             </exclusions>
         </dependency>
 

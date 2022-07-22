@@ -1,9 +1,11 @@
 package org.ikasan.notification;
 
 import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
+import org.ikasan.job.orchestration.core.notification.MonitorManagement;
 import org.ikasan.notification.monitor.StateChangeMonitorImpl;
 import org.ikasan.notification.monitor.OverdueFileMonitorImpl;
 import org.ikasan.notification.notifier.EmailNotifier;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
@@ -30,6 +32,9 @@ public class NotificationConfiguration {
 
     @Resource
     private SchedulerJobService schedulerJobService;
+
+    @Resource
+    private SchedulerJobInstanceService schedulerJobInstanceService;
 
     @Resource
     private EmailNotificationDetailsService emailNotificationDetailsService;
@@ -62,7 +67,7 @@ public class NotificationConfiguration {
 
     @Bean
     public Monitor overdueFileMonitor(List<Notifier> overdueFileNotifiers) {
-        Monitor monitor = new OverdueFileMonitorImpl(fileArrivalToleranceInMinutes, executorService, schedulerJobService);
+        Monitor monitor = new OverdueFileMonitorImpl(fileArrivalToleranceInMinutes, executorService, schedulerJobInstanceService);
         monitor.setNotifiers(overdueFileNotifiers);
         return monitor;
     }
@@ -75,6 +80,14 @@ public class NotificationConfiguration {
     @Bean
     public List<Notifier> overdueFileNotifiers(EmailNotifier notificationEmailNotifier) {
         return Arrays.asList(notificationEmailNotifier);
+    }
+
+    @Bean
+    public MonitorManagement monitorManagement(Monitor stateChangeMonitor, Monitor overdueFileMonitor) {
+        MonitorManagement monitorManagement = new MonitorManagement();
+        monitorManagement.registerMonitor(stateChangeMonitor);
+        monitorManagement.registerMonitor(overdueFileMonitor);
+        return monitorManagement;
     }
 
     @Bean

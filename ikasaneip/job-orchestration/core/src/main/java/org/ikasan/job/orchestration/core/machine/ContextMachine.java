@@ -21,6 +21,7 @@ import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecor
 import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.job.orchestration.core.notification.MonitorManagement;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -39,7 +40,6 @@ import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceServi
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -96,7 +96,6 @@ public class ContextMachine {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.jobLockCache = jobLockCache;
-
         this.jobLogicMachine = new JobLogicMachine(this.agents, this.jobLockCache, contextParametersInstanceService);
     }
 
@@ -116,6 +115,10 @@ public class ContextMachine {
 
         this.attempts = 0;
         this.maxWait = 10000L;
+    }
+
+    public void registerToNotificationMonitors() {
+        MonitorManagement.startMonitoring(this);
     }
 
     private String getOutboundQueueName() {
