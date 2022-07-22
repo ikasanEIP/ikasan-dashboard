@@ -5,15 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.core.notification.MonitorManagement;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.notification.NotificationConfiguration;
+import org.ikasan.notification.monitor.mock.ApplicationContextTestImpl;
 import org.ikasan.notification.monitor.mock.ScheduledContextInstanceServiceTestImpl;
-import org.ikasan.notification.monitor.mock.SchedulerJobServiceTestImpl;
+import org.ikasan.notification.monitor.mock.SchedulerJobInstanceServiceTestImpl;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
@@ -25,7 +26,6 @@ import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.joda.time.DateTimeUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -48,6 +48,8 @@ public class OverdueFileMonitorTest {
     private ObjectMapper objectMapper;
 
     private ContextMachine contextMachine1;
+
+    private Monitor overdueFileMonitor;
 
     @After
     public void tearDown() {
@@ -76,11 +78,21 @@ public class OverdueFileMonitorTest {
         contextInstance1.setScheduledJobs(Arrays.asList(schedulerJobInstance1));
         contextInstance1.setJobDependencies(new ArrayList<>());
 
+        overdueFileMonitor = new OverdueFileMonitorImpl(30, executorService, new SchedulerJobInstanceServiceTestImpl());
+        overdueFileMonitor.setNotifiers(Arrays.asList(new TestNotifier()));
+
+        MonitorManagement monitorManagement = new MonitorManagement();
+        monitorManagement.registerMonitor(overdueFileMonitor);
+
+        ApplicationContextTestImpl applicationContextTest = new ApplicationContextTestImpl();
+        applicationContextTest.setMonitorManagement(monitorManagement);
+
         contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,"./target",null,null, null);
+     //   contextMachine1.setApplicationContext(applicationContextTest);
+     //   contextMachine1.setMonitorManagement(monitorManagement);
         contextMachine1.init();
 
         ContextMachineCache.instance().put(contextMachine1);
-
     }
 
     @Test
@@ -92,10 +104,6 @@ public class OverdueFileMonitorTest {
         scheduledProcessEvent1.setJobStarting(false);
         scheduledProcessEvent1.setSuccessful(true);
 
-        // start test
-        NotificationConfiguration notificationConfiguration = new NotificationConfiguration();
-
-        Monitor overdueFileMonitor = notificationConfiguration.overdueFileMonitor(Arrays.asList(new TestNotifier()));
 
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
         ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
@@ -117,10 +125,6 @@ public class OverdueFileMonitorTest {
         scheduledProcessEvent1.setSuccessful(false);
 
         DateTimeUtils.setCurrentMillisFixed(1490688000000L); // 09:00:00
-
-         // start test
-        Monitor overdueFileMonitor = new OverdueFileMonitorImpl(30, executorService, new SchedulerJobServiceTestImpl());
-        overdueFileMonitor.setNotifiers(Arrays.asList(new TestNotifier()));
 
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
         ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));

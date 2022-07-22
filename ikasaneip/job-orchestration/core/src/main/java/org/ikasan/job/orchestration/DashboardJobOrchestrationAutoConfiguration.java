@@ -78,6 +78,7 @@ public class DashboardJobOrchestrationAutoConfiguration {
     }
 
     @Bean
+    @DependsOn({"stateChangeMonitor","overdueFileMonitor","monitorManagement"})
     public ContextInstanceRecoveryManager contextInstanceRecoveryManager(ContextInstanceRecoveryService contextInstanceRecoveryService) {
         return new ContextInstanceRecoveryManager(contextInstanceRecoveryService, isContextLifeCycleActive);
     }
