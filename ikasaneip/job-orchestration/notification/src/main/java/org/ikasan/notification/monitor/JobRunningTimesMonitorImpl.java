@@ -6,8 +6,7 @@ import org.ikasan.notification.exception.StopNotificationRunnerException;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
-import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
@@ -27,7 +26,7 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
     private static final Logger LOG = LoggerFactory.getLogger(JobRunningTimesMonitorImpl.class);
 
     private SchedulerJobInstanceService schedulerJobInstanceService;
-    private SchedulerJobService schedulerJobService;
+    private InternalEventDrivenJobService internalEventDrivenJobService;
 
     private List<ScheduledFuture<?>> jobRunningTimesNotificationsExecutors = new ArrayList<>();
 
@@ -36,12 +35,12 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
      * @param executorService
      */
     public JobRunningTimesMonitorImpl(ExecutorService executorService, SchedulerJobInstanceService schedulerJobInstanceService,
-                                      SchedulerJobService schedulerJobService) {
+                                      InternalEventDrivenJobService internalEventDrivenJobService) {
         super(executorService);
         LOG.info("JobRunningTimesMonitorImpl is being created!");
 
         this.schedulerJobInstanceService = schedulerJobInstanceService;
-        this.schedulerJobService = schedulerJobService;
+        this.internalEventDrivenJobService = internalEventDrivenJobService;
 
         jobRunningTimesNotificationsExecutors.clear();
     }
@@ -81,9 +80,9 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
 
                     SearchResults<SchedulerJobInstanceRecord> searchResults = schedulerJobInstanceService.getSchedulerJobInstancesByContextName(contextInstance.getName(), -1, -1, null, null);
 
-                    SearchResults<SchedulerJobRecord> jobDetailsResults = schedulerJobService.findByContext(contextInstance.getName(), -1, -1);
+                    SearchResults<InternalEventDrivenJobRecord> jobDetailsResults = internalEventDrivenJobService.findByContext(contextInstance.getName(), -1, -1);
 
-                    Map<String,SchedulerJobRecord> jobMap = createJobMap(jobDetailsResults);
+                    Map<String,InternalEventDrivenJobRecord> jobMap = createJobMap(jobDetailsResults);
 
                     for (SchedulerJobInstanceRecord schedulerJobInstanceRecord : searchResults.getResultList()) {
 
@@ -96,7 +95,7 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
                             if (internalEventDrivenJobInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.RUNNING.toString()) ||
                                 internalEventDrivenJobInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.COMPLETE.toString())) {
 
-                                InternalEventDrivenJobRecord internalEventDrivenJobRecord = (InternalEventDrivenJobRecord)jobMap.get(internalEventDrivenJobInstance.getJobName());
+                                InternalEventDrivenJobRecord internalEventDrivenJobRecord = jobMap.get(internalEventDrivenJobInstance.getJobName());
 
                                 long processTime = internalEventDrivenJobInstance.getScheduledProcessEvent().getCompletionTime() - internalEventDrivenJobInstance.getScheduledProcessEvent().getFireTime();
                                 if (processTime < internalEventDrivenJobRecord.getInternalEventDrivenJob().getMinExecutionTime() ||
@@ -123,9 +122,9 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
             }
         }
 
-        private Map<String,SchedulerJobRecord> createJobMap(SearchResults<SchedulerJobRecord> jobDetailsResults) {
-            Map<String,SchedulerJobRecord> resultMap = new HashMap<>();
-            for (SchedulerJobRecord jobRecord : jobDetailsResults.getResultList()) {
+        private Map<String,InternalEventDrivenJobRecord> createJobMap(SearchResults<InternalEventDrivenJobRecord> jobDetailsResults) {
+            Map<String,InternalEventDrivenJobRecord> resultMap = new HashMap<>();
+            for (InternalEventDrivenJobRecord jobRecord : jobDetailsResults.getResultList()) {
                 resultMap.put(jobRecord.getJobName(), jobRecord);
             }
             return resultMap;

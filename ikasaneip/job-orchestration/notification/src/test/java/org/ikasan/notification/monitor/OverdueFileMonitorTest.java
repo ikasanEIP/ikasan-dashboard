@@ -12,7 +12,6 @@ import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.notification.monitor.mock.ApplicationContextTestImpl;
 import org.ikasan.notification.monitor.mock.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.notification.monitor.mock.SchedulerJobInstanceServiceTestImpl;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
@@ -78,14 +77,14 @@ public class OverdueFileMonitorTest {
         contextInstance1.setScheduledJobs(Arrays.asList(schedulerJobInstance1));
         contextInstance1.setJobDependencies(new ArrayList<>());
 
-        overdueFileMonitor = new OverdueFileMonitorImpl(30, executorService, new SchedulerJobInstanceServiceTestImpl());
+        SchedulerJobInstanceServiceTestImpl mockSchedulerJobInstanceService = new SchedulerJobInstanceServiceTestImpl();
+        mockSchedulerJobInstanceService.setType("file");
+
+        overdueFileMonitor = new OverdueFileMonitorImpl(30, executorService, mockSchedulerJobInstanceService);
         overdueFileMonitor.setNotifiers(Arrays.asList(new TestNotifier()));
 
         MonitorManagement monitorManagement = new MonitorManagement();
         monitorManagement.registerMonitor(overdueFileMonitor);
-
-        ApplicationContextTestImpl applicationContextTest = new ApplicationContextTestImpl();
-        applicationContextTest.setMonitorManagement(monitorManagement);
 
         contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,"./target",null,null, null);
         contextMachine1.init();
