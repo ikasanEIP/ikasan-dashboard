@@ -10,6 +10,12 @@ import java.util.List;
 
 public class SchedulerJobServiceTestImpl implements SchedulerJobService {
 
+    private String type;
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     @Override
     public SearchResults findByAgent(String agent, int limit, int offset) {
         return null;
@@ -27,11 +33,19 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
 
     @Override
     public SearchResults findByContext(String contextId, int limit, int offset) {
-        List<SchedulerJobRecord> list = new ArrayList<>();
-        list.add(new SchedulerJobRecordTestImpl());
 
-        SearchResults<SchedulerJobRecord> results = new SearchResultsImpl(list,1,100);
-        return results;
+        if (type.equalsIgnoreCase("file")) {
+            List<SchedulerJobRecord> list = new ArrayList<>();
+            list.add(new SchedulerJobRecordTestImpl());
+            return new SearchResultsImpl(list,1,100);
+        }
+        else if (type.equalsIgnoreCase("internal")) {
+            List<InternalEventDrivenJobRecord> list = new ArrayList<>();
+            list.add(new InternalEventDrivenJobRecordTestImpl());
+            return new SearchResultsImpl(list,1,100);
+        }
+
+        return null;
     }
 
     @Override
