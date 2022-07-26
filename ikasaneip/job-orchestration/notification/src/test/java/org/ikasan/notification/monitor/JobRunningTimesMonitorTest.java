@@ -12,7 +12,7 @@ import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.notification.monitor.mock.ApplicationContextTestImpl;
+import org.ikasan.notification.monitor.mock.InternalEventDrivenJobServiceTestImpl;
 import org.ikasan.notification.monitor.mock.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.notification.monitor.mock.SchedulerJobInstanceServiceTestImpl;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
@@ -50,7 +50,7 @@ public class JobRunningTimesMonitorTest {
 
     private ContextMachine contextMachine1;
 
-    private Monitor overdueFileMonitor;
+    private Monitor jobRunningTimesMonitor;
 
     @After
     public void tearDown() {
@@ -79,14 +79,14 @@ public class JobRunningTimesMonitorTest {
         contextInstance1.setScheduledJobs(Arrays.asList(schedulerJobInstance1));
         contextInstance1.setJobDependencies(new ArrayList<>());
 
-        overdueFileMonitor = new OverdueFileMonitorImpl(30, executorService, new SchedulerJobInstanceServiceTestImpl());
-        overdueFileMonitor.setNotifiers(Arrays.asList(new TestNotifier()));
+        SchedulerJobInstanceServiceTestImpl mockSchedulerJobInstanceService = new SchedulerJobInstanceServiceTestImpl();
+        mockSchedulerJobInstanceService.setType("internal");
+
+        jobRunningTimesMonitor = new JobRunningTimesMonitorImpl(executorService, mockSchedulerJobInstanceService, new InternalEventDrivenJobServiceTestImpl());
+        jobRunningTimesMonitor.setNotifiers(Arrays.asList(new TestNotifier()));
 
         MonitorManagement monitorManagement = new MonitorManagement();
-        monitorManagement.registerMonitor(overdueFileMonitor);
-
-        ApplicationContextTestImpl applicationContextTest = new ApplicationContextTestImpl();
-        applicationContextTest.setMonitorManagement(monitorManagement);
+        monitorManagement.registerMonitor(jobRunningTimesMonitor);
 
         contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,"./target",null,null, null);
         contextMachine1.init();
@@ -95,35 +95,13 @@ public class JobRunningTimesMonitorTest {
     }
 
     @Test
-    public void test_with_completed_status() throws IOException {
-
-        ContextualisedScheduledProcessEvent scheduledProcessEvent1 = new ContextualisedScheduledProcessEventImpl();
-        scheduledProcessEvent1.setAgentName("agent-1");
-        scheduledProcessEvent1.setJobName("job-1");
-        scheduledProcessEvent1.setJobStarting(false);
-        scheduledProcessEvent1.setSuccessful(true);
-
-
-        BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
-        ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
-
-        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(60, TimeUnit.SECONDS).await()
-            .during(29, TimeUnit.SECONDS)
-            .atMost(90, TimeUnit.SECONDS)
-            .until(checkResult());
-
-    }
-
-    @Test
-    public void test_with_running_and_overdued() throws IOException {
+    public void test_with_long_running() throws IOException {
 
         ContextualisedScheduledProcessEvent scheduledProcessEvent1 = new ContextualisedScheduledProcessEventImpl();
         scheduledProcessEvent1.setAgentName("agent-1");
         scheduledProcessEvent1.setJobName("job-1");
         scheduledProcessEvent1.setJobStarting(true);
         scheduledProcessEvent1.setSuccessful(false);
-
-        DateTimeUtils.setCurrentMillisFixed(1490688000000L); // 09:00:00
 
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
         ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
