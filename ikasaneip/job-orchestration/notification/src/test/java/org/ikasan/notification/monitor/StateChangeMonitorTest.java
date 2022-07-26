@@ -12,7 +12,6 @@ import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.notification.monitor.mock.ApplicationContextTestImpl;
 import org.ikasan.notification.monitor.mock.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -56,9 +55,6 @@ public class StateChangeMonitorTest {
 
         MonitorManagement monitorManagement = new MonitorManagement();
         monitorManagement.registerMonitor(stateChangeMonitor);
-
-        ApplicationContextTestImpl applicationContextTest = new ApplicationContextTestImpl();
-        applicationContextTest.setMonitorManagement(monitorManagement);
 
         ContextInstance contextInstance1 = new ContextInstanceImpl();
         contextInstance1.setName("context-instance-1");

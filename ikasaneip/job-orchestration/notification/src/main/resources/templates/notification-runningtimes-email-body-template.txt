@@ -1,0 +1,3 @@
+[( ${emailNotificationDetails.emailNotificationTemplateParameters.EMAIL_BODY_TEXT} )]
+
+[( ${emailNotificationDetails.emailNotificationTemplateParameters.EMAIL_BODY_MESSAGE_FROM_MONITOR} )]

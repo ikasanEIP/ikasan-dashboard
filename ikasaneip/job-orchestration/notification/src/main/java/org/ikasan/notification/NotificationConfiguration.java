@@ -2,10 +2,12 @@ package org.ikasan.notification;
 
 import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.ikasan.job.orchestration.core.notification.MonitorManagement;
+import org.ikasan.notification.monitor.JobRunningTimesMonitorImpl;
 import org.ikasan.notification.monitor.StateChangeMonitorImpl;
 import org.ikasan.notification.monitor.OverdueFileMonitorImpl;
 import org.ikasan.notification.notifier.EmailNotifier;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
@@ -35,6 +37,9 @@ public class NotificationConfiguration {
 
     @Resource
     private SchedulerJobInstanceService schedulerJobInstanceService;
+
+    @Resource
+    private InternalEventDrivenJobService internalEventDrivenJobService;
 
     @Resource
     private EmailNotificationDetailsService emailNotificationDetailsService;
@@ -73,7 +78,19 @@ public class NotificationConfiguration {
     }
 
     @Bean
+    public Monitor jobRunningTimesMonitor(List<Notifier> jobRunningTimesNotifiers) {
+        Monitor monitor = new JobRunningTimesMonitorImpl(executorService, schedulerJobInstanceService, internalEventDrivenJobService);
+        monitor.setNotifiers(jobRunningTimesNotifiers);
+        return monitor;
+    }
+
+    @Bean
     public List<Notifier> stateChangeNotifiers(EmailNotifier notificationEmailNotifier) {
+        return Arrays.asList(notificationEmailNotifier);
+    }
+
+    @Bean
+    public List<Notifier> jobRunningTimesNotifiers(EmailNotifier notificationEmailNotifier) {
         return Arrays.asList(notificationEmailNotifier);
     }
 
@@ -83,10 +100,11 @@ public class NotificationConfiguration {
     }
 
     @Bean
-    public MonitorManagement monitorManagement(Monitor stateChangeMonitor, Monitor overdueFileMonitor) {
+    public MonitorManagement monitorManagement(Monitor stateChangeMonitor, Monitor overdueFileMonitor, Monitor jobRunningTimesMonitor) {
         MonitorManagement monitorManagement = new MonitorManagement();
         monitorManagement.registerMonitor(stateChangeMonitor);
         monitorManagement.registerMonitor(overdueFileMonitor);
+        monitorManagement.registerMonitor(jobRunningTimesMonitor);
         return monitorManagement;
     }
 
