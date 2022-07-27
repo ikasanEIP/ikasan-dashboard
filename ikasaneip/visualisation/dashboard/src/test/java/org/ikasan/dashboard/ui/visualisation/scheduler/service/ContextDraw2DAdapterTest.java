@@ -15,7 +15,7 @@ public class ContextDraw2DAdapterTest extends AbstractTest {
     public void test_context_machine() throws IOException {
         ContextInstance context = this.contextService.getContextInstance(loadDataFile("/data/contexts/CONTEXT-36916071.json"));
 
-        ContextDraw2dAdapter adapter = new ContextDraw2dAdapter();
+        ContextInstanceDraw2dAdapter adapter = new ContextInstanceDraw2dAdapter();
         String json = adapter.adaptContext(context);
 
         // todo sort out assertion

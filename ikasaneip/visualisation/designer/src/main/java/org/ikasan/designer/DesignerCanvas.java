@@ -12,11 +12,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
-import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
-import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
-import org.ikasan.designer.event.CanvasItemRightClickEvent;
-import org.ikasan.designer.event.CanvasItemRightClickEventListener;
-import org.ikasan.designer.function.OpenFunction;
+import org.ikasan.designer.event.*;
 import org.ikasan.designer.function.SaveAsFunction;
 import org.ikasan.designer.function.SaveFunction;
 import org.ikasan.designer.json.DesignerDynamicImageManager;
@@ -32,9 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Function;
 
 
 @Tag("div")
@@ -52,6 +45,11 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         = new ArrayList<>();
     private List<CanvasItemDoubleClickEventListener> canvasItemDoubleClickEventListeners
         = new ArrayList<>();
+    private List<ConnectorEventListener> connectorEventListeners
+        = new ArrayList<>();
+    private List<CanvasInitialisedListener> canvasInitialisedListeners = new ArrayList<>();
+
+    private List<CanvasUpdatedListener> canvasUpdatedListeners = new ArrayList<>();
 
     private SaveFunction saveFunction;
     private SaveAsFunction saveAsFunction;
@@ -204,6 +202,12 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.saved = false;
     }
 
+    public void addBoundaryStyled(String identifier, double x, double y, String dashArray, String colour, int stroke) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.addBoundaryStyled", identifier, x, y, dashArray, colour, stroke));
+        this.saved = false;
+    }
+
     public void removeFigure(String identifier) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.removeFigure", identifier));
@@ -231,6 +235,12 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     public void addLabel(String label) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addLabel", label));
+        this.saved = false;
+    }
+
+    public void addImageFigure(String image) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.addImageFigure", image));
         this.saved = false;
     }
 
@@ -282,6 +292,11 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setFont", font));
         this.saved = false;
+    }
+
+    public void deselectAllFigures() {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.deselectAllFigures"));
     }
 
     public void setLineTargetDecorator(String decorator) {
@@ -385,6 +400,42 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.canvasItemDoubleClickEventListeners.add(listener);
     }
 
+    public void addConnectorEventListener(ConnectorEventListener listener) {
+        this.connectorEventListeners.add(listener);
+    }
+
+    public void addCanvasUpdatedListener(CanvasUpdatedListener listener) {
+        this.canvasUpdatedListeners.add(listener);
+    }
+
+    @ClientCallable
+    private void connectorEvent(String event){
+        try {
+            ConnectorEvent connectorEvent = mapper.readValue(event, ConnectorEvent.class);
+            logger.info("Event received: " + connectorEvent.getCanvasJson());
+
+            this.connectorEventListeners.forEach(listener
+                -> listener.connectorEvent(connectorEvent));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @ClientCallable
+    private void canvasUpdatedEvent(String event){
+        try {
+            logger.info("Event received: " + event);
+            CanvasUpdatedEvent connectorEvent = mapper.readValue(event, CanvasUpdatedEvent.class);
+
+            this.canvasUpdatedListeners.forEach(listener
+                -> listener.canvasUpdated(connectorEvent));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @ClientCallable
     private void doubleClickEvent(String figure){
         try {
@@ -413,6 +464,15 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @ClientCallable
+    private void canvasInitialised(){
+        this.canvasInitialisedListeners.forEach(listener -> listener.canvasInitialised());
+    }
+
+    public void addCanvasInitialisedListener(CanvasInitialisedListener listener) {
+        this.canvasInitialisedListeners.add(listener);
     }
 
     public void exportJson(){

@@ -12,7 +12,7 @@ public class RectangleBuilder {
     protected String id = UUID.randomUUID().toString();
     protected int alpha = 1;
     protected boolean selectable;
-    protected boolean draggable;
+    protected boolean draggable = true;
     protected int angle;
     protected String cssClass = "draw2d_shape_basic_Rectangle";
     protected String composite;
@@ -28,6 +28,8 @@ public class RectangleBuilder {
     private int stroke = 2;
     private int radius = 5;
     private String dasharray = null;
+
+    private boolean resizable = false;
 
     public RectangleBuilder withId(String id) {
         this.id = id;
@@ -113,6 +115,11 @@ public class RectangleBuilder {
         return this;
     }
 
+    public RectangleBuilder withResizable(boolean resizable) {
+        this.resizable = resizable;
+        return this;
+    }
+
     public RectangleBuilder withTopAndBottomPorts() {
         PortBuilder bottomPortBuilder = new PortBuilder();
         bottomPortBuilder.witLocator("draw2d.layout.locator.BottomLocator")
@@ -166,6 +173,7 @@ public class RectangleBuilder {
         rectangle.setStroke(this.stroke);
         rectangle.setRadius(this.radius);
         rectangle.setDasharray(this.dasharray);
+        rectangle.setResizable(this.resizable);
 
         return rectangle;
     }
