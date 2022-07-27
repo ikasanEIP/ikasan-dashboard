@@ -83,13 +83,13 @@ public class ContextTemplateViewMenuBar extends MenuBar {
                     try {
                         if (this.contextTemplate.getName().equals(s)) {
                             this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate
-                                , this.contextTemplate, null);
+                                , this.contextTemplate, null, true);
                         }
                         else {
                             ContextTemplate childContextTemplate = ContextHelper.getChildContextTemplate(s,
                                 this.contextTemplate);
                             this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate
-                                , childContextTemplate, null);
+                                , childContextTemplate, null, true);
                         }
                     }
                     catch (IOException e) {

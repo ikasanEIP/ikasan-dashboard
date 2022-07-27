@@ -29,6 +29,7 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
@@ -99,6 +100,8 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
     private SchedulerJobService schedulerJobService;
 
+    private List<SchedulerJobSelectedListener> schedulerJobSelectedListeners = new ArrayList<>();
+
 
     /**
      * Constructor
@@ -164,6 +167,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
                 this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_EDIT, action, authentication.getName());
             }
 
+            this.schedulerJobSelectedListeners.forEach(listener -> listener.jobSelected(this.internalEventDrivenJob));
             this.close();
         });
 
@@ -362,6 +366,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     public void createOrUpdateScheduledJob(InternalEventDrivenJob internalEventDrivenJob, IkasanAuthentication authentication) throws JsonProcessingException {
         // Get the module configuration from the module.
         internalEventDrivenJob.setCommandLine(this.commandLineTa.getValue());
+        internalEventDrivenJob.setIdentifier(internalEventDrivenJob.getAgentName()+"-"+internalEventDrivenJob.getJobName());
 
         SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
         solrInternalEventDrivenJobRecord.setAgentName(internalEventDrivenJob.getAgentName());
@@ -426,4 +431,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.setJob((InternalEventDrivenJob)this.schedulerJobService.findById(internalEventDrivenJobRecord.getId()).getJob(), editMode);
     }
 
+    public void addSchedulerJobSelectedListener(SchedulerJobSelectedListener listener) {
+        this.schedulerJobSelectedListeners.add(listener);
+    }
 }

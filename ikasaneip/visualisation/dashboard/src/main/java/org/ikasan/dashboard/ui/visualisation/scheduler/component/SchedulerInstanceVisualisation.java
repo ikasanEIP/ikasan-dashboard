@@ -1,26 +1,20 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 import com.flowingcode.vaadin.addons.ironicons.IronIcons;
-import com.vaadin.componentfactory.Tooltip;
-import com.vaadin.componentfactory.TooltipAlignment;
-import com.vaadin.componentfactory.TooltipPosition;
 import com.vaadin.flow.component.*;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.shared.Registration;
-import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.scheduler.component.FileEventJobInstanceDialog;
 import org.ikasan.dashboard.ui.scheduler.component.InternalEventDrivenJobInstanceDialog;
 import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobInstanceDialog;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextDraw2dAdapter;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextInstanceDraw2dAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
@@ -63,7 +57,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
 
     private boolean initialised = false;
 
-    private ContextDraw2dAdapter adapter = new ContextDraw2dAdapter();
+    private ContextInstanceDraw2dAdapter adapter = new ContextInstanceDraw2dAdapter();
 
     private ModuleMetaDataService moduleMetaDataService;
     private ScheduledProcessManagementService scheduledProcessManagementService;
