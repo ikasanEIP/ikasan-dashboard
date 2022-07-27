@@ -20,6 +20,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
@@ -41,6 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDialog {
@@ -80,6 +83,8 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
     private SchedulerJobService schedulerJobService;
 
     private SchedulerJobRecord schedulerJobRecord;
+
+    private List<SchedulerJobSelectedListener> schedulerJobSelectedListeners = new ArrayList<>();
 
 
     /**
@@ -145,6 +150,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
                 this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_EDIT, action, authentication.getName());
             }
 
+            this.schedulerJobSelectedListeners.forEach(listener -> listener.jobSelected(this.quartzScheduleDrivenJob));
             this.close();
         });
 
@@ -344,5 +350,9 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
     public void setJob(SchedulerJobRecord schedulerJobRecord, EditMode editMode) {
         this.schedulerJobRecord = schedulerJobRecord;
         this.setJob((QuartzScheduleDrivenJob)this.schedulerJobService.findById(schedulerJobRecord.getId()).getJob(), editMode);
+    }
+
+    public void addSchedulerJobSelectedListener(SchedulerJobSelectedListener listener) {
+        this.schedulerJobSelectedListeners.add(listener);
     }
 }

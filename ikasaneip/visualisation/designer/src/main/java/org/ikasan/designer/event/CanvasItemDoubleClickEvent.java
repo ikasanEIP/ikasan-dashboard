@@ -3,7 +3,7 @@ package org.ikasan.designer.event;
 import org.ikasan.designer.model.Figure;
 import org.ikasan.designer.pallet.DesignerPalletImageItem;
 
-public class CanvasItemDoubleClickEvent extends CanvasItemEvent {
+public class CanvasItemDoubleClickEvent extends CanvasItemClickEvent {
 
     /**
      * Constructor

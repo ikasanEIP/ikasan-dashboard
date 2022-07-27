@@ -6582,8 +6582,6 @@
           "jobIdentifier" : "scheduler-agent-1666702606",
           "logicalGrouping" : {
             "and" : [ {
-              "identifier" : "scheduler-agent-1167353422_ScheduledJob_15:45:00"
-            }, {
               "identifier" : "scheduler-agent-991999604"
             } ]
           }
@@ -6591,8 +6589,6 @@
           "jobIdentifier" : "scheduler-agent--854506457",
           "logicalGrouping" : {
             "and" : [ {
-              "identifier" : "scheduler-agent-1167353422_ScheduledJob_15:45:00"
-            }, {
               "identifier" : "scheduler-agent-1666702606"
             } ]
           }
@@ -6600,53 +6596,41 @@
           "jobIdentifier" : "scheduler-agent--457154928",
           "logicalGrouping" : {
             "and" : [ {
-              "identifier" : "scheduler-agent-1167353422_ScheduledJob_15:45:00"
-            }, {
               "identifier" : "scheduler-agent--854506457"
             } ]
           }
         }, {
           "jobIdentifier" : "scheduler-agent-1483324359",
           "logicalGrouping" : {
-            "and" : [ {
-              "identifier" : "scheduler-agent-1167353422_ScheduledJob_15:45:00"
-            }, {
+            "and" : [  {
               "identifier" : "scheduler-agent--457154928"
             } ]
           }
         }, {
           "jobIdentifier" : "scheduler-agent-199248836",
           "logicalGrouping" : {
-            "and" : [ {
-              "identifier" : "scheduler-agent-1167353422_ScheduledJob_15:45:00"
-            }, {
+            "and" : [  {
               "identifier" : "scheduler-agent-1483324359"
             } ]
           }
         }, {
           "jobIdentifier" : "scheduler-agent--1222568013",
           "logicalGrouping" : {
-            "and" : [ {
-              "identifier" : "scheduler-agent-1167353422_ScheduledJob_15:45:00"
-            }, {
+            "and" : [  {
               "identifier" : "scheduler-agent-199248836"
             } ]
           }
         }, {
           "jobIdentifier" : "scheduler-agent--259049314",
           "logicalGrouping" : {
-            "and" : [ {
-              "identifier" : "scheduler-agent-1167353422_ScheduledJob_15:45:00"
-            }, {
+            "and" : [  {
               "identifier" : "scheduler-agent--1222568013"
             } ]
           }
         }, {
           "jobIdentifier" : "scheduler-agent-812176495",
           "logicalGrouping" : {
-            "and" : [ {
-              "identifier" : "scheduler-agent-1167353422_ScheduledJob_15:45:00"
-            }, {
+            "and" : [  {
               "identifier" : "scheduler-agent--259049314"
             } ]
           }
@@ -7099,9 +7083,7 @@
         }, {
           "jobIdentifier" : "scheduler-agent--532050073",
           "logicalGrouping" : {
-            "and" : [ {
-              "identifier" : "scheduler-agent-1892741766_ScheduledJob_17:00:00"
-            }, {
+            "and" : [  {
               "identifier" : "scheduler-agent--1515829064"
             }, {
               "identifier" : "scheduler-agent-185916817"
@@ -7110,9 +7092,7 @@
         }, {
           "jobIdentifier" : "scheduler-agent-131944233",
           "logicalGrouping" : {
-            "and" : [ {
-              "identifier" : "scheduler-agent-1892741766_ScheduledJob_17:00:00"
-            }, {
+            "and" : [  {
               "identifier" : "scheduler-agent-200769144"
             }, {
               "identifier" : "scheduler-agent--532050073"
@@ -7121,9 +7101,7 @@
         }, {
           "jobIdentifier" : "scheduler-agent-2074200534",
           "logicalGrouping" : {
-            "and" : [ {
-              "identifier" : "scheduler-agent-1892741766_ScheduledJob_17:00:00"
-            }, {
+            "and" : [  {
               "identifier" : "scheduler-agent--2047526486"
             }, {
               "identifier" : "scheduler-agent-131944233"
@@ -7132,9 +7110,7 @@
         }, {
           "jobIdentifier" : "scheduler-agent-959606163",
           "logicalGrouping" : {
-            "and" : [ {
-              "identifier" : "scheduler-agent-1892741766_ScheduledJob_17:00:00"
-            }, {
+            "and" : [  {
               "identifier" : "scheduler-agent--1657966748"
             }, {
               "identifier" : "scheduler-agent-2074200534"
@@ -7143,9 +7119,7 @@
         }, {
           "jobIdentifier" : "scheduler-agent--144197246",
           "logicalGrouping" : {
-            "and" : [ {
-              "identifier" : "scheduler-agent-1892741766_ScheduledJob_17:00:00"
-            }, {
+            "and" : [  {
               "identifier" : "scheduler-agent--1487547688"
             }, {
               "identifier" : "scheduler-agent-581199512"
@@ -7164,9 +7138,7 @@
         }, {
           "jobIdentifier" : "scheduler-agent--1352189442",
           "logicalGrouping" : {
-            "and" : [ {
-              "identifier" : "scheduler-agent-1892741766_ScheduledJob_17:00:00"
-            }, {
+            "and" : [  {
               "identifier" : "scheduler-agent--598161030"
             }, {
               "identifier" : "scheduler-agent--144197246"
