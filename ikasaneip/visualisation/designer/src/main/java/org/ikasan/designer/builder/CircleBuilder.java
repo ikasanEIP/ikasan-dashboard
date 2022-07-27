@@ -12,8 +12,8 @@ public class CircleBuilder {
     protected String type = "draw2d.shape.basic.Circle";
     protected String id = UUID.randomUUID().toString();
     protected int alpha = 1;
-    protected boolean selectable;
-    protected boolean draggable;
+    protected boolean selectable = true;
+    protected boolean draggable = true;
     protected int angle;
     protected String cssClass = "draw2d_shape_basic_Circle";
     protected String composite;

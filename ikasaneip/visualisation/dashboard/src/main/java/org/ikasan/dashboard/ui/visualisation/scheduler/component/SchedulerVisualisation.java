@@ -1,15 +1,10 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flowingcode.vaadin.addons.ironicons.IronIcons;
-import com.vaadin.componentfactory.Tooltip;
-import com.vaadin.componentfactory.TooltipAlignment;
-import com.vaadin.componentfactory.TooltipPosition;
 import com.vaadin.flow.component.*;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -21,14 +16,18 @@ import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobDialo
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextDraw2dAdapter;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.CanvasJsonToContextTemplateAdapter;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextInstanceDraw2dAdapter;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextTemplateDraw2dAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
+import org.ikasan.designer.CanvasInitialisedListener;
 import org.ikasan.designer.DesignerCanvas;
-import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
-import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
-import org.ikasan.designer.event.CanvasItemRightClickEvent;
-import org.ikasan.designer.event.CanvasItemRightClickEventListener;
-import org.ikasan.job.orchestration.model.context.ContextImpl;
+import org.ikasan.designer.event.*;
+import org.ikasan.designer.function.SaveFunction;
+import org.ikasan.job.orchestration.builder.context.JobDependencyBuilder;
+import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
+import org.ikasan.job.orchestration.model.context.JobDependencyImpl;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -37,9 +36,8 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.context.model.JobLock;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
@@ -48,14 +46,15 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.UUID;
 
-public class SchedulerVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener
-    , CanvasItemDoubleClickEventListener {
+public class SchedulerVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener, CanvasInitialisedListener
+    , CanvasItemDoubleClickEventListener, ConnectorEventListener, CanvasUpdatedListener, SaveFunction {
     private Logger logger = LoggerFactory.getLogger(SchedulerVisualisation.class);
 
     private DesignerCanvas designerCanvas;
@@ -67,7 +66,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
     private boolean initialised = false;
 
-    private ContextDraw2dAdapter adapter = new ContextDraw2dAdapter();
+    private ContextTemplateDraw2dAdapter adapter = new ContextTemplateDraw2dAdapter();
 
     private ModuleMetaDataService moduleMetaDataService;
     private ScheduledProcessManagementService scheduledProcessManagementService;
@@ -82,14 +81,19 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     private ContextProfileService contextProfileService;
     private UserService userService;
     private SecurityService securityService;
+    private ScheduledContextInstanceService scheduledContextInstanceService;
+    private JobProvisionService jobProvisionService;
 
     private Dialog parent;
+
+    private boolean edit;
 
     public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                   LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
-                                  JobInitiationService jobInitiationService, ContextProfileService contextProfileService, UserService userService, SecurityService securityService) {
+                                  JobInitiationService jobInitiationService, ContextProfileService contextProfileService, UserService userService, SecurityService securityService,
+                                  ScheduledContextInstanceService scheduledContextInstanceService, JobProvisionService jobProvisionService) {
 
         this.dynamicImagePath = dynamicImagePath;
         if (this.dynamicImagePath == null) {
@@ -161,6 +165,16 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             throw new IllegalArgumentException("securityService cannot be null!");
         }
 
+        this.scheduledContextInstanceService = scheduledContextInstanceService;
+        if(this.scheduledContextInstanceService == null) {
+            throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
+        }
+
+        this.jobProvisionService = jobProvisionService;
+        if(this.jobProvisionService == null) {
+            throw new IllegalArgumentException("jobProvisionService cannot be null!");
+        }
+
         this.setMargin(false);
         this.setSpacing(false);
         this.setSizeFull();
@@ -170,11 +184,12 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     /**
      * @param contextTemplate
      */
-    public void createSchedulerVisualisation(ContextTemplate parentContext, ContextTemplate contextTemplate, Dialog parent) throws IOException {
+    public void createSchedulerVisualisation(ContextTemplate parentContext, ContextTemplate contextTemplate, Dialog parent, boolean edit) throws IOException {
         this.parentContextTemplate = parentContext;
         this.contextTemplate = contextTemplate;
         this.parent = parent;
         this.initialised = false;
+        this.edit = edit;
         init();
     }
 
@@ -185,7 +200,8 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
                 this.removeAll();
             }
 
-            this.designerCanvas = new DesignerCanvas("canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, true);
+            this.designerCanvas = new DesignerCanvas(this, null, "canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, !this.edit);
+            this.designerCanvas.addCanvasInitialisedListener(this);
 
             if(contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
                 this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
@@ -196,6 +212,8 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
+            this.designerCanvas.addConnectorEventListener(this);
+            this.designerCanvas.addCanvasUpdatedListener(this);
 
             this.designerCanvas.manageClickableItems();
 
@@ -254,12 +272,14 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
         if(canvasItemDoubleClickEvent.getFigure().getIdentifier() != null) {
             ContextTemplate contextTemplate = ContextHelper.getChildContextTemplate(canvasItemDoubleClickEvent.getFigure().getIdentifier(),
-                this.contextTemplate);
+                this.parentContextTemplate);
 
             if(contextTemplate != null && contextTemplate.getScheduledJobs() != null) {
+                this.designerCanvas.deselectAllFigures();
                 this.openJobVisualisation(contextTemplate);
             }
             else if(contextTemplate != null) {
+                this.designerCanvas.deselectAllFigures();
                 this.openContextVisualisation(contextTemplate);
             }
             else {
@@ -278,12 +298,24 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
         this.designerCanvas.exportPng();
     }
 
+    public void addAndGrouping() {
+        this.designerCanvas.addBoundaryStyled(UUID.randomUUID().toString(), 200, 200, "--", IkasanColours.SCHEDULER_COMPLETE, 3);
+    }
+
+    public void addOrGrouping() {
+        this.designerCanvas.addBoundaryStyled(UUID.randomUUID().toString(), 200, 200, "--..", IkasanColours.IKASAN_ORANGE, 3);
+    }
+
+    public void save() {
+        this.designerCanvas.save("", "", "");
+    }
+
     private void openJobVisualisation(ContextTemplate contextTemplate) {
         try {
             JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                 this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService,
-                this.contextProfileService, this.userService, this.securityService);
+                this.contextProfileService, this.userService, this.securityService, this.scheduledContextInstanceService, this.jobProvisionService);
             jobTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
             jobTemplateVisualisationDialog.open();
 
@@ -302,7 +334,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
                 = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                 this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService,
-                this.contextProfileService, this.userService, this.securityService);
+                this.contextProfileService, this.userService, this.securityService, this.scheduledContextInstanceService, this.jobProvisionService);
             contextTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
             contextTemplateVisualisationDialog.open();
 
@@ -349,6 +381,48 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     protected void onAttach(AttachEvent attachEvent) {
         if(this.designerCanvas != null){
             this.redraw();
+        }
+    }
+
+    public void addJob(SchedulerJob schedulerJob) {
+        this.parentContextTemplate.getScheduledJobsMap().put(schedulerJob.getIdentifier(), schedulerJob);
+        this.contextTemplate.getScheduledJobsMap().put(schedulerJob.getIdentifier(), schedulerJob);
+        this.designerCanvas.addImageFigure(adapter.adaptJob(schedulerJob));
+        this.designerCanvas.addLabelToFigure(schedulerJob.getIdentifier(), schedulerJob.getJobName());
+    }
+
+    @Override
+    public void canvasInitialised() {
+        if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
+            this.contextTemplate.getScheduledJobs().forEach(job -> this.designerCanvas.addLabelToFigure(job.getIdentifier(), job.getJobName()));
+        }
+    }
+
+    @Override
+    public void connectorEvent(ConnectorEvent connectorEvent) {
+        if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
+            if(connectorEvent.getEventType().equals(ConnectorEvent.CONNECTOR_ADDED_EVENT_TYPE)) {
+            }
+        }
+    }
+
+    @Override
+    public void canvasUpdated(CanvasUpdatedEvent canvasUpdatedEvent) {
+        logger.info(canvasUpdatedEvent.getCanvasJson());
+    }
+
+    @Override
+    public void save(String id, String name, String description, String payload) {
+        try {
+            CanvasJsonToContextTemplateAdapter adapter = new CanvasJsonToContextTemplateAdapter();
+            this.contextTemplate = adapter.adapt(this.contextTemplate.getName(), payload);
+
+            logger.info(this.parentContextTemplate.toString());
+
+            ContextHelper.replaceChildContextTemplate(this.parentContextTemplate, this.contextTemplate);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

@@ -284,7 +284,8 @@ public class ContextTemplateManagementWidget extends Div {
 
         this.schedulerVisualisation = new SchedulerVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
-            , this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService);
+            , this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService,
+            this.scheduledContextInstanceService, this.jobProvisionService);
         this.schedulerVisualisation.setWidthFull();
         this.schedulerVisualisation.setHeight("75vh");
 
@@ -300,10 +301,10 @@ public class ContextTemplateManagementWidget extends Div {
                 ContextTemplate childContextTemplate = ContextHelper.getChildContextTemplate(results.getResultList()
                     .get(0).getContextProfile().getDefaultContext(), this.contextTemplate);
 
-                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, childContextTemplate, null);
+                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, childContextTemplate, null, true);
             }
             else {
-                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, this.contextTemplate, null);
+                this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, this.contextTemplate, null, true);
             }
 
             this.schedulerVisualisationDiv.add(this.contextViewMenuBar(), this.schedulerVisualisation);
