@@ -17943,6 +17943,7 @@ _packages2.default.command.CommandStack = Class.extend(
    * @private
    **/
   notifyListeners: function notifyListeners(command, state, action) {
+    debugger;
     var event = new _packages2.default.command.CommandStackEvent(this, command, state, action);
     var size = this.eventListeners.getSize();
 

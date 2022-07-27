@@ -9,6 +9,7 @@ public class Rectangle extends PositionedItem {
     private int stroke;
     private int radius;
     private String dasharray;
+    private boolean resizable;
 
     public List<Port> getPorts() {
         return ports;
@@ -56,5 +57,13 @@ public class Rectangle extends PositionedItem {
 
     public void setDasharray(String dasharray) {
         this.dasharray = dasharray;
+    }
+
+    public boolean isResizable() {
+        return resizable;
+    }
+
+    public void setResizable(boolean resizable) {
+        this.resizable = resizable;
     }
 }

@@ -23,14 +23,14 @@ public class ContextHelper {
         return null;
     }
 
-    public static ContextTemplate getChildContextTemplate(String childContextName, ContextTemplate contextInstance) {
-        if(contextInstance.getName().equals(childContextName)) {
-            return contextInstance;
+    public static ContextTemplate getChildContextTemplate(String childContextName, ContextTemplate contextTemplate) {
+        if(contextTemplate.getName().equals(childContextName)) {
+            return contextTemplate;
         }
 
-        if(contextInstance.getContexts() != null) {
-            for (ContextTemplate contextTemplate: contextInstance.getContexts()) {
-                ContextTemplate result = getChildContextTemplate(childContextName, contextTemplate);
+        if(contextTemplate.getContexts() != null) {
+            for (ContextTemplate template: contextTemplate.getContexts()) {
+                ContextTemplate result = getChildContextTemplate(childContextName, template);
 
                 if(result != null) {
                     return result;
@@ -39,5 +39,19 @@ public class ContextHelper {
         }
 
         return null;
+    }
+
+    public static ContextTemplate replaceChildContextTemplate(ContextTemplate contextTemplate, ContextTemplate updated) {
+        if(contextTemplate.getContexts() != null) {
+            for (int i=0; i<contextTemplate.getContexts().size(); i++) {
+                ContextTemplate result = getChildContextTemplate(updated.getName(), contextTemplate.getContexts().get(i));
+
+                if(result != null) {
+                    contextTemplate.getContexts().set(i, updated);
+                }
+            }
+        }
+
+        return contextTemplate;
     }
 }

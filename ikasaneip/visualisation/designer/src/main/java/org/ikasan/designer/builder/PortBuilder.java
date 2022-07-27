@@ -11,8 +11,8 @@ public class PortBuilder {
     protected String type = "draw2d.HybridPort";
     protected String id = UUID.randomUUID().toString();
     protected int alpha = 1;
-    protected boolean selectable = false;
-    protected boolean draggable = false;
+    protected boolean selectable = true;
+    protected boolean draggable = true;
     protected int angle = 0;
     protected String cssClass = "draw2d_HybridPort";
     protected String composite;

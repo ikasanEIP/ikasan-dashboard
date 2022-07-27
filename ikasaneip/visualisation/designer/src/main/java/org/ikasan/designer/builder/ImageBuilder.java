@@ -3,6 +3,7 @@ package org.ikasan.designer.builder;
 import org.ikasan.designer.model.Image;
 import org.ikasan.designer.model.Port;
 import org.ikasan.designer.model.Rectangle;
+import org.ikasan.designer.model.UserData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ public class ImageBuilder {
     protected String cssClass = "draw2d_shape_basic_Image";
     private List<Port> ports = new ArrayList<>();
     private String path = "frontend/images/flow.png";
+    private UserData userData;
 
     protected ImageBuilder() {
 
@@ -89,11 +91,15 @@ public class ImageBuilder {
     public ImageBuilder withTopAndBottomPorts() {
         PortBuilder bottomPortBuilder = new PortBuilder();
         bottomPortBuilder.witLocator("draw2d.layout.locator.BottomLocator")
-            .withName("bottomHybridSource");
+            .withName("bottomHybridSource")
+            .withDraggable(true)
+            .withSelectable(true);
 
         PortBuilder topPortBuilder = new PortBuilder();
         topPortBuilder.witLocator("draw2d.layout.locator.TopLocator")
-            .withName("topHybridTarget");
+            .withName("topHybridTarget")
+            .withDraggable(true)
+            .withSelectable(true);
 
         this.addPort(bottomPortBuilder.build())
             .addPort(topPortBuilder.build());
@@ -108,11 +114,20 @@ public class ImageBuilder {
 
         PortBuilder topPortBuilder = new PortBuilder();
         topPortBuilder.witLocator("draw2d.layout.locator.LeftLocator")
-            .withName("leftHybridTarget");
+            .withName("leftHybridTarget")
+            .withDraggable(true)
+            .withSelectable(true);
 
         this.addPort(bottomPortBuilder.build())
-            .addPort(topPortBuilder.build());
+            .addPort(topPortBuilder.build())
+            .withDraggable(true)
+            .withSelectable(true);
 
+        return this;
+    }
+
+    public ImageBuilder withUserData(UserData userData) {
+        this.userData = userData;
         return this;
     }
 
@@ -142,6 +157,7 @@ public class ImageBuilder {
         image.setHeight(this.height);
         image.setPorts(this.ports);
         image.setPath(this.path);
+        image.setUserData(this.userData);
 
         return image;
     }
