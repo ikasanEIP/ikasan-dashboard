@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Designer extends VerticalLayout implements BeforeEnterObserver, BeforeLeaveObserver
 {
@@ -337,8 +338,20 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
     }
 
     protected void initBase() {
-        this.designerCanvas = new DesignerCanvas(this.saveFunction, this.saveAsFunction, "canvas-wrapper", this.dynamicImagePath, false);
-        this.designerCanvas.setSizeUndefined();
+        this.designerCanvas = new DesignerCanvas(this.saveFunction, this.saveAsFunction, "canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, false);
+        this.designerCanvas.setSizeFull();
+        this.designerCanvas.getElement().getStyle().set("border", "1px solid #E0E0E0");
+        this.designerCanvas.getElement().getStyle().set("padding", "0px");
+        this.designerCanvas.getElement().getStyle().set("margin", "0px");
+        this.designerCanvas.getElement().getStyle().set("position", "absolute");
+        this.designerCanvas.getElement().getStyle().set("top", "140px");
+        this.designerCanvas.getElement().getStyle().set("right", "15px");
+        this.designerCanvas.getElement().getStyle().set("left", "250px");
+        this.designerCanvas.getElement().getStyle().set("bottom", "15px");
+        this.designerCanvas.getElement().getStyle().set("overflow", "scroll");
+        this.designerCanvas.getElement().getStyle().set("height", "calc(100% - 160px)");
+        this.designerCanvas.getElement().getStyle().set("width", "calc(100% - 270px)");
+        this.designerCanvas.getElement().getStyle().set("background-color", "#FFFFFF");
 
         DropTarget<DesignerCanvas> dropTarget = DropTarget.create(this.designerCanvas);
 

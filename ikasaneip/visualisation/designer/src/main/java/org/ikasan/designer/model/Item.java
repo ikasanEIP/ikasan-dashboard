@@ -9,6 +9,7 @@ public abstract class Item {
     protected int angle;
     protected String cssClass;
     protected String composite;
+    protected UserData userData;
 
     public String getType() {
         return type;
@@ -74,5 +75,11 @@ public abstract class Item {
         this.composite = composite;
     }
 
-    //        "userData": {},
+    public UserData getUserData() {
+        return userData;
+    }
+
+    public void setUserData(UserData userData) {
+        this.userData = userData;
+    }
 }

@@ -11,6 +11,8 @@ public class Port extends Item {
     private String semanticGroup;
     private String port;
     private String locator;
+    private String dasharray;
+    private Object locatorAttr;
 
     public int getWidth() {
         return width;
@@ -92,4 +94,19 @@ public class Port extends Item {
         this.locator = locator;
     }
 
+    public String getDasharray() {
+        return dasharray;
+    }
+
+    public void setDasharray(String dasharray) {
+        this.dasharray = dasharray;
+    }
+
+    public Object getLocatorAttr() {
+        return locatorAttr;
+    }
+
+    public void setLocatorAttr(Object locatorAttr) {
+        this.locatorAttr = locatorAttr;
+    }
 }

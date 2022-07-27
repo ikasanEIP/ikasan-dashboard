@@ -10,8 +10,8 @@ import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.designer.builder.*;
 import org.ikasan.designer.model.*;
-import org.ikasan.job.orchestration.model.context.ContextImpl;
 import org.ikasan.spec.scheduled.context.model.*;
+import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -20,32 +20,29 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ui.context.support.UiApplicationContextUtils;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class ContextDraw2dAdapter {
+public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
 
-    Logger logger = LoggerFactory.getLogger(ContextDraw2dAdapter.class);
+    Logger logger = LoggerFactory.getLogger(ContextTemplateDraw2dAdapter.class);
 
     public String adaptJobs(Context context) {
         DefaultDirectedGraph<Object, DefaultEdge> graph
             = new DefaultDirectedGraph<>(NoEdgeLabel.class);
-
-        DiagramBuilder diagramBuilder = new DiagramBuilder();
 
         if(context.getScheduledJobs() != null && !context.getScheduledJobs().isEmpty()) {
             context.getScheduledJobs().forEach(job -> {
                 graph.addVertex(((SchedulerJob)job).getIdentifier());
 
                 String image = "frontend/images/and.png";
-                if(this.isTerminalJob((SchedulerJob)job, context.getJobDependencies())) {
-                    image = "frontend/images/terminal.png";
-                }
+//                if(this.isTerminalJob((SchedulerJob)job, context.getJobDependencies())) {
+//                    image = "frontend/images/terminal.png";
+//                }
 
                 diagramBuilder.addItem(diagramBuilder.getImageBuilder()
                     .withId(((SchedulerJob)job).getIdentifier())
@@ -53,57 +50,32 @@ public class ContextDraw2dAdapter {
                     .withWidth(100)
                     .withPath(image)
                     .withLeftAndRightPorts()
-                    .build());
+                    .withUserData(new UserDataBuilder()
+                        .withAgentName(((SchedulerJob) job).getAgentName())
+                        .withJobName(((SchedulerJob) job).getJobName())
+                        .withIdentifier(((SchedulerJob) job).getIdentifier())
+                        .build()
+                    ).build());
             });
 
+            List<Grouping> groupings = new ArrayList<>();
+
+            Grouping grouping = new Grouping();
+
             context.getJobDependencies().forEach(jobDependency -> {
-                if (((JobDependency)jobDependency).getLogicalGrouping() != null && ((JobDependency)jobDependency).getLogicalGrouping().getAnd() != null) {
-                    ((JobDependency)jobDependency).getLogicalGrouping().getAnd().forEach(and -> {
-                        graph.addEdge(and.getIdentifier(), ((JobDependency)jobDependency).getJobIdentifier());
+                if(((JobDependency)jobDependency).getLogicalGrouping() != null) {
+                    this.manageLogicalGroupings(((JobDependency)jobDependency).getJobIdentifier(),
+                        ((JobDependency)jobDependency).getLogicalGrouping(), diagramBuilder, graph);
 
-                        ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
-                        connectionBuilder.withSource(
-                            diagramBuilder.getConnectionDetailsBuilder()
-                                .withNode(and.getIdentifier())
-                                .withPort("rightHybridSource")
-                                .build()
-                        );
+//                    context.getScheduledJobs().forEach(job -> {
 
-                        connectionBuilder.withTarget(
-                            diagramBuilder.getConnectionDetailsBuilder()
-                                .withNode(((JobDependency)jobDependency).getJobIdentifier())
-                                .withPort("leftHybridTarget")
-                                .withDecoration("draw2d.decoration.connection.ArrowDecorator")
-                                .build()
-                        );
+                        this.getAllJobsInGrouping(((JobDependency)jobDependency).getLogicalGrouping(),
+                            grouping);
 
-                        diagramBuilder.addItem(connectionBuilder.build());
-                    });
-                }
-
-                if (((JobDependency)jobDependency).getLogicalGrouping() != null && ((JobDependency)jobDependency).getLogicalGrouping().getLogicalGrouping() != null
-                    && ((JobDependency)jobDependency).getLogicalGrouping().getLogicalGrouping().getOr() != null) {
-                    ((JobDependency)jobDependency).getLogicalGrouping().getLogicalGrouping().getOr().forEach(or -> {
-                        graph.addEdge(or.getIdentifier(), ((JobDependency)jobDependency).getJobIdentifier());
-
-                        ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
-                        connectionBuilder.withSource(
-                            diagramBuilder.getConnectionDetailsBuilder()
-                                .withNode(or.getIdentifier())
-                                .withPort("rightHybridSource")
-                                .build()
-                        );
-
-                        connectionBuilder.withTarget(
-                            diagramBuilder.getConnectionDetailsBuilder()
-                                .withNode(((JobDependency)jobDependency).getJobIdentifier())
-                                .withPort("leftHybridTarget")
-                                .withDecoration("draw2d.decoration.connection.ArrowDecorator")
-                                .build()
-                        );
-
-                        diagramBuilder.addItem(connectionBuilder.build());
-                    });
+                        if(grouping.getJobIdentifiers().size() > 1) {
+                            groupings.add(grouping);
+                        }
+//                    });
                 }
             });
 
@@ -124,79 +96,95 @@ public class ContextDraw2dAdapter {
             mxHierarchicalLayout compactTreeLayout = new mxHierarchicalLayout(jGraphXAdapter);
             compactTreeLayout.setOrientation(SwingConstants.WEST);
             compactTreeLayout.setIntraCellSpacing(120);
-            compactTreeLayout.setInterHierarchySpacing(300);
-            compactTreeLayout.setInterRankCellSpacing(300);
+            compactTreeLayout.setInterHierarchySpacing(1000);
+            compactTreeLayout.setInterRankCellSpacing(1000);
 
             compactTreeLayout.execute(jGraphXAdapter.getDefaultParent());
 
             Map<String, mxCell> cellMap = this.getCellMap(jGraphXAdapter);
 
             ArrayList<Object> items = diagramBuilder.build();
-            ArrayList<Label> labels = new ArrayList<>();
+//            ArrayList<Label> labels = new ArrayList<>();
             ArrayList<Object> imageOverlay = new ArrayList<>();
+//            ArrayList<Object> groups = new ArrayList<>();
 
             items.forEach(item -> {
                 if (item instanceof Rectangle || item instanceof Image) {
+
+//                    GroupBuilder groupBuilder = new GroupBuilder();
+//                    Group group = groupBuilder.build();
+//
+//                    groups.add(group);group
+
                     mxCell cell = cellMap.get(((Item) item).getId());
 
                     if (cell != null) {
                         ((PositionedItem) item).setX(cell.getGeometry().getX() + 600);
                         ((PositionedItem) item).setY(cell.getGeometry().getY() + 600);
 
-                        if(isTerminalJob((SchedulerJob) context.getScheduledJobsMap().get(((PositionedItem) item).getId())
-                            , context.getJobDependencies())) {
-                            CircleBuilder cb = diagramBuilder.getCircleBuilder()
-                                .withId(((PositionedItem) item).getId() + "_status")
-                                .withTopAndBottomPorts()
-                                .withWidth(100)
-                                .withHeight(100)
-                                .withStroke(0)
-                                .withX(((PositionedItem) item).getX())
-                                .withY(((PositionedItem) item).getY());
+//                        if(isTerminalJob((SchedulerJob) context.getScheduledJobsMap().get(((PositionedItem) item).getId())
+//                            , context.getJobDependencies())) {
+//                            CircleBuilder cb = diagramBuilder.getCircleBuilder()
+//                                .withId(((PositionedItem) item).getId() + "_status")
+//                                .withTopAndBottomPorts()
+//                                .withWidth(100)
+//                                .withHeight(100)
+//                                .withStroke(0)
+//                                .withX(((PositionedItem) item).getX())
+//                                .withY(((PositionedItem) item).getY())
+//                                .withComposite(group.getId());
+//
+//                            if(context.getScheduledJobsMap().get(((PositionedItem) item).getId()) instanceof SchedulerJobInstance) {
+//                                cb.withBgColor(StatusColours.getInstanceStatusColour(((SchedulerJobInstance)context.getScheduledJobsMap()
+//                                    .get(((PositionedItem) item).getId())).getStatus()));
+//                            }
+//                            else {
+//                                cb.withBgColor(IkasanColours.IKASAN_ORANGE_50);
+//                            }
+//
+//                            imageOverlay.add(cb.build());
+//                        }
+//                        else {
+//                            RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
+//                                .withId(((PositionedItem) item).getId() + "_status")
+//                                .withTopAndBottomPorts()
+//                                .withWidth(100)
+//                                .withHeight(100)
+//                                .withStroke(0)
+//                                .withRadius(20)
+//                                .withComposite(group.getId())
+//                                .withX(((PositionedItem) item).getX())
+//                                .withY(((PositionedItem) item).getY());
+//
+//                            if(context.getScheduledJobsMap().get(((PositionedItem) item).getId()) instanceof SchedulerJobInstance) {
+//                              rb.withBgColor(StatusColours.getInstanceStatusColour(((SchedulerJobInstance)context.getScheduledJobsMap()
+//                                    .get(((PositionedItem) item).getId())).getStatus()));
+//                            }
+//                            else {
+//                                rb.withBgColor(IkasanColours.IKASAN_ORANGE_50);
+//                            }
+//
+//                            imageOverlay.add(rb.build());
+//                        }
 
-                            if(context.getScheduledJobsMap().get(((PositionedItem) item).getId()) instanceof SchedulerJobInstance) {
-                                cb.withBgColor(StatusColours.getInstanceStatusColour(((SchedulerJobInstance)context.getScheduledJobsMap()
-                                    .get(((PositionedItem) item).getId())).getStatus()));
-                            }
-                            else {
-                                cb.withBgColor(IkasanColours.IKASAN_ORANGE_50);
-                            }
-
-                            imageOverlay.add(cb.build());
-                        }
-                        else {
-                            RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
-                                .withId(((PositionedItem) item).getId() + "_status")
-                                .withTopAndBottomPorts()
-                                .withWidth(100)
-                                .withHeight(100)
-                                .withStroke(0)
-                                .withRadius(20)
-                                .withX(((PositionedItem) item).getX())
-                                .withY(((PositionedItem) item).getY());
-
-                            if(context.getScheduledJobsMap().get(((PositionedItem) item).getId()) instanceof SchedulerJobInstance) {
-                              rb.withBgColor(StatusColours.getInstanceStatusColour(((SchedulerJobInstance)context.getScheduledJobsMap()
-                                    .get(((PositionedItem) item).getId())).getStatus()));
-                            }
-                            else {
-                                rb.withBgColor(IkasanColours.IKASAN_ORANGE_50);
-                            }
-
-                            imageOverlay.add(rb.build());
-                        }
-
-                        labels.add(new LabelBuilder().withText(((SchedulerJob) context.getScheduledJobsMap()
-                            .get(((PositionedItem) item).getId())).getJobName())
-                            .withX(((PositionedItem) item).getX() - 15)
-                            .withY(((PositionedItem) item).getY() + 110)
-                            .build());
+//                        labels.add(new LabelBuilder().withText(((SchedulerJob) context.getScheduledJobsMap()
+//                            .get(((PositionedItem) item).getId())).getJobName())
+//                            .withX(((PositionedItem) item).getX() - 15)
+//                            .withY(((PositionedItem) item).getY() + 110)
+//                            .withComposite(group.getId())
+//                            .build());
                     }
+
+//                    ((PositionedItem) item).setComposite(group.getId());
                 }
             });
 
-            items.addAll(labels);
+
+            super.addLogicGroupings(grouping, imageOverlay, cellMap, diagramBuilder);
+
+//            items.addAll(labels);
             items.addAll(imageOverlay);
+//            items.addAll(groups);
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -253,6 +241,7 @@ public class ContextDraw2dAdapter {
                 .withWidth(100)
                 .withPath("frontend/images/branch.png")
                 .withTopAndBottomPorts()
+                .withLeftAndRightPorts()
                 .build();
 
             diagramBuilder.addItem(branch);
@@ -304,12 +293,18 @@ public class ContextDraw2dAdapter {
         ArrayList<Label> labels = new ArrayList<>();
 
         ArrayList<Object> imageOverlay = new ArrayList<>();
+        ArrayList<Object> groups = new ArrayList<>();
 
         items.forEach(item -> {
             if(item instanceof Rectangle || item instanceof Image) {
                 mxCell cell = cellMap.get(((Item)item).getId());
 
                 if(cell != null) {
+                    GroupBuilder groupBuilder = new GroupBuilder();
+                    Group group = groupBuilder.build();
+
+                    groups.add(group);
+
                     ((PositionedItem) item).setX(cell.getGeometry().getX() + 600);
                     ((PositionedItem) item).setY(cell.getGeometry().getY() + 600);
 
@@ -319,7 +314,8 @@ public class ContextDraw2dAdapter {
                         .withWidth(90)
                         .withHeight(90)
                         .withX(((PositionedItem)item).getX() + 5)
-                        .withY(((PositionedItem)item).getY() + 5);
+                        .withY(((PositionedItem)item).getY() + 5)
+                        .withComposite(group.getId());
 
                     if(contextMap.get(((PositionedItem) item).getId()) instanceof ContextInstance) {
                         rb.withBgColor(StatusColours.getInstanceStatusColour(((ContextInstance)contextMap.get(((PositionedItem) item).getId())).getStatus()));
@@ -333,15 +329,18 @@ public class ContextDraw2dAdapter {
                     labels.add(new LabelBuilder().withText(((PositionedItem)item).getId())
                         .withX(((PositionedItem)item).getX() - 15)
                         .withY(((PositionedItem)item).getY() + 110)
+                        .withComposite(group.getId())
                         .build());
+
+                    ((PositionedItem) item).setComposite(group.getId());
                 }
             }
         });
 
+//        items.addAll(imageOverlay);
+        items.addAll(groups);
         items.addAll(labels);
-        items.addAll(imageOverlay);
 
-        ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
 
@@ -449,5 +448,34 @@ public class ContextDraw2dAdapter {
         });
 
         return isTerminal.get();
+    }
+
+    public String adaptJob(SchedulerJob schedulerJob) {
+        String image = "frontend/images/and.png";
+
+        String result = null;
+        // todo clean this up. still a hack.
+        try {
+            result = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this.diagramBuilder.getImageBuilder()
+                .withId(schedulerJob.getIdentifier())
+                .withHeight(100)
+                .withWidth(100)
+                .withX(super.jobMaxXExtent)
+                .withY(super.jobMaxYExtent)
+                .withPath(image)
+                .withLeftAndRightPorts()
+                .withUserData(new UserDataBuilder()
+                    .withIdentifier(schedulerJob.getIdentifier())
+                    .withJobName(schedulerJob.getJobName())
+                    .withAgentName(schedulerJob.getAgentName())
+                    .build())
+                .build());
+            logger.debug(result);
+        }
+        catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 }
