@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.UUID;
 
 public class PortBuilder {
+    private static final String INPUT_PORT = "draw2d.InputPort";
+    private static final String OUTPUT_PORT = "draw2d.OutputPort";
+    private static final String HYBRID_PORT = "draw2d.HybridPort";
+
     protected String type = "draw2d.HybridPort";
     protected String id = UUID.randomUUID().toString();
     protected int alpha = 1;
@@ -100,6 +104,21 @@ public class PortBuilder {
 
     public PortBuilder witLocator(String locator) {
         this.locator = locator;
+        return this;
+    }
+
+    public PortBuilder asInputPort() {
+        this.type = INPUT_PORT;
+        return this;
+    }
+
+    public PortBuilder asOutputPort() {
+        this.type = OUTPUT_PORT;
+        return this;
+    }
+
+    public PortBuilder asHybridPort() {
+        this.type = HYBRID_PORT;
         return this;
     }
 

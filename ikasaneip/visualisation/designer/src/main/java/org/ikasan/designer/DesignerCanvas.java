@@ -412,7 +412,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     private void connectorEvent(String event){
         try {
             ConnectorEvent connectorEvent = mapper.readValue(event, ConnectorEvent.class);
-            logger.info("Event received: " + connectorEvent.getCanvasJson());
+            logger.debug("Event received: " + connectorEvent.getCanvasJson());
 
             this.connectorEventListeners.forEach(listener
                 -> listener.connectorEvent(connectorEvent));
@@ -425,7 +425,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     @ClientCallable
     private void canvasUpdatedEvent(String event){
         try {
-            logger.info("Event received: " + event);
+            logger.debug("Event received: " + event);
             CanvasUpdatedEvent connectorEvent = mapper.readValue(event, CanvasUpdatedEvent.class);
 
             this.canvasUpdatedListeners.forEach(listener
@@ -478,14 +478,14 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     public void exportJson(){
         getElement().callJsFunction("$connector.exportJson").then(String.class, canvasJson -> {
             this.canvasJson = canvasJson;
-            logger.info(canvasJson);
+            logger.debug(canvasJson);
         });
     }
 
     public void save(String id, String name, String description){
         getElement().callJsFunction("$connector.exportJson").then(String.class, canvasJson -> {
             this.canvasJson = canvasJson;
-            logger.info(canvasJson);
+            logger.debug(canvasJson);
 
             if(this.saveFunction != null) {
                 this.saveFunction.save(id, name, description, canvasJson);
@@ -498,7 +498,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     public void saveAs(){
         getElement().callJsFunction("$connector.exportJson").then(String.class, result -> {
             this.canvasJson = result;
-            logger.info(result);
+            logger.debug(result);
 
             if(this.saveAsFunction != null) {
                 this.saveAsFunction.saveAs(result);

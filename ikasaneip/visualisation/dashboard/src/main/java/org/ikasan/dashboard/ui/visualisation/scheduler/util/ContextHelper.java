@@ -1,7 +1,11 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.util;
 
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ContextHelper {
 
@@ -44,14 +48,41 @@ public class ContextHelper {
     public static ContextTemplate replaceChildContextTemplate(ContextTemplate contextTemplate, ContextTemplate updated) {
         if(contextTemplate.getContexts() != null) {
             for (int i=0; i<contextTemplate.getContexts().size(); i++) {
-                ContextTemplate result = getChildContextTemplate(updated.getName(), contextTemplate.getContexts().get(i));
 
-                if(result != null) {
+                if(contextTemplate.getContexts().get(i).getName().equals(updated.getName())) {
                     contextTemplate.getContexts().set(i, updated);
+                }
+                else {
+                    replaceChildContextTemplate(contextTemplate.getContexts().get(i), updated);
                 }
             }
         }
 
         return contextTemplate;
     }
+
+    public static Map<String, Context> getAllContexts(Context context) {
+        Map<String, Context> contextMap = new HashMap<>();
+        contextMap.put(context.getName(), context);
+
+        if(context.getContexts() != null) {
+            context.getContexts().forEach(c -> {
+                getAllContexts((Context) c, contextMap);
+            });
+        }
+
+        return contextMap;
+    }
+
+
+    private static void getAllContexts(Context context, Map<String, Context> contextMap) {
+        contextMap.put(context.getName(), context);
+
+        if(context.getContexts() != null) {
+            context.getContexts().forEach(c -> {
+                getAllContexts((Context) c, contextMap);
+            });
+        }
+    }
+
 }

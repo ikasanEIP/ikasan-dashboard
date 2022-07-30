@@ -15,19 +15,19 @@ public class ContextTemplateDraw2dAdapterTest extends AbstractTest {
 
     @Test
     public void test() throws IOException {
-        ContextTemplate contextTemplate = this.contextService.getContextTemplate(loadDataFile("/data/contexts/-1793100514.json"));
-        contextTemplate = ContextHelper.getChildContextTemplate("CONTEXT--1209755884", contextTemplate);
-
-        String result = adapter.adaptJobs(contextTemplate);
-
-        System.out.println(result);
-
-        contextTemplate = this.contextService.getContextTemplate(loadDataFile("/data/contexts/-1793100514.json"));
-        contextTemplate = ContextHelper.getChildContextTemplate("CONTEXT-774294372", contextTemplate);
-
-        result = adapter.adaptJobs(contextTemplate);
-
-        System.out.println(result);
+//        ContextTemplate contextTemplate = this.contextService.getContextTemplate(loadDataFile("/data/contexts/-1793100514.json"));
+//        contextTemplate = ContextHelper.getChildContextTemplate("CONTEXT--1209755884", contextTemplate);
+//
+//        String result = adapter.adaptJobs(contextTemplate);
+//
+//        System.out.println(result);
+//
+//        contextTemplate = this.contextService.getContextTemplate(loadDataFile("/data/contexts/-1793100514.json"));
+//        contextTemplate = ContextHelper.getChildContextTemplate("CONTEXT-774294372", contextTemplate);
+//
+//        result = adapter.adaptJobs(contextTemplate);
+//
+//        System.out.println(result);
     }
 
 }
