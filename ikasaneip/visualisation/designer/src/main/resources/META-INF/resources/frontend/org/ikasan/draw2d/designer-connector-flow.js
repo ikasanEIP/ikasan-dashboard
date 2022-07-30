@@ -145,17 +145,28 @@ window.Vaadin.Flow.designerConnector = {
             console.log(icon);
 
             attributes.ports.forEach(function (port, index) {
+                let type = "hybrid";
+
+                if(port.type != null) {
+                    if(port.type == "draw2d.InputPort") {
+                        type = "input";
+                    }
+                    if(port.type == "draw2d.OutputPort") {
+                        type = "output";
+                    }
+                }
+
                 if(port.locator === "draw2d.layout.locator.RightLocator") {
-                    icon.createPort("hybrid", new draw2d.layout.locator.RightLocator());
+                    icon.createPort(type, new draw2d.layout.locator.RightLocator());
                 }
                 else if(port.locator === "draw2d.layout.locator.LeftLocator") {
-                    icon.createPort("hybrid", new draw2d.layout.locator.LeftLocator());
+                    icon.createPort(type, new draw2d.layout.locator.LeftLocator());
                 }
                 else if(port.locator === "draw2d.layout.locator.TopLocator") {
-                    icon.createPort("hybrid", new draw2d.layout.locator.TopLocator());
+                    icon.createPort(type, new draw2d.layout.locator.TopLocator());
                 }
                 else if(port.locator === "draw2d.layout.locator.BottomLocator") {
-                    icon.createPort("hybrid", new draw2d.layout.locator.BottomLocator());
+                    icon.createPort(type, new draw2d.layout.locator.BottomLocator());
                 }
             });
 
@@ -284,7 +295,9 @@ window.Vaadin.Flow.designerConnector = {
                 id: id,
                 dasharray: dashArray,
                 color: colour,
-                stroke: stroke
+                stroke: stroke,
+                resizable:true,
+                draggable:true
             });
 
             boundary.uninstallEditPolicy(new draw2d.policy.figure.RectangleSelectionFeedbackPolicy());
@@ -699,7 +712,7 @@ window.Vaadin.Flow.designerConnector = {
             }
 
 
-            designer.$connector.designer.setZoom(zoomFactor)
+            designer.$connector.designer.setZoom(zoomFactor);
             designer.$connector.designer.scrollTo((minY / zoomFactor) - ((800 - (height / zoomFactor)) / 4), (minX - 100) / zoomFactor);
 
             spinner.stop();
