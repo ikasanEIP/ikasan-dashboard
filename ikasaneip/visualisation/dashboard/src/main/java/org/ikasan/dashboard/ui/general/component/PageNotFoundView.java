@@ -10,6 +10,7 @@ import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.material.Material;
 
 @HtmlImport("frontend://styles/shared-styles.html")

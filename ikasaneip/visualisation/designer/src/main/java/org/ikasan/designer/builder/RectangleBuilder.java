@@ -11,7 +11,7 @@ public class RectangleBuilder {
     protected String type = "draw2d.shape.basic.Rectangle";
     protected String id = UUID.randomUUID().toString();
     protected int alpha = 1;
-    protected boolean selectable;
+    protected boolean selectable = true;
     protected boolean draggable = true;
     protected int angle;
     protected String cssClass = "draw2d_shape_basic_Rectangle";
@@ -29,7 +29,7 @@ public class RectangleBuilder {
     private int radius = 5;
     private String dasharray = null;
 
-    private boolean resizable = false;
+    private boolean resizable = true;
 
     public RectangleBuilder withId(String id) {
         this.id = id;
@@ -123,11 +123,13 @@ public class RectangleBuilder {
     public RectangleBuilder withTopAndBottomPorts() {
         PortBuilder bottomPortBuilder = new PortBuilder();
         bottomPortBuilder.witLocator("draw2d.layout.locator.BottomLocator")
-            .withName("bottomHybridSource");
+            .withName("bottomHybridSource")
+            .asOutputPort();
 
         PortBuilder topPortBuilder = new PortBuilder();
         topPortBuilder.witLocator("draw2d.layout.locator.TopLocator")
-            .withName("topHybridTarget");
+            .withName("topHybridTarget")
+            .asInputPort();
 
         this.addPort(bottomPortBuilder.build())
             .addPort(topPortBuilder.build());
@@ -138,11 +140,13 @@ public class RectangleBuilder {
     public RectangleBuilder withLeftAndRightPorts() {
         PortBuilder bottomPortBuilder = new PortBuilder();
         bottomPortBuilder.witLocator("draw2d.layout.locator.RightLocator")
-            .withName("rightHybridSource");
+            .withName("rightHybridSource")
+            .asOutputPort();
 
         PortBuilder topPortBuilder = new PortBuilder();
         topPortBuilder.witLocator("draw2d.layout.locator.LeftLocator")
-            .withName("leftHybridTarget");
+            .withName("leftHybridTarget")
+            .asInputPort();
 
         this.addPort(bottomPortBuilder.build())
             .addPort(topPortBuilder.build());
