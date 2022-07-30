@@ -1,6 +1,7 @@
 package org.ikasan;
 
 import org.ikasan.scheduled.context.dao.SolrScheduledContextDaoImpl;
+import org.ikasan.scheduled.context.dao.SolrScheduledContextViewDaoImpl;
 import org.ikasan.scheduled.context.service.SolrScheduledContextServiceImpl;
 import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceAuditAggregateDaoImpl;
 import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceAuditDaoImpl;
@@ -78,11 +79,17 @@ public class SolrClientAutoConfiguration {
 
     @Bean
     public ScheduledContextService scheduledContextService() {
-        SolrScheduledContextDaoImpl dao = new SolrScheduledContextDaoImpl();
-        dao.initStandalone(solrUrl, solrRetentionDays);
-        dao.setSolrUsername(solrUsername);
-        dao.setSolrPassword(solrPassword);
-        return new SolrScheduledContextServiceImpl(dao);
+        SolrScheduledContextDaoImpl solrScheduledContextDao = new SolrScheduledContextDaoImpl();
+        solrScheduledContextDao.initStandalone(solrUrl, solrRetentionDays);
+        solrScheduledContextDao.setSolrUsername(solrUsername);
+        solrScheduledContextDao.setSolrPassword(solrPassword);
+
+        SolrScheduledContextViewDaoImpl solrScheduledContextViewDao = new SolrScheduledContextViewDaoImpl();
+        solrScheduledContextViewDao.initStandalone(solrUrl, solrRetentionDays);
+        solrScheduledContextViewDao.setSolrUsername(solrUsername);
+        solrScheduledContextViewDao.setSolrPassword(solrPassword);
+
+        return new SolrScheduledContextServiceImpl(solrScheduledContextDao, solrScheduledContextViewDao);
     }
 
     @Bean

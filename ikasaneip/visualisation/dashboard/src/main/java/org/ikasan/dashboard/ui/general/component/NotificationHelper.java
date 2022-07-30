@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.general.component;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -44,11 +45,18 @@ public class NotificationHelper
 
     public static void showUserNotification(String message)
     {
-        Notification notification = new Notification(message);
+        Notification notification = new Notification();
         notification.setPosition(Notification.Position.MIDDLE);
         notification.setDuration(errorNotificationDuration);
-        notification.setOpened(true);
 
+        Div textDiv = new Div();
+        textDiv.setSizeFull();
+        Text text = new Text(message);
+        textDiv.add(text);
+        textDiv.getElement().getStyle().set("text-align", "center");
+        notification.add(textDiv);
+
+        notification.open();
         lastMessage = message;
     }
 

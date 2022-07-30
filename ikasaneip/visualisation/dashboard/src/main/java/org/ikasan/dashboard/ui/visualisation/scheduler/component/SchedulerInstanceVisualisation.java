@@ -19,6 +19,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
+import org.ikasan.designer.CanvasInitialisedListener;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
 import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
@@ -31,19 +32,26 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class SchedulerInstanceVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener
-    , CanvasItemDoubleClickEventListener {
+    , CanvasItemDoubleClickEventListener, CanvasInitialisedListener {
     private Logger logger = LoggerFactory.getLogger(SchedulerInstanceVisualisation.class);
 
     private Registration contextInstanceStateChangeRegistration;
@@ -174,11 +182,18 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
                 this.designerCanvas.setCanvasJson(adapter.adaptContext(contextInstance));
             }
             else if (contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
-                this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextInstance));
+                SearchResults<SchedulerJobRecord> jobs = this.schedulerJobService.findByContext(this.parentContextInstance.getName(), -1, -1);
+
+                Map<String, SchedulerJob> schedulerJobs = jobs.getResultList().stream()
+                    .map(record -> record.getJob())
+                    .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity()));
+
+                this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextInstance, schedulerJobs));
             }
 
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
+            this.designerCanvas.addCanvasInitialisedListener(this);
 
             this.designerCanvas.manageClickableItems();
 
@@ -311,8 +326,15 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
 //        jobContextMenu.open();
     }
 
-    public void exportPng(){
-        this.designerCanvas.exportPng();
+    @Override
+    public void canvasInitialised() {
+        if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
+            this.contextInstance.getScheduledJobs().forEach(job -> this.designerCanvas.addLabelToFigure(job.getIdentifier(), job.getJobName()));
+        }
+        else {
+            Map<String, Context> contextMap = ContextHelper.getAllContexts(this.contextInstance);
+            contextMap.entrySet().forEach(entry -> this.designerCanvas.addLabelToFigure(entry.getKey(), entry.getKey()));
+        }
     }
 
     @Override
