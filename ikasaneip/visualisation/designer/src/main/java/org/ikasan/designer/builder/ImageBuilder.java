@@ -88,40 +88,54 @@ public class ImageBuilder {
         return this;
     }
 
-    public ImageBuilder withTopAndBottomPorts() {
-        PortBuilder bottomPortBuilder = new PortBuilder();
-        bottomPortBuilder.witLocator("draw2d.layout.locator.BottomLocator")
-            .withName("bottomHybridSource")
-            .withDraggable(true)
-            .withSelectable(true);
-
+    public ImageBuilder withTopPort() {
         PortBuilder topPortBuilder = new PortBuilder();
         topPortBuilder.witLocator("draw2d.layout.locator.TopLocator")
             .withName("topHybridTarget")
             .withDraggable(true)
-            .withSelectable(true);
+            .withSelectable(true)
+            .asInputPort();
 
-        this.addPort(bottomPortBuilder.build())
-            .addPort(topPortBuilder.build());
+        this.addPort(topPortBuilder.build());
 
         return this;
     }
 
-    public ImageBuilder withLeftAndRightPorts() {
+    public ImageBuilder withBottomPort() {
         PortBuilder bottomPortBuilder = new PortBuilder();
-        bottomPortBuilder.witLocator("draw2d.layout.locator.RightLocator")
-            .withName("rightHybridSource");
+        bottomPortBuilder.witLocator("draw2d.layout.locator.BottomLocator")
+            .withName("bottomHybridSource")
+            .withDraggable(true)
+            .withSelectable(true)
+            .asOutputPort();
 
+        this.addPort(bottomPortBuilder.build());
+
+        return this;
+    }
+
+    public ImageBuilder withLeftPort() {
         PortBuilder topPortBuilder = new PortBuilder();
         topPortBuilder.witLocator("draw2d.layout.locator.LeftLocator")
             .withName("leftHybridTarget")
             .withDraggable(true)
-            .withSelectable(true);
+            .withSelectable(true)
+            .asInputPort();
 
-        this.addPort(bottomPortBuilder.build())
-            .addPort(topPortBuilder.build())
+        this.addPort(topPortBuilder.build());
+
+        return this;
+    }
+
+    public ImageBuilder withRightPort() {
+        PortBuilder bottomPortBuilder = new PortBuilder();
+        bottomPortBuilder.witLocator("draw2d.layout.locator.RightLocator")
+            .withName("rightHybridSource")
             .withDraggable(true)
-            .withSelectable(true);
+            .withSelectable(true)
+            .asOutputPort();
+
+        this.addPort(bottomPortBuilder.build());
 
         return this;
     }
@@ -132,17 +146,6 @@ public class ImageBuilder {
     }
 
     public Image build() {
-        PortBuilder bottomPortBuilder = new PortBuilder();
-        bottomPortBuilder.witLocator("draw2d.layout.locator.BottomLocator")
-            .withName("hybridSource");
-
-        PortBuilder topPortBuilder = new PortBuilder();
-        topPortBuilder.witLocator("draw2d.layout.locator.TopLocator")
-            .withName("hybridTarget");
-
-        this.addPort(bottomPortBuilder.build())
-            .addPort(topPortBuilder.build());
-
         Image image = new Image();
         image.setId(this.id);
         image.setType(this.type);

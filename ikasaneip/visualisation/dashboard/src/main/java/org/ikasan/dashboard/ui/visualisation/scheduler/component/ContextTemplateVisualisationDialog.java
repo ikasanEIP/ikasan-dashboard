@@ -18,6 +18,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -56,6 +57,7 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
     private SecurityService securityService;
     private JobProvisionService jobProvisionService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
+    private ScheduledContextService scheduledContextService;
 
     private ContextService contextService = new ContextService();
 
@@ -66,7 +68,8 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
                                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                               LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                                               JobInitiationService jobInitiationService, ContextProfileService contextProfileService, UserService userService,
-                                              SecurityService securityService, ScheduledContextInstanceService scheduledContextInstanceService, JobProvisionService jobProvisionService) {
+                                              SecurityService securityService, ScheduledContextInstanceService scheduledContextInstanceService, JobProvisionService jobProvisionService,
+                                              ScheduledContextService scheduledContextService) {
         this.setHeight("90%");
         this.setWidth("90%");
 
@@ -145,6 +148,11 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
             throw new IllegalArgumentException("jobProvisionService cannot be null!");
         }
 
+        this.scheduledContextService = scheduledContextService;
+        if(this.scheduledContextService == null) {
+            throw new IllegalArgumentException("scheduledContextService cannot be null!");
+        }
+
         layout = new VerticalLayout();
         layout.setSizeFull();
         super.content.add(layout);
@@ -158,7 +166,7 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
         this.schedulerVisualisation = new SchedulerVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.scheduledContextInstanceService,
-            this.jobProvisionService);
+            this.jobProvisionService, this.scheduledContextService);
 
         schedulerVisualisation.createSchedulerVisualisation(rootContextTemplate, contextTemplate, this, true);
 
@@ -190,7 +198,7 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
                                     = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
                                     , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService
                                     , this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService,
-                                    this.scheduledContextInstanceService, this.jobProvisionService);
+                                    this.scheduledContextInstanceService, this.jobProvisionService, this.scheduledContextService);
 
                                 contextTemplateVisualisationDialog.createSchedulerVisualisation(this.rootContextTemplate, this.contextTemplate);
                                 contextTemplateVisualisationDialog.open();

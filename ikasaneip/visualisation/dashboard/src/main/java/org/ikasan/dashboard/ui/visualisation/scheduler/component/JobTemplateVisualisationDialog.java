@@ -29,6 +29,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
@@ -73,6 +74,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
     private SecurityService securityService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private JobProvisionService jobProvisionService;
+    private ScheduledContextService scheduledContextService;
 
     private ContextService contextService = new ContextService();
 
@@ -84,7 +86,8 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                                           SchedulerJobService schedulerJobService, LogStreamingService logStreamingService,
                                           SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
                                           ContextProfileService contextProfileService, UserService userService, SecurityService securityService,
-                                          ScheduledContextInstanceService scheduledContextInstanceService, JobProvisionService jobProvisionService) {
+                                          ScheduledContextInstanceService scheduledContextInstanceService, JobProvisionService jobProvisionService,
+                                          ScheduledContextService scheduledContextService) {
         this.setHeight("90%");
         this.setWidth("90%");
 
@@ -163,6 +166,11 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             throw new IllegalArgumentException("jobProvisionService cannot be null!");
         }
 
+        this.scheduledContextService = scheduledContextService;
+        if(this.scheduledContextService == null) {
+            throw new IllegalArgumentException("scheduledContextService cannot be null!");
+        }
+
         layout = new VerticalLayout();
         layout.setSizeFull();
         super.content.add(layout);
@@ -180,7 +188,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         this.schedulerVisualisation = new SchedulerVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService,
             this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService,
-            this.scheduledContextInstanceService, this.jobProvisionService);
+            this.scheduledContextInstanceService, this.jobProvisionService, this.scheduledContextService);
         this.schedulerVisualisation.createSchedulerVisualisation(this.rootContextTemplate, this.contextTemplate, this, true);
 
         this.layout.add(this.schedulerVisualisation);
@@ -208,7 +216,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                                     = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
                                     , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService
                                     , this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService,
-                                    this.scheduledContextInstanceService, this.jobProvisionService);
+                                    this.scheduledContextInstanceService, this.jobProvisionService, this.scheduledContextService);
 
                                 contextTemplateVisualisationDialog.createSchedulerVisualisation(this.rootContextTemplate, this.contextTemplate);
                                 contextTemplateVisualisationDialog.open();
@@ -252,13 +260,14 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             Button jsonButton = new Button("JSON", VaadinIcon.CODE.create());
             jsonButton.setIconAfterText(true);
             jsonButton.addClickListener(buttonClickEvent -> {
-                JsonViewerDialog jsonViewerDialog = new JsonViewerDialog(this.contextTemplate);
+                JsonViewerDialog jsonViewerDialog = new JsonViewerDialog(this.schedulerVisualisation.getContextTemplate());
                 jsonViewerDialog.open();
             });
             Button saveButton = new Button("Save");
             saveButton.addClickListener(buttonClickEvent -> {
                 this.schedulerVisualisation.save();
             });
+
 
             buttonLayout.add(createNewJobMenuBar, addAnd, addOr, jsonButton, addContextViewButton, saveButton);
             buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.BASELINE, createNewJobMenuBar, addAnd, addOr, jsonButton, addContextViewButton, saveButton);

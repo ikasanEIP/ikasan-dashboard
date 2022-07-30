@@ -27,6 +27,7 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.material.Material;
 import org.ikasan.dashboard.ui.administration.view.*;
 import org.ikasan.dashboard.ui.general.component.AboutIkasanDialog;
