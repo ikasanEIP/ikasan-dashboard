@@ -22,13 +22,72 @@ public class CanvasJsonToContextTemplateAdapter {
 
     private ObjectMapper objectMapper;
 
+    public CanvasJsonToContextTemplateAdapter() {
+        this.objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    public void validate(String canvasJson) throws CanvasJsonValidationException {
+        List<PositionedItem> overlappingItems = new ArrayList<>();
+
+        try {
+            List<LinkedHashMap> values = objectMapper.readValue(canvasJson, List.class);
+            List<PositionedItem> positionedItems = new ArrayList<>();
+
+            for (LinkedHashMap value : values) {
+                if (value.get("type").equals("draw2d.shape.basic.Image")) {
+                    Image image = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Image.class);
+                    positionedItems.add(image);
+                } else if (value.get("type").equals("draw2d.shape.basic.Rectangle") && value.get("id").toString().startsWith("AND")) {
+                    Rectangle rectangle = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Rectangle.class);
+                    positionedItems.add(rectangle);
+                } else if (value.get("type").equals("draw2d.shape.basic.Rectangle") && value.get("id").toString().startsWith("OR")) {
+                    Rectangle rectangle = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Rectangle.class);
+                    positionedItems.add(rectangle);
+                }
+
+            }
+
+            positionedItems.forEach(rectangle -> {
+                positionedItems.forEach(positionedItem -> {
+                    if(rectangle.getX() < positionedItem.getX() + positionedItem.getWidth() &&
+                        rectangle.getX() + rectangle.getWidth() > positionedItem.getX() &&
+                        rectangle.getY() < positionedItem.getY() + positionedItem.getHeight() &&
+                        rectangle.getY() + rectangle.getHeight() > positionedItem.getY()) {
+
+                        if(!withinArea(rectangle, positionedItem) && !withinArea(positionedItem, rectangle) && !positionedItem.equals(rectangle)) {
+                            if(!overlappingItems.contains(rectangle)) {
+                                overlappingItems.add(rectangle);
+                            }
+                        }
+                    }
+                });
+            });
+        }
+        catch (Exception e) {
+           throw new CanvasJsonValidationException("Exception validating canvas JSON!", e);
+        }
+
+        if(!overlappingItems.isEmpty()) {
+            throw new CanvasJsonValidationException("The canvas JSON contains overlapping items!!", overlappingItems);
+        }
+    }
+
+    public boolean withinArea(PositionedItem left, PositionedItem right) {
+        if(left.getX() < right.getX() &&
+            (left.getX() + left.getWidth()) > (right.getX() + right.getWidth()) &&
+            left.getY() < right.getY() &&
+            (left.getY() + left.getHeight()) > (right.getY() + right.getHeight())) {
+            return true;
+        }
+
+        return false;
+    }
+
     public ContextTemplate adapt(String contextName, String canvasJson) {
         Map<String, Image> schedulerJobs = new HashMap<>();
         List<Rectangle> orBoundaries = new ArrayList<>();
         List<Rectangle> andBoundaries = new ArrayList<>();
         Map<String, List<Connection>> connections = new HashMap<>();
-
-        objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         try {
             List<LinkedHashMap> values = objectMapper.readValue(canvasJson, List.class);
@@ -60,6 +119,8 @@ public class CanvasJsonToContextTemplateAdapter {
             List<Rectangle> aggregatedLogicRectangles = new ArrayList<>();
             aggregatedLogicRectangles.addAll(orBoundaries);
             aggregatedLogicRectangles.addAll(andBoundaries);
+
+            aggregatedLogicRectangles.sort(Comparator.comparingDouble(Rectangle::getY));
 
             Map<String, Tree<PositionedItem>> logicNestingTrees = new HashMap<>();
 
