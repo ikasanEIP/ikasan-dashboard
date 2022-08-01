@@ -13,6 +13,7 @@ public class SolrInternalEventDrivenJobInstanceImpl extends SolrSchedulerJobInst
     private long maxExecutionTime;
     private List<ContextParameter> contextParameters;
     private List<Integer> daysOfWeekToRun;
+    private boolean targetResidingContextOnly;
 
     @Override
     public List<String> getSuccessfulReturnCodes() {
@@ -82,5 +83,15 @@ public class SolrInternalEventDrivenJobInstanceImpl extends SolrSchedulerJobInst
     @Override
     public void setDaysOfWeekToRun(List<Integer> daysOfWeekToRun) {
         this.daysOfWeekToRun = daysOfWeekToRun;
+    }
+
+    @Override
+    public boolean isTargetResidingContextOnly() {
+        return targetResidingContextOnly;
+    }
+
+    @Override
+    public void setTargetResidingContextOnly(boolean targetResidingContextOnly) {
+        this.targetResidingContextOnly = targetResidingContextOnly;
     }
 }
