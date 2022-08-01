@@ -312,14 +312,16 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
      *
      * @param fileEventDrivenJob
      */
-    public void createOrUpdateScheduledJob(FileEventDrivenJob fileEventDrivenJob, IkasanAuthentication authentication) throws JsonProcessingException {
+    public void createOrUpdateScheduledJob(FileEventDrivenJob fileEventDrivenJob, IkasanAuthentication authentication) {
+        fileEventDrivenJob.setIdentifier(fileEventDrivenJob.getAgentName()+"-"+fileEventDrivenJob.getJobName());
+        fileEventDrivenJob.setFilenames(List.of(fileEventDrivenJob.getFilePath()));
+
         SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
         solrFileEventDrivenJobRecord.setAgentName(fileEventDrivenJob.getAgentName());
         solrFileEventDrivenJobRecord.setJobName(fileEventDrivenJob.getJobName());
         solrFileEventDrivenJobRecord.setContextId(fileEventDrivenJob.getContextId());
         solrFileEventDrivenJobRecord.setModifiedTimestamp(System.currentTimeMillis());
         solrFileEventDrivenJobRecord.setFileEventDrivenJob(fileEventDrivenJob);
-
         solrFileEventDrivenJobRecord.setModifiedBy(authentication.getName());
 
         if(this.schedulerJobRecord != null) {

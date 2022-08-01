@@ -16,6 +16,7 @@ import org.ikasan.notification.monitor.mock.ScheduledContextInstanceServiceTestI
 import org.ikasan.notification.monitor.mock.SchedulerJobInstanceServiceTestImpl;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -26,6 +27,9 @@ import org.joda.time.DateTimeUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.*;
@@ -37,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.assertEquals;
 
+@RunWith(MockitoJUnitRunner.class)
 public class OverdueFileMonitorTest {
 
     /** default executor service is a single thread executor */
@@ -49,6 +54,9 @@ public class OverdueFileMonitorTest {
     private ContextMachine contextMachine1;
 
     private Monitor overdueFileMonitor;
+
+    @Mock
+    private ScheduledContextService scheduledContextService;
 
     @After
     public void tearDown() {
@@ -86,7 +94,8 @@ public class OverdueFileMonitorTest {
         MonitorManagement monitorManagement = new MonitorManagement();
         monitorManagement.registerMonitor(overdueFileMonitor);
 
-        contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,"./target",null,null, null);
+        contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,"./target"
+            ,null,null, null, this.scheduledContextService);
         contextMachine1.init();
 
         ContextMachineCache.instance().put(contextMachine1);

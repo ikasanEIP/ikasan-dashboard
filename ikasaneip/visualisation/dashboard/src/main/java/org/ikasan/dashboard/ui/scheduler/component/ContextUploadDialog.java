@@ -160,7 +160,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
                 jobLockCache.addLocks(contextTemplate.getAllNestedJobLocks());
 
                 ContextMachine contextMachine = new ContextMachine(contextTemplate, contextInstance, scheduledContextInstanceService
-                    , internalEventDrivenJobMap, this.queueDir, agents, jobLockCache, this.contextParametersInstanceService);
+                    , internalEventDrivenJobMap, this.queueDir, agents, jobLockCache, this.contextParametersInstanceService, this.scheduledContextService);
                 contextMachine.init();
 
                 // We add the listener to write initiation events to the agents.
