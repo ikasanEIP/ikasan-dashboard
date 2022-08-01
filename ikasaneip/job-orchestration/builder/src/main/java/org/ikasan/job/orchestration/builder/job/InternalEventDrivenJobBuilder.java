@@ -17,6 +17,7 @@ public class InternalEventDrivenJobBuilder extends SchedulerJobBuilder {
     private long maxExecutionTime;
     private List<ContextParameter> contextParameters = new ArrayList<>();
     private List<Integer> daysOfWeekToRun;
+    private boolean targetResidingContextOnly = false;
 
     public InternalEventDrivenJobBuilder addSuccessfulReturnCode(String returnCode) {
         if(successfulReturnCodes == null) {
@@ -48,6 +49,12 @@ public class InternalEventDrivenJobBuilder extends SchedulerJobBuilder {
 
     public InternalEventDrivenJobBuilder withMaxExecutionTime(long maxExecutionTime) {
         this.maxExecutionTime = maxExecutionTime;
+
+        return this;
+    }
+
+    public InternalEventDrivenJobBuilder withTargetResidingContextOnly(boolean targetResidingContextOnly) {
+        this.targetResidingContextOnly = targetResidingContextOnly;
 
         return this;
     }
@@ -93,7 +100,8 @@ public class InternalEventDrivenJobBuilder extends SchedulerJobBuilder {
         internalEventDrivenJob.setStartupControlType(super.startupControlType);
         internalEventDrivenJob.setContextId(super.contextId);
         internalEventDrivenJob.setChildContextIds(super.childContextIds);
-        internalEventDrivenJob.setDaysOfWeekToRun(daysOfWeekToRun);
+        internalEventDrivenJob.setDaysOfWeekToRun(this.daysOfWeekToRun);
+        internalEventDrivenJob.setTargetResidingContextOnly(this.targetResidingContextOnly);
 
         return internalEventDrivenJob;
     }

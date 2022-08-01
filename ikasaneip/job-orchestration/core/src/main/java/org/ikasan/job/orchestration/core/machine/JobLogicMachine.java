@@ -1,7 +1,6 @@
 package org.ikasan.job.orchestration.core.machine;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -15,7 +14,6 @@ import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +26,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> {
-
-    public static final String PASS_THROUGH = "PASS_THROUGH";
-
     private Logger logger = LoggerFactory.getLogger(JobLogicMachine.class);
 
     private List<SchedulerJobInstanceStateChangeEventListener> schedulerJobInstanceStateChangeEventListeners;
@@ -295,7 +290,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         }
         schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
 
-        if(internalEventDrivenJob.getChildContextIds() != null && internalEventDrivenJob.getChildContextIds().contains(PASS_THROUGH)) {
+        if(internalEventDrivenJob.isTargetResidingContextOnly()) {
             if(this.isAlreadyComplete(parentContextInstance, schedulerJobInstance.getAgentName()
                 , schedulerJobInstance.getJobName(), scheduledProcessEvent.getChildContextIds())) {
 

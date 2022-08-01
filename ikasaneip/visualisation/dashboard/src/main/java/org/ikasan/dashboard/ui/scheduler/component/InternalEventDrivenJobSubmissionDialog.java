@@ -20,7 +20,6 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static org.ikasan.job.orchestration.core.machine.JobLogicMachine.PASS_THROUGH;
 
 public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableResizableDialog {
 
@@ -179,7 +176,7 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
         schedulerJobInitiationEvent.setAgentUrl(agent.getUrl());
         schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
 
-        if(internalEventDrivenJob.getChildContextIds() != null && internalEventDrivenJob.getChildContextIds().contains(PASS_THROUGH)){
+        if(internalEventDrivenJob.getChildContextIds() != null && internalEventDrivenJob.isTargetResidingContextOnly()){
             schedulerJobInitiationEvent.setChildContextIds(List.of(internalEventDrivenJob.getChildContextName()));
         }
         else {
