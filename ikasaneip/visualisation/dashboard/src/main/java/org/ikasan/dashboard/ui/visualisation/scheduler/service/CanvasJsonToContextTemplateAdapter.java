@@ -99,10 +99,12 @@ public class CanvasJsonToContextTemplateAdapter {
                 }
                 else if (value.get("type").equals("draw2d.shape.basic.Rectangle") && value.get("id").toString().startsWith("AND")) {
                     Rectangle rectangle = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Rectangle.class);
+                    rectangle.setResizable(true);
                     andBoundaries.add(rectangle);
                 }
                 else if (value.get("type").equals("draw2d.shape.basic.Rectangle") && value.get("id").toString().startsWith("OR")) {
                     Rectangle rectangle = objectMapper.readValue(objectMapper.writeValueAsBytes(value), Rectangle.class);
+                    rectangle.setResizable(true);
                     orBoundaries.add(rectangle);
                 }
                 else if (value.get("type").equals("draw2d.Connection")) {

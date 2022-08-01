@@ -294,6 +294,16 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.saved = false;
     }
 
+    public void startSpinner() {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.startSpinner"));
+    }
+
+    public void stopSpinner() {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.stopSpinner"));
+    }
+
     public void deselectAllFigures() {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.deselectAllFigures"));

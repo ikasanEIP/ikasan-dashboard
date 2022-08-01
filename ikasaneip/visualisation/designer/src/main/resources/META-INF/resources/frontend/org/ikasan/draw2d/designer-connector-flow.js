@@ -24,6 +24,7 @@ window.Vaadin.Flow.designerConnector = {
         let canvasRightClickY=0;
         let rightClickX=0;
         let rightClickY=0;
+        let spinner=null;
 
         $(document).ready(function () {
             $("#"+canvasName).mouseover(function (e) {
@@ -297,11 +298,9 @@ window.Vaadin.Flow.designerConnector = {
                 color: colour,
                 stroke: stroke,
                 resizable:true,
+                selectable:true,
                 draggable:true
             });
-
-            boundary.uninstallEditPolicy(new draw2d.policy.figure.RectangleSelectionFeedbackPolicy());
-            boundary.installEditPolicy(new RotateRectangleSelectionFeedbackPolicy());
 
             let command = new draw2d.command.CommandAdd(_this, boundary, x, y);
             _this.getCommandStack().execute(command);
@@ -332,6 +331,7 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.designer.on("dblclick", function(emitter, event){
+            debugger;
             let figure = event.figure;
             let figureLite = new FigureLite(figure.id, $(':hover').last().offset().left, $(':hover').last().offset().top, figure.getWidth()
                 , figure.getHeight(), figure.NAME, figure.getPersistentAttributes());
@@ -472,7 +472,7 @@ window.Vaadin.Flow.designerConnector = {
                     fontColor: "#0d0d0d",
                     bgColor: "rgba(255,255,255,0)",
                     outlineColor: "rgba(255,255,255,0)",
-                    fontFamily: "Arial",
+                    fontFamily: "Arial, Helvetica, sans-serif",
                     fontSize: "14pt",
                     x: x, y: y
                 });
@@ -633,6 +633,38 @@ window.Vaadin.Flow.designerConnector = {
             });
 
             return result;
+        }
+
+        designer.$connector.startSpinner = async function() {
+            let opts = {
+                lines: 13, // The number of lines to draw
+                length: 38, // The length of each line
+                width: 17, // The line thickness
+                radius: 45, // The radius of the inner circle
+                scale: 1, // Scales overall size of the spinner
+                corners: 1, // Corner roundness (0..1)
+                speed: 1, // Rounds per second
+                rotate: 0, // The rotation offset
+                animation: 'spinner-line-fade-quick', // The CSS animation name for the lines
+                direction: 1, // 1: clockwise, -1: counterclockwise
+                color: 'rgba(241, 90, 35, 1.0)', // CSS color or array of colors
+                fadeColor: 'transparent', // CSS color or array of colors
+                top: '50%', // Top position relative to parent
+                left: '50%', // Left position relative to parent
+                shadow: '0 0 1px transparent', // Box-shadow for the lines
+                zIndex: 2000000000, // The z-index (defaults to 2e9)
+                className: 'spinner', // The CSS class to assign to the spinner
+                position: 'absolute', // Element positioning
+            };
+
+            let target = document.getElementById(canvasName);
+            spinner = new Spin.Spinner(opts).spin(target);
+            await new Promise(r => setTimeout(r, 100));
+        }
+
+        designer.$connector.stopSpinner = function() {
+            if(spinner != null) spinner.stop();
+            spinner = null;
         }
 
         designer.$connector.importJson = async function (jsonDocument) {

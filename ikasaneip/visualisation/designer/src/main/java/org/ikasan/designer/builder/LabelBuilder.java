@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.UUID;
 
 public class LabelBuilder {
-    protected String type = "draw2d.shape.basic.Text";
+    protected String type = "draw2d.shape.basic.Label";
     protected String id = UUID.randomUUID().toString();
     protected int alpha = 1;
     protected boolean selectable = true;
     protected boolean draggable = true;
     protected int angle = 0;
-    protected String cssClass = "draw2d_shape_basic_Text";
+    protected String cssClass = "draw2d_shape_basic_Label";
     protected String composite;
 
     protected double x;
@@ -32,8 +32,8 @@ public class LabelBuilder {
     private int outlineStroke = 0;
     private String outlineColor = "rgba(255,255,255,0)";
     private String fontSize = "10pt";
-    private String fontColor = "rgba(13,13,13,1)";
-    private String fontFamily = "\"Trebuchet MS\", Helvetica, sans-serif";
+    private String fontColor = "black";
+    private String fontFamily = "Arial, Helvetica, sans-serif";
 
     public LabelBuilder withId(String id) {
         this.id = id;
@@ -145,27 +145,30 @@ public class LabelBuilder {
     }
 
     public Label build() {
-        Label rectangle = new Label();
-        rectangle.setId(this.id);
-        rectangle.setType(this.type);
-        rectangle.setAlpha(this.alpha);
-        rectangle.setSelectable(this.selectable);
-        rectangle.setDraggable(this.draggable);
-        rectangle.setAlpha(this.alpha);
-        rectangle.setCssClass(this.cssClass);
-        rectangle.setComposite(this.composite);
-        rectangle.setX(this.x);
-        rectangle.setY(this.y);
-        rectangle.setWidth(this.width);
-        rectangle.setHeight(this.height);
-        rectangle.setPorts(this.ports);
-        rectangle.setBgColor(this.bgColor);
-        rectangle.setColor(this.color);
-        rectangle.setStroke(this.stroke);
-        rectangle.setRadius(this.radius);
-        rectangle.setText(this.text);
-        rectangle.setOutlineColor(this.outlineColor);
+        Label label = new Label();
+        label.setId(this.id);
+        label.setType(this.type);
+        label.setAlpha(this.alpha);
+        label.setSelectable(this.selectable);
+        label.setDraggable(this.draggable);
+        label.setAlpha(this.alpha);
+        label.setCssClass(this.cssClass);
+        label.setComposite(this.composite);
+        label.setX(this.x);
+        label.setY(this.y);
+        label.setWidth(this.width);
+        label.setHeight(this.height);
+        label.setPorts(this.ports);
+        label.setBgColor(this.bgColor);
+        label.setColor(this.color);
+        label.setStroke(this.stroke);
+        label.setRadius(this.radius);
+        label.setText(this.text);
+        label.setFontSize(this.fontSize);
+        label.setFontFamily(this.fontFamily);
+        label.setFontColor(this.fontColor);
+        label.setOutlineColor(this.outlineColor);
 
-        return rectangle;
+        return label;
     }
 }

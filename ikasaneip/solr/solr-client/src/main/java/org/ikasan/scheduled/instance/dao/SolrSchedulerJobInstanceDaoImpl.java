@@ -93,7 +93,7 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         queryString.append(typeBuffer)
             .append(AND)
             .append(ID).append(COLON)
-            .append(SolrSpecialCharacterEscapeUtil.escape(id));
+            .append("\"").append(SolrSpecialCharacterEscapeUtil.escape(id)).append("\"");
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(queryString.toString());
@@ -146,22 +146,22 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
 
         queryString.append(AND)
             .append(MODULE_NAME).append(COLON)
-            .append(filter.getJobName() != null && !filter.getJobName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getJobName()) : "*");
+            .append(filter.getJobName() != null && !filter.getJobName().isEmpty() ? "\""+SolrSpecialCharacterEscapeUtil.escape(filter.getJobName())+"\"" : "*");
 
         queryString.append(AND)
             .append(FLOW_NAME)
-            .append(COLON)
-            .append(filter.getContextName() != null && !filter.getContextName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getContextName()) : "*");
+                .append(COLON)
+            .append(filter.getContextName() != null && !filter.getContextName().isEmpty() ? "\""+SolrSpecialCharacterEscapeUtil.escape(filter.getContextName())+"\"" : "*");
 
         queryString.append(AND)
             .append(COMPONENT_NAME)
             .append(COLON)
-            .append(filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getContextInstanceId()) : "*");
+            .append(filter.getContextInstanceId() != null && !filter.getContextInstanceId().isEmpty() ? "\""+SolrSpecialCharacterEscapeUtil.escape(filter.getContextInstanceId())+"\"" : "*");
 
         queryString.append(AND)
             .append(CHILD_CONTEXT_NAME)
             .append(COLON)
-            .append(filter.getChildContextName() != null && !filter.getChildContextName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getChildContextName()) : "*");
+            .append(filter.getChildContextName() != null && !filter.getChildContextName().isEmpty() ? "\""+SolrSpecialCharacterEscapeUtil.escape(filter.getChildContextName())+"\"" : "*");
 
         if(filter.getStatus() != null && !filter.getStatus().isEmpty()) {
             queryString.append(AND).append(STATUS).append(COLON).append(filter.getStatus());
