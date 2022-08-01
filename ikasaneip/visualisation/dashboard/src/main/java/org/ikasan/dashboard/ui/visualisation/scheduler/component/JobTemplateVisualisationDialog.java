@@ -324,7 +324,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             fileEventJobDialog.addSchedulerJobSelectedListener(this);
 
             FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
-            fileEventDrivenJob.setContextId(contextTemplate.getName());
+            fileEventDrivenJob.setContextId(this.rootContextTemplate.getName());
 
             fileEventJobDialog.setJob(fileEventDrivenJob, EditMode.NEW);
 
@@ -336,7 +336,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             quartzDrivenScheduledJobDialog.addSchedulerJobSelectedListener(this);
 
             QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
-            quartzScheduleDrivenJob.setContextId(this.contextTemplate.getName());
+            quartzScheduleDrivenJob.setContextId(this.rootContextTemplate.getName());
 
             quartzDrivenScheduledJobDialog.setJob(quartzScheduleDrivenJob, EditMode.NEW);
 

@@ -110,7 +110,7 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
         this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
-            , this.jobUtilsService);
+            , this.jobUtilsService, this.scheduledContextService);
 
         this.getStyle().set("padding-top", "0px");
         this.add(this.contextInstanceWidget);

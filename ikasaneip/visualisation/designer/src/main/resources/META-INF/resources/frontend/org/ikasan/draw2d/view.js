@@ -8,7 +8,7 @@ View = draw2d.Canvas.extend({
     init:function(app, id, readonly){
         let _this = this;
 
-        this._super(id, 64000, 64000);
+        this._super(id, 128000, 128000);
         this.clipboardFigure = new draw2d.util.ArrayList();
         this.grid =  new draw2d.policy.canvas.ShowGridEditPolicy(20);
 
