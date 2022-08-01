@@ -42,7 +42,7 @@ public final class ContextMachineTestHelper {
         InternalEventDrivenJobInstance job = new InternalEventDrivenJobInstanceImpl();
         job.setIdentifier(jobIdentifier);
         job.setChildContextName(childContextName);
-        job.setChildContextIds(List.of("PASS_THROUGH"));
+        job.setTargetResidingContextOnly(true);
 
         return job;
     }

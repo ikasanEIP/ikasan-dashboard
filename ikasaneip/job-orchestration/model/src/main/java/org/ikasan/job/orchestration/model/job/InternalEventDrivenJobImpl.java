@@ -15,6 +15,7 @@ public class InternalEventDrivenJobImpl extends SchedulerJobImpl implements Inte
     private long maxExecutionTime;
     private List<ContextParameter> contextParameters = new ArrayList<>();
     private List<Integer> daysOfWeekToRun;
+    private boolean targetResidingContextOnly;
 
     @Override
     public List<String> getSuccessfulReturnCodes() {
@@ -84,6 +85,16 @@ public class InternalEventDrivenJobImpl extends SchedulerJobImpl implements Inte
     @Override
     public void setDaysOfWeekToRun(List<Integer> daysOfWeekToRun) {
         this.daysOfWeekToRun = daysOfWeekToRun;
+    }
+
+    @Override
+    public boolean isTargetResidingContextOnly() {
+        return targetResidingContextOnly;
+    }
+
+    @Override
+    public void setTargetResidingContextOnly(boolean targetResidingContextOnly) {
+        this.targetResidingContextOnly = targetResidingContextOnly;
     }
 
     @Override
