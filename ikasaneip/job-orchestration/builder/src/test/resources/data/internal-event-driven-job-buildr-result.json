@@ -17,6 +17,7 @@
     "type" : "java.lang.String"
   } ],
   "daysOfWeekToRun" : [ 2, 3 ],
+  "targetResidingContextOnly" : false,
   "identifier" : "agentName-jobName",
   "jobDescription" : "description"
 }
