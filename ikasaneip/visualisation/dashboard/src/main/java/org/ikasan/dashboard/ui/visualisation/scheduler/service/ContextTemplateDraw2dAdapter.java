@@ -37,10 +37,8 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
     }
 
     public String adaptJob(SchedulerJob schedulerJob) {
-        String image = "frontend/images/and.png";
+        String image = getJobImage(schedulerJob);
 
-        String result = null;
-        // todo clean this up. still a hack.
         try {
             ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
                 .withId((schedulerJob).getIdentifier())
@@ -62,13 +60,12 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
                 jobBuilder.withRightPort();
             }
 
-            result = mapper.writerWithDefaultPrettyPrinter()
+            return mapper.writerWithDefaultPrettyPrinter()
                 .writeValueAsString(jobBuilder.build());
         }
         catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new Draw2dAdapterException(String.format("An exception has occurred attempting to translate " +
+                "scheduler jon[%s] to the draw 2d data format", schedulerJob.getJobName()), e);
         }
-
-        return result;
     }
 }

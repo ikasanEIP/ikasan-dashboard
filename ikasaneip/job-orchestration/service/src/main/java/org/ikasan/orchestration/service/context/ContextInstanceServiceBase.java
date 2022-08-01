@@ -136,7 +136,7 @@ public abstract class ContextInstanceServiceBase {
         HashMap<String, ModuleMetaData> agents = getAgents(internalJobs);
 
         ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, internalJobs, queueDirectory, agents,
-            getJobLockCache(context), contextParametersInstanceService);
+            getJobLockCache(context), contextParametersInstanceService, this.scheduledContextService);
         contextMachine.init();
 
         // We add the listener to write initiation events to the agents.

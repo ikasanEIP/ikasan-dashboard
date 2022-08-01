@@ -44,6 +44,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -80,6 +81,7 @@ public class ContextInstanceWidget extends Div {
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private JobUtilsService jobUtilsService;
+    private ScheduledContextService scheduledContextService;
 
     private Div schedulerVisualisationDiv;
 
@@ -113,7 +115,7 @@ public class ContextInstanceWidget extends Div {
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
-                                 ContextProfileService contextProfileService, JobUtilsService jobUtilsService) {
+                                 ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
@@ -124,6 +126,7 @@ public class ContextInstanceWidget extends Div {
         this.contextProfileService = contextProfileService;
         this.configurationRestService = configurationRestService;
         this.jobUtilsService = jobUtilsService;
+        this.scheduledContextService = scheduledContextService;
 
         this.init(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
@@ -334,7 +337,7 @@ public class ContextInstanceWidget extends Div {
 
         this.schedulerInstanceVisualisation = new SchedulerInstanceVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
-            , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService);
+            , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
         this.schedulerInstanceVisualisation.setWidthFull();
         this.schedulerInstanceVisualisation.setHeight("75vh");
 
@@ -380,7 +383,7 @@ public class ContextInstanceWidget extends Div {
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobInstanceGridWidget = new SchedulerJobInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextInstance, this.schedulerJobInstanceService,
-            this.jobInitiationService, this.configurationRestService, metaDataRestService, this.jobUtilsService);
+            this.jobInitiationService, this.configurationRestService, metaDataRestService, this.jobUtilsService, this.scheduledContextService);
         this.schedulerJobInstanceGridWidget.setWidthFull();
         this.schedulerJobInstanceGridWidget.setHeight("75vh");
         this.schedulerJobInstanceGridWidget.setVisible(false);

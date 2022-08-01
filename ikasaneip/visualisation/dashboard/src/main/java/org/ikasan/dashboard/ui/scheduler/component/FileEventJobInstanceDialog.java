@@ -25,13 +25,8 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
-import org.ikasan.spec.metadata.ModuleMetaDataService;
-import org.ikasan.spec.module.client.ConfigurationService;
-import org.ikasan.spec.module.client.MetaDataService;
-import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.instance.model.FileEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -290,10 +285,10 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         this.statusDiv.setStatus(this.schedulerJobInstanceRecord.getStatus());
     }
 
-    public void setJob(SchedulerJobInstanceRecord internalEventDrivenJobRecord) {
-        this.schedulerJobInstanceRecord = internalEventDrivenJobRecord;
+    public void setJob(SchedulerJobInstanceRecord scheduledEventDrivenJobRecord) {
+        this.schedulerJobInstanceRecord = scheduledEventDrivenJobRecord;
         this.setJob((FileEventDrivenJobInstance) this.schedulerJobInstanceService
-            .findById(internalEventDrivenJobRecord.getId()).getSchedulerJobInstance());
+            .findById(scheduledEventDrivenJobRecord.getId()).getSchedulerJobInstance());
     }
 
     @Override

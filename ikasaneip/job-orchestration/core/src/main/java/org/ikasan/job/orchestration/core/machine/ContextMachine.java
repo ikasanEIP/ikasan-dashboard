@@ -28,6 +28,7 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
@@ -62,6 +63,7 @@ public class ContextMachine {
     private ListenableFuture<byte[]> outboundListenableFuture;
     private ObjectMapper objectMapper;
     private ScheduledContextInstanceService scheduledContextInstanceService;
+    private ScheduledContextService scheduledContextService;
     private SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener;
     private ContextTemplate context;
     private int attempts;
@@ -80,7 +82,8 @@ public class ContextMachine {
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
                           Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstances, String queueDir,
                           Map<String, ModuleMetaData> agents, JobLockCache jobLockCache,
-                          ContextParametersInstanceService contextParametersInstanceService) {
+                          ContextParametersInstanceService contextParametersInstanceService,
+                          ScheduledContextService scheduledContextService) {
         this.context = context;
         this.contextInstance = contextInstance;
         this.internalEventDrivenJobInstances = internalEventDrivenJobInstances;
@@ -95,6 +98,7 @@ public class ContextMachine {
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
+        this.scheduledContextService = scheduledContextService;
         this.jobLockCache = jobLockCache;
         this.jobLogicMachine = new JobLogicMachine(this.agents, this.jobLockCache, contextParametersInstanceService);
     }
@@ -136,6 +140,7 @@ public class ContextMachine {
     public void resetContextInstance() throws JsonProcessingException {
         if(this.context != null) {
             ContextService contextService = new ContextService();
+            this.context = scheduledContextService.findByName(this.context.getName()).getContext();
             this.contextInstance = contextService.getContextInstance(contextService.getContextTemplateString(this.context));
             this.contextInstance.setId(UUID.randomUUID().toString());
 
