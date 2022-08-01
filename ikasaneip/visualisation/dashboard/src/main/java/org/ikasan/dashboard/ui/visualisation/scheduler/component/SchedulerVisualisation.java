@@ -1,11 +1,12 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 import com.flowingcode.vaadin.addons.ironicons.IronIcons;
-import com.vaadin.flow.component.*;
-import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -28,6 +29,7 @@ import org.ikasan.designer.event.*;
 import org.ikasan.designer.function.SaveFunction;
 import org.ikasan.scheduled.context.model.SolrScheduledContextViewRecordImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobRecordImpl;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -43,10 +45,7 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextViewRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -57,8 +56,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -101,6 +99,8 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     private boolean edit;
 
     private IkasanAuthentication authentication;
+
+    private List<SchedulerJob> addedJobs;
 
     public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -227,9 +227,11 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             this.designerCanvas.addCanvasInitialisedListener(this);
 
             if(contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
+//                this.designerCanvas.startSpinner();
                 this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
             }
             else if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
+//                this.designerCanvas.startSpinner();
                 if(this.scheduledContextViewRecord == null) {
                     SearchResults<SchedulerJobRecord> jobs = this.schedulerJobService.findByContext(parentContextTemplate.getName(), -1, -1);
 
@@ -252,6 +254,8 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             this.designerCanvas.manageClickableItems();
 
             this.add(initCanvasActions(), designerCanvas);
+
+            this.addedJobs = new ArrayList<>();
 
             this.initialised = true;
         }
@@ -423,20 +427,25 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     }
 
     public void addJob(SchedulerJob schedulerJob) {
-        this.parentContextTemplate.getScheduledJobsMap().put(schedulerJob.getIdentifier(), schedulerJob);
-        this.contextTemplate.getScheduledJobsMap().put(schedulerJob.getIdentifier(), schedulerJob);
+//        this.contextTemplate.getScheduledJobsMap().put(schedulerJob.getIdentifier(), schedulerJob);
         this.designerCanvas.addImageFigure(adapter.adaptJob(schedulerJob));
         this.designerCanvas.addLabelToFigure(schedulerJob.getIdentifier(), schedulerJob.getJobName());
+//        if(!schedulerJob.getChildContextIds().contains(contextTemplate.getName())) {
+//            schedulerJob.getChildContextIds().add(contextTemplate.getName());
+//        }
+//        this.addedJobs.add(schedulerJob);schedulerJob
     }
 
     @Override
     public void canvasInitialised() {
         if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty() && this.scheduledContextViewRecord == null) {
-            this.contextTemplate.getScheduledJobs().forEach(job -> this.designerCanvas.addLabelToFigure(job.getIdentifier(), job.getJobName()));
+//            this.contextTemplate.getScheduledJobs().forEach(job -> this.designerCanvas.addLabelToFigure(job.getIdentifier(), job.getJobName()));
+//            this.designerCanvas.stopSpinner();
         }
         else {
             Map<String, Context> contextMap = ContextHelper.getAllContexts(this.contextTemplate);
-            contextMap.entrySet().forEach(entry -> this.designerCanvas.addLabelToFigure(entry.getKey(), entry.getKey()));
+//            contextMap.entrySet().forEach(entry -> this.designerCanvas.addLabelToFigure(entry.getKey(), entry.getKey()));
+//            this.designerCanvas.stopSpinner();
         }
     }
 
@@ -459,11 +468,38 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             CanvasJsonToContextTemplateAdapter adapter = new CanvasJsonToContextTemplateAdapter();
             adapter.validate(payload);
 
-            this.contextTemplate = adapter.adapt(this.contextTemplate.getName(), payload);
+            ContextTemplate updatedContext = adapter.adapt(this.contextTemplate.getName(), payload);
 
+            Map<String, SchedulerJob> jobsToSave = new HashMap<>();
+            this.contextTemplate.getScheduledJobs().forEach(job -> {
+                SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextIdAndJobName(this.parentContextTemplate.getName(), job.getJobName());
+                SchedulerJob schedulerJob = schedulerJobRecord.getJob();
+                schedulerJob.getChildContextIds().remove(this.contextTemplate.getName());
+
+                jobsToSave.put(job.getIdentifier(), schedulerJob);
+            });
+
+            updatedContext.getScheduledJobs().forEach(job -> {
+                if(jobsToSave.containsKey(job.getIdentifier())) {
+                    jobsToSave.get(job.getIdentifier()).getChildContextIds().add(updatedContext.getName());
+                }
+                else {
+                    SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextIdAndJobName(this.parentContextTemplate.getName(), job.getJobName());
+                    SchedulerJob schedulerJob = schedulerJobRecord.getJob();
+                    if(schedulerJob.getChildContextIds() == null) {
+                        schedulerJob.setChildContextIds(new ArrayList<>());
+                    }
+                    schedulerJob.getChildContextIds().add(updatedContext.getName());
+                    jobsToSave.put(job.getIdentifier(), schedulerJob);
+                }
+            });
+
+            this.schedulerJobService.save(jobsToSave.values().stream()
+                .collect(Collectors.toList()));
             logger.info(this.parentContextTemplate.toString());
 
-            ContextHelper.replaceChildContextTemplate(this.parentContextTemplate, this.contextTemplate);
+            ContextHelper.replaceChildContextTemplate(this.parentContextTemplate, updatedContext);
+            this.contextTemplate = updatedContext;
 
             if(this.scheduledContextViewRecord == null) {
                 this.scheduledContextViewRecord = new SolrScheduledContextViewRecordImpl();

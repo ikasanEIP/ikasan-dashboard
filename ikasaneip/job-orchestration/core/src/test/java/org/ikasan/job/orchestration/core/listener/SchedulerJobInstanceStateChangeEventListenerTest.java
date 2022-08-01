@@ -13,20 +13,28 @@ import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
+@RunWith(MockitoJUnitRunner.class)
 public class SchedulerJobInstanceStateChangeEventListenerTest extends AbstractTest {
 
     private ContextService contextService = new ContextService();
     private String queueDir = "./target";
+
+    @Mock
+    private ScheduledContextService scheduledContextService;
 
     @Test
     public void test_scheduler_job_instance_event_listener_success() throws IOException, InterruptedException {
@@ -54,7 +62,7 @@ public class SchedulerJobInstanceStateChangeEventListenerTest extends AbstractTe
         internalEventDrivenJobs.put("agentName8-jobName8", job8);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
         contextMachine.init();
         contextMachine.addSchedulerJobStateChangeEventListener(event -> {
             Assert.assertNotNull(event);

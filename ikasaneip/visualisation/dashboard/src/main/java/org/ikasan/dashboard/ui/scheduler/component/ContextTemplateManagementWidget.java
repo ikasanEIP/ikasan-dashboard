@@ -321,7 +321,7 @@ public class ContextTemplateManagementWidget extends Div {
                                                      LogStreamingService logStreamingService, JobInitiationService jobInitiationService) {
         this.contextInstanceGridWidget = new ContextInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate, this.schedulerJobInstanceService,
-            jobInitiationService, this.contextProfileService, this.jobUtilsService);
+            jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService);
         this.contextInstanceGridWidget.setWidthFull();
         this.contextInstanceGridWidget.setHeight("75vh");
         this.contextInstanceGridWidget.setVisible(false);

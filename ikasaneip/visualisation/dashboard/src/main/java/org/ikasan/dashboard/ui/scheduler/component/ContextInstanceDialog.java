@@ -29,11 +29,11 @@ public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
-                                 JobUtilsService jobUtilsService) {
+                                 JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService) {
         this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService
-            , jobUtilsService);
+            , jobUtilsService, scheduledContextService);
 
         this.setHeight("95vh");
         this.setWidth("90vw");
