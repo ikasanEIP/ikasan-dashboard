@@ -15,6 +15,7 @@ import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.notification.monitor.mock.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -23,6 +24,9 @@ import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.assertEquals;
 
+@RunWith(MockitoJUnitRunner.class)
 public class StateChangeMonitorTest {
 
     /** default executor service is a single thread executor */
@@ -44,6 +49,9 @@ public class StateChangeMonitorTest {
     private String result="test";
 
     Monitor stateChangeMonitor;
+
+    @Mock
+    private ScheduledContextService scheduledContextService;
 
     @Before
     public void setup() throws IOException {
@@ -71,7 +79,9 @@ public class StateChangeMonitorTest {
         contextInstance1.setScheduledJobs(Arrays.asList(schedulerJobInstance1));
         contextInstance1.setJobDependencies(new ArrayList<>());
 
-        ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,"./target",null,null, null);
+        ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl()
+            , null,"./target",null,null, null, this.scheduledContextService);
+
         contextMachine1.init();
 
         ContextMachineCache.instance().put(contextMachine1);
@@ -92,7 +102,9 @@ public class StateChangeMonitorTest {
         contextInstance2.setScheduledJobs(Arrays.asList(schedulerJobInstance2));
         contextInstance2.setJobDependencies(new ArrayList<>());
 
-        ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, new ScheduledContextInstanceServiceTestImpl(), null,"./target",null,null, null);
+        ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, new ScheduledContextInstanceServiceTestImpl()
+            , null,"./target",null,null, null, this.scheduledContextService);
+
         contextMachine2.init();
 
         ContextMachineCache.instance().put(contextMachine2);

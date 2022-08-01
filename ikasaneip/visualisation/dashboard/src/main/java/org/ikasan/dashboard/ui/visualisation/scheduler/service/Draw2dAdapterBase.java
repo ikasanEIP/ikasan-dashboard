@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.service;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.layout.mxCompactTreeLayout;
@@ -12,6 +13,7 @@ import org.ikasan.designer.builder.*;
 import org.ikasan.designer.model.*;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -31,7 +33,8 @@ public abstract class Draw2dAdapterBase {
     protected double jobMaxYExtent = 0;
 
     public Draw2dAdapterBase() {
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
     protected ArrayList<Object> _adaptJobs(Context context, Map<String, SchedulerJob> schedulerJobs) {
@@ -42,7 +45,7 @@ public abstract class Draw2dAdapterBase {
             context.getScheduledJobs().forEach(job -> {
                 graph.addVertex(((SchedulerJob)job).getIdentifier());
 
-                String image = "frontend/images/and.png";
+                String image = getJobImage(schedulerJobs.get(((SchedulerJob)job).getJobName()));
 
                 ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
                     .withId(((SchedulerJob)job).getIdentifier())
@@ -109,20 +112,45 @@ public abstract class Draw2dAdapterBase {
 
             ArrayList<Object> items = diagramBuilder.build();
             ArrayList<Object> imageOverlay = new ArrayList<>();
+            ArrayList<Object> labels = new ArrayList<>();
+            ArrayList<Object> groups = new ArrayList<>();
 
             items.forEach(item -> {
-                if (item instanceof Rectangle || item instanceof Image) {
+                if (item instanceof Image) {
                     mxCell cell = cellMap.get(((Item) item).getId());
 
                     if (cell != null) {
+                        GroupBuilder groupBuilder = new GroupBuilder();
+                        Group group = groupBuilder.build();
+
                         ((PositionedItem) item).setX(cell.getGeometry().getX() + 600);
                         ((PositionedItem) item).setY(cell.getGeometry().getY() + 600);
+
+                        double positionedItemCentre = ((PositionedItem) item).getX() + 50;
+                        ((Image) item).setComposite(group.getId());
+
+                        // assuming each letter is 8 units long
+                        double labelLength = ((SchedulerJob) context.getScheduledJobsMap()
+                            .get(((PositionedItem) item).getId())).getJobName().length() * 8;
+
+                        Label label = new LabelBuilder().withText(((SchedulerJob) context.getScheduledJobsMap()
+                            .get(((PositionedItem) item).getId())).getJobName())
+                            .withX(positionedItemCentre - (labelLength / 2))
+                            .withY(((PositionedItem) item).getY() + 110)
+                            .withFontSize("14pt")
+                            .withComposite(group.getId())
+                            .build();
+
+                        labels.add(label);
+                        groups.add(group);
                     }
                 }
             });
 
             this.addLogicGroupings(grouping, imageOverlay, cellMap, diagramBuilder);
             items.addAll(imageOverlay);
+            items.addAll(labels);
+            items.addAll(groups);
 
             return items;
         }
@@ -142,7 +170,7 @@ public abstract class Draw2dAdapterBase {
             .withId(context.getName())
             .withHeight(100)
             .withWidth(100)
-            .withPath("frontend/images/trunk.png")
+            .withPath("frontend/images/leaf_black.png")
             .withTopPort()
             .withBottomPort()
             .build();
@@ -163,7 +191,7 @@ public abstract class Draw2dAdapterBase {
                 .withId(((Context)c).getName())
                 .withHeight(100)
                 .withWidth(100)
-                .withPath("frontend/images/branch.png")
+                .withPath("frontend/images/leaf_black.png")
                 .withTopPort()
                 .withBottomPort()
                 .build();
@@ -227,10 +255,24 @@ public abstract class Draw2dAdapterBase {
                     GroupBuilder groupBuilder = new GroupBuilder();
                     Group group = groupBuilder.build();
 
-                    groups.add(group);
-
                     ((PositionedItem) item).setX(cell.getGeometry().getX() + 600);
                     ((PositionedItem) item).setY(cell.getGeometry().getY() + 600);
+
+                    double positionedItemCentre = ((PositionedItem) item).getX() + 50;
+                    ((PositionedItem) item).setComposite(group.getId());
+
+                    // assuming each letter is 8 units long
+                    double labelLength = ((PositionedItem)item).getId().length() * 8;
+
+                    Label label = new LabelBuilder().withText(((PositionedItem)item).getId())
+                        .withX(positionedItemCentre - (labelLength / 2))
+                        .withY(((PositionedItem)item).getY() + 110)
+                        .withFontSize("14pt")
+                        .withComposite(group.getId())
+                        .build();
+
+                    labels.add(label);
+                    groups.add(group);
                 }
             }
         });
@@ -256,7 +298,7 @@ public abstract class Draw2dAdapterBase {
                     .withId(((Context)c).getName())
                     .withHeight(100)
                     .withWidth(100)
-                    .withPath("frontend/images/branch.png")
+                    .withPath("frontend/images/leaf_black.png")
                     .withTopPort()
                     .withBottomPort()
                     .build();
@@ -517,5 +559,18 @@ public abstract class Draw2dAdapterBase {
         xMaxExtent.set(xMaxExtent.get() + 15);
         yMinExtent.set(yMinExtent.get() - 15);
         yMaxExtent.set(yMaxExtent.get() + 15);
+    }
+
+    protected String getJobImage(SchedulerJob schedulerJob) {
+        String image = "frontend/images/command_black.png";
+
+        if(schedulerJob instanceof FileEventDrivenJob) {
+            image = "frontend/images/file_black.png";
+        }
+        else if(schedulerJob instanceof QuartzScheduleDrivenJob) {
+            image = "frontend/images/time_black.png";
+        }
+
+        return image;
     }
 }

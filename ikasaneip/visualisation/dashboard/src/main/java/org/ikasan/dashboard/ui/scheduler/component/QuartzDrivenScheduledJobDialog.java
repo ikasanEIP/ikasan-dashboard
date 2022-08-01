@@ -291,6 +291,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
      * @param solrQuartzScheduleDrivenJob
      */
     public void createOrUpdateScheduledJob(QuartzScheduleDrivenJob solrQuartzScheduleDrivenJob, IkasanAuthentication authentication) throws JsonProcessingException {
+        solrQuartzScheduleDrivenJob.setIdentifier(solrQuartzScheduleDrivenJob.getAgentName()+"-"+solrQuartzScheduleDrivenJob.getJobName());
 
         QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
         quartzScheduleDrivenJobRecord.setAgentName(solrQuartzScheduleDrivenJob.getAgentName());

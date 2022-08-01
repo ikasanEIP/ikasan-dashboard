@@ -33,6 +33,8 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.Context;
+import org.ikasan.spec.scheduled.context.model.ScheduledContextViewRecord;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -79,6 +81,9 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
     private JobInitiationService jobInitiationService;
     private JobUtilsService jobUtilsService;
     private ContextInstance parentContextInstance;
+    private ScheduledContextService scheduledContextService;
+
+    private ScheduledContextViewRecord scheduledContextViewRecord;
 
     private Dialog parent;
 
@@ -87,7 +92,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                           LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
-                                          JobInitiationService jobInitiationService, JobUtilsService jobUtilsService) {
+                                          JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService) {
 
         this.dynamicImagePath = dynamicImagePath;
         if (this.dynamicImagePath == null) {
@@ -149,6 +154,11 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
             throw new IllegalArgumentException("jobUtilsService cannot be null!");
         }
 
+        this.scheduledContextService = scheduledContextService;
+        if(this.scheduledContextService == null) {
+            throw new IllegalArgumentException("scheduledContextService cannot be null!");
+        }
+
         this.setMargin(false);
         this.setSpacing(false);
         this.setSizeFull();
@@ -166,6 +176,9 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
         this.contextInstance = contextInstance;
         this.parent = parent;
         this.initialised = false;
+
+        this.scheduledContextViewRecord = this.scheduledContextService.getContextView(parentContextInstance.getName(), contextInstance.getName());
+
         init();
     }
 
@@ -179,16 +192,23 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
             this.designerCanvas = new DesignerCanvas("canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, true);
 
             if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
+//                this.designerCanvas.startSpinner();
                 this.designerCanvas.setCanvasJson(adapter.adaptContext(contextInstance));
             }
             else if (contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
-                SearchResults<SchedulerJobRecord> jobs = this.schedulerJobService.findByContext(this.parentContextInstance.getName(), -1, -1);
+//                this.designerCanvas.startSpinner();
+                if(this.scheduledContextViewRecord == null) {
+                    SearchResults<SchedulerJobRecord> jobs = this.schedulerJobService.findByContext(this.parentContextInstance.getName(), -1, -1);
 
-                Map<String, SchedulerJob> schedulerJobs = jobs.getResultList().stream()
-                    .map(record -> record.getJob())
-                    .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity()));
+                    Map<String, SchedulerJob> schedulerJobs = jobs.getResultList().stream()
+                        .map(record -> record.getJob())
+                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity()));
 
-                this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextInstance, schedulerJobs));
+                    this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextInstance, schedulerJobs));
+                }
+                else {
+                    this.designerCanvas.setCanvasJson(adapter.adaptContextView(this.contextInstance, this.scheduledContextViewRecord.getContextView()));
+                }
             }
 
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
@@ -217,16 +237,6 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
         IronIcons.Icon zoomOut = IconDecorator.decorate(IronIcons.ZOOM_OUT.create(), getTranslation("tooltip.zoom-out", UI.getCurrent().getLocale()), "25px", IkasanColours.IKASAN_ORANGE);
         zoomOut.addClickListener(event -> this.designerCanvas.zoomOut());
         actions.add(zoomOut);
-
-//        // Export as selected format
-//        Button download = new Button();
-//        download.getElement().appendChild(IronIcons.FILE_DOWNLOAD.create().getElement());
-//        Tooltip downloadTooltip = getTooltip(download, getTranslation("tooltip.export-png", UI.getCurrent().getLocale())
-//            , TooltipPosition.BOTTOM, TooltipAlignment.BOTTOM);
-//        actions.add(download, downloadTooltip);
-//        download.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> {
-//            this.exportPng();
-//        });
 
         actions.setVerticalComponentAlignment(Alignment.END, zoomIn, zoomOut);
         return actions;
@@ -258,7 +268,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
                 try {
                     JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
-                        this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService);
+                        this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
                     jobInstanceVisualisationDialog.createSchedulerVisualisation(this.parentContextInstance, contextInstance);
                     jobInstanceVisualisationDialog.open();
 
@@ -276,7 +286,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
                         = new ContextInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                         this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService,
-                        this.jobUtilsService);
+                        this.jobUtilsService, this.scheduledContextService);
                     contextInstanceVisualisationDialog.createSchedulerVisualisation(this.parentContextInstance, contextInstance);
                     contextInstanceVisualisationDialog.open();
 
@@ -329,11 +339,13 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
     @Override
     public void canvasInitialised() {
         if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
-            this.contextInstance.getScheduledJobs().forEach(job -> this.designerCanvas.addLabelToFigure(job.getIdentifier(), job.getJobName()));
+            //this.contextInstance.getScheduledJobs().forEach(job -> this.designerCanvas.addLabelToFigure(job.getIdentifier(), job.getJobName()));
+//            this.designerCanvas.stopSpinner();
         }
         else {
             Map<String, Context> contextMap = ContextHelper.getAllContexts(this.contextInstance);
-            contextMap.entrySet().forEach(entry -> this.designerCanvas.addLabelToFigure(entry.getKey(), entry.getKey()));
+            //contextMap.entrySet().forEach(entry -> this.designerCanvas.addLabelToFigure(entry.getKey(), entry.getKey()));
+//            this.designerCanvas.stopSpinner();
         }
     }
 
