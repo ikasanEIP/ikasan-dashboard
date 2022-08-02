@@ -2,34 +2,33 @@ package org.ikasan.job.orchestration.context.parameters;
 
 import java.util.List;
 
-import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
+import org.ikasan.job.orchestration.context.util.SchedulerContextParametersPropertiesProvider;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 
 public class ContextParametersFactory {
 
-    // TODO this needs to be replaced with something correct i.e. cloud properties or some other service
-    private final SchedulerOverrider schedulerOverrider;
+    private final SchedulerContextParametersPropertiesProvider schedulerContextParametersPropertiesProvider;
 
-    public ContextParametersFactory(SchedulerOverrider schedulerOverrider) {
-        if(schedulerOverrider == null) {
-            throw new IllegalArgumentException("schedulerOverrider cannot be null!");
+    public ContextParametersFactory(SchedulerContextParametersPropertiesProvider schedulerContextParametersPropertiesProvider) {
+        if(schedulerContextParametersPropertiesProvider == null) {
+            throw new IllegalArgumentException("schedulerContextParametersProvider cannot be null!");
         }
-        this.schedulerOverrider = schedulerOverrider;
+        this.schedulerContextParametersPropertiesProvider = schedulerContextParametersPropertiesProvider;
     }
 
     public void populateContextParameters() {
-        // at the moment no point as on startup properties are re read
+        // at the moment no point as on startup properties are read
     }
 
     public List<ContextParameterInstance> getAllContextParameters(String contextName) {
-        return schedulerOverrider.getAllContextParameters(contextName);
+        return schedulerContextParametersPropertiesProvider.getAllContextParameters(contextName);
     }
 
     public String getContextParameter(String contextName, String parameterValue) {
-        return schedulerOverrider.getReplacementForContextParamName(contextName, parameterValue);
+        return schedulerContextParametersPropertiesProvider.getContextParameter(contextName, parameterValue);
     }
 
     public boolean isSkipped(String contextName, String jobName) {
-        return schedulerOverrider.isSkipped(contextName, jobName);
+        return schedulerContextParametersPropertiesProvider.isSkipped(contextName, jobName);
     }
 }

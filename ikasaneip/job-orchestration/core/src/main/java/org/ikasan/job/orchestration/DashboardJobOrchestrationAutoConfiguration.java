@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersInstanceServiceImpl;
-import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
+import org.ikasan.job.orchestration.context.util.SchedulerContextParametersPropertiesProvider;
 import org.ikasan.module.service.ModuleActivatorDefaultImpl;
 import org.ikasan.module.startup.dao.StartupControlDao;
 import org.ikasan.job.orchestration.context.recovery.ContextInstanceRecoveryManager;
@@ -60,6 +60,21 @@ public class DashboardJobOrchestrationAutoConfiguration {
     @Value("${context.lifecycle.active:true}")
     private boolean isContextLifeCycleActive;
 
+    /**
+     * This map with a String key that is an identifier for the spel expression.
+     * The value String is the spel expression.
+     *
+     * E.g. in properties file
+     *
+     * job.context.params.to.spel.calculators={ \
+     *   'BusinessDateCalculator':'T(java.time.LocalDate).now().format(T(java.time.format.DateTimeFormatter).BASIC_ISO_DATE)' \
+     *   }
+     *
+     *  Initialises to empty map if not set.
+     */
+    @Value("#{${job.context.params.to.spel.calculators:{T(java.util.Collections).emptyMap()}}}")
+    private Map<String, String> spelContextParamsCalculators;
+
     @Bean
     @DependsOn("contextParametersFactory")
     public ContextParametersInstanceService contextParametersInstanceService() {
@@ -73,8 +88,8 @@ public class DashboardJobOrchestrationAutoConfiguration {
     }
 
     @Bean
-    public SchedulerOverrider schedulerOverrider() {
-        return new SchedulerOverrider(useSkipJobs, jobsToSkip, replaceContextParams, paramsToReplace);
+    public SchedulerContextParametersPropertiesProvider schedulerOverrider() {
+        return new SchedulerContextParametersPropertiesProvider(useSkipJobs, jobsToSkip, replaceContextParams, paramsToReplace, spelContextParamsCalculators);
     }
 
     @Bean
