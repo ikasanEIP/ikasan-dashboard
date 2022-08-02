@@ -6,7 +6,7 @@ import org.apache.commons.io.IOUtils;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersInstanceServiceImpl;
-import org.ikasan.job.orchestration.context.util.SchedulerOverrider;
+import org.ikasan.job.orchestration.context.util.SchedulerContextParametersPropertiesProvider;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
@@ -29,8 +29,8 @@ import static org.junit.Assert.*;
 public class AbstractTest
 {
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-    private final SchedulerOverrider schedulerOverrider = new SchedulerOverrider(false, null, false, null);
-    private final ContextParametersFactory contextParametersFactory = new ContextParametersFactory(schedulerOverrider);
+    private final SchedulerContextParametersPropertiesProvider schedulerContextParametersPropertiesProvider = new SchedulerContextParametersPropertiesProvider(false, null, false, null, null);
+    private final ContextParametersFactory contextParametersFactory = new ContextParametersFactory(schedulerContextParametersPropertiesProvider);
     protected final ContextParametersInstanceService contextParametersInstanceService = new ContextParametersInstanceServiceImpl(contextParametersFactory);
 
     protected String loadDataFile(String fileName) throws IOException {

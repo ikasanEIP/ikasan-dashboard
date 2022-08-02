@@ -1,8 +1,10 @@
 package org.ikasan.job.orchestration.provision.context;
 
 import com.esotericsoftware.minlog.Log;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.register.ContextInstanceEndJob;
 import org.ikasan.job.orchestration.context.register.ContextInstanceRegisterJob;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
 import org.ikasan.quartz.AbstractDashboardSchedulerService;
@@ -117,7 +119,10 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
             this.registerContext(contextBundle.getContextTemplate());
 
             if (withinOperatingWindow(contextBundle.getContextTemplate().getTimeWindowStart(), contextBundle.getContextTemplate().getTimeWindowEnd(), new Date())) {
-                // todo ? should we remove it if it already exists?
+                ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextBundle.getContextTemplate().getName());
+                if (contextMachine != null) {
+                    contextInstanceRegistrationService.deRegister(contextBundle.getContextTemplate().getName());
+                }
                 // NOTE: this will create a new context machine and instance and initialise it so overwriting existing context machine
                 contextInstanceRegistrationService.register(contextBundle.getContextTemplate().getName());
             }
