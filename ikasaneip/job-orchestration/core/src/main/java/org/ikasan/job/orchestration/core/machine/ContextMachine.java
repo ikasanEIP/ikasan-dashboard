@@ -38,6 +38,9 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +49,9 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class ContextMachine {
     private Logger logger = LoggerFactory.getLogger(ContextMachine.class);
@@ -63,6 +69,7 @@ public class ContextMachine {
     private ListenableFuture<byte[]> outboundListenableFuture;
     private ObjectMapper objectMapper;
     private ScheduledContextInstanceService scheduledContextInstanceService;
+    private SchedulerJobInstanceService schedulerJobInstanceService;
     private ScheduledContextService scheduledContextService;
     private SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener;
     private ContextTemplate context;
@@ -83,7 +90,7 @@ public class ContextMachine {
                           Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstances, String queueDir,
                           Map<String, ModuleMetaData> agents, JobLockCache jobLockCache,
                           ContextParametersInstanceService contextParametersInstanceService,
-                          ScheduledContextService scheduledContextService) {
+                          ScheduledContextService scheduledContextService, SchedulerJobInstanceService schedulerJobInstanceService) {
         this.context = context;
         this.contextInstance = contextInstance;
         this.internalEventDrivenJobInstances = internalEventDrivenJobInstances;
@@ -99,6 +106,7 @@ public class ContextMachine {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.scheduledContextService = scheduledContextService;
+        this.schedulerJobInstanceService = schedulerJobInstanceService;
         this.jobLockCache = jobLockCache;
 
         this.jobLogicMachine = new JobLogicMachine(this.agents, this.jobLockCache, contextParametersInstanceService);
@@ -134,18 +142,20 @@ public class ContextMachine {
      *
      * @throws JsonProcessingException
      */
-    public void resetContextInstance() throws JsonProcessingException {
+    public void resetContextInstance() throws JsonProcessingException, SchedulerJobInstanceInitialisationException {
         if(this.context != null) {
             ContextService contextService = new ContextService();
             this.context = scheduledContextService.findByName(this.context.getName()).getContext();
             this.contextInstance = contextService.getContextInstance(contextService.getContextTemplateString(this.context));
             this.contextInstance.setId(UUID.randomUUID().toString());
 
-            this.internalEventDrivenJobInstances.entrySet().forEach(entry -> {
-                entry.getValue().setScheduledProcessEvent(null);
-                entry.getValue().setContextInstanceId(this.contextInstance.getId());
-                entry.getValue().setStatus(InstanceStatus.WAITING);
-            });
+            List<SchedulerJobInstance> schedulerJobInstances = this.schedulerJobInstanceService
+                .initialiseSchedulerJobInstancesForContext(this.contextInstance);
+
+            this.internalEventDrivenJobInstances  = schedulerJobInstances.stream()
+                .filter(job -> job instanceof InternalEventDrivenJobInstance)
+                .map(job -> (InternalEventDrivenJobInstance)job)
+                .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
 
             this.saveContext();
             List<JobLock> jobLocks = this.context.getJobLocks();
@@ -419,6 +429,11 @@ public class ContextMachine {
     public void releaseJob(String jobIdentifier, String childContextName) throws IOException {
         SchedulerJobInitiationEvent event = this.contextInstance.getHeldJobs().get(jobIdentifier+ "_" + childContextName);
         if(event != null) {
+            InternalEventDrivenJobInstance instance = this.internalEventDrivenJobInstances.get(jobIdentifier);
+            if(instance != null && instance.isTargetResidingContextOnly()) {
+                event.getChildContextIds().clear();
+                event.getChildContextIds().add(childContextName);
+            }
             this.contextInstance.getHeldJobs().remove(jobIdentifier + "_" + childContextName);
 
             BigQueueMessage bigQueueMessage

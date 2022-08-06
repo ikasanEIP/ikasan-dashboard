@@ -6,6 +6,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ContextHelper {
 
@@ -43,6 +44,44 @@ public class ContextHelper {
         }
 
         return null;
+    }
+
+    public static ContextTemplate getParentContextTemplate(String childContextName, ContextTemplate contextTemplate) {
+        AtomicBoolean containsContext = new AtomicBoolean(false);
+
+        contextTemplate.getContexts().forEach(c -> {
+            if(c.getName().equals(childContextName)) {
+                containsContext.set(true);
+            }
+        });
+
+        if(containsContext.get()) {
+            return contextTemplate;
+        }
+
+        if(contextTemplate.getContexts() != null) {
+            for (ContextTemplate template: contextTemplate.getContexts()) {
+                ContextTemplate result = getParentContextTemplate(childContextName, template);
+
+                if(result != null) {
+                    return result;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static void removeChildContextTemplate(String childContextName, ContextTemplate contextTemplate) {
+        if(contextTemplate.getContexts() != null) {
+            if(contextTemplate.getContextsMap().containsKey(childContextName)) {
+                contextTemplate.getContexts().remove(contextTemplate.getContextsMap().get(childContextName));
+                contextTemplate.getContextsMap().remove(childContextName);
+            }
+            else {
+                contextTemplate.getContexts().forEach(template -> removeChildContextTemplate(childContextName, template));
+            }
+        }
     }
 
     public static ContextTemplate replaceChildContextTemplate(ContextTemplate contextTemplate, ContextTemplate updated) {

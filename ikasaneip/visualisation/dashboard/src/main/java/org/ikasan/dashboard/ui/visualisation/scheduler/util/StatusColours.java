@@ -1,22 +1,22 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.util;
 
+import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
 import java.util.HashMap;
 
 public class StatusColours {
-    public static final String WAITING = "rgba(210, 215, 211, 1.0)";
-    public static final String RUNNING = "rgba(133,181,225, 1.0)";
-    public static final String ERROR = "rgba(239, 83, 80, 1.0)";
-    public static final String COMPLETE = "rgba(102, 187, 106, 1.0)";
 
     private static HashMap<InstanceStatus, String> STATUS_COLOURS = new HashMap<>();
 
     static {
-        STATUS_COLOURS.put(InstanceStatus.COMPLETE, COMPLETE);
-        STATUS_COLOURS.put(InstanceStatus.ERROR, ERROR);
-        STATUS_COLOURS.put(InstanceStatus.RUNNING, RUNNING);
-        STATUS_COLOURS.put(InstanceStatus.WAITING, WAITING);
+        STATUS_COLOURS.put(InstanceStatus.COMPLETE, IkasanColours.SCHEDULER_COMPLETE);
+        STATUS_COLOURS.put(InstanceStatus.ERROR, IkasanColours.SCHEDULER_ERROR);
+        STATUS_COLOURS.put(InstanceStatus.RUNNING, IkasanColours.SCHEDULER_RUNNING);
+        STATUS_COLOURS.put(InstanceStatus.WAITING, IkasanColours.SCHEDULER_WAITING);
+        STATUS_COLOURS.put(InstanceStatus.ON_HOLD, IkasanColours.SCHEDULER_ON_HOLD);
+        STATUS_COLOURS.put(InstanceStatus.SKIPPED, IkasanColours.SCHEDULER_SKIPPED);
+        STATUS_COLOURS.put(InstanceStatus.RELEASED, IkasanColours.SCHEDULER_RELEASED);
     }
 
     public static String getInstanceStatusColour(InstanceStatus status) {

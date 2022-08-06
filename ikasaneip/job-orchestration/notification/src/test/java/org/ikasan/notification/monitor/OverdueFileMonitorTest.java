@@ -21,6 +21,7 @@ import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.joda.time.DateTimeUtils;
@@ -57,6 +58,9 @@ public class OverdueFileMonitorTest {
     @Mock
     private ScheduledContextService scheduledContextService;
 
+    @Mock
+    private SchedulerJobInstanceService schedulerJobInstanceService;
+
     @After
     public void tearDown() {
         DateTimeUtils.setCurrentMillisSystem();
@@ -85,7 +89,7 @@ public class OverdueFileMonitorTest {
         contextInstance1.setJobDependencies(new ArrayList<>());
 
         contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,"./target"
-            ,null,null, null, this.scheduledContextService);
+            ,null,null, null, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine1.init();
 
         ContextMachineCache.instance().put(contextMachine1);
