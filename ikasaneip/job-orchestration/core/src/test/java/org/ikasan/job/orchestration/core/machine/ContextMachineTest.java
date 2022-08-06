@@ -24,6 +24,7 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.json.JSONException;
 import org.junit.After;
 import org.junit.Assert;
@@ -56,6 +57,9 @@ public class ContextMachineTest extends AbstractTest {
     @Mock
     private ScheduledContextService scheduledContextService;
 
+    @Mock
+    private SchedulerJobInstanceService schedulerJobInstanceService;
+
     @After
     public void tearDown() {
         JobLockCacheImpl.instance().reset();
@@ -71,7 +75,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
 
         ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
             "agentName3", false);
@@ -272,7 +276,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.holdJob("bad-job-identifier", "bad_context_name");
     }
@@ -287,7 +291,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.releaseJob("bad-job-identifier", "bad_context_name");
     }
@@ -304,7 +308,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.holdJob("agentName1-jobName1", "Context3");
     }
@@ -321,7 +325,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.holdJob("agentName1-jobName1", "Context3");
     }
@@ -338,7 +342,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.holdJob("agentName1-jobName1", "Context3");
     }
@@ -355,7 +359,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.holdJob("agentName1-jobName1", "Context3");
     }
@@ -372,7 +376,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.holdJob("agentName1-jobName1", "Context3");
     }
@@ -389,7 +393,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.releaseJob("agentName1-jobName1", "Context3");
     }
@@ -406,7 +410,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.releaseJob("agentName1-jobName1", "Context3");
     }
@@ -423,7 +427,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.releaseJob("agentName1-jobName1", "Context3");
     }
@@ -440,7 +444,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.releaseJob("agentName1-jobName1", "Context3");
     }
@@ -457,7 +461,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.releaseJob("agentName1-jobName1", "Context3");
     }
@@ -474,7 +478,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.releaseJob("agentName1-jobName1", "Context3");
 
@@ -492,7 +496,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.holdJob("agentName5-jobName5", "Context3");
         contextMachine.holdJob("agentName16-jobName16", "Context3");
@@ -529,7 +533,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.holdJob("agentName5-jobName5", "Context3");
         contextMachine.holdJob("agentName16-jobName16", "Context5");
@@ -757,7 +761,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
         contextMachine.holdJob("agentName5-jobName5", "Context3");
         contextMachine.holdJob("agentName16-jobName16", "Context5");
@@ -971,7 +975,7 @@ public class ContextMachineTest extends AbstractTest {
         jobLockCache.addLocks(context.getAllNestedJobLocks());
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
 
         ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1",
             "agentName1", false);
@@ -1051,7 +1055,7 @@ public class ContextMachineTest extends AbstractTest {
         jobLockCache.addLocks(context.getAllNestedJobLocks());
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
 
         ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1",
             "agentName1", false);
@@ -1146,7 +1150,7 @@ public class ContextMachineTest extends AbstractTest {
         jobLockCache.addLocks(context.getAllNestedJobLocks());
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
 
         ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1",
             "agentName1", false);
@@ -1241,7 +1245,7 @@ public class ContextMachineTest extends AbstractTest {
         jobLockCache.addLocks(context.getAllNestedJobLocks());
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
 
         ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
             "agentName3", false);
@@ -1445,7 +1449,7 @@ public class ContextMachineTest extends AbstractTest {
         jobLockCache.addLocks(context.getAllNestedJobLocks());
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
 
         ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1",
             "agentName1", false);
@@ -1638,7 +1642,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
 
         ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
@@ -1694,7 +1698,7 @@ public class ContextMachineTest extends AbstractTest {
 
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         InstanceStatus status = contextMachine.getContextStatus("CONTEXT-1892741766");
         Assert.assertEquals(InstanceStatus.WAITING, status);
 
@@ -1819,7 +1823,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         InstanceStatus status = contextMachine.getContextStatus("Context3");
         Assert.assertEquals(InstanceStatus.WAITING, status);
 
@@ -1865,7 +1869,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         InstanceStatus status = contextMachine.getContextStatus("Context3");
         Assert.assertEquals(InstanceStatus.WAITING, status);
 
@@ -1924,7 +1928,7 @@ public class ContextMachineTest extends AbstractTest {
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         InstanceStatus status = contextMachine.getContextStatus("Context3");
         Assert.assertEquals(InstanceStatus.WAITING, status);
 
@@ -1980,7 +1984,7 @@ public class ContextMachineTest extends AbstractTest {
         internalEventDrivenJobs.put("agentName8-jobName8-Context1", job8);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
 
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance("jobName1", "agentName1", true);
@@ -2058,7 +2062,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         InstanceStatus status = contextMachine.getContextStatus("NonExistentContext");
 
         Assert.assertNull(status);
@@ -2074,7 +2078,7 @@ public class ContextMachineTest extends AbstractTest {
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, instance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         ContextInstance contextInstance = contextMachine.getContext("Context3");
         Assert.assertEquals("Context3", contextInstance.getName());
 
@@ -2109,7 +2113,7 @@ public class ContextMachineTest extends AbstractTest {
         jobLockCache.addLocks(context.getAllNestedJobLocks());
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
 
         /**
          * name" : "CONTEXT-1616645609",
@@ -3896,7 +3900,7 @@ public class ContextMachineTest extends AbstractTest {
         jobLockCache.addLocks(context.getAllNestedJobLocks());
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
 
         /**
          * name" : "CONTEXT-1616645609",
@@ -3982,7 +3986,7 @@ public class ContextMachineTest extends AbstractTest {
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
 
         /**
          * name" : "CONTEXT-1616645609",
@@ -4070,7 +4074,7 @@ public class ContextMachineTest extends AbstractTest {
         jobLockCache.addLocks(context.getAllNestedJobLocks());
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
 
         Assert.assertEquals(1, this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "PARALLEL_SAMPLE", null
@@ -4386,7 +4390,7 @@ public class ContextMachineTest extends AbstractTest {
         jobLockCache.addLocks(context.getAllNestedJobLocks());
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
 
         List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents = this.sendScheduledEventToContextMachineWithChildContextId
             (contextMachine, "SIMPLE_MONTH_END", null,"scheduler-agent", "SIMPLE_ME_ScheduledJob_06:01:00", true);

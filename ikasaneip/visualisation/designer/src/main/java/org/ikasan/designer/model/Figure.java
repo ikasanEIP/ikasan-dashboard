@@ -11,6 +11,7 @@ public class Figure {
     private String type;
     private String attributes;
     private JSONObject attributesObject;
+    private UserData userData;
 
     public String getIdentifier() {
         return identifier;
@@ -80,6 +81,14 @@ public class Figure {
             this.attributesObject = new JSONObject(this.attributes);
         }
         return this.attributesObject.getNumber(name);
+    }
+
+    public UserData getUserData() {
+        return userData;
+    }
+
+    public void setUserData(UserData userData) {
+        this.userData = userData;
     }
 
     @Override

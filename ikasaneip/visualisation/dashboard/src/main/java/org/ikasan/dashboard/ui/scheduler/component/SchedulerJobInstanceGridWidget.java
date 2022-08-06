@@ -3,11 +3,13 @@ package org.ikasan.dashboard.ui.scheduler.component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
@@ -133,7 +135,18 @@ public class SchedulerJobInstanceGridWidget extends Div {
         Icon icon = VaadinIcon.SEARCH.create();
         icon.setSize("12pt");
 
+        HorizontalLayout layout = new HorizontalLayout();
 
+        Button refresh = new Button(getTranslation("button.refresh", UI.getCurrent().getLocale()));
+        refresh.setIcon(VaadinIcon.REFRESH.create());
+        refresh.setIconAfterText(true);
+        refresh.addClickListener(event -> this.schedulerJobInstanceFilteringGrid.init());
+        refresh.getElement().getStyle().set("margin-left", "auto");
+
+        layout.add(refresh);
+        layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, refresh);
+
+        div.add(layout);
         div.add(this.schedulerJobInstanceFilteringGrid);
 
         this.schedulerJobInstanceFilteringGrid.init();

@@ -183,6 +183,7 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
             return contextualisedSchedulerJobInstances;
         }
         catch (IOException e) {
+            e.printStackTrace();
             throw new SchedulerJobInstanceInitialisationException(String.format("An exception has occurred " +
                 "attempting to initialise scheduler job instances for context[%s]", contextInstance.getName()), e);
         }
