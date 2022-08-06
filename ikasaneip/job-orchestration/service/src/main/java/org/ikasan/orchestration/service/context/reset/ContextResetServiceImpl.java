@@ -16,7 +16,7 @@ public class ContextResetServiceImpl implements ContextResetService {
         }
         try {
             contextMachine.resetContextInstance();
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             throw new ContextResetException("Failed to reset context " + e.getMessage());
         }
     }

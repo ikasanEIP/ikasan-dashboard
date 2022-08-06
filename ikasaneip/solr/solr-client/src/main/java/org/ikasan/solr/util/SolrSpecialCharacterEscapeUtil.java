@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
  */
 public class SolrSpecialCharacterEscapeUtil {
     private static String[] LOGICAL_OPERATORS = {"&&", "||", "!", "(", ")", "AND", "OR"};
-    private static String[] TOKENS_TO_ESCAPE = { "+", "-", ":"};
+    private static String[] TOKENS_TO_ESCAPE = { "+", "-", ":", " "};
 
     public static String escape(String query) {
         for(String escapeToken: TOKENS_TO_ESCAPE) {

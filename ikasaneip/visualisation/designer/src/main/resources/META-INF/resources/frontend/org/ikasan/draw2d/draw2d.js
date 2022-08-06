@@ -17662,7 +17662,7 @@ _packages2.default.command.CommandStack = Class.extend(
     this.redostack = [];
 
     // fire an empty command to inform all listener that the stack has been changed
-    this.notifyListeners(new _packages2.default.command.Command(), _packages2.default.command.CommandStack.POST_EXECUTE);
+    this.notifyListeners(new _packages2.default.command.Command(), _packages2.default.command.CommandStack.POST_EXECUTE, "POST_EXECUTE");
 
     return this;
   },
@@ -17782,10 +17782,10 @@ _packages2.default.command.CommandStack = Class.extend(
   undo: function undo() {
     var command = this.undostack.pop();
     if (command) {
-      this.notifyListeners(command, _packages2.default.command.CommandStack.PRE_UNDO);
+      this.notifyListeners(command, _packages2.default.command.CommandStack.PRE_UNDO, "PRE_UNDO");
       this.redostack.push(command);
       command.undo();
-      this.notifyListeners(command, _packages2.default.command.CommandStack.POST_UNDO);
+      this.notifyListeners(command, _packages2.default.command.CommandStack.POST_UNDO, "POST_UNDO");
     }
 
     return this;
@@ -17801,10 +17801,10 @@ _packages2.default.command.CommandStack = Class.extend(
     var command = this.redostack.pop();
 
     if (command) {
-      this.notifyListeners(command, _packages2.default.command.CommandStack.PRE_REDO);
+      this.notifyListeners(command, _packages2.default.command.CommandStack.PRE_REDO, "PRE_REDO");
       this.undostack.push(command);
       command.redo();
-      this.notifyListeners(command, _packages2.default.command.CommandStack.POST_REDO);
+      this.notifyListeners(command, _packages2.default.command.CommandStack.POST_REDO, "POST_REDO");
     }
 
     return this;

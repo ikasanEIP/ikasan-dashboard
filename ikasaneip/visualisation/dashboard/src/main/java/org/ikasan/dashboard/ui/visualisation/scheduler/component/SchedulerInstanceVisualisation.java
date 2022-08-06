@@ -161,6 +161,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
 
         this.setMargin(false);
         this.setSpacing(false);
+        this.setPadding(false);
         this.setSizeFull();
         this.setId("schedulerVisualisation");
     }
@@ -338,6 +339,7 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
 
     @Override
     public void canvasInitialised() {
+        this.designerCanvas.manageClickableItems();
         if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
             //this.contextInstance.getScheduledJobs().forEach(job -> this.designerCanvas.addLabelToFigure(job.getIdentifier(), job.getJobName()));
 //            this.designerCanvas.stopSpinner();

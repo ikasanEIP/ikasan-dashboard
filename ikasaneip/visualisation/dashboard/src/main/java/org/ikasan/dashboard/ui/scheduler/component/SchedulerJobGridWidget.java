@@ -2,10 +2,7 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
@@ -284,22 +281,25 @@ public class SchedulerJobGridWidget extends Div {
         this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter, "flowName");
         this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobTypeFilter
             , SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
+        this.schedulerJobFilteringGrid.getElement().getStyle().set("margin-top", "0px");
 
     }
 
-    private HorizontalLayout createButtonLayout() {
+    private Component createButtonLayout() {
+        VerticalLayout buttonWrapper = new VerticalLayout();
+        buttonWrapper.setMargin(false);
+        buttonWrapper.setPadding(false);
+        buttonWrapper.setWidthFull();
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setMargin(false);
         buttonLayout.setPadding(false);
-        buttonLayout.getElement().getStyle().set("position", "absolute");
-        buttonLayout.getElement().getStyle().set("right", "30px");
-        buttonLayout.getElement().getStyle().set("margin-top", "0px");
         Button refreshButton = this.createRefreshButton();
-        Button provisionButton = this.createProvisionButton();
-        buttonLayout.add(this.createJobUploadMenuBar(), this.createNewJobMenuBar(), provisionButton, refreshButton);
-        buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, refreshButton, provisionButton);
+        buttonLayout.add(refreshButton);
 
-        return buttonLayout;
+        buttonWrapper.add(buttonLayout);
+        buttonWrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
+
+        return buttonWrapper;
     }
 
     private Button createRefreshButton() {
@@ -311,215 +311,8 @@ public class SchedulerJobGridWidget extends Div {
         return refreshJobsButton;
     }
 
-    private Button createProvisionButton() {
-        Button provisionJobsButton = new Button("Provision Jobs", VaadinIcon.COGS.create());
-        provisionJobsButton.setIconAfterText(true);
-
-        provisionJobsButton.addClickListener(event -> {
-            ConfirmDialog confirmDialog = new ConfirmDialog();
-            confirmDialog.setCancelable(true);
-            confirmDialog.setHeader(getTranslation("confirm-dialog.provision-job-header", UI.getCurrent().getLocale()));
-            confirmDialog.setText(getTranslation("confirm-dialog.provision-job-body", UI.getCurrent().getLocale()));
-
-            confirmDialog.open();
-
-            confirmDialog.addConfirmListener(confirmEvent -> {
-                ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
-                dialog.setWidth("600px");
-                dialog.setHeight("250px");
-                dialog.open(getTranslation("progress-dialog.provision-job-header", UI.getCurrent().getLocale()),
-                    getTranslation("progress-dialog.provision-job-body", UI.getCurrent().getLocale()));
-
-                final UI current = UI.getCurrent();
-                Executor executor = Executors.newSingleThreadExecutor();
-                executor.execute(() -> {
-                    try {
-                        SearchResults<SchedulerJobRecord> jobRecords = this.schedulerJobService.findByContext(this.contextTemplate.getName(), -1, -1);
-
-                        List<SchedulerJob> schedulerJobs = jobRecords.getResultList().stream()
-                            .map(record -> record.getJob())
-                            .map(job -> {
-                                if (job instanceof InternalEventDrivenJob) {
-                                    InternalEventDrivenJobImpl internalEventDrivenJob = new InternalEventDrivenJobImpl();
-                                    internalEventDrivenJob.setIdentifier(job.getIdentifier());
-                                    internalEventDrivenJob.setCommandLine(((InternalEventDrivenJob) job).getCommandLine());
-                                    internalEventDrivenJob.setContextParameters(((InternalEventDrivenJob) job).getContextParameters()
-                                        .stream()
-                                        .map(p -> {
-                                            ContextParameterImpl contextParameter = new ContextParameterImpl();
-                                            contextParameter.setName(p.getName());
-                                            contextParameter.setType(p.getType());
-
-                                            return contextParameter;
-                                        }).collect(Collectors.toList()));
-                                    internalEventDrivenJob.setDaysOfWeekToRun(((InternalEventDrivenJob) job).getDaysOfWeekToRun());
-                                    internalEventDrivenJob.setMaxExecutionTime(((InternalEventDrivenJob) job).getMaxExecutionTime());
-                                    internalEventDrivenJob.setMinExecutionTime(((InternalEventDrivenJob) job).getMinExecutionTime());
-                                    internalEventDrivenJob.setSuccessfulReturnCodes(((InternalEventDrivenJob) job).getSuccessfulReturnCodes());
-                                    internalEventDrivenJob.setWorkingDirectory(((InternalEventDrivenJob) job).getWorkingDirectory());
-                                    internalEventDrivenJob.setAgentName(job.getAgentName());
-                                    internalEventDrivenJob.setChildContextIds(job.getChildContextIds());
-                                    internalEventDrivenJob.setContextId(job.getContextId());
-                                    internalEventDrivenJob.setChildContextIds(job.getChildContextIds());
-                                    internalEventDrivenJob.setStartupControlType(job.getStartupControlType());
-                                    internalEventDrivenJob.setJobName(job.getJobName());
-                                    internalEventDrivenJob.setJobDescription(job.getJobDescription());
-
-                                    return internalEventDrivenJob;
-                                } else if (job instanceof FileEventDrivenJob) {
-                                    FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
-                                    fileEventDrivenJob.setContextId(job.getContextId());
-                                    fileEventDrivenJob.setDirectoryDepth(((FileEventDrivenJob) job).getDirectoryDepth());
-                                    fileEventDrivenJob.setEncoding(((FileEventDrivenJob) job).getEncoding());
-                                    fileEventDrivenJob.setFilenames(((FileEventDrivenJob) job).getFilenames());
-                                    fileEventDrivenJob.setFilePath(((FileEventDrivenJob) job).getFilePath());
-                                    fileEventDrivenJob.setIgnoreFileRenameWhilstScanning(((FileEventDrivenJob) job).isIgnoreFileRenameWhilstScanning());
-                                    fileEventDrivenJob.setIncludeHeader(((FileEventDrivenJob) job).isIncludeHeader());
-                                    fileEventDrivenJob.setIncludeTrailer(((FileEventDrivenJob) job).isIncludeTrailer());
-                                    fileEventDrivenJob.setLogMatchedFilenames(((FileEventDrivenJob) job).isLogMatchedFilenames());
-                                    fileEventDrivenJob.setMinFileAgeSeconds(((FileEventDrivenJob) job).getMinFileAgeSeconds());
-                                    fileEventDrivenJob.setMoveDirectory(((FileEventDrivenJob) job).getMoveDirectory());
-                                    fileEventDrivenJob.setSortAscending(((FileEventDrivenJob) job).isSortAscending());
-                                    fileEventDrivenJob.setSortByModifiedDateTime(((FileEventDrivenJob) job).isSortByModifiedDateTime());
-                                    fileEventDrivenJob.setAgentName(job.getAgentName());
-                                    fileEventDrivenJob.setChildContextIds(job.getChildContextIds());
-                                    fileEventDrivenJob.setCronExpression(((FileEventDrivenJob) job).getCronExpression());
-                                    fileEventDrivenJob.setEager(((FileEventDrivenJob) job).isEager());
-                                    fileEventDrivenJob.setIdentifier(job.getIdentifier());
-                                    fileEventDrivenJob.setIgnoreMisfire(((FileEventDrivenJob) job).isIgnoreMisfire());
-                                    fileEventDrivenJob.setJobGroup(((FileEventDrivenJob) job).getJobGroup());
-                                    fileEventDrivenJob.setMaxEagerCallbacks(((FileEventDrivenJob) job).getMaxEagerCallbacks());
-                                    fileEventDrivenJob.setTimeZone(((FileEventDrivenJob) job).getTimeZone());
-                                    fileEventDrivenJob.setPassthroughProperties(((FileEventDrivenJob) job).getPassthroughProperties());
-                                    fileEventDrivenJob.setPersistentRecovery(((FileEventDrivenJob) job).isPersistentRecovery());
-                                    fileEventDrivenJob.setRecoveryTolerance(((FileEventDrivenJob) job).getRecoveryTolerance());
-                                    fileEventDrivenJob.setStartupControlType(job.getStartupControlType());
-                                    fileEventDrivenJob.setJobName(job.getJobName());
-
-                                    return fileEventDrivenJob;
-                                } else {
-                                    QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
-                                    quartzScheduleDrivenJob.setContextId(job.getContextId());
-                                    quartzScheduleDrivenJob.setCronExpression(((QuartzScheduleDrivenJob) job).getCronExpression());
-                                    quartzScheduleDrivenJob.setEager(((QuartzScheduleDrivenJob) job).isEager());
-                                    quartzScheduleDrivenJob.setIgnoreMisfire(((QuartzScheduleDrivenJob) job).isIgnoreMisfire());
-                                    quartzScheduleDrivenJob.setJobGroup(((QuartzScheduleDrivenJob) job).getJobGroup());
-                                    quartzScheduleDrivenJob.setMaxEagerCallbacks(((QuartzScheduleDrivenJob) job).getMaxEagerCallbacks());
-                                    quartzScheduleDrivenJob.setPassthroughProperties(((QuartzScheduleDrivenJob) job).getPassthroughProperties());
-                                    quartzScheduleDrivenJob.setPersistentRecovery(((QuartzScheduleDrivenJob) job).isPersistentRecovery());
-                                    quartzScheduleDrivenJob.setRecoveryTolerance(((QuartzScheduleDrivenJob) job).getRecoveryTolerance());
-                                    quartzScheduleDrivenJob.setStartupControlType(job.getStartupControlType());
-                                    quartzScheduleDrivenJob.setJobName(job.getJobName());
-                                    quartzScheduleDrivenJob.setJobDescription(job.getJobDescription());
-                                    quartzScheduleDrivenJob.setIdentifier(job.getIdentifier());
-                                    quartzScheduleDrivenJob.setChildContextIds(job.getChildContextIds());
-                                    quartzScheduleDrivenJob.setAgentName(job.getAgentName());
-                                    quartzScheduleDrivenJob.setTimeZone(((QuartzScheduleDrivenJob) job).getTimeZone());
-
-                                    return quartzScheduleDrivenJob;
-                                }
-                            })
-                            .collect(Collectors.toList());
-
-                        this.jobProvisionService.provisionJobs(schedulerJobs);
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                        current.access(() -> NotificationHelper.showErrorNotification(getTranslation("error.provisioning-jobs", UI.getCurrent().getLocale())));
-                    }
-                    finally {
-                        current.access(() -> {
-                            dialog.close();
-                            NotificationHelper.showUserNotification(getTranslation("notification.provisioned-jobs", UI.getCurrent().getLocale()));
-                        });
-                    }
-                });
-
-            });
-        });
-
-        return provisionJobsButton;
-    }
-
-    private MenuBar createJobUploadMenuBar() {
-        MenuBar uploadJobMenuBar = new MenuBar();
-        uploadJobMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
-
-        MenuItem quickAccess = createIconItem(uploadJobMenuBar, VaadinIcon.UPLOAD_ALT, getTranslation("menu-item.upload-job-template", UI.getCurrent().getLocale()));
-
-        SubMenu activeContextInstancesSubMenu = quickAccess.getSubMenu();
-        MenuItem activeContexts = activeContextInstancesSubMenu.addItem(getTranslation("menu-item.job-type", UI.getCurrent().getLocale()));
-        SubMenu activeContextSubMenu = activeContexts.getSubMenu();
-
-        activeContextSubMenu.addItem("Command Execution Job", event -> {UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog(); underConstructionDialog.open();});
-        activeContextSubMenu.addItem("File Watcher Job", event -> {UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog(); underConstructionDialog.open();});
-        activeContextSubMenu.addItem("Scheduled Job", event -> {UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog(); underConstructionDialog.open();});
-
-        return uploadJobMenuBar;
-    }
-
-    private MenuBar createNewJobMenuBar() {
-        MenuBar newJobMenuBar = new MenuBar();
-        newJobMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
-
-        MenuItem quickAccess = createIconItem(newJobMenuBar, VaadinIcon.PLUS, getTranslation("menu-item.create-new-job", UI.getCurrent().getLocale()));
-
-        SubMenu activeContextInstancesSubMenu = quickAccess.getSubMenu();
-        MenuItem activeContexts = activeContextInstancesSubMenu.addItem(getTranslation("menu-item.job-type", UI.getCurrent().getLocale()));
-        SubMenu activeContextSubMenu = activeContexts.getSubMenu();
-
-        activeContextSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale()), event -> {
-            InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
-                this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
-
-            InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
-            internalEventDrivenJob.setContextId(this.contextTemplate.getName());
-
-            internalEventDrivenJobDialog.setJob(internalEventDrivenJob, EditMode.NEW);
-            internalEventDrivenJobDialog.open();
-
-            internalEventDrivenJobDialog.addOpenedChangeListener(openedChangeEvent -> {
-                if(!openedChangeEvent.isOpened()) {
-                    this.schedulerJobFilteringGrid.refresh();
-                }
-            });
-        });
-        activeContextSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
-            FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
-                this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
-
-            FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
-            fileEventDrivenJob.setContextId(contextTemplate.getName());
-
-            fileEventJobDialog.setJob(fileEventDrivenJob, EditMode.NEW);
-
-            fileEventJobDialog.open();
-
-            fileEventJobDialog.addOpenedChangeListener(openedChangeEvent -> {
-                if(!openedChangeEvent.isOpened()) {
-                    this.schedulerJobFilteringGrid.refresh();
-                }
-            });
-        });
-        activeContextSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale()), event -> {
-            QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(null, this.scheduledProcessManagementService,
-                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
-
-            QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
-            quartzScheduleDrivenJob.setContextId(this.contextTemplate.getName());
-
-            quartzDrivenScheduledJobDialog.setJob(quartzScheduleDrivenJob, EditMode.NEW);
-
-            quartzDrivenScheduledJobDialog.open();
-
-            quartzDrivenScheduledJobDialog  .addOpenedChangeListener(openedChangeEvent -> {
-                if(!openedChangeEvent.isOpened()) {
-                    this.schedulerJobFilteringGrid.refresh();
-                }
-            });
-        });
-
-        return newJobMenuBar;
+    public void refresh() {
+        this.schedulerJobFilteringGrid.refresh();
     }
 
     private MenuItem createIconItem(MenuBar menu, VaadinIcon iconName, String label) {

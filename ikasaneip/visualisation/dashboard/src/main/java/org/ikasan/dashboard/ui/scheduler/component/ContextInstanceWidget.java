@@ -5,11 +5,10 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -45,7 +44,10 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateSearchFilter;
+import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -58,11 +60,8 @@ import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
-public class ContextInstanceWidget extends Div {
+public class ContextInstanceWidget extends VerticalLayout {
 
     private Registration contextInstanceStateChangeRegistration;
 
@@ -104,8 +103,6 @@ public class ContextInstanceWidget extends Div {
 
     private SchedulerStatusDiv statusDiv;
 
-    private ComboBox<String> contextViews;
-
     /**
      * Constructor
      *
@@ -118,15 +115,47 @@ public class ContextInstanceWidget extends Div {
                                  ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
+        if (this.scheduledContextInstanceService == null) {
+            throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
+        }
         this.schedulerJobInstanceService = schedulerJobInstanceService;
-        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        if (this.schedulerJobInstanceService == null) {
+            throw new IllegalArgumentException("schedulerJobInstanceService cannot be null!");
+        }
         this.contextInstance = contextInstance;
+        if (this.contextInstance == null) {
+            throw new IllegalArgumentException("contextInstance cannot be null!");
+        }
         this.contextTemplate = contextTemplate;
+        if (this.contextTemplate == null) {
+            throw new IllegalArgumentException("contextTemplate cannot be null!");
+        }
         this.jobInitiationService = jobInitiationService;
+        if (this.jobInitiationService == null) {
+            throw new IllegalArgumentException("jobInitiationService cannot be null!");
+        }
         this.contextProfileService = contextProfileService;
+        if (this.contextProfileService == null) {
+            throw new IllegalArgumentException("contextProfileService cannot be null!");
+        }
         this.configurationRestService = configurationRestService;
+        if (this.configurationRestService == null) {
+            throw new IllegalArgumentException("configurationRestService cannot be null!");
+        }
         this.jobUtilsService = jobUtilsService;
+        if (this.jobUtilsService == null) {
+            throw new IllegalArgumentException("jobUtilsService cannot be null!");
+        }
         this.scheduledContextService = scheduledContextService;
+        if (this.scheduledContextService == null) {
+            throw new IllegalArgumentException("scheduledContextService cannot be null!");
+        }
+        this.moduleControlRestService = moduleControlRestService;
+        if (this.moduleControlRestService == null) {
+            throw new IllegalArgumentException("moduleControlRestService cannot be null!");
+        }
+
+        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.init(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
@@ -178,7 +207,7 @@ public class ContextInstanceWidget extends Div {
 
         this.formLayout.setWidth("100%");
 
-        H2 contextInstanceLabel = new H2(String.format(getTranslation("label.context-instance", UI.getCurrent().getLocale())));
+        H4 contextInstanceLabel = new H4(String.format(getTranslation("label.context-instance", UI.getCurrent().getLocale())));
         contextInstanceLabel.getStyle().set("padding-top", "5px");
         contextInstanceLabel.getStyle().set("margin", "20px");
         formLayout.add(contextInstanceLabel, 2);
@@ -207,7 +236,6 @@ public class ContextInstanceWidget extends Div {
                         ContextMachineCache.instance().remove(contextMachine);
                         contextMachine.resetContextInstance();
                         ContextMachineCache.instance().put(contextMachine);
-                        this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextMachine.getContext());
                         String route = RouteConfiguration.forSessionScope()
                             .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
                                 .getByContextName(this.contextInstance.getName()).getContext().getId() + "_scheduledContextInstance");
@@ -217,6 +245,7 @@ public class ContextInstanceWidget extends Div {
                         resetButton.setVisible(false);
                     }
                     catch (Exception e) {
+                        e.printStackTrace();
                         NotificationHelper.showErrorNotification(getTranslation("error.reset-context", UI.getCurrent().getLocale()));
                     }
                 }
@@ -312,7 +341,7 @@ public class ContextInstanceWidget extends Div {
         aceEditor.setMode(AceMode.json);
         aceEditor.setFontSize(11);
         aceEditor.setTabSize(4);
-        aceEditor.setWidth("auto");
+        aceEditor.setWidth("100%");
         aceEditor.setHeight("75vh");
         aceEditor.setReadOnly(true);
         aceEditor.setWrap(false);
@@ -359,7 +388,23 @@ public class ContextInstanceWidget extends Div {
                 this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance, null);
             }
 
-            this.schedulerVisualisationDiv.add(contextViewMenuBar(), this.schedulerInstanceVisualisation);
+            VerticalLayout buttonWrapper = new VerticalLayout();
+            buttonWrapper.setMargin(false);
+            buttonWrapper.setPadding(false);
+            buttonWrapper.setWidthFull();
+            HorizontalLayout buttonLayout = new HorizontalLayout();
+            buttonLayout.setMargin(false);
+            buttonLayout.setPadding(false);
+
+            buttonLayout.add(this.contextViewMenuBar());
+
+            buttonWrapper.add(buttonLayout);
+            buttonWrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
+
+            this.schedulerInstanceVisualisation.getElement().getStyle().set("margin-top", "0px");
+            this.schedulerInstanceVisualisation.getElement().getStyle().set("margin-bottom", "30px");
+
+            this.schedulerVisualisationDiv.add(buttonWrapper, this.schedulerInstanceVisualisation);
         }
         catch (IOException e) {
             // todo raise message
@@ -370,8 +415,6 @@ public class ContextInstanceWidget extends Div {
 
     private MenuBar contextViewMenuBar() {
         MenuBar contextViewsMenuBar = new ContextInstanceViewMenuBar(this.contextInstance, this.contextProfileService, this.schedulerInstanceVisualisation);
-        contextViewsMenuBar.getElement().getStyle().set("position", "absolute");
-        contextViewsMenuBar.getElement().getStyle().set("right", "35px");
 
         return contextViewsMenuBar;
     }

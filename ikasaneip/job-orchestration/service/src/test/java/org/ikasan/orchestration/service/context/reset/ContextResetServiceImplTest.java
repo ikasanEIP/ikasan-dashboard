@@ -13,6 +13,7 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -32,6 +33,9 @@ public class ContextResetServiceImplTest {
     @Mock
     private ScheduledContextService scheduledContextService;
 
+    @Mock
+    private SchedulerJobInstanceService schedulerJobInstanceService;
+
     @Before
     public void setUp() throws IOException {
         contextService = new ContextService();
@@ -44,7 +48,8 @@ public class ContextResetServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, JobLockCacheImpl.instance(), null, this.scheduledContextService);
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null
+            , null, null, JobLockCacheImpl.instance(), null, this.scheduledContextService, this.schedulerJobInstanceService);
         ContextMachineCache.instance().put(contextMachine);
 
         try {
@@ -62,7 +67,8 @@ public class ContextResetServiceImplTest {
         ContextTemplate context = this.contextService.getContextTemplate(jsonContext);
         ContextInstance contextInstance = this.contextService.getContextInstance(jsonContext);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, JobLockCacheImpl.instance(), null, this.scheduledContextService);
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null
+            , null, null, JobLockCacheImpl.instance(), null, this.scheduledContextService, this.schedulerJobInstanceService);
         ContextMachineCache.instance().put(contextMachine);
 
         contextResetService.resetContext("CONTEXT-1436221681");
