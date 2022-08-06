@@ -16,6 +16,7 @@ import org.ikasan.dashboard.ui.scheduler.component.EditMode;
 import org.ikasan.dashboard.ui.scheduler.component.FileEventJobDialog;
 import org.ikasan.dashboard.ui.scheduler.component.InternalEventDrivenJobDialog;
 import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobDialog;
+import org.ikasan.dashboard.ui.scheduler.listener.NewContextListener;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
@@ -27,9 +28,9 @@ import org.ikasan.designer.CanvasInitialisedListener;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.*;
 import org.ikasan.designer.function.SaveFunction;
+import org.ikasan.designer.model.UserData;
 import org.ikasan.scheduled.context.model.SolrScheduledContextViewRecordImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobRecordImpl;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -45,7 +46,10 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextViewRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -61,7 +65,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SchedulerVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener, CanvasInitialisedListener
-    , CanvasItemDoubleClickEventListener, ConnectorEventListener, CanvasUpdatedListener, SaveFunction {
+    , CanvasItemDoubleClickEventListener, ConnectorEventListener, CanvasUpdatedListener, SaveFunction, NewContextListener, FigureDeleteEventListener, FigureUndoDeleteEventListener {
     private Logger logger = LoggerFactory.getLogger(SchedulerVisualisation.class);
 
     private DesignerCanvas designerCanvas;
@@ -100,7 +104,8 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
     private IkasanAuthentication authentication;
 
-    private List<SchedulerJob> addedJobs;
+    private Map<String, ContextDeletedHolder> contextDeletedHolderMap = new HashMap<>();
+
 
     public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -196,6 +201,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
         this.setMargin(false);
         this.setSpacing(false);
+        this.setPadding(false);
         this.setSizeFull();
         this.setId("schedulerVisualisation");
     }
@@ -227,11 +233,9 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             this.designerCanvas.addCanvasInitialisedListener(this);
 
             if(contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
-//                this.designerCanvas.startSpinner();
                 this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
             }
             else if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
-//                this.designerCanvas.startSpinner();
                 if(this.scheduledContextViewRecord == null) {
                     SearchResults<SchedulerJobRecord> jobs = this.schedulerJobService.findByContext(parentContextTemplate.getName(), -1, -1);
 
@@ -250,12 +254,10 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
             this.designerCanvas.addConnectorEventListener(this);
             this.designerCanvas.addCanvasUpdatedListener(this);
-
-            this.designerCanvas.manageClickableItems();
+            this.designerCanvas.addFigureDeleteEventListeners(this);
+            this.designerCanvas.addFigureUndoDeleteEventListeners(this);
 
             this.add(initCanvasActions(), designerCanvas);
-
-            this.addedJobs = new ArrayList<>();
 
             this.initialised = true;
         }
@@ -299,7 +301,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             this.init();
         }
         catch (IOException e) {
-            logger.warn("Could not initialise business stream!", e);
+            logger.warn("Could not initialise scheduler visualisation!", e);
         }
         this.redraw();
     }
@@ -331,12 +333,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
     @Override
     public void rightClickEvent(CanvasItemRightClickEvent canvasItemRightClickEvent) {
-//        JobContextMenu jobContextMenu = new JobContextMenu(canvasItemRightClickEvent.getClickLocationX(), canvasItemRightClickEvent.getClickLocationY());
-//        jobContextMenu.open();
-    }
 
-    public void exportPng(){
-        this.designerCanvas.exportPng();
     }
 
     public void addAndGrouping() {
@@ -427,32 +424,62 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     }
 
     public void addJob(SchedulerJob schedulerJob) {
-//        this.contextTemplate.getScheduledJobsMap().put(schedulerJob.getIdentifier(), schedulerJob);
         this.designerCanvas.addImageFigure(adapter.adaptJob(schedulerJob));
         this.designerCanvas.addLabelToFigure(schedulerJob.getIdentifier(), schedulerJob.getJobName());
-//        if(!schedulerJob.getChildContextIds().contains(contextTemplate.getName())) {
-//            schedulerJob.getChildContextIds().add(contextTemplate.getName());
-//        }
-//        this.addedJobs.add(schedulerJob);schedulerJob
+        this.contextTemplate.getScheduledJobsMap().put(schedulerJob.getIdentifier(), schedulerJob);
     }
 
     @Override
     public void canvasInitialised() {
-        if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty() && this.scheduledContextViewRecord == null) {
-//            this.contextTemplate.getScheduledJobs().forEach(job -> this.designerCanvas.addLabelToFigure(job.getIdentifier(), job.getJobName()));
-//            this.designerCanvas.stopSpinner();
-        }
-        else {
-            Map<String, Context> contextMap = ContextHelper.getAllContexts(this.contextTemplate);
-//            contextMap.entrySet().forEach(entry -> this.designerCanvas.addLabelToFigure(entry.getKey(), entry.getKey()));
-//            this.designerCanvas.stopSpinner();
-        }
+        this.designerCanvas.manageClickableItems();
     }
 
     @Override
     public void connectorEvent(ConnectorEvent connectorEvent) {
-        if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
-            if(connectorEvent.getEventType().equals(ConnectorEvent.CONNECTOR_ADDED_EVENT_TYPE)) {
+        logger.info(connectorEvent.getEventType());
+        if(connectorEvent.getEventType().equals("CONNECTOR_ADDED")) {
+            if(connectorEvent.getSourceUserData() != null && connectorEvent.getSourceUserData().getItemType().equals(UserData.CONTEXT)
+                && connectorEvent.getTargetUserData() != null && connectorEvent.getTargetUserData().getItemType().equals(UserData.CONTEXT)) {
+                ContextTemplate childContextTemplate = ContextHelper.getChildContextTemplate(connectorEvent.getTargetUserData().getContextName()
+                    , this.parentContextTemplate);
+                ContextHelper.removeChildContextTemplate(connectorEvent.getTargetUserData().getContextName(), this.parentContextTemplate);
+
+                ContextTemplate contextTemplate = ContextHelper.getChildContextTemplate(connectorEvent.getSourceUserData().getContextName(), this.parentContextTemplate);
+
+                contextTemplate.getContexts().add(childContextTemplate);
+                contextTemplate.getContextsMap().put(childContextTemplate.getName(),childContextTemplate);
+
+                this._save();
+            }
+        }
+    }
+
+    @Override
+    public void figureDeleted(FigureDeleteEvent figureDeleteEvent) {
+        if(figureDeleteEvent.getFigure().getUserData().getItemType().equals(UserData.CONTEXT)) {
+            logger.info("Context deleted! " + figureDeleteEvent.getFigure());
+            ContextTemplate parent = ContextHelper.getParentContextTemplate(figureDeleteEvent.getFigure().getUserData().getContextName(), this.parentContextTemplate);
+            ContextTemplate removed = ContextHelper.getChildContextTemplate(figureDeleteEvent.getFigure().getUserData().getContextName(), this.parentContextTemplate);
+            ContextHelper.removeChildContextTemplate(figureDeleteEvent.getFigure().getUserData().getContextName(), this.parentContextTemplate);
+
+            ContextDeletedHolder contextDeletedHolder = new ContextDeletedHolder(parent, removed);
+            this.contextDeletedHolderMap.put(figureDeleteEvent.getFigure().getUserData().getContextName(), contextDeletedHolder);
+
+            this._save();
+        }
+    }
+
+    @Override
+    public void undoFigureDeleted(FigureUndoDeleteEvent figureUndoDeleteEvent) {
+        if(figureUndoDeleteEvent.getFigure().getUserData().getItemType().equals(UserData.CONTEXT)) {
+            logger.info("Context undo delete! " + figureUndoDeleteEvent.getFigure());
+            ContextDeletedHolder contextDeletedHolder = this.contextDeletedHolderMap.get(figureUndoDeleteEvent.getFigure().getUserData().getContextName());
+            if(contextDeletedHolder != null) {
+                ContextTemplate parent = ContextHelper.getChildContextTemplate(contextDeletedHolder.parent.getName(), this.parentContextTemplate);
+                parent.getContexts().add(contextDeletedHolder.getDeleted());
+                this.contextDeletedHolderMap.remove(figureUndoDeleteEvent.getFigure().getUserData().getContextName());
+
+                this._save();
             }
         }
     }
@@ -460,6 +487,41 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
     @Override
     public void canvasUpdated(CanvasUpdatedEvent canvasUpdatedEvent) {
         logger.info(canvasUpdatedEvent.getCanvasJson());
+    }
+
+    @Override
+    public void newContext(ContextTemplate context) {
+        if(ContextHelper.getChildContextTemplate(context.getName(), this.parentContextTemplate) != null) {
+            ConfirmDialog errorDialog = new ConfirmDialog();
+            errorDialog.setHeader(getTranslation("error-dialog-header.cannot-add-context", UI.getCurrent().getLocale()));
+            errorDialog.setWidth("500px");
+
+            StringBuffer message = new StringBuffer();
+            message.append("<p style=\"color:red\">" + getTranslation("error-dialog-body.cannot-add-context", UI.getCurrent().getLocale()) +
+                "</p>");
+            errorDialog.setText(new Html("<div>"+message.toString()+"</div>"));
+            errorDialog.setConfirmText(getTranslation("button.ok", UI.getCurrent().getLocale()));
+            errorDialog.open();
+            return;
+        }
+
+        this.contextTemplate = ContextHelper.getChildContextTemplate(this.contextTemplate.getName(), this.parentContextTemplate);
+        this.contextTemplate.getContexts().add(context);
+        this.contextTemplate.getContextsMap().put(context.getName(), context);
+
+        this.designerCanvas.addImageFigure(adapter.adaptChildContext(context));
+        this.designerCanvas.addLabelToFigure(context.getName(), context.getName());
+        this.designerCanvas.manageClickableItems();
+
+        ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findByName(this.parentContextTemplate.getName());
+        scheduledContextRecord.setContext(parentContextTemplate);
+        this.scheduledContextService.save(scheduledContextRecord);
+    }
+
+    private void _save() {
+        ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findByName(this.parentContextTemplate.getName());
+        scheduledContextRecord.setContext(parentContextTemplate);
+        this.scheduledContextService.save(scheduledContextRecord);
     }
 
     @Override
@@ -526,7 +588,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 
 
             StringBuffer message = new StringBuffer();
-            message.append("<b style=\"color:red\">An error has occurred! The following items overlap.</b><br/><ul>");
+            message.append("<b style=\"color:red\">" + getTranslation("error-dialog-body.cannot-save-context", UI.getCurrent().getLocale()) + "</b><br/><ul>");
 
             e.getOverlappingItems().forEach(item -> {
                 String value;
@@ -542,12 +604,30 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             });
 
             errorDialog.setText(new Html("<div>"+message.toString()+"<ul></div>"));
-            errorDialog.setConfirmText("OK");
+            errorDialog.setConfirmText(getTranslation("button.ok", UI.getCurrent().getLocale()));
             errorDialog.open();
         }
     }
 
     public ContextTemplate getContextTemplate() {
         return contextTemplate;
+    }
+
+    private class ContextDeletedHolder {
+        private ContextTemplate parent;
+        private ContextTemplate deleted;
+
+        public ContextDeletedHolder(ContextTemplate parent, ContextTemplate deleted) {
+            this.parent = parent;
+            this.deleted = deleted;
+        }
+
+        public ContextTemplate getParent() {
+            return parent;
+        }
+
+        public ContextTemplate getDeleted() {
+            return deleted;
+        }
     }
 }

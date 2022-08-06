@@ -12,10 +12,12 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -59,6 +61,9 @@ public class JobContextControllerTest extends  AbstractRestMvcTest {
     @MockBean
     private ScheduledContextService scheduledContextService;
 
+    @Mock
+    private SchedulerJobInstanceService schedulerJobInstanceService;
+
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -101,9 +106,9 @@ public class JobContextControllerTest extends  AbstractRestMvcTest {
         contextTemplate2.setName("context-template-2");
 
         ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, null, null
-            ,null,null,null, null, this.scheduledContextService);
+            ,null,null,null, null, this.scheduledContextService, this.schedulerJobInstanceService);
         ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, null, null
-            ,null,null,null, null, this.scheduledContextService);
+            ,null,null,null, null, this.scheduledContextService, this.schedulerJobInstanceService);
 
         ContextMachineCache.instance().put(contextMachine1);
         ContextMachineCache.instance().put(contextMachine2);
