@@ -278,7 +278,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         boolean shouldSkip = contextParametersInstanceService.isSkipped(parentContextInstance.getName(), schedulerJobInstance.getJobName());
         schedulerJobInitiationEvent.setSkipped(shouldSkip);
 
-        if(contextParameters != null) {
+        if(contextParameters != null && internalEventDrivenJob.getContextParameters() != null) {
             schedulerJobInitiationEvent.setContextParameters(contextParameters.stream()
                 .filter(contextParameterInstance -> internalEventDrivenJob
                     .getContextParameters()

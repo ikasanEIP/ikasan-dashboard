@@ -18,13 +18,13 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     protected String description;
     protected String timezone;
     protected List<JobDependency> jobDependencies;
-    protected List<CONTEXT> contexts;
-    protected List<ContextDependency> contextDependencies;
-    protected List<CONTEXT_PARAM> contextParameters;
-    protected List<JOB> scheduledJobs;
+    protected List<CONTEXT> contexts = new ArrayList<>();
+    protected List<ContextDependency> contextDependencies = new ArrayList<>();
+    protected List<CONTEXT_PARAM> contextParameters = new ArrayList<>() ;
+    protected List<JOB> scheduledJobs = new ArrayList<>() ;
     protected String timeWindowStart;
     protected String timeWindowEnd;
-    protected List<JOB_LOCK> jobLocks;
+    protected List<JOB_LOCK> jobLocks = new ArrayList<>();
 
     @JsonIgnore
     protected Map<String, JOB> scheduledJobsMap = new HashMap<>();

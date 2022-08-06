@@ -1,12 +1,13 @@
 package org.ikasan.designer.builder;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ikasan.designer.model.UserData;
 
 public class UserDataBuilder {
     private String jobName;
     private String agentName;
     private String identifier;
+    private String contextName;
+    private String itemType;
 
     public UserDataBuilder withJobName(String jobName) {
         this.jobName = jobName;
@@ -23,7 +24,17 @@ public class UserDataBuilder {
         return this;
     }
 
+    public UserDataBuilder withContextName(String contextName) {
+        this.contextName = contextName;
+        return this;
+    }
+
+    public UserDataBuilder withItemType(String itemType) {
+        this.itemType = itemType;
+        return this;
+    }
+
     public UserData build() {
-        return new UserData(this.jobName, this.agentName, this.identifier);
+        return new UserData(this.jobName, this.agentName, this.identifier, this.contextName, this.itemType);
     }
 }

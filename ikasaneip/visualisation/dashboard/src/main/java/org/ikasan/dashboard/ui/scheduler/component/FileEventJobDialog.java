@@ -221,14 +221,13 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.filenameTf.setRequired(true);
         this.filenameTf.setId("filePathTf");
         formBinder.forField(this.filenameTf)
-            .withValidator(filePath -> !filePath.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
+            .withValidator(filePath -> !filePath.isEmpty(), getTranslation("error.missing-file-path", UI.getCurrent().getLocale()))
             .bind(FileEventDrivenJob::getFilePath, FileEventDrivenJob::setFilePath);
         formLayout.add(filenameTf, 2);
 
         archiveDirectoryTf = new TextField(getTranslation("label.archive-directory", UI.getCurrent().getLocale()));
         this.filenameTf.setId("archiveDirectoryTf");
         formBinder.forField(this.archiveDirectoryTf)
-            .withValidator(filePath -> !filePath.isEmpty(), getTranslation("error.missing-job-description", UI.getCurrent().getLocale()))
             .bind(FileEventDrivenJob::getMoveDirectory, FileEventDrivenJob::setMoveDirectory);
         formLayout.add(this.archiveDirectoryTf, 2);
 
