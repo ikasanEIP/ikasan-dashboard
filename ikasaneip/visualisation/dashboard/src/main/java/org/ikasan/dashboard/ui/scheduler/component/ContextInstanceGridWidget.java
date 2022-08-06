@@ -1,14 +1,12 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
@@ -66,12 +64,32 @@ public class ContextInstanceGridWidget extends Div {
                                  ScheduledContextService scheduledContextService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
-        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        if (this.scheduledContextInstanceService == null) {
+            throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
+        }
         this.contextTemplate = contextTemplate;
+        if (this.contextTemplate == null) {
+            throw new IllegalArgumentException("contextTemplate cannot be null!");
+        }
         this.jobInitiationService = jobInitiationService;
+        if (this.jobInitiationService == null) {
+            throw new IllegalArgumentException("jobInitiationService cannot be null!");
+        }
         this.contextProfileService = contextProfileService;
+        if (this.contextProfileService == null) {
+            throw new IllegalArgumentException("contextProfileService cannot be null!");
+        }
         this.jobUtilsService = jobUtilsService;
+        if (this.jobUtilsService == null) {
+            throw new IllegalArgumentException("jobUtilsService cannot be null!");
+        }
         this.scheduledContextService = scheduledContextService;
+        if (this.scheduledContextService == null) {
+            throw new IllegalArgumentException("scheduledContextService cannot be null!");
+        }
+
+        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService);
@@ -237,18 +255,24 @@ public class ContextInstanceGridWidget extends Div {
         this.contextInstanceFilteringGrid.addDateGridFiltering(hr, contextInstanceSearchFilter::setModifiedTimestamp, "modifiedTimestamp");
         this.contextInstanceFilteringGrid.addSelectGridFiltering(hr, contextInstanceSearchFilter::setStatus
             , Arrays.asList(InstanceStatus.values()).stream().map(instanceStatus -> instanceStatus.name()).collect(Collectors.toList()), "status");
+        this.contextInstanceFilteringGrid.getElement().getStyle().set("margin-top", "0px");
     }
 
-    private HorizontalLayout createButtonLayout() {
+    private Component createButtonLayout() {
+        VerticalLayout buttonWrapper = new VerticalLayout();
+        buttonWrapper.setMargin(false);
+        buttonWrapper.setPadding(false);
+        buttonWrapper.setWidthFull();
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setMargin(false);
         buttonLayout.setPadding(false);
-        buttonLayout.getElement().getStyle().set("position", "absolute");
-        buttonLayout.getElement().getStyle().set("right", "30px");
-        buttonLayout.getElement().getStyle().set("margin-top", "0px");
-        buttonLayout.add(this.createRefreshButton());
+        Button refreshButton = this.createRefreshButton();
+        buttonLayout.add(refreshButton);
 
-        return buttonLayout;
+        buttonWrapper.add(buttonLayout);
+        buttonWrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
+
+        return buttonWrapper;
     }
 
     private Button createRefreshButton() {

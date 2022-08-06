@@ -6,11 +6,10 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -18,19 +17,15 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.converter.StringToLongConverter;
-import com.vaadin.flow.server.StreamResource;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
-import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
@@ -48,14 +43,10 @@ import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.vaadin.miki.superfields.dates.SuperDatePicker;
-import org.vaadin.olli.FileDownloadWrapper;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDialog {
 
@@ -75,6 +66,8 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     private TextField workingDirectoryTf;
     private TextField minExecutionTimeTf;
     private TextField maxExecutionTimeTf;
+
+    private Checkbox targetResidingContextOnlyCb;
 
     private Button saveButton;
     private Button cancelButton;
@@ -196,7 +189,11 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     private FormLayout createConfigurationForm() {
         formLayout = new FormLayout();
         H3 jobExecutionLabel = new H3(getTranslation("label.command-execution-job", UI.getCurrent().getLocale()));
-        formLayout.add(jobExecutionLabel, 2);
+        this.targetResidingContextOnlyCb = new Checkbox(getTranslation("label.target-residing-context-only", UI.getCurrent().getLocale()));
+        formBinder.forField(this.targetResidingContextOnlyCb)
+            .bind(InternalEventDrivenJob::isTargetResidingContextOnly, InternalEventDrivenJob::setTargetResidingContextOnly);
+
+        formLayout.add(jobExecutionLabel, this.targetResidingContextOnlyCb);
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setId("jobNameTf");
@@ -230,18 +227,19 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             .bind(InternalEventDrivenJob::getJobDescription, InternalEventDrivenJob::setJobDescription);
         formLayout.add(jobDescriptionTa, 2);
 
-        this.minExecutionTimeTf = new TextField("Minimum execution time");
+
+        this.minExecutionTimeTf = new TextField(getTranslation("label.minimum-execution-time", UI.getCurrent().getLocale()));
         formBinder.forField(this.minExecutionTimeTf)
             .withNullRepresentation("")
             .withConverter(
-                new StringToLongConverter("Please enter a number"))
+                new StringToLongConverter(getTranslation("error.please-enter-a-number", UI.getCurrent().getLocale())))
             .bind(InternalEventDrivenJob::getMinExecutionTime, InternalEventDrivenJob::setMinExecutionTime);
 
-        this.maxExecutionTimeTf = new TextField("Maximum execution time");
+        this.maxExecutionTimeTf = new TextField(getTranslation("label.maximum-execution-time", UI.getCurrent().getLocale()));
         formBinder.forField(this.maxExecutionTimeTf)
             .withNullRepresentation("")
             .withConverter(
-                new StringToLongConverter("Please enter a number"))
+                new StringToLongConverter(getTranslation("error.please-enter-a-number", UI.getCurrent().getLocale())))
             .bind(InternalEventDrivenJob::getMaxExecutionTime, InternalEventDrivenJob::setMaxExecutionTime);
 
         formLayout.add(minExecutionTimeTf, maxExecutionTimeTf);
@@ -294,30 +292,12 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             });
         });
 
-//        Icon downloadIcon = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
-//        StreamResource streamResource = new StreamResource(this.internalEventDrivenJob.getJobName()+".json"
-//            , () -> {
-//            try {
-//                return new ByteArrayInputStream(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(this.internalEventDrivenJob));
-//            }
-//            catch (JsonProcessingException e) {
-//                e.printStackTrace();
-//                return null;
-//            }
-//        });
-//
-//        FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
-//        buttonWrapper.wrapComponent(downloadIcon);
-//
-//        Icon externalIcon = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), getTranslation("label.expand-text-editor", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
-
         HorizontalLayout horizontalLayout = new HorizontalLayout();
         horizontalLayout.add(executionDaysButton, parametersButton, successfulReturnCodesButton);
 
         VerticalLayout newButtonLayout = new VerticalLayout();
         newButtonLayout.setWidth("100%");
         newButtonLayout.add(horizontalLayout);
-//        newButtonLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, horizontalLayout);
 
         formLayout.add(newButtonLayout, 2);
 

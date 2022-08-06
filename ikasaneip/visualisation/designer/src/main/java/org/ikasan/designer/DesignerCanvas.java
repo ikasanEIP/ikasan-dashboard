@@ -41,15 +41,13 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
 
     private final ObjectMapper mapper = new ObjectMapper();
     private Map<String, DesignerPalletImageItem> designerPalletItemMap = new HashMap<>();
-    private List<CanvasItemRightClickEventListener> canvasItemRightClickEventListeners
-        = new ArrayList<>();
-    private List<CanvasItemDoubleClickEventListener> canvasItemDoubleClickEventListeners
-        = new ArrayList<>();
-    private List<ConnectorEventListener> connectorEventListeners
-        = new ArrayList<>();
+    private List<CanvasItemRightClickEventListener> canvasItemRightClickEventListeners = new ArrayList<>();
+    private List<CanvasItemDoubleClickEventListener> canvasItemDoubleClickEventListeners = new ArrayList<>();
+    private List<ConnectorEventListener> connectorEventListeners = new ArrayList<>();
     private List<CanvasInitialisedListener> canvasInitialisedListeners = new ArrayList<>();
-
     private List<CanvasUpdatedListener> canvasUpdatedListeners = new ArrayList<>();
+    private List<FigureUndoDeleteEventListener> figureUndoDeleteEventListeners = new ArrayList<>();
+    private List<FigureDeleteEventListener> figureDeleteEventListeners = new ArrayList<>();
 
     private SaveFunction saveFunction;
     private SaveAsFunction saveAsFunction;
@@ -414,6 +412,14 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.connectorEventListeners.add(listener);
     }
 
+    public void addFigureDeleteEventListeners(FigureDeleteEventListener listener) {
+        this.figureDeleteEventListeners.add(listener);
+    }
+
+    public void addFigureUndoDeleteEventListeners(FigureUndoDeleteEventListener listener) {
+        this.figureUndoDeleteEventListeners.add(listener);
+    }
+
     public void addCanvasUpdatedListener(CanvasUpdatedListener listener) {
         this.canvasUpdatedListeners.add(listener);
     }
@@ -436,10 +442,10 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     private void canvasUpdatedEvent(String event){
         try {
             logger.debug("Event received: " + event);
-            CanvasUpdatedEvent connectorEvent = mapper.readValue(event, CanvasUpdatedEvent.class);
+            CanvasUpdatedEvent canvasUpdatedEvent = mapper.readValue(event, CanvasUpdatedEvent.class);
 
             this.canvasUpdatedListeners.forEach(listener
-                -> listener.canvasUpdated(connectorEvent));
+                -> listener.canvasUpdated(canvasUpdatedEvent));
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -469,6 +475,33 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
                 figureObj.getX(), figureObj.getY(), figureObj);
 
             this.canvasItemRightClickEventListeners.forEach(listener -> listener.rightClickEvent(event));
+
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @ClientCallable
+    private void figureDeleted(String figure){
+        try {
+            Figure figureObj = mapper.readValue(figure, Figure.class);
+
+            FigureDeleteEvent figureDeleteEvent = new FigureDeleteEvent(figureObj);
+            this.figureDeleteEventListeners.forEach(listener -> listener.figureDeleted(figureDeleteEvent));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @ClientCallable
+    private void undoFigureDeleted(String figure){
+        try {
+            Figure figureObj = mapper.readValue(figure, Figure.class);
+
+            FigureUndoDeleteEvent figureUndoDeleteEvent = new FigureUndoDeleteEvent(figureObj);
+            this.figureUndoDeleteEventListeners.forEach(listener -> listener.undoFigureDeleted(figureUndoDeleteEvent));
 
         }
         catch (Exception e) {

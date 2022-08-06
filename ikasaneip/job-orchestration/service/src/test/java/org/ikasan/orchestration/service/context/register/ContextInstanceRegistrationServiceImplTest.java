@@ -84,6 +84,7 @@ public class ContextInstanceRegistrationServiceImplTest {
     @Mock
     SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
 
+
     private ContextInstanceRegistrationServiceImpl contextInstanceRegistrationService;
 
     private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
@@ -421,7 +422,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, JobLockCacheImpl.instance(), null,
-            null);
+            null, this.schedulerJobInstanceService);
 
         ContextMachineCache.instance().put(contextMachine);
 

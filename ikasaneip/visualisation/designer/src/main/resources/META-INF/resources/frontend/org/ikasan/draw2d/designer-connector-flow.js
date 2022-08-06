@@ -46,7 +46,7 @@ window.Vaadin.Flow.designerConnector = {
         });
 
         class FigureLite {
-            constructor(name, x, y, width, height, type, atttributes) {
+            constructor(name, x, y, width, height, type, atttributes, userData) {
                 this.identifier = name;
                 this.x = x;
                 this.y = y;
@@ -54,16 +54,19 @@ window.Vaadin.Flow.designerConnector = {
                 this.height= height;
                 this.type = type;
                 this.attributes = JSON.stringify(atttributes);
+                this.userData = userData;
             }
 
         }
 
         class ConnectionEvent {
-            constructor(canvasJson, eventType, sourceFigureId, targetFigureId) {
+            constructor(canvasJson, eventType, sourceFigureId, sourceUserData, targetFigureId, targetUserData) {
                 this.canvasJson = canvasJson;
                 this.eventType = eventType;
                 this.sourceFigureId = sourceFigureId;
+                this.sourceUserData = sourceUserData;
                 this.targetFigureId = targetFigureId;
+                this.targetUserData = targetUserData;
             }
         }
 
@@ -92,7 +95,7 @@ window.Vaadin.Flow.designerConnector = {
 
             _this.getSelection().each((i, figure)=>{
                 figures.push(new FigureLite(figure.getId(), figure.x, figure.y, figure.getWidth()
-                    , figure.getHeight(), figure.NAME, figure.getPersistentAttributes()));
+                    , figure.getHeight(), figure.NAME, figure.getPersistentAttributes(), figure.getUserData()));
             });
 
             let container = new Container(figures,  designer.$connector.designer.getRightMouseX(),  designer.$connector.designer.getRightMouseY()
@@ -179,6 +182,14 @@ window.Vaadin.Flow.designerConnector = {
                 yCoords.push(b.y, b.y + b.h);
             });
 
+            if(xCoords.length === 0) {
+                xCoords = [100, 200]
+            }
+
+            if(yCoords.length === 0) {
+                yCoords = [100, 200]
+            }
+
             let minX = Math.min.apply(Math, xCoords);
             let minY = Math.min.apply(Math, yCoords);
             let x = (Math.max.apply(Math, xCoords) + minX);
@@ -189,10 +200,6 @@ window.Vaadin.Flow.designerConnector = {
 
             let command = new draw2d.command.CommandAdd(_this, icon, x, y);
             _this.getCommandStack().execute(command);
-
-            if(isClickable === true) {
-                icon.shape.attr({"cursor": "pointer"});
-            }
         }
 
         designer.$connector.addIcon = function (identifier, image, x, y, h, w, showPorts, isClickable) {
@@ -334,7 +341,7 @@ window.Vaadin.Flow.designerConnector = {
             debugger;
             let figure = event.figure;
             let figureLite = new FigureLite(figure.id, $(':hover').last().offset().left, $(':hover').last().offset().top, figure.getWidth()
-                , figure.getHeight(), figure.NAME, figure.getPersistentAttributes());
+                , figure.getHeight(), figure.NAME, figure.getPersistentAttributes(), figure.getUserData());
             let element = document.getElementById(canvasName);
             element.$server.doubleClickEvent(JSON.stringify(figureLite));
         });
@@ -343,7 +350,7 @@ window.Vaadin.Flow.designerConnector = {
             let figure = event.figure;
             debugger;
             let figureLite = new FigureLite(figure.id, $(':hover').last().offset().left, $(':hover').last().offset().top, figure.getWidth()
-                , figure.getHeight(), figure.NAME, figure.getPersistentAttributes());
+                , figure.getHeight(), figure.NAME, figure.getPersistentAttributes(), figure.getUserData());
             let element = document.getElementById(canvasName);
             element.$server.rightClickEvent(JSON.stringify(figureLite));
         });
@@ -490,13 +497,13 @@ window.Vaadin.Flow.designerConnector = {
 
                 _this.getFigures().each((i, figure) => {
                     if (figure.NAME === 'draw2d.shape.basic.Image' || figure.NAME === 'draw2d.shape.composite.Group') {
-                        console.log("to front " + figure.NAME);
+                        console.log("to front " + figure.NAME + " " + figure.id);
                         figure.setKeepAspectRatio(true);
                         // We want to bring images to the front so that
                         // they can be double clicked!
                         figure.toFront();
                     } else {
-                        console.log("to back " + figure.NAME);
+                        console.log("to back " + figure.NAME + " " + figure.id);
                         figure.toBack();
                     }
                 });
@@ -698,26 +705,28 @@ window.Vaadin.Flow.designerConnector = {
             await new Promise(r => setTimeout(r, 100));
 
             console.log("before unmarshal " + performance.now());
-            reader.unmarshal(designer.$connector.designer, jsonDocument);
+            let figures = reader.unmarshal(designer.$connector.designer, jsonDocument);
             console.log("after unmarshal " + performance.now());
 
-            _this.getFigures().each((i, figure) => {
+            debugger;
+
+            figures .each((i, figure) => {
                 debugger;
                 if (figure.NAME === 'draw2d.shape.basic.Image' || figure.NAME === 'draw2d.shape.composite.Group') {
-                    console.log("to front " + figure.NAME);
+                    console.log("to front " + figure.NAME + " " + figure.id);
                     figure.setKeepAspectRatio(true);
                     // We want to bring images to the front so that
                     // they can be double clicked!
                     figure.toFront();
                 } else {
-                    console.log("to back " + figure.NAME);
+                    console.log("to back " + figure.NAME + " " + figure.id);
                     figure.toBack();
                 }
             });
 
             let xCoords = [];
             let yCoords = [];
-            _this.getFigures().each(function (i, f) {
+            figures.each(function (i, f) {
                 let b = f.getBoundingBox();
                 xCoords.push(b.x, b.x + b.w);
                 yCoords.push(b.y, b.y + b.h);
@@ -754,13 +763,51 @@ window.Vaadin.Flow.designerConnector = {
             designer.$connector.designer.getCommandStack().addEventListener(function(e){
                 debugger;
                 if(e.getCommand().getLabel() === "Connect Ports" && e.action === "POST_EXECUTE") {
-                    element.$server.connectorEvent(JSON.stringify(new ConnectionEvent(exportJsonLocal(), "CONNECTOR_ADDED", e.getCommand().source.parent.getId(),
-                        e.getCommand().target.parent.getId())));
+                    element.$server.connectorEvent(JSON.stringify(new ConnectionEvent(exportJsonLocal(), "CONNECTOR_ADDED", e.getCommand().source.parent.getId(), e.getCommand().source.parent.getUserData(),
+                        e.getCommand().target.parent.getId(), e.getCommand().target.parent.getUserData())));
                 }
-                else if(e.getCommand().getLabel() === "Delete Shape" && e.action === "POST_EXECUTE" &&
-                    e.getCommand().figure != null && e.getCommand().figure.NAME === "draw2d.Connection") {
-                    element.$server.connectorEvent(JSON.stringify(new ConnectionEvent(exportJsonLocal(), "CONNECTOR_REMOVED", e.getCommand().figure.sourcePort.parent.getId(),
-                        e.getCommand().figure.targetPort.parent.getId())));
+                else if(e.getCommand().getLabel() === "Delete Shape" && e.action === "PRE_EXECUTE") {
+                    if (e.getCommand().group != null && e.getCommand().group.assignedFigures != null) {
+                        // send a connection removed event back to the server
+                        e.getCommand().group.assignedFigures.each((i, figure)=> {
+                            if(figure.NAME === "draw2d.shape.basic.Image" && figure.getUserData() != null) {
+                                let figureLite = new FigureLite(figure.id, figure.getX(), figure.getY(), figure.getWidth()
+                                    , figure.getHeight(), figure.NAME, figure.getPersistentAttributes(), figure.getUserData());
+                                element.$server.figureDeleted(JSON.stringify(figureLite));
+                            }
+                        });
+                    }
+                }
+                else if(e.getCommand().getLabel() === "Delete Shape" && e.action === "POST_UNDO") {
+                    if (e.getCommand().group != null && e.getCommand().group.assignedFigures != null) {
+                        // send a connection removed event back to the server
+                        e.getCommand().group.assignedFigures.each((i, figure)=> {
+                            if(figure.NAME === "draw2d.shape.basic.Image" && figure.getUserData() != null) {
+                                let figureLite = new FigureLite(figure.id, figure.getX(), figure.getY(), figure.getWidth()
+                                    , figure.getHeight(), figure.NAME, figure.getPersistentAttributes(), figure.getUserData());
+                                element.$server.undoFigureDeleted(JSON.stringify(figureLite));
+                            }
+                        });
+                    }
+                }
+                else if(e.getCommand().getLabel() === "Delete Shape" && e.action === "POST_REDO") {
+                    if (e.getCommand().group != null && e.getCommand().group.assignedFigures != null) {
+                        // send a connection removed event back to the server
+                        e.getCommand().group.assignedFigures.each((i, figure)=> {
+                            if(figure.NAME === "draw2d.shape.basic.Image" && figure.getUserData() != null) {
+                                let figureLite = new FigureLite(figure.id, figure.getX(), figure.getY(), figure.getWidth()
+                                    , figure.getHeight(), figure.NAME, figure.getPersistentAttributes(), figure.getUserData());
+                                element.$server.figureDeleted(JSON.stringify(figureLite));
+                            }
+                        });
+                    }
+                }
+                else if(e.getCommand().getLabel() === "Delete Shape" && e.action === "POST_EXECUTE") {
+                    if (e.getCommand().figure != null && e.getCommand().figure.NAME === "draw2d.Connection") {
+                        // send a connection removed event back to the server
+                        element.$server.connectorEvent(JSON.stringify(new ConnectionEvent(exportJsonLocal(), "CONNECTOR_REMOVED", e.getCommand().figure.sourcePort.parent.getId(), e.getCommand().source.parent.getUserData(),
+                            e.getCommand().figure.targetPort.parent.getId(), e.getCommand().target.parent.getUserData())));
+                    }
                 }
             });
 
@@ -781,12 +828,24 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         designer.$connector.manageClickableItems = function () {
+            debugger;
             let _figures = _this.getFigures();
             _figures.each((i, figure)=>{
                 if(figure.NAME === 'draw2d.shape.basic.Image') {
+                    debugger;
                     if(figure.getId().startsWith("FLOW")) {
-                        debugger;
                         figure.shape.attr({"cursor": "pointer"});
+                    }
+                    else if(figure.getUserData() != null) {
+                        figure.shape.attr({"cursor": "pointer"});
+                        if(figure.getUserData().itemType === 'INTERNAL_EVENT_DRIVEN_JOB' ||
+                            figure.getUserData().itemType === 'QUARTZ_EVENT_DRIVEN_JOB'||
+                            figure.getUserData().itemType === 'FILE_EVENT_DRIVEN_JOB') {
+                            figure.shape.attr({"title": figure.getUserData().jobName});
+                        }
+                        else if(figure.getUserData().itemType === 'CONTEXT') {
+                            figure.shape.attr({"title": figure.getUserData().contextName});
+                        }
                     }
                 }
 

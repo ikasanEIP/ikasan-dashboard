@@ -1,17 +1,24 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -20,10 +27,17 @@ import com.vaadin.flow.data.binder.Binder;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
+import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.IconDecorator;
+import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
+import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
+import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
@@ -39,6 +53,7 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -50,8 +65,13 @@ import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
-public class ContextTemplateManagementWidget extends Div {
+    public class ContextTemplateManagementWidget extends VerticalLayout {
 
     private ScheduledContextService scheduledContextService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
@@ -61,6 +81,12 @@ public class ContextTemplateManagementWidget extends Div {
     private UserService userService;
     private SecurityService securityService;
     private JobUtilsService jobUtilsService;
+    private SchedulerJobService schedulerJobService;
+    private ScheduledProcessManagementService scheduledProcessManagementService;
+    private ConfigurationService configurationRestService;
+    private ModuleControlService moduleControlRestService;
+    private MetaDataService metaDataRestService;
+    private SystemEventLogger systemEventLogger;
 
     private FormLayout formLayout;
     private IkasanAuthentication authentication;
@@ -77,7 +103,6 @@ public class ContextTemplateManagementWidget extends Div {
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
     private TextField endWindowCronExpressionTf;
-    private MenuBar contextViewsMenuBar;
 
     private Div schedulerVisualisationDiv;
 
@@ -98,7 +123,8 @@ public class ContextTemplateManagementWidget extends Div {
      *
      * @param scheduledContextService
      */
-    public ContextTemplateManagementWidget(ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public ContextTemplateManagementWidget(ScheduledContextService scheduledContextService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath,
+                                           ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
@@ -106,20 +132,77 @@ public class ContextTemplateManagementWidget extends Div {
                                            UserService userService, SecurityService securityService, JobUtilsService jobUtilsService) {
 
         this.scheduledContextService = scheduledContextService;
+        if (this.scheduledContextService == null) {
+            throw new IllegalArgumentException("scheduledContextService cannot be null!");
+        }
         this.scheduledContextInstanceService = scheduledContextInstanceService;
+        if (this.scheduledContextInstanceService == null) {
+            throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
+        }
         this.schedulerJobInstanceService = schedulerJobInstanceService;
-        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        if (this.schedulerJobInstanceService == null) {
+            throw new IllegalArgumentException("schedulerJobInstanceService cannot be null!");
+        }
         this.contextTemplate = contextTemplate;
+        if (this.contextTemplate == null) {
+            throw new IllegalArgumentException("contextTemplate cannot be null!");
+        }
         this.jobInitiationService = jobInitiationService;
+        if (this.jobInitiationService == null) {
+            throw new IllegalArgumentException("jobInitiationService cannot be null!");
+        }
         this.contextProfileService = contextProfileService;
+        if (this.contextProfileService == null) {
+            throw new IllegalArgumentException("contextProfileService cannot be null!");
+        }
         this.jobProvisionService = jobProvisionService;
+        if (this.jobProvisionService == null) {
+            throw new IllegalArgumentException("jobProvisionService cannot be null!");
+        }
         this.userService = userService;
+        if (this.userService == null) {
+            throw new IllegalArgumentException("userService cannot be null!");
+        }
         this.securityService = securityService;
+        if (this.securityService == null) {
+            throw new IllegalArgumentException("securityService cannot be null!");
+        }
         this.jobUtilsService = jobUtilsService;
+        if (this.jobUtilsService == null) {
+            throw new IllegalArgumentException("jobUtilsService cannot be null!");
+        }
+        this.schedulerJobService = schedulerJobService;
+        if (this.schedulerJobService == null) {
+            throw new IllegalArgumentException("schedulerJobService cannot be null!");
+        }
+        this.scheduledProcessManagementService = scheduledProcessManagementService;
+        if (this.scheduledProcessManagementService == null) {
+            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
+        }
+        this.configurationRestService = configurationRestService;
+        if (this.configurationRestService == null) {
+            throw new IllegalArgumentException("configurationRestService cannot be null!");
+        }
+        this.moduleControlRestService = moduleControlRestService;
+        if (this.moduleControlRestService == null) {
+            throw new IllegalArgumentException("moduleControlRestService cannot be null!");
+        }
+        this.metaDataRestService = metaDataRestService;
+        if (this.metaDataRestService == null) {
+            throw new IllegalArgumentException("metaDataRestService cannot be null!");
+        }
+        this.systemEventLogger = systemEventLogger;
+        if (this.systemEventLogger == null) {
+            throw new IllegalArgumentException("systemEventLogger cannot be null!");
+        }
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         ui = UI.getCurrent();
+
+        this.setMargin(false);
+        this.setSpacing(false);
+        this.setPadding(false);
 
         this.init(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, jobInitiationService);
@@ -176,9 +259,21 @@ public class ContextTemplateManagementWidget extends Div {
 
         binder.readBean(this.contextTemplate);
 
+        HorizontalLayout headerLayout = new HorizontalLayout();
+        headerLayout.setWidth("100%");
+        headerLayout.setMargin(false);
+        headerLayout.setPadding(false);
+        H4 contextTemplateManagementLabel = new H4(String.format(getTranslation("label.context-template-management", UI.getCurrent().getLocale())));
+        contextTemplateManagementLabel.getElement().getStyle().set("margin-top", "10px");
+        HorizontalLayout labelLayout = new HorizontalLayout();
+        labelLayout.setWidth("100%");
+        labelLayout.setMargin(false);
+        labelLayout.setPadding(false);
+        labelLayout.add(contextTemplateManagementLabel);
+        headerLayout.add(labelLayout, createButtonLayout());
+
         this.formLayout = new FormLayout();
         this.formLayout.setWidth("100%");
-
         this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.descriptionTa, this.endWindowCronExpressionTf);
         this.initialiseEditor();
         this.initialiseVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
@@ -192,7 +287,8 @@ public class ContextTemplateManagementWidget extends Div {
         this.initialiseTabs();
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(this.tabs);
-        this.add(this.formLayout, tabLayout, this.aceEditor, this.schedulerVisualisationDiv, this.contextInstanceGridWidget, this.schedulerJobGridWidget, this.contextTemplateStatisticsWidget);
+        this.add(headerLayout, this.formLayout, tabLayout, this.aceEditor, this.schedulerVisualisationDiv
+            , this.contextInstanceGridWidget, this.schedulerJobGridWidget, this.contextTemplateStatisticsWidget);
     }
 
     private void initialiseTabs() {
@@ -258,11 +354,11 @@ public class ContextTemplateManagementWidget extends Div {
         aceEditor.setMode(AceMode.json);
         aceEditor.setFontSize(11);
         aceEditor.setTabSize(4);
-        aceEditor.setWidth("auto");
         aceEditor.setHeight("75vh");
         aceEditor.setReadOnly(true);
         aceEditor.setWrap(false);
         aceEditor.setVisible(false);
+        aceEditor.getElement().getStyle().set("margin-bottom", "30px");
 
         ContextService contextService = new ContextService();
 
@@ -307,7 +403,30 @@ public class ContextTemplateManagementWidget extends Div {
                 this.schedulerVisualisation.createSchedulerVisualisation(this.contextTemplate, this.contextTemplate, null, true);
             }
 
-            this.schedulerVisualisationDiv.add(this.contextViewMenuBar(), this.schedulerVisualisation);
+            VerticalLayout buttonWrapper = new VerticalLayout();
+            buttonWrapper.setMargin(false);
+            buttonWrapper.setPadding(false);
+            buttonWrapper.setWidthFull();
+            HorizontalLayout buttonLayout = new HorizontalLayout();
+            buttonLayout.setMargin(false);
+            buttonLayout.setPadding(false);
+
+            Button addContextButton = new Button(getTranslation("button.add-context", UI.getCurrent().getLocale()), VaadinIcon.PLUS.create());
+            addContextButton.setIconAfterText(true);
+            addContextButton.addClickListener(event -> {
+                AddChildContextDialog addChildContextDialog = new AddChildContextDialog();
+                addChildContextDialog.open();
+                addChildContextDialog.addNewContextListener(this.schedulerVisualisation);
+            });
+
+            buttonLayout.add(addContextButton, this.contextViewMenuBar());
+
+            buttonWrapper.add(buttonLayout);
+            buttonWrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
+
+            this.schedulerVisualisation.getElement().getStyle().set("margin-top", "0px");
+            this.schedulerVisualisation.getElement().getStyle().set("margin-bottom", "30px");
+            this.schedulerVisualisationDiv.add(buttonWrapper, this.schedulerVisualisation);
         }
         catch (IOException e) {
             // todo raise message
@@ -325,6 +444,7 @@ public class ContextTemplateManagementWidget extends Div {
         this.contextInstanceGridWidget.setWidthFull();
         this.contextInstanceGridWidget.setHeight("75vh");
         this.contextInstanceGridWidget.setVisible(false);
+        this.contextInstanceGridWidget.getElement().getStyle().set("margin-bottom", "30px");
 
     }
 
@@ -338,6 +458,7 @@ public class ContextTemplateManagementWidget extends Div {
         this.schedulerJobGridWidget.setWidthFull();
         this.schedulerJobGridWidget.setHeight("75vh");
         this.schedulerJobGridWidget.setVisible(false);
+        this.schedulerJobGridWidget.getElement().getStyle().set("margin-bottom", "30px");
 
     }
 
@@ -355,9 +476,258 @@ public class ContextTemplateManagementWidget extends Div {
 
     private MenuBar contextViewMenuBar() {
         MenuBar contextViewsMenuBar = new ContextTemplateViewMenuBar(this.contextTemplate, this.contextProfileService, this.schedulerVisualisation);
-        contextViewsMenuBar.getElement().getStyle().set("position", "absolute");
-        contextViewsMenuBar.getElement().getStyle().set("right", "45px");
 
         return contextViewsMenuBar;
+    }
+
+    private Component createButtonLayout() {
+        VerticalLayout buttonWrapper = new VerticalLayout();
+        buttonWrapper.setMargin(false);
+        buttonWrapper.setPadding(false);
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.setMargin(false);
+        buttonLayout.setPadding(false);
+        Button provisionButton = this.createProvisionButton();
+
+        Button downloadContextTemplateButton = new Button(getTranslation("button.download-context-template", UI.getCurrent().getLocale()), VaadinIcon.DOWNLOAD_ALT.create());
+        downloadContextTemplateButton.setIconAfterText(true);
+
+
+        buttonLayout.add(this.createJobUploadMenuBar(), this.createNewJobMenuBar(), downloadContextTemplateButton, provisionButton);
+        buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, provisionButton);
+
+        buttonWrapper.add(buttonLayout);
+        buttonWrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
+        return buttonWrapper;
+    }
+
+    private Button createProvisionButton() {
+        Button provisionJobsButton = new Button(getTranslation("button.synchronise-jobs", UI.getCurrent().getLocale()), VaadinIcon.COGS.create());
+        provisionJobsButton.getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
+        provisionJobsButton.getStyle().set("color","white");
+        provisionJobsButton.getElement().setAttribute("title", getTranslation("tooltip.synch-jobs-required", UI.getCurrent().getLocale()));
+        provisionJobsButton.setIconAfterText(true);
+
+        provisionJobsButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setCancelable(true);
+            confirmDialog.setHeader(getTranslation("confirm-dialog.provision-job-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.provision-job-body", UI.getCurrent().getLocale()));
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+                dialog.setWidth("600px");
+                dialog.setHeight("250px");
+                dialog.open(getTranslation("progress-dialog.provision-job-header", UI.getCurrent().getLocale()),
+                    getTranslation("progress-dialog.provision-job-body", UI.getCurrent().getLocale()));
+
+                final UI current = UI.getCurrent();
+                Executor executor = Executors.newSingleThreadExecutor();
+                executor.execute(() -> {
+                    try {
+                        SearchResults<SchedulerJobRecord> jobRecords = this.schedulerJobService.findByContext(this.contextTemplate.getName(), -1, -1);
+
+                        List<SchedulerJob> schedulerJobs = jobRecords.getResultList().stream()
+                            .map(record -> record.getJob())
+                            .map(job -> {
+                                if (job instanceof InternalEventDrivenJob) {
+                                    InternalEventDrivenJobImpl internalEventDrivenJob = new InternalEventDrivenJobImpl();
+                                    internalEventDrivenJob.setIdentifier(job.getIdentifier());
+                                    internalEventDrivenJob.setCommandLine(((InternalEventDrivenJob) job).getCommandLine());
+                                    internalEventDrivenJob.setContextParameters(((InternalEventDrivenJob) job).getContextParameters()
+                                        .stream()
+                                        .map(p -> {
+                                            ContextParameterImpl contextParameter = new ContextParameterImpl();
+                                            contextParameter.setName(p.getName());
+                                            contextParameter.setType(p.getType());
+
+                                            return contextParameter;
+                                        }).collect(Collectors.toList()));
+                                    internalEventDrivenJob.setDaysOfWeekToRun(((InternalEventDrivenJob) job).getDaysOfWeekToRun());
+                                    internalEventDrivenJob.setMaxExecutionTime(((InternalEventDrivenJob) job).getMaxExecutionTime());
+                                    internalEventDrivenJob.setMinExecutionTime(((InternalEventDrivenJob) job).getMinExecutionTime());
+                                    internalEventDrivenJob.setSuccessfulReturnCodes(((InternalEventDrivenJob) job).getSuccessfulReturnCodes());
+                                    internalEventDrivenJob.setWorkingDirectory(((InternalEventDrivenJob) job).getWorkingDirectory());
+                                    internalEventDrivenJob.setAgentName(job.getAgentName());
+                                    internalEventDrivenJob.setChildContextIds(job.getChildContextIds());
+                                    internalEventDrivenJob.setContextId(job.getContextId());
+                                    internalEventDrivenJob.setChildContextIds(job.getChildContextIds());
+                                    internalEventDrivenJob.setStartupControlType(job.getStartupControlType());
+                                    internalEventDrivenJob.setJobName(job.getJobName());
+                                    internalEventDrivenJob.setJobDescription(job.getJobDescription());
+
+                                    return internalEventDrivenJob;
+                                } else if (job instanceof FileEventDrivenJob) {
+                                    FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
+                                    fileEventDrivenJob.setContextId(job.getContextId());
+                                    fileEventDrivenJob.setDirectoryDepth(((FileEventDrivenJob) job).getDirectoryDepth());
+                                    fileEventDrivenJob.setEncoding(((FileEventDrivenJob) job).getEncoding());
+                                    fileEventDrivenJob.setFilenames(((FileEventDrivenJob) job).getFilenames());
+                                    fileEventDrivenJob.setFilePath(((FileEventDrivenJob) job).getFilePath());
+                                    fileEventDrivenJob.setIgnoreFileRenameWhilstScanning(((FileEventDrivenJob) job).isIgnoreFileRenameWhilstScanning());
+                                    fileEventDrivenJob.setIncludeHeader(((FileEventDrivenJob) job).isIncludeHeader());
+                                    fileEventDrivenJob.setIncludeTrailer(((FileEventDrivenJob) job).isIncludeTrailer());
+                                    fileEventDrivenJob.setLogMatchedFilenames(((FileEventDrivenJob) job).isLogMatchedFilenames());
+                                    fileEventDrivenJob.setMinFileAgeSeconds(((FileEventDrivenJob) job).getMinFileAgeSeconds());
+                                    fileEventDrivenJob.setMoveDirectory(((FileEventDrivenJob) job).getMoveDirectory());
+                                    fileEventDrivenJob.setSortAscending(((FileEventDrivenJob) job).isSortAscending());
+                                    fileEventDrivenJob.setSortByModifiedDateTime(((FileEventDrivenJob) job).isSortByModifiedDateTime());
+                                    fileEventDrivenJob.setAgentName(job.getAgentName());
+                                    fileEventDrivenJob.setChildContextIds(job.getChildContextIds());
+                                    fileEventDrivenJob.setCronExpression(((FileEventDrivenJob) job).getCronExpression());
+                                    fileEventDrivenJob.setEager(((FileEventDrivenJob) job).isEager());
+                                    fileEventDrivenJob.setIdentifier(job.getIdentifier());
+                                    fileEventDrivenJob.setIgnoreMisfire(((FileEventDrivenJob) job).isIgnoreMisfire());
+                                    fileEventDrivenJob.setJobGroup(((FileEventDrivenJob) job).getJobGroup());
+                                    fileEventDrivenJob.setMaxEagerCallbacks(((FileEventDrivenJob) job).getMaxEagerCallbacks());
+                                    fileEventDrivenJob.setTimeZone(((FileEventDrivenJob) job).getTimeZone());
+                                    fileEventDrivenJob.setPassthroughProperties(((FileEventDrivenJob) job).getPassthroughProperties());
+                                    fileEventDrivenJob.setPersistentRecovery(((FileEventDrivenJob) job).isPersistentRecovery());
+                                    fileEventDrivenJob.setRecoveryTolerance(((FileEventDrivenJob) job).getRecoveryTolerance());
+                                    fileEventDrivenJob.setStartupControlType(job.getStartupControlType());
+                                    fileEventDrivenJob.setJobName(job.getJobName());
+
+                                    return fileEventDrivenJob;
+                                } else {
+                                    QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
+                                    quartzScheduleDrivenJob.setContextId(job.getContextId());
+                                    quartzScheduleDrivenJob.setCronExpression(((QuartzScheduleDrivenJob) job).getCronExpression());
+                                    quartzScheduleDrivenJob.setEager(((QuartzScheduleDrivenJob) job).isEager());
+                                    quartzScheduleDrivenJob.setIgnoreMisfire(((QuartzScheduleDrivenJob) job).isIgnoreMisfire());
+                                    quartzScheduleDrivenJob.setJobGroup(((QuartzScheduleDrivenJob) job).getJobGroup());
+                                    quartzScheduleDrivenJob.setMaxEagerCallbacks(((QuartzScheduleDrivenJob) job).getMaxEagerCallbacks());
+                                    quartzScheduleDrivenJob.setPassthroughProperties(((QuartzScheduleDrivenJob) job).getPassthroughProperties());
+                                    quartzScheduleDrivenJob.setPersistentRecovery(((QuartzScheduleDrivenJob) job).isPersistentRecovery());
+                                    quartzScheduleDrivenJob.setRecoveryTolerance(((QuartzScheduleDrivenJob) job).getRecoveryTolerance());
+                                    quartzScheduleDrivenJob.setStartupControlType(job.getStartupControlType());
+                                    quartzScheduleDrivenJob.setJobName(job.getJobName());
+                                    quartzScheduleDrivenJob.setJobDescription(job.getJobDescription());
+                                    quartzScheduleDrivenJob.setIdentifier(job.getIdentifier());
+                                    quartzScheduleDrivenJob.setChildContextIds(job.getChildContextIds());
+                                    quartzScheduleDrivenJob.setAgentName(job.getAgentName());
+                                    quartzScheduleDrivenJob.setTimeZone(((QuartzScheduleDrivenJob) job).getTimeZone());
+
+                                    return quartzScheduleDrivenJob;
+                                }
+                            })
+                            .collect(Collectors.toList());
+
+                        this.jobProvisionService.provisionJobs(schedulerJobs);
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        current.access(() -> NotificationHelper.showErrorNotification(getTranslation("error.provisioning-jobs", UI.getCurrent().getLocale())));
+                    }
+                    finally {
+                        current.access(() -> {
+                            dialog.close();
+                            NotificationHelper.showUserNotification(getTranslation("notification.provisioned-jobs", UI.getCurrent().getLocale()));
+                        });
+                    }
+                });
+
+            });
+        });
+
+        return provisionJobsButton;
+    }
+
+    private MenuBar createJobUploadMenuBar() {
+        MenuBar uploadJobMenuBar = new MenuBar();
+        uploadJobMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
+
+        MenuItem quickAccess = createIconItem(uploadJobMenuBar, VaadinIcon.UPLOAD_ALT, getTranslation("menu-item.upload-job-template", UI.getCurrent().getLocale()));
+
+        SubMenu activeContextInstancesSubMenu = quickAccess.getSubMenu();
+        MenuItem activeContexts = activeContextInstancesSubMenu.addItem(getTranslation("menu-item.job-type", UI.getCurrent().getLocale()));
+        SubMenu activeContextSubMenu = activeContexts.getSubMenu();
+
+        activeContextSubMenu.addItem(getTranslation(" menu-item.command-execution-job", UI.getCurrent().getLocale())
+            , event -> {UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog(); underConstructionDialog.open();});
+        activeContextSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale())
+            , event -> {UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog(); underConstructionDialog.open();});
+        activeContextSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale())
+            , event -> {UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog(); underConstructionDialog.open();});
+
+        return uploadJobMenuBar;
+    }
+
+    private MenuBar createNewJobMenuBar() {
+        MenuBar newJobMenuBar = new MenuBar();
+        newJobMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
+
+        MenuItem quickAccess = createIconItem(newJobMenuBar, VaadinIcon.PLUS, getTranslation("menu-item.create-new-job", UI.getCurrent().getLocale()));
+
+        SubMenu activeContextInstancesSubMenu = quickAccess.getSubMenu();
+        MenuItem activeContexts = activeContextInstancesSubMenu.addItem(getTranslation("menu-item.job-type", UI.getCurrent().getLocale()));
+        SubMenu activeContextSubMenu = activeContexts.getSubMenu();
+
+        activeContextSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale()), event -> {
+            InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+                this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+
+            InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
+            internalEventDrivenJob.setContextId(this.contextTemplate.getName());
+
+            internalEventDrivenJobDialog.setJob(internalEventDrivenJob, EditMode.NEW);
+            internalEventDrivenJobDialog.open();
+
+            internalEventDrivenJobDialog.addOpenedChangeListener(openedChangeEvent -> {
+                if(!openedChangeEvent.isOpened()) {
+                    this.schedulerJobGridWidget.refresh();
+                }
+            });
+        });
+        activeContextSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
+            FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+                this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+
+            FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
+            fileEventDrivenJob.setContextId(contextTemplate.getName());
+
+            fileEventJobDialog.setJob(fileEventDrivenJob, EditMode.NEW);
+
+            fileEventJobDialog.open();
+
+            fileEventJobDialog.addOpenedChangeListener(openedChangeEvent -> {
+                if(!openedChangeEvent.isOpened()) {
+                    this.schedulerJobGridWidget.refresh();
+                }
+            });
+        });
+        activeContextSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale()), event -> {
+            QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(null, this.scheduledProcessManagementService,
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+
+            QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
+            quartzScheduleDrivenJob.setContextId(this.contextTemplate.getName());
+
+            quartzDrivenScheduledJobDialog.setJob(quartzScheduleDrivenJob, EditMode.NEW);
+
+            quartzDrivenScheduledJobDialog.open();
+
+            quartzDrivenScheduledJobDialog  .addOpenedChangeListener(openedChangeEvent -> {
+                if(!openedChangeEvent.isOpened()) {
+                    this.schedulerJobGridWidget.refresh();
+                }
+            });
+        });
+
+        return newJobMenuBar;
+    }
+
+    private MenuItem createIconItem(MenuBar menu, VaadinIcon iconName, String label) {
+        Icon icon = new Icon(iconName);
+
+        Button menuButton = new Button(label, icon);
+        menuButton.setIconAfterText(true);
+
+        MenuItem item = menu.addItem(menuButton);
+        item.getElement().getStyle().set("padding", "0px");
+        item.getElement().getStyle().set("padding-right", "5px");
+
+        return item;
     }
 }

@@ -45,21 +45,30 @@ public abstract class Draw2dAdapterBase {
             context.getScheduledJobs().forEach(job -> {
                 graph.addVertex(((SchedulerJob)job).getIdentifier());
 
-                String image = getJobImage(schedulerJobs.get(((SchedulerJob)job).getJobName()));
+                SchedulerJob schedulerJob = schedulerJobs.get(((SchedulerJob)job).getJobName());
+                String image = getJobImage(schedulerJob);
+
+                UserDataBuilder userDataBuilder = new UserDataBuilder()
+                    .withAgentName(((SchedulerJob) job).getAgentName())
+                    .withJobName(((SchedulerJob) job).getJobName())
+                    .withIdentifier(((SchedulerJob) job).getIdentifier());
+
+                if(schedulerJob instanceof InternalEventDrivenJob) {
+                    userDataBuilder.withItemType(UserData.INTERNAL_EVENT_DRIVEN_JOB);
+                }
+                else if(schedulerJob instanceof FileEventDrivenJob) {
+                    userDataBuilder.withItemType(UserData.FILE_EVENT_DRIVEN_JOB);
+                }
+                else if(schedulerJob instanceof QuartzScheduleDrivenJob) {
+                    userDataBuilder.withItemType(UserData.QUARTZ_EVENT_DRIVEN_JOB);
+                }
 
                 ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
                     .withId(((SchedulerJob)job).getIdentifier())
                     .withHeight(100)
                     .withWidth(100)
                     .withPath(image)
-                    .withUserData(new UserDataBuilder()
-                        .withAgentName(((SchedulerJob) job).getAgentName())
-                        .withJobName(((SchedulerJob) job).getJobName())
-                        .withIdentifier(((SchedulerJob) job).getIdentifier())
-                        .build()
-                    );
-
-                SchedulerJob schedulerJob = schedulerJobs.get(((SchedulerJob) job).getJobName());
+                    .withUserData(userDataBuilder.build());
 
                 if(schedulerJob instanceof InternalEventDrivenJob) {
                     jobBuilder.withLeftPort()
@@ -170,9 +179,14 @@ public abstract class Draw2dAdapterBase {
             .withId(context.getName())
             .withHeight(100)
             .withWidth(100)
-            .withPath("frontend/images/leaf_black.png")
+            .withPath("frontend/images/square_void.png")
             .withTopPort()
             .withBottomPort()
+            .withUserData(new UserDataBuilder()
+                .withContextName(context.getName())
+                .withIdentifier(context.getName())
+                .withItemType(UserData.CONTEXT)
+                .build())
             .build();
 
         diagramBuilder.addItem(root);
@@ -191,9 +205,14 @@ public abstract class Draw2dAdapterBase {
                 .withId(((Context)c).getName())
                 .withHeight(100)
                 .withWidth(100)
-                .withPath("frontend/images/leaf_black.png")
+                .withPath("frontend/images/square_void.png")
                 .withTopPort()
                 .withBottomPort()
+                .withUserData(new UserDataBuilder()
+                    .withContextName(((Context)c).getName())
+                    .withIdentifier(((Context)c).getName())
+                    .withItemType(UserData.CONTEXT)
+                    .build())
                 .build();
 
             diagramBuilder.addItem(branch);
@@ -298,9 +317,14 @@ public abstract class Draw2dAdapterBase {
                     .withId(((Context)c).getName())
                     .withHeight(100)
                     .withWidth(100)
-                    .withPath("frontend/images/leaf_black.png")
+                    .withPath("frontend/images/square_void.png")
                     .withTopPort()
                     .withBottomPort()
+                    .withUserData(new UserDataBuilder()
+                        .withContextName(((Context) c).getName())
+                        .withIdentifier(((Context) c).getName())
+                        .withItemType(UserData.CONTEXT)
+                        .build())
                     .build();
 
                 diagramBuilder.addItem(branch);
