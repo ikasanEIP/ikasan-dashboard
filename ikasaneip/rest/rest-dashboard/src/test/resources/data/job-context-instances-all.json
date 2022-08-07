@@ -4,8 +4,8 @@
     "description": null,
     "timezone": null,
     "jobDependencies": null,
-    "contexts": null,
-    "contextDependencies": null,
+    "contexts": [],
+    "contextDependencies": [],
     "contextParameters": [
       {
         "name": "localFilePath",
@@ -13,10 +13,10 @@
         "value": "/opt/data/files"
       }
     ],
-    "scheduledJobs": null,
+    "scheduledJobs": [],
     "timeWindowStart": null,
     "timeWindowEnd": null,
-    "jobLocks": null,
+    "jobLocks": [],
     "id": "UUID2",
     "createdDateTime": 22,
     "updatedDateTime": 222,
@@ -30,8 +30,8 @@
     "description": null,
     "timezone": null,
     "jobDependencies": null,
-    "contexts": null,
-    "contextDependencies": null,
+    "contexts": [],
+    "contextDependencies": [],
     "contextParameters": [
       {
         "name": "BusinessDate",
@@ -44,10 +44,10 @@
         "value": "/opt/data/files"
       }
     ],
-    "scheduledJobs": null,
+    "scheduledJobs": [],
     "timeWindowStart": null,
     "timeWindowEnd": null,
-    "jobLocks": null,
+    "jobLocks": [],
     "id": "UUID1",
     "createdDateTime": 11,
     "updatedDateTime": 111,
@@ -57,4 +57,3 @@
     "heldJobs": {}
   }
 }
-
