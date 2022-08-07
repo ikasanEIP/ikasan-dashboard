@@ -17,16 +17,21 @@ import org.ikasan.notification.monitor.mock.ScheduledContextInstanceServiceTestI
 import org.ikasan.notification.monitor.mock.SchedulerJobInstanceServiceTestImpl;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.joda.time.DateTimeUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.assertEquals;
 
+@RunWith(MockitoJUnitRunner.class)
 public class JobRunningTimesMonitorTest {
 
     /** default executor service is a single thread executor */
@@ -51,6 +57,12 @@ public class JobRunningTimesMonitorTest {
     private ContextMachine contextMachine1;
 
     private Monitor jobRunningTimesMonitor;
+
+    @Mock
+    private ScheduledContextService scheduledContextService;
+
+    @Mock
+    private SchedulerJobInstanceService schedulerJobInstanceService;
 
     @After
     public void tearDown() {
@@ -88,7 +100,8 @@ public class JobRunningTimesMonitorTest {
         MonitorManagement monitorManagement = new MonitorManagement();
         monitorManagement.registerMonitor(jobRunningTimesMonitor);
 
-        contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,"./target",null,null, null);
+        contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null
+            ,"./target",null,null, null, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine1.init();
 
         ContextMachineCache.instance().put(contextMachine1);
