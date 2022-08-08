@@ -557,6 +557,7 @@ import java.util.stream.Collectors;
                                     internalEventDrivenJob.setStartupControlType(job.getStartupControlType());
                                     internalEventDrivenJob.setJobName(job.getJobName());
                                     internalEventDrivenJob.setJobDescription(job.getJobDescription());
+                                    internalEventDrivenJob.setTargetResidingContextOnly(((InternalEventDrivenJob) job).isTargetResidingContextOnly());
 
                                     return internalEventDrivenJob;
                                 } else if (job instanceof FileEventDrivenJob) {
