@@ -128,21 +128,23 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                                                                 ContextInstance parentContextInstance,
                                                                 List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents) {
 
-        for (JobDependency jobDependency : contextInstance.getJobDependencies()) {
-            if (this.shouldRaiseEvent(jobDependency.getLogicalGrouping(), contextInstance.getScheduledJobsMap())) {
+        if(contextInstance.getJobDependencies() != null) {
+            for (JobDependency jobDependency : contextInstance.getJobDependencies()) {
+                if (this.shouldRaiseEvent(jobDependency.getLogicalGrouping(), contextInstance.getScheduledJobsMap())) {
 
-                SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(jobDependency.getJobIdentifier());
+                    SchedulerJobInstance jobInstance = contextInstance.getScheduledJobsMap().get(jobDependency.getJobIdentifier());
 
-                InternalEventDrivenJobInstance internalEventDrivenJob = internalEventDrivenJobs.get(jobDependency.getJobIdentifier() + "-" + contextInstance.getName());
+                    InternalEventDrivenJobInstance internalEventDrivenJob = internalEventDrivenJobs.get(jobDependency.getJobIdentifier() + "-" + contextInstance.getName());
 
-                if (!jobInstance.isInitiationEventRaised()) {
-                    jobInstance.setInitiationEventRaised(true);
+                    if (!jobInstance.isInitiationEventRaised()) {
+                        jobInstance.setInitiationEventRaised(true);
 
-                    SchedulerJobInitiationEvent event = createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters
-                        , contextParameters, parentContextInstance, scheduledProcessEvent, contextInstance);
+                        SchedulerJobInitiationEvent event = createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters
+                            , contextParameters, parentContextInstance, scheduledProcessEvent, contextInstance);
 
-                    if(event != null) {
-                        schedulerJobInitiationEvents.add(event);
+                        if (event != null) {
+                            schedulerJobInitiationEvents.add(event);
+                        }
                     }
                 }
             }
