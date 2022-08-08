@@ -85,15 +85,17 @@ public abstract class Draw2dAdapterBase {
 
             Grouping grouping = new Grouping();
 
-            context.getJobDependencies().forEach(jobDependency -> {
-                if(((JobDependency)jobDependency).getLogicalGrouping() != null) {
-                    this.manageLogicalGroupings(((JobDependency)jobDependency).getJobIdentifier(),
-                        ((JobDependency)jobDependency).getLogicalGrouping(), diagramBuilder, graph);
+            if(context.getJobDependencies() != null) {
+                context.getJobDependencies().forEach(jobDependency -> {
+                    if (((JobDependency) jobDependency).getLogicalGrouping() != null) {
+                        this.manageLogicalGroupings(((JobDependency) jobDependency).getJobIdentifier(),
+                            ((JobDependency) jobDependency).getLogicalGrouping(), diagramBuilder, graph);
 
-                    this.getAllJobsInGrouping(((JobDependency)jobDependency).getLogicalGrouping(),
-                        grouping);
-                }
-            });
+                        this.getAllJobsInGrouping(((JobDependency) jobDependency).getLogicalGrouping(),
+                            grouping);
+                    }
+                });
+            }
 
 
             JGraphXAdapter<Object, DefaultEdge> jGraphXAdapter
