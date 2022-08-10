@@ -28,7 +28,7 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
     }
 
     @Override
-    public void publish(String contextUrl, ContextInstance instance) {
+    public synchronized void publish(String contextUrl, ContextInstance instance) {
         HttpHeaders headers = createHttpHeaders();
         HttpEntity<?> entity = new HttpEntity<>(instance, headers);
         String url = contextUrl + REST_URL_SAVE;
@@ -49,7 +49,7 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
     }
 
     @Override
-    public void remove(String contextUrl, ContextInstance contextInstance) {
+    public synchronized void remove(String contextUrl, ContextInstance contextInstance) {
         HttpHeaders headers = createHttpHeaders();
         HttpEntity entity = new HttpEntity(headers);
         String url = contextUrl + REST_URL_REMOVE;

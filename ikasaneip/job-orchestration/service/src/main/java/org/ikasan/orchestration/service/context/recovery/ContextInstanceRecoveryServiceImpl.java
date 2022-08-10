@@ -67,7 +67,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-import static org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker.outsideOfOperatingWindow;
+import static org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker.withinOperatingWindow;
 
 public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRecoveryService {
     private static final Logger LOG = LoggerFactory.getLogger(ContextInstanceRecoveryServiceImpl.class);
@@ -102,7 +102,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
 
     public void recoverInstances() {
         SearchResults<ScheduledContextInstanceRecord> contextInstanceRecords = scheduledContextInstanceService
-            .getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING));
+            .getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING, InstanceStatus.ERROR));
 
         Map<String, List<ScheduledContextInstanceRecord>> records = new HashMap<>();
         for (ScheduledContextInstanceRecord scheduledContextInstanceRecord : contextInstanceRecords.getResultList()) {
@@ -114,7 +114,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
             }
         }
 
-        // TODO this represents an exception case  - there should never be more than one instance WAITING OR RUNNING
+        // TODO this represents an exception case  - there should never be more than one instance WAITING OR RUNNING OR ERROR
         List<ScheduledContextInstanceRecord> sorted = new ArrayList<>();
         for (String key : records.keySet()) {
             List<ScheduledContextInstanceRecord> mapRecords = records.get(key);
@@ -138,28 +138,27 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
         for (ScheduledContextRecord scheduledContextRecord : scheduledContextRecords.getResultList()) {
             ContextTemplate context = scheduledContextRecord.getContext();
             ScheduledContextInstanceRecord scheduledContextInstanceRecord = instancesMap.get(scheduledContextRecord.getContextName());
-            if (scheduledContextInstanceRecord != null) {
-                if (outsideOfOperatingWindow(context.getTimeWindowStart(), context.getTimeWindowEnd(), now)) {
-                    // do nothing outside of window
-                    continue;
+            // if outside the operating window instances will be created when ContextInstanceRegistrationServiceImpl.register runs
+            if (withinOperatingWindow(context.getTimeWindowStart(), context.getTimeWindowEnd(), now)) {
+                if (scheduledContextInstanceRecord != null) {
+                    try {
+                        ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
+                        LOG.info(String.format("Recovering instance [%s] id [%s]", contextInstance.getName(), contextInstance.getId()));
+                        initialiseContextMachine(context, contextInstance, false);
+                    } catch (Exception e) {
+                        // todo probably want to send a notification here.
+                        LOG.error(String.format("An error has occurred recovering context instance [%s]!", scheduledContextInstanceRecord.getContextName()), e);
+                    }
+                } else {
+                    // we have a context record without an instance which should not be the case
+                    String message = String.format("Context [%s] does not have an instance. Creating instance now!", scheduledContextRecord.getContextName());
+                    LOG.info(message);
+                    executor.execute(new MissingContextInstanceRecoveryRunnable(
+                        this.queueDirectory, this.scheduledContextInstanceService, this.jobInitiationService, this.moduleMetadataService, this.internalEventDrivenJobService,
+                        this.contextParametersInstanceService, this.contextParametersUpdateService, this.jobLockCacheService, this.scheduledContextService,
+                        scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster
+                    ));
                 }
-                try {
-                    ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
-                    LOG.info(String.format("Recovering instance [%s] id [%s]", contextInstance.getName(), contextInstance.getId()));
-                    initialiseContextMachine(context, contextInstance, false);
-                } catch (Exception e) {
-                    // todo probably want to send a notification here.
-                    LOG.error(String.format("An error has occurred recovering context instance [%s]!", scheduledContextInstanceRecord.getContextName()), e);
-                }
-            } else {
-                // we have a context record without an instance which should not be the case
-                String message = String.format("Context [%s] does not have an instance. Creating instance now!", scheduledContextRecord.getContextName());
-                LOG.info(message);
-                executor.execute(new MissingContextInstanceRecoveryRunnable(
-                    this.queueDirectory, this.scheduledContextInstanceService, this.jobInitiationService, this.moduleMetadataService, this.internalEventDrivenJobService,
-                    this.contextParametersInstanceService, this.contextParametersUpdateService, this.jobLockCacheService, this.scheduledContextService,
-                    scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster
-                ));
             }
         }
     }
