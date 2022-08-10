@@ -85,7 +85,6 @@ public class ContextMachine {
 
     private InboundQueueMessageRunner inboundQueueMessageRunner;
 
-    // todo clean up the transient queues once a context is complete.
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
                           Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstances, String queueDir,
                           Map<String, ModuleMetaData> agents, JobLockCache jobLockCache,
@@ -230,7 +229,7 @@ public class ContextMachine {
             this.jobLogicMachine = null;
             this.statusConverter = null;
         } catch (Exception e) {
-            logger.warn(String.format("Could tear down context machine: Error [%s]", e.getMessage()));
+            logger.warn(String.format("Could not tear down context machine: Error [%s]", e.getMessage()));
         }
     }
 

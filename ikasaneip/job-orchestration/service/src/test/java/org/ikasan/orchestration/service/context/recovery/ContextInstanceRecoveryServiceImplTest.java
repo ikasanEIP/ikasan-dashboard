@@ -47,6 +47,7 @@ import java.util.concurrent.ExecutorService;
 
 import static org.ikasan.orchestration.service.utils.InternalEventDrivenJobTestSearchResults.AGENT_NAME;
 import static org.ikasan.orchestration.service.utils.ScheduledContextRecordTestSearchResults.CONTEXT_NAME;
+import static org.ikasan.spec.scheduled.instance.model.InstanceStatus.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -129,7 +130,7 @@ public class ContextInstanceRecoveryServiceImplTest {
 
         // set up
         ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(1, true);
-        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING))).thenReturn(results);
+        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(results);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(0, false);
         when(scheduledContextService.findAll()).thenReturn(contextResults);
@@ -138,7 +139,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         contextInstanceRecoveryServiceImpl.recoverInstances();
 
         // verify
-        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING));
+        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
@@ -166,7 +167,7 @@ public class ContextInstanceRecoveryServiceImplTest {
 
         // set up
         ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(0, true);
-        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING))).thenReturn(results);
+        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(results);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, false);
         when(scheduledContextService.findAll()).thenReturn(contextResults);
@@ -180,7 +181,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         contextInstanceRecoveryServiceImpl.recoverInstances();
 
         // verify
-        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING));
+        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
         verify(executor).execute(any(MissingContextInstanceRecoveryRunnable.class));
 
@@ -209,7 +210,7 @@ public class ContextInstanceRecoveryServiceImplTest {
 
         // set up
         ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(1, false);
-        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING))).thenReturn(results);
+        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(results);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, true);
         when(scheduledContextService.findAll()).thenReturn(contextResults);
@@ -218,7 +219,44 @@ public class ContextInstanceRecoveryServiceImplTest {
         contextInstanceRecoveryServiceImpl.recoverInstances();
 
         // verify
-        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING));
+        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
+        verify(scheduledContextService).findAll();
+
+        verifyNoMoreInteractions(scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            jobLockCacheService,
+            scheduledContextService,
+            schedulerJobInstanceService,
+            executor,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster
+            );
+
+        // ensure no contexts
+        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+    }
+
+    @Test
+    public void should_do_nothing_context_machine_outside_of_operating_window_no_instance() {
+        // ensure no contexts
+        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+
+        // set up
+        ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(0, false);
+        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(results);
+
+        ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, true);
+        when(scheduledContextService.findAll()).thenReturn(contextResults);
+
+        // execute
+        contextInstanceRecoveryServiceImpl.recoverInstances();
+
+        // verify
+        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
@@ -253,7 +291,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         record.setContextName(CONTEXT_NAME);
 
         ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(3, true);
-        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING))).thenReturn(instanceResults);
+        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(instanceResults);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(3, false);
         when(scheduledContextService.findAll()).thenReturn(contextResults);
@@ -274,7 +312,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         contextInstanceRecoveryServiceImpl.recoverInstances();
 
         // verify
-        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING));
+        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
         verify(schedulerJobInstanceService, times(3)).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(contextParametersInstanceService, times(3)).populateContextParameters();
@@ -321,7 +359,7 @@ public class ContextInstanceRecoveryServiceImplTest {
 
         // set up
         ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(1, true);
-        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING))).thenReturn(results);
+        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(results);
 
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, false);
         when(scheduledContextService.findAll()).thenReturn(contextResults);
@@ -333,7 +371,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         contextInstanceRecoveryServiceImpl.recoverInstances();
 
         // verify
-        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING));
+        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
         verify(schedulerJobInstanceService).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(jobLockCacheService).get();
@@ -345,7 +383,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(scheduledContextInstanceService).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals("ContextName1", actualContextInstanceRecord.getContextName());
-        assertEquals(InstanceStatus.WAITING.name(), actualContextInstanceRecord.getStatus());
+        assertEquals(WAITING.name(), actualContextInstanceRecord.getStatus());
         assertNull(null, actualContextInstanceRecord.getId());
         assertNotNull(actualContextInstanceRecord.getContextInstance());
         assertTrue(actualContextInstanceRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextInstanceRecord.getTimestamp() <= System.currentTimeMillis());
@@ -374,7 +412,7 @@ public class ContextInstanceRecoveryServiceImplTest {
     public void does_nothing_if_no_context_instance_records_or_context_records() {
         // set up
         ContextInstanceTestSearchResults instanceResults = new ContextInstanceTestSearchResults(0, true);
-        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING))).thenReturn(instanceResults);
+        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(instanceResults);
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(0, true);
         when(scheduledContextService.findAll()).thenReturn(contextResults);
 
@@ -382,7 +420,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         contextInstanceRecoveryServiceImpl.recoverInstances();
 
         // verify
-        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING));
+        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
@@ -422,5 +460,9 @@ public class ContextInstanceRecoveryServiceImplTest {
             = (List<SchedulerJobInstanceStateChangeEventListener>) ReflectionTestUtils.getField(jobLogicMachine, "schedulerJobInstanceStateChangeEventListeners");
         assertNotNull(schedulerJobInstanceStateChangeEventListeners);
         assertEquals(2, schedulerJobInstanceStateChangeEventListeners.size());
+    }
+
+    private List<InstanceStatus> getStatusesToLookFor() {
+        return List.of(WAITING, RUNNING, ERROR);
     }
 }
