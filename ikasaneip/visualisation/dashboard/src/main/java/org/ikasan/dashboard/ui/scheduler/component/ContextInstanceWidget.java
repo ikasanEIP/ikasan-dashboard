@@ -231,6 +231,7 @@ public class ContextInstanceWidget extends VerticalLayout {
                 ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
                 if (contextMachine != null) {
                     try {
+                        contextMachine.setDryRunParameters(null);
                         this.saveContextInstance(contextMachine.getContext(), InstanceStatus.ENDED);
                         this.statusDiv.setStatus(InstanceStatus.ENDED);
                         ContextMachineCache.instance().remove(contextMachine);

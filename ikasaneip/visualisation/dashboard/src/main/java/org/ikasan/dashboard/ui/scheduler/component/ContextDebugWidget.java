@@ -211,10 +211,12 @@ public class ContextDebugWidget extends Div {
         resetContextButton.addClickListener(buttonClickEvent -> {
             ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
             try {
+                contextMachine.setDryRunParameters(null);
+                this.saveContextInstance(contextMachine.getContext(), InstanceStatus.ENDED);
+                setDryRunCheckbox(contextMachine.getContext().getName());
                 ContextMachineCache.instance().remove(contextMachine);
                 contextMachine.resetContextInstance();
                 ContextMachineCache.instance().put(contextMachine);
-
 
                 this.schedulerInstanceVisualisation.createSchedulerVisualisation(contextMachine.getContext(), contextMachine.getContext(), null);
                 this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextMachine.getContext());

@@ -77,7 +77,7 @@ public class ContextTemplateWidget extends Div {
                                  LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
                                  JobInitiationService jobInitiationService, String zipWorkingDirectory, ContextProvisionService contextProvisionService,
                                  ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
-                                 SecurityService securityService, JobUtilsService jobUtilsService) {
+                                 SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs) {
 
         this.scheduledContextService = scheduledContextService;
         this.schedulerJobService = schedulerJobService;
@@ -112,7 +112,7 @@ public class ContextTemplateWidget extends Div {
         Button addContextButton = new Button("Upload Context",uploadIcon);
         addContextButton.setIconAfterText(true);
         addContextButton.addClickListener(buttonClickEvent -> {
-            ContextImportFileDialog importer = new ContextImportFileDialog(contextProvisionService);
+            ContextImportFileDialog importer = new ContextImportFileDialog(contextProvisionService, provisionJobs);
             importer.open();
         });
 

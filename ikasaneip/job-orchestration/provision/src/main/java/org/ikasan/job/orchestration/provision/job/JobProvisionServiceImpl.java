@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class JobProvisionServiceImpl implements JobProvisionService {
@@ -87,7 +88,7 @@ public class JobProvisionServiceImpl implements JobProvisionService {
 
                 logger.info(String.format("Attempting to provision %s jobs on agent[%s]", jobs.size(), agent.getUrl()));
                 this.jobProvisionModuleRestService.provisionJobs(agent.getUrl(), schedulerJobWrapper);
-                persistJobs(agent.getName(), jobs);
+                persistJobs(jobs);
                 logger.info(String.format("Successfully provisioned %s jobs on agent[%s]", jobs.size(), agent.getUrl()));
             }
             catch (JobProvisionException e) {
@@ -116,8 +117,11 @@ public class JobProvisionServiceImpl implements JobProvisionService {
             .collect(Collectors.toList());
     }
 
-    private void persistJobs(String agentName, List<SchedulerJob> jobs) {
-        this.schedulerJobService.deleteByAgentName(agentName);
+    private void persistJobs(List<SchedulerJob> jobs) {
+        Set<String> contextNames = jobs.stream().map(SchedulerJob::getContextId).collect(Collectors.toSet());
+        for (String contextName : contextNames) {
+            this.schedulerJobService.deleteByContextName(contextName);
+        }
 
         List<InternalEventDrivenJob> internalEventDrivenJobs = new ArrayList<>();
         List<FileEventDrivenJob> fileEventDrivenJobs = new ArrayList<>();
