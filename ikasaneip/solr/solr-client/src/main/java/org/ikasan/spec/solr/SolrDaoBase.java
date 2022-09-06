@@ -475,6 +475,25 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     }
 
     /**
+     * Method to remove records from the solr index by type and id.
+     *
+     * @param type
+     */
+    public void removeByIds(String type, List<String> ids)
+    {
+        StringBuffer query = new StringBuffer();
+        query.append(TYPE).append(COLON).append("\"").append(type).append("\"");
+        query.append(AND);
+
+        ids.forEach(id -> query.append(ID).append(COLON).append("\"").append(id).append("\"").append(OR));
+
+        String queryString = query.toString().trim();
+        queryString = queryString.substring(0, queryString.length()-2);
+
+        this.deleteByQuery(queryString.trim());
+    }
+
+    /**
      * Method to remove expired records from the solr index.
      */
     public void removeExpired()
