@@ -47,16 +47,19 @@ public class SolrComponentConfigurationMetadataDao extends SolrDaoBase<Configura
             UpdateRequest req = new UpdateRequest();
             req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
-            for(ConfigurationMetaData configurationMetaData: configurationMetaDataList)
-            {
-                super.removeById(COMPONENT_CONFIGURATION, configurationMetaData.getConfigurationId());
+            List<String> configurationIds = configurationMetaDataList
+                .stream()
+                .map(configurationMetaData -> configurationMetaData.getConfigurationId())
+                .collect(Collectors.toList());
 
+            super.removeByIds(COMPONENT_CONFIGURATION, configurationIds);
+
+            configurationMetaDataList.forEach(configurationMetaData -> {
                 SolrInputDocument document = convertEntityToSolrInputDocument(null,configurationMetaData);
                 req.add(document);
 
                 logger.debug("Adding document: " + document);
-            }
-
+            });
 
             commitSolrRequest(req);
         }
