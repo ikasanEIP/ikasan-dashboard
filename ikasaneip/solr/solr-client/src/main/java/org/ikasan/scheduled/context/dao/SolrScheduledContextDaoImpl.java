@@ -138,4 +138,9 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
             return null;
         }
     }
+
+    @Override
+    public void deleteContext(String contextName) {
+        super.removeById(SCHEDULED_CONTEXT, contextName + "-" + SCHEDULED_CONTEXT);
+    }
 }

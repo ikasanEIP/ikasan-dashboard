@@ -12,7 +12,6 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 
 public class DayOfWeekJobHelpDialog extends AbstractCloseableResizableDialog
 {
-
     public DayOfWeekJobHelpDialog()
     {
         super.title.setText(getTranslation("help.search-help-header", UI.getCurrent().getLocale()));

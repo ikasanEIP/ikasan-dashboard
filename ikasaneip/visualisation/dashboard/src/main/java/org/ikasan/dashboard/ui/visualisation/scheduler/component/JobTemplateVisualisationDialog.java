@@ -51,14 +51,10 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
     private Logger logger = LoggerFactory.getLogger(JobTemplateVisualisationDialog.class);
 
     private VerticalLayout layout;
-
     private boolean initialised = false;
-
     private ContextTemplate rootContextTemplate;
     private ContextTemplate contextTemplate;
-
     private String dynamicImagePath = ".";
-
     private ModuleMetaDataService moduleMetaDataService;
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;

@@ -232,10 +232,7 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
             this.designerCanvas = new DesignerCanvas(this, null, "canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, !this.edit);
             this.designerCanvas.addCanvasInitialisedListener(this);
 
-            if(contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
-                this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
-            }
-            else if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
+            if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
                 if(this.scheduledContextViewRecord == null) {
                     SearchResults<SchedulerJobRecord> jobs = this.schedulerJobService.findByContext(parentContextTemplate.getName(), -1, -1);
 
@@ -248,6 +245,9 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
                 else {
                     this.designerCanvas.setCanvasJson(this.scheduledContextViewRecord.getContextView());
                 }
+            }
+            else  {
+                this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
             }
 
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);

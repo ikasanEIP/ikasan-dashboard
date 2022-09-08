@@ -23,6 +23,8 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.apache.commons.lang.StringUtils;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -31,6 +33,7 @@ import static com.cronutils.model.CronType.QUARTZ;
 
 public class CronBuilderDialog extends AbstractCloseableResizableDialog {
 
+    private Logger logger = LoggerFactory.getLogger(CronBuilderDialog.class);
     private Tab secondsTab;
     private Tab minutesTab;
     private Tab hoursTab;
@@ -1170,8 +1173,13 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
     }
 
     private void setNaturalLanguageDescription(String cronExpression) {
-        Cron quartzCron = parser.parse(cronExpression);
-        this.naturalLanguageTf.setValue(descriptor.describe(quartzCron));
+        try {
+            Cron quartzCron = parser.parse(cronExpression);
+            this.naturalLanguageTf.setValue(descriptor.describe(quartzCron));
+        }
+        catch (IllegalArgumentException e) {
+            // ignore as the user might manually enter a bad cron that can not be converted to natural language.
+        }
     }
 
     private String dayOfWeek(String textDay) {
@@ -1216,7 +1224,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
     private void initialiseParts() {
         StringTokenizer stringTokenizer = new StringTokenizer(this.cronExpression, " ");
         if(stringTokenizer.countTokens() < 6) {
-            throw new RuntimeException("cron expression must contain at least 6 tokens");
+            logger.info("Cannot initialise the cron dialog internal state. The cron expression must contain at least 6 tokens");
         }
         else {
             this.secondPart = stringTokenizer.nextToken();
