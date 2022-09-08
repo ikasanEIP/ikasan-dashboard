@@ -5,6 +5,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.grid.HeaderRow;
@@ -37,6 +38,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -62,9 +64,11 @@ public class ContextTemplateWidget extends Div {
     private JobProvisionService jobProvisionService;
     private IkasanAuthentication authentication;
     private JobUtilsService jobUtilsService;
-
     private SchedulerJobService schedulerJobService;
     private String zipWorkingDirectory;
+    private ContextInstanceRegistrationService contextInstanceRegistrationService;
+
+    private SubMenu activeContextSubMenu;
 
     /**
      * Constructor
@@ -77,7 +81,7 @@ public class ContextTemplateWidget extends Div {
                                  LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
                                  JobInitiationService jobInitiationService, String zipWorkingDirectory, ContextProvisionService contextProvisionService,
                                  ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
-                                 SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs) {
+                                 SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs, ContextInstanceRegistrationService contextInstanceRegistrationService) {
 
         this.scheduledContextService = scheduledContextService;
         this.schedulerJobService = schedulerJobService;
@@ -85,6 +89,7 @@ public class ContextTemplateWidget extends Div {
         this.contextProfileService = contextProfileService;
         this.jobProvisionService = jobProvisionService;
         this.jobUtilsService = jobUtilsService;
+        this.contextInstanceRegistrationService = contextInstanceRegistrationService;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
@@ -120,8 +125,10 @@ public class ContextTemplateWidget extends Div {
         Button newContextButton = new Button("New Context",newContextIcon);
         newContextButton.setIconAfterText(true);
         newContextButton.addClickListener(buttonClickEvent -> {
-            UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
-            underConstructionDialog.open();
+            NewContextTemplateDialog newContextTemplateDialog = new NewContextTemplateDialog(this.scheduledContextService
+                , this.contextTemplateFilteringGrid, this.contextInstanceRegistrationService);
+            newContextTemplateDialog.open();
+            newContextTemplateDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> this.updateActiveContextMenu());
         });
 
         actionButtonLayout.add(newContextButton, addContextButton, quickAccessMenu);
@@ -210,20 +217,44 @@ public class ContextTemplateWidget extends Div {
 
             layout.add(delete);
 
-            delete.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
-                underConstructionDialog.open();
+            delete.addClickListener(iconClickEvent -> {
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog.delete-context-template-header"
+                    , UI.getCurrent().getLocale()));
+                confirmDialog.setText(getTranslation("confirm-dialog.delete-context-template-body"
+                    , UI.getCurrent().getLocale()));
+                confirmDialog.setCancelable(true);
+                confirmDialog.addConfirmListener(confirmEvent -> {
+                    try {
+                        this.schedulerJobService.deleteByContextName(scheduledContextRecord.getContextName());
+                        this.scheduledContextService.deleteContext(scheduledContextRecord.getContextName());
+                        this.contextTemplateFilteringGrid.getDataProvider().refreshAll();
+                        this.contextInstanceRegistrationService.deRegister(scheduledContextRecord.getContextName());
+                        this.updateActiveContextMenu();
+                        NotificationHelper.showUserNotification(getTranslation("notification.context-deleted-successfully"
+                            , UI.getCurrent().getLocale()));
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        NotificationHelper.showUserNotification(getTranslation("error.delete-context-template"
+                            , UI.getCurrent().getLocale()));
+                    }
+                });
+                confirmDialog.open();
             });
 
             Icon clone = IconDecorator.decorate(new Icon(VaadinIcon.COPY), getTranslation("tooltip.clone-context", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             ComponentSecurityVisibility.applySecurity(this.authentication, clone, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
+            clone.addClickListener(iconClickEvent -> {
+                CloneContextTemplateDialog cloneContextTemplateDialog = new CloneContextTemplateDialog(this.scheduledContextService
+                    , this.contextTemplateFilteringGrid, this.contextInstanceRegistrationService, this.schedulerJobService
+                    , this.contextProfileService, scheduledContextRecord);
+
+                cloneContextTemplateDialog.addOpenedChangeListener(event -> this.updateActiveContextMenu());
+                cloneContextTemplateDialog.open();
+            });
 
             layout.add(clone);
-
-            clone.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
-                underConstructionDialog.open();
-            });
 
             Icon chart = IconDecorator.decorate(new Icon(VaadinIcon.CHART), getTranslation("tooltip.contexts-statistics", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -316,10 +347,16 @@ public class ContextTemplateWidget extends Div {
 
         SubMenu activeContextInstancesSubMenu = quickAccess.getSubMenu();
         MenuItem activeContexts = activeContextInstancesSubMenu.addItem(getTranslation("menu-item.active-contexts", UI.getCurrent().getLocale()));
-        SubMenu activeContextSubMenu = activeContexts.getSubMenu();
+        this.activeContextSubMenu = activeContexts.getSubMenu();
+        this.updateActiveContextMenu();
 
+        return quickStartMenuBar;
+    }
+
+    private void updateActiveContextMenu() {
+        this.activeContextSubMenu.removeAll();
         ContextMachineCache.instance().contextNames().forEach(name ->
-            activeContextSubMenu.addItem(name, menuItemClickEvent -> {
+            this.activeContextSubMenu.addItem(name, itemClickEvent -> {
                 String route = RouteConfiguration.forSessionScope()
                     .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
                         .getByContextName(name).getContext().getId()+"_scheduledContextInstance");
@@ -327,8 +364,6 @@ public class ContextTemplateWidget extends Div {
                 getUI().ifPresent(ui -> ui.getPage().open(route));
             })
         );
-
-        return quickStartMenuBar;
     }
 
     private MenuItem createQuickAccessButton(MenuBar menu, VaadinIcon iconName, String label) {
