@@ -639,17 +639,17 @@ import java.util.stream.Collectors;
         MenuBar uploadJobMenuBar = new MenuBar();
         uploadJobMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
 
-        MenuItem quickAccess = createIconItem(uploadJobMenuBar, VaadinIcon.UPLOAD_ALT, getTranslation("menu-item.upload-job-template", UI.getCurrent().getLocale()));
+        MenuItem jobUploadMenutItem = createIconItem(uploadJobMenuBar, VaadinIcon.UPLOAD_ALT, getTranslation("menu-item.upload-job-template", UI.getCurrent().getLocale()));
 
-        SubMenu activeContextInstancesSubMenu = quickAccess.getSubMenu();
-        MenuItem activeContexts = activeContextInstancesSubMenu.addItem(getTranslation("menu-item.job-type", UI.getCurrent().getLocale()));
-        SubMenu activeContextSubMenu = activeContexts.getSubMenu();
+        SubMenu activeContextInstancesSubMenu = jobUploadMenutItem.getSubMenu();
+        MenuItem jobTypesMenuItem = activeContextInstancesSubMenu.addItem(getTranslation("menu-item.job-type", UI.getCurrent().getLocale()));
+        SubMenu jobTypesSubMenu = jobTypesMenuItem.getSubMenu();
 
-        activeContextSubMenu.addItem(getTranslation(" menu-item.command-execution-job", UI.getCurrent().getLocale())
+        jobTypesSubMenu.addItem(getTranslation(" menu-item.command-execution-job", UI.getCurrent().getLocale())
             , event -> {UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog(); underConstructionDialog.open();});
-        activeContextSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale())
+        jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale())
             , event -> {UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog(); underConstructionDialog.open();});
-        activeContextSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale())
+        jobTypesSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale())
             , event -> {UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog(); underConstructionDialog.open();});
 
         return uploadJobMenuBar;
@@ -659,13 +659,13 @@ import java.util.stream.Collectors;
         MenuBar newJobMenuBar = new MenuBar();
         newJobMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
 
-        MenuItem quickAccess = createIconItem(newJobMenuBar, VaadinIcon.PLUS, getTranslation("menu-item.create-new-job", UI.getCurrent().getLocale()));
+        MenuItem newJobMenuItem = createIconItem(newJobMenuBar, VaadinIcon.PLUS, getTranslation("menu-item.create-new-job", UI.getCurrent().getLocale()));
 
-        SubMenu activeContextInstancesSubMenu = quickAccess.getSubMenu();
-        MenuItem activeContexts = activeContextInstancesSubMenu.addItem(getTranslation("menu-item.job-type", UI.getCurrent().getLocale()));
-        SubMenu activeContextSubMenu = activeContexts.getSubMenu();
+        SubMenu newJobSubMenu = newJobMenuItem.getSubMenu();
+        MenuItem jobTypeMenuItem = newJobSubMenu.addItem(getTranslation("menu-item.job-type", UI.getCurrent().getLocale()));
+        SubMenu jobTypesSubMenu = jobTypeMenuItem.getSubMenu();
 
-        activeContextSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale()), event -> {
+        jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale()), event -> {
             InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
                 this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
 
@@ -681,7 +681,7 @@ import java.util.stream.Collectors;
                 }
             });
         });
-        activeContextSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
+        jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
             FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
                 this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
 
@@ -698,7 +698,7 @@ import java.util.stream.Collectors;
                 }
             });
         });
-        activeContextSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale()), event -> {
+        jobTypesSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale()), event -> {
             QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(null, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
 

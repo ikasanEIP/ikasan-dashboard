@@ -63,4 +63,14 @@ public class SolrScheduledContextServiceImpl implements ScheduledContextService 
     public void saveContextView(ScheduledContextViewRecord contextView) {
         this.scheduledContextViewDao.save(contextView);
     }
+
+    @Override
+    public void deleteContext(String contextName) {
+        this.scheduledContextDao.deleteContext(contextName);
+    }
+
+    @Override
+    public ScheduledContextRecord cloneContext(String contextName, String clonedContextName) {
+        return null;
+    }
 }
