@@ -64,47 +64,47 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class SchedulerVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener, CanvasInitialisedListener
+public abstract class SchedulerVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener, CanvasInitialisedListener
     , CanvasItemDoubleClickEventListener, ConnectorEventListener, CanvasUpdatedListener, SaveFunction, NewContextListener, FigureDeleteEventListener, FigureUndoDeleteEventListener {
     private Logger logger = LoggerFactory.getLogger(SchedulerVisualisation.class);
 
-    private DesignerCanvas designerCanvas;
+    protected DesignerCanvas designerCanvas;
 
-    private String dynamicImagePath;
+    protected String dynamicImagePath;
 
-    private ContextTemplate contextTemplate;
-    private ContextTemplate parentContextTemplate;
+    protected ContextTemplate contextTemplate;
+    protected ContextTemplate parentContextTemplate;
 
-    private boolean initialised = false;
+    protected boolean initialised = false;
 
-    private ContextTemplateDraw2dAdapter adapter = new ContextTemplateDraw2dAdapter();
+    protected ContextTemplateDraw2dAdapter adapter = new ContextTemplateDraw2dAdapter();
 
-    private ModuleMetaDataService moduleMetaDataService;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
-    private ConfigurationService configurationRestService;
-    private ModuleControlService moduleControlRestService;
-    private MetaDataService metaDataRestService;
-    private SystemEventLogger systemEventLogger;
-    private SchedulerJobService schedulerJobService;
-    private LogStreamingService logStreamingService;
-    private SchedulerJobInstanceService schedulerJobInstanceService;
-    private JobInitiationService jobInitiationService;
-    private ContextProfileService contextProfileService;
-    private UserService userService;
-    private SecurityService securityService;
-    private ScheduledContextInstanceService scheduledContextInstanceService;
-    private JobProvisionService jobProvisionService;
-    private ScheduledContextService scheduledContextService;
+    protected ModuleMetaDataService moduleMetaDataService;
+    protected ScheduledProcessManagementService scheduledProcessManagementService;
+    protected ConfigurationService configurationRestService;
+    protected ModuleControlService moduleControlRestService;
+    protected MetaDataService metaDataRestService;
+    protected SystemEventLogger systemEventLogger;
+    protected SchedulerJobService schedulerJobService;
+    protected LogStreamingService logStreamingService;
+    protected SchedulerJobInstanceService schedulerJobInstanceService;
+    protected JobInitiationService jobInitiationService;
+    protected ContextProfileService contextProfileService;
+    protected UserService userService;
+    protected SecurityService securityService;
+    protected ScheduledContextInstanceService scheduledContextInstanceService;
+    protected JobProvisionService jobProvisionService;
+    protected ScheduledContextService scheduledContextService;
 
-    private ScheduledContextViewRecord scheduledContextViewRecord;
+    protected ScheduledContextViewRecord scheduledContextViewRecord;
 
-    private Dialog parent;
+    protected Dialog parent;
 
-    private boolean edit;
+    protected boolean edit;
 
-    private IkasanAuthentication authentication;
+    protected IkasanAuthentication authentication;
 
-    private Map<String, ContextDeletedHolder> contextDeletedHolderMap = new HashMap<>();
+    protected Map<String, ContextDeletedHolder> contextDeletedHolderMap = new HashMap<>();
 
 
     public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
@@ -222,17 +222,39 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
         init();
     }
 
-    private void init() throws IOException {
-        if(!initialised && contextTemplate != null) {
-
-            if (this.designerCanvas != null) {
-                this.removeAll();
-            }
-
-            this.designerCanvas = new DesignerCanvas(this, null, "canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, !this.edit);
-            this.designerCanvas.addCanvasInitialisedListener(this);
-
-//            if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
+    protected abstract void init() throws IOException;
+//    {
+//        if(!initialised && contextTemplate != null) {
+//
+//            if (this.designerCanvas != null) {
+//                this.removeAll();
+//            }
+//
+//            this.designerCanvas = new DesignerCanvas(this, null, "canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, !this.edit);
+//            this.designerCanvas.addCanvasInitialisedListener(this);
+//
+////            if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
+////                if(this.scheduledContextViewRecord == null) {
+////                    SearchResults<SchedulerJobRecord> jobs = this.schedulerJobService.findByContext(parentContextTemplate.getName(), -1, -1);
+////
+////                    Map<String, SchedulerJob> schedulerJobs = jobs.getResultList().stream()
+////                        .map(record -> record.getJob())
+////                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity()));
+////
+////                    this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextTemplate, schedulerJobs));
+////                }
+////                else {
+////                    this.designerCanvas.setCanvasJson(this.scheduledContextViewRecord.getContextView());
+////                }
+////            }
+////            else  {
+////                this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
+////            }
+//
+//            if(contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
+//                this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
+//            }
+//            else if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
 //                if(this.scheduledContextViewRecord == null) {
 //                    SearchResults<SchedulerJobRecord> jobs = this.schedulerJobService.findByContext(parentContextTemplate.getName(), -1, -1);
 //
@@ -246,40 +268,19 @@ public class SchedulerVisualisation extends VerticalLayout implements BeforeEnte
 //                    this.designerCanvas.setCanvasJson(this.scheduledContextViewRecord.getContextView());
 //                }
 //            }
-//            else  {
-//                this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
-//            }
-
-            if(contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
-                this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
-            }
-            else if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
-                if(this.scheduledContextViewRecord == null) {
-                    SearchResults<SchedulerJobRecord> jobs = this.schedulerJobService.findByContext(parentContextTemplate.getName(), -1, -1);
-
-                    Map<String, SchedulerJob> schedulerJobs = jobs.getResultList().stream()
-                        .map(record -> record.getJob())
-                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity()));
-
-                    this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextTemplate, schedulerJobs));
-                }
-                else {
-                    this.designerCanvas.setCanvasJson(this.scheduledContextViewRecord.getContextView());
-                }
-            }
-
-            this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
-            this.designerCanvas.addCanvasItemRightClickEventListener(this);
-            this.designerCanvas.addConnectorEventListener(this);
-            this.designerCanvas.addCanvasUpdatedListener(this);
-            this.designerCanvas.addFigureDeleteEventListeners(this);
-            this.designerCanvas.addFigureUndoDeleteEventListeners(this);
-
-            this.add(initCanvasActions(), designerCanvas);
-
-            this.initialised = true;
-        }
-    }
+//
+//            this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
+//            this.designerCanvas.addCanvasItemRightClickEventListener(this);
+//            this.designerCanvas.addConnectorEventListener(this);
+//            this.designerCanvas.addCanvasUpdatedListener(this);
+//            this.designerCanvas.addFigureDeleteEventListeners(this);
+//            this.designerCanvas.addFigureUndoDeleteEventListeners(this);
+//
+//            this.add(initCanvasActions(), designerCanvas);
+//
+//            this.initialised = true;
+//        }
+//    }
 
     protected Component initCanvasActions() {
         HorizontalLayout actions = new HorizontalLayout();

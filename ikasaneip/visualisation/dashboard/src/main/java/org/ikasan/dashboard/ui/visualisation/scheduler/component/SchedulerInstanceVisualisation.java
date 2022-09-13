@@ -52,40 +52,40 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class SchedulerInstanceVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener
+public abstract class SchedulerInstanceVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener
     , CanvasItemDoubleClickEventListener, CanvasInitialisedListener {
     private Logger logger = LoggerFactory.getLogger(SchedulerInstanceVisualisation.class);
 
-    private Registration contextInstanceStateChangeRegistration;
-    private Registration schedulerJobStateChangeRegistration;
+    protected Registration contextInstanceStateChangeRegistration;
+    protected Registration schedulerJobStateChangeRegistration;
 
-    private DesignerCanvas designerCanvas;
+    protected DesignerCanvas designerCanvas;
 
-    private String dynamicImagePath;
+    protected String dynamicImagePath;
 
-    private ContextInstance contextInstance;
+    protected ContextInstance contextInstance;
 
-    private boolean initialised = false;
+    protected boolean initialised = false;
 
-    private ContextInstanceDraw2dAdapter adapter = new ContextInstanceDraw2dAdapter();
+    protected ContextInstanceDraw2dAdapter adapter = new ContextInstanceDraw2dAdapter();
 
-    private ModuleMetaDataService moduleMetaDataService;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
-    private ConfigurationService configurationRestService;
-    private ModuleControlService moduleControlRestService;
-    private MetaDataService metaDataRestService;
-    private SystemEventLogger systemEventLogger;
-    private SchedulerJobService schedulerJobService;
-    private LogStreamingService logStreamingService;
-    private SchedulerJobInstanceService schedulerJobInstanceService;
-    private JobInitiationService jobInitiationService;
-    private JobUtilsService jobUtilsService;
-    private ContextInstance parentContextInstance;
-    private ScheduledContextService scheduledContextService;
+    protected ModuleMetaDataService moduleMetaDataService;
+    protected ScheduledProcessManagementService scheduledProcessManagementService;
+    protected ConfigurationService configurationRestService;
+    protected ModuleControlService moduleControlRestService;
+    protected MetaDataService metaDataRestService;
+    protected SystemEventLogger systemEventLogger;
+    protected SchedulerJobService schedulerJobService;
+    protected LogStreamingService logStreamingService;
+    protected SchedulerJobInstanceService schedulerJobInstanceService;
+    protected JobInitiationService jobInitiationService;
+    protected JobUtilsService jobUtilsService;
+    protected ContextInstance parentContextInstance;
+    protected ScheduledContextService scheduledContextService;
 
-    private ScheduledContextViewRecord scheduledContextViewRecord;
+    protected ScheduledContextViewRecord scheduledContextViewRecord;
 
-    private Dialog parent;
+    protected Dialog parent;
 
 
     public SchedulerInstanceVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
@@ -183,46 +183,8 @@ public class SchedulerInstanceVisualisation extends VerticalLayout implements Be
         init();
     }
 
-    private void init() throws IOException {
-        if(!initialised && contextInstance != null) {
+    protected abstract void init() throws IOException;
 
-            if (this.designerCanvas != null) {
-                this.removeAll();
-            }
-
-            this.designerCanvas = new DesignerCanvas("canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, true);
-
-            if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
-//                this.designerCanvas.startSpinner();
-                this.designerCanvas.setCanvasJson(adapter.adaptContext(contextInstance));
-            }
-            else if (contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
-//                this.designerCanvas.startSpinner();
-                if(this.scheduledContextViewRecord == null) {
-                    SearchResults<SchedulerJobRecord> jobs = this.schedulerJobService.findByContext(this.parentContextInstance.getName(), -1, -1);
-
-                    Map<String, SchedulerJob> schedulerJobs = jobs.getResultList().stream()
-                        .map(record -> record.getJob())
-                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity()));
-
-                    this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextInstance, schedulerJobs));
-                }
-                else {
-                    this.designerCanvas.setCanvasJson(adapter.adaptContextView(this.contextInstance, this.scheduledContextViewRecord.getContextView()));
-                }
-            }
-
-            this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
-            this.designerCanvas.addCanvasItemRightClickEventListener(this);
-            this.designerCanvas.addCanvasInitialisedListener(this);
-
-            this.designerCanvas.manageClickableItems();
-
-            this.add(initCanvasActions(), designerCanvas);
-
-            this.initialised = true;
-        }
-    }
 
     protected Component initCanvasActions() {
         HorizontalLayout actions = new HorizontalLayout();

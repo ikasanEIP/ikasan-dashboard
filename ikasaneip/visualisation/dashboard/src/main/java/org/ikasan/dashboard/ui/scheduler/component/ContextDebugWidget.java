@@ -16,6 +16,7 @@ import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.visualisation.scheduler.component.ContextSchedulerInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerInstanceVisualisation;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
@@ -108,7 +109,7 @@ public class ContextDebugWidget extends Div {
         this.jobInitiationService = jobInitiationService;
         this.jobUtilsService = jobUtilsService;
 
-        this.schedulerInstanceVisualisation = new SchedulerInstanceVisualisation(".", moduleMetaDataService, scheduledProcessManagementService, configurationRestService,
+        this.schedulerInstanceVisualisation = new ContextSchedulerInstanceVisualisation(".", moduleMetaDataService, scheduledProcessManagementService, configurationRestService,
             moduleControlRestService,  metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, schedulerJobInstanceService, jobInitiationService, jobUtilsService,
             this.scheduledContextService);
 
