@@ -27,6 +27,7 @@ import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.visualisation.scheduler.component.ContextSchedulerInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
@@ -365,7 +366,7 @@ public class ContextInstanceWidget extends VerticalLayout {
         this.schedulerVisualisationDiv = new Div();
         this.schedulerVisualisationDiv.setSizeFull();
 
-        this.schedulerInstanceVisualisation = new SchedulerInstanceVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+        this.schedulerInstanceVisualisation = new ContextSchedulerInstanceVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
             , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
         this.schedulerInstanceVisualisation.setWidthFull();

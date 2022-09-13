@@ -32,6 +32,7 @@ import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.visualisation.scheduler.component.ContextSchedulerVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
@@ -378,7 +379,7 @@ import java.util.stream.Collectors;
         this.schedulerVisualisationDiv = new Div();
         this.schedulerVisualisationDiv.setSizeFull();
 
-        this.schedulerVisualisation = new SchedulerVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+        this.schedulerVisualisation = new ContextSchedulerVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
             , this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService,
             this.scheduledContextInstanceService, this.jobProvisionService, this.scheduledContextService);
