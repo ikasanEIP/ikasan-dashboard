@@ -181,7 +181,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         this.initialised = false;
         initParentNavigation();
 
-        this.schedulerVisualisation = new SchedulerVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
+        this.schedulerVisualisation = new JobSchedulerVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService,
             this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService,
             this.scheduledContextInstanceService, this.jobProvisionService, this.scheduledContextService);

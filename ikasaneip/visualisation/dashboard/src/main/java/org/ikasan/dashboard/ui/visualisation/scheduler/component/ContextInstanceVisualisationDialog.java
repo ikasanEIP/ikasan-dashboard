@@ -159,7 +159,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
 
         this.initParentNavigation();
 
-        this.schedulerInstanceVisualisation =  new SchedulerInstanceVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
+        this.schedulerInstanceVisualisation =  new ContextSchedulerInstanceVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
         this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.rootContextInstance, this.contextInstance, this);

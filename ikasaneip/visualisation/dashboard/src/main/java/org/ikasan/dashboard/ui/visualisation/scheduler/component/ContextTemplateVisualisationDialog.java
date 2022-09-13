@@ -163,7 +163,7 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
         this.contextTemplate = contextTemplate;
         this.initialised = false;
 
-        this.schedulerVisualisation = new SchedulerVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
+        this.schedulerVisualisation = new ContextSchedulerVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.scheduledContextInstanceService,
             this.jobProvisionService, this.scheduledContextService);
