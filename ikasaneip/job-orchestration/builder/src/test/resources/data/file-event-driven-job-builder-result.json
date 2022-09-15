@@ -4,6 +4,7 @@
   "contextId" : "contextId",
   "childContextIds" : [ "childContextId" ],
   "startupControlType" : "MANUAL",
+  "skip" : false,
   "cronExpression" : "cronExpression",
   "jobGroup" : "jobGroup",
   "timeZone" : "timezone",
@@ -27,6 +28,6 @@
   "logMatchedFilenames" : true,
   "ignoreFileRenameWhilstScanning" : false,
   "minFileAgeSeconds" : 180,
-  "identifier" : "agentName-jobName",
-  "jobDescription" : "description"
+  "jobDescription" : "description",
+  "identifier" : "agentName-jobName"
 }

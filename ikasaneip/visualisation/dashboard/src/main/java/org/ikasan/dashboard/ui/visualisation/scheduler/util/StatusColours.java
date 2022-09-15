@@ -16,6 +16,8 @@ public class StatusColours {
         STATUS_COLOURS.put(InstanceStatus.WAITING, IkasanColours.SCHEDULER_WAITING);
         STATUS_COLOURS.put(InstanceStatus.ON_HOLD, IkasanColours.SCHEDULER_ON_HOLD);
         STATUS_COLOURS.put(InstanceStatus.SKIPPED, IkasanColours.SCHEDULER_SKIPPED);
+        STATUS_COLOURS.put(InstanceStatus.SKIPPED_RUNNING, IkasanColours.SCHEDULER_SKIPPED);
+        STATUS_COLOURS.put(InstanceStatus.SKIPPED_COMPLETE, IkasanColours.SCHEDULER_SKIPPED);
         STATUS_COLOURS.put(InstanceStatus.RELEASED, IkasanColours.SCHEDULER_RELEASED);
     }
 

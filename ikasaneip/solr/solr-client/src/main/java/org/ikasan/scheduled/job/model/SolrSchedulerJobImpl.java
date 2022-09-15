@@ -13,6 +13,7 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
     protected String contextId;
     protected List<String> childContextIds;
     protected String startupControlType = "AUTOMATIC";
+    protected boolean skip = false;
 
     @Override
     public String getContextId() {
@@ -82,5 +83,13 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
     @Override
     public void setStartupControlType(String startupControlType) {
         this.startupControlType = startupControlType;
+    }
+
+    public boolean isSkip() {
+        return skip;
+    }
+
+    public void setSkip(boolean skip) {
+        this.skip = skip;
     }
 }

@@ -84,6 +84,44 @@ public class JobLogicMachineTest extends AbstractTest {
      * @throws IOException
      */
     @Test
+    public void test_simple_context_and_single_dependency_relevant_event_job_skipped() throws IOException, InvalidContextTemplateException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+        context.getScheduledJobsMap().get("agentName1-jobName1").setSkip(true);
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+        eventInstance.setSkipped(true);
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", new InternalEventDrivenJobInstanceImpl());
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs, context.getContextParameters(), context, new MutableBoolean(false));
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName2", events.get(0).getAgentName());
+        Assert.assertEquals("jobName2", events.get(0).getJobName());
+    }
+
+    /**
+     * This test evaluates a simple dependency:
+     *      agentName1-jobName1 --> agentName2-jobName2
+     *
+     * "jobDependencies" : [ {
+     *     "jobIdentifier" : "agentName2-jobName2",
+     *     "logicalGrouping" : {
+     *       "logicalGrouping" : null,
+     *       "and" : [ {
+     *         "identifier" : "agentName1-jobName1"
+     *       }],
+     *       "or" : null,
+     *       "not" : null
+     *     }
+     *   } ]
+     *
+     * @throws IOException
+     */
+    @Test
     public void test_simple_context_and_single_dependency_relevant_event_not_successful() throws IOException {
         ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
 

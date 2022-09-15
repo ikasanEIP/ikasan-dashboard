@@ -6,12 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.leansoft.bigqueue.BigQueueImpl;
 import com.leansoft.bigqueue.IBigQueue;
-
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
 import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagementServiceImpl;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
+import org.ikasan.job.orchestration.core.notification.MonitorManagement;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
@@ -20,8 +20,8 @@ import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAudit
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.job.orchestration.core.notification.MonitorManagement;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -41,16 +41,18 @@ import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceServi
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class ContextMachine {
@@ -158,6 +160,15 @@ public class ContextMachine {
                 .filter(job -> job instanceof InternalEventDrivenJobInstance)
                 .map(job -> (InternalEventDrivenJobInstance)job)
                 .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+
+            this.internalEventDrivenJobInstances.entrySet().forEach(job -> {
+                if(job.getValue().isSkip()) {
+                    logger.info("job");
+                    ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), this.contextInstance);
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isSkip());
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
+                }
+            });
 
             this.saveContext();
             List<JobLock> jobLocks = this.context.getJobLocks();
@@ -383,7 +394,7 @@ public class ContextMachine {
                 schedulerJobInstance.setStatus(InstanceStatus.SKIPPED);
             }
             else {
-                schedulerJobInstance.setStatus(InstanceStatus.RELEASED);
+                schedulerJobInstance.setStatus(InstanceStatus.WAITING);
             }
             this.saveContext();
             logger.info(String.format("Successfully set skip flag to [%s] on job[%s]. Context[%s], Context Instance[%s]."
@@ -628,7 +639,10 @@ public class ContextMachine {
         if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
 
             contextInstance.getScheduledJobs().forEach(job -> {
-                if (!job.getStatus().equals(InstanceStatus.COMPLETE)) {
+                if (!job.getStatus().equals(InstanceStatus.COMPLETE)
+                    && !job.getStatus().equals(InstanceStatus.SKIPPED)
+                    && !job.getStatus().equals(InstanceStatus.SKIPPED_RUNNING)
+                    && !job.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
                     allJobsComplete.set(false);
                 }
                 if (job.getStatus().equals(InstanceStatus.RUNNING)

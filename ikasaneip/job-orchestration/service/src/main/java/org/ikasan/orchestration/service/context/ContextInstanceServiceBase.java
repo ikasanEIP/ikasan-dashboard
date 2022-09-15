@@ -6,6 +6,7 @@ import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -134,6 +135,14 @@ public abstract class ContextInstanceServiceBase {
 
         Map<String, InternalEventDrivenJobInstance> internalJobs = getInternalJobs(instance.getId());
         HashMap<String, ModuleMetaData> agents = getAgents(internalJobs);
+
+        internalJobs.entrySet().forEach(job -> {
+            if(job.getValue().isSkip()) {
+                ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), instance);
+                child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isSkip());
+                child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
+            }
+        });
 
         ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, internalJobs, queueDirectory, agents,
             getJobLockCache(context), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);

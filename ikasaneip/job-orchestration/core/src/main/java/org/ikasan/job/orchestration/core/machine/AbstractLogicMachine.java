@@ -34,7 +34,7 @@ public class AbstractLogicMachine<STATEFUL_ENTITY extends StatefulEntity> {
                             operator.getIdentifier(), logicalGrouping));
                     }
 
-                    if (!statefulEntity.getStatus().equals(InstanceStatus.COMPLETE)) {
+                    if (!statefulEntity.getStatus().equals(InstanceStatus.COMPLETE) && !statefulEntity.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
                         and.set(false);
                     }
                 }
@@ -67,7 +67,7 @@ public class AbstractLogicMachine<STATEFUL_ENTITY extends StatefulEntity> {
                             operator.getIdentifier(), logicalGrouping));
                     }
 
-                    if (statefulEntity.getStatus().equals(InstanceStatus.COMPLETE)) {
+                    if (statefulEntity.getStatus().equals(InstanceStatus.COMPLETE) || statefulEntity.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
                         or.set(true);
                     }
                 }
@@ -100,7 +100,7 @@ public class AbstractLogicMachine<STATEFUL_ENTITY extends StatefulEntity> {
                             operator.getIdentifier(), logicalGrouping));
                     }
 
-                    if (statefulEntity.getStatus().equals(InstanceStatus.COMPLETE)) {
+                    if (statefulEntity.getStatus().equals(InstanceStatus.COMPLETE) || statefulEntity.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
                         not.set(true);
                     }
                 }

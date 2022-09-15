@@ -10,7 +10,6 @@ public class SolrSchedulerJobInstanceImpl extends SolrSchedulerJobImpl implement
     private String contextInstanceId;
     private String childContextName;
     private boolean held = false;
-    private boolean skip = false;
     private boolean initiationEventRaised = false;
     private InstanceStatus status;
     private ScheduledProcessEvent scheduledProcessEvent;
@@ -44,14 +43,6 @@ public class SolrSchedulerJobInstanceImpl extends SolrSchedulerJobImpl implement
 
     public void setHeld(boolean held) {
         this.held = held;
-    }
-
-    public boolean isSkip() {
-        return skip;
-    }
-
-    public void setSkip(boolean skip) {
-        this.skip = skip;
     }
 
     public boolean isInitiationEventRaised() {
