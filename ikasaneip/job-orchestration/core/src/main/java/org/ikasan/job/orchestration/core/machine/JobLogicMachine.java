@@ -80,19 +80,27 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             // collection of child contexts means the event is valid for all contexts.
             InstanceStatus currentJobState = schedulerJobInstance.getStatus();
 
-            if(scheduledProcessEvent.isJobStarting()) {
-                schedulerJobInstance.setStatus(InstanceStatus.RUNNING);
-            }
-            else if(scheduledProcessEvent.isSuccessful()) {
-                schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
-            }
-            else {
-                schedulerJobInstance.setStatus(InstanceStatus.ERROR);
-            }
-
             schedulerJobInstance.setScheduledProcessEvent(scheduledProcessEvent);
             schedulerJobInstance.setChildContextName(contextInstance.getName());
             schedulerJobInstance.setContextInstanceId(parentContextInstance.getId());
+
+            if (scheduledProcessEvent.isJobStarting()) {
+                if(schedulerJobInstance.isSkip()) {
+                    schedulerJobInstance.setStatus(InstanceStatus.SKIPPED_RUNNING);
+                }
+                else {
+                    schedulerJobInstance.setStatus(InstanceStatus.RUNNING);
+                }
+            } else if (scheduledProcessEvent.isSuccessful()) {
+                if(schedulerJobInstance.isSkip()) {
+                    schedulerJobInstance.setStatus(InstanceStatus.SKIPPED_COMPLETE);
+                }
+                else {
+                    schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
+                }
+            } else {
+                schedulerJobInstance.setStatus(InstanceStatus.ERROR);
+            }
 
             this.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, parentContextInstance
                 , currentJobState, schedulerJobInstance.getStatus()));
@@ -279,6 +287,11 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
         boolean shouldSkip = contextParametersInstanceService.isSkipped(parentContextInstance.getName(), schedulerJobInstance.getJobName());
         schedulerJobInitiationEvent.setSkipped(shouldSkip);
+
+        if(schedulerJobInstance.isSkip()) {
+            schedulerJobInitiationEvent.setSkipped(true);
+            internalEventDrivenJob.setSkip(true);
+        }
 
         if(contextParameters != null && internalEventDrivenJob.getContextParameters() != null) {
             schedulerJobInitiationEvent.setContextParameters(contextParameters.stream()

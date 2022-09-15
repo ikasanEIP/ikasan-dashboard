@@ -69,6 +69,8 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
     private Checkbox targetResidingContextOnlyCb;
 
+    private Checkbox skippedCb;
+
     private Button saveButton;
     private Button cancelButton;
 
@@ -193,6 +195,16 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         formBinder.forField(this.targetResidingContextOnlyCb)
             .bind(InternalEventDrivenJob::isTargetResidingContextOnly, InternalEventDrivenJob::setTargetResidingContextOnly);
 
+        this.skippedCb = new Checkbox(getTranslation("label.skip", UI.getCurrent().getLocale()));
+        formBinder.forField(this.skippedCb)
+            .bind(InternalEventDrivenJob::isSkip, InternalEventDrivenJob::setSkip);
+
+        HorizontalLayout cbLayout = new HorizontalLayout();
+        cbLayout.add(this.targetResidingContextOnlyCb, this.skippedCb);
+
+        // In order for the skip feature to be added to the general
+        // template level instand of the instance level include
+        // formLayout.add(jobExecutionLabel, cbLayout);
         formLayout.add(jobExecutionLabel, this.targetResidingContextOnlyCb);
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));

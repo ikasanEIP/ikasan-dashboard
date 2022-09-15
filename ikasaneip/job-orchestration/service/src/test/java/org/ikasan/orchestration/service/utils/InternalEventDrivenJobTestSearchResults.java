@@ -5,8 +5,10 @@ import static org.ikasan.orchestration.service.utils.ScheduledContextRecordTestS
 import java.util.ArrayList;
 import java.util.List;
 
+import liquibase.pro.packaged.I;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
@@ -19,9 +21,18 @@ public class InternalEventDrivenJobTestSearchResults implements SearchResults<Sc
 
     private final int number;
     private boolean useContextName;
+    private boolean skipJobs = false;
+    private String identifier = null;
 
     public InternalEventDrivenJobTestSearchResults(int number) {
         this.number = number;
+    }
+
+    public InternalEventDrivenJobTestSearchResults(int number, boolean skipJobs, boolean useContextName, String identifier) {
+        this.number = number;
+        this.skipJobs = skipJobs;
+        this.useContextName = useContextName;
+        this.identifier = identifier;
     }
 
     public InternalEventDrivenJobTestSearchResults(int number, boolean useContextName) {
@@ -33,7 +44,7 @@ public class InternalEventDrivenJobTestSearchResults implements SearchResults<Sc
     public List<SchedulerJobInstanceRecord> getResultList() {
         List<SchedulerJobInstanceRecord> results = new ArrayList<>();
         for (int i = 1; i < number + 1; i++) {
-            results.add(new TestInternalEventDrivenJobRecordImpl(i, useContextName, ""));
+            results.add(new TestInternalEventDrivenJobRecordImpl(this.identifier != null ? this.identifier : String.valueOf(i), useContextName, "", this.skipJobs));
         }
         return results;
     }
@@ -54,10 +65,13 @@ public class InternalEventDrivenJobTestSearchResults implements SearchResults<Sc
         private final boolean useContextName;
         private final String type;
 
-        public TestInternalEventDrivenJobRecordImpl(int id, boolean useContextName, String type) {
-            this.id = String.valueOf(id);
+        private boolean skipJobs;
+
+        public TestInternalEventDrivenJobRecordImpl(String id, boolean useContextName, String type, boolean skipJobs) {
+            this.id = id;
             this.useContextName = useContextName;
             this.type = type;
+            this.skipJobs = skipJobs;
         }
 
         @Override
@@ -115,6 +129,10 @@ public class InternalEventDrivenJobTestSearchResults implements SearchResults<Sc
             InternalEventDrivenJobInstance internalEventDrivenJob = new InternalEventDrivenJobInstanceImpl();
             internalEventDrivenJob.setIdentifier(id);
             internalEventDrivenJob.setAgentName(useContextName ? AGENT_NAME + id + "-" + CONTEXT_NAME + id : AGENT_NAME + id);
+            internalEventDrivenJob.setSkip(skipJobs);
+            if(this.skipJobs) internalEventDrivenJob.setStatus(InstanceStatus.SKIPPED);
+            else internalEventDrivenJob.setStatus(InstanceStatus.WAITING);
+            internalEventDrivenJob.setChildContextName("CONTEXT-1616645609");
             return internalEventDrivenJob;
         }
 
@@ -125,52 +143,14 @@ public class InternalEventDrivenJobTestSearchResults implements SearchResults<Sc
 
         @Override
         public String getStatus() {
-            return null;
+            if(this.skipJobs) return InstanceStatus.SKIPPED.toString();
+            else return InstanceStatus.WAITING.toString();
         }
 
         @Override
         public void setStatus(String status) {
 
         }
-
-        //        @Override
-//        public String getAgentName() {
-//            return useContextName ? AGENT_NAME + "-" + CONTEXT_NAME + id : AGENT_NAME + id;
-//        }
-//
-//        @Override
-//        public void setAgentName(String agentName) {
-//        }
-//
-//        @Override
-//        public String getJobName() {
-//            return "JobName" + id;
-//        }
-//
-//        @Override
-//        public void setJobName(String jobName) {
-//        }
-//
-//        @Override
-//        public String getContextId() {
-//            return "ContextId" + id;
-//        }
-//
-//        @Override
-//        public void setContextId(String contextId) {
-//        }
-//
-//        @Override
-//        public InternalEventDrivenJob getInternalEventDrivenJob() {
-//            InternalEventDrivenJobImpl internalEventDrivenJob = new InternalEventDrivenJobImpl();
-//            internalEventDrivenJob.setIdentifier(id);
-//            internalEventDrivenJob.setAgentName(useContextName ? AGENT_NAME + id + "-" + CONTEXT_NAME + id : AGENT_NAME + id);
-//            return internalEventDrivenJob;
-//        }
-//
-//        @Override
-//        public void setInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob) {
-//        }
 
         @Override
         public long getTimestamp() {

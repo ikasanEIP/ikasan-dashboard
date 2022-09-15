@@ -14,6 +14,7 @@ public class SchedulerJobImpl implements SchedulerJob {
     protected List<String> childContextIds;
     protected String description;
     protected String startupControlType = "AUTOMATIC";
+    protected boolean skip = false;
 
     @Override
     public String getContextId() {
@@ -86,6 +87,16 @@ public class SchedulerJobImpl implements SchedulerJob {
     }
 
     @Override
+    public boolean isSkip() {
+        return skip;
+    }
+
+    @Override
+    public void setSkip(boolean skip) {
+        this.skip = skip;
+    }
+
+    @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("SchedulerJobImpl{");
         sb.append("jobIdentifier='").append(jobIdentifier).append('\'');
@@ -101,6 +112,7 @@ public class SchedulerJobImpl implements SchedulerJob {
         }
         sb.append("], description='").append(description).append('\'');
         sb.append(", startupControlType='").append(startupControlType).append('\'');
+        sb.append(", skip='").append(skip).append('\'');
         sb.append('}');
         return sb.toString();
     }

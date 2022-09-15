@@ -13,7 +13,7 @@ import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.scheduler.util.ContextViewUpdateEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
