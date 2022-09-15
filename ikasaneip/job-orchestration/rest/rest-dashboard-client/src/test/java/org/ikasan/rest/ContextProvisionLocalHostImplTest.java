@@ -83,4 +83,61 @@ public class ContextProvisionLocalHostImplTest extends AbstractTest{
 
     }
 
+    @Test
+    @Ignore
+    public void test_success_provision_context_1025415934() throws IOException {
+        when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
+        when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
+        when(environment.getProperty("ikasan.dashboard.extract.password")).thenReturn("admin");
+        when(environment.getProperty("module.name")).thenReturn("useragent");
+        when(environment.getProperty("ikasan.dashboard.extract.base.url")).thenReturn(contextBaseUrl);
+        when(environment.getProperty("ikasan.dashboard.extract.exceptions", "false")).thenReturn("true");
+
+        ContextProvisionRestServiceImpl contextProvisionRestService = new ContextProvisionRestServiceImpl(environment,
+            new HttpComponentsClientHttpRequestFactory(), "/rest/provision/context");
+
+        InputStream inputStream = new ClassPathResource("data/SAMPLE_CONTEXT/CONTEXT-1025415934.zip").getInputStream();
+        ContextBundle contextBundle = ContextImportZipUtils.extractZipFile(inputStream);
+
+        contextProvisionRestService.provisionContext(contextBundle);
+    }
+
+    @Test
+    @Ignore
+    public void test_success_provision_CONTEXT_1616314541() throws IOException {
+        when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
+        when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
+        when(environment.getProperty("ikasan.dashboard.extract.password")).thenReturn("admin");
+        when(environment.getProperty("module.name")).thenReturn("useragent");
+        when(environment.getProperty("ikasan.dashboard.extract.base.url")).thenReturn(contextBaseUrl);
+        when(environment.getProperty("ikasan.dashboard.extract.exceptions", "false")).thenReturn("true");
+
+        ContextProvisionRestServiceImpl contextProvisionRestService = new ContextProvisionRestServiceImpl(environment,
+            new HttpComponentsClientHttpRequestFactory(), "/rest/provision/context");
+
+        InputStream inputStream = new ClassPathResource("data/SAMPLE_CONTEXT/CONTEXT--1616314541.zip").getInputStream();
+        ContextBundle contextBundle = ContextImportZipUtils.extractZipFile(inputStream);
+
+        contextProvisionRestService.provisionContext(contextBundle);
+    }
+
+    @Test
+    @Ignore
+    public void test_success_provision_context_CONTEXT_611007888() throws IOException {
+        when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
+        when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
+        when(environment.getProperty("ikasan.dashboard.extract.password")).thenReturn("admin");
+        when(environment.getProperty("module.name")).thenReturn("useragent");
+        when(environment.getProperty("ikasan.dashboard.extract.base.url")).thenReturn(contextBaseUrl);
+        when(environment.getProperty("ikasan.dashboard.extract.exceptions", "false")).thenReturn("true");
+
+        ContextProvisionRestServiceImpl contextProvisionRestService = new ContextProvisionRestServiceImpl(environment,
+            new HttpComponentsClientHttpRequestFactory(), "/rest/provision/context");
+
+        InputStream inputStream = new ClassPathResource("data/SAMPLE_CONTEXT/CONTEXT--611007888.zip").getInputStream();
+        ContextBundle contextBundle = ContextImportZipUtils.extractZipFile(inputStream);
+
+        contextProvisionRestService.provisionContext(contextBundle);
+    }
+
 }

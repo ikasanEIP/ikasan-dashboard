@@ -137,8 +137,13 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                         , SolrFileEventDrivenJobInstanceImpl.class));
                 }
                 else if(schedulerJobRecord.getJob() instanceof SolrInternalEventDrivenJobImpl) {
-                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
-                        , SolrInternalEventDrivenJobInstanceImpl.class));
+                    InternalEventDrivenJobInstance internalEventDrivenJobInstance = objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
+                        , SolrInternalEventDrivenJobInstanceImpl.class);
+                    if(internalEventDrivenJobInstance.isSkip()) {
+                        internalEventDrivenJobInstance.setStatus(InstanceStatus.SKIPPED);
+                    }
+
+                    schedulerJobInstances.add(internalEventDrivenJobInstance);
                 }
                 else if(schedulerJobRecord.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
                     schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
@@ -169,7 +174,7 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                 SchedulerJobInstanceRecord instanceRecord = new SolrSchedulerJobInstanceRecordImpl();
                 instanceRecord.setContextName(job.getContextId());
                 instanceRecord.setJobName(job.getJobName());
-                instanceRecord.setStatus(InstanceStatus.WAITING.name());
+                instanceRecord.setStatus(job.getStatus().toString());
                 instanceRecord.setTimestamp(System.currentTimeMillis());
                 instanceRecord.setContextInstanceId(contextInstance.getId());
                 instanceRecord.setChildContextName(job.getChildContextName());

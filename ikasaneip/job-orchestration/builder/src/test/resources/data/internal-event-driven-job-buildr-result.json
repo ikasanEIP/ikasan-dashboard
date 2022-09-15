@@ -4,6 +4,7 @@
   "contextId" : "contextId",
   "childContextIds" : [ "childContextId" ],
   "startupControlType" : "AUTOMATIC",
+  "skip" : false,
   "successfulReturnCodes" : [ "0" ],
   "workingDirectory" : "working directory",
   "commandLine" : "commandLine",
@@ -18,6 +19,6 @@
   } ],
   "daysOfWeekToRun" : [ 2, 3 ],
   "targetResidingContextOnly" : false,
-  "identifier" : "agentName-jobName",
-  "jobDescription" : "description"
+  "jobDescription" : "description",
+  "identifier" : "agentName-jobName"
 }
