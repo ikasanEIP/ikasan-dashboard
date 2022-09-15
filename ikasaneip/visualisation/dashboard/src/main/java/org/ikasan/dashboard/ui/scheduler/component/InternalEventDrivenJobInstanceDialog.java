@@ -210,7 +210,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.holdButton.setIconAfterText(true);
 
         if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.ON_HOLD) ||
-            this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED)) {
+            this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED) ||
+            this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
+            this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
             this.holdButton.setVisible(false);
         }
 
@@ -263,7 +265,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.skipButton.setIconAfterText(true);
 
         if(!(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.ON_HOLD) ||
-            this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED))) {
+            this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED)) ||
+            this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
+            this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
             this.skipButton.setVisible(true);
         }
         else {
@@ -294,7 +298,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.enableButton = new Button(getTranslation("button.enable", UI.getCurrent().getLocale()), new Icon(VaadinIcon.PLAY));
         this.enableButton.setIconAfterText(true);
 
-        if(!this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED)) {
+        if(!this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED) ||
+            this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
+            this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
             this.enableButton.setVisible(false);
         }
 
@@ -819,7 +825,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);
         }
-        else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED)) {
+        else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED) ||
+            this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
+            this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
             this.killButton.setVisible(false);
             this.submitButton.setVisible(true);
             this.holdButton.setVisible(false);

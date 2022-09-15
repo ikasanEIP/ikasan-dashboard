@@ -23,12 +23,12 @@ import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.CanvasJsonToContextTemplateAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.CanvasJsonValidationException;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextTemplateDraw2dAdapter;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.designer.CanvasInitialisedListener;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.*;
 import org.ikasan.designer.function.SaveFunction;
 import org.ikasan.designer.model.UserData;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.context.model.SolrScheduledContextViewRecordImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
@@ -223,64 +223,6 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     }
 
     protected abstract void init() throws IOException;
-//    {
-//        if(!initialised && contextTemplate != null) {
-//
-//            if (this.designerCanvas != null) {
-//                this.removeAll();
-//            }
-//
-//            this.designerCanvas = new DesignerCanvas(this, null, "canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, !this.edit);
-//            this.designerCanvas.addCanvasInitialisedListener(this);
-//
-////            if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
-////                if(this.scheduledContextViewRecord == null) {
-////                    SearchResults<SchedulerJobRecord> jobs = this.schedulerJobService.findByContext(parentContextTemplate.getName(), -1, -1);
-////
-////                    Map<String, SchedulerJob> schedulerJobs = jobs.getResultList().stream()
-////                        .map(record -> record.getJob())
-////                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity()));
-////
-////                    this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextTemplate, schedulerJobs));
-////                }
-////                else {
-////                    this.designerCanvas.setCanvasJson(this.scheduledContextViewRecord.getContextView());
-////                }
-////            }
-////            else  {
-////                this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
-////            }
-//
-//            if(contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
-//                this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
-//            }
-//            else if(contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
-//                if(this.scheduledContextViewRecord == null) {
-//                    SearchResults<SchedulerJobRecord> jobs = this.schedulerJobService.findByContext(parentContextTemplate.getName(), -1, -1);
-//
-//                    Map<String, SchedulerJob> schedulerJobs = jobs.getResultList().stream()
-//                        .map(record -> record.getJob())
-//                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity()));
-//
-//                    this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextTemplate, schedulerJobs));
-//                }
-//                else {
-//                    this.designerCanvas.setCanvasJson(this.scheduledContextViewRecord.getContextView());
-//                }
-//            }
-//
-//            this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
-//            this.designerCanvas.addCanvasItemRightClickEventListener(this);
-//            this.designerCanvas.addConnectorEventListener(this);
-//            this.designerCanvas.addCanvasUpdatedListener(this);
-//            this.designerCanvas.addFigureDeleteEventListeners(this);
-//            this.designerCanvas.addFigureUndoDeleteEventListeners(this);
-//
-//            this.add(initCanvasActions(), designerCanvas);
-//
-//            this.initialised = true;
-//        }
-//    }
 
     protected Component initCanvasActions() {
         HorizontalLayout actions = new HorizontalLayout();
@@ -408,7 +350,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     private void openJobDialog(String identifier) {
         SchedulerJob schedulerJob = this.contextTemplate.getScheduledJobsMap().get(identifier);
 
-        SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextIdAndJobName
+            SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextIdAndJobName
             (this.parentContextTemplate.getName(), schedulerJob.getJobName());
 
         if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {

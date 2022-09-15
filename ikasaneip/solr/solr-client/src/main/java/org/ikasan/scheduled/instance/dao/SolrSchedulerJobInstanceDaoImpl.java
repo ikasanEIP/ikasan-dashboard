@@ -164,7 +164,19 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
             .append(filter.getChildContextName() != null && !filter.getChildContextName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getChildContextName()) : "*");
 
         if(filter.getStatus() != null && !filter.getStatus().isEmpty()) {
-            queryString.append(AND).append(STATUS).append(COLON).append(filter.getStatus());
+            if(filter.getStatus().equals(InstanceStatus.SKIPPED.name())) {
+                filter.setStatus(InstanceStatus.SKIPPED.toString());
+                queryString.append(AND).append(OPEN_BRACKET)
+                    .append(STATUS).append(COLON).append(filter.getStatus())
+                    .append(OR)
+                    .append(STATUS).append(COLON).append(InstanceStatus.SKIPPED_COMPLETE.name())
+                    .append(OR)
+                    .append(STATUS).append(COLON).append(InstanceStatus.SKIPPED_RUNNING.name())
+                    .append(CLOSE_BRACKET);
+            }
+            else {
+                queryString.append(AND).append(STATUS).append(COLON).append(filter.getStatus());
+            }
         }
 
         SolrQuery solrQuery = new SolrQuery();

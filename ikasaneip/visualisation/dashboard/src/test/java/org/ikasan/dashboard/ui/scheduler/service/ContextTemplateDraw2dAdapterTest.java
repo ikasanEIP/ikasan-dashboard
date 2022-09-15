@@ -2,9 +2,7 @@ package org.ikasan.dashboard.ui.scheduler.service;
 
 import org.ikasan.dashboard.AbstractTest;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextTemplateDraw2dAdapter;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextHelper;
 import org.ikasan.job.orchestration.service.ContextService;
-import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.junit.Test;
 
 import java.io.IOException;

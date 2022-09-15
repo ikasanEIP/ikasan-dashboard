@@ -4,6 +4,7 @@
   "contextId" : "contextId",
   "childContextIds" : [ "childContextId" ],
   "startupControlType" : "MANUAL",
+  "skip" : false,
   "cronExpression" : "cronExpression",
   "jobGroup" : "jobGroup",
   "timeZone" : "timezone",
@@ -15,6 +16,6 @@
   },
   "persistentRecovery" : true,
   "recoveryTolerance" : 100,
-  "identifier" : "agentName-jobName",
-  "jobDescription" : "description"
+  "jobDescription" : "description",
+  "identifier" : "agentName-jobName"
 }

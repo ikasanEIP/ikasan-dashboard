@@ -88,7 +88,16 @@ public abstract class Draw2dAdapterBase {
             if(context.getJobDependencies() != null) {
                 context.getJobDependencies().forEach(jobDependency -> {
                     if (((JobDependency) jobDependency).getLogicalGrouping() != null) {
-                        this.manageLogicalGroupings(((JobDependency) jobDependency).getJobIdentifier(),
+//                        if(!context.getScheduledJobsMap().containsKey(((JobDependency) jobDependency).getJobIdentifier())) {
+//                            System.out.println("Potential link to context!");
+                            context.getContexts().forEach(child -> {
+                                if(((Context)child).getScheduledJobsMap()
+                                    .containsKey(((JobDependency) jobDependency).getJobIdentifier())) {
+                                    System.out.println("This job links TO a job in another context");
+                                }
+                            });
+//                        }
+                        this.manageLogicalGroupings(context, ((JobDependency) jobDependency).getJobIdentifier(),
                             ((JobDependency) jobDependency).getLogicalGrouping(), diagramBuilder, graph);
 
                         this.getAllJobsInGrouping(((JobDependency) jobDependency).getLogicalGrouping(),
@@ -372,17 +381,22 @@ public abstract class Draw2dAdapterBase {
         return cellMap;
     }
 
-    protected void manageLogicalGroupings(String jobIdentifier, LogicalGrouping logicalGrouping, DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object, DefaultEdge> graph) {
+    protected void manageLogicalGroupings(Context context, String jobIdentifier, LogicalGrouping logicalGrouping, DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object, DefaultEdge> graph) {
         if(logicalGrouping.getLogicalGrouping() != null) {
-            manageLogicalGroupings(jobIdentifier, logicalGrouping.getLogicalGrouping(), diagramBuilder, graph);
+            manageLogicalGroupings(context, jobIdentifier, logicalGrouping.getLogicalGrouping(), diagramBuilder, graph);
         }
 
         if(logicalGrouping.getAnd() != null && !logicalGrouping.getAnd().isEmpty()) {
             logicalGrouping.getAnd().forEach(and -> {
                 if(and.getLogicalGrouping() != null) {
-                    manageLogicalGroupings(jobIdentifier, and.getLogicalGrouping(), diagramBuilder, graph);
+                    manageLogicalGroupings(context, jobIdentifier, and.getLogicalGrouping(), diagramBuilder, graph);
                 }
                 else {
+                    context.getContexts().forEach(child -> {
+                        if(((Context)child).getScheduledJobsMap().containsKey(and.getIdentifier())) {
+                            System.out.println("This job is linked to FROM a job in another context");
+                        }
+                    });
                     graph.addEdge(and.getIdentifier(), jobIdentifier);
 
                     ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
@@ -409,7 +423,7 @@ public abstract class Draw2dAdapterBase {
         if(logicalGrouping.getOr() != null && !logicalGrouping.getOr().isEmpty()) {
             logicalGrouping.getOr().forEach(or -> {
                 if(or.getLogicalGrouping() != null) {
-                    manageLogicalGroupings(jobIdentifier, or.getLogicalGrouping(), diagramBuilder, graph);
+                    manageLogicalGroupings(context, jobIdentifier, or.getLogicalGrouping(), diagramBuilder, graph);
                 }
                 else {
                     graph.addEdge(or.getIdentifier(), jobIdentifier);
