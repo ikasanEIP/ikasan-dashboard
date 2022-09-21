@@ -6,9 +6,9 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
-import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 
 import java.util.Objects;
