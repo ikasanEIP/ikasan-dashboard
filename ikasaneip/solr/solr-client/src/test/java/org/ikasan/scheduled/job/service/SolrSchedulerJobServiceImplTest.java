@@ -383,21 +383,23 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
             for (int i = 0; i < results.getResultList().size(); i++) {
                 SchedulerJobRecord job = (SolrSchedulerJobRecordImpl) results.getResultList().get(i);
                 assertEquals(contextId + "agentName" + resetCount, job.getAgentName());
-                assertEquals(contextId + "jobName" + resetCount, job.getJobName());
                 assertEquals(contextId, job.getContextName());
                 if (job.getJob() instanceof SolrFileEventDrivenJobImpl) {
                     FileEventDrivenJob fileJob = (FileEventDrivenJob) job.getJob();
+                    assertEquals(contextId + "jobNameFile" + resetCount, job.getJobName());
                     assertEquals(job.getAgentName() + "_" + job.getJobName(), fileJob.getIdentifier());
                     assertEquals("cronExpression" + resetCount, fileJob.getCronExpression());
                     assertEquals("filePath" + resetCount, fileJob.getFilePath());
                 }
-                if (job.getJob() instanceof SolrInternalEventDrivenJobImpl) {
+                else if (job.getJob() instanceof SolrInternalEventDrivenJobImpl) {
                     InternalEventDrivenJob internalEventDrivenJob = (InternalEventDrivenJob) job.getJob();
+                    assertEquals(contextId + "jobNameInternal" + resetCount, job.getJobName());
                     assertEquals(job.getAgentName() + "_" + job.getJobName(), internalEventDrivenJob.getIdentifier());
                     assertEquals("ls -al" + resetCount, internalEventDrivenJob.getCommandLine());
                 }
-                if (job.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
+                else if (job.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
                     QuartzScheduleDrivenJob quartzScheduleDrivenJob = (QuartzScheduleDrivenJob) job.getJob();
+                    assertEquals(contextId + "jobNameQuartz" + resetCount, job.getJobName());
                     assertEquals(job.getAgentName() + "_" + job.getJobName(), quartzScheduleDrivenJob.getIdentifier());
                     assertEquals("cronExpression" + resetCount, quartzScheduleDrivenJob.getCronExpression());
                 }
