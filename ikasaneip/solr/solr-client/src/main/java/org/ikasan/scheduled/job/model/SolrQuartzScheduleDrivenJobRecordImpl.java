@@ -23,7 +23,7 @@ public class SolrQuartzScheduleDrivenJobRecordImpl implements QuartzScheduleDriv
     private String jobName;
 
     @Field(SolrDaoBase.COMPONENT_NAME)
-    private String contextId;
+    private String contextName;
 
     @Field(SolrDaoBase.PAYLOAD_CONTENT)
     private String quartzScheduleDrivenJob;
@@ -83,13 +83,13 @@ public class SolrQuartzScheduleDrivenJobRecordImpl implements QuartzScheduleDriv
     }
 
     @Override
-    public String getContextId() {
-        return this.contextId;
+    public String getContextName() {
+        return this.contextName;
     }
 
     @Override
-    public void setContextId(String contextId) {
-        this.contextId = contextId;
+    public void setContextName(String contextName) {
+        this.contextName = contextName;
     }
 
     public QuartzScheduleDrivenJob getQuartzScheduleDrivenJob() {

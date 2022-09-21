@@ -76,8 +76,8 @@ public class QuartzScheduleDrivenJobBuilder extends SchedulerJobBuilder {
         quartzScheduleDrivenJob.setIdentifier(super.agentName+"-"+super.jobName);
         quartzScheduleDrivenJob.setJobDescription(super.description);
         quartzScheduleDrivenJob.setJobName(super.jobName);
-        quartzScheduleDrivenJob.setContextId(super.contextId);
-        quartzScheduleDrivenJob.setChildContextIds(super.childContextIds);
+        quartzScheduleDrivenJob.setContextName(super.contextName);
+        quartzScheduleDrivenJob.setChildContextNames(super.childContextNames);
         quartzScheduleDrivenJob.setStartupControlType(super.startupControlType);
         quartzScheduleDrivenJob.setCronExpression(this.cronExpression);
         quartzScheduleDrivenJob.setTimeZone(this.timeZone);

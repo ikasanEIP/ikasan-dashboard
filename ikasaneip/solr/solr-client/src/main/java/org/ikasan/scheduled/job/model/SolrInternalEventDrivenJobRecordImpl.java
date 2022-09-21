@@ -23,19 +23,28 @@ public class SolrInternalEventDrivenJobRecordImpl implements InternalEventDriven
     private String jobName;
 
     @Field(SolrDaoBase.COMPONENT_NAME)
-    private String contextId;
+    private String contextName;
 
     @Field(SolrDaoBase.PAYLOAD_CONTENT)
     private String internalEventDrivenJob;
 
     @Field(SolrDaoBase.CREATED_DATE_TIME)
-    private long timestamp;
+    private long timestamp = -1;
 
     @Field(SolrDaoBase.UPDATED_DATE_TIME)
     private long modifiedTimestamp;
 
     @Field(SolrDaoBase.MODIFIED_BY)
     private String modifiedBy;
+
+    @Field(SolrDaoBase.HELD)
+    private boolean held;
+
+    @Field(SolrDaoBase.SKIPPED)
+    private boolean skipped;
+
+    @Field(SolrDaoBase.TARGET_RESIDING_CONTEXT_ONLY)
+    private boolean targetResidingContextOnly;
 
     @Override
     public long getModifiedTimestamp() {
@@ -83,13 +92,13 @@ public class SolrInternalEventDrivenJobRecordImpl implements InternalEventDriven
     }
 
     @Override
-    public String getContextId() {
-        return this.contextId;
+    public String getContextName() {
+        return this.contextName;
     }
 
     @Override
-    public void setContextId(String contextId) {
-        this.contextId = contextId;
+    public void setContextName(String contextName) {
+        this.contextName = contextName;
     }
 
     public InternalEventDrivenJob getInternalEventDrivenJob() {
@@ -116,5 +125,35 @@ public class SolrInternalEventDrivenJobRecordImpl implements InternalEventDriven
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public boolean isHeld() {
+        return held;
+    }
+
+    @Override
+    public void setHeld(boolean held) {
+        this.held = held;
+    }
+
+    @Override
+    public boolean isSkipped() {
+        return skipped;
+    }
+
+    @Override
+    public void setSkipped(boolean skipped) {
+        this.skipped = skipped;
+    }
+
+    @Override
+    public boolean isTargetResidingContextOnly() {
+        return targetResidingContextOnly;
+    }
+
+    @Override
+    public void setTargetResidingContextOnly(boolean targetResidingContextOnly) {
+        this.targetResidingContextOnly = targetResidingContextOnly;
     }
 }

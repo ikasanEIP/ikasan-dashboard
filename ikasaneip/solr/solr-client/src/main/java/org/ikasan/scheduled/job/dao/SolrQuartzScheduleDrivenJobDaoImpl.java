@@ -43,10 +43,10 @@ public class SolrQuartzScheduleDrivenJobDaoImpl extends SolrDaoBase<QuartzSchedu
         }
 
         document.addField(ID, JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB + "_" + event.getAgentName() + "_" + event.getJobName()
-            + "_" + event.getQuartzScheduleDrivenJob().getContextId());
+            + "_" + event.getQuartzScheduleDrivenJob().getContextName());
         document.addField(MODULE_NAME, event.getAgentName());
         document.addField(FLOW_NAME, event.getJobName());
-        document.addField(COMPONENT_NAME, event.getQuartzScheduleDrivenJob().getContextId());
+        document.addField(COMPONENT_NAME, event.getQuartzScheduleDrivenJob().getContextName());
         document.addField(CREATED_DATE_TIME, event.getTimestamp());
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
         document.addField(MODIFIED_BY, event.getModifiedBy());

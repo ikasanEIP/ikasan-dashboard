@@ -295,7 +295,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
 
         QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
         quartzScheduleDrivenJobRecord.setAgentName(solrQuartzScheduleDrivenJob.getAgentName());
-        quartzScheduleDrivenJobRecord.setContextId(solrQuartzScheduleDrivenJob.getContextId());
+        quartzScheduleDrivenJobRecord.setContextName(solrQuartzScheduleDrivenJob.getContextName());
         quartzScheduleDrivenJobRecord.setJobName(solrQuartzScheduleDrivenJob.getJobName());
         quartzScheduleDrivenJobRecord.setQuartzScheduleDrivenJob(solrQuartzScheduleDrivenJob);
         quartzScheduleDrivenJobRecord.setModifiedBy(authentication.getName());

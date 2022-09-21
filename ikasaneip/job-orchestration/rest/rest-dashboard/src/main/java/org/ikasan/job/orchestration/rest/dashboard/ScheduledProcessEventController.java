@@ -151,8 +151,8 @@ public class ScheduledProcessEventController
         try {
             ContextualisedScheduledProcessEvent scheduledProcessEvent
                 = mapper.readValue(scheduledProcessEventPayload, ContextualisedScheduledProcessEventImpl.class);
-            if (scheduledProcessEvent.getContextId() != null) {
-                map.put("contextName", scheduledProcessEvent.getContextId());
+            if (scheduledProcessEvent.getContextName() != null) {
+                map.put("contextName", scheduledProcessEvent.getContextName());
             }
             if (scheduledProcessEvent.getContextInstanceId() != null) {
                 map.put("contextInstanceId", scheduledProcessEvent.getContextInstanceId());

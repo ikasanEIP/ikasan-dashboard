@@ -62,7 +62,7 @@ public class SchedulerJobInstanceServiceTestImpl implements SchedulerJobInstance
             FileEventDrivenJobInstance fileEventDrivenJobInstance = new SolrFileEventDrivenJobInstanceImpl();
             fileEventDrivenJobInstance.setCronExpression("0 0/1 05-23 ? * MON-SUN *");
             fileEventDrivenJobInstance.setJobName("job-1");
-            fileEventDrivenJobInstance.setChildContextIds(Arrays.asList("context-instance-1"));
+            fileEventDrivenJobInstance.setChildContextNames(Arrays.asList("context-instance-1"));
             fileEventDrivenJobInstance.setStatus(InstanceStatus.COMPLETE);
 
             record.setSchedulerJobInstance(fileEventDrivenJobInstance);
@@ -78,7 +78,7 @@ public class SchedulerJobInstanceServiceTestImpl implements SchedulerJobInstance
             scheduledProcessEvent.setCompletionTime(new Date().getTime());
 
             internalEventDrivenJobInstance.setScheduledProcessEvent(scheduledProcessEvent);
-            internalEventDrivenJobInstance.setChildContextIds(Arrays.asList("context-instance-1"));
+            internalEventDrivenJobInstance.setChildContextNames(Arrays.asList("context-instance-1"));
             internalEventDrivenJobInstance.setJobName("job-1");
 
             record.setSchedulerJobInstance(internalEventDrivenJobInstance);

@@ -34,8 +34,8 @@ public class AbstractTest
     protected ContextualisedScheduledProcessEventImpl scheduledProcessEventInstance(String contextId, String childContextId
         , String jobName, String agentName, boolean isSuccessful) {
         ContextualisedScheduledProcessEventImpl eventInstance = new ContextualisedScheduledProcessEventImpl();
-        eventInstance.setContextId(contextId);
-        eventInstance.setChildContextIds(List.of(childContextId));
+        eventInstance.setContextName(contextId);
+        eventInstance.setChildContextNames(List.of(childContextId));
         eventInstance.setJobName(jobName);
         eventInstance.setAgentName(agentName);
         eventInstance.setSuccessful(isSuccessful);
@@ -46,8 +46,8 @@ public class AbstractTest
     protected ContextualisedScheduledProcessEventImpl scheduledProcessEventInstance(String contextId, List<String> childContextIds
         , String jobName, String agentName, boolean isSuccessful) {
         ContextualisedScheduledProcessEventImpl eventInstance = new ContextualisedScheduledProcessEventImpl();
-        eventInstance.setContextId(contextId);
-        eventInstance.setChildContextIds(childContextIds);
+        eventInstance.setContextName(contextId);
+        eventInstance.setChildContextNames(childContextIds);
         eventInstance.setJobName(jobName);
         eventInstance.setAgentName(agentName);
         eventInstance.setSuccessful(isSuccessful);

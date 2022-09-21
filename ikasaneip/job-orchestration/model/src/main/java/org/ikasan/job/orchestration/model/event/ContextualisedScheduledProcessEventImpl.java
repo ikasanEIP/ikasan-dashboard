@@ -2,7 +2,6 @@ package org.ikasan.job.orchestration.model.event;
 
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 
 import java.io.Serializable;
 import java.util.List;
@@ -26,8 +25,8 @@ public class ContextualisedScheduledProcessEventImpl implements ContextualisedSc
     private long nextFireTime;
     private long completionTime;
     private boolean dryRun = false;
-    private String contextId;
-    private List<String> childContextIds;
+    private String contextName;
+    private List<String> childContextNames;
     private String contextInstanceId;
     private boolean jobStarting = false;
     private DryRunParametersImpl dryRunParameters;
@@ -224,23 +223,23 @@ public class ContextualisedScheduledProcessEventImpl implements ContextualisedSc
     }
 
     @Override
-    public String getContextId() {
-        return this.contextId;
+    public String getContextName() {
+        return this.contextName;
     }
 
     @Override
-    public void setContextId(String contextId) {
-        this.contextId = contextId;
+    public void setContextName(String contextName) {
+        this.contextName = contextName;
     }
 
     @Override
-    public List<String> getChildContextIds() {
-        return childContextIds;
+    public List<String> getChildContextNames() {
+        return childContextNames;
     }
 
     @Override
-    public void setChildContextIds(List<String> childContextIds) {
-        this.childContextIds = childContextIds;
+    public void setChildContextNames(List<String> childContextNames) {
+        this.childContextNames = childContextNames;
     }
 
     @Override
@@ -314,13 +313,13 @@ public class ContextualisedScheduledProcessEventImpl implements ContextualisedSc
         sb.append(", nextFireTime=").append(nextFireTime);
         sb.append(", completionTime=").append(completionTime);
         sb.append(", dryRun=").append(dryRun);
-        sb.append(", contextId='").append(contextId).append('\'');
-        if(childContextIds != null) {
-            sb.append(", childContextIds=[ ");
-            childContextIds.forEach(id -> sb.append("[").append(id).append("] "));
+        sb.append(", contextName='").append(contextName).append('\'');
+        if(childContextNames != null) {
+            sb.append(", childContextNames=[ ");
+            childContextNames.forEach(id -> sb.append("[").append(id).append("] "));
         }
         else {
-            sb.append(", childContextIds='").append(this.childContextIds).append('\'');
+            sb.append(", childContextNames='").append(this.childContextNames).append('\'');
         }
         sb.append("], contextInstanceId='").append(contextInstanceId).append('\'');
         sb.append(", jobStarting=").append(jobStarting);

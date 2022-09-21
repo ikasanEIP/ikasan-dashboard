@@ -24,10 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
@@ -114,6 +111,42 @@ public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
             else {
                 setFilter.accept(null);
             }
+
+            filteredDataProvider.refreshAll();
+        });
+
+        Icon filterIcon = VaadinIcon.FILTER.create();
+        filterIcon.setSize("12pt");
+
+        HorizontalLayout layout = new HorizontalLayout(select, filterIcon);
+        layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, filterIcon);
+
+        hr.getCell(getColumnByKey(columnKey)).setComponent(layout);
+    }
+
+    /**
+     * Add filtering to a column.
+     *
+     * @param hr
+     * @param setFilter
+     * @param columnKey
+     */
+    public void addSelectGridFiltering(HeaderRow hr, Consumer<String> setFilter, List<String> options, String columnKey) {
+        Select<String> select = new Select<>();
+        select.setItems(options);
+        select.setWidthFull();
+        select.setEmptySelectionAllowed(true);
+        select.setItemLabelGenerator(entry -> {
+            if(entry == null) {
+                return "";
+            }
+
+            return entry;
+        });
+
+        select.addValueChangeListener(ev-> {
+
+            setFilter.accept(ev.getValue());
 
             filteredDataProvider.refreshAll();
         });

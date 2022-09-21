@@ -21,6 +21,7 @@
     <fieldType name="string" class="solr.StrField"/>
     <fieldType name="plongs" class="solr.TrieLongField" precisionStep="0" omitNorms="true" positionIncrementGap="0"/>
     <fieldType name="binary" class="solr.BinaryField"/>
+    <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true"/>
     <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100" multiValued="true">
         <analyzer type="index">
             <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -59,5 +60,8 @@
     <field name="childContextName" type="strings" multiValued="false" stored="true"/>
     <field name="accessGroups" type="strings" multiValued="false" stored="true"/>
     <field name="accessUsers" type="strings" multiValued="false" stored="true"/>
+    <field name="held" type="boolean" indexed="true" stored="true"/>
+    <field name="skipped" type="boolean" indexed="true" stored="true"/>
+    <field name="targetResidingContextOnly" type="boolean" indexed="true" stored="true"/>
 
 </schema>

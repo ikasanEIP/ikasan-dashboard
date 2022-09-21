@@ -61,7 +61,7 @@ public class SolrInternalEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 
             init(server);
 
             SolrInternalEventDrivenJobImpl solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
-            solrInternalEventDrivenJob.setContextId("contextId");
+            solrInternalEventDrivenJob.setContextName("contextId");
             SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
             solrInternalEventDrivenJobRecord.setAgentName("agentName");
             solrInternalEventDrivenJobRecord.setJobName("jobName");

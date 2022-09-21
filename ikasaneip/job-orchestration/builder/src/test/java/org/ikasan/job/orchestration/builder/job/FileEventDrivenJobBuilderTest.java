@@ -3,7 +3,6 @@ package org.ikasan.job.orchestration.builder.job;
 import org.ikasan.job.orchestration.AbstractTest;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.json.JSONException;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -50,7 +49,7 @@ public class FileEventDrivenJobBuilderTest extends AbstractTest {
             .withPersistentRecovery(true)
             .withRecoveryTolerance(100L)
             .withAgentName("agentName")
-            .withContextId("contextId")
+            .withContextName("contextId")
             .addChildContextId("childContextId")
             .withDescription("description")
             .withJobName("jobName")

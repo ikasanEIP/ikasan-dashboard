@@ -2,6 +2,7 @@ package org.ikasan.scheduled.instance.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.SerializationUtils;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
 import org.ikasan.scheduled.instance.model.*;
 import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
@@ -12,6 +13,7 @@ import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
@@ -139,9 +141,6 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                 else if(schedulerJobRecord.getJob() instanceof SolrInternalEventDrivenJobImpl) {
                     InternalEventDrivenJobInstance internalEventDrivenJobInstance = objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
                         , SolrInternalEventDrivenJobInstanceImpl.class);
-                    if(internalEventDrivenJobInstance.isSkip()) {
-                        internalEventDrivenJobInstance.setStatus(InstanceStatus.SKIPPED);
-                    }
 
                     schedulerJobInstances.add(internalEventDrivenJobInstance);
                 }
@@ -164,6 +163,19 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                     contextualisedInstance.setChildContextName(schedulerJobInstance.getChildContextName());
                     contextualisedInstance.setContextInstanceId(contextInstance.getId());
 
+                    if(instance instanceof InternalEventDrivenJobInstance) {
+
+                        if (instance.getSkippedContexts().containsKey(schedulerJobInstance.getChildContextName())
+                            && instance.getSkippedContexts().get(schedulerJobInstance.getChildContextName())) {
+                            contextualisedInstance.setSkip(true);
+                            contextualisedInstance.setStatus(InstanceStatus.SKIPPED);
+                        }
+                        else if (instance.getHeldContexts().containsKey(schedulerJobInstance.getChildContextName())
+                            && instance.getHeldContexts().get(schedulerJobInstance.getChildContextName())) {
+                            contextualisedInstance.setHeld(true);
+                            contextualisedInstance.setStatus(InstanceStatus.ON_HOLD);
+                        }
+                    }
                     contextualisedSchedulerJobInstances.add(contextualisedInstance);
                 }
             });
@@ -172,7 +184,7 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
 
             contextualisedSchedulerJobInstances.forEach(job -> {
                 SchedulerJobInstanceRecord instanceRecord = new SolrSchedulerJobInstanceRecordImpl();
-                instanceRecord.setContextName(job.getContextId());
+                instanceRecord.setContextName(job.getContextName());
                 instanceRecord.setJobName(job.getJobName());
                 instanceRecord.setStatus(job.getStatus().toString());
                 instanceRecord.setTimestamp(System.currentTimeMillis());

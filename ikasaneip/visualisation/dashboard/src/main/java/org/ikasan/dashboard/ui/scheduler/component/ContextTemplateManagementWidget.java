@@ -2,7 +2,6 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
@@ -11,7 +10,6 @@ import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
@@ -66,7 +64,6 @@ import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -97,16 +94,12 @@ import java.util.stream.Collectors;
     private ContextInstanceGridWidget contextInstanceGridWidget;
     private SchedulerJobGridWidget schedulerJobGridWidget;
     private ContextTemplateStatisticsWidget contextTemplateStatisticsWidget;
-
     private JobInitiationService jobInitiationService;
-
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
     private TextField endWindowCronExpressionTf;
-
     private Div schedulerVisualisationDiv;
-
     private Tab visualisationTab;
     private Tab rawContextTab;
     private Tab contextInstancesTab;
@@ -381,8 +374,7 @@ import java.util.stream.Collectors;
 
         this.schedulerVisualisation = new ContextSchedulerVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
-            , this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService,
-            this.scheduledContextInstanceService, this.jobProvisionService, this.scheduledContextService);
+            , this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService);
         this.schedulerVisualisation.setWidthFull();
         this.schedulerVisualisation.setHeight("75vh");
 
@@ -455,7 +447,7 @@ import java.util.stream.Collectors;
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobGridWidget = new SchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate,
-            this.jobInitiationService, this.jobProvisionService);
+            this.jobInitiationService, this.jobProvisionService, this.contextProfileService, this.userService, this.securityService, this.scheduledContextService);
         this.schedulerJobGridWidget.setWidthFull();
         this.schedulerJobGridWidget.setHeight("75vh");
         this.schedulerJobGridWidget.setVisible(false);
@@ -552,9 +544,9 @@ import java.util.stream.Collectors;
                                     internalEventDrivenJob.setSuccessfulReturnCodes(((InternalEventDrivenJob) job).getSuccessfulReturnCodes());
                                     internalEventDrivenJob.setWorkingDirectory(((InternalEventDrivenJob) job).getWorkingDirectory());
                                     internalEventDrivenJob.setAgentName(job.getAgentName());
-                                    internalEventDrivenJob.setChildContextIds(job.getChildContextIds());
-                                    internalEventDrivenJob.setContextId(job.getContextId());
-                                    internalEventDrivenJob.setChildContextIds(job.getChildContextIds());
+                                    internalEventDrivenJob.setChildContextNames(job.getChildContextNames());
+                                    internalEventDrivenJob.setContextName(job.getContextName());
+                                    internalEventDrivenJob.setChildContextNames(job.getChildContextNames());
                                     internalEventDrivenJob.setStartupControlType(job.getStartupControlType());
                                     internalEventDrivenJob.setJobName(job.getJobName());
                                     internalEventDrivenJob.setJobDescription(job.getJobDescription());
@@ -563,7 +555,7 @@ import java.util.stream.Collectors;
                                     return internalEventDrivenJob;
                                 } else if (job instanceof FileEventDrivenJob) {
                                     FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
-                                    fileEventDrivenJob.setContextId(job.getContextId());
+                                    fileEventDrivenJob.setContextName(job.getContextName());
                                     fileEventDrivenJob.setDirectoryDepth(((FileEventDrivenJob) job).getDirectoryDepth());
                                     fileEventDrivenJob.setEncoding(((FileEventDrivenJob) job).getEncoding());
                                     fileEventDrivenJob.setFilenames(((FileEventDrivenJob) job).getFilenames());
@@ -577,7 +569,7 @@ import java.util.stream.Collectors;
                                     fileEventDrivenJob.setSortAscending(((FileEventDrivenJob) job).isSortAscending());
                                     fileEventDrivenJob.setSortByModifiedDateTime(((FileEventDrivenJob) job).isSortByModifiedDateTime());
                                     fileEventDrivenJob.setAgentName(job.getAgentName());
-                                    fileEventDrivenJob.setChildContextIds(job.getChildContextIds());
+                                    fileEventDrivenJob.setChildContextNames(job.getChildContextNames());
                                     fileEventDrivenJob.setCronExpression(((FileEventDrivenJob) job).getCronExpression());
                                     fileEventDrivenJob.setEager(((FileEventDrivenJob) job).isEager());
                                     fileEventDrivenJob.setIdentifier(job.getIdentifier());
@@ -594,7 +586,7 @@ import java.util.stream.Collectors;
                                     return fileEventDrivenJob;
                                 } else {
                                     QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
-                                    quartzScheduleDrivenJob.setContextId(job.getContextId());
+                                    quartzScheduleDrivenJob.setContextName(job.getContextName());
                                     quartzScheduleDrivenJob.setCronExpression(((QuartzScheduleDrivenJob) job).getCronExpression());
                                     quartzScheduleDrivenJob.setEager(((QuartzScheduleDrivenJob) job).isEager());
                                     quartzScheduleDrivenJob.setIgnoreMisfire(((QuartzScheduleDrivenJob) job).isIgnoreMisfire());
@@ -607,7 +599,7 @@ import java.util.stream.Collectors;
                                     quartzScheduleDrivenJob.setJobName(job.getJobName());
                                     quartzScheduleDrivenJob.setJobDescription(job.getJobDescription());
                                     quartzScheduleDrivenJob.setIdentifier(job.getIdentifier());
-                                    quartzScheduleDrivenJob.setChildContextIds(job.getChildContextIds());
+                                    quartzScheduleDrivenJob.setChildContextNames(job.getChildContextNames());
                                     quartzScheduleDrivenJob.setAgentName(job.getAgentName());
                                     quartzScheduleDrivenJob.setTimeZone(((QuartzScheduleDrivenJob) job).getTimeZone());
 
@@ -671,7 +663,7 @@ import java.util.stream.Collectors;
                 this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
 
             InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
-            internalEventDrivenJob.setContextId(this.contextTemplate.getName());
+            internalEventDrivenJob.setContextName(this.contextTemplate.getName());
 
             internalEventDrivenJobDialog.setJob(internalEventDrivenJob, EditMode.NEW);
             internalEventDrivenJobDialog.open();
@@ -687,7 +679,7 @@ import java.util.stream.Collectors;
                 this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
 
             FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
-            fileEventDrivenJob.setContextId(contextTemplate.getName());
+            fileEventDrivenJob.setContextName(contextTemplate.getName());
 
             fileEventJobDialog.setJob(fileEventDrivenJob, EditMode.NEW);
 
@@ -704,7 +696,7 @@ import java.util.stream.Collectors;
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
 
             QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
-            quartzScheduleDrivenJob.setContextId(this.contextTemplate.getName());
+            quartzScheduleDrivenJob.setContextName(this.contextTemplate.getName());
 
             quartzDrivenScheduledJobDialog.setJob(quartzScheduleDrivenJob, EditMode.NEW);
 

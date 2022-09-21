@@ -706,7 +706,7 @@ public class JobLockCacheImplTest {
         jobLockBuilder.withLockCount(jobLockCount);
         for (int i = 0; i < count; i++) {
             SchedulerJob job = makeSchedulerJob(i, newOrNot, jobLockName);
-            job.setContextId(UUID.randomUUID().toString());
+            job.setContextName(UUID.randomUUID().toString());
             jobLockBuilder.withJob("contextName"+i, job);
         }
         return jobLockBuilder.build().get(0);

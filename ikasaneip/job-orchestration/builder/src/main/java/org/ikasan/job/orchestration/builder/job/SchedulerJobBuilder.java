@@ -10,8 +10,8 @@ import java.util.List;
 public class SchedulerJobBuilder {
     protected String agentName;
     protected String jobName;
-    protected String contextId;
-    protected List<String> childContextIds;
+    protected String contextName;
+    protected List<String> childContextNames;
     protected String description;
     protected String startupControlType = "AUTOMATIC";
 
@@ -43,13 +43,13 @@ public class SchedulerJobBuilder {
     }
 
     /**
-     * Set the context id.
+     * Set the context name.
      *
-     * @param contextId
+     * @param contextName
      * @return
      */
-    public SchedulerJobBuilder withContextId(String contextId) {
-        this.contextId = contextId;
+    public SchedulerJobBuilder withContextName(String contextName) {
+        this.contextName = contextName;
 
         return this;
     }
@@ -61,11 +61,11 @@ public class SchedulerJobBuilder {
      * @return
      */
     public SchedulerJobBuilder addChildContextId(String childContextId) {
-        if(this.childContextIds == null) {
-            this.childContextIds = new ArrayList<>();
+        if(this.childContextNames == null) {
+            this.childContextNames = new ArrayList<>();
         }
 
-        this.childContextIds.add(childContextId);
+        this.childContextNames.add(childContextId);
 
         return this;
     }

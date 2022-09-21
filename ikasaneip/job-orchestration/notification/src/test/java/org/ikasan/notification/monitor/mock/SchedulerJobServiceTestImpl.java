@@ -132,4 +132,34 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     public void saveFileEventDrivenJobRecords(List list) {
 
     }
+
+    @Override
+    public void skip(SchedulerJobRecord jobRecord, List childContextNames, String actor) {
+
+    }
+
+    @Override
+    public void enable(SchedulerJobRecord jobRecord, String actor) {
+
+    }
+
+    @Override
+    public void hold(SchedulerJobRecord jobRecord, List childContextNames, String actor) {
+
+    }
+
+    @Override
+    public void release(SchedulerJobRecord jobRecord, String actor) {
+
+    }
+
+    @Override
+    public void releaseAll(String contextName, String actor) {
+
+    }
+
+    @Override
+    public void enableAll(String contextName, String actor) {
+
+    }
 }
