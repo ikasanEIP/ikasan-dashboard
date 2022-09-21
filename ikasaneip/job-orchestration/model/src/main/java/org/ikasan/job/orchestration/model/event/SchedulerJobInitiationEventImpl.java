@@ -1,10 +1,8 @@
 package org.ikasan.job.orchestration.model.event;
 
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
-import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 
 import java.util.List;
 import java.util.Objects;
@@ -14,8 +12,8 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
     private String agentUrl;
     private String jobName;
     private InternalEventDrivenJobInstance internalEventDrivenJob;
-    private String contextId;
-    private List<String> childContextIds;
+    private String contextName;
+    private List<String> childContextNames;
     private String contextInstanceId;
     private List<ContextParameterInstanceImpl> contextParameters;
     private boolean dryRun = false;
@@ -63,23 +61,23 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
     }
 
     @Override
-    public String getContextId() {
-        return contextId;
+    public String getContextName() {
+        return contextName;
     }
 
     @Override
-    public void setContextId(String contextId) {
-        this.contextId = contextId;
+    public void setContextName(String contextName) {
+        this.contextName = contextName;
     }
 
     @Override
-    public List<String> getChildContextIds() {
-        return childContextIds;
+    public List<String> getChildContextNames() {
+        return childContextNames;
     }
 
     @Override
-    public void setChildContextIds(List<String> childContextIds) {
-        this.childContextIds = childContextIds;
+    public void setChildContextNames(List<String> childContextNames) {
+        this.childContextNames = childContextNames;
     }
 
     @Override
@@ -139,13 +137,13 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
         sb.append(", agentUrl='").append(agentUrl).append('\'');
         sb.append(", jobName='").append(jobName).append('\'');
         sb.append(", internalEventDrivenJob=").append(internalEventDrivenJob);
-        sb.append(", contextId='").append(contextId).append('\'');
-        if(childContextIds != null) {
+        sb.append(", contextId='").append(contextName).append('\'');
+        if(childContextNames != null) {
             sb.append(", childContextIds=[ ");
-            childContextIds.forEach(id -> sb.append("[").append(id).append("] "));
+            childContextNames.forEach(id -> sb.append("[").append(id).append("] "));
         }
         else {
-            sb.append(", childContextIds='").append(this.childContextIds).append('\'');
+            sb.append(", childContextIds='").append(this.childContextNames).append('\'');
         }
         sb.append("], contextInstanceId='").append(contextInstanceId).append('\'');
         sb.append(", contextParameters=").append(contextParameters);
@@ -167,8 +165,8 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
             Objects.equals(agentUrl, that.agentUrl) &&
             Objects.equals(jobName, that.jobName) &&
             Objects.equals(internalEventDrivenJob, that.internalEventDrivenJob) &&
-            Objects.equals(contextId, that.contextId) &&
-            Objects.equals(childContextIds, that.childContextIds) &&
+            Objects.equals(contextName, that.contextName) &&
+            Objects.equals(childContextNames, that.childContextNames) &&
             Objects.equals(contextInstanceId, that.contextInstanceId) &&
             Objects.equals(contextParameters, that.contextParameters) &&
             Objects.equals(dryRunParameters, that.dryRunParameters);
@@ -176,7 +174,7 @@ public class SchedulerJobInitiationEventImpl implements SchedulerJobInitiationEv
 
     @Override
     public int hashCode() {
-        return Objects.hash(agentName, agentUrl, jobName, internalEventDrivenJob, contextId, childContextIds
+        return Objects.hash(agentName, agentUrl, jobName, internalEventDrivenJob, contextName, childContextNames
             , contextInstanceId, contextParameters, dryRun, dryRunParameters, skipped);
     }
 }

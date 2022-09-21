@@ -3,7 +3,6 @@ package org.ikasan.job.orchestration.builder.job;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class FileEventDrivenJobBuilder extends QuartzScheduleDrivenJobBuilder {
@@ -102,8 +101,8 @@ public class FileEventDrivenJobBuilder extends QuartzScheduleDrivenJobBuilder {
         fileEventDrivenJob.setIdentifier(super.agentName+"-"+super.jobName);
         fileEventDrivenJob.setJobDescription(super.description);
         fileEventDrivenJob.setJobName(super.jobName);
-        fileEventDrivenJob.setContextId(super.contextId);
-        fileEventDrivenJob.setChildContextIds(super.childContextIds);
+        fileEventDrivenJob.setContextName(super.contextName);
+        fileEventDrivenJob.setChildContextNames(super.childContextNames);
         fileEventDrivenJob.setCronExpression(super.cronExpression);
         fileEventDrivenJob.setPassthroughProperties(this.passthroughProperties);
         fileEventDrivenJob.setTimeZone(super.timeZone);

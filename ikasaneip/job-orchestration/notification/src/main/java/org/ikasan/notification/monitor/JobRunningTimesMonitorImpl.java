@@ -101,7 +101,7 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
                                 if (processTime < internalEventDrivenJobRecord.getInternalEventDrivenJob().getMinExecutionTime() ||
                                     processTime > internalEventDrivenJobRecord.getInternalEventDrivenJob().getMaxExecutionTime() ) {
 
-                                    GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(internalEventDrivenJobInstance.getChildContextIds().get(0),
+                                    GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(internalEventDrivenJobInstance.getChildContextNames().get(0),
                                         internalEventDrivenJobInstance.getJobName(), contextInstance.getId(), MonitorType.RUNNING_TIME, internalEventDrivenJobInstance.getStatus());
                                     genericNotificationDetails.setMessage("Processing time:"+processTime+", job min. running time:"+internalEventDrivenJobRecord.getInternalEventDrivenJob().getMinExecutionTime()+
                                         ", job max. running time:"+internalEventDrivenJobRecord.getInternalEventDrivenJob().getMaxExecutionTime());

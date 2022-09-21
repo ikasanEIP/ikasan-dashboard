@@ -5,13 +5,10 @@ import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.ikasan.configuration.metadata.model.SolrConfigurationParameterMetaData;
 import org.ikasan.job.orchestration.builder.context.ContextParameterBuilder;
 import org.ikasan.job.orchestration.builder.job.FileEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.InternalEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.QuartzScheduleDrivenJobBuilder;
-import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
 import org.ikasan.job.orchestration.rest.client.DashboardRestClientException;
 import org.ikasan.job.orchestration.rest.client.JobProvisionRestServiceImpl;
@@ -19,21 +16,17 @@ import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.StandardEnvironment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -174,7 +167,7 @@ public class JobProvisionRestServiceImplTest extends AbstractTest{
             .withWorkingDirectory(workingDirectory)
             .addSuccessfulReturnCode("0")
             .withAgentName(agentName)
-            .withContextId(contextId)
+            .withContextName(contextId)
             .withDescription(description)
             .withJobName(jobName);
 
@@ -198,7 +191,7 @@ public class JobProvisionRestServiceImplTest extends AbstractTest{
             .withPassthroughProperties(passthrough)
             .withDescription(description)
             .withJobName(jobName)
-            .withContextId(contextId)
+            .withContextName(contextId)
             .withAgentName(agentName)
             .withStartupControlType("MANUAL");
 
@@ -224,7 +217,7 @@ public class JobProvisionRestServiceImplTest extends AbstractTest{
             .withPassthroughProperties(passthrough)
             .withDescription(description)
             .withJobName(jobName)
-            .withContextId(contextId)
+            .withContextName(contextId)
             .withAgentName(agentName);
 
         return fileEventDrivenJobBuilder.build();

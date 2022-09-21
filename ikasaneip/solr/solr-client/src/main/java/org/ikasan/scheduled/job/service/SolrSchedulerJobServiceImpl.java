@@ -7,15 +7,20 @@ import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
 import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobRecordImpl;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobRecordImpl;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobRecordImpl;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
 import org.ikasan.spec.solr.SolrServiceBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements SchedulerJobService<SchedulerJobRecord> {
+
+    private static Logger logger = LoggerFactory.getLogger(SolrSchedulerJobServiceImpl.class);
 
     private SolrFileEventDrivenJobDaoImpl fileEventDrivenJobRecordDao;
     private SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao;
@@ -164,8 +169,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
         solrInternalEventDrivenJobRecord.setAgentName(internalEventDrivenJob.getAgentName());
         solrInternalEventDrivenJobRecord.setJobName(internalEventDrivenJob.getJobName());
-        solrInternalEventDrivenJobRecord.setContextId(internalEventDrivenJob.getContextId());
-        solrInternalEventDrivenJobRecord.setTimestamp(System.currentTimeMillis());
+        solrInternalEventDrivenJobRecord.setContextName(internalEventDrivenJob.getContextName());
         solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
 
         return solrInternalEventDrivenJobRecord;
@@ -186,7 +190,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     private QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord(QuartzScheduleDrivenJob quartzScheduleDrivenJob) {
         QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
         quartzScheduleDrivenJobRecord.setAgentName(quartzScheduleDrivenJob.getAgentName());
-        quartzScheduleDrivenJobRecord.setContextId(quartzScheduleDrivenJob.getContextId());
+        quartzScheduleDrivenJobRecord.setContextName(quartzScheduleDrivenJob.getContextName());
         quartzScheduleDrivenJobRecord.setJobName(quartzScheduleDrivenJob.getJobName());
         quartzScheduleDrivenJobRecord.setTimestamp(System.currentTimeMillis());
         quartzScheduleDrivenJobRecord.setQuartzScheduleDrivenJob(quartzScheduleDrivenJob);
@@ -210,10 +214,107 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
         solrFileEventDrivenJobRecord.setAgentName(fileEventDrivenJob.getAgentName());
         solrFileEventDrivenJobRecord.setJobName(fileEventDrivenJob.getJobName());
-        solrFileEventDrivenJobRecord.setContextId(fileEventDrivenJob.getContextId());
+        solrFileEventDrivenJobRecord.setContextName(fileEventDrivenJob.getContextName());
         solrFileEventDrivenJobRecord.setTimestamp(System.currentTimeMillis());
         solrFileEventDrivenJobRecord.setFileEventDrivenJob(fileEventDrivenJob);
 
         return solrFileEventDrivenJobRecord;
+    }
+
+    @Override
+    public void skip(SchedulerJobRecord jobRecord, List<String> childContextNames, String actor) {
+        if(jobRecord.getJob() instanceof InternalEventDrivenJob) {
+            InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
+                ((InternalEventDrivenJob)jobRecord.getJob());
+            internalEventDrivenJobRecord.setTimestamp(jobRecord.getTimestamp());
+            this.internalEventDrivenJobRecordDao.skip(internalEventDrivenJobRecord, childContextNames, actor);
+        }
+        else {
+            throw new IllegalArgumentException("Only internal event driven jobs can be skipped.");
+        }
+    }
+
+    @Override
+    public void hold(SchedulerJobRecord jobRecord, List<String> childContextNames, String actor) {
+        if(jobRecord.getJob() instanceof InternalEventDrivenJob) {
+            InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
+                ((InternalEventDrivenJob)jobRecord.getJob());
+            internalEventDrivenJobRecord.setTimestamp(jobRecord.getTimestamp());
+            this.internalEventDrivenJobRecordDao.hold(internalEventDrivenJobRecord,
+                childContextNames, actor);
+        }
+        else {
+            throw new IllegalArgumentException("Only internal event driven jobs can be held.");
+        }
+    }
+
+    @Override
+    public void enable(SchedulerJobRecord jobRecord, String actor) {
+        if(jobRecord.getJob() instanceof InternalEventDrivenJob) {
+            InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
+                ((InternalEventDrivenJob)jobRecord.getJob());
+            internalEventDrivenJobRecord.setTimestamp(jobRecord.getTimestamp());
+            this.internalEventDrivenJobRecordDao.enable(internalEventDrivenJobRecord, actor);
+        }
+        else {
+            throw new IllegalArgumentException("Only internal event driven jobs can be enabled.");
+        }
+    }
+
+    @Override
+    public void release(SchedulerJobRecord jobRecord, String actor) {
+        if(jobRecord.getJob() instanceof InternalEventDrivenJob) {
+            InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
+                ((InternalEventDrivenJob)jobRecord.getJob());
+            internalEventDrivenJobRecord.setTimestamp(jobRecord.getTimestamp());
+            this.internalEventDrivenJobRecordDao.release(internalEventDrivenJobRecord, actor);
+        }
+        else {
+            throw new IllegalArgumentException("Only internal event driven jobs can be released.");
+        }
+    }
+
+    @Override
+    public void releaseAll(String contextName, String actor) {
+        SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
+        filter.setContextSearchFilter(contextName);
+        filter.setHeld(true);
+
+        SearchResults<SchedulerJobRecord> searchResults = (SearchResults<SchedulerJobRecord>) this.schedulerJobRecordDao
+            .findByFilter(filter, -1, -1, null, null);
+
+        ArrayList<InternalEventDrivenJobRecord> jobsToRelease = new ArrayList<>();
+        searchResults.getResultList().forEach(schedulerJobRecord -> {
+            if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
+                InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
+                    ((InternalEventDrivenJob)schedulerJobRecord.getJob());
+                internalEventDrivenJobRecord.setTimestamp(schedulerJobRecord.getTimestamp());
+                jobsToRelease.add(internalEventDrivenJobRecord);
+            }
+        });
+
+        this.internalEventDrivenJobRecordDao.releaseAll(jobsToRelease, actor);
+    }
+
+    @Override
+    public void enableAll(String contextName, String actor) {
+        SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
+        filter.setContextSearchFilter(contextName);
+        filter.setSkipped(true);
+
+        SearchResults<SchedulerJobRecord> searchResults = (SearchResults<SchedulerJobRecord>) this.schedulerJobRecordDao
+            .findByFilter(filter, -1, -1, null, null);
+
+        ArrayList<InternalEventDrivenJobRecord> jobsToRelease = new ArrayList<>();
+        searchResults.getResultList().forEach(schedulerJobRecord -> {
+            if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
+                InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
+                    ((InternalEventDrivenJob)schedulerJobRecord.getJob());
+                internalEventDrivenJobRecord.setTimestamp(schedulerJobRecord.getTimestamp());
+                jobsToRelease.add(internalEventDrivenJobRecord);
+            }
+        });
+
+        this.internalEventDrivenJobRecordDao.enableAll(jobsToRelease, actor);
     }
 }

@@ -63,9 +63,9 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 , scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName());
         }
 
-        if(scheduledProcessEvent.getChildContextIds() != null) {
+        if(scheduledProcessEvent.getChildContextNames() != null) {
             StringBuffer childIds = new StringBuffer("[ ");
-            scheduledProcessEvent.getChildContextIds().forEach(id -> childIds.append("{").append(id).append("}"));
+            scheduledProcessEvent.getChildContextNames().forEach(id -> childIds.append("{").append(id).append("}"));
             childIds.append("]");
 
             logger.info("Processing Schedule Process Event [{}], for Context Instance [{}], with Child Ids {}", scheduledProcessEvent.getJobName()
@@ -74,8 +74,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
         // Firstly the status of the job is set on the instance.
         if(schedulerJobInstance != null &&
-            (scheduledProcessEvent.getChildContextIds() == null || scheduledProcessEvent.getChildContextIds().isEmpty()
-            || scheduledProcessEvent.getChildContextIds().contains(contextInstance.getName()))) {
+            (scheduledProcessEvent.getChildContextNames() == null || scheduledProcessEvent.getChildContextNames().isEmpty()
+            || scheduledProcessEvent.getChildContextNames().contains(contextInstance.getName()))) {
             // we update the job result with the event if it is relevant in this context. A null or empty
             // collection of child contexts means the event is valid for all contexts.
             InstanceStatus currentJobState = schedulerJobInstance.getStatus();
@@ -280,7 +280,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         SchedulerJobInitiationEvent schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
         schedulerJobInitiationEvent.setAgentName(schedulerJobInstance.getAgentName());
         schedulerJobInitiationEvent.setJobName(schedulerJobInstance.getJobName());
-        schedulerJobInitiationEvent.setContextId(parentContextInstance.getName());
+        schedulerJobInitiationEvent.setContextName(parentContextInstance.getName());
         schedulerJobInitiationEvent.setContextInstanceId(parentContextInstance.getId());
         schedulerJobInitiationEvent.setDryRun(dryRunParameters != null);
         schedulerJobInitiationEvent.setDryRunParameters(dryRunParameters);
@@ -307,16 +307,16 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
         if(internalEventDrivenJob.isTargetResidingContextOnly()) {
             if(this.isAlreadyComplete(parentContextInstance, schedulerJobInstance.getAgentName()
-                , schedulerJobInstance.getJobName(), scheduledProcessEvent.getChildContextIds())) {
+                , schedulerJobInstance.getJobName(), scheduledProcessEvent.getChildContextNames())) {
 
-                schedulerJobInitiationEvent.setChildContextIds(List.of(contextInstance.getName()));
+                schedulerJobInitiationEvent.setChildContextNames(List.of(contextInstance.getName()));
             }
             else {
-                schedulerJobInitiationEvent.setChildContextIds(scheduledProcessEvent.getChildContextIds());
+                schedulerJobInitiationEvent.setChildContextNames(scheduledProcessEvent.getChildContextNames());
             }
         }
         else {
-            schedulerJobInitiationEvent.setChildContextIds(internalEventDrivenJob.getChildContextIds());
+            schedulerJobInitiationEvent.setChildContextNames(internalEventDrivenJob.getChildContextNames());
         }
 
         if(this.agents.containsKey(schedulerJobInstance.getAgentName())) {
@@ -373,7 +373,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             if(schedulerJob != null && (schedulerJob.getStatus().equals(InstanceStatus.COMPLETE)
                 || schedulerJob.getStatus().equals(InstanceStatus.ERROR))
                 && ((ContextualisedScheduledProcessEvent)schedulerJob.getScheduledProcessEvent())
-                    .getChildContextIds().equals(childContextIds)) {
+                    .getChildContextNames().equals(childContextIds)) {
                 return true;
             }
         }

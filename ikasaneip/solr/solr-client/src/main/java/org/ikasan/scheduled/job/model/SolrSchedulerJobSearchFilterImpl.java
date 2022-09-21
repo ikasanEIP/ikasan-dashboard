@@ -1,5 +1,6 @@
 package org.ikasan.scheduled.job.model;
 
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
 
 import java.util.ArrayList;
@@ -24,6 +25,10 @@ public class SolrSchedulerJobSearchFilterImpl implements SchedulerJobSearchFilte
     private String jobNameFilter = null;
     private String jobTypeFilter = null;
     private String contextSearchFilter = null;
+    private boolean held;
+    private boolean skipped;
+
+    private boolean targetResidingContextOnly;
 
     public String getJobNameFilter()
     {
@@ -53,5 +58,56 @@ public class SolrSchedulerJobSearchFilterImpl implements SchedulerJobSearchFilte
 
     public List<String> getTobTypes() {
         return new ArrayList<>(JOB_TYPE_MAPPINGS.keySet());
+    }
+
+    @Override
+    public boolean isHeld() {
+        return held;
+    }
+
+    @Override
+    public void setHeld(boolean held) {
+        this.held = held;
+    }
+
+    @Override
+    public boolean isSkipped() {
+        return skipped;
+    }
+
+    @Override
+    public void setSkipped(boolean skipped) {
+        this.skipped = skipped;
+    }
+
+    @Override
+    public boolean isTargetResidingContextOnly() {
+        return targetResidingContextOnly;
+    }
+
+    @Override
+    public void setTargetResidingContextOnly(String targetResidingContextOnly) {
+        if(targetResidingContextOnly == null) {
+            this.targetResidingContextOnly = false;
+        }
+        else if(targetResidingContextOnly.equals("targeted")) {
+            this.targetResidingContextOnly = true;
+        }
+    }
+
+    @Override
+    public void setStatus(String status) {
+        if(status == null || status.isEmpty()) {
+            this.held = false;
+            this.skipped = false;
+        }
+        else if(status.equals(InstanceStatus.ON_HOLD.name())) {
+            this.held = true;
+            this.skipped = false;
+        }
+        else if(status.equals(InstanceStatus.SKIPPED.name())) {
+            this.held = false;
+            this.skipped = true;
+        }
     }
 }

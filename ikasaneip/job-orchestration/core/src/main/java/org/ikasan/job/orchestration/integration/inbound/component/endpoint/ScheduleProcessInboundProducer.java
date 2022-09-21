@@ -32,7 +32,7 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
             ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent
                 = objectMapper.readValue(message, ContextualisedScheduledProcessEventImpl.class);
             ContextMachine contextMachine = ContextMachineCache.instance()
-                .getByContextName(contextualisedScheduledProcessEvent.getContextId());
+                .getByContextName(contextualisedScheduledProcessEvent.getContextName());
 
             // put the payload straight onto the queue as it is a big message already created by ScheduledProcessEventController
             contextMachine.eventReceived(payload);

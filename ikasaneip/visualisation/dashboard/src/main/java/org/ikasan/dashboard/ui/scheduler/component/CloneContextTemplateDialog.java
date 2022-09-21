@@ -114,7 +114,7 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
                     List<SchedulerJob> clonedJobs = new ArrayList<>();
                     scheduledContextRecordSearchResults.getResultList().forEach(context -> {
                         SchedulerJob job = context.getJob();
-                        job.setContextId(this.contextTemplate.getName());
+                        job.setContextName(this.contextTemplate.getName());
                         clonedJobs.add(job);
                     });
 

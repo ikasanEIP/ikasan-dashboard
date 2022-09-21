@@ -1,18 +1,17 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.cronutils.utils.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
-import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
-import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -20,18 +19,15 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.server.StreamResource;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
-import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.IconDecorator;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
-import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
+import org.ikasan.dashboard.ui.util.*;
+import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobTemplateVisualisationDialog;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
+import org.ikasan.security.service.SecurityService;
+import org.ikasan.security.service.UserService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -39,19 +35,24 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.ikasan.spec.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
-import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class SchedulerJobGridWidget extends Div {
@@ -71,14 +72,24 @@ public class SchedulerJobGridWidget extends Div {
     private SchedulerJobService schedulerJobService;
     private JobProvisionService jobProvisionService;
 
+    private ContextProfileService contextProfileService;
+
+    private UserService userService;
+
+    private SecurityService securityService;
+
+    private ScheduledContextService scheduledContextService;
+
     /**
      * Constructor
      */
-    public SchedulerJobGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public SchedulerJobGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService,
+                                  ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                   LogStreamingService logStreamingService, ContextTemplate contextTemplate, JobInitiationService jobInitiationService,
-                                  JobProvisionService jobProvisionService) {
+                                  JobProvisionService jobProvisionService, ContextProfileService contextProfileService, UserService userService,
+                                  SecurityService securityService, ScheduledContextService scheduledContextService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -92,6 +103,10 @@ public class SchedulerJobGridWidget extends Div {
         this.metaDataRestService = metaDataRestService;
         this.schedulerJobService =  schedulerJobService;
         this.jobProvisionService =  jobProvisionService;
+        this.contextProfileService = contextProfileService;
+        this.userService = userService;
+        this.securityService = securityService;
+        this.scheduledContextService = scheduledContextService;
 
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
@@ -136,7 +151,7 @@ public class SchedulerJobGridWidget extends Div {
             .setResizable(true)
             .setSortable(true)
             .setKey("flowName")
-            .setFlexGrow(3);
+            .setFlexGrow(6);
 
         schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -152,6 +167,80 @@ public class SchedulerJobGridWidget extends Div {
             .setFlexGrow(2);
 
         schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
+                VerticalLayout verticalLayout = new VerticalLayout();
+                verticalLayout.setWidth("100%");
+                verticalLayout.setSpacing(false);
+                verticalLayout.setPadding(false);
+
+                if(schedulerJobRecord.getJob() != null && schedulerJobRecord.getJob().getChildContextNames() != null) {
+                    schedulerJobRecord.getJob().getChildContextNames().forEach(context -> {
+                        Icon visualisation = IconDecorator.decorate(new Icon(VaadinIcon.SITEMAP), getTranslation("tooltip.open-visualisation", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+                        Button contextButton = new Button(context);
+                        contextButton.getElement().getStyle().set("font-size", "9pt");
+                        contextButton.getElement().getStyle().set("color", "rgba(0, 0, 0, 1.0)");
+                        contextButton.getElement().getStyle().set("margin-bottom", "5px");
+                        contextButton.setIcon(visualisation);
+                        contextButton.addClickListener(event -> {
+                            try {
+                                JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
+                                    configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService,
+                                    jobInitiationService, contextProfileService, userService, securityService,
+                                    jobProvisionService, scheduledContextService);
+                                jobTemplateVisualisationDialog.createSchedulerVisualisation(contextTemplate, ContextHelper.getChildContextTemplate(context, contextTemplate));
+                                jobTemplateVisualisationDialog.open();
+                            } catch (Exception e) {
+                                // todo error message
+                            }
+
+                        });
+
+                        if(schedulerJobRecord.isSkipped()
+                            && schedulerJobRecord.getJob().getSkippedContexts().containsKey(context)
+                            && schedulerJobRecord.getJob().getSkippedContexts().get(context)) {
+                            contextButton.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
+                            visualisation.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
+                            contextButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_SKIPPED);
+                        }
+                        else if(schedulerJobRecord.isHeld()
+                            && schedulerJobRecord.getJob().getHeldContexts().containsKey(context)
+                            && schedulerJobRecord.getJob().getHeldContexts().get(context)) {
+                            contextButton.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
+                            visualisation.getElement().getStyle().set("color", "rgba(255, 255, 255, 1.0)");
+                            contextButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ON_HOLD);
+                        }
+
+                        verticalLayout.add(contextButton);
+                    });
+                }
+
+                return verticalLayout;
+            })).setHeader(getTranslation("table-header.residing-contexts", UI.getCurrent().getLocale()))
+            .setResizable(true)
+            .setSortable(true)
+            .setKey("childContexts")
+            .setFlexGrow(6);
+
+        schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
+                VerticalLayout verticalLayout = new VerticalLayout();
+                verticalLayout.setWidth("100%");
+                verticalLayout.setSpacing(false);
+                verticalLayout.setPadding(false);
+
+                if(schedulerJobRecord.isTargetResidingContextOnly()) {
+                    Icon targeted = IconDecorator.decorate(new Icon(VaadinIcon.BULLSEYE), getTranslation("tooltip.target-residing-context"
+                        , UI.getCurrent().getLocale()), "14pt", IkasanColours.SCHEDULER_ERROR);
+                    verticalLayout.add(targeted);
+                    verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, targeted);
+                }
+
+                return verticalLayout;
+            })).setHeader(getTranslation("table-header.targeted", UI.getCurrent().getLocale()))
+            .setResizable(true)
+            .setSortable(false)
+            .setKey("targeted")
+            .setFlexGrow(1);
+
+        schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
             Icon delete = IconDecorator.decorate(new Icon(VaadinIcon.TRASH), getTranslation("tooltip.delete-job-template", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
@@ -162,6 +251,7 @@ public class SchedulerJobGridWidget extends Div {
                 confirmDialog.setText(getTranslation("confirm-dialog.delete-job-template-body", UI.getCurrent().getLocale()));
 
                 confirmDialog.addConfirmListener(event -> {
+                    // todo only delete jobs that no longer belong to the context.
                     this.schedulerJobService.delete(schedulerJobRecord);
                     this.schedulerJobFilteringGrid.refresh();
                 });
@@ -195,14 +285,128 @@ public class SchedulerJobGridWidget extends Div {
             exportWrapper.wrapComponent(export);
             layout.add(exportWrapper);
 
+            Icon skip = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.skip-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            skip.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(((InternalEventDrivenJob)schedulerJobRecord.getJob()).isTargetResidingContextOnly()
+                    && schedulerJobRecord.getJob().getChildContextNames().size() > 1) {
+                    ResidingContextSelectDialog residingContextSelectDialog
+                        = new ResidingContextSelectDialog((InternalEventDrivenJob)schedulerJobRecord.getJob()
+                        , ResidingContextSelectDialog.Action.SKIP);
+                    residingContextSelectDialog.open();
+                    residingContextSelectDialog.addOpenedChangeListener(event -> {
+                        if(!event.isOpened() && residingContextSelectDialog.getSelectedContexts() != null &&
+                            !residingContextSelectDialog.getSelectedContexts().isEmpty()) {
+                            this.schedulerJobService.skip(schedulerJobRecord, residingContextSelectDialog.getSelectedContexts(), this.authentication.getName());
+                            this.refresh();
+
+                            String action = String.format("Targeted Scheduler Job[%s], Parent Context[%s], was skipped in the following Child Contexts [%s]."
+                                , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName(), StringUtils.join(residingContextSelectDialog.getSelectedContexts().toArray(), ","));
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, action, authentication.getName());
+                        }
+                    });
+                }
+                else {
+                    this.schedulerJobService.skip(schedulerJobRecord, schedulerJobRecord.getJob().getChildContextNames(), this.authentication.getName());
+                    this.refresh();
+
+                    String action = String.format("Scheduler Job[%s], Parent Context[%s], was skipped in the following Child Contexts [%s]."
+                        , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName(), StringUtils.join(schedulerJobRecord.getJob().getChildContextNames().toArray(), ","));
+                    this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, action, authentication.getName());
+                }
+
+            });
+
+            if(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB) && !schedulerJobRecord.isSkipped()
+                && !schedulerJobRecord.isHeld()) {
+                skip.setVisible(true);
+            }
+            else {
+                skip.setVisible(false);
+            }
+
+            layout.add(skip);
+
+            Icon enable = IconDecorator.decorate(new Icon(VaadinIcon.PLAY), getTranslation("tooltip.enable-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            enable.setVisible(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB));
+            enable.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                this.schedulerJobService.enable(schedulerJobRecord, this.authentication.getName());
+                refresh();
+
+                String action = String.format("Scheduler Job[%s], Parent Context[%s], has been enabled."
+                    , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName());
+                this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_ENABLED, action, authentication.getName());
+            });
+
+            if(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB) && !schedulerJobRecord.isSkipped()) {
+                enable.setVisible(false);
+            }
+
+            layout.add(enable);
+
+            Icon hold = IconDecorator.decorate(new Icon(VaadinIcon.HAND), getTranslation("tooltip.hold-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            hold.setVisible(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB));
+            hold.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(((InternalEventDrivenJob)schedulerJobRecord.getJob()).isTargetResidingContextOnly()
+                    && schedulerJobRecord.getJob().getChildContextNames().size() > 1) {
+                    ResidingContextSelectDialog residingContextSelectDialog
+                        = new ResidingContextSelectDialog((InternalEventDrivenJob)schedulerJobRecord.getJob()
+                        , ResidingContextSelectDialog.Action.HOLD);
+                    residingContextSelectDialog.open();
+                    residingContextSelectDialog.addOpenedChangeListener(event -> {
+                        if(!event.isOpened() && residingContextSelectDialog.getSelectedContexts() != null &&
+                            !residingContextSelectDialog.getSelectedContexts().isEmpty()) {
+                            this.schedulerJobService.hold(schedulerJobRecord, residingContextSelectDialog.getSelectedContexts(), this.authentication.getName());
+                            this.refresh();
+
+                            String action = String.format("Targeted Scheduler Job[%s], Parent Context[%s], was held in the following Child Contexts [%s]."
+                                , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName(), StringUtils.join(residingContextSelectDialog.getSelectedContexts().toArray(), ","));
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_HELD, action, authentication.getName());
+                        }
+                    });
+                }
+                else {
+                    this.schedulerJobService.hold(schedulerJobRecord, schedulerJobRecord.getJob().getChildContextNames(), this.authentication.getName());
+                    this.refresh();
+
+                    String action = String.format("Scheduler Job[%s], Parent Context[%s], was held in the following Child Contexts [%s]."
+                        , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName(), StringUtils.join(schedulerJobRecord.getJob().getChildContextNames().toArray(), ","));
+                    this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_HELD, action, authentication.getName());
+                }
+            });
+
+            if(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)
+                && (schedulerJobRecord.isHeld() || schedulerJobRecord.isSkipped())) {
+                hold.setVisible(false);
+            }
+
+            layout.add(hold);
+
+            Icon release = IconDecorator.decorate(new Icon(VaadinIcon.HANDS_UP), getTranslation("tooltip.release-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            release.setVisible(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB));
+            release.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                this.schedulerJobService.release(schedulerJobRecord, this.authentication.getName());
+                refresh();
+
+                String action = String.format("Scheduler Job[%s], Parent Context[%s], has been released."
+                    , schedulerJobRecord.getJobName(), schedulerJobRecord.getContextName());
+                this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RELEASED, action, authentication.getName());
+            });
+
+            if(schedulerJobRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB) && !schedulerJobRecord.isHeld()) {
+                release.setVisible(false);
+            }
+
+            layout.add(release);
+
+            layout.setWidth("300px");
             return layout;
         }))
-            .setResizable(true)
-            .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
-            .setFlexGrow(1);
+        .setResizable(true)
+        .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
+        .setFlexGrow(2);
 
         this.schedulerJobFilteringGrid.addColumn(TemplateRenderer.<SchedulerJobRecord>of(
-            "<div>[[item.date]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">[[item.date]]</div>")
             .withProperty("date",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
             .setHeader(getTranslation("table-header.created-date-time", UI.getCurrent().getLocale()))
@@ -212,7 +416,7 @@ public class SchedulerJobGridWidget extends Div {
             .setFlexGrow(2);
 
         this.schedulerJobFilteringGrid.addColumn(TemplateRenderer.<SchedulerJobRecord>of(
-            "<div>[[item.modified]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">[[item.modified]]</div>")
             .withProperty("modified",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
             .setHeader(getTranslation("table-header.modified-date-time", UI.getCurrent().getLocale()))
@@ -232,6 +436,36 @@ public class SchedulerJobGridWidget extends Div {
         .setResizable(true)
         .setHeader(getTranslation("table-header.modified-by", UI.getCurrent().getLocale()))
         .setSortable(true)
+        .setFlexGrow(1);
+        this.schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
+                VerticalLayout labelLayout = new VerticalLayout();
+
+                if(schedulerJobRecord.isSkipped()) {
+                    SchedulerStatusDiv schedulerStatusDiv = new SchedulerStatusDiv();
+                    schedulerStatusDiv.getElement().getStyle().set("font-size", "10pt");
+                    schedulerStatusDiv.getElement().getStyle().set("margin-top", "1px");
+                    schedulerStatusDiv.getElement().getStyle().set("margin-bottom", "1px");
+                    schedulerStatusDiv.setWidth("100%");
+                    schedulerStatusDiv.setStatus(InstanceStatus.SKIPPED);
+                    labelLayout.add(schedulerStatusDiv);
+                }
+
+                if(schedulerJobRecord.isHeld()) {
+                    SchedulerStatusDiv schedulerStatusDiv = new SchedulerStatusDiv();
+                    schedulerStatusDiv.getElement().getStyle().set("font-size", "10pt");
+                    schedulerStatusDiv.getElement().getStyle().set("margin-top", "1px");
+                    schedulerStatusDiv.getElement().getStyle().set("margin-bottom", "1px");
+                    schedulerStatusDiv.setWidth("100%");
+                    schedulerStatusDiv.setStatus(InstanceStatus.ON_HOLD);
+                    labelLayout.add(schedulerStatusDiv);
+                }
+
+                return labelLayout;
+        }))
+        .setResizable(true)
+        .setHeader(getTranslation("table-header.skip-hold", UI.getCurrent().getLocale()))
+        .setSortable(true)
+        .setKey("status")
         .setFlexGrow(1);
 
         this.schedulerJobFilteringGrid.addItemDoubleClickListener(event -> {
@@ -281,8 +515,20 @@ public class SchedulerJobGridWidget extends Div {
         this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter, "flowName");
         this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobTypeFilter
             , SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
+
+        HashMap<String, String> heldSkippedMap = new HashMap<>();
+        heldSkippedMap.put(getTranslation("filter-label.held", UI.getCurrent().getLocale()), InstanceStatus.ON_HOLD.name());
+        heldSkippedMap.put(getTranslation("filter-label.skipped", UI.getCurrent().getLocale()), InstanceStatus.SKIPPED.name());
+
+        this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setStatus
+            , heldSkippedMap.entrySet(), "status");
         this.schedulerJobFilteringGrid.getElement().getStyle().set("margin-top", "0px");
 
+        HashMap<String, String> targetedMap = new HashMap<>();
+        targetedMap.put(getTranslation("filter-label.targeted", UI.getCurrent().getLocale()), "targeted");
+
+        this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setTargetResidingContextOnly
+            , targetedMap.entrySet(), "targeted");
     }
 
     private Component createButtonLayout() {
@@ -294,7 +540,18 @@ public class SchedulerJobGridWidget extends Div {
         buttonLayout.setMargin(false);
         buttonLayout.setPadding(false);
         Button refreshButton = this.createRefreshButton();
-        buttonLayout.add(refreshButton);
+        Button enableAllSkippedButton = new Button(getTranslation("button.enabled-all-skipped", UI.getCurrent().getLocale()));
+        enableAllSkippedButton.addClickListener(event -> {
+            this.schedulerJobService.enableAll(this.contextTemplate.getName(), this.authentication.getName());
+            this.refresh();
+        });
+        Button releaseAllHeldButton = new Button(getTranslation("button.release-all-held", UI.getCurrent().getLocale()));
+        releaseAllHeldButton.addClickListener(event -> {
+            this.schedulerJobService.releaseAll(this.contextTemplate.getName(), this.authentication.getName());
+            this.refresh();
+        });
+
+        buttonLayout.add(enableAllSkippedButton, releaseAllHeldButton,  refreshButton);
 
         buttonWrapper.add(buttonLayout);
         buttonWrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);

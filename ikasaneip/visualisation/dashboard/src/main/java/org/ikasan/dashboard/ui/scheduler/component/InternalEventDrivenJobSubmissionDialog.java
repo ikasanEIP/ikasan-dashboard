@@ -170,17 +170,17 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
         SchedulerJobInitiationEvent schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
         schedulerJobInitiationEvent.setAgentName(internalEventDrivenJob.getAgentName());
         schedulerJobInitiationEvent.setJobName(internalEventDrivenJob.getJobName());
-        schedulerJobInitiationEvent.setContextId(contextInstance.getName());
+        schedulerJobInitiationEvent.setContextName(contextInstance.getName());
         schedulerJobInitiationEvent.setContextInstanceId(contextInstance.getId());
         schedulerJobInitiationEvent.setContextParameters(contextParameters);
         schedulerJobInitiationEvent.setAgentUrl(agent.getUrl());
         schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
 
-        if(internalEventDrivenJob.getChildContextIds() != null && internalEventDrivenJob.isTargetResidingContextOnly()){
-            schedulerJobInitiationEvent.setChildContextIds(List.of(internalEventDrivenJob.getChildContextName()));
+        if(internalEventDrivenJob.getChildContextNames() != null && internalEventDrivenJob.isTargetResidingContextOnly()){
+            schedulerJobInitiationEvent.setChildContextNames(List.of(internalEventDrivenJob.getChildContextName()));
         }
         else {
-            schedulerJobInitiationEvent.setChildContextIds(internalEventDrivenJob.getChildContextIds());
+            schedulerJobInitiationEvent.setChildContextNames(internalEventDrivenJob.getChildContextNames());
         }
 
         return schedulerJobInitiationEvent;

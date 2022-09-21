@@ -16,6 +16,7 @@ import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEventDrivenJobRecord>
@@ -34,21 +35,25 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
         SolrInputDocument document = new SolrInputDocument();
         document.addField(TYPE, JobConstants.INTERNAL_EVENT_DRIVEN_JOB);
         try {
-            document.addField(PAYLOAD_CONTENT, getInternalEventDrivenJob(event.getInternalEventDrivenJob()));
+            InternalEventDrivenJob job = event.getInternalEventDrivenJob();
+            document.addField(ID, JobConstants.INTERNAL_EVENT_DRIVEN_JOB + "_" + event.getAgentName() + "_"
+                + event.getJobName() + "_" + job.getContextName());
+            document.addField(PAYLOAD_CONTENT, getInternalEventDrivenJob(job));
+            document.setField(TARGET_RESIDING_CONTEXT_ONLY, job.isTargetResidingContextOnly());
+            document.addField(COMPONENT_NAME, job.getContextName());
         }
         catch (JsonProcessingException e) {
-            throw new SolrEntityConversionException(String.format("Cannot convert QuartzScheduleDrivenJobRecord to string! [%s]", event), e);
+            throw new SolrEntityConversionException(String.format("Cannot convert InternalEventDrivenJob to string! [%s]", event), e);
         }
 
-        document.addField(ID, JobConstants.INTERNAL_EVENT_DRIVEN_JOB + "_" + event.getAgentName() + "_"
-            + event.getJobName() + "_" + event.getInternalEventDrivenJob().getContextId());
         document.addField(MODULE_NAME, event.getAgentName());
         document.addField(FLOW_NAME, event.getJobName());
-        document.addField(COMPONENT_NAME, event.getInternalEventDrivenJob().getContextId());
         document.addField(CREATED_DATE_TIME, event.getTimestamp());
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
         document.addField(MODIFIED_BY, event.getModifiedBy());
         document.setField(EXPIRY, expiry);
+        document.setField(HELD, event.isHeld());
+        document.setField(SKIPPED, event.isSkipped());
 
         logger.debug(String.format("Converted scheduled process event to SolrDocument[%s]", document));
         return document;
@@ -105,5 +110,93 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
         {
             return null;
         }
+    }
+
+    @Override
+    public void skip(InternalEventDrivenJobRecord jobRecord, List<String> childContextNames, String actor) {
+        InternalEventDrivenJob internalEventDrivenJob = jobRecord.getInternalEventDrivenJob();
+        internalEventDrivenJob.setSkippedContexts(new HashMap<>());
+        if(internalEventDrivenJob.isTargetResidingContextOnly()) {
+            childContextNames.forEach(name ->
+                internalEventDrivenJob.getSkippedContexts().put(name, true));
+        }
+        else {
+            internalEventDrivenJob.getChildContextNames().forEach(name ->
+                internalEventDrivenJob.getSkippedContexts().put(name, true));
+        }
+
+        jobRecord.setSkipped(true);
+        jobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
+        jobRecord.setModifiedBy(actor);
+
+        this.save(jobRecord);
+    }
+
+    @Override
+    public void hold(InternalEventDrivenJobRecord jobRecord, List<String> childContextNames, String actor) {
+        InternalEventDrivenJob internalEventDrivenJob = jobRecord.getInternalEventDrivenJob();
+        internalEventDrivenJob.setHeldContexts(new HashMap<>());
+        if(internalEventDrivenJob.isTargetResidingContextOnly()) {
+            childContextNames.forEach(name ->
+                internalEventDrivenJob.getHeldContexts().put(name, true));
+        }
+        else {
+            internalEventDrivenJob.getChildContextNames().forEach(name ->
+                internalEventDrivenJob.getHeldContexts().put(name, true));
+        }
+
+        jobRecord.setHeld(true);
+        jobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
+        jobRecord.setModifiedBy(actor);
+
+        this.save(jobRecord);
+    }
+
+    @Override
+    public void enable(InternalEventDrivenJobRecord jobRecord, String actor) {
+        InternalEventDrivenJob internalEventDrivenJob = jobRecord.getInternalEventDrivenJob();
+        internalEventDrivenJob.setSkippedContexts(new HashMap<>());
+        jobRecord.setSkipped(false);
+        jobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
+        jobRecord.setModifiedBy(actor);
+
+        this.save(jobRecord);
+    }
+
+    @Override
+    public void release(InternalEventDrivenJobRecord jobRecord, String actor) {
+        InternalEventDrivenJob internalEventDrivenJob = jobRecord.getInternalEventDrivenJob();
+        internalEventDrivenJob.setHeldContexts(new HashMap<>());
+        jobRecord.setHeld(false);
+        jobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
+        jobRecord.setModifiedBy(actor);
+
+        this.save(jobRecord);
+    }
+
+    @Override
+    public void releaseAll(List<InternalEventDrivenJobRecord> jobRecords, String actor) {
+        jobRecords.forEach(jobRecord -> {
+            InternalEventDrivenJob internalEventDrivenJob = jobRecord.getInternalEventDrivenJob();
+            internalEventDrivenJob.setHeldContexts(new HashMap<>());
+            jobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
+            jobRecord.setHeld(false);
+            jobRecord.setModifiedBy(actor);
+        });
+
+        save(jobRecords);
+    }
+
+    @Override
+    public void enableAll(List<InternalEventDrivenJobRecord> jobRecords, String actor) {
+        jobRecords.forEach(jobRecord -> {
+            InternalEventDrivenJob internalEventDrivenJob = jobRecord.getInternalEventDrivenJob();
+            internalEventDrivenJob.setSkippedContexts(new HashMap<>());
+            jobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
+            jobRecord.setSkipped(false);
+            jobRecord.setModifiedBy(actor);
+        });
+
+        save(jobRecords);
     }
 }
