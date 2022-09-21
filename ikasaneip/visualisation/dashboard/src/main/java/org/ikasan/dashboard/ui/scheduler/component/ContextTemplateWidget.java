@@ -21,11 +21,11 @@ import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.StreamResource;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.scheduler.util.ContextExportZipUtils;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
@@ -53,8 +53,6 @@ import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-
-import static org.ikasan.dashboard.ui.scheduler.util.ContextExportZipUtils.getExportZipFileName;
 
 public class ContextTemplateWidget extends Div {
 
@@ -265,7 +263,7 @@ public class ContextTemplateWidget extends Div {
             layout.add(chart);
 
             Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("tooltip.export-jobs-and-associated-artifacts", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
-            StreamResource streamResource = new StreamResource(getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
+            StreamResource streamResource = new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
                 try {
                     ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
                         scheduledContextRecord.getContext(),
