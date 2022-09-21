@@ -9,7 +9,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 
 public class SolrContextualisedScheduledProcessEventImpl implements ContextualisedScheduledProcessEvent<String, SolrDryRunParameters>, Serializable {
     private Long id;
@@ -30,8 +29,8 @@ public class SolrContextualisedScheduledProcessEventImpl implements Contextualis
     private long nextFireTime;
     private long completionTime;
     private boolean dryRun = false;
-    private String contextId;
-    private List<String> childContextIds;
+    private String contextName;
+    private List<String> childContextNames;
     private String contextInstanceId;
     private boolean jobStarting = false;
     private SolrDryRunParameters dryRunParameters;
@@ -217,23 +216,23 @@ public class SolrContextualisedScheduledProcessEventImpl implements Contextualis
     }
 
     @Override
-    public String getContextId() {
-        return this.contextId;
+    public String getContextName() {
+        return this.contextName;
     }
 
     @Override
-    public void setContextId(String contextId) {
-        this.contextId = contextId;
+    public void setContextName(String contextName) {
+        this.contextName = contextName;
     }
 
     @Override
-    public List<String> getChildContextIds() {
-        return childContextIds;
+    public List<String> getChildContextNames() {
+        return childContextNames;
     }
 
     @Override
-    public void setChildContextIds(List<String> childContextIds) {
-        this.childContextIds = childContextIds;
+    public void setChildContextNames(List<String> childContextNames) {
+        this.childContextNames = childContextNames;
     }
 
     @Override

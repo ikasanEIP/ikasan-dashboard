@@ -1,41 +1,22 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
-import com.vaadin.flow.component.contextmenu.MenuItem;
-import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.menubar.MenuBar;
-import com.vaadin.flow.component.menubar.MenuBarVariant;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
-import com.vaadin.flow.server.StreamResource;
-import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
-import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -44,26 +25,18 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.ikasan.spec.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
-import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.vaadin.olli.FileDownloadWrapper;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 public class SchedulerJobSelectGridWidget extends Div {
 
     private SchedulerJobFilteringGrid schedulerJobFilteringGrid;
-    private ScheduledContextInstanceService scheduledContextInstanceService;
     private IkasanAuthentication authentication;
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
     private SystemEventLogger systemEventLogger;
@@ -82,13 +55,12 @@ public class SchedulerJobSelectGridWidget extends Div {
     /**
      * Constructor
      */
-    public SchedulerJobSelectGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public SchedulerJobSelectGridWidget(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                         ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                         MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                         LogStreamingService logStreamingService, ContextTemplate contextTemplate, JobInitiationService jobInitiationService,
                                         JobProvisionService jobProvisionService, Dialog parent) {
 
-        this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.systemEventLogger = systemEventLogger;
         this.moduleMetaDataService = moduleMetaDataService;

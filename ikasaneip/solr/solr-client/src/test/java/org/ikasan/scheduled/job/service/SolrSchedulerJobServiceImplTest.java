@@ -18,6 +18,7 @@ import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.FileSystemUtils;
@@ -27,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
 
@@ -122,6 +124,258 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         validateResults(results, 0, contextId2);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void test_exception_skip_wrong_scheduler_job_type() {
+        String contextId1 = "Context-" + RandomStringUtils.randomAlphanumeric(10);
+
+        List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
+
+        service.save(listOfRecords1);
+
+        SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
+
+        List<SchedulerJobRecord> internalEventDrivenJobs = results.getResultList().stream()
+            .filter(job -> job.getJob() instanceof QuartzScheduleDrivenJob)
+            .collect(Collectors.toList());
+
+        internalEventDrivenJobs.forEach(job ->
+            this.service.skip(job, job.getJob().getChildContextNames(), "actor"));
+
+        internalEventDrivenJobs.forEach(job -> {
+            this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+        });
+    }
+
+    @Test
+    public void test_skip_scheduler_job() {
+        String contextId1 = "Context-" + RandomStringUtils.randomAlphanumeric(10);
+
+        List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
+
+        service.save(listOfRecords1);
+
+        SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
+
+        List<SchedulerJobRecord> internalEventDrivenJobs = results.getResultList().stream()
+            .filter(job -> job.getJob() instanceof InternalEventDrivenJob)
+            .collect(Collectors.toList());
+
+        internalEventDrivenJobs.forEach(job ->
+            this.service.skip(job, job.getJob().getChildContextNames(), "actor"));
+
+        internalEventDrivenJobs.forEach(job -> {
+            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+
+            Assert.assertTrue(schedulerJob.isSkipped());
+            Assert.assertFalse(schedulerJob.isHeld());
+            Assert.assertEquals("actor", schedulerJob.getModifiedBy());
+            Assert.assertTrue(schedulerJob.getJob().getSkippedContexts().get("child"));
+        });
+    }
+
+    @Test
+    public void test_skip_and_enable_scheduler_job() {
+        String contextId1 = "Context-" + RandomStringUtils.randomAlphanumeric(10);
+
+        List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
+
+        service.save(listOfRecords1);
+
+        SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
+
+        List<SchedulerJobRecord> internalEventDrivenJobs = results.getResultList().stream()
+            .filter(job -> job.getJob() instanceof InternalEventDrivenJob)
+            .collect(Collectors.toList());
+
+        internalEventDrivenJobs.forEach(job ->
+            this.service.skip(job, job.getJob().getChildContextNames(), "actor"));
+
+        internalEventDrivenJobs.forEach(job -> {
+            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+
+            Assert.assertTrue(schedulerJob.isSkipped());
+            Assert.assertFalse(schedulerJob.isHeld());
+            Assert.assertEquals("actor", schedulerJob.getModifiedBy());
+            Assert.assertTrue(schedulerJob.getJob().getSkippedContexts().get("child"));
+        });
+
+        internalEventDrivenJobs.forEach(job ->
+            this.service.enable(job, "actor"));
+
+        internalEventDrivenJobs.forEach(job -> {
+            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+
+            Assert.assertFalse(schedulerJob.isSkipped());
+            Assert.assertFalse(schedulerJob.isHeld());
+            Assert.assertEquals("actor", schedulerJob.getModifiedBy());
+            Assert.assertTrue(schedulerJob.getJob().getSkippedContexts().isEmpty());
+        });
+    }
+
+    @Test
+    public void test_skip_and_enable_all_scheduler_job() {
+        String contextId1 = "Context-" + RandomStringUtils.randomAlphanumeric(10);
+
+        List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
+
+        service.save(listOfRecords1);
+
+        SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
+
+        List<SchedulerJobRecord> internalEventDrivenJobs = results.getResultList().stream()
+            .filter(job -> job.getJob() instanceof InternalEventDrivenJob)
+            .collect(Collectors.toList());
+
+        internalEventDrivenJobs.forEach(job ->
+            this.service.skip(job, job.getJob().getChildContextNames(), "actor"));
+
+        internalEventDrivenJobs.forEach(job -> {
+            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+
+            Assert.assertTrue(schedulerJob.isSkipped());
+            Assert.assertFalse(schedulerJob.isHeld());
+            Assert.assertEquals("actor", schedulerJob.getModifiedBy());
+            Assert.assertTrue(schedulerJob.getJob().getSkippedContexts().get("child"));
+        });
+
+        this.service.enableAll(contextId1, "actor");
+
+        internalEventDrivenJobs.forEach(job -> {
+            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+
+            Assert.assertFalse(schedulerJob.isSkipped());
+            Assert.assertFalse(schedulerJob.isHeld());
+            Assert.assertEquals("actor", schedulerJob.getModifiedBy());
+            Assert.assertTrue(schedulerJob.getJob().getSkippedContexts().isEmpty());
+        });
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void test_exception_hold_wrong_scheduler_job_type() {
+        String contextId1 = "Context-" + RandomStringUtils.randomAlphanumeric(10);
+
+        List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
+
+        service.save(listOfRecords1);
+
+        SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
+
+        List<SchedulerJobRecord> internalEventDrivenJobs = results.getResultList().stream()
+            .filter(job -> job.getJob() instanceof FileEventDrivenJob)
+            .collect(Collectors.toList());
+
+        internalEventDrivenJobs.forEach(job ->
+            this.service.hold(job, job.getJob().getChildContextNames(), "actor"));
+
+        internalEventDrivenJobs.forEach(job -> {
+            this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+        });
+    }
+
+    @Test
+    public void test_hold_scheduler_job() {
+        String contextId1 = "Context-" + RandomStringUtils.randomAlphanumeric(10);
+
+        List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
+
+        service.save(listOfRecords1);
+
+        SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
+
+        List<SchedulerJobRecord> internalEventDrivenJobs = results.getResultList().stream()
+            .filter(job -> job.getJob() instanceof InternalEventDrivenJob)
+            .collect(Collectors.toList());
+
+        internalEventDrivenJobs.forEach(job ->
+            this.service.hold(job, job.getJob().getChildContextNames(), "actor"));
+
+        internalEventDrivenJobs.forEach(job -> {
+            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+
+            Assert.assertTrue(schedulerJob.isHeld());
+            Assert.assertFalse(schedulerJob.isSkipped());
+            Assert.assertEquals("actor", schedulerJob.getModifiedBy());
+            Assert.assertTrue(schedulerJob.getJob().getHeldContexts().get("child"));
+        });
+    }
+
+    @Test
+    public void test_hold_and_release_scheduler_job() {
+        String contextId1 = "Context-" + RandomStringUtils.randomAlphanumeric(10);
+
+        List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
+
+        service.save(listOfRecords1);
+
+        SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
+
+        List<SchedulerJobRecord> internalEventDrivenJobs = results.getResultList().stream()
+            .filter(job -> job.getJob() instanceof InternalEventDrivenJob)
+            .collect(Collectors.toList());
+
+        internalEventDrivenJobs.forEach(job ->
+            this.service.hold(job, job.getJob().getChildContextNames(), "actor"));
+
+        internalEventDrivenJobs.forEach(job -> {
+            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+
+            Assert.assertTrue(schedulerJob.isHeld());
+            Assert.assertFalse(schedulerJob.isSkipped());
+            Assert.assertEquals("actor", schedulerJob.getModifiedBy());
+            Assert.assertTrue(schedulerJob.getJob().getHeldContexts().get("child"));
+        });
+
+        internalEventDrivenJobs.forEach(job ->
+            this.service.release(job, "actor"));
+
+        internalEventDrivenJobs.forEach(job -> {
+            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+
+            Assert.assertFalse(schedulerJob.isHeld());
+            Assert.assertFalse(schedulerJob.isSkipped());
+            Assert.assertEquals("actor", schedulerJob.getModifiedBy());
+            Assert.assertTrue(schedulerJob.getJob().getHeldContexts().isEmpty());
+        });
+    }
+
+    @Test
+    public void test_hold_and_release_all_scheduler_job() {
+        String contextId1 = "Context-" + RandomStringUtils.randomAlphanumeric(10);
+
+        List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
+
+        service.save(listOfRecords1);
+
+        SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
+
+        List<SchedulerJobRecord> internalEventDrivenJobs = results.getResultList().stream()
+            .filter(job -> job.getJob() instanceof InternalEventDrivenJob)
+            .collect(Collectors.toList());
+
+        internalEventDrivenJobs.forEach(job ->
+            this.service.hold(job, job.getJob().getChildContextNames(), "actor"));
+
+        internalEventDrivenJobs.forEach(job -> {
+            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+
+            Assert.assertTrue(schedulerJob.isHeld());
+            Assert.assertFalse(schedulerJob.isSkipped());
+            Assert.assertEquals("actor", schedulerJob.getModifiedBy());
+            Assert.assertTrue(schedulerJob.getJob().getHeldContexts().get("child"));
+        });
+
+        this.service.releaseAll(contextId1, "actor");
+
+        internalEventDrivenJobs.forEach(job -> {
+            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+
+            Assert.assertFalse(schedulerJob.isHeld());
+            Assert.assertFalse(schedulerJob.isSkipped());
+            Assert.assertEquals("actor", schedulerJob.getModifiedBy());
+            Assert.assertTrue(schedulerJob.getJob().getHeldContexts().isEmpty());
+        });
+    }
+
     private void validateResults(SearchResults results, int expectedCount, String contextId) {
         assertEquals(expectedCount, results.getResultList().size());
         if (expectedCount > 0) {
@@ -130,7 +384,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
                 SchedulerJobRecord job = (SolrSchedulerJobRecordImpl) results.getResultList().get(i);
                 assertEquals(contextId + "agentName" + resetCount, job.getAgentName());
                 assertEquals(contextId + "jobName" + resetCount, job.getJobName());
-                assertEquals(contextId, job.getContextId());
+                assertEquals(contextId, job.getContextName());
                 if (job.getJob() instanceof SolrFileEventDrivenJobImpl) {
                     FileEventDrivenJob fileJob = (FileEventDrivenJob) job.getJob();
                     assertEquals(job.getAgentName() + "_" + job.getJobName(), fileJob.getIdentifier());
@@ -160,25 +414,28 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         for (int i = 0; i < 3; i++) {
             SolrFileEventDrivenJobImpl solrFileEventDrivenJob = new SolrFileEventDrivenJobImpl();
             solrFileEventDrivenJob.setAgentName(contextId + "agentName" + i);
-            solrFileEventDrivenJob.setJobName(contextId + "jobName" + i);
+            solrFileEventDrivenJob.setJobName(contextId + "jobNameFile" + i);
             solrFileEventDrivenJob.setIdentifier(solrFileEventDrivenJob.getAgentName() + "_" + solrFileEventDrivenJob.getJobName());
-            solrFileEventDrivenJob.setContextId(contextId);
+            solrFileEventDrivenJob.setContextName(contextId);
             solrFileEventDrivenJob.setCronExpression("cronExpression" + i);
             solrFileEventDrivenJob.setFilePath("filePath" + i);
+            solrFileEventDrivenJob.setChildContextNames(List.of("child"));
 
             SolrInternalEventDrivenJobImpl solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
             solrInternalEventDrivenJob.setAgentName(contextId + "agentName" + i);
-            solrInternalEventDrivenJob.setJobName(contextId + "jobName" + i);
+            solrInternalEventDrivenJob.setJobName(contextId + "jobNameInternal" + i);
             solrInternalEventDrivenJob.setIdentifier(solrInternalEventDrivenJob.getAgentName() + "_" + solrInternalEventDrivenJob.getJobName());
-            solrInternalEventDrivenJob.setContextId(contextId);
+            solrInternalEventDrivenJob.setContextName(contextId);
             solrInternalEventDrivenJob.setCommandLine("ls -al" + i);
+            solrInternalEventDrivenJob.setChildContextNames(List.of("child"));
 
             SolrQuartzScheduleDrivenJobImpl solrQuartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
             solrQuartzScheduleDrivenJob.setAgentName(contextId + "agentName" + i);
-            solrQuartzScheduleDrivenJob.setJobName(contextId + "jobName" + i);
+            solrQuartzScheduleDrivenJob.setJobName(contextId + "jobNameQuartz" + i);
             solrQuartzScheduleDrivenJob.setIdentifier(solrQuartzScheduleDrivenJob.getAgentName() + "_" + solrQuartzScheduleDrivenJob.getJobName());
-            solrQuartzScheduleDrivenJob.setContextId(contextId);
+            solrQuartzScheduleDrivenJob.setContextName(contextId);
             solrQuartzScheduleDrivenJob.setCronExpression("cronExpression" + i);
+            solrQuartzScheduleDrivenJob.setChildContextNames(List.of("child"));
 
             jobs.add(solrFileEventDrivenJob);
             jobs.add(solrInternalEventDrivenJob);

@@ -37,6 +37,8 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -45,7 +47,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDialog {
@@ -66,14 +70,9 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     private TextField workingDirectoryTf;
     private TextField minExecutionTimeTf;
     private TextField maxExecutionTimeTf;
-
     private Checkbox targetResidingContextOnlyCb;
-
-    private Checkbox skippedCb;
-
     private Button saveButton;
     private Button cancelButton;
-
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleMetaData agent;
@@ -96,6 +95,8 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     private SchedulerJobService schedulerJobService;
 
     private List<SchedulerJobSelectedListener> schedulerJobSelectedListeners = new ArrayList<>();
+
+    private ContextTemplate contextTemplate;
 
 
     /**
@@ -123,6 +124,15 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.schedulerJobService = schedulerJobService;
 
         this.internalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
+    }
+
+    public InternalEventDrivenJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
+                                        ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                        MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
+                                        ContextTemplate contextTemplate) {
+        this(agent, scheduledProcessManagementService, configurationRestService, moduleControlRestService,
+            metaDataRestService, systemEventLogger, schedulerJobService);
+        this.contextTemplate = contextTemplate;
     }
 
     private void init() {
@@ -195,16 +205,6 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         formBinder.forField(this.targetResidingContextOnlyCb)
             .bind(InternalEventDrivenJob::isTargetResidingContextOnly, InternalEventDrivenJob::setTargetResidingContextOnly);
 
-        this.skippedCb = new Checkbox(getTranslation("label.skip", UI.getCurrent().getLocale()));
-        formBinder.forField(this.skippedCb)
-            .bind(InternalEventDrivenJob::isSkip, InternalEventDrivenJob::setSkip);
-
-        HorizontalLayout cbLayout = new HorizontalLayout();
-        cbLayout.add(this.targetResidingContextOnlyCb, this.skippedCb);
-
-        // In order for the skip feature to be added to the general
-        // template level instand of the instance level include
-        // formLayout.add(jobExecutionLabel, cbLayout);
         formLayout.add(jobExecutionLabel, this.targetResidingContextOnlyCb);
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
@@ -363,9 +363,27 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
         solrInternalEventDrivenJobRecord.setAgentName(internalEventDrivenJob.getAgentName());
         solrInternalEventDrivenJobRecord.setJobName(internalEventDrivenJob.getJobName());
-        solrInternalEventDrivenJobRecord.setContextId(internalEventDrivenJob.getContextId());
+        solrInternalEventDrivenJobRecord.setContextName(internalEventDrivenJob.getContextName());
         solrInternalEventDrivenJobRecord.setModifiedTimestamp(System.currentTimeMillis());
         solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
+
+        AtomicBoolean skipped = new AtomicBoolean(false);
+        internalEventDrivenJob.getSkippedContexts().entrySet().forEach(entry -> {
+            if(entry.getValue()) {
+                skipped.set(true);
+            }
+        });
+
+        solrInternalEventDrivenJobRecord.setSkipped(skipped.get());
+
+        AtomicBoolean held = new AtomicBoolean(false);
+        internalEventDrivenJob.getHeldContexts().entrySet().forEach(entry -> {
+            if(entry.getValue()) {
+                held.set(true);
+            }
+        });
+
+        solrInternalEventDrivenJobRecord.setHeld(held.get());
 
         if(this.schedulerJobRecord != null) {
             solrInternalEventDrivenJobRecord.setTimestamp(this.schedulerJobRecord.getTimestamp());

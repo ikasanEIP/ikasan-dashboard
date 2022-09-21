@@ -19,12 +19,12 @@ import org.ikasan.spec.scheduled.provision.JobProvisionService;
 public class SchedulerJobSelectDialog extends AbstractCloseableResizableDialog {
     private SchedulerJobSelectGridWidget contextTemplateManagementWidget;
 
-    public SchedulerJobSelectDialog(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public SchedulerJobSelectDialog(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                     ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                     MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                     LogStreamingService logStreamingService, ContextTemplate contextTemplate, JobInitiationService jobInitiationService,
                                     JobProvisionService jobProvisionService) {
-        this.contextTemplateManagementWidget = new SchedulerJobSelectGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+        this.contextTemplateManagementWidget = new SchedulerJobSelectGridWidget(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, contextTemplate,
             jobInitiationService, jobProvisionService, this);
 

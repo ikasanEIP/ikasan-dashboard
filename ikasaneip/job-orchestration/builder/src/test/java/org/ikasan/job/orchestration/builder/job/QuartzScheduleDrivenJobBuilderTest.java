@@ -32,7 +32,7 @@ public class QuartzScheduleDrivenJobBuilderTest extends AbstractTest {
             .withPersistentRecovery(true)
             .withRecoveryTolerance(100L)
             .withAgentName("agentName")
-            .withContextId("contextId")
+            .withContextName("contextId")
             .addChildContextId("childContextId")
             .withDescription("description")
             .withJobName("jobName")

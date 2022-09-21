@@ -59,7 +59,6 @@ public class ContextProvisionLocalHostImplTest extends AbstractTest{
     }
 
     @Test
-    @Ignore
     public void test_success_provision_context () throws IOException {
         when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
         when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
@@ -84,7 +83,6 @@ public class ContextProvisionLocalHostImplTest extends AbstractTest{
     }
 
     @Test
-    @Ignore
     public void test_success_provision_context_1025415934() throws IOException {
         when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
         when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
@@ -103,7 +101,6 @@ public class ContextProvisionLocalHostImplTest extends AbstractTest{
     }
 
     @Test
-    @Ignore
     public void test_success_provision_CONTEXT_1616314541() throws IOException {
         when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
         when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
@@ -122,7 +119,6 @@ public class ContextProvisionLocalHostImplTest extends AbstractTest{
     }
 
     @Test
-    @Ignore
     public void test_success_provision_context_CONTEXT_611007888() throws IOException {
         when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
         when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");

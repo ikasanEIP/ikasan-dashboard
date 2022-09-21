@@ -16,6 +16,8 @@ public class SchedulerJobInstanceImpl extends SchedulerJobImpl implements Schedu
     private InstanceStatus status;
     private ScheduledProcessEvent scheduledProcessEvent;
 
+    private boolean skip;
+
     public SchedulerJobInstanceImpl() {
         status = InstanceStatus.WAITING;
     }
@@ -78,5 +80,15 @@ public class SchedulerJobInstanceImpl extends SchedulerJobImpl implements Schedu
     @Override
     public void setScheduledProcessEvent(ScheduledProcessEvent scheduledProcessEvent) {
         this.scheduledProcessEvent = scheduledProcessEvent;
+    }
+
+    @Override
+    public boolean isSkip() {
+        return skip;
+    }
+
+    @Override
+    public void setSkip(boolean skip) {
+        this.skip = skip;
     }
 }

@@ -163,9 +163,13 @@ public class ContextMachine {
 
             this.internalEventDrivenJobInstances.entrySet().forEach(job -> {
                 if(job.getValue().isSkip()) {
-                    logger.info("job");
                     ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), this.contextInstance);
                     child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isSkip());
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
+                }
+                if(job.getValue().isHeld()) {
+                    ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), this.contextInstance);
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isHeld());
                     child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
                 }
             });
@@ -444,8 +448,8 @@ public class ContextMachine {
         if(event != null) {
             InternalEventDrivenJobInstance instance = this.internalEventDrivenJobInstances.get(jobIdentifier);
             if(instance != null && instance.isTargetResidingContextOnly()) {
-                event.getChildContextIds().clear();
-                event.getChildContextIds().add(childContextName);
+                event.getChildContextNames().clear();
+                event.getChildContextNames().add(childContextName);
             }
             this.contextInstance.getHeldJobs().remove(jobIdentifier + "_" + childContextName);
 
@@ -776,7 +780,7 @@ public class ContextMachine {
                     BigQueueMessage<SchedulerJobInitiationEvent> outgoingBigQueueMessage
                         = new BigQueueMessageBuilder<SchedulerJobInitiationEvent>().withMessage(schedulerJobInitiationEvent)
                         .withMessageProperties(
-                            Map.of("contextName", schedulerJobInitiationEvent.getContextId(),
+                            Map.of("contextName", schedulerJobInitiationEvent.getContextName(),
                                 "contextInstanceId", schedulerJobInitiationEvent.getContextInstanceId()))
                         .build();
 

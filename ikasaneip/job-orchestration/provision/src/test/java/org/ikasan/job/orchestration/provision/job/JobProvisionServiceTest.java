@@ -159,7 +159,7 @@ public class JobProvisionServiceTest extends AbstractTest {
             .withWorkingDirectory(workingDirectory)
             .addSuccessfulReturnCode("0")
             .withAgentName(agentName)
-            .withContextId(contextId)
+            .withContextName(contextId)
             .withDescription(description)
             .withJobName(jobName);
 
@@ -180,7 +180,7 @@ public class JobProvisionServiceTest extends AbstractTest {
             .withJobGroup(jobGroup)
             .withDescription(description)
             .withJobName(jobName)
-            .withContextId(contextId)
+            .withContextName(contextId)
             .withAgentName(agentName);
 
         return quartzScheduleDrivenJobBuilder.build();
@@ -197,7 +197,7 @@ public class JobProvisionServiceTest extends AbstractTest {
             .withJobGroup(jobGroup)
             .withDescription(description)
             .withJobName(jobName)
-            .withContextId(contextId)
+            .withContextName(contextId)
             .withAgentName(agentName);
 
         return fileEventDrivenJobBuilder.build();

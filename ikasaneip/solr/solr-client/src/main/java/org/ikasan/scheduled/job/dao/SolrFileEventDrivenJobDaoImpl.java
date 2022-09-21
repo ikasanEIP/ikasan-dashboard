@@ -41,10 +41,10 @@ public class SolrFileEventDrivenJobDaoImpl extends SolrDaoBase<FileEventDrivenJo
         }
 
         document.addField(ID, JobConstants.FILE_EVENT_DRIVEN_JOB + "_" + event.getAgentName() + "_" + event.getJobName()
-            + "_" + event.getFileEventDrivenJob().getContextId());
+            + "_" + event.getFileEventDrivenJob().getContextName());
         document.addField(MODULE_NAME, event.getAgentName());
         document.addField(FLOW_NAME, event.getJobName());
-        document.addField(COMPONENT_NAME, event.getFileEventDrivenJob().getContextId());
+        document.addField(COMPONENT_NAME, event.getFileEventDrivenJob().getContextName());
         document.addField(CREATED_DATE_TIME, event.getTimestamp());
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
         document.addField(MODIFIED_BY, event.getModifiedBy());

@@ -816,14 +816,14 @@ public class ContextMachineTest extends AbstractTest {
 
         eventInstance = scheduledProcessEventInstance("jobName5",
             "agentName5", true);
-        eventInstance.setChildContextIds(List.of("Context3"));
+        eventInstance.setChildContextNames(List.of("Context3"));
 
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(1, events.size());
 
         eventInstance = scheduledProcessEventInstance("jobName6",
             "agentName6", true);
-        eventInstance.setChildContextIds(List.of("Context3"));
+        eventInstance.setChildContextNames(List.of("Context3"));
 
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(0, events.size());
@@ -859,7 +859,7 @@ public class ContextMachineTest extends AbstractTest {
 
         eventInstance = scheduledProcessEventInstance("jobName11",
             "agentName11", true);
-        eventInstance.setChildContextIds(List.of("Context4"));
+        eventInstance.setChildContextNames(List.of("Context4"));
 
         contextMachine.holdJob("agentName6-jobName6", "Context4");
 
@@ -938,7 +938,7 @@ public class ContextMachineTest extends AbstractTest {
 
         eventInstance = scheduledProcessEventInstance("jobName6",
             "agentName6", true);
-        eventInstance.setChildContextIds(List.of("Context4"));
+        eventInstance.setChildContextNames(List.of("Context4"));
 
         contextMachine.eventReceived(eventInstance);
 
@@ -2334,8 +2334,8 @@ public class ContextMachineTest extends AbstractTest {
 
         Assert.assertEquals(1, jobs.size());
 
-        Assert.assertEquals(1, jobs.get(0).getChildContextIds().size());
-        Assert.assertEquals("CONTEXT--1209755884", jobs.get(0).getChildContextIds().get(0));
+        Assert.assertEquals(1, jobs.get(0).getChildContextNames().size());
+        Assert.assertEquals("CONTEXT--1209755884", jobs.get(0).getChildContextNames().get(0));
 
         this.assertContextStatus(contextMachine, "CONTEXT-1616645609", InstanceStatus.COMPLETE);
         this.assertContextStatus(contextMachine, "CONTEXT-1436221681", InstanceStatus.RUNNING);
