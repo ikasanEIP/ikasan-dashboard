@@ -3,23 +3,18 @@ package org.ikasan.scheduled.job.dao;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.request.QueryRequest;
-import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.general.SolrEntityConversionException;
-import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobRecordImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.job.dao.QuartzScheduleDrivenJobDao;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJobRecord;
 import org.ikasan.spec.search.SearchResults;
-import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class SolrQuartzScheduleDrivenJobDaoImpl extends SolrDaoBase<QuartzScheduleDrivenJobRecord>
     implements QuartzScheduleDrivenJobDao<QuartzScheduleDrivenJobRecord> {

@@ -2,9 +2,9 @@ package org.ikasan.scheduled.job.dao;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
-import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobRecordImpl;
 import org.ikasan.spec.scheduled.job.dao.SchedulerJobDao;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
 import org.ikasan.spec.search.SearchResults;
