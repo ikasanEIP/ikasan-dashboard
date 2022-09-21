@@ -26,7 +26,7 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
     private String jobName;
 
     @Field(SolrDaoBase.COMPONENT_NAME)
-    private String contextId;
+    private String contextName;
 
     @Field(SolrDaoBase.PAYLOAD_CONTENT)
     private String job;
@@ -39,6 +39,15 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
 
     @Field(SolrDaoBase.MODIFIED_BY)
     private String modifiedBy;
+
+    @Field(SolrDaoBase.HELD)
+    private boolean held;
+
+    @Field(SolrDaoBase.SKIPPED)
+    private boolean skipped;
+
+    @Field(SolrDaoBase.TARGET_RESIDING_CONTEXT_ONLY)
+    private boolean targetResidingContextOnly;
 
     @Override
     public String getId() {
@@ -61,8 +70,8 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
     }
 
     @Override
-    public String getContextId() {
-        return this.contextId;
+    public String getContextName() {
+        return this.contextName;
     }
 
     @Override
@@ -95,19 +104,43 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
         return modifiedTimestamp;
     }
 
-    @Override
-    public void setModifiedTimestamp(long modifiedTimestamp) {
-        this.modifiedTimestamp = modifiedTimestamp;
-    }
+//    @Override
+//    public void setModifiedTimestamp(long modifiedTimestamp) {
+//        this.modifiedTimestamp = modifiedTimestamp;
+//    }
 
     @Override
     public String getModifiedBy() {
         return modifiedBy;
     }
 
+//    @Override
+//    public void setModifiedBy(String modifiedBy) {
+//        this.modifiedBy = modifiedBy;
+//    }
+
     @Override
-    public void setModifiedBy(String modifiedBy) {
-        this.modifiedBy = modifiedBy;
+    public boolean isHeld() {
+        return held;
     }
 
+//    @Override
+//    public void setHeld(boolean held) {
+//        this.held = held;
+//    }
+
+    @Override
+    public boolean isSkipped() {
+        return skipped;
+    }
+
+//    @Override
+//    public void setSkipped(boolean skipped) {
+//        this.skipped = skipped;
+//    }
+
+    @Override
+    public boolean isTargetResidingContextOnly() {
+        return this.targetResidingContextOnly;
+    }
 }

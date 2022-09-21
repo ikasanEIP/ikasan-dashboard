@@ -68,7 +68,7 @@ public class SolrFileEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 {
             Assert.assertEquals("fileEventDrivenJob_idagentName0_jobName0_contextId", found.getId());
             Assert.assertEquals("idagentName0", found.getAgentName());
             Assert.assertEquals("jobName0", found.getJobName());
-            Assert.assertEquals("contextId", found.getContextId());
+            Assert.assertEquals("contextId", found.getContextName());
             Assert.assertEquals(1000000L, found.getTimestamp());
 
             Assert.assertNull(this.dao.findById("bad_id"));
@@ -118,14 +118,14 @@ public class SolrFileEventDrivenJobRecordDaoImplTest extends SolrTestCaseJ4 {
             SolrFileEventDrivenJobImpl solrFileEventDrivenJob = new SolrFileEventDrivenJobImpl();
             solrFileEventDrivenJob.setAgentName(idPrefix+"agentName"+i);
             solrFileEventDrivenJob.setJobName("jobName"+i);
-            solrFileEventDrivenJob.setContextId(contextId);
+            solrFileEventDrivenJob.setContextName(contextId);
             solrFileEventDrivenJob.setCronExpression("cronExpression");
             solrFileEventDrivenJob.setFilePath("filePath");
 
             SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
             solrFileEventDrivenJobRecord.setAgentName(idPrefix+"agentName"+i);
             solrFileEventDrivenJobRecord.setJobName("jobName"+i);
-            solrFileEventDrivenJobRecord.setContextId(contextId);
+            solrFileEventDrivenJobRecord.setContextName(contextId);
             solrFileEventDrivenJobRecord.setTimestamp(1000000L);
             solrFileEventDrivenJobRecord.setFileEventDrivenJob(solrFileEventDrivenJob);
 

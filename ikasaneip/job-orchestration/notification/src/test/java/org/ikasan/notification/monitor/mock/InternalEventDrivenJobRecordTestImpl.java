@@ -31,12 +31,12 @@ public class InternalEventDrivenJobRecordTestImpl implements InternalEventDriven
     }
 
     @Override
-    public String getContextId() {
+    public String getContextName() {
         return null;
     }
 
     @Override
-    public void setContextId(String contextId) {
+    public void setContextName(String contextName) {
 
     }
 
@@ -82,5 +82,35 @@ public class InternalEventDrivenJobRecordTestImpl implements InternalEventDriven
     @Override
     public void setModifiedBy(String modifiedBy) {
 
+    }
+
+    @Override
+    public boolean isHeld() {
+        return false;
+    }
+
+    @Override
+    public void setHeld(boolean held) {
+
+    }
+
+    @Override
+    public boolean isSkipped() {
+        return false;
+    }
+
+    @Override
+    public void setSkipped(boolean skipped) {
+
+    }
+
+    @Override
+    public void setTargetResidingContextOnly(boolean targetResidingContextOnly) {
+
+    }
+
+    @Override
+    public boolean isTargetResidingContextOnly() {
+        return false;
     }
 }

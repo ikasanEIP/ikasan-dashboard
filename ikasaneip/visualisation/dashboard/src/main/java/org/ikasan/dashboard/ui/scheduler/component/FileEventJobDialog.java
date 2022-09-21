@@ -1,6 +1,5 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ItemLabelGenerator;
@@ -49,7 +48,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class FileEventJobDialog extends AbstractCloseableResizableDialog {
 
     Logger logger = LoggerFactory.getLogger(FileEventJobDialog.class);
-
     private ComboBox<String> agentCb;
 
     // Fields to capture schedule job properties.
@@ -318,7 +316,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
         solrFileEventDrivenJobRecord.setAgentName(fileEventDrivenJob.getAgentName());
         solrFileEventDrivenJobRecord.setJobName(fileEventDrivenJob.getJobName());
-        solrFileEventDrivenJobRecord.setContextId(fileEventDrivenJob.getContextId());
+        solrFileEventDrivenJobRecord.setContextName(fileEventDrivenJob.getContextName());
         solrFileEventDrivenJobRecord.setModifiedTimestamp(System.currentTimeMillis());
         solrFileEventDrivenJobRecord.setFileEventDrivenJob(fileEventDrivenJob);
         solrFileEventDrivenJobRecord.setModifiedBy(authentication.getName());

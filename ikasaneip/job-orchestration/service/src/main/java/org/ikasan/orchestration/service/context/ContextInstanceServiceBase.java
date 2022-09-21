@@ -142,6 +142,11 @@ public abstract class ContextInstanceServiceBase {
                 child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isSkip());
                 child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
             }
+            if(job.getValue().isHeld()) {
+                ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), instance);
+                child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isHeld());
+                child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
+            }
         });
 
         ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, internalJobs, queueDirectory, agents,

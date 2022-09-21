@@ -9,15 +9,14 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.ikasan.scheduled.instance.model.SolrContextParameterInstanceImpl;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 
 public class SolrSchedulerJobInitiationEventImpl implements SchedulerJobInitiationEvent<SolrContextParameterInstanceImpl, InternalEventDrivenJobInstance, SolrDryRunParameters> {
     private String agentName;
     private String agentUrl;
     private String jobName;
     private InternalEventDrivenJobInstance internalEventDrivenJob;
-    private String contextId;
-    private List<String> childContextIds;
+    private String contextName;
+    private List<String> childContextNames;
     private String contextInstanceId;
     private List<SolrContextParameterInstanceImpl> contextParameters;
     private boolean dryRun = false;
@@ -65,23 +64,23 @@ public class SolrSchedulerJobInitiationEventImpl implements SchedulerJobInitiati
     }
 
     @Override
-    public String getContextId() {
-        return contextId;
+    public String getContextName() {
+        return contextName;
     }
 
     @Override
-    public void setContextId(String contextId) {
-        this.contextId = contextId;
+    public void setContextName(String contextName) {
+        this.contextName = contextName;
     }
 
     @Override
-    public List<String> getChildContextIds() {
-        return childContextIds;
+    public List<String> getChildContextNames() {
+        return childContextNames;
     }
 
     @Override
-    public void setChildContextIds(List<String> childContextIds) {
-        this.childContextIds = childContextIds;
+    public void setChildContextNames(List<String> childContextNames) {
+        this.childContextNames = childContextNames;
     }
 
     @Override

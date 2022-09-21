@@ -103,7 +103,7 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
                                 }
 
                                 if (isJobOverdued(dateTime.toDate(), fireTime, fileEventDrivenJobInstance.getCronExpression())) {
-                                    GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(fileEventDrivenJobInstance.getChildContextIds().get(0),
+                                    GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(fileEventDrivenJobInstance.getChildContextNames().get(0),
                                         fileEventDrivenJobInstance.getJobName(), contextInstance.getId(), MonitorType.OVERDUE, InstanceStatus.ERROR);
 
                                     invoke(genericNotificationDetails);

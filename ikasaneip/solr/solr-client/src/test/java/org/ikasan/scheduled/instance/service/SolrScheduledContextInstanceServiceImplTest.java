@@ -703,8 +703,8 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         event.setNextFireTime(System.currentTimeMillis() + 1000);
         event.setCompletionTime(System.currentTimeMillis() + 2000);
         event.setDryRun(true);
-        event.setContextId("contextId " + RandomStringUtils.randomAlphabetic(5));
-        event.setChildContextIds(List.of("childContextId1", "childContextId2"));
+        event.setContextName("contextId " + RandomStringUtils.randomAlphabetic(5));
+        event.setChildContextNames(List.of("childContextId1", "childContextId2"));
         event.setContextInstanceId("contextInstanceId " + RandomStringUtils.randomAlphabetic(5));
         event.setJobStarting(true);
 
@@ -751,8 +751,8 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         internalEventDrivenJob.setDaysOfWeekToRun(List.of(1, 2, 3, 4, 5));
         event.setInternalEventDrivenJob(internalEventDrivenJob);
 
-        event.setContextId("contextId " + RandomStringUtils.randomAlphabetic(5));
-        event.setChildContextIds(List.of("EventChildContextId1", "EventChildContextId2"));
+        event.setContextName("contextId " + RandomStringUtils.randomAlphabetic(5));
+        event.setChildContextNames(List.of("EventChildContextId1", "EventChildContextId2"));
         event.setContextInstanceId("contextInstanceId " + RandomStringUtils.randomAlphabetic(5));
 
         SolrContextParameterInstanceImpl contextParameter1 = new SolrContextParameterInstanceImpl();

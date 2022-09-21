@@ -135,7 +135,7 @@ public class SolrQuartzScheduleDrivenJobImpl extends SolrSchedulerJobImpl implem
         sb.append(", agentName='").append(agentName).append('\'');
         sb.append(", jobName='").append(jobName).append('\'');
         sb.append(", jobDescription='").append(jobDescription).append('\'');
-        sb.append(", contextId='").append(contextId).append('\'');
+        sb.append(", contextId='").append(contextName).append('\'');
         sb.append(", startupControlType='").append(startupControlType).append('\'');
         sb.append('}');
         return sb.toString();

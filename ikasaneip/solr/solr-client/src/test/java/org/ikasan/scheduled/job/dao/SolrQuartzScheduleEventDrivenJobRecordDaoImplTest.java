@@ -61,7 +61,7 @@ public class SolrQuartzScheduleEventDrivenJobRecordDaoImplTest extends SolrTestC
             init(server);
 
             SolrQuartzScheduleDrivenJobImpl solrQuartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
-            solrQuartzScheduleDrivenJob.setContextId("contextId");
+            solrQuartzScheduleDrivenJob.setContextName("contextId");
             SolrQuartzScheduleDrivenJobRecordImpl solrQuartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
             solrQuartzScheduleDrivenJobRecord.setAgentName("agentName");
             solrQuartzScheduleDrivenJobRecord.setJobName("jobName");

@@ -29,8 +29,15 @@ import java.util.stream.Collectors;
 
 public class ContextSchedulerVisualisation extends SchedulerVisualisation {
 
-    public ContextSchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService, ContextProfileService contextProfileService, UserService userService, SecurityService securityService, ScheduledContextInstanceService scheduledContextInstanceService, JobProvisionService jobProvisionService, ScheduledContextService scheduledContextService) {
-        super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, schedulerJobInstanceService, jobInitiationService, contextProfileService, userService, securityService, scheduledContextInstanceService, jobProvisionService, scheduledContextService);
+    public ContextSchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService
+        , ScheduledProcessManagementService scheduledProcessManagementService, ConfigurationService configurationRestService
+        , ModuleControlService moduleControlRestService, MetaDataService metaDataRestService, SystemEventLogger systemEventLogger
+        , SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, JobInitiationService jobInitiationService
+        , ContextProfileService contextProfileService, UserService userService, SecurityService securityService
+        ,  JobProvisionService jobProvisionService, ScheduledContextService scheduledContextService) {
+        super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService, configurationRestService
+            , moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
+            , jobInitiationService, contextProfileService, userService, securityService, jobProvisionService, scheduledContextService);
     }
 
     protected void init() throws IOException {

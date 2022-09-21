@@ -118,7 +118,7 @@ public class JobProvisionServiceImpl implements JobProvisionService {
     }
 
     private void persistJobs(List<SchedulerJob> jobs) {
-        Set<String> contextNames = jobs.stream().map(SchedulerJob::getContextId).collect(Collectors.toSet());
+        Set<String> contextNames = jobs.stream().map(SchedulerJob::getContextName).collect(Collectors.toSet());
         for (String contextName : contextNames) {
             this.schedulerJobService.deleteByContextName(contextName);
         }
