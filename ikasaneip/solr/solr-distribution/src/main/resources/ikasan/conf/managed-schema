@@ -472,7 +472,6 @@
   <field name="childContextName" type="strings" multiValued="false" stored="true"/>
   <field name="accessGroups" type="strings" multiValued="false" stored="true"/>
   <field name="accessUsers" type="strings" multiValued="false" stored="true"/>
-  <field name="accessUsers" type="strings" multiValued="false" stored="true"/>
   <field name="held" type="boolean" indexed="true" stored="true"/>
   <field name="skipped" type="boolean" indexed="true" stored="true"/>
   <field name="targetResidingContextOnly" type="boolean" indexed="true" stored="true"/>
