@@ -41,6 +41,7 @@
 package org.ikasan.orchestration.service.context.recovery;
 
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
+import org.ikasan.orchestration.service.context.JobLockCacheInitialisationServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -57,6 +58,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
@@ -85,7 +87,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                               ScheduledContextService scheduledContextService,
                                               SchedulerJobInstanceService schedulerJobInstanceService,
                                               ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
-                                              SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
+                                              SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
+                                              JobLockCacheInitialisationService jobLockCacheInitialisationService) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService,
@@ -97,7 +100,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
             scheduledContextService,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster);
+            schedulerJobStateChangeEventBroadcaster,
+            jobLockCacheInitialisationService);
     }
 
     public void recoverInstances() {
@@ -156,7 +160,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                     executor.execute(new MissingContextInstanceRecoveryRunnable(
                         this.queueDirectory, this.scheduledContextInstanceService, this.jobInitiationService, this.moduleMetadataService, this.internalEventDrivenJobService,
                         this.contextParametersInstanceService, this.contextParametersUpdateService, this.jobLockCacheService, this.scheduledContextService,
-                        scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster
+                        scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster,
+                        this.jobLockCacheInitialisationService
                     ));
                 }
             }

@@ -10,11 +10,13 @@ import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.orchestration.service.context.JobLockCacheInitialisationServiceImpl;
 import org.ikasan.orchestration.service.utils.ContextInstanceTestSearchResults;
 import org.ikasan.orchestration.service.utils.InternalEventDrivenJobTestSearchResults;
 import org.ikasan.orchestration.service.utils.ScheduledContextRecordTestSearchResults;
 import org.ikasan.orchestration.service.utils.TestUtils;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
@@ -45,7 +47,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import static org.ikasan.orchestration.service.utils.InternalEventDrivenJobTestSearchResults.AGENT_NAME;
 import static org.ikasan.orchestration.service.utils.ScheduledContextRecordTestSearchResults.CONTEXT_NAME;
 import static org.ikasan.spec.scheduled.instance.model.InstanceStatus.*;
 import static org.junit.Assert.*;
@@ -88,6 +89,9 @@ public class ContextInstanceRecoveryServiceImplTest {
     SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
 
     @Mock
+    JobLockCacheInitialisationServiceImpl jobLockCacheInitialisationService;
+
+    @Mock
     private ExecutorService executor;
 
     private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
@@ -111,7 +115,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             scheduledContextService,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster
+            schedulerJobStateChangeEventBroadcaster,
+            jobLockCacheInitialisationService
         );
 
         ReflectionTestUtils.setField(contextInstanceRecoveryServiceImpl, "executor", executor);
@@ -298,15 +303,14 @@ public class ContextInstanceRecoveryServiceImplTest {
 
         InternalEventDrivenJobTestSearchResults internalJobResults = new InternalEventDrivenJobTestSearchResults(3);
         when(schedulerJobInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull())).thenReturn(internalJobResults);
-        when(moduleMetadataService.findById(AGENT_NAME + "1")).thenReturn(TestUtils.createModuleMetaData("1"));
-        when(moduleMetadataService.findById(AGENT_NAME + "2")).thenReturn(TestUtils.createModuleMetaData("2"));
-        when(moduleMetadataService.findById(AGENT_NAME + "3")).thenReturn(TestUtils.createModuleMetaData("3"));
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
 
         JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
         jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
-        when(jobLockCacheService.get()).thenReturn(jobLockCacheRecord);
 
         // execute
         contextInstanceRecoveryServiceImpl.recoverInstances();
@@ -319,11 +323,8 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(contextParametersInstanceService).getAllContextParameters("ContextName1");
         verify(contextParametersInstanceService).getAllContextParameters("ContextName2");
         verify(contextParametersInstanceService).getAllContextParameters("ContextName3");
-        verify(moduleMetadataService, times(3)).findById(AGENT_NAME + "1");
-        verify(moduleMetadataService, times(3)).findById(AGENT_NAME + "2");
-        verify(moduleMetadataService, times(3)).findById(AGENT_NAME + "3");
+        verify(moduleMetadataService, times(3)).find(any(), any(), eq(-1), eq(-1));
 
-        verify(jobLockCacheService, times(3)).get();
         verify(schedulerJobInstanceService, times(0)).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
         verify(scheduledContextInstanceService, times(3)).save(any(ScheduledContextInstanceRecord.class));
 
@@ -365,7 +366,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         when(scheduledContextService.findAll()).thenReturn(contextResults);
 
         when(schedulerJobInstanceService.getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull())).thenReturn(new InternalEventDrivenJobTestSearchResults(0));
-        when(jobLockCacheService.get()).thenReturn(null);
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1))).thenReturn(new ModuleMetadataSearchResults(List.of(), 0, 0));
 
         // execute
         contextInstanceRecoveryServiceImpl.recoverInstances();
@@ -374,7 +375,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
         verify(schedulerJobInstanceService).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
-        verify(jobLockCacheService).get();
+        verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(schedulerJobInstanceService, times(0)).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
         verify(contextParametersInstanceService).populateContextParameters();
         verify(contextParametersInstanceService).getAllContextParameters("ContextName1");
