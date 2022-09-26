@@ -2,6 +2,7 @@ package org.ikasan.orchestration.service.context.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
@@ -25,6 +26,10 @@ import static org.ikasan.job.orchestration.util.ContextImportExportConstants.*;
 
 
 public final class ContextExportZipUtils {
+
+    public static final String[] UNSAFE_FILENAME_CHAR = new String[]{"\\", ":", "/", "*", "?", "\"", "<", ">", "|"};
+    public static final String[] REPLACE_UNSAFE_FILENAME_CHAR = new String[]{"_",  "_" ,"_", "_", "_", "_",  "_", "_", "_"};
+
     private static final Logger LOG = LoggerFactory.getLogger(ContextExportZipUtils.class);
 
     public static String getExportZipFileName(String contextName) {
@@ -41,15 +46,18 @@ public final class ContextExportZipUtils {
 
             String contextName = context.getName();
 
+            // sanitise the contextName as this will be used for the filename and that windows do not allow for certain characters
+            String contextFileName = StringUtils.replaceEach(contextName, UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR);
+
             // clean up the working directory if it exists
-            deleteWorkingDirectory(getWorkingDirectory(workingDirectory) + contextName);
+            deleteWorkingDirectory(getWorkingDirectory(workingDirectory) + contextFileName);
 
             // create the paths and directories on disk
-            Path contextDir = Paths.get(getWorkingDirectory(workingDirectory) + contextName + File.separator + CONTEXT_DIR);
-            Path jobsDir = Paths.get(getWorkingDirectory(workingDirectory) + contextName + File.separator + JOBS_DIR);
-            Path jobsFileDir = Paths.get(getWorkingDirectory(workingDirectory) + contextName + File.separator + JOBS_DIR + File.separator + FILE_DIR);
-            Path jobsInternalDir = Paths.get(getWorkingDirectory(workingDirectory) + contextName + File.separator + JOBS_DIR + File.separator + INTERNAL_DIR);
-            Path jobsQuartzDir = Paths.get(getWorkingDirectory(workingDirectory) + contextName + File.separator + JOBS_DIR + File.separator + QUARTZ_DIR);
+            Path contextDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + CONTEXT_DIR);
+            Path jobsDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR);
+            Path jobsFileDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + FILE_DIR);
+            Path jobsInternalDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + INTERNAL_DIR);
+            Path jobsQuartzDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + QUARTZ_DIR);
 
             Files.createDirectories(contextDir);
             Files.createDirectories(jobsDir);
@@ -58,7 +66,7 @@ public final class ContextExportZipUtils {
             Files.createDirectories(jobsQuartzDir);
 
             // create the context template as json
-            Path contextFilePath = Paths.get(contextDir + File.separator + contextName + ".json");
+            Path contextFilePath = Paths.get(contextDir + File.separator + contextFileName + ".json");
             Files.createFile(contextFilePath);
             Files.write(contextFilePath, template.getBytes());
 
@@ -79,7 +87,7 @@ public final class ContextExportZipUtils {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ZipOutputStream zipOut = new ZipOutputStream(baos);
 
-            File fileToZip = new File(getWorkingDirectory(workingDirectory) + contextName);
+            File fileToZip = new File(getWorkingDirectory(workingDirectory) + contextFileName);
             zipDirectory(fileToZip, fileToZip.getName(), zipOut);
 
             // close the streams
@@ -87,14 +95,15 @@ public final class ContextExportZipUtils {
             baos.close();
 
             // clean up everything in case there is anything there
-            deleteWorkingDirectory(getWorkingDirectory(workingDirectory) + contextName);
+            deleteWorkingDirectory(getWorkingDirectory(workingDirectory) + contextFileName);
 
             return baos;
         } catch (Exception e) {
             LOG.warn(String.format("Got exception creating zip file. Error [%s]", e.getMessage()));
             // clean up everything in case there is anything there
             try {
-                deleteWorkingDirectory(getWorkingDirectory(workingDirectory) + context.getName());
+                deleteWorkingDirectory(getWorkingDirectory(workingDirectory) +
+                    StringUtils.replaceEach(context.getName(), UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR));
             } catch (IOException ex) {}
 
             return null;
@@ -134,15 +143,19 @@ public final class ContextExportZipUtils {
         for (SchedulerJobRecord schedulerJobRecord : results.getResultList()) {
             String jobAsString = objectMapper.writeValueAsString(schedulerJobRecord.getJob());
             Path jobPath = null;
+
+            // sanitise the jobName as this will be used for the filename and that windows do not allow for certain characters
+            String jobName = StringUtils.replaceEach(schedulerJobRecord.getJob().getJobName(),
+                UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR);
             switch (schedulerJobRecord.getType()) {
                 case JobConstants.FILE_EVENT_DRIVEN_JOB:
-                    jobPath = Paths.get(p3 + File.separator + schedulerJobRecord.getJob().getJobName() + ".json");
+                    jobPath = Paths.get(p3 + File.separator + jobName + ".json");
                     break;
                 case JobConstants.INTERNAL_EVENT_DRIVEN_JOB:
-                    jobPath = Paths.get(p4 + File.separator + schedulerJobRecord.getJob().getJobName() + ".json");
+                    jobPath = Paths.get(p4 + File.separator + jobName + ".json");
                     break;
                 case JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB:
-                    jobPath = Paths.get(p5 + File.separator + schedulerJobRecord.getJob().getJobName() + ".json");
+                    jobPath = Paths.get(p5 + File.separator + jobName + ".json");
                     break;
                 default:
                     LOG.warn("Unknown job type: " + schedulerJobRecord.getType());

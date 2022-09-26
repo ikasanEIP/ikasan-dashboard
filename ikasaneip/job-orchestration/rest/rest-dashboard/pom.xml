@@ -293,5 +293,11 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-solr-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 </project>
