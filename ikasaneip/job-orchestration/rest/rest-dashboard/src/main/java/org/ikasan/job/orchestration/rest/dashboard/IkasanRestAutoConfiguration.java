@@ -49,6 +49,8 @@ import org.ikasan.rest.dashboard.JwtTokenUtil;
 import org.ikasan.security.service.UserService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
@@ -81,6 +83,12 @@ public class IkasanRestAutoConfiguration {
     private ContextResetService contextResetService;
 
     @Resource
+    private ScheduledContextService scheduledContextService;
+
+    @Resource
+    private SchedulerJobService schedulerJobService;
+
+    @Resource
     private EmailNotificationDetailsService emailNotificationDetailsService;
 
     @Bean
@@ -111,6 +119,11 @@ public class IkasanRestAutoConfiguration {
     @Bean
     public ContextResetController contextResetController() {
         return new ContextResetController(this.contextResetService);
+    }
+
+    @Bean
+    public ContextExportControl contextBundleDownloadControl() {
+        return new ContextExportControl(scheduledContextService, schedulerJobService);
     }
 
     @Bean
