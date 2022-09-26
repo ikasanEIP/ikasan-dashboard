@@ -9,7 +9,6 @@ import com.vaadin.flow.shared.Registration;
 
 public class ContextInstanceStateChangeEventBroadcasterImpl implements ContextInstanceStateChangeEventBroadcaster<Registration> {
 
-
     @Override
     public synchronized Registration register(Consumer<ContextInstanceStateChangeEvent> listener) {
         return org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster.register(listener);

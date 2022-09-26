@@ -16,6 +16,7 @@ public class TestUtils {
 
     public static ModuleMetaData createModuleMetaData(String id) {
         ModuleMetaDataImpl moduleMetaData = new ModuleMetaDataImpl();
+        moduleMetaData.setName("AGENT-"+id);
         moduleMetaData.setUrl(AGENT_URL + id);
         return moduleMetaData;
     }

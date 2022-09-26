@@ -37,46 +37,33 @@ import java.util.List;
 public class SchedulerJobSelectGridWidget extends Div {
 
     private SchedulerJobFilteringGrid schedulerJobFilteringGrid;
-    private IkasanAuthentication authentication;
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-    private SystemEventLogger systemEventLogger;
-    private ModuleMetaDataService moduleMetaDataService;
-    private JobInitiationService jobInitiationService;
-    private ContextTemplate contextTemplate;
-    private ModuleControlService moduleControlRestService;
-    private ScheduledProcessManagementService scheduledProcessManagementService;
-    private ConfigurationService configurationRestService;
-    private MetaDataService metaDataRestService;
-    private SchedulerJobService schedulerJobService;
-    private JobProvisionService jobProvisionService;
     private List<SchedulerJobSelectedListener> schedulerJobSelectedListeners = new ArrayList<>();
     private Dialog parent;
+
+    private String jobType = null;
+
+    public SchedulerJobSelectGridWidget(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate, Dialog parent, String jobType) {
+        this.jobType = jobType;
+
+        this.parent = parent;
+
+        init(schedulerJobService, contextTemplate);
+    }
 
     /**
      * Constructor
      */
-    public SchedulerJobSelectGridWidget(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
-                                        ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                        MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                        LogStreamingService logStreamingService, ContextTemplate contextTemplate, JobInitiationService jobInitiationService,
-                                        JobProvisionService jobProvisionService, Dialog parent) {
+    public SchedulerJobSelectGridWidget(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate, Dialog parent) {
 
-        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        this.systemEventLogger = systemEventLogger;
-        this.moduleMetaDataService = moduleMetaDataService;
-        this.jobInitiationService = jobInitiationService;
-        this.contextTemplate = contextTemplate;
-        this.moduleControlRestService = moduleControlRestService;
-        this.scheduledProcessManagementService = scheduledProcessManagementService;
-        this.configurationRestService = configurationRestService;
-        this.metaDataRestService = metaDataRestService;
-        this.schedulerJobService =  schedulerJobService;
-        this.jobProvisionService =  jobProvisionService;
         this.parent = parent;
 
-        this.createGrid(dynamicImagePath, moduleMetaDataService
-            , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextTemplate);
+        init(schedulerJobService, contextTemplate);
+    }
+
+    private void init(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate) {
+        this.parent = parent;
+
+        this.createGrid(schedulerJobService, contextTemplate);
 
         this.schedulerJobFilteringGrid.init();
 
@@ -91,12 +78,13 @@ public class SchedulerJobSelectGridWidget extends Div {
         this.setSizeFull();
     }
 
-    private void createGrid(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
-                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                            LogStreamingService logStreamingService, ContextTemplate contextTemplate) {
+    private void createGrid(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate) {
         // Create a modulesGrid bound to the list
         SolrSchedulerJobSearchFilterImpl schedulerJobSearchFilter = new SolrSchedulerJobSearchFilterImpl();
+        if(this.jobType != null) {
+            schedulerJobSearchFilter.setJobTypeFilter(this.jobType);
+        }
+
         schedulerJobFilteringGrid = new SchedulerJobFilteringGrid(schedulerJobService, schedulerJobSearchFilter);
         schedulerJobFilteringGrid.getElement().getStyle().set("margin-top", "40px");
         schedulerJobFilteringGrid.removeAllColumns();
@@ -174,8 +162,11 @@ public class SchedulerJobSelectGridWidget extends Div {
 
         HeaderRow hr = schedulerJobFilteringGrid.appendHeaderRow();
         this.schedulerJobFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobNameFilter, "flowName");
-        this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobTypeFilter
-            , SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
+
+        if(this.jobType == null) {
+            this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setJobTypeFilter
+                , SolrSchedulerJobSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
+        }
 
     }
 

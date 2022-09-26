@@ -1,5 +1,7 @@
 package org.ikasan.job.orchestration.model.context;
 
+import org.ikasan.spec.scheduled.context.model.AbstractJobLockHolder;
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -7,10 +9,9 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class JobLockHolderImpl implements JobLockHolder {
+public class JobLockHolderImpl extends AbstractJobLockHolder implements JobLockHolder {
     private String lockName;
     private long lockCount = 1;
-    private final Map<String, List<SchedulerJob>> schedulerJobs = new ConcurrentHashMap<>();
     private final Set<String> lockHolders = new HashSet<>();
     private Queue<ContextualisedSchedulerJobInitiationEvent> queuedSchedulerJobInitiationEvents = new LinkedList<>();
 
@@ -37,14 +38,6 @@ public class JobLockHolderImpl implements JobLockHolder {
     @Override
     public Map<String, List<SchedulerJob>> getSchedulerJobs() {
         return schedulerJobs;
-    }
-
-    @Override
-    public void addSchedulerJobs(String contextName, List<SchedulerJob> jobs) {
-        if(!this.schedulerJobs.containsKey(contextName)) {
-            this.schedulerJobs.put(contextName, new ArrayList<>());
-        }
-        this.schedulerJobs.get(contextName).addAll(jobs);
     }
 
     @Override
