@@ -95,6 +95,8 @@ import java.util.stream.Collectors;
     private SchedulerJobGridWidget schedulerJobGridWidget;
     private ContextTemplateStatisticsWidget contextTemplateStatisticsWidget;
     private JobInitiationService jobInitiationService;
+    private ModuleMetaDataService moduleMetaDataService;
+    private LogStreamingService logStreamingService;
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
@@ -144,6 +146,14 @@ import java.util.stream.Collectors;
         this.jobInitiationService = jobInitiationService;
         if (this.jobInitiationService == null) {
             throw new IllegalArgumentException("jobInitiationService cannot be null!");
+        }
+        this.moduleMetaDataService = moduleMetaDataService;
+        if (this.moduleMetaDataService == null) {
+            throw new IllegalArgumentException("moduleMetaDataService cannot be null!");
+        }
+        this.logStreamingService = logStreamingService;
+        if (this.logStreamingService == null) {
+            throw new IllegalArgumentException("logStreamingService cannot be null!");
         }
         this.contextProfileService = contextProfileService;
         if (this.contextProfileService == null) {
@@ -480,13 +490,21 @@ import java.util.stream.Collectors;
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setMargin(false);
         buttonLayout.setPadding(false);
-        Button provisionButton = this.createProvisionButton();
+        Button provisionButton = this.createSynchroniseJobsButton();
 
         Button downloadContextTemplateButton = new Button(getTranslation("button.download-context-template", UI.getCurrent().getLocale()), VaadinIcon.DOWNLOAD_ALT.create());
         downloadContextTemplateButton.setIconAfterText(true);
 
+        Button manageJobLocksButton =  new Button(getTranslation("button.manage-job-locks", UI.getCurrent().getLocale()), VaadinIcon.LOCK.create());
+        manageJobLocksButton.setIconAfterText(true);
+        manageJobLocksButton.addClickListener(event -> {
+            JobLockManagementDialog jobLockManagementDialog = new JobLockManagementDialog(this.contextTemplate, this.moduleMetaDataService, this.scheduledProcessManagementService,
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
+                this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService);
+            jobLockManagementDialog.open();
+        });
 
-        buttonLayout.add(this.createJobUploadMenuBar(), this.createNewJobMenuBar(), downloadContextTemplateButton, provisionButton);
+        buttonLayout.add(manageJobLocksButton, this.createJobUploadMenuBar(), this.createNewJobMenuBar(), downloadContextTemplateButton, provisionButton);
         buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, provisionButton);
 
         buttonWrapper.add(buttonLayout);
@@ -494,14 +512,14 @@ import java.util.stream.Collectors;
         return buttonWrapper;
     }
 
-    private Button createProvisionButton() {
-        Button provisionJobsButton = new Button(getTranslation("button.synchronise-jobs", UI.getCurrent().getLocale()), VaadinIcon.COGS.create());
-        provisionJobsButton.getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
-        provisionJobsButton.getStyle().set("color","white");
-        provisionJobsButton.getElement().setAttribute("title", getTranslation("tooltip.synch-jobs-required", UI.getCurrent().getLocale()));
-        provisionJobsButton.setIconAfterText(true);
+    private Button createSynchroniseJobsButton() {
+        Button synchroniseJobsButton = new Button(getTranslation("button.synchronise-jobs", UI.getCurrent().getLocale()), VaadinIcon.COGS.create());
+        synchroniseJobsButton.getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
+        synchroniseJobsButton.getStyle().set("color","white");
+        synchroniseJobsButton.getElement().setAttribute("title", getTranslation("tooltip.synch-jobs-required", UI.getCurrent().getLocale()));
+        synchroniseJobsButton.setIconAfterText(true);
 
-        provisionJobsButton.addClickListener(event -> {
+        synchroniseJobsButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setCancelable(true);
             confirmDialog.setHeader(getTranslation("confirm-dialog.provision-job-header", UI.getCurrent().getLocale()));
@@ -625,7 +643,7 @@ import java.util.stream.Collectors;
             });
         });
 
-        return provisionJobsButton;
+        return synchroniseJobsButton;
     }
 
     private MenuBar createJobUploadMenuBar() {

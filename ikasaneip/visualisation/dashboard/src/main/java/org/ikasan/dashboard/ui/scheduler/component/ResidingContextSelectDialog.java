@@ -36,6 +36,9 @@ public class ResidingContextSelectDialog extends AbstractCloseableResizableDialo
         else if(action.equals(Action.SKIP)) {
             label.setText(getTranslation("label.select-skipped-contexts", UI.getCurrent().getLocale()));
         }
+        else if(action.equals(Action.SELECT_FOR_LOCK)) {
+            label.setText("Select residing contexts to add to job lock");
+        }
 
         Button selectAll = new Button(getTranslation("button.select-all", UI.getCurrent().getLocale()));
         Button deSelectAll = new Button(getTranslation("button.deselect-all", UI.getCurrent().getLocale()));
@@ -156,6 +159,7 @@ public class ResidingContextSelectDialog extends AbstractCloseableResizableDialo
 
     public enum Action {
         HOLD,
-        SKIP;
+        SKIP,
+        SELECT_FOR_LOCK;
     }
 }

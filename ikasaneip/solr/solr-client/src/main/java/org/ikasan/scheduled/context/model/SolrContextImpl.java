@@ -1,37 +1,23 @@
 package org.ikasan.scheduled.context.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.ikasan.spec.scheduled.context.model.Context;
-import org.ikasan.spec.scheduled.context.model.ContextDependency;
-import org.ikasan.spec.scheduled.context.model.JobDependency;
-import org.ikasan.spec.scheduled.context.model.JobLock;
+import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends SchedulerJob, JOB_LOCK extends JobLock> implements Context<CONTEXT, CONTEXT_PARAM, JOB, JOB_LOCK> {
+public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends SchedulerJob, JOB_LOCK extends JobLock>
+    extends AbstractContext<CONTEXT, JOB, JOB_LOCK>
+    implements Context<CONTEXT, CONTEXT_PARAM, JOB, JOB_LOCK> {
     protected String name;
     protected String description;
     protected String timezone;
     protected List<JobDependency> jobDependencies;
-    protected List<CONTEXT> contexts = new ArrayList<>();
     protected List<ContextDependency> contextDependencies = new ArrayList<>();
     protected List<CONTEXT_PARAM> contextParameters = new ArrayList<>() ;
-    protected List<JOB> scheduledJobs = new ArrayList<>() ;
     protected String timeWindowStart;
     protected String timeWindowEnd;
-    protected List<JOB_LOCK> jobLocks = new ArrayList<>();
-
-    @JsonIgnore
-    protected Map<String, JOB> scheduledJobsMap = new HashMap<>();
-    @JsonIgnore
-    protected Map<String, CONTEXT> contextsMap = new HashMap<>();
-    @JsonIgnore
-    protected Map<String, JOB_LOCK> jobLocksMap = new HashMap<>();
 
     @Override
     public String getName() {
@@ -74,20 +60,6 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     }
 
     @Override
-    public List<JOB> getScheduledJobs() {
-        return scheduledJobs;
-    }
-
-    @Override
-    public void setScheduledJobs(List<JOB> scheduledJobs) {
-        this.scheduledJobs = scheduledJobs;
-        if(scheduledJobs != null) {
-            this.scheduledJobsMap = this.scheduledJobs.stream()
-                .collect(Collectors.toMap(item -> item.getIdentifier() , item -> item, (a1, a2) -> a1));
-        }
-    }
-
-    @Override
     public List<JobDependency> getJobDependencies() {
         return jobDependencies;
     }
@@ -98,20 +70,6 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     }
 
     @Override
-    public List<CONTEXT> getContexts() {
-        return contexts;
-    }
-
-    @Override
-    public void setContexts(List<CONTEXT> contexts) {
-        this.contexts = contexts;
-        if(this.contexts != null) {
-            this.contextsMap = this.contexts.stream()
-                .collect(Collectors.toMap(item -> item.getName(), item -> item, (a1, a2) -> a1));
-        }
-    }
-
-    @Override
     public List<ContextDependency> getContextDependencies() {
         return contextDependencies;
     }
@@ -119,11 +77,6 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     @Override
     public void setContextDependencies(List<ContextDependency> contextDependencies) {
         this.contextDependencies = contextDependencies;
-    }
-
-    @Override
-    public Map<String, JOB> getScheduledJobsMap() {
-        return scheduledJobsMap;
     }
 
     @Override
@@ -149,37 +102,5 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     @Override
     public void setTimeWindowEnd(String timeWindowEnd) {
         this.timeWindowEnd = timeWindowEnd;
-    }
-
-    @Override
-    public void setJobLocks(List<JOB_LOCK> jobLocks) {
-        this.jobLocks = jobLocks;
-        if(this.jobLocks != null) {
-            this.jobLocksMap = this.jobLocks.stream()
-                .collect(Collectors.toMap(JobLock::getName, item -> item));
-        }
-    }
-
-    @Override
-    public List<JOB_LOCK> getJobLocks() {
-        return this.jobLocks;
-    }
-
-    @Override
-    public Map<String, JOB_LOCK> getJobLocksMap() {
-        return jobLocksMap;
-    }
-
-    @Override
-    @JsonIgnore
-    public List<JOB_LOCK> getAllNestedJobLocks() {
-        List<JOB_LOCK> jobLocks = new ArrayList<>();
-        if (this.getJobLocks() != null) {
-            jobLocks.addAll(this.getJobLocks());
-        }
-        if (this.getContexts() != null) {
-            this.getContexts().forEach(c -> jobLocks.addAll(c.getAllNestedJobLocks()));
-        }
-        return jobLocks;
     }
 }
