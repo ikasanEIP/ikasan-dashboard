@@ -121,7 +121,7 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
         sb.append("jobIdentifier='").append(jobIdentifier).append('\'');
         sb.append(", agentName='").append(agentName).append('\'');
         sb.append(", jobName='").append(jobName).append('\'');
-        sb.append(", contextId='").append(contextName).append('\'');
+        sb.append(", contextName='").append(contextName).append('\'');
         if(childContextNames != null) {
             sb.append(", childContextNames=[ ");
             childContextNames.forEach(id -> sb.append("[").append(id).append("] "));

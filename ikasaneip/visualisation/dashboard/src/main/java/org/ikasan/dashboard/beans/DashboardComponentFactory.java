@@ -11,6 +11,7 @@ import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.scheduler.model.CalendarConfiguration;
 import org.ikasan.dashboard.ui.util.DashboardCacheAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextInstanceStateChangeEventBroadcasterImpl;
+import org.ikasan.dashboard.ui.visualisation.scheduler.service.JobLockCacheEventBroadcasterImpl;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.SchedulerJobStateChangeEventBroadcasterImpl;
 import org.ikasan.error.reporting.dao.SolrErrorReportingServiceDao;
 import org.ikasan.error.reporting.service.SolrErrorReportingServiceImpl;
@@ -18,6 +19,7 @@ import org.ikasan.exclusion.dao.SolrExclusionEventDao;
 import org.ikasan.exclusion.service.SolrExclusionServiceImpl;
 import org.ikasan.hospital.dao.SolrHospitalDao;
 import org.ikasan.hospital.service.SolrHospitalServiceImpl;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.metrics.dao.SolrMetricsDao;
 import org.ikasan.metrics.service.SolrMetricsServiceImpl;
 import org.ikasan.module.metadata.dao.SolrModuleMetadataDao;
@@ -40,7 +42,9 @@ import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayEvent;
+import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.wiretap.WiretapEvent;
 import org.ikasan.systemevent.dao.SolrSystemEventDao;
@@ -377,6 +381,13 @@ public class DashboardComponentFactory
     @Bean
     public SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster() {
         return new SchedulerJobStateChangeEventBroadcasterImpl();
+    }
+    @Bean
+    public JobLockCacheEventBroadcaster jobLockCacheEventBroadcaster() {
+        JobLockCacheEventBroadcaster broadcaster = new JobLockCacheEventBroadcasterImpl();
+        JobLockCacheImpl.instance().setJobLockCacheEventBroadcaster(broadcaster);
+
+        return broadcaster;
     }
 
     @Bean

@@ -10,6 +10,8 @@ import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
+import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -22,7 +24,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
-import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
@@ -47,6 +49,7 @@ public abstract class ContextInstanceServiceBase {
     protected final JobLockCacheService jobLockCacheService;
     protected final ScheduledContextService scheduledContextService;
     protected final SchedulerJobInstanceService schedulerJobInstanceService;
+    protected final JobLockCacheInitialisationService jobLockCacheInitialisationService;
     protected final ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster;
     protected final SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
 
@@ -64,7 +67,8 @@ public abstract class ContextInstanceServiceBase {
                                       ScheduledContextService scheduledContextService,
                                       SchedulerJobInstanceService schedulerJobInstanceService,
                                       ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
-                                      SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
+                                      SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
+                                      JobLockCacheInitialisationService jobLockCacheInitialisationService) {
         this.queueDirectory = queueDirectory;
         if (this.queueDirectory == null) {
             throw new IllegalArgumentException("queueDirectory cannot be null!");
@@ -113,6 +117,10 @@ public abstract class ContextInstanceServiceBase {
         if (this.schedulerJobStateChangeEventBroadcaster == null) {
             throw new IllegalArgumentException("schedulerJobStateChangeEventBroadcaster cannot be null!");
         }
+        this.jobLockCacheInitialisationService = jobLockCacheInitialisationService;
+        if (this.jobLockCacheInitialisationService == null) {
+            throw new IllegalArgumentException("jobLockCacheInitialisationService cannot be null!");
+        }
 
         this.objectMapper = ObjectMapperFactory.newInstance();
     }
@@ -134,7 +142,7 @@ public abstract class ContextInstanceServiceBase {
         }
 
         Map<String, InternalEventDrivenJobInstance> internalJobs = getInternalJobs(instance.getId());
-        HashMap<String, ModuleMetaData> agents = getAgents(internalJobs);
+        HashMap<String, ModuleMetaData> agents = getAgents();
 
         internalJobs.entrySet().forEach(job -> {
             if(job.getValue().isSkip()) {
@@ -150,7 +158,7 @@ public abstract class ContextInstanceServiceBase {
         });
 
         ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, internalJobs, queueDirectory, agents,
-            getJobLockCache(context), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
+            initialiseJobLockCache(context), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
         contextMachine.init();
 
         // We add the listener to write initiation events to the agents.
@@ -181,8 +189,7 @@ public abstract class ContextInstanceServiceBase {
     }
 
     protected void removeAgentInstances(ContextInstance instance) {
-        Map<String, InternalEventDrivenJobInstance> internalJobs = getInternalJobs(instance.getId());
-        HashMap<String, ModuleMetaData> agents = getAgents(internalJobs);
+        HashMap<String, ModuleMetaData> agents = getAgents();
         if (!agents.keySet().isEmpty()) {
             for (String key : agents.keySet()) {
                 ModuleMetaData agent = agents.get(key);
@@ -191,40 +198,19 @@ public abstract class ContextInstanceServiceBase {
         }
     }
 
-    private JobLockCache getJobLockCache(ContextTemplate context) {
-        JobLockCache jobLockCache = JobLockCacheImpl.instance();
-        JobLockCacheRecord jobLockCacheRecord = jobLockCacheService.get();
-        /**
-         * TODO we need to focus on exactly how the job lock cache is initialised / recovered.
-         * What happens when we have resolve the persisted cache, but the context has been updated
-         * to have more or less jobs in a lock, a lock has been removed, or a new lock added?
-         */
-        if (jobLockCacheRecord == null) {
-            // should never happen we are recovering so should exist but just in case
-            jobLockCache.setJobLockCacheService(jobLockCacheService);
-            jobLockCache.addLocks(context.getAllNestedJobLocks());
-        } else {
-            // do not set the locks as should all be in there already
-            jobLockCache.setJobLockCacheService(jobLockCacheService);
-            jobLockCache.setJobLockCacheRecord(jobLockCacheRecord);
-        }
-        return jobLockCache;
+    private JobLockCache initialiseJobLockCache(ContextTemplate context) {
+        this.jobLockCacheInitialisationService.initialiseJobLockCache(context);
+        return JobLockCacheImpl.instance();
     }
 
-    private HashMap<String, ModuleMetaData> getAgents(Map<String, InternalEventDrivenJobInstance> internalJobs) {
+    private HashMap<String, ModuleMetaData> getAgents() {
         HashMap<String, ModuleMetaData> agents = new HashMap<>();
-        // TODO we only need to get the module metadata for distinct agents!
-        internalJobs.values().forEach(job -> {
-            if (!agents.containsKey(job.getAgentName())) {
-                ModuleMetaData moduleMetadataById = moduleMetadataService.findById(job.getAgentName());
-                if (moduleMetadataById == null) {
-                    // TODO is this an exception case? Do we need to raise exceptions?
-                    LOG.warn("Could not find ModuleMetaData for agent name " + job.getAgentName());
-                } else {
-                    agents.put(job.getAgentName(), moduleMetadataById);
-                }
-            }
-        });
+
+        ModuleMetadataSearchResults searchResults = moduleMetadataService
+            .find(List.of(), ModuleType.SCHEDULER_AGENT, -1, -1);
+
+        searchResults.getResultList().forEach(agent -> agents.put(agent.getName(), agent));
+
         return agents;
     }
 
