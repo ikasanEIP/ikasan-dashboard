@@ -4,12 +4,12 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.job.orchestration.builder.context.JobLockBuilder;
 import org.ikasan.job.orchestration.builder.job.SchedulerJobBuilder;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
-import org.ikasan.job.orchestration.model.context.JobLockHolderImpl;
-import org.ikasan.job.orchestration.model.event.ContextualisedSchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
+import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
+import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
@@ -22,18 +22,26 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JobLockCacheImplTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobLockCacheImplTest.class);
 
     @Mock
     private JobLockCacheService jobLockCacheService;
@@ -303,6 +311,159 @@ public class JobLockCacheImplTest {
         assertFalse(jlc.hasLock("AgentName1-TEST-LOCK-JobName1", contextId1));
         assertFalse(jlc.locked("AgentName2-TEST-LOCK-JobName2", "contextName"));
         assertFalse(jlc.hasLock("AgentName2-TEST-LOCK-JobName2", contextId2));
+    }
+
+    @Test
+    public void test_job_lock_cache_publishes_event_when_job_locked() {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.setJobLockCacheService(jobLockCacheService);
+        String contextId0 = UUID.randomUUID().toString();
+
+        AtomicReference<JobLockCacheEvent> jobLockCacheEvent = new AtomicReference<>();
+
+        JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
+            LOGGER.info("Event -> "+ event);
+            jobLockCacheEvent.set(event);
+        });
+
+        assertFalse(jlc.locked("jobIdentifier", "contextName"));
+
+        // 3 jobs one lock count
+        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 1, 1)));
+
+        assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName"));
+
+        // lock it
+        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0));
+
+        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
+            .atMost(15, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                Assert.assertEquals(JobLockCacheEvent.EventType.LOCK_OBTAINED, jobLockCacheEvent.get().getEvent());
+                Assert.assertEquals("AgentName0-TEST-LOCK-JobName0", jobLockCacheEvent.get().getJobIdentifier());
+                Assert.assertEquals(contextId0, jobLockCacheEvent.get().getContextName());
+            });
+    }
+
+    @Test
+    public void test_job_lock_cache_broadcasts_event_when_job_locked() {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.setJobLockCacheService(jobLockCacheService);
+        String contextId0 = UUID.randomUUID().toString();
+
+        AtomicReference<JobLockCacheEvent> jobLockCacheEvent = new AtomicReference<>();
+
+        JobLockCacheEventBroadcaster broadcaster = new JobLockCacheEventBroadcaster() {
+            @Override
+            public void broadcast(JobLockCacheEvent message) {
+                jobLockCacheEvent.set(message);
+            }
+
+            @Override
+            public Object register(Consumer listener) {
+                return null;
+            }
+        };
+
+        JobLockCacheImpl.instance().setJobLockCacheEventBroadcaster(broadcaster);
+
+        assertFalse(jlc.locked("jobIdentifier", "contextName"));
+
+        // 3 jobs one lock count
+        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 1, 1)));
+
+        assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName"));
+
+        // lock it
+        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0));
+
+        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
+            .atMost(15, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                Assert.assertEquals(JobLockCacheEvent.EventType.LOCK_OBTAINED, jobLockCacheEvent.get().getEvent());
+                Assert.assertEquals("AgentName0-TEST-LOCK-JobName0", jobLockCacheEvent.get().getJobIdentifier());
+                Assert.assertEquals(contextId0, jobLockCacheEvent.get().getContextName());
+            });
+    }
+
+    @Test
+    public void test_job_lock_cache_publishes_event_when_job_released() {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.setJobLockCacheService(jobLockCacheService);
+        String contextId0 = UUID.randomUUID().toString();
+
+        assertFalse(jlc.locked("jobIdentifier", "contextName"));
+
+        // 3 jobs one lock count
+        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 1, 1)));
+
+        assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName"));
+
+        // lock it
+        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0));
+
+        AtomicReference<JobLockCacheEvent> jobLockCacheEvent = new AtomicReference<>();
+
+        JobLockCacheImpl.instance().addJobLockCacheEventListener(event -> {
+            LOGGER.info("Event -> "+ event);
+            jobLockCacheEvent.set(event);
+        });
+
+        // release the lock
+        assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0));
+
+        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
+            .atMost(15, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                Assert.assertEquals(JobLockCacheEvent.EventType.LOCK_RELEASED, jobLockCacheEvent.get().getEvent());
+                Assert.assertEquals("AgentName0-TEST-LOCK-JobName0", jobLockCacheEvent.get().getJobIdentifier());
+                Assert.assertEquals(contextId0, jobLockCacheEvent.get().getContextName());
+            });
+
+    }
+
+    @Test
+    public void test_job_lock_cache_broadcasts_event_when_job_released() {
+        JobLockCache jlc = JobLockCacheImpl.instance();
+        jlc.setJobLockCacheService(jobLockCacheService);
+        String contextId0 = UUID.randomUUID().toString();
+
+        assertFalse(jlc.locked("jobIdentifier", "contextName"));
+
+        // 3 jobs one lock count
+        jlc.addLocks(List.of(makeJobLock("TEST-LOCK", 1, 1)));
+
+        assertFalse(jlc.locked("AgentName0-TEST-LOCK-JobName0", "contextName"));
+
+        // lock it
+        assertTrue(jlc.lock("AgentName0-TEST-LOCK-JobName0", contextId0));
+
+        AtomicReference<JobLockCacheEvent> jobLockCacheEvent = new AtomicReference<>();
+
+        JobLockCacheEventBroadcaster broadcaster = new JobLockCacheEventBroadcaster() {
+            @Override
+            public void broadcast(JobLockCacheEvent message) {
+                jobLockCacheEvent.set(message);
+            }
+
+            @Override
+            public Object register(Consumer listener) {
+                return null;
+            }
+        };
+        JobLockCacheImpl.instance().setJobLockCacheEventBroadcaster(broadcaster);
+
+        // release the lock
+        assertTrue(jlc.release("AgentName0-TEST-LOCK-JobName0", contextId0));
+
+        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
+            .atMost(15, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                Assert.assertEquals(JobLockCacheEvent.EventType.LOCK_RELEASED, jobLockCacheEvent.get().getEvent());
+                Assert.assertEquals("AgentName0-TEST-LOCK-JobName0", jobLockCacheEvent.get().getJobIdentifier());
+                Assert.assertEquals(contextId0, jobLockCacheEvent.get().getContextName());
+            });
+
     }
 
     @Test

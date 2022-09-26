@@ -68,6 +68,7 @@ public class ObjectMapperFactory {
             .addAbstractTypeMapping(JobLock.class, JobLockImpl.class)
             .addAbstractTypeMapping(JobLockInstance.class, JobLockInstanceImpl.class)
             .addAbstractTypeMapping(List.class, ArrayList.class)
+            .addAbstractTypeMapping(JobLockHolder.class, JobLockHolderImpl.class)
             .addAbstractTypeMapping(Map.class, HashMap.class);
 
         objectMapper.registerModule(simpleModule);

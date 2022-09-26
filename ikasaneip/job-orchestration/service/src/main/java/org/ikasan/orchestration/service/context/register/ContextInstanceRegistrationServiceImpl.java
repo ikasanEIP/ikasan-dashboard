@@ -47,6 +47,7 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
+import org.ikasan.orchestration.service.context.JobLockCacheInitialisationServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -62,6 +63,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 
 public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRegistrationService {
@@ -78,7 +80,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                                                   ScheduledContextService scheduledContextService,
                                                   SchedulerJobInstanceService schedulerJobInstanceService,
                                                   ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
-                                                  SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster) {
+                                                  SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
+                                                  JobLockCacheInitialisationService jobLockCacheInitialisationService) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService,
@@ -90,7 +93,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             scheduledContextService,
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
-            schedulerJobStateChangeEventBroadcaster);
+            schedulerJobStateChangeEventBroadcaster,
+            jobLockCacheInitialisationService);
     }
 
 
@@ -111,6 +115,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
 
             removeAgentInstances(instance);
             saveContextInstance(instance, InstanceStatus.ENDED);
+            super.jobLockCacheInitialisationService.removeJobLocksFromCache(instance);
             ContextMachineCache.instance().remove(contextMachine);
             contextMachine.teardown();
         } catch (Exception e) {
