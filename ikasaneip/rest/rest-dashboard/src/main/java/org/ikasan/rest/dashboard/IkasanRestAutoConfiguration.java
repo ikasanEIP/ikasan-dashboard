@@ -40,13 +40,16 @@
  */
 package org.ikasan.rest.dashboard;
 
+import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagementServiceImpl;
 import org.ikasan.security.service.UserService;
+import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -56,6 +59,10 @@ import javax.annotation.Resource;
 @Configuration
 public class IkasanRestAutoConfiguration
 {
+
+    @Value("${scheduled.job.context.queue.directory}")
+    private String queueDir;
+
     @Resource
     private BatchInsert errorOccurrenceBatchInsert;
 
@@ -154,6 +161,16 @@ public class IkasanRestAutoConfiguration
     public NotifierController notifierControllerApplication()
     {
         return new NotifierController(this.cacheAdapter);
+    }
+
+    @Bean
+    public BigQueueDashboardController bigQueueManagementController() {
+        return new BigQueueDashboardController();
+    }
+
+    @Bean
+    public BigQueueDirectoryManagementService bigQueueDirectoryManagementService() {
+        return new BigQueueDirectoryManagementServiceImpl(this.queueDir);
     }
 
     @Bean
