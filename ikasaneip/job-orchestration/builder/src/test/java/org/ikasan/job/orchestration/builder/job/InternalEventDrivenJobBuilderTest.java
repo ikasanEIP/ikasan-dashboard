@@ -22,6 +22,8 @@ public class InternalEventDrivenJobBuilderTest extends AbstractTest {
             .withMaxExecutionTime(100000L)
             .withMinExecutionTime(1000L)
             .withWorkingDirectory("working directory")
+            .withParticipatesInLock(true)
+            .withTargetResidingContextOnly(true)
             .addDayOfWeekToRun(Calendar.MONDAY).addDayOfWeekToRun(Calendar.TUESDAY)
             .addContextParameter(internalEventDrivenJobBuilder.getContextParameterBuilder()
                 .withName("name1")

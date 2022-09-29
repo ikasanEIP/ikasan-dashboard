@@ -48,11 +48,11 @@
       }, {
         "jobName" : "jobName9",
         "agentName" : "agentName9",
-        "instanceStatus" : "WAITING"
+        "instanceStatus" : "COMPLETE"
       }, {
         "jobName" : "jobName10",
         "agentName" : "agentName10",
-        "instanceStatus" : "LOCK_QUEUED"
+        "instanceStatus" : "WAITING"
       }, {
         "jobName" : "jobName11",
         "agentName" : "agentName11",

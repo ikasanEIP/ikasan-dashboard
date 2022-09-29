@@ -1,10 +1,12 @@
 package org.ikasan.job.orchestration.context.cache;
 
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
 import org.ikasan.job.orchestration.model.context.JobLockHolderImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedSchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.JobLockCacheEventImpl;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
@@ -14,6 +16,8 @@ import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiatio
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;

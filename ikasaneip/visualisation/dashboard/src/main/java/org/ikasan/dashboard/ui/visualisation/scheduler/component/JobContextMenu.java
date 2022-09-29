@@ -202,7 +202,7 @@ public class JobContextMenu extends Dialog {
     }
 
     private SchedulerJob getSchedulerJob(String jobName) {
-        SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextIdAndJobName(this.rootContextInstance.getName(), jobName);
+        SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName(this.rootContextInstance.getName(), jobName);
 
         if (schedulerJobRecord != null) {
             return schedulerJobRecord.getJob();

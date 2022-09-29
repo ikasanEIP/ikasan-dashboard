@@ -40,6 +40,7 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
                 + event.getJobName() + "_" + job.getContextName());
             document.addField(PAYLOAD_CONTENT, getInternalEventDrivenJob(job));
             document.setField(TARGET_RESIDING_CONTEXT_ONLY, job.isTargetResidingContextOnly());
+            document.setField(PARTICIPATES_IN_LOCK, job.isParticipatesInLock());
             document.addField(COMPONENT_NAME, job.getContextName());
         }
         catch (JsonProcessingException e) {

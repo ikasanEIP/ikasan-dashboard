@@ -160,7 +160,7 @@ public class ContextMachineTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(0, events.size());
 
-        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job8-success-context-status.json")
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job8-success-context-status-no-lock.json")
             , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
 
         eventInstance = scheduledProcessEventInstance("jobName9",
@@ -169,7 +169,7 @@ public class ContextMachineTest extends AbstractTest {
         events = contextMachine.eventReceived(eventInstance);
         Assert.assertEquals(0, events.size());
 
-        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job9-success-context-status.json")
+        JSONAssert.assertEquals(loadDataFile("/data/machine/result/job9-success-context-status-no-lock.json")
             , objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()), JSONCompareMode.LENIENT);
 
         status = contextMachine.getContextStatus("Context3");

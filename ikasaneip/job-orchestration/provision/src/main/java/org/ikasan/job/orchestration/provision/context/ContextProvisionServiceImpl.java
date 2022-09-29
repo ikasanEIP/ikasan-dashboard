@@ -14,9 +14,11 @@ import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.module.ModuleType;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobWrapper;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
@@ -29,10 +31,7 @@ import org.quartz.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.ikasan.job.orchestration.context.register.ContextInstanceEndJob.END_JOB_EXTENSION;
@@ -103,6 +102,8 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
             this.deleteAllJobs(contextBundle.getContextTemplate().getName());
             // delete the context profiles
             this.deleteContextProfiles(contextBundle.getContextTemplate().getName());
+            // set job participates in lock flag on relevant jobs
+            this.setJobsParticipateInJobLock(contextBundle.getContextTemplate(), contextBundle.getSchedulerJobs());
             // save the jobs
             this.saveJobs(contextBundle.getSchedulerJobs());
             // saveContext
@@ -212,6 +213,22 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
 
     private void saveJobs(List<SchedulerJob> contextJobs) {
         this.schedulerJobService.save(contextJobs);
+    }
+
+    private void setJobsParticipateInJobLock(ContextTemplate contextTemplate, List<SchedulerJob> contextJobs) {
+        List<JobLock> jobLocks = contextTemplate.getAllNestedJobLocks();
+        Set<String> jobInJobLocks = new HashSet<>();
+        jobLocks.forEach(jobLock -> {
+            jobLock.getJobs().values().forEach(jobs -> {
+                jobs.forEach(job -> jobInJobLocks.add(job.getIdentifier()));
+            });
+        });
+
+        contextJobs.forEach(job -> {
+            if(job instanceof InternalEventDrivenJob) {
+                ((InternalEventDrivenJob)job).setParticipatesInLock(jobInJobLocks.contains(job.getIdentifier()));
+            }
+        });
     }
 
     private void deleteAllJobs(String contextName) {

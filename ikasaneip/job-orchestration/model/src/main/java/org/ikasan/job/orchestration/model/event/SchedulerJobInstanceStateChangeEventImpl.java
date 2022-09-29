@@ -12,6 +12,7 @@ public class SchedulerJobInstanceStateChangeEventImpl extends StateChangeEventIm
     public SchedulerJobInstanceStateChangeEventImpl(SchedulerJobInstance schedulerJobInstance, ContextInstance contextInstance, InstanceStatus previousStatus, InstanceStatus newStatus) {
         super(previousStatus, newStatus);
         this.schedulerJobInstance = schedulerJobInstance;
+        this.contextInstance = contextInstance;
     }
 
     @Override

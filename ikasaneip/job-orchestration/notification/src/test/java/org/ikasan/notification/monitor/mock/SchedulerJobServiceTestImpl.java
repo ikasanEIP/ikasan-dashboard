@@ -27,7 +27,7 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     }
 
     @Override
-    public SchedulerJobRecord findByContextIdAndJobName(String contextId, String jobName) {
+    public SchedulerJobRecord findByContextNameAndJobName(String contextId, String jobName) {
         return new SchedulerJobRecordTestImpl();
     }
 
@@ -89,17 +89,17 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     }
 
     @Override
-    public void saveFileEventDrivenJob(FileEventDrivenJob fileEventDrivenJob) {
+    public void saveFileEventDrivenJob(FileEventDrivenJob fileEventDrivenJob, String modifiedBy) {
 
     }
 
     @Override
-    public void saveInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob) {
+    public void saveInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob, String modifiedBy) {
 
     }
 
     @Override
-    public void saveQuartzScheduledJob(QuartzScheduleDrivenJob quartzScheduleDrivenJob) {
+    public void saveQuartzScheduledJob(QuartzScheduleDrivenJob quartzScheduleDrivenJob, String modifiedBy) {
 
     }
 
