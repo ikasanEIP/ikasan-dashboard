@@ -50,6 +50,9 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
     @Field(SolrDaoBase.TARGET_RESIDING_CONTEXT_ONLY)
     private boolean targetResidingContextOnly;
 
+    @Field(SolrDaoBase.PARTICIPATES_IN_LOCK)
+    private boolean participatesInLock;
+
     @Override
     public String getId() {
         return id;
@@ -105,43 +108,29 @@ public class SolrSchedulerJobRecordImpl implements SchedulerJobRecord {
         return modifiedTimestamp;
     }
 
-//    @Override
-//    public void setModifiedTimestamp(long modifiedTimestamp) {
-//        this.modifiedTimestamp = modifiedTimestamp;
-//    }
 
     @Override
     public String getModifiedBy() {
         return modifiedBy;
     }
 
-//    @Override
-//    public void setModifiedBy(String modifiedBy) {
-//        this.modifiedBy = modifiedBy;
-//    }
-
     @Override
     public boolean isHeld() {
         return held;
     }
-
-//    @Override
-//    public void setHeld(boolean held) {
-//        this.held = held;
-//    }
 
     @Override
     public boolean isSkipped() {
         return skipped;
     }
 
-//    @Override
-//    public void setSkipped(boolean skipped) {
-//        this.skipped = skipped;
-//    }
-
     @Override
     public boolean isTargetResidingContextOnly() {
         return this.targetResidingContextOnly;
+    }
+
+    @Override
+    public boolean isParticipatesInLock() {
+        return participatesInLock;
     }
 }

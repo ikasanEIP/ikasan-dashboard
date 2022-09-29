@@ -3,16 +3,17 @@ package org.ikasan.dashboard.ui.scheduler.component;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
-import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 
-public class InternalEventDrivenJobSelectDialog extends AbstractCloseableResizableDialog {
+public class FilteredSchedulerJobSelectDialog extends AbstractCloseableResizableDialog {
     private SchedulerJobSelectGridWidget schedulerJobSelectGridWidget;
 
-    public InternalEventDrivenJobSelectDialog(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate) {
+    public FilteredSchedulerJobSelectDialog(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate,
+                                            SchedulerJobSearchFilter schedulerJobSearchFilter, String headerLabel, String bodyLabel) {
         this.schedulerJobSelectGridWidget = new SchedulerJobSelectGridWidget(schedulerJobService, contextTemplate, this,
-            JobConstants.INTERNAL_EVENT_DRIVEN_JOB);
+            schedulerJobSearchFilter, bodyLabel);
 
         this.setHeight("90vh");
         this.setWidth("90vw");
@@ -22,6 +23,7 @@ public class InternalEventDrivenJobSelectDialog extends AbstractCloseableResizab
         layout.add(this.schedulerJobSelectGridWidget);
         layout.getStyle().set("padding-bottom", "20px");
 
+        super.title.setText(headerLabel);
         super.content.add(layout);
     }
 

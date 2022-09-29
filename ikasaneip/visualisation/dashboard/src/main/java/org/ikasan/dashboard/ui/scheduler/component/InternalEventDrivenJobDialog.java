@@ -360,41 +360,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         internalEventDrivenJob.setCommandLine(this.commandLineTa.getValue());
         internalEventDrivenJob.setIdentifier(internalEventDrivenJob.getAgentName()+"-"+internalEventDrivenJob.getJobName());
 
-        SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
-        solrInternalEventDrivenJobRecord.setAgentName(internalEventDrivenJob.getAgentName());
-        solrInternalEventDrivenJobRecord.setJobName(internalEventDrivenJob.getJobName());
-        solrInternalEventDrivenJobRecord.setContextName(internalEventDrivenJob.getContextName());
-        solrInternalEventDrivenJobRecord.setModifiedTimestamp(System.currentTimeMillis());
-        solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
-
-        AtomicBoolean skipped = new AtomicBoolean(false);
-        internalEventDrivenJob.getSkippedContexts().entrySet().forEach(entry -> {
-            if(entry.getValue()) {
-                skipped.set(true);
-            }
-        });
-
-        solrInternalEventDrivenJobRecord.setSkipped(skipped.get());
-
-        AtomicBoolean held = new AtomicBoolean(false);
-        internalEventDrivenJob.getHeldContexts().entrySet().forEach(entry -> {
-            if(entry.getValue()) {
-                held.set(true);
-            }
-        });
-
-        solrInternalEventDrivenJobRecord.setHeld(held.get());
-
-        if(this.schedulerJobRecord != null) {
-            solrInternalEventDrivenJobRecord.setTimestamp(this.schedulerJobRecord.getTimestamp());
-        }
-        else {
-            solrInternalEventDrivenJobRecord.setTimestamp(System.currentTimeMillis());
-        }
-
-        solrInternalEventDrivenJobRecord.setModifiedBy(authentication.getName());
-
-        this.schedulerJobService.saveInternalEventDrivenJobRecord(solrInternalEventDrivenJobRecord);
+        this.schedulerJobService.saveInternalEventDrivenJob(internalEventDrivenJob, authentication.getName());
      }
 
     /**

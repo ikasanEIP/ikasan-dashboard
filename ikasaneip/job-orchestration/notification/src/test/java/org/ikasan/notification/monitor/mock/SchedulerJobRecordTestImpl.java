@@ -72,4 +72,8 @@ public class SchedulerJobRecordTestImpl implements SchedulerJobRecord {
         return false;
     }
 
+    @Override
+    public boolean isParticipatesInLock() {
+        return false;
+    }
 }
