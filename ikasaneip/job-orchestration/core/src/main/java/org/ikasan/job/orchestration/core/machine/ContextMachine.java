@@ -15,6 +15,7 @@ import org.ikasan.job.orchestration.core.notification.MonitorManagement;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
+import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditAggregateImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditAggregateRecordImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
@@ -650,7 +651,8 @@ public class ContextMachine {
                     allJobsComplete.set(false);
                 }
                 if (job.getStatus().equals(InstanceStatus.RUNNING)
-                    || job.getStatus().equals(InstanceStatus.COMPLETE)) {
+                    || job.getStatus().equals(InstanceStatus.COMPLETE)
+                    || job.getStatus().equals(InstanceStatus.LOCK_QUEUED)) {
                     anyRunningOrCompletedJobs.set(true);
                 }
                 if (job.getStatus().equals(InstanceStatus.ERROR)) {
@@ -695,6 +697,18 @@ public class ContextMachine {
         }
     }
 
+    public void addQueuedSchedulerJobInitiationEvent(SchedulerJobInitiationEvent event) {
+        ContextInstance childContextInstance = ContextHelper.getChildContextInstance(event.getInternalEventDrivenJob().getChildContextName()
+            , this.contextInstance);
+
+        this.jobLogicMachine.addQueuedSchedulerJobInitiationEvent(childContextInstance, this.contextInstance
+            , event.getInternalEventDrivenJob().getIdentifier(), event);
+
+        this.setContextStatus(childContextInstance);
+
+        this.saveContext();
+    }
+
     private void issueContextInstanceStateChangeEvent(ContextInstanceStateChangeEvent event) {
         this.statusListenerExecutor.submit(() -> this.contextInstanceStateChangeEventListeners
             .forEach(listener -> listener.onContextInstanceStateChangeEvent(event)));
@@ -709,25 +723,6 @@ public class ContextMachine {
         scheduledContextInstanceRecord.setStatus(this.contextInstance.getStatus().name());
 
         scheduledContextInstanceService.save(scheduledContextInstanceRecord);
-    }
-
-    private SchedulerJobInstance getSchedulerJob(ContextInstance contextInstance, String jobIdentifier) {
-        if(contextInstance.getScheduledJobsMap() != null && contextInstance.getScheduledJobsMap().containsKey(jobIdentifier)) {
-            return contextInstance.getScheduledJobsMap().get(jobIdentifier);
-        }
-        else if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
-            for(ContextInstance contextInstance1: contextInstance.getContexts()) {
-                 SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(contextInstance1, jobIdentifier);
-
-                 if(schedulerJobInstance != null) {
-                     return schedulerJobInstance;
-                 }
-            }
-
-            return null;
-        }
-
-        return null;
     }
 
     private SchedulerJobInstance getSchedulerJob(ContextInstance contextInstance, String childContextName, String jobIdentifier) {

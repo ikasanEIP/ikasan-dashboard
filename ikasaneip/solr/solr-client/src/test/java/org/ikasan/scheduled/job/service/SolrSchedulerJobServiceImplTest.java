@@ -142,7 +142,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
             this.service.skip(job, job.getJob().getChildContextNames(), "actor"));
 
         internalEventDrivenJobs.forEach(job -> {
-            this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+            this.service.findByContextNameAndJobName(contextId1, job.getJobName());
         });
     }
 
@@ -164,7 +164,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
             this.service.skip(job, job.getJob().getChildContextNames(), "actor"));
 
         internalEventDrivenJobs.forEach(job -> {
-            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+            SchedulerJobRecord schedulerJob = this.service.findByContextNameAndJobName(contextId1, job.getJobName());
 
             Assert.assertTrue(schedulerJob.isSkipped());
             Assert.assertFalse(schedulerJob.isHeld());
@@ -191,7 +191,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
             this.service.skip(job, job.getJob().getChildContextNames(), "actor"));
 
         internalEventDrivenJobs.forEach(job -> {
-            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+            SchedulerJobRecord schedulerJob = this.service.findByContextNameAndJobName(contextId1, job.getJobName());
 
             Assert.assertTrue(schedulerJob.isSkipped());
             Assert.assertFalse(schedulerJob.isHeld());
@@ -203,7 +203,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
             this.service.enable(job, "actor"));
 
         internalEventDrivenJobs.forEach(job -> {
-            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+            SchedulerJobRecord schedulerJob = this.service.findByContextNameAndJobName(contextId1, job.getJobName());
 
             Assert.assertFalse(schedulerJob.isSkipped());
             Assert.assertFalse(schedulerJob.isHeld());
@@ -230,7 +230,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
             this.service.skip(job, job.getJob().getChildContextNames(), "actor"));
 
         internalEventDrivenJobs.forEach(job -> {
-            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+            SchedulerJobRecord schedulerJob = this.service.findByContextNameAndJobName(contextId1, job.getJobName());
 
             Assert.assertTrue(schedulerJob.isSkipped());
             Assert.assertFalse(schedulerJob.isHeld());
@@ -241,7 +241,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         this.service.enableAll(contextId1, "actor");
 
         internalEventDrivenJobs.forEach(job -> {
-            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+            SchedulerJobRecord schedulerJob = this.service.findByContextNameAndJobName(contextId1, job.getJobName());
 
             Assert.assertFalse(schedulerJob.isSkipped());
             Assert.assertFalse(schedulerJob.isHeld());
@@ -268,7 +268,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
             this.service.hold(job, job.getJob().getChildContextNames(), "actor"));
 
         internalEventDrivenJobs.forEach(job -> {
-            this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+            this.service.findByContextNameAndJobName(contextId1, job.getJobName());
         });
     }
 
@@ -290,7 +290,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
             this.service.hold(job, job.getJob().getChildContextNames(), "actor"));
 
         internalEventDrivenJobs.forEach(job -> {
-            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+            SchedulerJobRecord schedulerJob = this.service.findByContextNameAndJobName(contextId1, job.getJobName());
 
             Assert.assertTrue(schedulerJob.isHeld());
             Assert.assertFalse(schedulerJob.isSkipped());
@@ -317,7 +317,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
             this.service.hold(job, job.getJob().getChildContextNames(), "actor"));
 
         internalEventDrivenJobs.forEach(job -> {
-            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+            SchedulerJobRecord schedulerJob = this.service.findByContextNameAndJobName(contextId1, job.getJobName());
 
             Assert.assertTrue(schedulerJob.isHeld());
             Assert.assertFalse(schedulerJob.isSkipped());
@@ -329,7 +329,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
             this.service.release(job, "actor"));
 
         internalEventDrivenJobs.forEach(job -> {
-            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+            SchedulerJobRecord schedulerJob = this.service.findByContextNameAndJobName(contextId1, job.getJobName());
 
             Assert.assertFalse(schedulerJob.isHeld());
             Assert.assertFalse(schedulerJob.isSkipped());
@@ -356,7 +356,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
             this.service.hold(job, job.getJob().getChildContextNames(), "actor"));
 
         internalEventDrivenJobs.forEach(job -> {
-            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+            SchedulerJobRecord schedulerJob = this.service.findByContextNameAndJobName(contextId1, job.getJobName());
 
             Assert.assertTrue(schedulerJob.isHeld());
             Assert.assertFalse(schedulerJob.isSkipped());
@@ -367,7 +367,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         this.service.releaseAll(contextId1, "actor");
 
         internalEventDrivenJobs.forEach(job -> {
-            SchedulerJobRecord schedulerJob = this.service.findByContextIdAndJobName(contextId1, job.getJobName());
+            SchedulerJobRecord schedulerJob = this.service.findByContextNameAndJobName(contextId1, job.getJobName());
 
             Assert.assertFalse(schedulerJob.isHeld());
             Assert.assertFalse(schedulerJob.isSkipped());

@@ -46,6 +46,9 @@ public class SolrInternalEventDrivenJobRecordImpl implements InternalEventDriven
     @Field(SolrDaoBase.TARGET_RESIDING_CONTEXT_ONLY)
     private boolean targetResidingContextOnly;
 
+    @Field(SolrDaoBase.PARTICIPATES_IN_LOCK)
+    boolean participatesInLock;
+
     @Override
     public long getModifiedTimestamp() {
         return modifiedTimestamp;
@@ -155,5 +158,15 @@ public class SolrInternalEventDrivenJobRecordImpl implements InternalEventDriven
     @Override
     public void setTargetResidingContextOnly(boolean targetResidingContextOnly) {
         this.targetResidingContextOnly = targetResidingContextOnly;
+    }
+
+    @Override
+    public boolean isParticipatesInLock() {
+        return participatesInLock;
+    }
+
+    @Override
+    public void setParticipatesInLock(boolean participatesInLock) {
+        this.participatesInLock = participatesInLock;
     }
 }

@@ -18,8 +18,8 @@ import org.ikasan.spec.scheduled.provision.JobProvisionService;
 public class SchedulerJobSelectDialog extends AbstractCloseableResizableDialog {
     private SchedulerJobSelectGridWidget schedulerJobSelectGridWidget;
 
-    public SchedulerJobSelectDialog(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate) {
-        this.schedulerJobSelectGridWidget = new SchedulerJobSelectGridWidget(schedulerJobService, contextTemplate, this);
+    public SchedulerJobSelectDialog(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate, String headerLabel, String bodyLabel) {
+        this.schedulerJobSelectGridWidget = new SchedulerJobSelectGridWidget(schedulerJobService, contextTemplate, this, bodyLabel);
 
         this.setHeight("90vh");
         this.setWidth("90vw");
@@ -29,6 +29,7 @@ public class SchedulerJobSelectDialog extends AbstractCloseableResizableDialog {
         layout.add(this.schedulerJobSelectGridWidget);
         layout.getStyle().set("padding-bottom", "20px");
 
+        super.title.setText(headerLabel);
         super.content.add(layout);
     }
 

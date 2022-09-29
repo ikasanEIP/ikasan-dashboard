@@ -333,7 +333,11 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
         });
 
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(schedulerJobInstanceStateChangeEvent -> {
-            if (schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance() != null) {
+            if (schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance() != null
+                && this.contextInstance != null
+                && this.parentContextInstance != null
+                && this.contextInstance.getName().equals(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName())
+                && this.parentContextInstance.getId().equals(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId())) {
                 logger.info("Updating scheduler visualisation job status. Scheduler Job Instance[{}], Status[{}], Status Colour[{}]",
                     schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
                     StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
