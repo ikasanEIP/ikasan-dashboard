@@ -159,11 +159,18 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
                 .append(true);
         }
 
-        if(filter.isTargetResidingContextOnly()) {
+        if(filter.isTargetResidingContextOnly() != null && filter.isTargetResidingContextOnly().booleanValue()) {
             queryBuffer.append(AND)
                 .append(TARGET_RESIDING_CONTEXT_ONLY)
                 .append(COLON)
                 .append(true);
+        }
+
+        if(filter.isParticipatesInLock() != null) {
+            queryBuffer.append(AND)
+                .append(PARTICIPATES_IN_LOCK)
+                .append(COLON)
+                .append(filter.isParticipatesInLock());
         }
 
         SolrQuery solrQuery = new SolrQuery();

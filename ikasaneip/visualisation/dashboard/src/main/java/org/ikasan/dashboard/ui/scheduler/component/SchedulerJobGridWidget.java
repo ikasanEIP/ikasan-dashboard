@@ -18,9 +18,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.server.StreamResource;
-import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobTemplateVisualisationDialog;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -37,7 +37,6 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
@@ -49,11 +48,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class SchedulerJobGridWidget extends Div {
 
@@ -79,6 +76,8 @@ public class SchedulerJobGridWidget extends Div {
     private SecurityService securityService;
 
     private ScheduledContextService scheduledContextService;
+
+    private LogStreamingService logStreamingService;
 
     /**
      * Constructor
@@ -107,6 +106,7 @@ public class SchedulerJobGridWidget extends Div {
         this.userService = userService;
         this.securityService = securityService;
         this.scheduledContextService = scheduledContextService;
+        this.logStreamingService = logStreamingService;
 
         this.createGrid(dynamicImagePath, moduleMetaDataService
             , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
@@ -219,6 +219,50 @@ public class SchedulerJobGridWidget extends Div {
             .setSortable(true)
             .setKey("childContexts")
             .setFlexGrow(6);
+
+        schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
+                VerticalLayout verticalLayout = new VerticalLayout();
+                verticalLayout.setWidth("100%");
+                verticalLayout.setSpacing(false);
+                verticalLayout.setPadding(false);
+
+                if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
+                    if(schedulerJobRecord.isParticipatesInLock()) {
+                        AtomicReference<String> lockName = new AtomicReference<>();
+                        this.contextTemplate.getJobLocks().forEach(jobLock -> {
+                            jobLock.getJobs().entrySet().forEach(entry -> {
+                                entry.getValue().forEach(job -> {
+                                    if (job.getIdentifier().equals(schedulerJobRecord.getJob().getIdentifier())) {
+                                        lockName.set(jobLock.getName());
+                                    }
+                                });
+                            });
+                        });
+
+                        Icon lock = IconDecorator.decorate(new Icon(VaadinIcon.LOCK), lockName.get(), "14pt", "rgba(0, 0, 0, 1.0)");
+                        lock.addClickListener(event -> {
+                            JobLockManagementDialog jobLockManagementDialog = new JobLockManagementDialog(this.contextTemplate, this.moduleMetaDataService, this.scheduledProcessManagementService,
+                                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
+                                this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService);
+                            jobLockManagementDialog.setJobLock(lockName.get());
+                            jobLockManagementDialog.open();
+                            jobLockManagementDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> {
+                                if (!dialogOpenedChangeEvent.isOpened()) {
+                                    this.schedulerJobFilteringGrid.refresh();
+                                }
+                            });
+                        });
+                        verticalLayout.add(lock);
+                        verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, lock);
+                    }
+                }
+
+                return verticalLayout;
+            })).setHeader("In Lock")
+            .setResizable(true)
+            .setSortable(false)
+            .setKey("isInLock")
+            .setFlexGrow(1);
 
         schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
                 VerticalLayout verticalLayout = new VerticalLayout();
@@ -527,8 +571,11 @@ public class SchedulerJobGridWidget extends Div {
         HashMap<String, String> targetedMap = new HashMap<>();
         targetedMap.put(getTranslation("filter-label.targeted", UI.getCurrent().getLocale()), "targeted");
 
-        this.schedulerJobFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setTargetResidingContextOnly
-            , targetedMap.entrySet(), "targeted");
+        this.schedulerJobFilteringGrid.addCheckboxGridFiltering(hr, schedulerJobSearchFilter::setTargetResidingContextOnly
+            , "targeted");
+
+        this.schedulerJobFilteringGrid.addCheckboxGridFiltering(hr, schedulerJobSearchFilter::setParticipatesInLock
+            , "isInLock");
     }
 
     private Component createButtonLayout() {

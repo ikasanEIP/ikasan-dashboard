@@ -19,6 +19,7 @@ public class SolrInternalEventDrivenJobImpl extends SolrSchedulerJobImpl impleme
     private List<ContextParameter> contextParameters;
     private List<Integer> daysOfWeekToRun;
     private boolean targetResidingContextOnly;
+    boolean participatesInLock;
 
     @Override
     public List<String> getSuccessfulReturnCodes() {
@@ -98,6 +99,16 @@ public class SolrInternalEventDrivenJobImpl extends SolrSchedulerJobImpl impleme
     @Override
     public void setTargetResidingContextOnly(boolean targetResidingContextOnly) {
         this.targetResidingContextOnly = targetResidingContextOnly;
+    }
+
+    @Override
+    public boolean isParticipatesInLock() {
+        return participatesInLock;
+    }
+
+    @Override
+    public void setParticipatesInLock(boolean participatesInLock) {
+        this.participatesInLock = participatesInLock;
     }
 
     @Override

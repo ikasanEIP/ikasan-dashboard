@@ -349,7 +349,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     private void openJobDialog(String identifier) {
         SchedulerJob schedulerJob = this.contextTemplate.getScheduledJobsMap().get(identifier);
 
-            SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextIdAndJobName
+            SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName
             (this.parentContextTemplate.getName(), schedulerJob.getJobName());
 
         if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
@@ -495,7 +495,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
             Map<String, SchedulerJob> jobsToSave = new HashMap<>();
             this.contextTemplate.getScheduledJobs().forEach(job -> {
-                SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextIdAndJobName(this.parentContextTemplate.getName(), job.getJobName());
+                SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName(this.parentContextTemplate.getName(), job.getJobName());
                 SchedulerJob schedulerJob = schedulerJobRecord.getJob();
                 schedulerJob.getChildContextNames().remove(this.contextTemplate.getName());
 
@@ -507,7 +507,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                     jobsToSave.get(job.getIdentifier()).getChildContextNames().add(updatedContext.getName());
                 }
                 else {
-                    SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextIdAndJobName(this.parentContextTemplate.getName(), job.getJobName());
+                    SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName(this.parentContextTemplate.getName(), job.getJobName());
                     SchedulerJob schedulerJob = schedulerJobRecord.getJob();
                     if(schedulerJob.getChildContextNames() == null) {
                         schedulerJob.setChildContextNames(new ArrayList<>());

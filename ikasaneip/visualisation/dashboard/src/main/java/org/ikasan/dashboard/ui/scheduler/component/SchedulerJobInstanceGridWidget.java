@@ -11,18 +11,17 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.IconDecorator;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceVisualisationDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -179,7 +178,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
             .setResizable(true)
             .setSortable(true)
             .setKey("moduleName")
-            .setFlexGrow(3);
+            .setFlexGrow(6);
 
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -192,7 +191,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
             .setResizable(true)
             .setSortable(true)
             .setKey("type")
-            .setFlexGrow(2);
+            .setFlexGrow(4);
 
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -205,10 +204,54 @@ public class SchedulerJobInstanceGridWidget extends Div {
             .setResizable(true)
             .setSortable(true)
             .setKey("childContextName")
-            .setFlexGrow(2);
+            .setFlexGrow(6);
+
+        schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
+                VerticalLayout verticalLayout = new VerticalLayout();
+                verticalLayout.setWidth("100%");
+                verticalLayout.setSpacing(false);
+                verticalLayout.setPadding(false);
+
+                if(schedulerJobRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance
+                    && ((InternalEventDrivenJobInstance)schedulerJobRecord.getSchedulerJobInstance()).isTargetResidingContextOnly()) {
+                    Icon targeted = IconDecorator.decorate(new Icon(VaadinIcon.BULLSEYE), getTranslation("tooltip.target-residing-context"
+                        , UI.getCurrent().getLocale()), "14pt", IkasanColours.SCHEDULER_ERROR);
+                    verticalLayout.add(targeted);
+                    verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, targeted);
+                }
+
+                return verticalLayout;
+            })).setHeader(getTranslation("table-header.targeted", UI.getCurrent().getLocale()))
+            .setResizable(true)
+            .setSortable(false)
+            .setKey("targeted")
+            .setFlexGrow(1);
+
+        schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
+                VerticalLayout verticalLayout = new VerticalLayout();
+                verticalLayout.setWidth("100%");
+                verticalLayout.setSpacing(false);
+                verticalLayout.setPadding(false);
+
+                if(schedulerJobRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance
+                    && JobLockCacheImpl.instance().doesJobParticipateInLock(schedulerJobRecord.getSchedulerJobInstance().getIdentifier(),
+                            schedulerJobRecord.getSchedulerJobInstance().getContextName())) {
+                    Icon targeted = IconDecorator.decorate(new Icon(VaadinIcon.LOCK), getTranslation("tooltip.target-residing-context"
+                        , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+                    verticalLayout.add(targeted);
+                    verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, targeted);
+                }
+
+                return verticalLayout;
+            })).setHeader("In Lock")
+            .setResizable(true)
+            .setSortable(false)
+            .setKey("isInLock")
+            .setFlexGrow(1);
 
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
+            layout.setWidth("300px");
 
             Icon skip = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.skip-job", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             skip.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -429,27 +472,27 @@ public class SchedulerJobInstanceGridWidget extends Div {
         }))
             .setResizable(true)
             .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
-            .setFlexGrow(1);
+            .setFlexGrow(5);
 
         this.schedulerJobInstanceFilteringGrid.addColumn(TemplateRenderer.<SchedulerJobInstanceRecord>of(
-            "<div>[[item.date]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">[[item.date]]</div>")
             .withProperty("date",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
             .setHeader(getTranslation("table-header.created-date-time", UI.getCurrent().getLocale()))
             .setKey("timestamp")
             .setResizable(true)
             .setSortable(true)
-            .setFlexGrow(2);
+            .setFlexGrow(4);
 
         this.schedulerJobInstanceFilteringGrid.addColumn(TemplateRenderer.<SchedulerJobInstanceRecord>of(
-            "<div>[[item.modified]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">[[item.modified]]</div>")
             .withProperty("modified",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
             .setHeader(getTranslation("table-header.modified-date-time", UI.getCurrent().getLocale()))
             .setKey("modifiedTimestamp")
             .setResizable(true)
             .setSortable(true)
-            .setFlexGrow(2);
+            .setFlexGrow(4);
 
         this.schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -462,7 +505,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
         .setResizable(true)
         .setHeader(getTranslation("table-header.modified-by", UI.getCurrent().getLocale()))
         .setSortable(true)
-        .setFlexGrow(1);
+        .setFlexGrow(2);
 
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -480,7 +523,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
             .setResizable(true)
             .setSortable(true)
             .setKey("status")
-            .setFlexGrow(1);
+            .setFlexGrow(2);
 
         HeaderRow hr = schedulerJobInstanceFilteringGrid.appendHeaderRow();
         this.schedulerJobInstanceFilteringGrid.addGridFiltering(hr, schedulerJobSearchFilter::setJobName, "moduleName");
