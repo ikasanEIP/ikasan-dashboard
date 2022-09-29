@@ -27,8 +27,8 @@ public class SolrSchedulerJobSearchFilterImpl implements SchedulerJobSearchFilte
     private String contextSearchFilter = null;
     private boolean held;
     private boolean skipped;
-
-    private boolean targetResidingContextOnly;
+    private Boolean targetResidingContextOnly;
+    private Boolean participatesInLock = null;
 
     public String getJobNameFilter()
     {
@@ -81,18 +81,24 @@ public class SolrSchedulerJobSearchFilterImpl implements SchedulerJobSearchFilte
     }
 
     @Override
-    public boolean isTargetResidingContextOnly() {
+    public Boolean isTargetResidingContextOnly() {
         return targetResidingContextOnly;
     }
 
+
     @Override
-    public void setTargetResidingContextOnly(String targetResidingContextOnly) {
-        if(targetResidingContextOnly == null) {
-            this.targetResidingContextOnly = false;
-        }
-        else if(targetResidingContextOnly.equals("targeted")) {
-            this.targetResidingContextOnly = true;
-        }
+    public void setTargetResidingContextOnly(Boolean targetResidingContextOnly) {
+        this.targetResidingContextOnly = targetResidingContextOnly;
+    }
+
+    @Override
+    public Boolean isParticipatesInLock() {
+        return participatesInLock;
+    }
+
+    @Override
+    public void setParticipatesInLock(Boolean participatesInLock) {
+        this.participatesInLock = participatesInLock;
     }
 
     @Override

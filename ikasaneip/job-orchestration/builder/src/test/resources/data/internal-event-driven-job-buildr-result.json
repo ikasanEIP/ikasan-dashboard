@@ -19,7 +19,8 @@
     "type" : "java.lang.String"
   } ],
   "daysOfWeekToRun" : [ 2, 3 ],
-  "targetResidingContextOnly" : false,
-  "jobDescription" : "description",
-  "identifier" : "agentName-jobName"
+  "targetResidingContextOnly" : true,
+  "participatesInLock" : true,
+  "identifier" : "agentName-jobName",
+  "jobDescription" : "description"
 }

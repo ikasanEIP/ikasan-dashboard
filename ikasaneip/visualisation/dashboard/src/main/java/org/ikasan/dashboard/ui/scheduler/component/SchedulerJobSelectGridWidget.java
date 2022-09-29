@@ -7,6 +7,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -26,6 +27,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobSearchFilter;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
@@ -42,10 +44,15 @@ public class SchedulerJobSelectGridWidget extends Div {
 
     private String jobType = null;
 
-    public SchedulerJobSelectGridWidget(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate, Dialog parent, String jobType) {
-        this.jobType = jobType;
+    private SchedulerJobSearchFilter schedulerJobSearchFilter;
 
+    private String jobSelectLabel;
+
+    public SchedulerJobSelectGridWidget(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate, Dialog parent
+        , SchedulerJobSearchFilter schedulerJobSearchFilter, String jobSelectLabel) {
+        this.schedulerJobSearchFilter = schedulerJobSearchFilter;
         this.parent = parent;
+        this.jobSelectLabel = jobSelectLabel;
 
         init(schedulerJobService, contextTemplate);
     }
@@ -53,38 +60,35 @@ public class SchedulerJobSelectGridWidget extends Div {
     /**
      * Constructor
      */
-    public SchedulerJobSelectGridWidget(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate, Dialog parent) {
+    public SchedulerJobSelectGridWidget(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate, Dialog parent
+        , String jobSelectLabel) {
 
         this.parent = parent;
-
+        this.schedulerJobSearchFilter = new SolrSchedulerJobSearchFilterImpl();
+        this.jobSelectLabel = jobSelectLabel;
         init(schedulerJobService, contextTemplate);
     }
 
     private void init(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate) {
-        this.parent = parent;
-
         this.createGrid(schedulerJobService, contextTemplate);
 
         this.schedulerJobFilteringGrid.init();
+
+        H3 label = new H3(this.jobSelectLabel);
+        label.getElement().getStyle().set("margin-top", "10px");
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
         layout.setMargin(false);
         layout.setSpacing(false);
         layout.setPadding(false);
-        layout.add(this.createButtonLayout(), this.schedulerJobFilteringGrid);
+        layout.add(label, this.createButtonLayout(), this.schedulerJobFilteringGrid);
 
         this.add(layout);
         this.setSizeFull();
     }
 
     private void createGrid(SchedulerJobService schedulerJobService, ContextTemplate contextTemplate) {
-        // Create a modulesGrid bound to the list
-        SolrSchedulerJobSearchFilterImpl schedulerJobSearchFilter = new SolrSchedulerJobSearchFilterImpl();
-        if(this.jobType != null) {
-            schedulerJobSearchFilter.setJobTypeFilter(this.jobType);
-        }
-
         schedulerJobFilteringGrid = new SchedulerJobFilteringGrid(schedulerJobService, schedulerJobSearchFilter);
         schedulerJobFilteringGrid.getElement().getStyle().set("margin-top", "40px");
         schedulerJobFilteringGrid.removeAllColumns();

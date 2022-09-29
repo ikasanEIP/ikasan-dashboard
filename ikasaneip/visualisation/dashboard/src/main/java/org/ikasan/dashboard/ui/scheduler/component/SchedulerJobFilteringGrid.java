@@ -1,12 +1,14 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
@@ -131,30 +133,27 @@ public class SchedulerJobFilteringGrid extends Grid<SchedulerJobRecord> {
      * @param setFilter
      * @param columnKey
      */
-    public void addSelectGridFiltering(HeaderRow hr, Consumer<String> setFilter, List<String> options, String columnKey) {
-        Select<String> select = new Select<>();
-        select.setItems(options);
-        select.setWidthFull();
-        select.setEmptySelectionAllowed(true);
-        select.setItemLabelGenerator(entry -> {
-            if(entry == null) {
-                return "";
+    public void addCheckboxGridFiltering(HeaderRow hr, Consumer<Boolean> setFilter, String columnKey) {
+        Icon filterIcon = VaadinIcon.FILTER.create();
+        filterIcon.setSize("14pt");
+        filterIcon.getElement().getStyle().set("margin-bottom", "0px");
+
+        Checkbox checkbox = new Checkbox();
+        checkbox.setWidthFull();
+        checkbox.getElement().getStyle().set("margin-bottom", "0px");
+        checkbox.addValueChangeListener(ev-> {
+            if(ev.getValue()) {
+                setFilter.accept(ev.getValue());
             }
-
-            return entry;
-        });
-
-        select.addValueChangeListener(ev-> {
-
-            setFilter.accept(ev.getValue());
-
+            else {
+                setFilter.accept(null);
+            }
             filteredDataProvider.refreshAll();
         });
 
-        Icon filterIcon = VaadinIcon.FILTER.create();
-        filterIcon.setSize("12pt");
-
-        HorizontalLayout layout = new HorizontalLayout(select, filterIcon);
+        HorizontalLayout layout = new HorizontalLayout(checkbox, filterIcon);
+        layout.setWidth("120px");
+        layout.getElement().getStyle().set("margin-bottom", "0px");
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, filterIcon);
 
         hr.getCell(getColumnByKey(columnKey)).setComponent(layout);

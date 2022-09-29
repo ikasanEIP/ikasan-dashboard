@@ -268,7 +268,8 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         SubMenu addJobSubMenu = quickAccess.getSubMenu();
         MenuItem newJobMenuItem = addJobSubMenu.addItem(getTranslation("menu-item.new-job", UI.getCurrent().getLocale()));
         addJobSubMenu.addItem(getTranslation("menu-item.existing-job", UI.getCurrent().getLocale()), menuItemClickEvent -> {
-            SchedulerJobSelectDialog schedulerJobSelectDialog = new SchedulerJobSelectDialog(this.schedulerJobService, this.rootContextTemplate);
+            SchedulerJobSelectDialog schedulerJobSelectDialog = new SchedulerJobSelectDialog(this.schedulerJobService, this.rootContextTemplate,
+                getTranslation("label.select-job", UI.getCurrent().getLocale()), getTranslation("label.select-job", UI.getCurrent().getLocale()));
 
             schedulerJobSelectDialog.open();
             schedulerJobSelectDialog.addSchedulerJobSelectedListener(this);

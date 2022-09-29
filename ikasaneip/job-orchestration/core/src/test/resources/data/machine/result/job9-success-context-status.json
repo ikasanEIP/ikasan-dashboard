@@ -52,7 +52,7 @@
       }, {
         "jobName" : "jobName10",
         "agentName" : "agentName10",
-        "instanceStatus" : "WAITING"
+        "instanceStatus" : "LOCK_QUEUED"
       }, {
         "jobName" : "jobName11",
         "agentName" : "agentName11",

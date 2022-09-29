@@ -12,6 +12,9 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -151,12 +154,40 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
             SchedulerJobInitiationEvent schedulerJobInitiationEvent = createSchedulerJobInitiationEvent(agent, this.internalEventDrivenJobInstance
                 , this.contextParameterInstances, this.contextInstance);
             logger.info("Submitting job[{}] to [{}]", schedulerJobInitiationEvent, agent.getUrl());
-            this.jobInitiationService.raiseSchedulerJobInitiationEvent(agent.getUrl(), schedulerJobInitiationEvent);
+
+            if(JobLockCacheImpl.instance().doesJobParticipateInLock(internalEventDrivenJobInstance.getIdentifier()
+                , internalEventDrivenJobInstance.getChildContextName())) {
+                // Now that we have determined that a job participates in a lock, we determine if the lock it participates in
+                // is already locked.
+                if(JobLockCacheImpl.instance().locked(internalEventDrivenJobInstance.getIdentifier()
+                    , internalEventDrivenJobInstance.getChildContextName())) {
+                    ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstance.getName());
+                    if(contextMachine != null) {
+                        contextMachine.addQueuedSchedulerJobInitiationEvent(schedulerJobInitiationEvent);
+                        NotificationHelper.showUserNotification("The job has been submitted successfully but has been queued as it participates " +
+                            "in a lock and the lock is held by another running job");
+                    }
+                    else {
+                        NotificationHelper.showUserNotification("Context machine was null!");
+                    }
+                }
+                else {
+                    // Otherwise the job takes a lock and adds the initiation event to the finalSchedulerJobInitiationEvents so that
+                    // the initiation event will be sent to the relevant agent.
+                    JobLockCacheImpl.instance().lock(internalEventDrivenJobInstance.getIdentifier(), internalEventDrivenJobInstance.getChildContextName());
+                    logger.info("Lock {}", internalEventDrivenJobInstance);
+                    this.jobInitiationService.raiseSchedulerJobInitiationEvent(agent.getUrl(), schedulerJobInitiationEvent);
+                    NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
+                }
+            }
+            else {
+                this.jobInitiationService.raiseSchedulerJobInitiationEvent(agent.getUrl(), schedulerJobInitiationEvent);
+                NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
+            }
 
             this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
                 , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName()), this.authentication.getName());
 
-            NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
             this.close();
         }
         catch (Exception e) {

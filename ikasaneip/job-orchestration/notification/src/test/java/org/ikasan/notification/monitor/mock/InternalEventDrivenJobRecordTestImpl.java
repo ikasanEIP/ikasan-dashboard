@@ -113,4 +113,14 @@ public class InternalEventDrivenJobRecordTestImpl implements InternalEventDriven
     public boolean isTargetResidingContextOnly() {
         return false;
     }
+
+    @Override
+    public void setParticipatesInLock(boolean participatesInLock) {
+
+    }
+
+    @Override
+    public boolean isParticipatesInLock() {
+        return false;
+    }
 }
