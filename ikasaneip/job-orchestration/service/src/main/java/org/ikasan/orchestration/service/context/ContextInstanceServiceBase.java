@@ -158,7 +158,8 @@ public abstract class ContextInstanceServiceBase {
         });
 
         ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, internalJobs, queueDirectory, agents,
-            initialiseJobLockCache(context), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService);
+            initialiseJobLockCache(context, isInitialContextInstantiation), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
+            this.jobLockCacheInitialisationService);
         contextMachine.init();
 
         // We add the listener to write initiation events to the agents.
@@ -198,8 +199,8 @@ public abstract class ContextInstanceServiceBase {
         }
     }
 
-    private JobLockCache initialiseJobLockCache(ContextTemplate context) {
-        this.jobLockCacheInitialisationService.initialiseJobLockCache(context);
+    private JobLockCache initialiseJobLockCache(ContextTemplate context, boolean isRefresh) {
+        this.jobLockCacheInitialisationService.initialiseJobLockCache(context, isRefresh);
         return JobLockCacheImpl.instance();
     }
 

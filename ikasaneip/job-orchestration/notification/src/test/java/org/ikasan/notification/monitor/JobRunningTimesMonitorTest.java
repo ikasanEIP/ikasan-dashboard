@@ -23,6 +23,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.joda.time.DateTimeUtils;
@@ -64,6 +65,9 @@ public class JobRunningTimesMonitorTest {
     @Mock
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
+    @Mock
+    private JobLockCacheInitialisationService jobLockCacheInitialisationService;
+
     @After
     public void tearDown() {
         DateTimeUtils.setCurrentMillisSystem();
@@ -101,7 +105,7 @@ public class JobRunningTimesMonitorTest {
         monitorManagement.registerMonitor(jobRunningTimesMonitor);
 
         contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null
-            ,"./target",null,null, null, this.scheduledContextService, this.schedulerJobInstanceService);
+            ,"./target",null,null, null, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
         contextMachine1.init();
 
         ContextMachineCache.instance().put(contextMachine1);

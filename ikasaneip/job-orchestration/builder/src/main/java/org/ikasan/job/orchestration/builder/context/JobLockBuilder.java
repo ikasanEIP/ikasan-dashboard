@@ -13,7 +13,7 @@ public class JobLockBuilder {
 
     private String lockName;
     private Map<String, List<SchedulerJob>> schedulerJobs;
-    private long lockCount = 1;
+    private int lockCount = 1;
 
     public JobLockBuilder() {
     }
@@ -36,7 +36,7 @@ public class JobLockBuilder {
         return this;
     }
 
-    public JobLockBuilder withLockCount(Long lockCount) {
+    public JobLockBuilder withLockCount(Integer lockCount) {
         this.lockCount = lockCount;
         return this;
     }

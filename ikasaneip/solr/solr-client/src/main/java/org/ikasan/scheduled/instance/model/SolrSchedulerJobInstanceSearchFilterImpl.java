@@ -27,6 +27,9 @@ public class SolrSchedulerJobInstanceSearchFilterImpl implements SchedulerJobIns
     private String childContextName;
     private String status;
 
+    private Boolean targetResidingContextOnly = null;
+    private Boolean participatesInLock = null;
+
     @Override
     public String getJobName() {
         return this.jobName;
@@ -85,5 +88,25 @@ public class SolrSchedulerJobInstanceSearchFilterImpl implements SchedulerJobIns
     @Override
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    @Override
+    public Boolean isTargetResidingContextOnly() {
+        return targetResidingContextOnly;
+    }
+
+    @Override
+    public void setTargetResidingContextOnly(Boolean targetResidingContextOnly) {
+        this.targetResidingContextOnly = targetResidingContextOnly;
+    }
+
+    @Override
+    public Boolean isParticipatesInLock() {
+        return participatesInLock;
+    }
+
+    @Override
+    public void setParticipatesInLock(Boolean participatesInLock) {
+        this.participatesInLock = participatesInLock;
     }
 }

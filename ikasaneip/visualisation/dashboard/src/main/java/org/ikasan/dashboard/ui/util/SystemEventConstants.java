@@ -68,4 +68,6 @@ public class SystemEventConstants
 
     public static final String USER_ADDED_TO_CONTEXT_PROFILE = "User added to context profile";
     public static final String USER_REMOVED_FROM_CONTEXT_PROFILE = "User removed from context profile";
+
+    public static final String CONTEXT_JOB_LOCKS_MODIFICATION = "Context template job lock modification";
 }

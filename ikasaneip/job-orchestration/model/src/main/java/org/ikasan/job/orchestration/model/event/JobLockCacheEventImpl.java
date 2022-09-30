@@ -1,17 +1,26 @@
 package org.ikasan.job.orchestration.model.event;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
 
 public class JobLockCacheEventImpl implements JobLockCacheEvent {
 
+    private String lockName;
     private String jobIdentifier;
     private String contextName;
     private EventType eventType;
 
-    public JobLockCacheEventImpl(String jobIdentifier, String contextName, EventType eventType) {
+    public JobLockCacheEventImpl(String lockName, String jobIdentifier, String contextName, EventType eventType) {
+        this.lockName = lockName;
         this.jobIdentifier = jobIdentifier;
         this.contextName = contextName;
         this.eventType = eventType;
+    }
+
+    @Override
+    public String getLockName() {
+        return null;
     }
 
     @Override
@@ -31,10 +40,6 @@ public class JobLockCacheEventImpl implements JobLockCacheEvent {
 
     @Override
     public String toString() {
-        return "JobLockCacheEventImpl{" +
-            "jobIdentifier='" + jobIdentifier + '\'' +
-            ", contextName='" + contextName + '\'' +
-            ", eventType=" + eventType +
-            '}';
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

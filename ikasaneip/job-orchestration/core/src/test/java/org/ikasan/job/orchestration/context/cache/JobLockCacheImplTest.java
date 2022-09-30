@@ -5,11 +5,15 @@ import org.ikasan.job.orchestration.builder.context.JobLockBuilder;
 import org.ikasan.job.orchestration.builder.job.SchedulerJobBuilder;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheRecordImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
+import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
+import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.event.model.JobLockCacheEvent;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheRecord;
@@ -158,6 +162,11 @@ public class JobLockCacheImplTest {
         // reset TEST-LOCK-1
         SchedulerJobInitiationEventImpl schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
         schedulerJobInitiationEvent.setJobName("JobName0");
+        InternalEventDrivenJobInstance internalEventDrivenJob = new InternalEventDrivenJobInstanceImpl();
+        internalEventDrivenJob.setJobName("name");
+        internalEventDrivenJob.setContextName("context");
+        internalEventDrivenJob.setIdentifier("identifier");
+        schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
 
         jlc.addQueuedSchedulerJobInitiationEvent("AgentName0-TEST-LOCK-JobName0", "contextName", schedulerJobInitiationEvent);
 
@@ -857,11 +866,11 @@ public class JobLockCacheImplTest {
         return schedulerJobs.stream().collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity()));
     }
 
-    private JobLock makeJobLock(String jobLockName, int count, long jobLockCount) {
+    private JobLock makeJobLock(String jobLockName, int count, int jobLockCount) {
         return makeJobLock(jobLockName, count, jobLockCount, null);
     }
 
-    private JobLock makeJobLock(String jobLockName, int count, long jobLockCount, String newOrNot) {
+    private JobLock makeJobLock(String jobLockName, int count, int jobLockCount, String newOrNot) {
         JobLockBuilder jobLockBuilder = new JobLockBuilder();
         jobLockBuilder.withLockName(jobLockName);
         jobLockBuilder.withLockCount(jobLockCount);
