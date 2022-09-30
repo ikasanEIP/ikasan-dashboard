@@ -35,13 +35,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableResizableDialog {
-
     Logger logger = LoggerFactory.getLogger(InternalEventDrivenJobSubmissionDialog.class);
-
     private ModuleMetaDataService moduleMetaDataService;
-
     private InternalEventDrivenJobInstance internalEventDrivenJobInstance;
-
     private SystemEventLogger systemEventLogger;
     private IkasanAuthentication authentication;
     private ContextInstance contextInstance;

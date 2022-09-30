@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class JobLockHolderImpl extends AbstractJobLockHolder implements JobLockHolder {
     private String lockName;
-    private long lockCount = 1;
+    private int lockCount = 1;
     private final Set<String> lockHolders = new HashSet<>();
     private Queue<ContextualisedSchedulerJobInitiationEvent> queuedSchedulerJobInitiationEvents = new LinkedList<>();
 
@@ -26,12 +26,12 @@ public class JobLockHolderImpl extends AbstractJobLockHolder implements JobLockH
     }
 
     @Override
-    public long getLockCount() {
+    public int getLockCount() {
         return lockCount;
     }
 
     @Override
-    public void setLockCount(long lockCount) {
+    public void setLockCount(int lockCount) {
         this.lockCount = lockCount;
     }
 

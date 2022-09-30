@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -15,16 +17,20 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.IconDecorator;
+import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobTemplateVisualisationDialog;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.JobConstants;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobSearchFilterImpl;
@@ -44,6 +50,8 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
@@ -53,6 +61,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class JobLockManagementDialog extends AbstractCloseableResizableDialog implements SchedulerJobSelectedListener {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobLockManagementDialog.class);
     private ContextTemplate contextTemplate;
     private String dynamicImagePath = ".";
     private ModuleMetaDataService moduleMetaDataService;
@@ -74,7 +83,10 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
     private ComboBox<JobLock> comboBox;
     private Grid<SchedulerJob> grid;
 
-    TextField filterTf = new TextField();
+    private TextField filterTf = new TextField();
+
+    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    private String initialJobLocks = "";
 
     public JobLockManagementDialog(ContextTemplate contextTemplate, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                    ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -164,6 +176,14 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
 
     private void init() {
 
+        try {
+            this.initialJobLocks = this.objectMapper.writerWithDefaultPrettyPrinter()
+                .writeValueAsString(this.contextTemplate.getJobLocks());
+        }
+        catch (JsonProcessingException e) {
+            LOGGER.info("Could not initialise job locks string for audit!");
+        }
+
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
 
@@ -181,7 +201,8 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
 
                     if(job != null && job.getChildContextNames() != null) {
                         job.getChildContextNames().forEach(context -> {
-                            Icon visualisation = IconDecorator.decorate(new Icon(VaadinIcon.SITEMAP), getTranslation("tooltip.open-visualisation", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+                            Icon visualisation = IconDecorator.decorate(new Icon(VaadinIcon.SITEMAP), getTranslation("tooltip.open-visualisation", UI.getCurrent().getLocale())
+                                , "14pt", "rgba(0, 0, 0, 1.0)");
                             Button contextButton = new Button(context);
                             contextButton.getElement().getStyle().set("font-size", "9pt");
                             contextButton.getElement().getStyle().set("color", "rgba(0, 0, 0, 1.0)");
@@ -197,7 +218,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                                     jobTemplateVisualisationDialog.open();
                                 } catch (Exception e) {
                                     e.printStackTrace();
-                                    // todo error message
+                                    NotificationHelper.showErrorNotification(getTranslation("error.cannot-open-visualisation", UI.getCurrent().getLocale()));
                                 }
 
                             });
@@ -214,7 +235,8 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                 VerticalLayout buttonLayout = new VerticalLayout();
                 buttonLayout.setWidth("100%");
 
-                Icon delete = IconDecorator.decorate(new Icon(VaadinIcon.TRASH), getTranslation("tooltip.delete-job-from-job-lock", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+                Icon delete = IconDecorator.decorate(new Icon(VaadinIcon.TRASH), getTranslation("tooltip.delete-job-from-job-lock"
+                    , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
                 delete.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                     JobLock jobLock = this.comboBox.getValue();
                     job.getChildContextNames().forEach(child -> {
@@ -227,7 +249,8 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                     if(this.saveContextTemplate()) {
                         this.updateScheduledJob(job, false);
                         this.populateGrid(jobLock, filterTf.getValue());
-                        NotificationHelper.showUserNotification(String.format(getTranslation("notification.job-removed-from-lock", UI.getCurrent().getLocale()), job.getJobName(), jobLock.getName()));
+                        NotificationHelper.showUserNotification(String.format(getTranslation("notification.job-removed-from-lock"
+                            , UI.getCurrent().getLocale()), job.getJobName(), jobLock.getName()));
                     }
                 });
 
@@ -251,7 +274,15 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         comboBox.setItems(contextTemplate.getJobLocks());
         comboBox.setItemLabelGenerator(JobLock::getName);
 
-        TextField lockCountTf = new TextField(getTranslation("label.lock-count", UI.getCurrent().getLocale()));
+        IntegerField lockCountTf = new IntegerField(getTranslation("label.lock-count", UI.getCurrent().getLocale()));
+        lockCountTf.setHasControls(true);
+        lockCountTf.setMin(1);
+        lockCountTf.setEnabled(false);
+        lockCountTf.addValueChangeListener(event -> {
+           if(event.getValue() != null && event.getOldValue() != null && comboBox.getValue() != null) {
+               this.updateLockCount(lockCountTf.getValue());
+           }
+        });
 
         Button newJobLockButton = new Button(getTranslation("button.new-job-lock", UI.getCurrent().getLocale()), VaadinIcon.LOCK.create());
         newJobLockButton.setIconAfterText(true);
@@ -308,7 +339,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                 this.saveContextTemplate();
                 this.comboBox.setItems(this.contextTemplate.getJobLocks());
                 grid.setItems(new ArrayList<>());
-                lockCountTf.setValue("");
+                lockCountTf.setValue(null);
             });
         });
 
@@ -336,17 +367,21 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         layout.add(formLayout, addJobButton, grid);
 
         comboBox.addValueChangeListener(event -> {
+            lockCountTf.setValue(null);
             if(event.getValue() != null) {
-                lockCountTf.setValue(String.valueOf(event.getValue().getLockCount()));
+                lockCountTf.setEnabled(true);
+                lockCountTf.setValue(event.getValue().getLockCount());
                 this.populateGrid(event.getValue(), filterTf.getValue());
                 addJobButton.setEnabled(true);
                 deleteJobLockButton.setEnabled(true);
             }
             else {
+                lockCountTf.setEnabled(false);
                 addJobButton.setEnabled(false);
                 deleteJobLockButton.setEnabled(false);
             }
         });
+
 
         Button okButton = new Button(getTranslation("button.done", UI.getCurrent().getLocale()));
         okButton.addClickListener(event -> {
@@ -366,7 +401,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         super.setResizable(false);
 
         super.setHeight("80vh");
-        super.setWidth("1500px");
+        super.setWidth("90vw");
     }
 
     public void addGridFiltering(HeaderRow hr, String columnKey) {
@@ -409,6 +444,12 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         }
     }
 
+    public void updateLockCount(int lockCount) {
+        JobLock jobLock = this.comboBox.getValue();
+        jobLock.setLockCount(lockCount);
+        this.saveContextTemplate();
+    }
+
     public void setJobLock(String jobLockName) {
         this.contextTemplate.getJobLocks().forEach(lock -> {
             if(lock.getName().equals(jobLockName)) {
@@ -446,6 +487,25 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
             ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findByName(this.contextTemplate.getName());
             scheduledContextRecord.setContext(this.contextTemplate);
             this.scheduledContextService.save(scheduledContextRecord);
+
+            String newLocksString = "";
+
+            try {
+                newLocksString = this.objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(this.contextTemplate.getJobLocks());
+            }
+            catch (JsonProcessingException e) {
+                LOGGER.info("Could not initialise job locks string for audit!");
+            }
+
+            StringBuffer auditMessage = new StringBuffer();
+            auditMessage.append(String.format("Context[%s] Job Lock Modifications\n", this.contextTemplate.getName()));
+            auditMessage.append("Before\n").append(this.initialJobLocks);
+            auditMessage.append("\nAfter\n").append(newLocksString);
+            this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_JOB_LOCKS_MODIFICATION, auditMessage.toString(),
+                SecurityContextHolder.getContext().getAuthentication().getName());
+
+            this.initialJobLocks = newLocksString;
             return true;
         }
         catch (Exception e) {

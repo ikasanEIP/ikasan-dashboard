@@ -13,6 +13,9 @@ import org.ikasan.designer.builder.*;
 import org.ikasan.designer.model.*;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.FileEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.QuartzScheduleDrivenJobInstance;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
@@ -53,13 +56,13 @@ public abstract class Draw2dAdapterBase {
                     .withJobName(((SchedulerJob) job).getJobName())
                     .withIdentifier(((SchedulerJob) job).getIdentifier());
 
-                if(schedulerJob instanceof InternalEventDrivenJob) {
+                if(schedulerJob instanceof InternalEventDrivenJob || schedulerJob instanceof InternalEventDrivenJobInstance) {
                     userDataBuilder.withItemType(UserData.INTERNAL_EVENT_DRIVEN_JOB);
                 }
-                else if(schedulerJob instanceof FileEventDrivenJob) {
+                else if(schedulerJob instanceof FileEventDrivenJob || schedulerJob instanceof FileEventDrivenJobInstance) {
                     userDataBuilder.withItemType(UserData.FILE_EVENT_DRIVEN_JOB);
                 }
-                else if(schedulerJob instanceof QuartzScheduleDrivenJob) {
+                else if(schedulerJob instanceof QuartzScheduleDrivenJob || schedulerJob instanceof QuartzScheduleDrivenJobInstance) {
                     userDataBuilder.withItemType(UserData.QUARTZ_EVENT_DRIVEN_JOB);
                 }
 
@@ -70,11 +73,11 @@ public abstract class Draw2dAdapterBase {
                     .withPath(image)
                     .withUserData(userDataBuilder.build());
 
-                if(schedulerJob instanceof InternalEventDrivenJob) {
+                if(schedulerJob instanceof InternalEventDrivenJob || schedulerJob instanceof InternalEventDrivenJobInstance) {
                     jobBuilder.withLeftPort()
                         .withRightPort();
                 }
-                else if(schedulerJob instanceof QuartzScheduleDrivenJob) {
+                else if(schedulerJob instanceof QuartzScheduleDrivenJob || schedulerJob instanceof QuartzScheduleDrivenJobInstance) {
                     jobBuilder.withRightPort();
                 }
 

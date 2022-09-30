@@ -190,6 +190,10 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                 instanceRecord.setTimestamp(System.currentTimeMillis());
                 instanceRecord.setContextInstanceId(contextInstance.getId());
                 instanceRecord.setChildContextName(job.getChildContextName());
+                if(job instanceof InternalEventDrivenJobInstance) {
+                    instanceRecord.setParticipatesInLock(((InternalEventDrivenJobInstance)job).isParticipatesInLock());
+                    instanceRecord.setTargetResidingContextOnly(((InternalEventDrivenJobInstance)job).isTargetResidingContextOnly());
+                }
                 instanceRecord.setSchedulerJobInstance(job);
 
                 schedulerJobInstanceRecords.add(instanceRecord);

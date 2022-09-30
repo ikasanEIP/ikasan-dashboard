@@ -212,8 +212,27 @@ public class SchedulerJobInstanceGridWidget extends Div {
                 verticalLayout.setSpacing(false);
                 verticalLayout.setPadding(false);
 
-                if(schedulerJobRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance
-                    && ((InternalEventDrivenJobInstance)schedulerJobRecord.getSchedulerJobInstance()).isTargetResidingContextOnly()) {
+                if(schedulerJobRecord.isParticipatesInLock()) {
+                    Icon isInLock = IconDecorator.decorate(new Icon(VaadinIcon.LOCK), getTranslation("tooltip.target-residing-context"
+                        , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+                    verticalLayout.add(isInLock);
+                    verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, isInLock);
+                }
+
+                return verticalLayout;
+            })).setHeader("In Lock")
+            .setResizable(true)
+            .setSortable(false)
+            .setKey("isInLock")
+            .setFlexGrow(1);
+
+        schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
+                VerticalLayout verticalLayout = new VerticalLayout();
+                verticalLayout.setWidth("100%");
+                verticalLayout.setSpacing(false);
+                verticalLayout.setPadding(false);
+
+                if(schedulerJobRecord.isTargetResidingContextOnly()) {
                     Icon targeted = IconDecorator.decorate(new Icon(VaadinIcon.BULLSEYE), getTranslation("tooltip.target-residing-context"
                         , UI.getCurrent().getLocale()), "14pt", IkasanColours.SCHEDULER_ERROR);
                     verticalLayout.add(targeted);
@@ -225,28 +244,6 @@ public class SchedulerJobInstanceGridWidget extends Div {
             .setResizable(true)
             .setSortable(false)
             .setKey("targeted")
-            .setFlexGrow(1);
-
-        schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
-                VerticalLayout verticalLayout = new VerticalLayout();
-                verticalLayout.setWidth("100%");
-                verticalLayout.setSpacing(false);
-                verticalLayout.setPadding(false);
-
-                if(schedulerJobRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance
-                    && JobLockCacheImpl.instance().doesJobParticipateInLock(schedulerJobRecord.getSchedulerJobInstance().getIdentifier(),
-                            schedulerJobRecord.getSchedulerJobInstance().getContextName())) {
-                    Icon targeted = IconDecorator.decorate(new Icon(VaadinIcon.LOCK), getTranslation("tooltip.target-residing-context"
-                        , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
-                    verticalLayout.add(targeted);
-                    verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, targeted);
-                }
-
-                return verticalLayout;
-            })).setHeader("In Lock")
-            .setResizable(true)
-            .setSortable(false)
-            .setKey("isInLock")
             .setFlexGrow(1);
 
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
@@ -447,7 +444,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
             Icon visualisation = IconDecorator.decorate(new Icon(VaadinIcon.SITEMAP), getTranslation("tooltip.open-visualisation", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             visualisation.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
-                    this.configurationService, this.moduleControlService, this.metaDataService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
+                    this.configurationService, this.moduleControlService, this.metaDataService, this.systemEventLogger, this.logStreamingService,
                     this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
 
                 if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
@@ -534,6 +531,8 @@ public class SchedulerJobInstanceGridWidget extends Div {
             , Arrays.asList(InstanceStatus.values()).stream().map(instanceStatus -> instanceStatus.name())
                     .filter(instanceStatus -> !instanceStatus.equals(InstanceStatus.SKIPPED_COMPLETE.name()) && !instanceStatus.equals(InstanceStatus.SKIPPED_RUNNING.name()))
                     .collect(Collectors.toList()), "status");
+        this.schedulerJobInstanceFilteringGrid.addCheckboxGridFiltering(hr, schedulerJobSearchFilter::setTargetResidingContextOnly, "targeted");
+        this.schedulerJobInstanceFilteringGrid.addCheckboxGridFiltering(hr, schedulerJobSearchFilter::setParticipatesInLock, "isInLock");
 
         this.schedulerJobInstanceFilteringGrid.addItemDoubleClickListener(event -> {
             if(event.getItem().getType().equals(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE)) {

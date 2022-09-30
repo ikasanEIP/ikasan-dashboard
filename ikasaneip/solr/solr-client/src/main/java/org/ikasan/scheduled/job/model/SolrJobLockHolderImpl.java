@@ -10,7 +10,7 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 public class SolrJobLockHolderImpl extends AbstractJobLockHolder implements JobLockHolder {
     private String lockName;
-    private long lockCount = 1;
+    private int lockCount = 1;
     private final Set<String> lockHolders = new HashSet<>();
     private Queue<ContextualisedSchedulerJobInitiationEvent> contextualisedSchedulerJobInitiationEvents
         = new LinkedList<>();
@@ -23,11 +23,11 @@ public class SolrJobLockHolderImpl extends AbstractJobLockHolder implements JobL
         this.lockName = lockName;
     }
 
-    public long getLockCount() {
+    public int getLockCount() {
         return lockCount;
     }
 
-    public void setLockCount(long lockCount) {
+    public void setLockCount(int lockCount) {
         this.lockCount = lockCount;
     }
 

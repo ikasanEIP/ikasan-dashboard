@@ -75,7 +75,6 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
     protected ModuleControlService moduleControlRestService;
     protected MetaDataService metaDataRestService;
     protected SystemEventLogger systemEventLogger;
-    protected SchedulerJobService schedulerJobService;
     protected LogStreamingService logStreamingService;
     protected SchedulerJobInstanceService schedulerJobInstanceService;
     protected JobInitiationService jobInitiationService;
@@ -90,7 +89,7 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
 
     public SchedulerInstanceVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                          MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
+                                          MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                           LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                                           JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService) {
 
@@ -127,11 +126,6 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
         this.systemEventLogger = systemEventLogger;
         if(this.systemEventLogger == null) {
             throw new IllegalArgumentException("systemEventLogger cannot be null!");
-        }
-
-        this.schedulerJobService = schedulerJobService;
-        if(this.schedulerJobService == null) {
-            throw new IllegalArgumentException("schedulerJobService cannot be null!");
         }
 
         this.logStreamingService = logStreamingService;
@@ -231,7 +225,7 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
                 try {
                     JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
-                        this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
+                        this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
                     jobInstanceVisualisationDialog.createSchedulerVisualisation(this.parentContextInstance, contextInstance);
                     jobInstanceVisualisationDialog.open();
 
@@ -248,7 +242,7 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
                     ContextInstanceVisualisationDialog contextInstanceVisualisationDialog
                         = new ContextInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
-                        this.schedulerJobService, this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService,
+                        this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService,
                         this.jobUtilsService, this.scheduledContextService);
                     contextInstanceVisualisationDialog.createSchedulerVisualisation(this.parentContextInstance, contextInstance);
                     contextInstanceVisualisationDialog.open();
