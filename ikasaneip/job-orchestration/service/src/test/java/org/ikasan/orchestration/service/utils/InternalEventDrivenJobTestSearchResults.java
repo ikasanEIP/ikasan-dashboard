@@ -153,6 +153,26 @@ public class InternalEventDrivenJobTestSearchResults implements SearchResults<Sc
         }
 
         @Override
+        public void setTargetResidingContextOnly(boolean targetResidingContextOnly) {
+
+        }
+
+        @Override
+        public boolean isTargetResidingContextOnly() {
+            return false;
+        }
+
+        @Override
+        public void setParticipatesInLock(boolean participatesInLock) {
+
+        }
+
+        @Override
+        public boolean isParticipatesInLock() {
+            return false;
+        }
+
+        @Override
         public long getTimestamp() {
             return System.currentTimeMillis();
         }

@@ -21,6 +21,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.junit.Before;
@@ -57,6 +58,9 @@ public class StateChangeMonitorTest {
     @Mock
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
+    @Mock
+    private JobLockCacheInitialisationService jobLockCacheInitialisationService;
+
     @Before
     public void setup() throws IOException {
         objectMapper = ObjectMapperFactory.newInstance();
@@ -85,7 +89,7 @@ public class StateChangeMonitorTest {
 
         ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl()
             , null,"./target",null,null, null, this.scheduledContextService,
-            this.schedulerJobInstanceService);
+            this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
 
         contextMachine1.init();
 
@@ -109,7 +113,7 @@ public class StateChangeMonitorTest {
 
         ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, new ScheduledContextInstanceServiceTestImpl()
             , null,"./target",null,null, null, this.scheduledContextService,
-            this.schedulerJobInstanceService);
+            this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
 
         contextMachine2.init();
 

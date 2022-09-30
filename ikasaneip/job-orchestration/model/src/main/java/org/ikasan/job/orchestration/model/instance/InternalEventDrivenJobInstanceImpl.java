@@ -15,6 +15,7 @@ public class InternalEventDrivenJobInstanceImpl extends SchedulerJobInstanceImpl
     private List<ContextParameter> contextParameters = new ArrayList<>();;
     private List<Integer> daysOfWeekToRun;
     private boolean targetResidingContextOnly;
+    private boolean participatesInLock;
 
     @Override
     public List<String> getSuccessfulReturnCodes() {
@@ -94,5 +95,15 @@ public class InternalEventDrivenJobInstanceImpl extends SchedulerJobInstanceImpl
     @Override
     public void setTargetResidingContextOnly(boolean targetResidingContextOnly) {
         this.targetResidingContextOnly = targetResidingContextOnly;
+    }
+
+    @Override
+    public boolean isParticipatesInLock() {
+        return participatesInLock;
+    }
+
+    @Override
+    public void setParticipatesInLock(boolean participatesInLock) {
+        this.participatesInLock = participatesInLock;
     }
 }

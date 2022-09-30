@@ -32,6 +32,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
@@ -87,7 +88,7 @@ public class ContextInstanceRegistrationServiceImplTest {
     SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
 
     @Mock
-    JobLockCacheInitialisationServiceImpl jobLockCacheInitialisationService;
+    private JobLockCacheInitialisationService jobLockCacheInitialisationService;
 
 
     private ContextInstanceRegistrationServiceImpl contextInstanceRegistrationService;
@@ -509,7 +510,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, JobLockCacheImpl.instance(), null,
-            null, this.schedulerJobInstanceService);
+            null, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
 
         ContextMachineCache.instance().put(contextMachine);
 

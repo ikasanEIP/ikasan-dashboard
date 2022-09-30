@@ -54,7 +54,6 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
     private SystemEventLogger systemEventLogger;
-    private SchedulerJobService schedulerJobService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private JobInitiationService jobInitiationService;
     private JobUtilsService jobUtilsService;
@@ -68,7 +67,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
 
     public ContextInstanceVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                              MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
+                                              MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                               LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                                               JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService) {
         this.setHeight("95%");
@@ -102,11 +101,6 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
         this.systemEventLogger = systemEventLogger;
         if(this.systemEventLogger == null) {
             throw new IllegalArgumentException("systemEventLogger cannot be null!");
-        }
-
-        this.schedulerJobService = schedulerJobService;
-        if(this.schedulerJobService == null) {
-            throw new IllegalArgumentException("schedulerJobService cannot be null!");
         }
 
         this.logStreamingService = logStreamingService;
@@ -160,7 +154,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
         this.initParentNavigation();
 
         this.schedulerInstanceVisualisation =  new ContextSchedulerInstanceVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
-            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
+            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
             this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
         this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.rootContextInstance, this.contextInstance, this);
 
@@ -184,7 +178,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
                                 this.close();
                                 ContextInstanceVisualisationDialog contextInstanceVisualisationDialog
                                     = new ContextInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
-                                    , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService
+                                    , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService
                                     , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
 
                                 contextInstanceVisualisationDialog.createSchedulerVisualisation(this.rootContextInstance, this.contextInstance);
