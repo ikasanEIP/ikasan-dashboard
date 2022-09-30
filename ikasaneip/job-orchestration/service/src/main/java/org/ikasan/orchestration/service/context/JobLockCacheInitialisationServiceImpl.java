@@ -17,7 +17,8 @@ public class JobLockCacheInitialisationServiceImpl implements JobLockCacheInitia
         }
     }
 
-    public void initialiseJobLockCache(Context context) {
+    @Override
+    public void initialiseJobLockCache(Context context, boolean isRefresh) {
         JobLockCacheRecord jobLockCacheRecord = jobLockCacheService.get();
         JobLockCacheImpl.instance().setJobLockCacheService(jobLockCacheService);
 
@@ -25,8 +26,10 @@ public class JobLockCacheInitialisationServiceImpl implements JobLockCacheInitia
             JobLockCacheImpl.instance().setJobLockCacheRecord(jobLockCacheRecord);
         }
 
-        JobLockCacheImpl.instance().removeJobsLocksForContext(context);
-        JobLockCacheImpl.instance().addLocks(context.getAllNestedJobLocks());
+        if(isRefresh) {
+            JobLockCacheImpl.instance().removeJobsLocksForContext(context);
+            JobLockCacheImpl.instance().addLocks(context.getAllNestedJobLocks());
+        }
     }
 
     @Override

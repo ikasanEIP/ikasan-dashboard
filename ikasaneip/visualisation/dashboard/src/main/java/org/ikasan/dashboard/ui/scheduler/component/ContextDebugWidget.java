@@ -39,6 +39,7 @@ import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,6 +85,8 @@ public class ContextDebugWidget extends Div {
 
     private ScheduledContextInstanceService scheduledContextInstanceService;
 
+    private JobLockCacheInitialisationService jobLockCacheInitialisationService;
+
     /**
      * Constructor
      */
@@ -94,7 +97,7 @@ public class ContextDebugWidget extends Div {
                               ScheduledContextInstanceService contextInstanceService, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                               SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, ContextParametersInstanceService contextParametersInstanceService,
-                              SchedulerJobInstanceService schedulerJobInstanceService, JobUtilsService jobUtilsService) {
+                              SchedulerJobInstanceService schedulerJobInstanceService, JobUtilsService jobUtilsService, JobLockCacheInitialisationService jobLockCacheInitialisationService) {
         Div div = new Div();
         div.addClassNames("card-counter");
         div.setHeight("100%");
@@ -108,9 +111,10 @@ public class ContextDebugWidget extends Div {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.jobInitiationService = jobInitiationService;
         this.jobUtilsService = jobUtilsService;
+        this.jobLockCacheInitialisationService = jobLockCacheInitialisationService;
 
         this.schedulerInstanceVisualisation = new ContextSchedulerInstanceVisualisation(".", moduleMetaDataService, scheduledProcessManagementService, configurationRestService,
-            moduleControlRestService,  metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, schedulerJobInstanceService, jobInitiationService, jobUtilsService,
+            moduleControlRestService,  metaDataRestService, systemEventLogger, logStreamingService, schedulerJobInstanceService, jobInitiationService, jobUtilsService,
             this.scheduledContextService);
 
         this.schedulerInstanceVisualisation.setWidthFull();
@@ -189,7 +193,7 @@ public class ContextDebugWidget extends Div {
         addContextButton.addClickListener(buttonClickEvent -> {
             ContextUploadDialog contextUploadDialog = new ContextUploadDialog(scheduledContextInstanceService,
                 jobInitiationService, this.scheduledContextService, this.internalEventDrivenJobService, this.queueDir, moduleMetaDataService
-                , this.jobLockCacheService, this.contextParametersInstanceService, schedulerJobInstanceService);
+                , this.jobLockCacheService, this.contextParametersInstanceService, schedulerJobInstanceService, this.jobLockCacheInitialisationService);
             contextUploadDialog.open();
 
             contextUploadDialog.addOpenedChangeListener(event -> {

@@ -9,7 +9,7 @@ import java.util.Map;
 public class SolrJobLockImpl implements JobLock {
 
     private String name;
-    private long lockCount = 1;
+    private int lockCount = 1;
     private Map<String, List<SchedulerJob>>  jobs;
 
     @Override
@@ -23,12 +23,12 @@ public class SolrJobLockImpl implements JobLock {
     }
 
     @Override
-    public void setLockCount(long lockCount) {
+    public void setLockCount(int lockCount) {
         this.lockCount = lockCount;
     }
 
     @Override
-    public long getLockCount() {
+    public int getLockCount() {
         return lockCount;
     }
 
