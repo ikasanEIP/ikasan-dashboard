@@ -42,6 +42,10 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
                 + "_" + schedulerJobInstanceRecord.getChildContextName()
                 + "_" + JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
             document.addField(TYPE, JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+            document.addField(TARGET_RESIDING_CONTEXT_ONLY,
+                ((InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()).isTargetResidingContextOnly());
+            document.addField(PARTICIPATES_IN_LOCK,
+                ((InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()).isParticipatesInLock());
         }
         else if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof QuartzScheduleDrivenJobInstance) {
             document.addField(ID, schedulerJobInstanceRecord.getJobName()
@@ -162,6 +166,20 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
             .append(CHILD_CONTEXT_NAME)
             .append(COLON)
             .append(filter.getChildContextName() != null && !filter.getChildContextName().isEmpty() ? SolrSpecialCharacterEscapeUtil.escape(filter.getChildContextName()) : "*");
+
+        if(filter.isTargetResidingContextOnly() != null && filter.isTargetResidingContextOnly().booleanValue()) {
+            queryString.append(AND)
+                .append(TARGET_RESIDING_CONTEXT_ONLY)
+                .append(COLON)
+                .append(true);
+        }
+
+        if(filter.isParticipatesInLock() != null) {
+            queryString.append(AND)
+                .append(PARTICIPATES_IN_LOCK)
+                .append(COLON)
+                .append(filter.isParticipatesInLock());
+        }
 
         if(filter.getStatus() != null && !filter.getStatus().isEmpty()) {
             if(filter.getStatus().equals(InstanceStatus.SKIPPED.name())) {

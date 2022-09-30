@@ -39,6 +39,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
@@ -67,6 +68,8 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
     private ContextParametersInstanceService contextParametersInstanceService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
+    private JobLockCacheInitialisationService jobLockCacheInitialisationService;
+
     /**
      * Constructor
      * TODO if this class stays around, it should leverage the base functionality in ContextInstanceServiceBase
@@ -74,7 +77,8 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
     public ContextUploadDialog(ScheduledContextInstanceService scheduledContextInstanceService, JobInitiationService jobInitiationService,
                                ScheduledContextService scheduledContextService, InternalEventDrivenJobService internalEventDrivenJobService,
                                String queueDir, ModuleMetaDataService moduleMetaDataService, JobLockCacheService jobLockCacheService,
-                               ContextParametersInstanceService contextParametersInstanceService, SchedulerJobInstanceService schedulerJobInstanceService)
+                               ContextParametersInstanceService contextParametersInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
+                               JobLockCacheInitialisationService jobLockCacheInitialisationService)
     {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.jobInitiationService = jobInitiationService;
@@ -85,6 +89,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
         this.jobLockCacheService = jobLockCacheService;
         this.contextParametersInstanceService = contextParametersInstanceService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
+        this.jobLockCacheInitialisationService = jobLockCacheInitialisationService;
         this.init();
     }
 
@@ -161,7 +166,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
 
                 ContextMachine contextMachine = new ContextMachine(contextTemplate, contextInstance, scheduledContextInstanceService
                     , internalEventDrivenJobMap, this.queueDir, agents, jobLockCache, this.contextParametersInstanceService, this.scheduledContextService
-                    , this.schedulerJobInstanceService);
+                    , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
                 contextMachine.init();
 
                 // We add the listener to write initiation events to the agents.

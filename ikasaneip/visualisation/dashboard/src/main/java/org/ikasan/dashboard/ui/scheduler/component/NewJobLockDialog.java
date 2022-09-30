@@ -26,7 +26,7 @@ public class NewJobLockDialog extends AbstractCloseableResizableDialog {
 
     private Map<String, JobLock> existingLocks;
     private String lockName;
-    private Long lockCount;
+    private Integer lockCount;
     public NewJobLockDialog(Map<String, JobLock> existingLocks) {
         this.existingLocks = existingLocks;
         this.init();
@@ -81,7 +81,7 @@ public class NewJobLockDialog extends AbstractCloseableResizableDialog {
             if(error)return;
 
             this.lockName = lockNameTf.getValue();
-            this.lockCount = Long.parseLong(lockCountTf.getValue());
+            this.lockCount = Integer.parseInt(lockCountTf.getValue());
 
             this.close();
         });
@@ -110,7 +110,7 @@ public class NewJobLockDialog extends AbstractCloseableResizableDialog {
         return lockName;
     }
 
-    public Long getLockCount() {
+    public Integer getLockCount() {
         return lockCount;
     }
 }

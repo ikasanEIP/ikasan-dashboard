@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobLockCacheImpl.class);
-    private static final String CONTEXT_ID = ":context-id:";
+    public static final String CONTEXT_ID = ":context-id:";
 
     private List<JobLockCacheEventListener> jobLockCacheEventListeners;
     private final static JobLockCacheImpl INSTANCE = new JobLockCacheImpl();
@@ -52,7 +52,8 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
         this.jobLockCacheData = new JobLockCacheDataImpl();
         this.jobLockCacheEventListeners = new LinkedList<>();
         this.addJobLockCacheEventListener(this);
-        this.executor = Executors.newSingleThreadExecutor();
+        // todo make pool size configurable
+        this.executor = Executors.newFixedThreadPool(5);
     }
 
     private JobLockCacheRecord jobLockCacheRecord = null;
@@ -130,7 +131,7 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
                 saveJobLockCacheRecord();
                 locked = true;
 
-                JobLockCacheEvent event = new JobLockCacheEventImpl(jobIdentifier, contextName
+                JobLockCacheEvent event = new JobLockCacheEventImpl(jobLockHolder.getLockName(), jobIdentifier, contextName
                     , JobLockCacheEvent.EventType.LOCK_OBTAINED);
                 this.executor.submit(() -> this.jobLockCacheEventListeners
                     .forEach(listener -> listener.onJobLockCacheEvent(event)));
@@ -152,7 +153,7 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
                 removed = jobLockHolder.removeLockHolder(jobIdentifier + CONTEXT_ID + contextName);
                 if (removed) {
                     saveJobLockCacheRecord();
-                    JobLockCacheEvent event = new JobLockCacheEventImpl(jobIdentifier, contextName
+                    JobLockCacheEvent event = new JobLockCacheEventImpl(jobLockHolder.getLockName(), jobIdentifier, contextName
                         , JobLockCacheEvent.EventType.LOCK_RELEASED);
                     this.executor.submit(() -> this.jobLockCacheEventListeners
                         .forEach(listener -> listener.onJobLockCacheEvent(event)));
@@ -236,6 +237,11 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
                 contextualisedSchedulerJobInitiationEvent.setContextName(contextName);
                 contextualisedSchedulerJobInitiationEvent.setSchedulerJobInitiationEvent(event);
                 jobLockHolder.getSchedulerJobInitiationEventWaitQueue().offer(contextualisedSchedulerJobInitiationEvent);
+                saveJobLockCacheRecord();
+                JobLockCacheEvent jobLockCacheEvent = new JobLockCacheEventImpl(jobLockHolder.getLockName(), event.getInternalEventDrivenJob().getIdentifier()
+                    , event.getInternalEventDrivenJob().getChildContextName(), JobLockCacheEvent.EventType.JOB_ADDED_TO_JOB_LOCK_QUEUE);
+                this.executor.submit(() -> this.jobLockCacheEventListeners
+                    .forEach(listener -> listener.onJobLockCacheEvent(jobLockCacheEvent)));
             }
         }
     }
@@ -251,6 +257,10 @@ public final class JobLockCacheImpl implements JobLockCache, JobLockCacheEventLi
                 removed = jobLockHolder.getSchedulerJobInitiationEventWaitQueue().poll();
                 if (removed != null) {
                     saveJobLockCacheRecord();
+                    JobLockCacheEvent jobLockCacheEvent = new JobLockCacheEventImpl(jobLockHolder.getLockName(), removed.getSchedulerJobInitiationEvent().getInternalEventDrivenJob().getIdentifier()
+                        , removed.getSchedulerJobInitiationEvent().getInternalEventDrivenJob().getChildContextName(), JobLockCacheEvent.EventType.JOB_REMOVED_FROM_JOB_LOCK_QUEUE);
+                    this.executor.submit(() -> this.jobLockCacheEventListeners
+                        .forEach(listener -> listener.onJobLockCacheEvent(jobLockCacheEvent)));
                 }
             }
         }

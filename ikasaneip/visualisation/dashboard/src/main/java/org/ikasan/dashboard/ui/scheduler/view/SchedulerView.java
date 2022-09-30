@@ -37,6 +37,7 @@ import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
@@ -144,6 +145,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     @Resource
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
+
+    @Resource
+    private JobLockCacheInitialisationService jobLockCacheInitialisationService;
 
     @Value("${ikasan.dashboard.unzip.and.provision.jobs:true}")
     private boolean uploadProvisionJobs;
@@ -269,7 +273,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
                 , this.scheduledContextService, this.systemEventLogger, this.internalEventDrivenJobService, this.queueDirectory
                 , this.moduleMetaDataService, this.jobLockCacheService, this.contextInstanceService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.schedulerJobService,
-                this.logStreamingService, this.contextParametersInstanceService, this.schedulerJobInstanceService, this.jobUtilsService);
+                this.logStreamingService, this.contextParametersInstanceService, this.schedulerJobInstanceService, this.jobUtilsService,
+                this.jobLockCacheInitialisationService);
 
             this.contextDebugBoard.addRow(this.contextDebugWidget);
             initialised = true;

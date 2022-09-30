@@ -45,6 +45,12 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Field(SolrDaoBase.STATUS)
     private String status;
 
+    @Field(SolrDaoBase.TARGET_RESIDING_CONTEXT_ONLY)
+    private boolean targetResidingContextOnly;
+
+    @Field(SolrDaoBase.PARTICIPATES_IN_LOCK)
+    boolean participatesInLock;
+
     @Field(SolrDaoBase.CREATED_DATE_TIME)
     private long timestamp;
 
@@ -153,6 +159,26 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Override
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    @Override
+    public boolean isTargetResidingContextOnly() {
+        return targetResidingContextOnly;
+    }
+
+    @Override
+    public void setTargetResidingContextOnly(boolean targetResidingContextOnly) {
+        this.targetResidingContextOnly = targetResidingContextOnly;
+    }
+
+    @Override
+    public boolean isParticipatesInLock() {
+        return participatesInLock;
+    }
+
+    @Override
+    public void setParticipatesInLock(boolean participatesInLock) {
+        this.participatesInLock = participatesInLock;
     }
 
     @Override

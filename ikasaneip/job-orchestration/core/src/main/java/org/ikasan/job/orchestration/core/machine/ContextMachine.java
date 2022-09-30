@@ -42,6 +42,7 @@ import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceServi
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
+import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +76,7 @@ public class ContextMachine {
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private ScheduledContextService scheduledContextService;
     private SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener;
+    private final JobLockCacheInitialisationService jobLockCacheInitialisationService;
     private ContextTemplate context;
     private int attempts;
     private long maxWait;
@@ -92,7 +94,8 @@ public class ContextMachine {
                           Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstances, String queueDir,
                           Map<String, ModuleMetaData> agents, JobLockCache jobLockCache,
                           ContextParametersInstanceService contextParametersInstanceService,
-                          ScheduledContextService scheduledContextService, SchedulerJobInstanceService schedulerJobInstanceService) {
+                          ScheduledContextService scheduledContextService, SchedulerJobInstanceService schedulerJobInstanceService,
+                          JobLockCacheInitialisationService jobLockCacheInitialisationService) {
         this.context = context;
         this.contextInstance = contextInstance;
         this.internalEventDrivenJobInstances = internalEventDrivenJobInstances;
@@ -109,6 +112,7 @@ public class ContextMachine {
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         this.scheduledContextService = scheduledContextService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
+        this.jobLockCacheInitialisationService = jobLockCacheInitialisationService;
         this.jobLockCache = jobLockCache;
         this.jobLogicMachine = new JobLogicMachine(this.agents, this.jobLockCache, contextParametersInstanceService);
     }
@@ -176,10 +180,8 @@ public class ContextMachine {
             });
 
             this.saveContext();
-            List<JobLock> jobLocks = this.context.getJobLocks();
-            if (jobLocks != null) {
-                jobLocks.forEach(j -> this.jobLockCache.resetLock(j.getName()));
-            }
+
+            this.jobLockCacheInitialisationService.initialiseJobLockCache(this.context, true);
         }
     }
 

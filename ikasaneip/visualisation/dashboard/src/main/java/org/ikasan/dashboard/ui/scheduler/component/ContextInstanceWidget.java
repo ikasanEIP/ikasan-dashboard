@@ -82,6 +82,11 @@ public class ContextInstanceWidget extends VerticalLayout {
     private ModuleControlService moduleControlRestService;
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
+    private ScheduledProcessManagementService scheduledProcessManagementService;
+    private ModuleMetaDataService moduleMetaDataService;
+    private MetaDataService metaDataRestService;
+    private SystemEventLogger systemEventLogger;
+    private LogStreamingService logStreamingService;
 
     private Div schedulerVisualisationDiv;
 
@@ -155,6 +160,26 @@ public class ContextInstanceWidget extends VerticalLayout {
         if (this.moduleControlRestService == null) {
             throw new IllegalArgumentException("moduleControlRestService cannot be null!");
         }
+        this.scheduledProcessManagementService = scheduledProcessManagementService;
+        if (this.scheduledProcessManagementService == null) {
+            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
+        }
+        this.metaDataRestService = metaDataRestService;
+        if (this.metaDataRestService == null) {
+            throw new IllegalArgumentException("metaDataRestService cannot be null!");
+        }
+        this.moduleMetaDataService = moduleMetaDataService;
+        if (this.moduleMetaDataService == null) {
+            throw new IllegalArgumentException("moduleMetaDataService cannot be null!");
+        }
+        this.systemEventLogger = systemEventLogger;
+        if (this.systemEventLogger == null) {
+            throw new IllegalArgumentException("systemEventLogger cannot be null!");
+        }
+        this.logStreamingService = logStreamingService;
+        if (this.logStreamingService == null) {
+            throw new IllegalArgumentException("logStreamingService cannot be null!");
+        }
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -213,8 +238,16 @@ public class ContextInstanceWidget extends VerticalLayout {
         contextInstanceLabel.getStyle().set("margin", "20px");
         formLayout.add(contextInstanceLabel, 2);
 
-        VerticalLayout buttonLayout = new VerticalLayout();
-        buttonLayout.setWidth("100%");
+        Button jobLogDashboard = new Button("Job Locks", VaadinIcon.LOCK.create());
+        jobLogDashboard.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+        jobLogDashboard.setIconAfterText(true);
+        jobLogDashboard.addClickListener(event -> {
+            JobLockCacheDialog jobLockCacheDialog = new JobLockCacheDialog(this.contextInstance, this.moduleMetaDataService, this.scheduledProcessManagementService,
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobInstanceService,
+                this.logStreamingService, this.jobInitiationService, this.scheduledContextService, this.jobUtilsService);
+
+            jobLockCacheDialog.open();
+        });
 
         Button resetButton = new Button(getTranslation("button.reset-context", UI.getCurrent().getLocale()), VaadinIcon.TIME_BACKWARD.create());
         resetButton.setIconAfterText(true);
@@ -254,12 +287,18 @@ public class ContextInstanceWidget extends VerticalLayout {
             });
         });
 
-        buttonLayout.add(resetButton);
-        buttonLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, resetButton);
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.add(jobLogDashboard, resetButton);
         buttonLayout.setMargin(false);
-        buttonLayout.setSpacing(false);
+        buttonLayout.setSpacing(true);
 
-        formLayout.add(buttonLayout, 2);
+        VerticalLayout wrapper = new VerticalLayout(buttonLayout);
+        wrapper.setWidthFull();
+        wrapper.setMargin(false);
+        wrapper.setSpacing(false);
+        wrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
+
+        formLayout.add(wrapper, 2);
 
         this.formLayout.add(this.contextInstanceId, this.contextNameTf
             , this.startWindowCronExpressionTf, this.endWindowCronExpressionTf, this.descriptionTa);
@@ -367,7 +406,7 @@ public class ContextInstanceWidget extends VerticalLayout {
         this.schedulerVisualisationDiv.setSizeFull();
 
         this.schedulerInstanceVisualisation = new ContextSchedulerInstanceVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
-            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
+            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService
             , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
         this.schedulerInstanceVisualisation.setWidthFull();
         this.schedulerInstanceVisualisation.setHeight("75vh");

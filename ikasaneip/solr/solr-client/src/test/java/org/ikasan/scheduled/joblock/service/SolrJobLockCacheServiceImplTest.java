@@ -253,7 +253,7 @@ public class SolrJobLockCacheServiceImplTest extends SolrTestCaseJ4 {
     }
 
 
-    private JobLock makeJobLock(String jobLockName, int count, long jobLockCount) {
+    private JobLock makeJobLock(String jobLockName, int count, int jobLockCount) {
         JobLock jobLock = new SolrJobLockImpl();
         jobLock.setName(jobLockName);
         jobLock.setLockCount(jobLockCount);
