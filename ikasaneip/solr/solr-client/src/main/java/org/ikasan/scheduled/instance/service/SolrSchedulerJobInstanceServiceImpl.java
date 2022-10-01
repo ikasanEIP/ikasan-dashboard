@@ -2,7 +2,6 @@ package org.ikasan.scheduled.instance.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.SerializationUtils;
-import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
 import org.ikasan.scheduled.instance.model.*;
 import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
@@ -13,7 +12,6 @@ import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
