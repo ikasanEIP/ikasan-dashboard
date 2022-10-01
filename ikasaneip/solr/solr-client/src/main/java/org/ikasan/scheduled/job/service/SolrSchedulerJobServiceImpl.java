@@ -154,7 +154,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     @Override
     public void saveInternalEventDrivenJob(InternalEventDrivenJob internalEventDrivenJob, String modifiedBy) {
         InternalEventDrivenJobRecord internalEventDrivenJobRecord =  this.internalEventDrivenJobRecordDao
-            .findById(JobConstants.INTERNAL_EVENT_DRIVEN_JOB + "_" + internalEventDrivenJob.getAgentName() + "_"
+            .findById(org.ikasan.spec.scheduled.job.model.JobConstants.INTERNAL_EVENT_DRIVEN_JOB + "_" + internalEventDrivenJob.getAgentName() + "_"
                 + internalEventDrivenJob.getJobName() + "_" + internalEventDrivenJob.getContextName());
 
         if(internalEventDrivenJob == null) {
