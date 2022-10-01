@@ -33,6 +33,8 @@ public class TestSchedulerJobRecord implements SchedulerJobRecord {
 
     private boolean targetResidingContextOnly;
 
+    private boolean participatesInLock;
+
     @Override
     public SchedulerJob getJob() {
         return job;
@@ -121,6 +123,11 @@ public class TestSchedulerJobRecord implements SchedulerJobRecord {
         this.timestamp = timestamp;
     }
 
+    @Override
+    public boolean isParticipatesInLock() {
+        return this.participatesInLock;
+    }
+
     public void setModifiedTimestamp(long modifiedTimestamp) {
         this.modifiedTimestamp = modifiedTimestamp;
     }
@@ -139,5 +146,9 @@ public class TestSchedulerJobRecord implements SchedulerJobRecord {
 
     public void setTargetResidingContextOnly(boolean targetResidingContextOnly) {
         this.targetResidingContextOnly = targetResidingContextOnly;
+    }
+
+    public void setParticipatesInLock(boolean participatesInLock) {
+        this.participatesInLock = participatesInLock;
     }
 }
