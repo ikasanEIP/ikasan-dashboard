@@ -94,6 +94,8 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
 
     private DateFormatter dateFormatter;
 
+    private int maxDownloadBytes;
+
     public BusinessStreamVisualisation(ModuleControlService moduleControlRestService
         , ConfigurationService configurationRestService, TriggerService triggerRestService
         , ModuleMetaDataService moduleMetaDataService
@@ -103,7 +105,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         , ResubmissionService resubmissionRestService, ReplayService replayRestService
         , ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService
         , MetaDataService metaDataApplicationRestService, BatchInsert<ModuleMetaData> moduleMetaDataBatchInsert
-        , String dynamicImagePath, DateFormatter dateFormatter) {
+        , String dynamicImagePath, DateFormatter dateFormatter, int maxDownloadBytes) {
         this.moduleControlRestService = moduleControlRestService;
         if (this.moduleControlRestService == null) {
             throw new IllegalArgumentException("moduleControlRestService cannot be null!");
@@ -165,6 +167,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
             throw new IllegalArgumentException("dateFormatter cannot be null!");
         }
 
+        this.maxDownloadBytes = maxDownloadBytes;
         this.setMargin(false);
         this.setSpacing(false);
         this.setSizeFull();
@@ -532,7 +535,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
         Flow flow =  this.flowMap.get(identifier.getName());
         logger.debug("error clicked: " + flow.getModuleName() + " " + flow.getFlowName());
         SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
-            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService, dateFormatter);
+            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService, dateFormatter, this.maxDownloadBytes);
         searchResultsDialog.search(searchFoundStatus.getStartTime(), searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm(), identifier.getType().toLowerCase(), false
             , flow.getModuleName(), flow.getFlowName());
         searchResultsDialog.open();
@@ -568,7 +571,7 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
                     , this.flowMap.get(nodeId), this.solrSearchService
                     , this.stringSearchFoundStatusMap.get(nodeId), this.hospitalAuditService
                     , this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService
-                    , this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert, this.dateFormatter);
+                    , this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert, this.dateFormatter, this.maxDownloadBytes);
 
                 flowVisualisationDialog.open();
             }

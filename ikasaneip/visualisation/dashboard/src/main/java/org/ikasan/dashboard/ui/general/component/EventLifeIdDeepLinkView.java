@@ -26,6 +26,7 @@ import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -43,6 +44,9 @@ public class EventLifeIdDeepLinkView extends VerticalLayout implements HasUrlPar
 {
     Logger logger = LoggerFactory.getLogger(EventLifeIdDeepLinkView.class);
 
+    @Value("${max.download.bytes:50000000}")
+    private int maxDownloadBytes;
+
     private SearchResults searchResults;
 
     public EventLifeIdDeepLinkView(ModuleMetaDataService moduleMetadataService,
@@ -51,7 +55,7 @@ public class EventLifeIdDeepLinkView extends VerticalLayout implements HasUrlPar
                                    ReplayRestServiceImpl replayRestService, BatchInsert replayAuditService, DateFormatter dateFormatter)
     {
         this.searchResults = new SearchResults(solrGeneralService, hospitalAuditService, resubmissionRestService
-            , replayRestService, moduleMetadataService, replayAuditService, dateFormatter);
+            , replayRestService, moduleMetadataService, replayAuditService, dateFormatter, this.maxDownloadBytes);
         this.searchResults.setSizeFull();
 
         this.add(searchResults);
