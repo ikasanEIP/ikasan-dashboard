@@ -89,6 +89,9 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver
     @Value(value = "${integrated.systems.image.path}")
     private String dynamicImagePath;
 
+    @Value("${max.download.bytes:50000000}")
+    private int maxDownloadBytes;
+
     private Registration broadcasterRegistration;
 
     private GraphVisualisation graphVisualisation;
@@ -115,7 +118,7 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver
             this.configurationMetadataService, this.businessStreamMetaDataService, this.solrGeneralService,
             this.hospitalAuditService, this.resubmissionRestService, this.replayRestService, this.replayAuditService,
             this.metaDataApplicationRestService, this.moduleMetadataBatchInsert, this.triggerRestService, this.dynamicImagePath,
-            this.dateFormatter);
+            this.dateFormatter, this.maxDownloadBytes);
 
         this.add(graphVisualisation);
 

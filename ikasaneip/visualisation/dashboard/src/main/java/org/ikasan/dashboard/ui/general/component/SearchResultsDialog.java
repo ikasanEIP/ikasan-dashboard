@@ -20,10 +20,10 @@ public class SearchResultsDialog extends AbstractCloseableResizableDialog {
 
     public SearchResultsDialog(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService
         , HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService
-        , ReplayService replayRestService, ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService, DateFormatter dateFormatter){
+        , ReplayService replayRestService, ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService, DateFormatter dateFormatter
+        , int maxDownloadBytes){
         searchResults = new SearchResults(solrGeneralService, hospitalAuditService,
-            resubmissionRestService, replayRestService, moduleMetadataService, replayAuditService, dateFormatter);
-        searchResults.tooltipBottom();
+            resubmissionRestService, replayRestService, moduleMetadataService, replayAuditService, dateFormatter, maxDownloadBytes);
 
         searchResults.setSizeFull();
 

@@ -114,7 +114,7 @@ public class SearchForm extends VerticalLayout {
         searchTextLayout.add(searchText);
 
         Image searchButtonImage = new Image("frontend/images/search-icon.png", "");
-        searchButtonImage.setHeight("50px");
+        searchButtonImage.setHeight("48px");
         this.searchButton = new Button(searchButtonImage);
         this.searchButton.setHeight("54px");
         this.searchButton.setWidth("54px");

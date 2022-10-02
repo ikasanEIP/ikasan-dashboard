@@ -60,6 +60,9 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
     @Value(value = "${integrated.systems.image.path}")
     private String dynamicImagePath;
 
+    @Value("${max.download.bytes:50000000}")
+    private int maxDownloadBytes;
+
     private boolean initialised = false;
 
     private String visualisationType = null;
@@ -97,7 +100,7 @@ public class GraphVisualisationDeepLinkView extends VerticalLayout implements Ha
             configurationMetadataService, businessStreamMetaDataService, solrGeneralService,
             hospitalAuditService, resubmissionRestService, replayRestService, replayAuditService,
             metaDataApplicationRestService, moduleMetadataBatchInsert, triggerRestService, dynamicImagePath,
-            this.dateFormatter);
+            this.dateFormatter, this.maxDownloadBytes);
 
         this.add(graphVisualisation);
         this.setSizeFull();

@@ -1,6 +1,6 @@
 package org.ikasan.dashboard.ui.general.component;
 
-import com.vaadin.componentfactory.Tooltip;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -10,11 +10,15 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.search.SearchConstants;
 import org.ikasan.dashboard.ui.search.component.SolrSearchFilteringGrid;
@@ -24,6 +28,7 @@ import org.ikasan.dashboard.ui.search.listener.ReplayEventSubmissionListener;
 import org.ikasan.dashboard.ui.search.listener.ResubmitHospitalEventSubmissionListener;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.IkasanDocumentToCsvConverter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.solr.model.IkasanSolrDocument;
@@ -34,13 +39,23 @@ import org.ikasan.spec.module.client.ReplayService;
 import org.ikasan.spec.module.client.ResubmissionService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.solr.SolrGeneralService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class SearchResults extends Div {
+    private static Logger logger = LoggerFactory.getLogger(SearchResults.class);
+
     private SolrSearchFilteringGrid searchResultsGrid;
     private Label resultsLabel = new Label();
     private SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService;
@@ -60,10 +75,8 @@ public class SearchResults extends Div {
     private Button replayButton;
     private Button resubmitButton;
     private Button ignoreButton;
-    private Tooltip selectAllTooltip;
-    private Tooltip replayButtonTooltip;
-    private Tooltip resubmitButtonTooltip;
-    private Tooltip ignoreButtonTooltip;
+    private LazyDownloadButton csvExportButton;
+    private LazyDownloadButton downloadButton;
 
     private HospitalAuditService hospitalAuditService;
 
@@ -87,10 +100,12 @@ public class SearchResults extends Div {
 
     private DateFormatter dateFormatter;
 
+    private int maxDownloadBytes;
+
     public SearchResults(SolrGeneralService<IkasanSolrDocument, IkasanSolrDocumentSearchResults> solrGeneralService,
                          HospitalAuditService hospitalAuditService, ResubmissionService resubmissionRestService,
                          ReplayService replayRestService, ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService,
-                         DateFormatter dateFormatter){
+                         DateFormatter dateFormatter, int maxDownloadBytes){
         this.solrGeneralService = solrGeneralService;
         if(this.solrGeneralService == null) {
             throw new IllegalArgumentException("solrGeneralService cannot be null!!");
@@ -120,6 +135,8 @@ public class SearchResults extends Div {
             throw new IllegalArgumentException("dateFormatter cannot be null!!");
         }
 
+        this.maxDownloadBytes = maxDownloadBytes;
+
         this.createSearchResultsGrid();
 
         createSearchResultGridLayout();
@@ -142,6 +159,7 @@ public class SearchResults extends Div {
         Image selectAllImage = new Image("/frontend/images/all-small-off-icon.png", "");
         selectAllImage.setHeight("30px");
         selectAllButton = new Button(selectAllImage);
+        selectAllButton.getElement().setAttribute("title", getTranslation("tooltip.select-all", UI.getCurrent().getLocale()));
         selectAllButton.setHeight("35px");
         selectAllButton.setWidth("35px");
         selectAllButton.setId("selectAllButton");
@@ -149,23 +167,25 @@ public class SearchResults extends Div {
         Image replayImage = new Image("/frontend/images/replay-service.png", "");
         replayImage.setHeight("30px");
         replayButton = new Button(replayImage);
+        replayButton.getElement().setAttribute("title", getTranslation("tooltip.bulk-replay", UI.getCurrent().getLocale()));
         replayButton.setHeight("35px");
         replayButton.setWidth("35px");
         Image resubmitImage = new Image("/frontend/images/resubmit-icon.png", "");
         resubmitImage.setHeight("30px");
         resubmitButton = new Button(resubmitImage);
+        resubmitButton.getElement().setAttribute("title", getTranslation("tooltip.bulk-resubmit", UI.getCurrent().getLocale()));
         resubmitButton.setHeight("35px");
         resubmitButton.setWidth("35px");
         Image ignoreImage = new Image("/frontend/images/ignore-icon.png", "");
         ignoreImage.setHeight("30px");
         ignoreButton = new Button(ignoreImage);
+        ignoreButton.getElement().setAttribute("title", getTranslation("tooltip.bulk-ignore", UI.getCurrent().getLocale()));
         ignoreButton.setHeight("35px");
-        ignoreButton.setWidth("35px");
+        ignoreButton.setWidth("30px");
 
-        selectAllTooltip = TooltipHelper.getTooltipForComponentTopLeft(selectAllButton, getTranslation("tooltip.select-all", UI.getCurrent().getLocale()));
-        resubmitButtonTooltip = TooltipHelper.getTooltipForComponentTopLeft(resubmitButton, getTranslation("tooltip.bulk-resubmit", UI.getCurrent().getLocale()));
-        ignoreButtonTooltip = TooltipHelper.getTooltipForComponentTopLeft(ignoreButton, getTranslation("tooltip.bulk-ignore", UI.getCurrent().getLocale()));
-        replayButtonTooltip = TooltipHelper.getTooltipForComponentTopLeft(replayButton, getTranslation("tooltip.bulk-replay", UI.getCurrent().getLocale()));
+        this.createCsvDownloadButton();
+        this.createDownloadZipButton();
+
 
         selectAllButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> toggleSelected());
 
@@ -192,11 +212,133 @@ public class SearchResults extends Div {
         this.add(controlLayout, searchResultsGrid);
     }
 
-    public void tooltipBottom() {
-        selectAllTooltip = TooltipHelper.getTooltipForComponentBottom(selectAllButton, getTranslation("tooltip.select-all", UI.getCurrent().getLocale()));
-        resubmitButtonTooltip = TooltipHelper.getTooltipForComponentBottom(resubmitButton, getTranslation("tooltip.bulk-resubmit", UI.getCurrent().getLocale()));
-        ignoreButtonTooltip = TooltipHelper.getTooltipForComponentBottom(ignoreButton, getTranslation("tooltip.bulk-ignore", UI.getCurrent().getLocale()));
-        replayButtonTooltip = TooltipHelper.getTooltipForComponentBottom(replayButton, getTranslation("tooltip.bulk-replay", UI.getCurrent().getLocale()));
+    private void createCsvDownloadButton() {
+        Image excelImage = new Image("/frontend/images/excel.png", "");
+        excelImage.setHeight("30px");
+        Optional<UI> optionalUI = UI.getCurrent().getUI();
+        this.csvExportButton = new LazyDownloadButton(excelImage,
+            () -> "search-results-"+System.currentTimeMillis()+".csv",
+            () -> {
+                IkasanDocumentToCsvConverter csvConverter = new IkasanDocumentToCsvConverter();
+                for (int i = 0; i < searchResultsGrid.getResultSize(); i += 100) {
+                    List<IkasanSolrDocument> docs = (List<IkasanSolrDocument>) searchResultsGrid.getDataProvider().fetch
+                        (new Query<>(i, 100, Collections.EMPTY_LIST, null, null)).collect(Collectors.toList());
+
+                    for (IkasanSolrDocument document : docs) {
+                        csvConverter.addDocument(document);
+                    }
+
+                    if(csvConverter.getCvsContents().getBytes().length > this.maxDownloadBytes) {
+                        optionalUI.ifPresent(ui -> ui.access(() ->
+                            NotificationHelper.showUserNotification(String.format(getTranslation("notification.download-size-exceeded"
+                                , UI.getCurrent().getLocale()), this.maxDownloadBytes))
+                        ));
+
+                        break;
+                    }
+                }
+
+                return new ByteArrayInputStream(csvConverter.getCvsContents().getBytes());
+            }
+        );
+        csvExportButton.getElement().setAttribute("title"
+            , getTranslation("tooltip.export-to-csv", UI.getCurrent().getLocale()));
+        csvExportButton.setHeight("35px");
+        csvExportButton.setWidth("30px");
+
+        csvExportButton.setDisableOnClick(true);
+        csvExportButton.addClickListener(event -> {
+            if(this.searchResultsGrid.getResultSize() == 0) {
+                NotificationHelper.showUserNotification(getTranslation("notification.no-records-to-download"
+                    , UI.getCurrent().getLocale()));
+                csvExportButton.reset();
+                csvExportButton.setEnabled(true);
+            }
+            else {
+                NotificationHelper.showUserNotification(getTranslation("notification.preparing-download"
+                    , UI.getCurrent().getLocale()));
+            }
+        });
+
+        csvExportButton.addDownloadStartsListener(event -> {
+            event.getSource().setEnabled(true);
+            csvExportButton.reset();
+        });
+    }
+
+    private void createDownloadZipButton() {
+        Image zipImage = new Image("/frontend/images/zip.png", "");
+        zipImage.setHeight("30px");
+        Optional<UI> optionalUI = UI.getCurrent().getUI();
+        downloadButton =  new LazyDownloadButton(zipImage,
+            () -> "search-results-" + System.currentTimeMillis() + ".zip",
+            () -> {
+                ObjectMapper objectMapper = new ObjectMapper();
+                try (final var baos = new ByteArrayOutputStream();
+                     final var zos = new ZipOutputStream(baos)) {
+                    for (int i = 0; i < searchResultsGrid.getResultSize(); i += 100) {
+                        List<IkasanSolrDocument> docs = (List<IkasanSolrDocument>) searchResultsGrid.getDataProvider().fetch
+                            (new Query<>(i, 100, Collections.EMPTY_LIST, null, null)).collect(Collectors.toList());
+
+                        for (IkasanSolrDocument document : docs) {
+                            String documentAsString = objectMapper.writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(document);
+
+                            ZipEntry entry = new ZipEntry(document.getModuleName() + "_" +
+                                document.getFlowName() + "_" +
+                                document.getComponentName() + "_" +
+                                document.getEventId() + "_" +
+                                + document.getTimestamp() + ".json");
+                            entry.setSize(documentAsString.getBytes().length);
+                            zos.putNextEntry(entry);
+                            zos.write(documentAsString.getBytes());
+                            zos.closeEntry();
+                        }
+                        if(baos.toByteArray().length > this.maxDownloadBytes) {
+                            optionalUI.ifPresent(ui -> ui.access(() ->
+                                NotificationHelper.showUserNotification(String.format(getTranslation("notification.download-size-exceeded"
+                                    , UI.getCurrent().getLocale()), this.maxDownloadBytes))
+                            ));
+
+                            break;
+                        }
+                    }
+                    zos.finish();
+                    zos.flush();
+                    zos.close();
+                    return new ByteArrayInputStream(baos.toByteArray());
+                } catch (Exception e) {
+                    optionalUI.ifPresent(ui -> ui.access(() ->
+                        NotificationHelper.showUserNotification(getTranslation("error.download"
+                            , UI.getCurrent().getLocale()))
+                    ));
+                    return new ByteArrayInputStream(new byte[0]);
+                }
+            }
+        );
+        downloadButton.getElement().setAttribute("title", getTranslation("tooltip.download-grid-items", UI.getCurrent().getLocale()));
+        downloadButton.setHeight("35px");
+        downloadButton.setWidth("35px");
+
+        downloadButton.setDisableOnClick(true);
+        downloadButton.addClickListener(event -> {
+            if(this.searchResultsGrid.getResultSize() == 0) {
+                NotificationHelper.showUserNotification(getTranslation("notification.no-records-to-download"
+                    , UI.getCurrent().getLocale()));
+                downloadButton.reset();
+                downloadButton.setEnabled(true);
+            }
+            else {
+                NotificationHelper.showUserNotification(getTranslation("notification.preparing-download"
+                    , UI.getCurrent().getLocale()));
+            }
+        });
+
+        downloadButton.addDownloadStartsListener(event -> {
+            LazyDownloadButton button = event.getSource();
+            button.setEnabled(true);
+            downloadButton.reset();
+        });
     }
 
     /**
@@ -324,34 +466,30 @@ public class SearchResults extends Div {
         {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Checkbox checkbox = new Checkbox();
-            checkbox.setId(ikasanSolrDocument.getId());
-            horizontalLayout.add(checkbox);
+            if(searchTypes.size() == 1 && (searchTypes.get(0).equals("replay")
+                || searchTypes.get(0).equals("exclusion"))) {
+                Checkbox checkbox = new Checkbox();
+                checkbox.setId(ikasanSolrDocument.getId());
+                horizontalLayout.add(checkbox);
 
-            checkbox.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<Checkbox, Boolean>>) checkboxBooleanComponentValueChangeEvent ->
-            {
-                if(checkboxBooleanComponentValueChangeEvent.getValue())
+                checkbox.addValueChangeListener((HasValue.ValueChangeListener<AbstractField.ComponentValueChangeEvent<Checkbox, Boolean>>) checkboxBooleanComponentValueChangeEvent ->
                 {
+                    if (checkboxBooleanComponentValueChangeEvent.getValue()) {
+                        this.selectionItems.put(ikasanSolrDocument.getId(), ikasanSolrDocument);
+                    } else {
+                        this.selectionItems.remove(ikasanSolrDocument.getId());
+                    }
+                });
+
+                if (!this.selectionBoxes.containsKey(ikasanSolrDocument.getId())) {
+                    checkbox.setValue(selected);
+                    this.selectionBoxes.put(ikasanSolrDocument.getId(), checkbox);
+                } else {
+                    checkbox.setValue(selectionBoxes.get(ikasanSolrDocument.getId()).getValue());
                     this.selectionItems.put(ikasanSolrDocument.getId(), ikasanSolrDocument);
+                    this.selectionBoxes.put(ikasanSolrDocument.getId(), checkbox);
                 }
-                else
-                {
-                    this.selectionItems.remove(ikasanSolrDocument.getId());
-                }
-            });
-
-            if(!this.selectionBoxes.containsKey(ikasanSolrDocument.getId()))
-            {
-                checkbox.setValue(selected);
-                this.selectionBoxes.put(ikasanSolrDocument.getId(), checkbox);
             }
-            else
-            {
-                checkbox.setValue(selectionBoxes.get(ikasanSolrDocument.getId()).getValue());
-                this.selectionItems.put(ikasanSolrDocument.getId(), ikasanSolrDocument);
-                this.selectionBoxes.put(ikasanSolrDocument.getId(), checkbox);
-            }
-
             return horizontalLayout;
         })).setWidth("20px");
 
@@ -491,6 +629,8 @@ public class SearchResults extends Div {
         buttonLayout.removeAll();
 
         if(types.size() != 1) {
+            buttonLayout.add(this.csvExportButton, this.downloadButton);
+            buttonLayout.setWidth("82px");
             return;
         }
 
@@ -498,7 +638,7 @@ public class SearchResults extends Div {
 
         if(type.equals("replay"))
         {
-            buttonLayout.add(replayButton, replayButtonTooltip, selectAllButton, selectAllTooltip);
+            buttonLayout.add(this.replayButton, this.selectAllButton, this.csvExportButton, this.downloadButton);
 
             ComponentSecurityVisibility.applySecurity(replayButton
                 , SecurityConstants.REPLAY_WRITE
@@ -513,11 +653,11 @@ public class SearchResults extends Div {
                 , SecurityConstants.REPLAY_ALL_MODULES_ADMIN
                 , SecurityConstants.ALL_AUTHORITY);
 
-            buttonLayout.setWidth("80px");
+            buttonLayout.setWidth("184px");
         }
         else if(type.equals("exclusion"))
         {
-            buttonLayout.add(this.resubmitButton, resubmitButtonTooltip, this.ignoreButton, ignoreButtonTooltip, this.selectAllButton, selectAllTooltip);
+            buttonLayout.add(this.resubmitButton, this.ignoreButton, this.selectAllButton, this.csvExportButton, downloadButton);
 
             ComponentSecurityVisibility.applySecurity(resubmitButton
                 , SecurityConstants.EXCLUSION_WRITE
@@ -538,7 +678,11 @@ public class SearchResults extends Div {
                 , SecurityConstants.EXCLUSION_ALL_MODULES_ADMIN
                 , SecurityConstants.ALL_AUTHORITY);
 
-            buttonLayout.setWidth("130px");
+            buttonLayout.setWidth("230px");
+        }
+        else {
+            buttonLayout.add(this.csvExportButton, this.downloadButton);
+            buttonLayout.setWidth("82px");
         }
     }
 
