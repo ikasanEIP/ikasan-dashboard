@@ -10,6 +10,7 @@ import org.ikasan.scheduled.context.model.SolrContextTemplateImpl;
 import org.ikasan.scheduled.context.model.SolrJobLockImpl;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.After;
@@ -71,6 +72,7 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
             solrContextTemplate.setName("contextName");
             solrContextTemplate.setJobLocks(List.of(new SolrJobLockImpl()));
+            solrContextTemplate.setDisabled(false);
             SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
             scheduledContextRecord.setContextName("contextName");
             scheduledContextRecord.setTimestamp(1000000L);
@@ -83,6 +85,22 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             Assert.assertEquals("contextName-" + SCHEDULED_CONTEXT, found.getId());
             Assert.assertEquals("contextName", found.getContextName());
             Assert.assertEquals("contextName", found.getContext().getName());
+            Assert.assertEquals(false, found.isDisabled());
+            Assert.assertEquals(false, found.getContext().isDisabled());
+            Assert.assertEquals(1000000L, found.getTimestamp());
+
+            ContextTemplate contextTemplate = found.getContext();
+            contextTemplate.setDisabled(true);
+            scheduledContextRecord.setContext(contextTemplate);
+            this.dao.save(scheduledContextRecord);
+
+            found = this.dao.findById("contextName");
+
+            Assert.assertEquals("contextName-" + SCHEDULED_CONTEXT, found.getId());
+            Assert.assertEquals("contextName", found.getContextName());
+            Assert.assertEquals("contextName", found.getContext().getName());
+            Assert.assertEquals(true, found.isDisabled());
+            Assert.assertEquals(true, found.getContext().isDisabled());
             Assert.assertEquals(1000000L, found.getTimestamp());
 
             Assert.assertNull(this.dao.findById("bad_id"));

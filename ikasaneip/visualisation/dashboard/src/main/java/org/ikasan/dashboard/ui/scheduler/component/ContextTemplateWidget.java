@@ -25,6 +25,7 @@ import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -36,10 +37,12 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -53,6 +56,7 @@ import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 public class ContextTemplateWidget extends Div {
 
@@ -168,7 +172,7 @@ public class ContextTemplateWidget extends Div {
             .setKey("moduleName")
             .setResizable(true)
             .setSortable(true)
-            .setFlexGrow(2);
+            .setFlexGrow(4);
 
         contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -179,7 +183,7 @@ public class ContextTemplateWidget extends Div {
             return horizontalLayout;
         })).setHeader(getTranslation("table-header.context-description", UI.getCurrent().getLocale()))
             .setResizable(true)
-            .setFlexGrow(5);
+            .setFlexGrow(8);
 
 
         contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
@@ -294,14 +298,15 @@ public class ContextTemplateWidget extends Div {
 
             layout.add(newWindow);
 
+            layout.setWidth("250px");
             return layout;
         }))
             .setResizable(true)
             .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
-            .setFlexGrow(2);
+            .setFlexGrow(4);
 
         this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextRecord>of(
-            "<div>[[item.date]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">[[item.date]]</div>")
             .withProperty("date",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
             .setHeader(getTranslation("table-header.created-date-time", UI.getCurrent().getLocale()))
@@ -311,7 +316,7 @@ public class ContextTemplateWidget extends Div {
             .setFlexGrow(2);
 
         this.contextTemplateFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextRecord>of(
-            "<div>[[item.modified]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">[[item.modified]]</div>")
             .withProperty("modified",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
             .setHeader(getTranslation("table-header.modified-date-time", UI.getCurrent().getLocale()))
@@ -332,6 +337,65 @@ public class ContextTemplateWidget extends Div {
             .setHeader(getTranslation("table-header.modified-by", UI.getCurrent().getLocale()))
             .setSortable(true)
             .setFlexGrow(1);
+
+        this.contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
+                Button enabled = new Button("Enabled");
+                Button disabled = new Button("Disabled");
+                if(!scheduledContextRecord.isDisabled()){
+                    enabled.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_COMPLETE);
+                    enabled.getElement().getStyle().set("color", IkasanColours.WHITE);
+                    disabled.getElement().getStyle().remove("background-color");
+                    disabled.getElement().getStyle().remove("color");
+                    enabled.setEnabled(false);
+                }
+                else {
+                    enabled.getElement().getStyle().remove("background-color");
+                    enabled.getElement().getStyle().remove("color");
+                    disabled.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
+                    disabled.getElement().getStyle().set("color", IkasanColours.WHITE);
+                    disabled.setEnabled(false);
+                }
+
+                enabled.addClickListener(event -> {
+                    ContextTemplate contextTemplate = scheduledContextRecord.getContext();
+                    contextTemplate.setDisabled(false);
+                    scheduledContextRecord.setContext(contextTemplate);
+                    this.scheduledContextService.save(scheduledContextRecord);
+                    contextTemplateFilteringGrid.getDataProvider().refreshAll();
+                });
+
+                disabled.addClickListener(event -> {
+
+                    try {
+                        ContextTemplate contextTemplate = scheduledContextRecord.getContext();
+                        contextTemplate.setDisabled(true);
+                        scheduledContextRecord.setContext(contextTemplate);
+                        scheduledContextRecord.setModifiedBy(SecurityContextHolder.getContext()
+                            .getAuthentication().getName());
+                        ContextMachine contextMachine = ContextMachineCache.instance()
+                            .getByContextName(contextTemplate.getName());
+                        if(contextMachine != null) {
+                            ContextMachineCache.instance().remove(contextMachine);
+                            contextMachine.teardown();
+                        }
+                        this.scheduledContextService.save(scheduledContextRecord);
+                        contextTemplateFilteringGrid.getDataProvider().refreshAll();
+                    } catch (IOException e) {
+//                        todo
+                    }
+                });
+
+                HorizontalLayout buttons = new HorizontalLayout();
+                buttons.setWidth("200px");
+                buttons.add(enabled, disabled);
+
+                return buttons;
+            }))
+            .setResizable(true)
+            .setHeader("Enabled/Disabled")
+            .setSortable(true)
+            .setKey("isDisabled")
+            .setFlexGrow(2);
 
         HeaderRow hr = contextTemplateFilteringGrid.appendHeaderRow();
         this.contextTemplateFilteringGrid.addGridFiltering(hr, contextSearchFilter::setContextName, "moduleName");
