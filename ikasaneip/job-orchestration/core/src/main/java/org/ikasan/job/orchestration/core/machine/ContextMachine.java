@@ -191,6 +191,9 @@ public class ContextMachine {
      */
     public void teardown() throws IOException {
         try {
+            this.contextInstance.setStatus(InstanceStatus.ENDED);
+            this.saveContext();
+
             if (this.inboundQueue != null) {
                 this.inboundQueueMessageRunner.stop();
                 this.inboundQueue.close();
