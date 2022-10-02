@@ -57,9 +57,9 @@ public class IkasanSolrDocument
         return id;
     }
 
-    public long getIdentifier()
+    public String getIdentifier()
     {
-        return new Long(id);
+        return id;
     }
 
     public String getModuleName()
@@ -89,7 +89,7 @@ public class IkasanSolrDocument
 
     public long getExpiry()
     {
-        return this.getExpiry();
+        return this.expiry;
     }
 
     public String getEventId()

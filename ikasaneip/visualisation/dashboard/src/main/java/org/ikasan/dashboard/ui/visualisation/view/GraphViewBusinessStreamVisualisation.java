@@ -77,6 +77,8 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
 
     private DateFormatter dateFormatter;
 
+    private int maxDownloadBytes;
+
     /**
      * Constructor
      */
@@ -84,7 +86,7 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
         , ModuleControlService moduleControlRestService, ModuleMetaDataService moduleMetadataService, ConfigurationService configurationRestService
         , TriggerService triggerRestService, ConfigurationMetaDataService configurationMetadataService, HospitalAuditService hospitalAuditService
         , ResubmissionService resubmissionRestService, ReplayService replayRestService, BatchInsert replayAuditService, MetaDataService metaDataApplicationRestService
-        , BatchInsert<ModuleMetaData> moduleMetaDataBatchInsert, String dynamicImagePath, DateFormatter dateFormatter)
+        , BatchInsert<ModuleMetaData> moduleMetaDataBatchInsert, String dynamicImagePath, DateFormatter dateFormatter, int maxDownloadBytes)
     {
         this.setMargin(false);
         this.setSizeFull();
@@ -146,6 +148,8 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
             throw new IllegalArgumentException("dateFormatter cannot be null!");
         }
 
+        this.maxDownloadBytes = maxDownloadBytes;
+
         this.graphViewChangeListeners = new ArrayList<>();
 
         init();
@@ -195,7 +199,8 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
             this.configurationRestService, this.triggerRestService, this.moduleMetadataService
             , this.configurationMetadataService, this.solrSearchService, this.hospitalAuditService,
             this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService,
-            this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert, this.dynamicImagePath, this.dateFormatter);
+            this.metaDataApplicationRestService, this.moduleMetaDataBatchInsert, this.dynamicImagePath, this.dateFormatter,
+            this.maxDownloadBytes);
 
         this.businessStreamVisualisation.createBusinessStreamGraphGraph(businessStreamMetaData);
 

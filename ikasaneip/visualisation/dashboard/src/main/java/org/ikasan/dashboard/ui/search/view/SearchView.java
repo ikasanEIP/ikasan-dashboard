@@ -29,6 +29,7 @@ import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.solr.SolrGeneralService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -67,6 +68,9 @@ public class SearchView extends VerticalLayout implements BeforeEnterObserver, S
     @Resource
     private DateFormatter dateFormatter;
 
+    @Value("${max.download.bytes:50000000}")
+    private int maxDownloadBytes;
+
     private boolean initialised = false;
 
     private SearchForm searchForm;
@@ -95,7 +99,7 @@ public class SearchView extends VerticalLayout implements BeforeEnterObserver, S
      */
     protected void createSearchResults() {
         this.searchResults = new SearchResults(solrGeneralService, hospitalAuditService, resubmissionRestService, replayRestService,
-            moduleMetadataService, replayAuditService, this.dateFormatter);
+            moduleMetadataService, replayAuditService, this.dateFormatter, this.maxDownloadBytes);
         this.searchResults.setSizeFull();
     }
 

@@ -82,6 +82,8 @@ public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
 
     private DateFormatter dateFormatter;
 
+    private int maxDownloadBytes;
+
     public FlowVisualisationDialog(ModuleControlService moduleControlRestService
         , ConfigurationService configurationRestService
         , TriggerService triggerRestService, ConfigurationMetaDataService configurationMetadataService
@@ -90,7 +92,8 @@ public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
         , HospitalAuditService hospitalAuditService
         , ResubmissionService resubmissionRestService, ReplayService replayRestService
         , ModuleMetaDataService moduleMetadataService, BatchInsert replayAuditService
-        , MetaDataService metaDataApplicationRestService, BatchInsert<ModuleMetaData> moduleMetaDataService, DateFormatter dateFormatter)
+        , MetaDataService metaDataApplicationRestService, BatchInsert<ModuleMetaData> moduleMetaDataService
+        , DateFormatter dateFormatter, int maxDownloadBytes)
     {
         this.moduleControlRestService = moduleControlRestService;
         if(this.moduleControlRestService == null){
@@ -155,6 +158,8 @@ public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
         if (this.dateFormatter == null) {
             throw new IllegalArgumentException("dateFormatter cannot be null!");
         }
+
+        this.maxDownloadBytes = maxDownloadBytes;
 
         this.showResize(false);
         this.init(moduleMetaData, flow.getFlowName());
@@ -296,7 +301,7 @@ public class FlowVisualisationDialog extends AbstractCloseableResizableDialog {
     protected void search(String type)
     {
         SearchResultsDialog searchResultsDialog = new SearchResultsDialog(this.solrSearchService, this.hospitalAuditService,
-            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService, this.dateFormatter);
+            this.resubmissionRestService, this.replayRestService, this.moduleMetadataService, this.replayAuditService, this.dateFormatter, this.maxDownloadBytes);
         searchResultsDialog.search(this.searchFoundStatus.getStartTime(), this.searchFoundStatus.getEndTime(), searchFoundStatus.getSearchTerm()
             , type, false, flow.getModuleName(), flow.getFlowName());
         searchResultsDialog.open();
