@@ -60,8 +60,8 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     public static final String HELD = "held";
     public static final String SKIPPED = "skipped";
     public static final String TARGET_RESIDING_CONTEXT_ONLY = "targetResidingContextOnly";
-
     public static final String PARTICIPATES_IN_LOCK = "participatesInLock";
+    public static final String DISABLED = "disabled";
 
 
     public static final String AND = " AND ";

@@ -31,6 +31,9 @@ public class SolrScheduledContextRecordImpl implements ScheduledContextRecord {
     @Field(SolrDaoBase.MODIFIED_BY)
     private String modifiedBy;
 
+    @Field(SolrDaoBase.DISABLED)
+    private boolean disabled = false;
+
     @Override
     public String getId() {
         return this.id;
@@ -94,5 +97,10 @@ public class SolrScheduledContextRecordImpl implements ScheduledContextRecord {
     @Override
     public void setModifiedBy(String modifiedBy) {
         this.modifiedBy = modifiedBy;
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return disabled;
     }
 }
