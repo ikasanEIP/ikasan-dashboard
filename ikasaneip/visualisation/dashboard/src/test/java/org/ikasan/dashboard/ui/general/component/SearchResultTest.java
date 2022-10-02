@@ -70,7 +70,7 @@ public class SearchResultTest extends UITest {
         UI.getCurrent().navigate("Search");
 
         SearchResults searchResults = new SearchResults(this.solrSearchService, this.hospitalAuditService
-            , resubmissionRestService, replayRestService, moduleMetadataService, replayAuditService, this.dateFormatter);
+            , resubmissionRestService, replayRestService, moduleMetadataService, replayAuditService, this.dateFormatter, 50000000);
 
         Assertions.assertNotNull(searchResults);
 
@@ -475,7 +475,7 @@ public class SearchResultTest extends UITest {
         _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
 
-        Assertions.assertEquals(0, ((HorizontalLayout)ReflectionTestUtils
+        Assertions.assertEquals(1, ((HorizontalLayout)ReflectionTestUtils
             .getField(searchResults, "buttonLayout")).getComponentCount());
     }
 
@@ -503,7 +503,7 @@ public class SearchResultTest extends UITest {
         _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
 
-        Assertions.assertEquals(0, ((HorizontalLayout)ReflectionTestUtils
+        Assertions.assertEquals(1, ((HorizontalLayout)ReflectionTestUtils
             .getField(searchResults, "buttonLayout")).getComponentCount());
     }
 
