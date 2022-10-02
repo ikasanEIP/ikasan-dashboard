@@ -20,7 +20,7 @@ public class ScheduledContextRecordImpl implements ScheduledContextRecord {
     private long timestamp;
     private long modifiedTimestamp;
     private String modifiedBy;
-
+    private boolean disabled = false;
 
     @Override
     public String getId() {
@@ -85,5 +85,10 @@ public class ScheduledContextRecordImpl implements ScheduledContextRecord {
     @Override
     public void setModifiedBy(String modifiedBy) {
         this.modifiedBy = modifiedBy;
+    }
+
+    @Override
+    public boolean isDisabled() {
+        return disabled;
     }
 }
