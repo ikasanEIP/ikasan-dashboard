@@ -286,7 +286,8 @@ public class SearchResults extends Div {
 
                             ZipEntry entry = new ZipEntry(document.getModuleName() + "_" +
                                 document.getFlowName() + "_" +
-                                document.getComponentName() + "_" +
+                                (document.getComponentName() != null ? document.getComponentName() + "_" : "") +
+                                document.getType() + "_" +
                                 document.getEventId() + "_" +
                                 + document.getTimestamp() + ".json");
                             entry.setSize(documentAsString.getBytes().length);
@@ -308,6 +309,7 @@ public class SearchResults extends Div {
                     zos.close();
                     return new ByteArrayInputStream(baos.toByteArray());
                 } catch (Exception e) {
+                    e.printStackTrace();
                     optionalUI.ifPresent(ui -> ui.access(() ->
                         NotificationHelper.showUserNotification(getTranslation("error.download"
                             , UI.getCurrent().getLocale()))
