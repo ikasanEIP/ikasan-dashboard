@@ -475,7 +475,7 @@ public class SearchResultTest extends UITest {
         _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
 
-        Assertions.assertEquals(1, ((HorizontalLayout)ReflectionTestUtils
+        Assertions.assertEquals(2, ((HorizontalLayout)ReflectionTestUtils
             .getField(searchResults, "buttonLayout")).getComponentCount());
     }
 
@@ -503,7 +503,7 @@ public class SearchResultTest extends UITest {
         _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
         _click(_get(Button.class, spec -> spec.withId("searchFormSearchButton")));
 
-        Assertions.assertEquals(1, ((HorizontalLayout)ReflectionTestUtils
+        Assertions.assertEquals(2, ((HorizontalLayout)ReflectionTestUtils
             .getField(searchResults, "buttonLayout")).getComponentCount());
     }
 
