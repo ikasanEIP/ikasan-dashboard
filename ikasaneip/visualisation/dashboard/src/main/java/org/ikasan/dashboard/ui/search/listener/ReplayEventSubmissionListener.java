@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class ReplayEventSubmissionListener extends IkasanEventActionListener implements ComponentEventListener<ClickEvent<Button>>
@@ -103,7 +104,7 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
                     {
                         List<ReplayAuditEvent> replayAuditEvents = new ArrayList<>();
 
-                        ReplayAuditEvent replayAuditEvent;
+                        AtomicInteger replayCount = new AtomicInteger(0);
 
                         if (!selected)
                         {
@@ -117,11 +118,13 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
                                         replayDialogDto.getPassword(), document.getModuleName(), document.getFlowName(), document.getPayloadRaw());
 
                                     replayAuditEvents.add(createReplayAuditEvent(result, replayDialogDto, document, current, i18NProvider));
+                                    replayCount.set(replayCount.get() + 1);
                                 }
                             }
                         }
                         else
                         {
+
                             for (int i = 0; i < searchResultsGrid.getResultSize(); i += 100)
                             {
                                 if (progressIndicatorDialog.isCancelled())
@@ -130,7 +133,7 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
                                 }
 
                                 List<IkasanSolrDocument> docs = (List<IkasanSolrDocument>) searchResultsGrid.getDataProvider().fetch
-                                    (new Query<>(i, i + 100, Collections.EMPTY_LIST, null, null)).collect(Collectors.toList());
+                                    (new Query<>(i, 100, Collections.EMPTY_LIST, null, null)).collect(Collectors.toList());
 
                                 for (IkasanSolrDocument document : docs)
                                 {
@@ -142,6 +145,8 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
                                             replayDialogDto.getPassword(), document.getModuleName(), document.getFlowName(), document.getPayloadRaw());
 
                                         replayAuditEvents.add(createReplayAuditEvent(result, replayDialogDto, document, current, i18NProvider));
+
+                                        replayCount.set(replayCount.get() + 1);
                                     }
                                 }
                             }
@@ -152,8 +157,8 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
                         current.access(() ->
                         {
                             progressIndicatorDialog.close();
-                            NotificationHelper.showUserNotification(i18NProvider.getTranslation("message.replay-complete"
-                                , current.getLocale()));
+                            NotificationHelper.showUserNotification(String.format(i18NProvider.getTranslation("message.replay-complete"
+                                , current.getLocale()), replayCount.get()));
                         });
                     }
                     catch(Exception e)
@@ -165,8 +170,6 @@ public class ReplayEventSubmissionListener extends IkasanEventActionListener imp
                             NotificationHelper.showErrorNotification(i18NProvider.getTranslation("message.replay-error"
                                 , current.getLocale()));
                         });
-
-                        return;
                     }
                 });
             }
