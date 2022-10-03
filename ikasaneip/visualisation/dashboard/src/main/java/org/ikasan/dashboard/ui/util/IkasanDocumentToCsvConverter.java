@@ -4,21 +4,26 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.ikasan.solr.model.IkasanSolrDocument;
 
 public class IkasanDocumentToCsvConverter {
-    public static final String HEADER = "ModuleName,FlowName,ComponentName,Type,ErrorMessage,Payload\n";
+    public static final String HEADER = "ModuleName,FlowName,ComponentName,Type,ErrorMessage,Payload,Event Id,Timestamp\n";
 
     private StringBuilder csvContents;
 
+    private DateFormatter dateFormatter;
+
     public IkasanDocumentToCsvConverter() {
         this.csvContents = new StringBuilder(HEADER);
+        this.dateFormatter = new DateFormatter();
     }
 
     public void addDocument(IkasanSolrDocument ikasanSolrDocument) {
         csvContents.append(StringEscapeUtils.escapeCsv(ikasanSolrDocument.getModuleName())).append(",")
             .append(StringEscapeUtils.escapeCsv(ikasanSolrDocument.getFlowName())).append(",")
-            .append(StringEscapeUtils.escapeCsv(ikasanSolrDocument.getComponentName())).append(",")
+            .append(StringEscapeUtils.escapeCsv(ikasanSolrDocument.getComponentName() == null ? "" : ikasanSolrDocument.getComponentName())).append(",")
             .append(StringEscapeUtils.escapeCsv(ikasanSolrDocument.getType())).append(",")
-            .append(StringEscapeUtils.escapeCsv(ikasanSolrDocument.getErrorMessage())).append(",")
-            .append(StringEscapeUtils.escapeCsv(ikasanSolrDocument.getEvent())).append("\n");
+            .append(StringEscapeUtils.escapeCsv(ikasanSolrDocument.getErrorMessage() == null ? "" : ikasanSolrDocument.getErrorMessage())).append(",")
+            .append(StringEscapeUtils.escapeCsv(ikasanSolrDocument.getEvent())).append(",")
+            .append(StringEscapeUtils.escapeCsv(ikasanSolrDocument.getEventId())).append(",")
+            .append(StringEscapeUtils.escapeCsv(this.dateFormatter.getFormattedDate(ikasanSolrDocument.getTimestamp()))).append("\n");
     }
 
     public String getCvsContents() {
