@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class ResubmitHospitalEventSubmissionListener extends HospitalEventActionListener implements ComponentEventListener<ClickEvent<Button>> {
@@ -90,15 +91,16 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
                 executor.execute(() -> {
                     try {
                         List<ExclusionEventAction> exclusionEventActions = null;
-                        ExclusionEventAction eventAction;
 
-                        ObjectMapper mapper = new ObjectMapper();
+                        AtomicInteger resubmitCount = new AtomicInteger(0);
 
                         if (!selected) {
                             List<IkasanSolrDocument> resubmissionEvents = this.selectionItems.values()
                                 .stream()
                                 .filter(document -> this.shouldActionEvent(document))
                                 .collect(Collectors.toList());
+
+                            resubmitCount.set(resubmissionEvents.size());
 
                             exclusionEventActions = super.actionHospitalEvents(resubmissionEvents, exclusionEventAction, progressIndicatorDialog,
                                 "resubmit", authentication.getName(), current);
@@ -122,6 +124,8 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
                                     .filter(document -> this.shouldActionEvent(document))
                                     .collect(Collectors.toList());
 
+                                resubmitCount.set(resubmitCount.get()+ resubmissionEvents.size());
+
                                 exclusionEventActions = super.actionHospitalEvents(resubmissionEvents, exclusionEventAction, progressIndicatorDialog,
                                     "resubmit", authentication.getName(), current);
 
@@ -135,16 +139,13 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
                             current.access(() ->
                             {
                                 progressIndicatorDialog.close();
-                                NotificationHelper.showUserNotification(getTranslation("message.successfully-resubmitted-exclusions", UI.getCurrent().getLocale()));
+                                NotificationHelper.showUserNotification(String.format(getTranslation("message.successfully-resubmitted-exclusions", UI.getCurrent().getLocale()), resubmitCount.get()));
                                 selectionBoxes.keySet().forEach(key -> selectionBoxes.get(key).setValue(false));
                                 selectionItems.clear();
                             });
                         }
 
-                        current.access(() ->
-                        {
-                            this.searchResultsGrid.getDataProvider().refreshAll();
-                        });
+                        current.access(() -> this.searchResultsGrid.getDataProvider().refreshAll());
                     }
                     catch (Exception e) {
                         e.printStackTrace();
@@ -153,8 +154,6 @@ public class ResubmitHospitalEventSubmissionListener extends HospitalEventAction
                             progressIndicatorDialog.close();
                             NotificationHelper.showErrorNotification(getTranslation("message.error-bulk-resubmit-exclusions", UI.getCurrent().getLocale()));
                         });
-
-                        return;
                     }
                 });
             }
