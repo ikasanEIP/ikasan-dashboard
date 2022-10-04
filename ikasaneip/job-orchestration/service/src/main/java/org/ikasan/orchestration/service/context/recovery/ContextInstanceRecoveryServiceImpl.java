@@ -141,6 +141,10 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
         Date now = new Date();
         for (ScheduledContextRecord scheduledContextRecord : scheduledContextRecords.getResultList()) {
             ContextTemplate context = scheduledContextRecord.getContext();
+
+            // We do not recover disabled contexts!
+            if(context.isDisabled()) continue;
+
             ScheduledContextInstanceRecord scheduledContextInstanceRecord = instancesMap.get(scheduledContextRecord.getContextName());
             // if outside the operating window instances will be created when ContextInstanceRegistrationServiceImpl.register runs
             if (withinOperatingWindow(context.getTimeWindowStart(), context.getTimeWindowEnd(), now)) {

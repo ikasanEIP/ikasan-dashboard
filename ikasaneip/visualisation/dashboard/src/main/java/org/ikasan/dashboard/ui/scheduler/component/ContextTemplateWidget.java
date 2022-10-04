@@ -361,28 +361,38 @@ public class ContextTemplateWidget extends Div {
                     contextTemplate.setDisabled(false);
                     scheduledContextRecord.setContext(contextTemplate);
                     this.scheduledContextService.save(scheduledContextRecord);
+                    this.contextInstanceRegistrationService.register(contextTemplate.getName());
                     contextTemplateFilteringGrid.getDataProvider().refreshAll();
+                    this.updateActiveContextMenu();
                 });
 
                 disabled.addClickListener(event -> {
+                    ConfirmDialog confirmDialog = new ConfirmDialog();
+                    confirmDialog.setHeader(getTranslation("confirm.disable-context-header", UI.getCurrent().getLocale()));
+                    confirmDialog.setText(getTranslation("confirm.disable-context-body", UI.getCurrent().getLocale()));
+                    confirmDialog.setCancelable(true);
+                    confirmDialog.open();
 
-                    try {
-                        ContextTemplate contextTemplate = scheduledContextRecord.getContext();
-                        contextTemplate.setDisabled(true);
-                        scheduledContextRecord.setContext(contextTemplate);
-                        scheduledContextRecord.setModifiedBy(SecurityContextHolder.getContext()
-                            .getAuthentication().getName());
-                        ContextMachine contextMachine = ContextMachineCache.instance()
-                            .getByContextName(contextTemplate.getName());
-                        if(contextMachine != null) {
-                            ContextMachineCache.instance().remove(contextMachine);
-                            contextMachine.teardown();
+                    confirmDialog.addConfirmListener(confirmEvent -> {
+                        try {
+                            ContextTemplate contextTemplate = scheduledContextRecord.getContext();
+                            contextTemplate.setDisabled(true);
+                            scheduledContextRecord.setContext(contextTemplate);
+                            scheduledContextRecord.setModifiedBy(SecurityContextHolder.getContext()
+                                .getAuthentication().getName());
+                            ContextMachine contextMachine = ContextMachineCache.instance()
+                                .getByContextName(contextTemplate.getName());
+                            if (contextMachine != null) {
+                                ContextMachineCache.instance().remove(contextMachine);
+                                contextMachine.teardown();
+                            }
+                            this.scheduledContextService.save(scheduledContextRecord);
+                            contextTemplateFilteringGrid.getDataProvider().refreshAll();
+                            this.updateActiveContextMenu();
+                        } catch (IOException e) {
+                            NotificationHelper.showErrorNotification(getTranslation("error.disabling-context", UI.getCurrent().getLocale()));
                         }
-                        this.scheduledContextService.save(scheduledContextRecord);
-                        contextTemplateFilteringGrid.getDataProvider().refreshAll();
-                    } catch (IOException e) {
-//                        todo
-                    }
+                    });
                 });
 
                 HorizontalLayout buttons = new HorizontalLayout();
@@ -392,8 +402,8 @@ public class ContextTemplateWidget extends Div {
                 return buttons;
             }))
             .setResizable(true)
-            .setHeader("Enabled/Disabled")
-            .setSortable(true)
+            .setHeader(getTranslation("table-header.enabled-disabled", UI.getCurrent().getLocale()))
+            .setSortable(false)
             .setKey("isDisabled")
             .setFlexGrow(2);
 
