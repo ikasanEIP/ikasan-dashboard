@@ -207,7 +207,7 @@ public class BigQueueModuleRestServiceImplTest {
 
     @Test
     public void test_listQueues_200() {
-        stubFor(get(urlEqualTo("/rest/big/queue"))
+        stubFor(get(urlEqualTo("/rest/big/queue/"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -223,7 +223,7 @@ public class BigQueueModuleRestServiceImplTest {
 
     @Test
     public void test_listQueues_200_Empty() {
-        stubFor(get(urlEqualTo("/rest/big/queue"))
+        stubFor(get(urlEqualTo("/rest/big/queue/"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -236,7 +236,7 @@ public class BigQueueModuleRestServiceImplTest {
 
     @Test
     public void test_listQueues_404() {
-        stubFor(get(urlEqualTo("/rest/big/queue"))
+        stubFor(get(urlEqualTo("/rest/big/queue/"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -249,7 +249,7 @@ public class BigQueueModuleRestServiceImplTest {
 
     @Test
     public void test_listQueues_500() {
-        stubFor(get(urlEqualTo("/rest/big/queue"))
+        stubFor(get(urlEqualTo("/rest/big/queue/"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
