@@ -59,7 +59,6 @@ import java.util.stream.Collectors;
 
 public class ContextMachine {
     private Logger logger = LoggerFactory.getLogger(ContextMachine.class);
-
     private ContextInstance contextInstance;
     private JobLogicMachine jobLogicMachine;
     private ContextInstanceToContextInstanceStatusConverter statusConverter;
@@ -191,7 +190,12 @@ public class ContextMachine {
      */
     public void teardown() throws IOException {
         try {
+            InstanceStatus previousStatus = contextInstance.getStatus();
             this.contextInstance.setStatus(InstanceStatus.ENDED);
+            InstanceStatus newStatus = contextInstance.getStatus();
+            this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl
+                (contextInstance, previousStatus, newStatus));
+
             this.saveContext();
 
             if (this.inboundQueue != null) {
