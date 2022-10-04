@@ -29,7 +29,7 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
     public String adaptJobs(Context context, Map<String, SchedulerJob> schedulerJobs) {
             try {
                 ArrayList<Object> items = super._adaptJobs(context, schedulerJobs);
-                this.addStatusRectangles(items, context);
+                //this.addStatusRectangles(items, context);
 
                 return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
             }
@@ -63,7 +63,7 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
     public String adaptContext(Context context) {
         try {
             ArrayList<Object> items = super._adaptContext(context);
-            this.addStatusRectangles(items, context);
+            //this.addStatusRectangles(items, context);
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(items);
         }
         catch (JsonProcessingException e) {
