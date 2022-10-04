@@ -376,6 +376,129 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         });
     }
 
+    public void test_save_internal_event_driven_job() {
+        String contextName = "contextName";
+        InternalEventDrivenJob solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
+        solrInternalEventDrivenJob.setAgentName(contextName + "agentName");
+        solrInternalEventDrivenJob.setJobName(contextName + "jobNameInternal");
+        solrInternalEventDrivenJob.setIdentifier(solrInternalEventDrivenJob.getAgentName() + "_" + solrInternalEventDrivenJob.getJobName());
+        solrInternalEventDrivenJob.setContextName(contextName);
+        solrInternalEventDrivenJob.setCommandLine("ls -al");
+        solrInternalEventDrivenJob.setChildContextNames(List.of("child"));
+
+        this.service.saveInternalEventDrivenJob(solrInternalEventDrivenJob, "tester");
+
+        SchedulerJobRecord schedulerJobRecord = this.service
+            .findByContextNameAndJobName("contextName", contextName + "jobNameInternal");
+        InternalEventDrivenJob internalEventDrivenJob = (InternalEventDrivenJob) schedulerJobRecord.getJob();
+
+        Assert.assertNotNull(internalEventDrivenJob);
+        long modifiedTimestamp = schedulerJobRecord.getModifiedTimestamp();
+        long timestamp = schedulerJobRecord.getTimestamp();
+        Assert.assertTrue(schedulerJobRecord.getTimestamp() > 0);
+        Assert.assertTrue(modifiedTimestamp > 0);
+        Assert.assertEquals("tester", schedulerJobRecord.getModifiedBy());
+        Assert.assertEquals("ls -al", internalEventDrivenJob.getCommandLine());
+
+        internalEventDrivenJob.setCommandLine("pwd");
+
+        this.service.saveInternalEventDrivenJob(internalEventDrivenJob, "tester2");
+
+        schedulerJobRecord = this.service
+            .findByContextNameAndJobName("contextName", contextName + "jobNameInternal");
+        internalEventDrivenJob = (InternalEventDrivenJob) schedulerJobRecord.getJob();
+
+        Assert.assertNotNull(internalEventDrivenJob);
+        Assert.assertTrue(schedulerJobRecord.getTimestamp() > 0);
+        Assert.assertTrue(schedulerJobRecord.getModifiedTimestamp() > 0);
+        Assert.assertTrue(schedulerJobRecord.getModifiedTimestamp() > modifiedTimestamp);
+        Assert.assertTrue(schedulerJobRecord.getTimestamp() == timestamp);
+        Assert.assertEquals("tester2", schedulerJobRecord.getModifiedBy());
+        Assert.assertEquals("pwd", internalEventDrivenJob.getCommandLine());
+    }
+
+    public void test_save_quartz_driven_job() {
+        String contextName = "contextName";
+        QuartzScheduleDrivenJob quartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
+        quartzScheduleDrivenJob.setAgentName(contextName + "agentName");
+        quartzScheduleDrivenJob.setJobName(contextName + "jobName");
+        quartzScheduleDrivenJob.setIdentifier(quartzScheduleDrivenJob.getAgentName() + "_" + quartzScheduleDrivenJob.getJobName());
+        quartzScheduleDrivenJob.setContextName(contextName);
+        quartzScheduleDrivenJob.setCronExpression("cronExpression");
+        quartzScheduleDrivenJob.setChildContextNames(List.of("child"));
+
+        this.service.saveQuartzScheduledJob(quartzScheduleDrivenJob, "tester");
+
+        SchedulerJobRecord schedulerJobRecord = this.service
+            .findByContextNameAndJobName("contextName", contextName + "jobName");
+        QuartzScheduleDrivenJob found = (QuartzScheduleDrivenJob) schedulerJobRecord.getJob();
+
+        Assert.assertNotNull(found);
+        long modifiedTimestamp = schedulerJobRecord.getModifiedTimestamp();
+        long timestamp = schedulerJobRecord.getTimestamp();
+        Assert.assertTrue(schedulerJobRecord.getTimestamp() > 0);
+        Assert.assertTrue(modifiedTimestamp > 0);
+        Assert.assertEquals("tester", schedulerJobRecord.getModifiedBy());
+        Assert.assertEquals("cronExpression", found.getCronExpression());
+
+        found.setCronExpression("updatedCronExpression");
+
+        this.service.saveQuartzScheduledJob(found, "tester2");
+
+        schedulerJobRecord = this.service
+            .findByContextNameAndJobName("contextName", contextName + "jobName");
+        found = (QuartzScheduleDrivenJob) schedulerJobRecord.getJob();
+
+        Assert.assertNotNull(found);
+        Assert.assertTrue(schedulerJobRecord.getTimestamp() > 0);
+        Assert.assertTrue(schedulerJobRecord.getModifiedTimestamp() > 0);
+        Assert.assertTrue(schedulerJobRecord.getModifiedTimestamp() > modifiedTimestamp);
+        Assert.assertTrue(schedulerJobRecord.getTimestamp() == timestamp);
+        Assert.assertEquals("tester2", schedulerJobRecord.getModifiedBy());
+        Assert.assertEquals("updatedCronExpression", found.getCronExpression());
+    }
+
+    public void test_save_file_driven_job() {
+        String contextName = "contextName";
+        FileEventDrivenJob fileEventDrivenJob = new SolrFileEventDrivenJobImpl();
+        fileEventDrivenJob.setAgentName(contextName + "agentName");
+        fileEventDrivenJob.setJobName(contextName + "jobName");
+        fileEventDrivenJob.setIdentifier(fileEventDrivenJob.getAgentName() + "_" + fileEventDrivenJob.getJobName());
+        fileEventDrivenJob.setContextName(contextName);
+        fileEventDrivenJob.setCronExpression("cronExpression");
+        fileEventDrivenJob.setChildContextNames(List.of("child"));
+
+        this.service.saveFileEventDrivenJob(fileEventDrivenJob, "tester");
+
+        SchedulerJobRecord schedulerJobRecord = this.service
+            .findByContextNameAndJobName("contextName", contextName + "jobName");
+        FileEventDrivenJob found = (FileEventDrivenJob) schedulerJobRecord.getJob();
+
+        Assert.assertNotNull(found);
+        long modifiedTimestamp = schedulerJobRecord.getModifiedTimestamp();
+        long timestamp = schedulerJobRecord.getTimestamp();
+        Assert.assertTrue(schedulerJobRecord.getTimestamp() > 0);
+        Assert.assertTrue(modifiedTimestamp > 0);
+        Assert.assertEquals("tester", schedulerJobRecord.getModifiedBy());
+        Assert.assertEquals("cronExpression", found.getCronExpression());
+
+        found.setCronExpression("updatedCronExpression");
+
+        this.service.saveFileEventDrivenJob(found, "tester2");
+
+        schedulerJobRecord = this.service
+            .findByContextNameAndJobName("contextName", contextName + "jobName");
+        found = (FileEventDrivenJob) schedulerJobRecord.getJob();
+
+        Assert.assertNotNull(found);
+        Assert.assertTrue(schedulerJobRecord.getTimestamp() > 0);
+        Assert.assertTrue(schedulerJobRecord.getModifiedTimestamp() > 0);
+        Assert.assertTrue(schedulerJobRecord.getModifiedTimestamp() > modifiedTimestamp);
+        Assert.assertTrue(schedulerJobRecord.getTimestamp() == timestamp);
+        Assert.assertEquals("tester2", schedulerJobRecord.getModifiedBy());
+        Assert.assertEquals("updatedCronExpression", found.getCronExpression());
+    }
+
     private void validateResults(SearchResults results, int expectedCount, String contextId) {
         assertEquals(expectedCount, results.getResultList().size());
         if (expectedCount > 0) {
