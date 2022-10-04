@@ -82,11 +82,16 @@ public class SecurityConfiguration
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http
-                .antMatcher("/rest/export/context/**")
+                .requestMatchers()
+                // Below are the paths to allow HTTP Basic for. Restrict it to URLs allowed to be called outside of the dashboard
+                        .antMatchers("/rest/export/context/**", // ContextExportControl
+                                                 "/rest/module/bigQueue/size/all/**" // BigQueueModuleController
+                        )
+                        .and()
                 .authorizeRequests()
-                .anyRequest()
-                .authenticated()
-                .and()
+                        .anyRequest()
+                        .authenticated()
+                        .and()
                 .httpBasic();
         }
     }

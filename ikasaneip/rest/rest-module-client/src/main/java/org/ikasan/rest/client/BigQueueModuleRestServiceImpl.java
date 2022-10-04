@@ -16,7 +16,7 @@ public class BigQueueModuleRestServiceImpl extends ModuleRestService implements 
 
     private static final Logger LOG = LoggerFactory.getLogger(BigQueueModuleRestServiceImpl.class);
 
-    private final static String GET_QUEUES_URL = "/rest/big/queue";
+    private final static String GET_QUEUES_URL = "/rest/big/queue/";
     private final static String DELETE_MESSAGE_ID_URL = "/rest/big/queue/delete/{queueName}/{messageId}";
     private final static String GET_MESSAGES_URL = "/rest/big/queue/messages/{queueName}";
     private final static String PEEK_QUEUES_URL = "/rest/big/queue/peek/{queueName}";
