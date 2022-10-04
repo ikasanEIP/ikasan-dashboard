@@ -91,4 +91,8 @@ public class ScheduledContextRecordImpl implements ScheduledContextRecord {
     public boolean isDisabled() {
         return disabled;
     }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
 }

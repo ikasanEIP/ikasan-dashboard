@@ -44,7 +44,9 @@ public class ContextTemplateManagementDialog extends AbstractCloseableResizableD
         layout.setSizeFull();
         layout.add(this.contextTemplateManagementWidget);
         layout.getStyle().set("padding-bottom", "20px");
+        layout.getStyle().set("padding-top", "0px");
 
+        super.content.getElement().getStyle().set("padding-top", "0px");
         super.title.setText(String.format(getTranslation("label.context-template-management", UI.getCurrent().getLocale())));
 
         super.content.add(layout);

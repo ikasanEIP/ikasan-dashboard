@@ -124,7 +124,7 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
             , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
             , this.jobProvisionService, this.userService, this.securityService, this.jobUtilsService);
 
-//        Text contextTemplateManagementLabel = new Text(String.format(getTranslation("label.context-template-management", UI.getCurrent().getLocale())));
+        this.getElement().getStyle().set("padding-top", "0px");
         this.add(this.contextTemplateManagementWidget);
     }
 
