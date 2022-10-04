@@ -46,6 +46,7 @@ import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metrics.MetricsService;
+import org.ikasan.spec.module.client.BigQueueModuleService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -99,6 +100,9 @@ public class IkasanRestAutoConfiguration
 
     @Resource
     private MetricsService metricsService;
+
+    @Resource
+    private BigQueueModuleService bigQueueModuleService;
 
     @Resource
     private FlowStateCacheAdapter cacheAdapter;
@@ -171,6 +175,11 @@ public class IkasanRestAutoConfiguration
     @Bean
     public BigQueueDirectoryManagementService bigQueueDirectoryManagementService() {
         return new BigQueueDirectoryManagementServiceImpl(this.queueDir);
+    }
+
+    @Bean
+    public BigQueueModuleController bigQueueModuleController() {
+        return new BigQueueModuleController(bigQueueModuleService, moduleMetadataService);
     }
 
     @Bean

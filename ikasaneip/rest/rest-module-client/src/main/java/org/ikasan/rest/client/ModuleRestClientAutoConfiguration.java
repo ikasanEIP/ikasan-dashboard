@@ -81,4 +81,10 @@ public class ModuleRestClientAutoConfiguration
         return new LogStreamingServiceRestImpl(environment, httpComponentsClientHttpRequestFactory);
     }
 
+    @Bean
+    public BigQueueModuleService bigQueueModuleService(Environment environment
+        , HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
+        return new BigQueueModuleRestServiceImpl(environment, httpComponentsClientHttpRequestFactory);
+    }
+
 }
