@@ -358,9 +358,11 @@ public class ContextTemplateWidget extends Div {
 
                 enabled.addClickListener(event -> {
                     ContextTemplate contextTemplate = scheduledContextRecord.getContext();
+                    ScheduledContextRecord refreshedScheduledContextRecord = this.scheduledContextService.findByName(contextTemplate.getName());
+                    contextTemplate = refreshedScheduledContextRecord.getContext();
                     contextTemplate.setDisabled(false);
-                    scheduledContextRecord.setContext(contextTemplate);
-                    this.scheduledContextService.save(scheduledContextRecord);
+                    refreshedScheduledContextRecord.setContext(contextTemplate);
+                    this.scheduledContextService.save(refreshedScheduledContextRecord);
                     this.contextInstanceRegistrationService.register(contextTemplate.getName());
                     contextTemplateFilteringGrid.getDataProvider().refreshAll();
                     this.updateActiveContextMenu();
