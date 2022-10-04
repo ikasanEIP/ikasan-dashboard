@@ -12,14 +12,14 @@ public class ContextTemplateBuilder {
     protected String name;
     protected String description;
     protected String timezone;
-    protected List<JobDependency> jobDependencies;
-    protected List<ContextTemplate> contexts;
-    protected List<ContextDependency> contextDependencies;
-    protected List<ContextParameter> contextParameters;
-    protected List<SchedulerJob> scheduledJobs;
+    protected List<JobDependency> jobDependencies = new ArrayList<>();
+    protected List<ContextTemplate> contexts = new ArrayList<>();
+    protected List<ContextDependency> contextDependencies = new ArrayList<>();
+    protected List<ContextParameter> contextParameters = new ArrayList<>();
+    protected List<SchedulerJob> scheduledJobs = new ArrayList<>();
     protected String timeWindowStartCronExpression;
     protected String timeWindowEndCronExpression;
-    protected List<JobLock> jobLocks;
+    protected List<JobLock> jobLocks = new ArrayList<>();
 
     public ContextTemplateBuilder withName(String name) {
         this.name = name;
