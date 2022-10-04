@@ -209,48 +209,50 @@ public abstract class Draw2dAdapterBase {
 
         contextMap.put(context.getName(), context);
 
-        context.getContexts().forEach(c -> {
-            graph.addVertex(((Context)c).getName());
-            graph.addEdge(context.getName(), ((Context)c).getName());
+        if(context.getContexts() != null) {
+            context.getContexts().forEach(c -> {
+                graph.addVertex(((Context) c).getName());
+                graph.addEdge(context.getName(), ((Context) c).getName());
 
-            contextMap.put(((Context)c).getName(), (Context)c);
+                contextMap.put(((Context) c).getName(), (Context) c);
 
-            Image branch = diagramBuilder.getImageBuilder()
-                .withId(((Context)c).getName())
-                .withHeight(100)
-                .withWidth(100)
-                .withPath("frontend/images/square_void.png")
-                .withTopPort()
-                .withBottomPort()
-                .withUserData(new UserDataBuilder()
-                    .withContextName(((Context)c).getName())
-                    .withIdentifier(((Context)c).getName())
-                    .withItemType(UserData.CONTEXT)
-                    .build())
-                .build();
+                Image branch = diagramBuilder.getImageBuilder()
+                    .withId(((Context) c).getName())
+                    .withHeight(100)
+                    .withWidth(100)
+                    .withPath("frontend/images/square_void.png")
+                    .withTopPort()
+                    .withBottomPort()
+                    .withUserData(new UserDataBuilder()
+                        .withContextName(((Context) c).getName())
+                        .withIdentifier(((Context) c).getName())
+                        .withItemType(UserData.CONTEXT)
+                        .build())
+                    .build();
 
-            diagramBuilder.addItem(branch);
+                diagramBuilder.addItem(branch);
 
-            ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
-            connectionBuilder.withSource(
-                diagramBuilder.getConnectionDetailsBuilder()
-                    .withNode(root.getId())
-                    .withPort("bottomHybridSource")
-                    .build()
-            );
+                ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
+                connectionBuilder.withSource(
+                    diagramBuilder.getConnectionDetailsBuilder()
+                        .withNode(root.getId())
+                        .withPort("bottomHybridSource")
+                        .build()
+                );
 
-            connectionBuilder.withTarget(
-                diagramBuilder.getConnectionDetailsBuilder()
-                    .withNode(branch.getId())
-                    .withPort("topHybridTarget")
-                    .withDecoration("draw2d.decoration.connection.ArrowDecorator")
-                    .build()
-            );
+                connectionBuilder.withTarget(
+                    diagramBuilder.getConnectionDetailsBuilder()
+                        .withNode(branch.getId())
+                        .withPort("topHybridTarget")
+                        .withDecoration("draw2d.decoration.connection.ArrowDecorator")
+                        .build()
+                );
 
-            diagramBuilder.addItem(connectionBuilder.build());
+                diagramBuilder.addItem(connectionBuilder.build());
 
-            this.manageContext((Context) c, graph, diagramBuilder, contextMap);
-        });
+                this.manageContext((Context) c, graph, diagramBuilder, contextMap);
+            });
+        }
 
         JGraphXAdapter<Object, DefaultEdge> jGraphXAdapter
             = new JGraphXAdapter<>(graph);
