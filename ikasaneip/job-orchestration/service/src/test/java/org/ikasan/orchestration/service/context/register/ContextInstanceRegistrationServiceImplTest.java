@@ -315,6 +315,44 @@ public class ContextInstanceRegistrationServiceImplTest {
     }
 
     @Test
+    public void register_with_disabled_agent() throws Exception {
+        ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
+        record.setDisabled(true);
+        String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+
+
+        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        context.setDisabled(true);
+        record.setContext(context);
+        record.setContextName(contextName);
+        when(scheduledContextService.findById(contextName)).thenReturn(record);
+
+        // execute
+        contextInstanceRegistrationService.register(contextName);
+
+        // verify
+        verify(scheduledContextService).findById(contextName);
+
+        verifyNoMoreInteractions(
+            scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            scheduledContextService,
+            schedulerJobInstanceService,
+            jobLockCacheService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster
+        );
+
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        assertNull(contextMachine);
+    }
+
+    @Test
     public void register_with_agents_with_skipped_jobs() throws Exception {
         // set up
         ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();

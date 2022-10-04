@@ -209,6 +209,48 @@ public class ContextInstanceRecoveryServiceImplTest {
     }
 
     @Test
+    public void should_not_call_executor_to_create_context_inside_operating_window_no_instance_but_context_disabled() {
+        // ensure no contexts
+        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+
+        // set up
+        ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(0, true);
+        when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(results);
+
+        ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, false, true);
+        when(scheduledContextService.findAll()).thenReturn(contextResults);
+        JobLockCacheRecordImpl jobLockCacheRecord = new JobLockCacheRecordImpl();
+        jobLockCacheRecord.setJobLockCache(new JobLockCacheDataImpl());
+        JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
+        jobLockInstance.setJobLockCacheService(jobLockCacheService);
+        jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
+
+        // execute
+        contextInstanceRecoveryServiceImpl.recoverInstances();
+
+        // verify
+        verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
+        verify(scheduledContextService).findAll();
+
+        verifyNoMoreInteractions(scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            jobLockCacheService,
+            scheduledContextService,
+            schedulerJobInstanceService,
+            executor,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster
+        );
+
+        // ensure no contexts
+        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+    }
+
+    @Test
     public void should_do_nothing_context_machine_outside_of_operating_window() {
         // ensure no contexts
         assertEquals(0, ContextMachineCache.instance().contextNames().size());

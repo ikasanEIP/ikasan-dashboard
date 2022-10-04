@@ -263,6 +263,17 @@ import java.util.stream.Collectors;
 
         binder.readBean(this.contextTemplate);
 
+        HorizontalLayout statusLayout = new HorizontalLayout();
+        statusLayout.getElement().getStyle().set("padding-top", "0px");
+        statusLayout.getElement().getStyle().set("padding-bottom", "10px");
+        ContextTemplateStatusDiv statusDiv = new ContextTemplateStatusDiv();
+        statusDiv.setHeight("45px");
+        statusDiv.setWidth("100%");
+        statusDiv.setStatus(!this.contextTemplate.isDisabled());
+
+        statusLayout.add(statusDiv);
+        statusLayout.setWidth("100%");
+
         HorizontalLayout headerLayout = new HorizontalLayout();
         headerLayout.setWidth("100%");
         headerLayout.setMargin(false);
@@ -277,7 +288,6 @@ import java.util.stream.Collectors;
         headerLayout.add(labelLayout, createButtonLayout());
 
         this.formLayout = new FormLayout();
-        this.formLayout.setWidth("100%");
         this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.descriptionTa, this.endWindowCronExpressionTf);
         this.initialiseEditor();
         this.initialiseVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
@@ -291,7 +301,8 @@ import java.util.stream.Collectors;
         this.initialiseTabs();
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(this.tabs);
-        this.add(headerLayout, this.formLayout, tabLayout, this.aceEditor, this.schedulerVisualisationDiv
+        this.getElement().getStyle().set("padding-top", "0px");
+        this.add(statusLayout, headerLayout, this.formLayout, tabLayout, this.aceEditor, this.schedulerVisualisationDiv
             , this.contextInstanceGridWidget, this.schedulerJobGridWidget, this.contextTemplateStatisticsWidget);
     }
 
