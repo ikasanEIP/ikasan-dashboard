@@ -169,4 +169,9 @@ public class BigQueueModuleRestServiceImpl extends ModuleRestService implements 
             return false;
         }
     }
+    //TODO implement properly
+    @Override
+    public boolean deleteAllMessage(String contextUrl, String queueName) {
+        return false;
+    }
 }
