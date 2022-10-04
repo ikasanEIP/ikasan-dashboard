@@ -99,6 +99,9 @@ public class NewContextTemplateDialog extends AbstractCloseableResizableDialog {
                 }
 
                 try {
+                    // new context templates should be disabled
+                    this.contextTemplate.setDisabled(true);
+
                     ScheduledContextRecord scheduledContextRecord = new ScheduledContextRecordImpl();
                     scheduledContextRecord.setContext(this.contextTemplate);
                     scheduledContextRecord.setContextName(this.contextTemplate.getName());
