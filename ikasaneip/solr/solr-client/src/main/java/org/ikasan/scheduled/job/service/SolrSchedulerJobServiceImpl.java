@@ -157,7 +157,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
             .findById(org.ikasan.spec.scheduled.job.model.JobConstants.INTERNAL_EVENT_DRIVEN_JOB + "_" + internalEventDrivenJob.getAgentName() + "_"
                 + internalEventDrivenJob.getJobName() + "_" + internalEventDrivenJob.getContextName());
 
-        if(internalEventDrivenJob == null) {
+        if(internalEventDrivenJobRecord == null) {
             internalEventDrivenJobRecord = this.internalEventDrivenJobRecord(internalEventDrivenJob);
         }
 
@@ -206,7 +206,18 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
 
     @Override
     public void saveQuartzScheduledJob(QuartzScheduleDrivenJob quartzScheduleDrivenJob, String modifiedBy) {
-        this.saveQuartzScheduledJobRecord(quartzScheduleDrivenJobRecord(quartzScheduleDrivenJob));
+        QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord =  this.quartzScheduleDrivenJobRecordDao
+            .findById(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB + "_" + quartzScheduleDrivenJob.getAgentName() + "_"
+                + quartzScheduleDrivenJob.getJobName() + "_" + quartzScheduleDrivenJob.getContextName());
+
+        if(quartzScheduleDrivenJobRecord == null) {
+            quartzScheduleDrivenJobRecord = quartzScheduleDrivenJobRecord(quartzScheduleDrivenJob);
+        }
+
+        quartzScheduleDrivenJobRecord.setQuartzScheduleDrivenJob(quartzScheduleDrivenJob);
+
+        quartzScheduleDrivenJobRecord.setModifiedBy(modifiedBy);
+        this.saveQuartzScheduledJobRecord(quartzScheduleDrivenJobRecord);
     }
 
     @Override
@@ -229,7 +240,18 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
 
     @Override
     public void saveFileEventDrivenJob(FileEventDrivenJob fileEventDrivenJob, String modifiedBy) {
+        FileEventDrivenJobRecord fileEventDrivenJobRecord =  this.fileEventDrivenJobRecordDao
+            .findById(JobConstants.FILE_EVENT_DRIVEN_JOB + "_" + fileEventDrivenJob.getAgentName() + "_"
+                + fileEventDrivenJob.getJobName() + "_" + fileEventDrivenJob.getContextName());
         this.saveFileEventDrivenJobRecord(fileEventDrivenJobRecord(fileEventDrivenJob));
+
+        if(fileEventDrivenJobRecord == null) {
+            fileEventDrivenJobRecord = fileEventDrivenJobRecord(fileEventDrivenJob);
+        }
+
+        fileEventDrivenJobRecord.setFileEventDrivenJob(fileEventDrivenJob);
+        fileEventDrivenJobRecord.setModifiedBy(modifiedBy);
+        this.saveFileEventDrivenJobRecord(fileEventDrivenJobRecord);
     }
 
     @Override
