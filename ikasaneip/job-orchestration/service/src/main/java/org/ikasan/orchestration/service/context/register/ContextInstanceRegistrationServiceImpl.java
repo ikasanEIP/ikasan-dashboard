@@ -133,6 +133,11 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                 throw new RuntimeException(String.format("Could not find scheduledContextRecord for [%s]", contextName));
             }
 
+            if (scheduledContextRecord.isDisabled()) {
+                LOG.info(String.format("ContextTemplate [%s] is disabled and will not be registered!", contextName));
+                return;
+            }
+
             ContextTemplate context = objectMapper.readValue(objectMapper.writeValueAsBytes(scheduledContextRecord.getContext()), ContextTemplateImpl.class);
             ContextInstanceImpl contextInstance = objectMapper.readValue(objectMapper.writeValueAsBytes(scheduledContextRecord.getContext()), ContextInstanceImpl.class);
             initialiseContextMachine(context, contextInstance, true);

@@ -15,9 +15,17 @@ public class ScheduledContextRecordTestSearchResults<ANY> implements SearchResul
     private final int number;
     private final boolean outsideOfOperatingWindow;
 
+    private boolean disabled = false;
+
     public ScheduledContextRecordTestSearchResults(int number, boolean outsideOfOperatingWindow) {
         this.number = number;
         this.outsideOfOperatingWindow = outsideOfOperatingWindow;
+    }
+
+    public ScheduledContextRecordTestSearchResults(int number, boolean outsideOfOperatingWindow, boolean disabled) {
+        this.number = number;
+        this.outsideOfOperatingWindow = outsideOfOperatingWindow;
+        this.disabled = disabled;
     }
 
     @Override
@@ -26,7 +34,9 @@ public class ScheduledContextRecordTestSearchResults<ANY> implements SearchResul
         for (int i = 1; i < number + 1; i++) {
             ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
             record.setContextName(CONTEXT_NAME + i);
+            record.setDisabled(this.disabled);
             ContextTemplateImpl context = new ContextTemplateImpl();
+            context.setDisabled(this.disabled);
             context.setName(CONTEXT_NAME + i);
             if (outsideOfOperatingWindow) {
                 context.setTimeWindowStart("59 59 23 ? * * *");

@@ -607,10 +607,10 @@ public abstract class Draw2dAdapterBase {
     protected String getJobImage(SchedulerJob schedulerJob) {
         String image = "frontend/images/command_black.png";
 
-        if(schedulerJob instanceof FileEventDrivenJob) {
+        if(schedulerJob instanceof FileEventDrivenJob || schedulerJob instanceof FileEventDrivenJobInstance) {
             image = "frontend/images/file_black.png";
         }
-        else if(schedulerJob instanceof QuartzScheduleDrivenJob) {
+        else if(schedulerJob instanceof QuartzScheduleDrivenJob || schedulerJob instanceof QuartzScheduleDrivenJob) {
             image = "frontend/images/time_black.png";
         }
 
