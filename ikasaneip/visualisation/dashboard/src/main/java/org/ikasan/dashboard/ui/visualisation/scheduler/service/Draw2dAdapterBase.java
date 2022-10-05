@@ -612,7 +612,7 @@ public abstract class Draw2dAdapterBase {
         if(schedulerJob instanceof FileEventDrivenJob || schedulerJob instanceof FileEventDrivenJobInstance) {
             image = "frontend/images/file_black.png";
         }
-        else if(schedulerJob instanceof QuartzScheduleDrivenJob || schedulerJob instanceof QuartzScheduleDrivenJob) {
+        else if(schedulerJob instanceof QuartzScheduleDrivenJob || schedulerJob instanceof QuartzScheduleDrivenJobInstance) {
             image = "frontend/images/time_black.png";
         }
 
