@@ -87,6 +87,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     private Button holdButton;
     private Button releaseButton;
     private Button submitButton;
+    private Button resetButton;
     private Button killButton;
 
     private ScheduledProcessManagementService scheduledProcessManagementService;
@@ -334,6 +335,29 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             internalEventDrivenJobSubmissionDialog.open();
         });
 
+        this.resetButton = new Button("Reset", new Icon(VaadinIcon.ARROW_BACKWARD));
+        this.resetButton.setIconAfterText(true);
+        this.resetButton.getElement().setAttribute("title", "Reset Job");
+        this.resetButton.setVisible(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.COMPLETE)
+            || this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.ERROR));
+        this.resetButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.reset-job-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.reset-job-body", UI.getCurrent().getLocale()));
+
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                if(this.resetJob()) {
+                    this.statusDiv.setStatus(InstanceStatus.WAITING);
+                    this.internalEventDrivenJobInstance.setStatus(InstanceStatus.WAITING);
+                    setButtonVisibility();
+                }
+            });
+        });
+
         this.killButton = new Button(getTranslation("button.kill-job", UI.getCurrent().getLocale()), new Icon(VaadinIcon.CLOSE_BIG));
         this.killButton.setIconAfterText(true);
 
@@ -359,7 +383,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
 
         HorizontalLayout actionsLayout = new HorizontalLayout();
-        actionsLayout.add(holdButton, releaseButton, skipButton, enableButton, submitButton, killButton);
+        actionsLayout.add(holdButton, releaseButton, skipButton, enableButton, submitButton, killButton, resetButton);
         actionsLayout.setMargin(false);
 
         VerticalLayout actionsButtonLayout = new VerticalLayout();
@@ -686,6 +710,30 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
         return true;
     }
+
+    private boolean resetJob() {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (this.schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.job-reset-error-no-active-context", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.resetJob(this.internalEventDrivenJobInstance.getIdentifier(), this.internalEventDrivenJobInstance.getChildContextName());
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET, String.format("Agent Name[%s], Scheduled Job Name[%s], Reset[%s]"
+                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), true), this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.reset-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
     
 
     /**
@@ -801,6 +849,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             this.releaseButton.setVisible(false);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);
+            this.resetButton.setVisible(false);
         }
         else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.ERROR)) {
             this.killButton.setVisible(false);
@@ -809,6 +858,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             this.releaseButton.setVisible(false);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);
+            this.resetButton.setVisible(true);
         }
         else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.WAITING)) {
             this.killButton.setVisible(false);
@@ -817,6 +867,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             this.releaseButton.setVisible(false);
             this.skipButton.setVisible(true);
             this.enableButton.setVisible(false);
+            this.resetButton.setVisible(false);
         }
         else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.ON_HOLD)) {
             this.killButton.setVisible(false);
@@ -825,6 +876,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             this.releaseButton.setVisible(true);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);
+            this.resetButton.setVisible(false);
         }
         else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED) ||
             this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
@@ -835,6 +887,16 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             this.releaseButton.setVisible(false);
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(true);
+            this.resetButton.setVisible(false);
+        }
+        else if(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.COMPLETE)) {
+            this.killButton.setVisible(false);
+            this.submitButton.setVisible(false);
+            this.holdButton.setVisible(false);
+            this.releaseButton.setVisible(false);
+            this.skipButton.setVisible(false);
+            this.enableButton.setVisible(false);
+            this.resetButton.setVisible(true);
         }
     }
 
