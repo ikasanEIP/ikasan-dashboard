@@ -515,8 +515,8 @@ public class ContextInstanceRegistrationServiceImplTest {
         assertEquals(2, schedulerJobInstanceStateChangeEventListeners.size());
     }
 
-    @Test(expected = RuntimeException.class)
-    public void deregsiter_null_contextmachine_should() {
+    @Test
+    public void deregsiter_contextmachine_that_not_in_cache() {
         // execute
         contextInstanceRegistrationService.deRegister(contextName);
 

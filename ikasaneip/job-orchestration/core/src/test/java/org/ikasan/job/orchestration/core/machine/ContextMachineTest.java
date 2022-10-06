@@ -4559,7 +4559,108 @@ public class ContextMachineTest extends AbstractTest {
 
     }
 
-    private List<SchedulerJobInitiationEvent> sendScheduledEventToContextMachineWithChildContextId(ContextMachine contextMachine, String contextId, List<String> childContextIds
+    @Test(expected = ContextMachineException.class)
+    public void test_context_machine_reset_job_exception_due_to_job_not_complete_or_error() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
+        contextMachine.init();
+        contextMachine.resetJob("agentName5-jobName5", "Context3");
+    }
+
+    @Test(expected = ContextMachineException.class)
+    public void test_context_machine_reset_job_exception_job_not_in_context() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
+        contextMachine.init();
+        contextMachine.resetJob("bad-job-name", "Context3");
+    }
+
+    @Test
+    public void test_context_machine_reset_job_success() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
+        contextMachine.init();
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
+            "agentName3", false);
+        eventInstance.setJobStarting(true);
+
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName3",
+            "agentName3", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(1, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName1",
+            "agentName1", true);
+        InstanceStatus status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName2",
+            "agentName2", true);
+
+        events = contextMachine.eventReceived(eventInstance);
+        Assert.assertEquals(0, events.size());
+
+        eventInstance = scheduledProcessEventInstance("jobName4",
+            "agentName4", true);
+
+        contextMachine.eventReceived(eventInstance);
+
+        eventInstance = scheduledProcessEventInstance("jobName5",
+            "agentName5", true);
+
+        contextMachine.eventReceived(eventInstance);
+
+        eventInstance = scheduledProcessEventInstance("jobName6",
+            "agentName6", true);
+
+        contextMachine.eventReceived(eventInstance);
+
+        // Confirm the job is in a COMPLETE state
+        this.assertJobStatus(contextMachine, "Context3", "agentName5-jobName5", InstanceStatus.COMPLETE);
+        // And the context it resides in is in a COMPLETE state
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.COMPLETE, status);
+
+        // Now reset the job
+        contextMachine.resetJob("agentName5-jobName5", "Context3");
+
+        // Confirm the job itself goes into WAITING state
+        this.assertJobStatus(contextMachine, "Context3", "agentName5-jobName5", InstanceStatus.WAITING);
+        // And the context into a RUNNING state
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+    }
+
+        private List<SchedulerJobInitiationEvent> sendScheduledEventToContextMachineWithChildContextId(ContextMachine contextMachine, String contextId, List<String> childContextIds
         , String agentName, String jobName, boolean eventSuccessful) {
         ContextualisedScheduledProcessEventImpl eventInstance
             = scheduledProcessEventInstance(contextId, childContextIds, jobName, agentName, eventSuccessful);

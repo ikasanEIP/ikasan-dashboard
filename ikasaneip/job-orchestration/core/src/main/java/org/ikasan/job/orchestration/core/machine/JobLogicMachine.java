@@ -272,7 +272,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      *
      * @param event
      */
-    private void issueSchedulerJobStateChangeEvent(SchedulerJobInstanceStateChangeEventImpl event) {
+    protected void issueSchedulerJobStateChangeEvent(SchedulerJobInstanceStateChangeEventImpl event) {
         this.executor.submit(() -> this.schedulerJobInstanceStateChangeEventListeners
             .forEach(listener -> listener.onSchedulerJobInstanceStateChangeEvent(event)));
     }

@@ -24,10 +24,16 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.FileEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -133,6 +139,13 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         submitButton.setIconAfterText(true);
         submitButton.getElement().setAttribute("title", "Submit Job");
 
+        submitButton.setVisible(!this.fileEventDrivenJobInstance.getStatus().equals(InstanceStatus.COMPLETE));
+
+        Button resetButton = new Button("Reset", new Icon(VaadinIcon.ARROW_BACKWARD));
+        resetButton.setIconAfterText(true);
+        resetButton.getElement().setAttribute("title", "Reset Job");
+        resetButton.setVisible(this.fileEventDrivenJobInstance.getStatus().equals(InstanceStatus.COMPLETE));
+
         submitButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-file-job", UI.getCurrent().getLocale()));
@@ -144,17 +157,37 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
 
             confirmDialog.addConfirmListener(confirmEvent -> {
                 try {
-                this.jobInitiationService.raiseFileEventSchedulerJob(this.agent.getUrl(), this.agent.getName(), this.fileEventDrivenJobInstance.getJobName());
+                    this.jobInitiationService.raiseFileEventSchedulerJob(this.agent.getUrl(), this.agent.getName(), this.fileEventDrivenJobInstance.getJobName());
 
-                this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
-                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
-                    , this.authentication.getName());
+                    this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
+                        , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
+                        , this.authentication.getName());
 
                     NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
+
+                    submitButton.setVisible(false);
+                    resetButton.setVisible(true);
                 }
                 catch (Exception e) {
                     e.printStackTrace();
                     NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
+                }
+            });
+        });
+        resetButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.reset-job-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.reset-job-body", UI.getCurrent().getLocale()));
+
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                if(this.resetJob()) {
+                    this.statusDiv.setStatus(InstanceStatus.WAITING);
+                    submitButton.setVisible(true);
+                    resetButton.setVisible(false);
                 }
             });
         });
@@ -175,7 +208,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         exportWrapper.wrapComponent(export);
 
         HorizontalLayout actionsLayout = new HorizontalLayout();
-        actionsLayout.add(submitButton, exportWrapper);
+        actionsLayout.add(submitButton, resetButton, exportWrapper);
         actionsLayout.setMargin(false);
         actionsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, submitButton);
         actionsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, exportWrapper);
@@ -289,6 +322,30 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         this.schedulerJobInstanceRecord = scheduledEventDrivenJobRecord;
         this.setJob((FileEventDrivenJobInstance) this.schedulerJobInstanceService
             .findById(scheduledEventDrivenJobRecord.getId()).getSchedulerJobInstance());
+    }
+
+    private boolean resetJob() {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (this.schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.job-reset-error-no-active-context", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.resetJob(this.fileEventDrivenJobInstance.getIdentifier(), this.fileEventDrivenJobInstance.getChildContextName());
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET, String.format("Agent Name[%s], Scheduled Job Name[%s], Reset[%s]"
+                , this.fileEventDrivenJobInstance.getAgentName(), fileEventDrivenJobInstance.getJobName(), true), this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.reset-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
     }
 
     @Override
