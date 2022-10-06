@@ -66,6 +66,8 @@ public class SystemEventConstants
     public static final String SCHEDULED_JOB_RELEASED = "Scheduled job released";
     public static final String SCHEDULED_JOB_SUBMITTED = "Scheduled job manually submitted";
 
+    public static final String SCHEDULED_JOB_RESET = "Scheduled job reset";
+
     public static final String USER_ADDED_TO_CONTEXT_PROFILE = "User added to context profile";
     public static final String USER_REMOVED_FROM_CONTEXT_PROFILE = "User removed from context profile";
 

@@ -339,8 +339,8 @@ public class ContextTemplateWidget extends Div {
             .setFlexGrow(1);
 
         this.contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
-                Button enabled = new Button("Enabled");
-                Button disabled = new Button("Disabled");
+                Button enabled = new Button(getTranslation("button.enabled", UI.getCurrent().getLocale()));
+                Button disabled = new Button(getTranslation("button.disabled", UI.getCurrent().getLocale()));
                 if(!scheduledContextRecord.isDisabled()){
                     enabled.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_COMPLETE);
                     enabled.getElement().getStyle().set("color", IkasanColours.WHITE);
