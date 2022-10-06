@@ -103,8 +103,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             LOG.info(String.format("De registering context [%s]", contextName));
             ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
             if (contextMachine == null) {
-                LOG.error(String.format("Could not find context machine for [%s]", contextName));
-                throw new RuntimeException(String.format("Could not find context machine for [%s]", contextName));
+                LOG.info(String.format("Could not find context machine for [%s], so therefor nothing to de-register.", contextName));
+                return;
             }
 
             ContextInstance instance = contextMachine.getContext();
