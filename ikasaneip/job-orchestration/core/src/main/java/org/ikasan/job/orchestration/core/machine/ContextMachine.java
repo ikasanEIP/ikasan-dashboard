@@ -274,6 +274,14 @@ public class ContextMachine {
         this.inboundQueue.enqueue(bigQueueMessage.getBytes());
     }
 
+    public void raiseEvent(ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent) throws IOException {
+        BigQueueMessageBuilder<String> bigQueueMessageBuilder = new BigQueueMessageBuilder();
+        bigQueueMessageBuilder.withMessage(this.objectMapper.writeValueAsString(contextualisedScheduledProcessEvent))
+            .withMessageId(UUID.randomUUID().toString())
+            .withCreatedTime(System.currentTimeMillis());
+        this.inboundQueue.enqueue(this.objectMapper.writeValueAsBytes(bigQueueMessageBuilder.build()));
+    }
+
 
     /**
      * Get the context status by context name.
@@ -561,6 +569,41 @@ public class ContextMachine {
     }
 
     /**
+     * This method is responsible for providing a view onto jobs that can be run based on the receipt of an input event,
+     * without impacting the state of the underlying context data model.
+     *
+     * @param contextualisedScheduledProcessEvent
+     * @return
+     */
+    public List<SchedulerJobInitiationEvent> getEventsThatCanRun(ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent) {
+        MutableBoolean lockRaised = new MutableBoolean(false);
+
+        List<SchedulerJobInitiationEvent> events = this.getInitiationEvents(this.contextInstance
+            , contextualisedScheduledProcessEvent, lockRaised, false);
+
+        List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();
+
+        events.forEach(event -> {
+            if(event.getInternalEventDrivenJob() != null) {
+                SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(contextInstance, event.getInternalEventDrivenJob().getChildContextName(),
+                    event.getInternalEventDrivenJob().getIdentifier());
+
+                if (schedulerJobInstance != null && schedulerJobInstance.isHeld()) {
+                    this.contextInstance.getHeldJobs().put(schedulerJobInstance.getIdentifier() + "_" + event.getInternalEventDrivenJob().getChildContextName(), event);
+                } else {
+                    finalEvents.add(event);
+                }
+            }
+            else {
+                logger.warn(String.format("Could not load internal event driven job for initiation event JobName[%s], SchedulerJobInitiationEvent[%s]"
+                    , event.getJobName(), event.toString()));
+            }
+        });
+
+        return events;
+    }
+
+    /**
      *
      * @param scheduledProcessEvent
      * @return
@@ -572,7 +615,7 @@ public class ContextMachine {
 
         MutableBoolean lockRaised = new MutableBoolean(false);
 
-        List<SchedulerJobInitiationEvent> events = this.getInitiationEvents(this.contextInstance, scheduledProcessEvent, lockRaised);
+        List<SchedulerJobInitiationEvent> events = this.getInitiationEvents(this.contextInstance, scheduledProcessEvent, lockRaised, true);
 
         List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();
 
@@ -623,7 +666,8 @@ public class ContextMachine {
      * @param scheduledProcessEvent
      * @return
      */
-    private List<SchedulerJobInitiationEvent> getInitiationEvents(ContextInstance contextInstance, ContextualisedScheduledProcessEvent scheduledProcessEvent, MutableBoolean lockRaised) {
+    private List<SchedulerJobInitiationEvent> getInitiationEvents(ContextInstance contextInstance, ContextualisedScheduledProcessEvent scheduledProcessEvent
+        , MutableBoolean lockRaised, boolean markAsRaised) {
         List<SchedulerJobInitiationEvent> results = new ArrayList<>();
 
         if(!contextInstance.getStatus().equals(InstanceStatus.COMPLETE)
@@ -634,7 +678,7 @@ public class ContextMachine {
              // required to be raised.
              List<SchedulerJobInitiationEvent> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
                  , contextInstance, this.dryRunParameters, this.internalEventDrivenJobInstances, this.contextInstance.getContextParameters()
-                 , this.contextInstance, lockRaised);
+                 , this.contextInstance, lockRaised, markAsRaised);
 
              // Update the context status after event received and attached
              // to the job instance.
@@ -652,7 +696,7 @@ public class ContextMachine {
         if (contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()){
             for(ContextInstance instance: contextInstance.getContexts()) {
                 // Recursively work our way through all nested contexts to determine if any job initiation events need to be raised.
-                results.addAll(this.getInitiationEvents(instance, scheduledProcessEvent,lockRaised));
+                results.addAll(this.getInitiationEvents(instance, scheduledProcessEvent,lockRaised, markAsRaised));
                 this.setContextStatus(contextInstance);
             }
         }
