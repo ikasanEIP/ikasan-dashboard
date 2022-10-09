@@ -1692,8 +1692,6 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test
-    @Ignore
-    // need to revisit after refactor of job lock implementation
     public void test_complex_context() throws IOException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/contexts/CONTEXT-36916071.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/contexts/CONTEXT-36916071.json"));
@@ -1813,8 +1811,6 @@ public class ContextMachineTest extends AbstractTest {
         this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent--2047526486", InstanceStatus.WAITING);
         this.assertJobStatus(contextMachine,"CONTEXT-1892741766", "scheduler-agent-2074200534", InstanceStatus.WAITING);
         Assert.assertEquals(0, events.size());
-
-//        printContext(contextMachine);
     }
 
     @Test
@@ -1958,6 +1954,172 @@ public class ContextMachineTest extends AbstractTest {
         Assert.assertEquals(InstanceStatus.WAITING, status);
         status = contextMachine.getContextStatus("Context1");
         Assert.assertEquals(InstanceStatus.ERROR, status);
+    }
+
+    @Test
+    public void test_error_then_resubmit_to_raise_downstream_events() throws IOException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
+        InstanceStatus status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1",
+            "agentName1", true);
+
+        contextMachine.eventReceived(eventInstance);
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        eventInstance = scheduledProcessEventInstance("jobName2",
+            "agentName2", false);
+        contextMachine.eventReceived(eventInstance);
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+
+        // We resubmit the job events but with raisedDueToFailureResubmission == true
+        eventInstance = scheduledProcessEventInstance("jobName2",
+            "agentName2", false);
+        eventInstance.setRaisedDueToFailureResubmission(true);
+        List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
+
+        // We get the downstream jobs to execute as expected.
+        Assert.assertNotNull(events);
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("jobName5", events.get(0).getJobName());
+
+        // Make sure that the contexts remain in the correct states.
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+
+        // Make sure the failing job is still in error!
+        this.assertJobStatus(contextMachine, "Context3", "agentName2-jobName2", InstanceStatus.ERROR);
+    }
+
+    @Test(expected = ContextMachineException.class)
+    public void test_exception_attempt_ro_resubmit_to_raise_downstream_events_but_job_is_in_complete_state() throws IOException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
+        InstanceStatus status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1",
+            "agentName1", true);
+
+        contextMachine.eventReceived(eventInstance);
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        eventInstance = scheduledProcessEventInstance("jobName2",
+            "agentName2", true);
+        contextMachine.eventReceived(eventInstance);
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        // We resubmit the job events but with raisedDueToFailureResubmission == true
+        eventInstance = scheduledProcessEventInstance("jobName2",
+            "agentName2", false);
+        eventInstance.setRaisedDueToFailureResubmission(true);
+        contextMachine.eventReceived(eventInstance);
+    }
+
+    @Test
+    public void test_query_machine_to_determine_which_jobs_can_run() throws IOException {
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
+        InstanceStatus status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName1",
+            "agentName1", true);
+
+        contextMachine.eventReceived(eventInstance);
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.RUNNING, status);
+
+        eventInstance = scheduledProcessEventInstance("jobName2",
+            "agentName2", false);
+        contextMachine.eventReceived(eventInstance);
+
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+
+        // We resubmit the job events but with raisedDueToFailureResubmission == true
+        eventInstance = scheduledProcessEventInstance("jobName2",
+            "agentName2", false);
+        eventInstance.setRaisedDueToFailureResubmission(true);
+        List<SchedulerJobInitiationEvent> events = contextMachine.getEventsThatCanRun(eventInstance);
+
+        // We get the downstream jobs to execute as expected.
+        Assert.assertNotNull(events);
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("jobName5", events.get(0).getJobName());
+
+        // Make sure that the contexts remain in the correct states.
+        status = contextMachine.getContextStatus("Context3");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+        status = contextMachine.getContextStatus("Context2");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+        status = contextMachine.getContextStatus("Context4");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context5");
+        Assert.assertEquals(InstanceStatus.WAITING, status);
+        status = contextMachine.getContextStatus("Context1");
+        Assert.assertEquals(InstanceStatus.ERROR, status);
+
+        // Make sure the failing job is still in error!
+        this.assertJobStatus(contextMachine, "Context3", "agentName2-jobName2", InstanceStatus.ERROR);
     }
 
     @Test
