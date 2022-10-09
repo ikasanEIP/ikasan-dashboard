@@ -52,9 +52,9 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      *
      * @return
      */
-    public List<SchedulerJobInitiationEvent> getJobInitiationEvents(ContextualisedScheduledProcessEvent scheduledProcessEvent
+    protected List<SchedulerJobInitiationEvent> getJobInitiationEvents(ContextualisedScheduledProcessEvent scheduledProcessEvent
         , ContextInstance contextInstance, DryRunParameters dryRunParameters, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs
-        , List<ContextParameterInstance> contextParameters, ContextInstance parentContextInstance, MutableBoolean lockRaised) {
+        , List<ContextParameterInstance> contextParameters, ContextInstance parentContextInstance, MutableBoolean lockRaised, boolean markAsRaised) {
         SchedulerJobInstance schedulerJobInstance = contextInstance.getScheduledJobsMap()
             .get(scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName());
 
@@ -84,34 +84,51 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             schedulerJobInstance.setChildContextName(contextInstance.getName());
             schedulerJobInstance.setContextInstanceId(parentContextInstance.getId());
 
-            if (scheduledProcessEvent.isJobStarting()) {
-                if(schedulerJobInstance.isSkip()) {
-                    schedulerJobInstance.setStatus(InstanceStatus.SKIPPED_RUNNING);
+            if(scheduledProcessEvent.isRaisedDueToFailureResubmission()) {
+                if(!schedulerJobInstance.getStatus().equals(InstanceStatus.ERROR)) {
+                    throw new ContextMachineException(String.format("Job[%s], Context[%s], Child Context[%s] was in a State[%s] when attempting" +
+                        " to raise events dues to a failure resubmission. The job must be in ERROR to resubmit due to failure.", schedulerJobInstance.getIdentifier(),
+                        schedulerJobInstance.getContextName(), schedulerJobInstance.getChildContextName(), schedulerJobInstance.getStatus().name()));
                 }
-                else {
-                    schedulerJobInstance.setStatus(InstanceStatus.RUNNING);
-                }
-            } else if (scheduledProcessEvent.isSuccessful()) {
-                if(schedulerJobInstance.isSkip()) {
-                    schedulerJobInstance.setStatus(InstanceStatus.SKIPPED_COMPLETE);
-                }
-                else {
-                    schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
-                }
-            } else {
-                schedulerJobInstance.setStatus(InstanceStatus.ERROR);
+                // we temporarily set the job to complete so the downstream logic will be assessed
+                schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
             }
+            else {
+                if (scheduledProcessEvent.isJobStarting()) {
+                    if (schedulerJobInstance.isSkip()) {
+                        schedulerJobInstance.setStatus(InstanceStatus.SKIPPED_RUNNING);
+                    } else {
+                        schedulerJobInstance.setStatus(InstanceStatus.RUNNING);
+                    }
+                } else if (scheduledProcessEvent.isSuccessful()) {
+                    if (schedulerJobInstance.isSkip()) {
+                        schedulerJobInstance.setStatus(InstanceStatus.SKIPPED_COMPLETE);
+                    } else {
+                        schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
+                    }
+                } else {
+                    schedulerJobInstance.setStatus(InstanceStatus.ERROR);
+                }
 
-            this.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, parentContextInstance
-                , currentJobState, schedulerJobInstance.getStatus()));
+                this.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, parentContextInstance
+                    , currentJobState, schedulerJobInstance.getStatus()));
+            }
         }
 
         List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents = new ArrayList<>();
 
         getScheduledJobInitiationEventsThatCanBeRaised(scheduledProcessEvent, contextInstance, dryRunParameters, internalEventDrivenJobs, contextParameters
-            , parentContextInstance, schedulerJobInitiationEvents);
+            , parentContextInstance, schedulerJobInitiationEvents, markAsRaised);
 
-        schedulerJobInitiationEvents = this.manageJobLocks(scheduledProcessEvent, contextInstance, parentContextInstance, schedulerJobInitiationEvents, lockRaised);
+        if(markAsRaised) {
+            schedulerJobInitiationEvents = this.manageJobLocks(scheduledProcessEvent, contextInstance
+                , parentContextInstance, schedulerJobInitiationEvents, lockRaised);
+        }
+
+        if(scheduledProcessEvent.isRaisedDueToFailureResubmission()) {
+            // we now revert this back to error
+            schedulerJobInstance.setStatus(InstanceStatus.ERROR);
+        }
 
         return schedulerJobInitiationEvents;
     }
@@ -134,7 +151,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                                                                 Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs,
                                                                 List<ContextParameterInstance> contextParameters,
                                                                 ContextInstance parentContextInstance,
-                                                                List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents) {
+                                                                List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents,
+                                                                boolean markAsRaised) {
 
         if(contextInstance.getJobDependencies() != null) {
             for (JobDependency jobDependency : contextInstance.getJobDependencies()) {
@@ -145,7 +163,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                     InternalEventDrivenJobInstance internalEventDrivenJob = internalEventDrivenJobs.get(jobDependency.getJobIdentifier() + "-" + contextInstance.getName());
 
                     if (!jobInstance.isInitiationEventRaised()) {
-                        jobInstance.setInitiationEventRaised(true);
+                        if(markAsRaised) jobInstance.setInitiationEventRaised(true);
 
                         SchedulerJobInitiationEvent event = createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters
                             , contextParameters, parentContextInstance, scheduledProcessEvent, contextInstance);
