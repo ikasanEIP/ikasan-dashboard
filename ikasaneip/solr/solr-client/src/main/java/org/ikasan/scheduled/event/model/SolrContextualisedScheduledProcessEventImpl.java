@@ -36,6 +36,7 @@ public class SolrContextualisedScheduledProcessEventImpl implements Contextualis
     private SolrDryRunParameters dryRunParameters;
     private boolean skipped;
     private InternalEventDrivenJobInstance internalEventDrivenJob;
+    private boolean raisedDueToFailureResubmission;
 
     public Long getId() {
         return id;
@@ -293,6 +294,16 @@ public class SolrContextualisedScheduledProcessEventImpl implements Contextualis
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    public boolean isRaisedDueToFailureResubmission() {
+        return raisedDueToFailureResubmission;
+    }
+
+    @Override
+    public void setRaisedDueToFailureResubmission(boolean raisedDueToFailureResubmission) {
+        this.raisedDueToFailureResubmission = raisedDueToFailureResubmission;
     }
 
     @Override
