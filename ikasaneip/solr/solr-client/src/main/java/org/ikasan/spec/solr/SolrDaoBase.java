@@ -1,5 +1,6 @@
 package org.ikasan.spec.solr;
 
+import org.apache.commons.collections4.ListUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest;
@@ -486,16 +487,19 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
      */
     public void removeByIds(String type, List<String> ids)
     {
-        StringBuffer query = new StringBuffer();
-        query.append(TYPE).append(COLON).append("\"").append(type).append("\"");
-        query.append(AND);
+        List<List<String>> partitions = ListUtils.partition(ids, 500);
+        partitions.forEach(partition -> {
+            StringBuffer query = new StringBuffer();
+            query.append(TYPE).append(COLON).append("\"").append(type).append("\"");
+            query.append(AND);
 
-        ids.forEach(id -> query.append(ID).append(COLON).append("\"").append(id).append("\"").append(OR));
+            partition.forEach(id -> query.append(ID).append(COLON).append("\"").append(id).append("\"").append(OR));
 
-        String queryString = query.toString().trim();
-        queryString = queryString.substring(0, queryString.length()-2);
+            String queryString = query.toString().trim();
+            queryString = queryString.substring(0, queryString.length()-2);
 
-        this.deleteByQuery(queryString.trim());
+            this.deleteByQuery(queryString.trim());
+        });
     }
 
     /**
