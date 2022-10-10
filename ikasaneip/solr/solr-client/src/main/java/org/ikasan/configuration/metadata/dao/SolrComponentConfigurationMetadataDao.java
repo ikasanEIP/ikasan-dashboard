@@ -2,6 +2,7 @@ package org.ikasan.configuration.metadata.dao;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.request.QueryRequest;
@@ -123,20 +124,28 @@ public class SolrComponentConfigurationMetadataDao extends SolrDaoBase<Configura
             return new ArrayList<>();
         }
 
-        StringBuffer queryString = new StringBuffer("type: \"").append(COMPONENT_CONFIGURATION).append("\"");
-        queryString.append(" AND id:(");
+        //Solr has an upper limit to the number of logical clauses of 1000, so partition the query.
+        List<List<String>> partitions = ListUtils.partition(configurationIds, 500);
+        List<ConfigurationMetaData> finalResults = new ArrayList<>();
 
-        configurationIds.forEach(id -> {
-            queryString.append("\"").append(id).append("\",");
+        partitions.forEach(partition -> {
+            StringBuffer queryString = new StringBuffer("type: \"").append(COMPONENT_CONFIGURATION).append("\"");
+            queryString.append(" AND id:(");
+
+            partition.forEach(id -> {
+                queryString.append("\"").append(id).append("\",");
+            });
+
+            queryString.append(")");
+
+            logger.debug("queryString: " + queryString);
+
+            List<SolrComponentConfiguration> beans = this.findByQuery(queryString.toString());
+
+            finalResults.addAll(beans.stream().map(bean -> convert(bean.getRawConfigurationMetadata())).collect(Collectors.toList()));
         });
 
-        queryString.append(")");
-
-        logger.debug("queryString: " + queryString);
-
-        List<SolrComponentConfiguration> beans = this.findByQuery(queryString.toString());
-
-        return beans.stream().map(bean -> convert(bean.getRawConfigurationMetadata())).collect(Collectors.toList());
+        return finalResults;
     }
 
     private SolrConfigurationMetaData convert(String solrComponentConfiguration)
@@ -166,8 +175,6 @@ public class SolrComponentConfigurationMetadataDao extends SolrDaoBase<Configura
         logger.debug("queryString: " + queryString);
 
         SolrQuery query = new SolrQuery();
-        query.setStart(0);
-        query.setRows(1000);
         query.setQuery(queryString);
 
         try
