@@ -18,6 +18,7 @@ public class BigQueueModuleRestServiceImpl extends ModuleRestService implements 
 
     private final static String GET_QUEUES_URL = "/rest/big/queue/";
     private final static String DELETE_MESSAGE_ID_URL = "/rest/big/queue/delete/{queueName}/{messageId}";
+    private final static String DELETE_ALL_MESSAGES_URL = "/rest/big/queue/delete/allMessages/{queueName}";
     private final static String GET_MESSAGES_URL = "/rest/big/queue/messages/{queueName}";
     private final static String PEEK_QUEUES_URL = "/rest/big/queue/peek/{queueName}";
     private final static String GET_QUEUES_SIZE_URL = "/rest/big/queue/size?includeZeros={includeZeros}";
@@ -169,9 +170,34 @@ public class BigQueueModuleRestServiceImpl extends ModuleRestService implements 
             return false;
         }
     }
-    //TODO implement properly
+
+    /**
+     * Calls the module to remove all messages from a queue
+     * @param contextUrl url of the module
+     * @param queueName name of the queue to delete all messages
+     * @return true if successfully removed, false if something went wrong
+     */
     @Override
     public boolean deleteAllMessage(String contextUrl, String queueName) {
-        return false;
+        HttpHeaders headers = createHttpHeaders();
+        HttpEntity entity = new HttpEntity(headers);
+        Map<String, String> parameters = new HashMap<>() {{ put("queueName", queueName); }};
+        String url = contextUrl + DELETE_ALL_MESSAGES_URL;
+        try {
+            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class, parameters);
+            if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                return true;
+            } else {
+                if (responseEntity.getBody() != null) {
+                    throw new RestClientException(responseEntity.getBody());
+                } else {
+                    throw new RestClientException("An unknown internal error has occurred when trying to delete all messages from the queue");
+                }
+            }
+        }
+        catch(RestClientException e){
+            LOG.warn("Issue removing all messages from the queue [{}] on the url [{}] with error [{}]", queueName, url, e.getLocalizedMessage());
+            return false;
+        }
     }
 }

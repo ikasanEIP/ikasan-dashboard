@@ -40,7 +40,9 @@
  */
 package org.ikasan.rest.dashboard;
 
+import com.leansoft.bigqueue.IBigQueue;
 import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagementServiceImpl;
+import org.ikasan.rest.dashboard.service.bigqueue.BigQueueDashboardServiceImpl;
 import org.ikasan.security.service.UserService;
 import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
 import org.ikasan.spec.cache.FlowStateCacheAdapter;
@@ -103,6 +105,9 @@ public class IkasanRestAutoConfiguration
 
     @Resource
     private BigQueueModuleService bigQueueModuleService;
+
+    @Resource
+    private IBigQueue inboundQueue;
 
     @Resource
     private FlowStateCacheAdapter cacheAdapter;
@@ -174,7 +179,7 @@ public class IkasanRestAutoConfiguration
 
     @Bean
     public BigQueueDirectoryManagementService bigQueueDirectoryManagementService() {
-        return new BigQueueDirectoryManagementServiceImpl(this.queueDir);
+        return new BigQueueDirectoryManagementServiceImpl(new BigQueueDashboardServiceImpl(inboundQueue), this.queueDir);
     }
 
     @Bean
