@@ -20,11 +20,13 @@ import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAudit
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditAggregateRecordImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
+import org.ikasan.job.orchestration.service.BigQueueContextMachineManagementServiceImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.bigqueue.service.BigQueueDirectoryManagementService;
+import org.ikasan.spec.bigqueue.service.BigQueueManagementService;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
@@ -137,12 +139,20 @@ public class ContextMachine {
         MonitorManagement.startMonitoring(this);
     }
 
-    private String getOutboundQueueName() {
+    public String getOutboundQueueName() {
         return "outbound-" + this.contextInstance.getId() + "-queue";
     }
 
-    private String getInboundQueueName() {
+    public String getInboundQueueName() {
         return "inbound-" + this.contextInstance.getId() + "-queue";
+    }
+
+    public IBigQueue getInboundQueue() {
+        return this.inboundQueue;
+    }
+
+    public IBigQueue getOutboundQueue() {
+        return this.outboundQueue;
     }
 
     /**
@@ -232,8 +242,12 @@ public class ContextMachine {
             this.inboundListenableFuture = null;
             this.outboundListenableFuture = null;
 
+            BigQueueManagementService bigQueueManagementService =
+            new BigQueueContextMachineManagementServiceImpl(getInboundQueueName(),
+                inboundQueue, getOutboundQueueName(), outboundQueue);
+
             BigQueueDirectoryManagementService bigQueueDirectoryManagementService
-                = new BigQueueDirectoryManagementServiceImpl(this.queueDir);
+                = new BigQueueDirectoryManagementServiceImpl(bigQueueManagementService, this.queueDir);
             if (this.inboundQueue != null) {
                 this.inboundQueue.removeAll();
                 this.inboundQueue.gc();

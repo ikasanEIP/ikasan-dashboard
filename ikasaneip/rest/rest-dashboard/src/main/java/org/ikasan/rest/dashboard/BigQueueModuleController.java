@@ -282,4 +282,34 @@ public class BigQueueModuleController {
             return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
         }
     }
+
+    /**
+     * Delete all messages from the queue
+     * /rest/module/bigQueue/delete/allMessages/{queueName}/{moduleName}
+     *
+     * @param moduleName name of the module
+     * @param queueName name of queue to delete a message from
+     * @return true if it was success, false if there was something wrong
+     */
+    @RequestMapping(method = RequestMethod.DELETE, value = "/delete/allMessages/{queueName}/{moduleName}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity deleteAllMessages(@PathVariable("moduleName") String moduleName, @PathVariable("queueName") String queueName) {
+
+        try {
+            List<MetadataModuleDto> metadataModuleDtoList = getModules();
+            MetadataModuleDto metadataModuleDto = metadataModuleDtoList.stream().filter(dto -> moduleName.equals(dto.getName())).findAny().orElse(null);
+
+            if (metadataModuleDto != null) {
+                String url = metadataModuleDto.getUrl();
+                return new ResponseEntity(bigQueueModuleService.deleteAllMessage(url, queueName), HttpStatus.OK);
+            } else {
+                throw new NullPointerException("The module was not found in the Ikasan Dashboard");
+            }
+        } catch (Exception e) {
+            String message = String.format("Got exception trying to delete all messages from the queue [%s] for the module [%s]. Error [%s]",
+                queueName, moduleName, e.getMessage());
+            LOG.warn(message);
+            return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
+        }
+    }
 }
