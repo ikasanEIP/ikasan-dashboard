@@ -920,4 +920,109 @@ public class BigQueueModuleControllerTest {
         verify(moduleMetaDataService).findAll();
         verifyNoMoreInteractions(moduleMetaDataService);
     }
+
+    @Test
+    public void deleteAllMessages_queues() throws Exception {
+        List<ModuleMetaData> mockMetadataModuleDtos = new ArrayList<>();
+        ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
+        moduleMetaData.setName("someModule");
+        moduleMetaData.setUrl("localhost");
+        mockMetadataModuleDtos.add(moduleMetaData);
+
+        when(bigQueueModuleService.deleteAllMessage("localhost", "queueName1")).thenReturn(true);
+        when(moduleMetaDataService.findAll()).thenReturn(mockMetadataModuleDtos);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/rest/module/bigQueue/delete/allMessages/queueName1/someModule")
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON);
+
+        MvcResult result = mockMvc.perform(requestBuilder).andReturn();
+
+        assertEquals(200, result.getResponse().getStatus());
+        assertEquals("true",
+            result.getResponse().getContentAsString());
+
+        verify(bigQueueModuleService).deleteAllMessage("localhost", "queueName1");
+        verifyNoMoreInteractions(bigQueueModuleService);
+        verify(moduleMetaDataService).findAll();
+        verifyNoMoreInteractions(moduleMetaDataService);
+    }
+
+    @Test
+    public void deleteAllMessages_queues_returns_false() throws Exception {
+        List<ModuleMetaData> mockMetadataModuleDtos = new ArrayList<>();
+        ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
+        moduleMetaData.setName("someModule");
+        moduleMetaData.setUrl("localhost");
+        mockMetadataModuleDtos.add(moduleMetaData);
+
+        when(bigQueueModuleService.deleteAllMessage("localhost", "queueName1")).thenReturn(false);
+        when(moduleMetaDataService.findAll()).thenReturn(mockMetadataModuleDtos);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/rest/module/bigQueue/delete/allMessages/queueName1/someModule")
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON);
+
+        MvcResult result = mockMvc.perform(requestBuilder).andReturn();
+
+        assertEquals(200, result.getResponse().getStatus());
+        assertEquals("false",
+            result.getResponse().getContentAsString());
+
+        verify(bigQueueModuleService).deleteAllMessage("localhost", "queueName1");
+        verifyNoMoreInteractions(bigQueueModuleService);
+        verify(moduleMetaDataService).findAll();
+        verifyNoMoreInteractions(moduleMetaDataService);
+    }
+
+    @Test
+    public void deleteAllMessages_queues_module_do_not_exist() throws Exception {
+        List<ModuleMetaData> mockMetadataModuleDtos = new ArrayList<>();
+
+        when(bigQueueModuleService.deleteAllMessage("localhost", "queueName1")).thenReturn(true);
+        when(moduleMetaDataService.findAll()).thenReturn(mockMetadataModuleDtos);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/rest/module/bigQueue/delete/allMessages/queueName1/someModule")
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON);
+
+        MvcResult result = mockMvc.perform(requestBuilder).andReturn();
+
+        assertEquals(400, result.getResponse().getStatus());
+        assertEquals("Got exception trying to delete all messages from the queue [queueName1] for the module [someModule]. " +
+                "Error [The module was not found in the Ikasan Dashboard]",
+            result.getResponse().getContentAsString());
+
+        verifyNoMoreInteractions(bigQueueModuleService);
+        verify(moduleMetaDataService).findAll();
+        verifyNoMoreInteractions(moduleMetaDataService);
+    }
+
+    @Test
+    public void deleteAllMessages_queues_runtime_exception() throws Exception {
+        List<ModuleMetaData> mockMetadataModuleDtos = new ArrayList<>();
+        ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
+        moduleMetaData.setName("someModule");
+        moduleMetaData.setUrl("localhost");
+        mockMetadataModuleDtos.add(moduleMetaData);
+
+        when(bigQueueModuleService.deleteAllMessage("localhost", "queueName1")).thenThrow(new RuntimeException("Expected"));
+        when(moduleMetaDataService.findAll()).thenReturn(mockMetadataModuleDtos);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/rest/module/bigQueue/delete/allMessages/queueName1/someModule")
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON);
+
+        MvcResult result = mockMvc.perform(requestBuilder).andReturn();
+
+        assertEquals(400, result.getResponse().getStatus());
+        assertEquals("Got exception trying to delete all messages from the queue [queueName1] for the module [someModule]. " +
+                "Error [Expected]",
+            result.getResponse().getContentAsString());
+
+        verify(bigQueueModuleService).deleteAllMessage("localhost", "queueName1");
+        verifyNoMoreInteractions(bigQueueModuleService);
+        verify(moduleMetaDataService).findAll();
+        verifyNoMoreInteractions(moduleMetaDataService);
+    }
 }
