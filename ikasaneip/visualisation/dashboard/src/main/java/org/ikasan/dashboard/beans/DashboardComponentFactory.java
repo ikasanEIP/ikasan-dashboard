@@ -84,6 +84,8 @@ public class DashboardComponentFactory
     @Resource
     private ModuleControlService moduleControlRestService;
 
+    private static final String INBOUND_QUEUE = "dashboard-inbound-queue";
+
     @Bean
     @ConfigurationProperties(prefix = "scheduler.calendar")
     public CalendarConfiguration calendarConfiguration() {
@@ -92,8 +94,7 @@ public class DashboardComponentFactory
 
     @Bean
     public IBigQueue inboundQueue() throws IOException {
-        String queueName = "dashboard-inbound-queue";
-        return new BigQueueImpl(queueDirectory, queueName);
+        return new BigQueueImpl(queueDirectory, INBOUND_QUEUE);
     }
 
     @Component
