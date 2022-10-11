@@ -369,4 +369,43 @@ public class BigQueueModuleRestServiceImplTest {
         boolean result = uut.deleteMessage(contextBaseUrl,"queueName1", "messId1");
         assertFalse(result);
     }
+
+    @Test
+    public void test_deleteAllMessage_200() {
+        stubFor(delete(urlEqualTo("/rest/big/queue/delete/allMessages/queueName1"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse()
+                .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .withStatus(200)
+            ));
+        boolean result = uut.deleteAllMessage(contextBaseUrl,"queueName1");
+        assertTrue(result);
+    }
+
+    @Test
+    public void test_deleteAllMessage_404() {
+        stubFor(delete(urlEqualTo("/rest/big/queue/delete/allMessages/queueName1"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse()
+                .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .withStatus(404)
+            ));
+        boolean result = uut.deleteAllMessage(contextBaseUrl,"queueName1");
+        assertFalse(result);
+    }
+
+    @Test
+    public void test_deleteAllMessage_500() {
+        stubFor(delete(urlEqualTo("/rest/big/queue/delete/allMessages/queueName1"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse()
+                .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                .withStatus(500)
+            ));
+        boolean result = uut.deleteAllMessage(contextBaseUrl,"queueName1");
+        assertFalse(result);
+    }
 }
