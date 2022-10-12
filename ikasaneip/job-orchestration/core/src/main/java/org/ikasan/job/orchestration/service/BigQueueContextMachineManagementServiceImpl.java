@@ -22,7 +22,10 @@ public class BigQueueContextMachineManagementServiceImpl extends AbstractBigQueu
 
     @Override
     public IBigQueue getBigQueue(String queueName) {
-        if (queueName.equals(this.inboundName)) {
+
+        if (queueName == null) {
+            return null;
+        } else if (queueName.equals(this.inboundName)) {
             return inboundQueue;
         } else if (queueName.equals(this.outboundName)) {
             return outboundQueue;
