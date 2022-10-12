@@ -19,6 +19,7 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -94,6 +95,8 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
     private ContextInstance contextInstance;
 
     private String contextInstanceId;
+    private String selectedTab;
+    private String jobStatus;
 
     /**
      * Constructor
@@ -106,26 +109,43 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
     /**
      * Initialise the internals of the object.
      */
-    private void init() {
-        this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
-            , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
-            , this.jobUtilsService, this.scheduledContextService);
+    private void init(BeforeEnterEvent beforeEnterEvent) {
+        if(this.selectedTab != null && this.jobStatus != null) {
+            this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
+                , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+                , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
+                , this.jobUtilsService, this.scheduledContextService, this.selectedTab, this.jobStatus);
+        }
+        else {
+            this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
+                , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+                , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
+                , this.jobUtilsService, this.scheduledContextService);
+        }
 
         this.getStyle().set("padding-top", "0px");
         this.add(this.contextInstanceWidget);
+        this.contextInstanceWidget.beforeEnter(beforeEnterEvent);
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         this.contextInstance = scheduledContextInstanceService.findById(this.contextInstanceId).getContextInstance();
         this.contextTemplate = this.scheduledContextService.findByName(this.contextInstance.getName()).getContext();
-        init();
+        init(beforeEnterEvent);
     }
 
     @Override
-    public void setParameter(BeforeEvent beforeEvent, String param) {
-        this.contextInstanceId = param;
+    public void setParameter(BeforeEvent beforeEvent, @WildcardParameter String param) {
+        if(param.contains("/")) {
+            String[] params = param.split("/");
+            this.contextInstanceId = params[0];
+            this.selectedTab = params[1];
+            this.jobStatus = params[2];
+        }
+        else {
+            this.contextInstanceId = param;
+        }
     }
 }
 
