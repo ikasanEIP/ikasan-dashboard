@@ -160,17 +160,53 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         super.title.setText(getTranslation("label.command-execution-job-instance", UI.getCurrent().getLocale()));
 
         this.agent = agent;
+        if(this.agent ==  null) {
+            throw new IllegalArgumentException("agent cannot be null!");
+        }
         this.scheduledProcessManagementService = scheduledProcessManagementService;
+        if(this.scheduledProcessManagementService ==  null) {
+            throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
+        }
         this.configurationRestService = configurationRestService;
+        if(this.configurationRestService ==  null) {
+            throw new IllegalArgumentException("configurationRestService cannot be null!");
+        }
         this.moduleControlRestService = moduleControlRestService;
+        if(this.moduleControlRestService ==  null) {
+            throw new IllegalArgumentException("moduleControlRestService cannot be null!");
+        }
         this.metaDataRestService = metaDataRestService;
+        if(this.metaDataRestService ==  null) {
+            throw new IllegalArgumentException("metaDataRestService cannot be null!");
+        }
         this.systemEventLogger = systemEventLogger;
+        if(this.systemEventLogger ==  null) {
+            throw new IllegalArgumentException("systemEventLogger cannot be null!");
+        }
         this.schedulerJobInstanceService = schedulerJobInstanceService;
+        if(this.schedulerJobInstanceService ==  null) {
+            throw new IllegalArgumentException("schedulerJobInstanceService cannot be null!");
+        }
         this.contextInstance = contextInstance;
+        if(this.contextInstance ==  null) {
+            throw new IllegalArgumentException("contextInstance cannot be null!");
+        }
         this.jobInitiationService = jobInitiationService;
+        if(this.jobInitiationService ==  null) {
+            throw new IllegalArgumentException("jobInitiationService cannot be null!");
+        }
         this.moduleMetaDataService = moduleMetaDataService;
+        if(this.moduleMetaDataService ==  null) {
+            throw new IllegalArgumentException("moduleMetaDataService cannot be null!");
+        }
         this.logStreamingService = logStreamingService;
+        if(this.logStreamingService ==  null) {
+            throw new IllegalArgumentException("logStreamingService cannot be null!");
+        }
         this.jobUtilsService = jobUtilsService;
+        if(this.jobUtilsService ==  null) {
+            throw new IllegalArgumentException("jobUtilsService cannot be null!");
+        }
 
         this.internalEventDrivenJobInstance = new SolrInternalEventDrivenJobInstanceImpl();
 
@@ -544,14 +580,14 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.viewOutputLogButton.setVisible(this.scheduledProcessEvent != null);
         this.viewOutputLogButton.setIconAfterText(true);
         this.viewOutputLogButton.addClickListener(event -> {
-           this.streamLog(this.internalEventDrivenJobInstance, false);
+           this.streamLog(false);
         });
 
         this.viewErrorLogButton = new Button("Error Log", VaadinIcon.FILE_PROCESS.create());
         this.viewErrorLogButton.setVisible(this.scheduledProcessEvent != null);
         this.viewErrorLogButton.setIconAfterText(true);
         this.viewErrorLogButton.addClickListener(event -> {
-            this.streamLog(this.internalEventDrivenJobInstance, true);
+            this.streamLog(true);
         });
 
         Button downloadButton = new Button(getTranslation("button.download", UI.getCurrent().getLocale()), new Icon(VaadinIcon.DOWNLOAD_ALT));
@@ -607,20 +643,12 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         return formLayout;
     }
 
-    private void streamLog(SchedulerJob schedulerJob, boolean getErrorLog) {
-        // TODO remove all the log info when happy this is working correctly
+    private void streamLog(boolean getErrorLog) {
         boolean displayLog = false;
         String host = null;
         String endPoint = null;
         String outputLog = null;
 
-        SchedulerJobInstance schedulerJobInstance = this.contextInstance.getScheduledJobsMap().get(schedulerJob.getIdentifier());
-
-        schedulerJobInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
-
-        logger.info("schedulerJobInstance is " + schedulerJobInstance + " for job identifier " + schedulerJob.getIdentifier());
-
-        logger.info("agent is " + agent + " for name " + schedulerJob.getAgentName());
         if (this.scheduledProcessEvent != null && agent != null) {
             host = agent.getUrl();
             endPoint = "/rest/logs";
