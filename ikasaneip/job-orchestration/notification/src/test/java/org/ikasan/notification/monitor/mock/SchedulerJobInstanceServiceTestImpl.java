@@ -98,4 +98,9 @@ public class SchedulerJobInstanceServiceTestImpl implements SchedulerJobInstance
     public List<SchedulerJobInstance> initialiseSchedulerJobInstancesForContext(ContextInstance contextInstance) throws SchedulerJobInstanceInitialisationException {
         return null;
     }
+
+    @Override
+    public List<ContextInstanceAggregateJobStatus> getJobStatusCountForContextInstances(List<String> contextInstanceIds) {
+        return null;
+    }
 }

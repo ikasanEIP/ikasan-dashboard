@@ -3,7 +3,14 @@ package org.ikasan.scheduled.instance.dao;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrRequest;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.request.QueryRequest;
+import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
+import org.ikasan.scheduled.instance.model.SolrContextInstanceAggregateJobStatusImpl;
+import org.ikasan.scheduled.instance.model.SolrScheduledContextInstanceRecordImpl;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceRecordImpl;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
@@ -12,9 +19,15 @@ import org.ikasan.spec.scheduled.instance.dao.SchedulerJobInstanceDao;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
+import org.ikasan.spec.solr.SolrConstants;
 import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobInstanceRecord> implements SchedulerJobInstanceDao {
 
@@ -209,5 +222,58 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         }
 
         return this.findByQuery(solrQuery, SolrSchedulerJobInstanceRecordImpl.class, offset, limit);
+    }
+
+    @Override
+    public List<ContextInstanceAggregateJobStatus> getJobStatusCountForContextInstances(List<String> contextInstanceIds) {
+        StringBuffer typeBuffer = new StringBuffer();
+        typeBuffer.append(OPEN_BRACKET);
+        typeBuffer.append(TYPE + COLON);
+        typeBuffer.append("\"").append(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE).append("\" ");
+        typeBuffer.append(OR).append(" ");
+        typeBuffer.append(TYPE + COLON);
+        typeBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE).append("\" ");
+        typeBuffer.append(OR).append(" ");
+        typeBuffer.append(TYPE + COLON);
+        typeBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE).append("\" ");
+        typeBuffer.append(CLOSE_BRACKET);
+
+        StringBuffer queryString = new StringBuffer();
+        queryString.append(typeBuffer)
+            .append(AND)
+            .append(COMPONENT_NAME)
+            .append(COLON)
+            .append("%s");
+
+        List<ContextInstanceAggregateJobStatus> results = new ArrayList<>();
+        contextInstanceIds.forEach(id -> {
+            SolrQuery solrQuery = new SolrQuery();
+            solrQuery.setQuery(String.format(queryString.toString(), id));
+            solrQuery.setFacet(true);
+            solrQuery.addFacetField(SolrDaoBase.STATUS, SolrDaoBase.FLOW_NAME);
+            solrQuery.setRows(0);
+
+            QueryRequest req = new QueryRequest(solrQuery, SolrRequest.METHOD.POST);
+            req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
+
+            try {
+                QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);
+                FacetField field = rsp.getFacetField(SolrDaoBase.STATUS);
+                HashMap<String, Integer> jobStatusCount = new HashMap<>();
+                field.getValues().forEach(count -> {
+                    jobStatusCount.put(count.getName(), (int) count.getCount());
+                });
+
+                FacetField contextName = rsp.getFacetField(SolrDaoBase.FLOW_NAME);
+
+                results.add(new SolrContextInstanceAggregateJobStatusImpl(id, contextName.getValues().get(0).getName(),
+                    jobStatusCount));
+
+            } catch (Exception e) {
+                throw new RuntimeException("Error resolving aggregate jobs statuses record data by query [" + queryString
+                    + "] from the Ikasan solr index!", e);
+            }
+        });
+        return results;
     }
 }

@@ -12,10 +12,18 @@ import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.BusinessStreamMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
+import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.JobInitiationService;
+import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.springframework.beans.factory.annotation.Value;
 
 @CssImport("./styles/dashboard-view.css")
 @CssImport(value="./styles/chart-styling.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
@@ -34,9 +42,21 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
 
     private SystemEventLogger systemEventLogger;
 
+    private SchedulerJobInstanceService schedulerJobInstanceService;
+    private ScheduledContextInstanceService scheduledContextInstanceService;
+    private String dynamicImagePath;
+    private ModuleMetaDataService moduleMetaDataService;
+    private LogStreamingService logStreamingService;
+    private JobInitiationService jobInitiationService;
+    private ContextProfileService contextProfileService;
+    private JobUtilsService jobUtilsService;
+    private ScheduledContextService scheduledContextService;
+
     private Board board;
 
     private boolean initialised = false;
+
+    private int statusRefreshInterval;
 
     /**
      * Constructor
@@ -51,7 +71,11 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
      */
     public SchedulerAgentDashboardView(ModuleMetaDataService moduleMetadataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                        ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
-                                       SystemEventLogger systemEventLogger, SchedulerService schedulerService, SchedulerJobService schedulerJobService) {
+                                       SystemEventLogger systemEventLogger, SchedulerService schedulerService, SchedulerJobService schedulerJobService,
+                                       SchedulerJobInstanceService schedulerJobInstanceService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath,
+                                       ModuleMetaDataService moduleMetaDataService, LogStreamingService logStreamingService,
+                                       JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
+                                       JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, int statusRefreshInterval) {
         this.moduleMetadataService = moduleMetadataService;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
@@ -60,6 +84,16 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
         this.systemEventLogger = systemEventLogger;
         this.schedulerService = schedulerService;
         this.schedulerJobService = schedulerJobService;
+        this.schedulerJobInstanceService = schedulerJobInstanceService;
+        this.scheduledContextInstanceService = scheduledContextInstanceService;
+        this.dynamicImagePath = dynamicImagePath;
+        this.moduleMetaDataService = moduleMetaDataService;
+        this.logStreamingService = logStreamingService;
+        this.jobInitiationService = jobInitiationService;
+        this.contextProfileService = contextProfileService;
+        this.jobUtilsService = jobUtilsService;
+        this.scheduledContextService = scheduledContextService;
+        this.statusRefreshInterval = statusRefreshInterval;
 
         board = new Board();
         board.addClassName("styled");
@@ -74,6 +108,12 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
             board.addRow(new AgentWidget(this.moduleMetadataService, this.scheduledProcessManagementService
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
                 , this.schedulerService, this.schedulerJobService), new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
+
+            board.addRow(new ContextInstanceDashboardWidget(this.moduleMetadataService, this.scheduledProcessManagementService
+                , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
+                , this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
+                this.dynamicImagePath, this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService,
+                this.jobUtilsService, this.scheduledContextService, false, statusRefreshInterval));
 
             initialised = true;
         }
