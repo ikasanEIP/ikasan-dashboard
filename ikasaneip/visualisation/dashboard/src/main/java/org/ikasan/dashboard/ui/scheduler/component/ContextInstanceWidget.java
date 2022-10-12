@@ -19,6 +19,8 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.shared.Registration;
 import de.f0rce.ace.AceEditor;
@@ -62,8 +64,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
 
-public class ContextInstanceWidget extends VerticalLayout {
+public class ContextInstanceWidget extends VerticalLayout implements BeforeEnterObserver {
 
+    public static final String VISUALISATION_TAB = "visualisationTab";
+    public static final String RAW_CONTEXT_TAB =  "rawContextTab";
+    public static final String JOB_INSTANCE_TAB = "jobsTab";
+    public static final String STATISTICS_TAB = "statisticsTab";
+    public static final String AUDIT_TAB = "auditTab";
     private Registration contextInstanceStateChangeRegistration;
 
     private ScheduledContextInstanceService scheduledContextInstanceService;
@@ -87,6 +94,7 @@ public class ContextInstanceWidget extends VerticalLayout {
     private MetaDataService metaDataRestService;
     private SystemEventLogger systemEventLogger;
     private LogStreamingService logStreamingService;
+    private SchedulerJobService schedulerJobService;
 
     private Div schedulerVisualisationDiv;
 
@@ -108,6 +116,23 @@ public class ContextInstanceWidget extends VerticalLayout {
     private ContextTemplate contextTemplate;
 
     private SchedulerStatusDiv statusDiv;
+    private String selectedTab;
+    private String jobStatus;
+
+    public ContextInstanceWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+                                 ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                 MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
+                                 LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
+                                 SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
+                                 ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
+                                 String selectedTab, String jobStatus) {
+        this(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService,
+            logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService,
+            contextProfileService, jobUtilsService, scheduledContextService);
+        this.selectedTab = selectedTab;
+        this.jobStatus = jobStatus;
+    }
 
     /**
      * Constructor
@@ -180,12 +205,12 @@ public class ContextInstanceWidget extends VerticalLayout {
         if (this.logStreamingService == null) {
             throw new IllegalArgumentException("logStreamingService cannot be null!");
         }
+        this.schedulerJobService = schedulerJobService;
+        if (this.schedulerJobService == null) {
+            throw new IllegalArgumentException("schedulerJobService cannot be null!");
+        }
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
-
-        this.init(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
-            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
-        this.setWidthFull();
     }
 
     private void init(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
@@ -331,47 +356,60 @@ public class ContextInstanceWidget extends VerticalLayout {
             , this.jobsTab, this.statisticsTab, this.auditTab);
 
         tabs.addSelectedChangeListener(event -> {
-            try {
-                if(tabs.getSelectedTab().equals(this.statisticsTab)) {
-                    this.aceEditor.setVisible(false);
-                    this.schedulerVisualisationDiv.setVisible(false);
-                    this.schedulerJobInstanceGridWidget.setVisible(false);
-                    this.contextTemplateStatisticsWidget.setVisible(true);
-                    this.contextInstanceAuditWidget.setVisible(false);
-                }
-                else if(tabs.getSelectedTab().equals(this.rawContextTab)) {
-                    this.aceEditor.setVisible(true);
-                    this.schedulerVisualisationDiv.setVisible(false);
-                    this.schedulerJobInstanceGridWidget.setVisible(false);
-                    this.contextTemplateStatisticsWidget.setVisible(false);
-                    this.contextInstanceAuditWidget.setVisible(false);
-                }
-                else if(tabs.getSelectedTab().equals(this.visualisationTab)) {
-                    this.aceEditor.setVisible(false);
-                    this.schedulerVisualisationDiv.setVisible(true);
-                    this.schedulerJobInstanceGridWidget.setVisible(false);
-                    this.contextTemplateStatisticsWidget.setVisible(false);
-                    this.contextInstanceAuditWidget.setVisible(false);
-                }
-                else if(tabs.getSelectedTab().equals(this.jobsTab)) {
-                    this.aceEditor.setVisible(false);
-                    this.schedulerVisualisationDiv.setVisible(false);
-                    this.schedulerJobInstanceGridWidget.setVisible(true);
-                    this.contextTemplateStatisticsWidget.setVisible(false);
-                    this.contextInstanceAuditWidget.setVisible(false);
-                }
-                else if(tabs.getSelectedTab().equals(this.auditTab)) {
-                    this.aceEditor.setVisible(false);
-                    this.schedulerVisualisationDiv.setVisible(false);
-                    this.schedulerJobInstanceGridWidget.setVisible(false);
-                    this.contextTemplateStatisticsWidget.setVisible(false);
-                    this.contextInstanceAuditWidget.setVisible(true);
-                }
+            if(tabs.getSelectedTab().equals(this.statisticsTab)) {
+                this.aceEditor.setVisible(false);
+                this.schedulerVisualisationDiv.setVisible(false);
+                this.schedulerJobInstanceGridWidget.setVisible(false);
+                this.contextTemplateStatisticsWidget.setVisible(true);
+                this.contextInstanceAuditWidget.setVisible(false);
             }
-            catch (Exception e){
-                e.printStackTrace();
+            else if(tabs.getSelectedTab().equals(this.rawContextTab)) {
+                this.aceEditor.setVisible(true);
+                this.schedulerVisualisationDiv.setVisible(false);
+                this.schedulerJobInstanceGridWidget.setVisible(false);
+                this.contextTemplateStatisticsWidget.setVisible(false);
+                this.contextInstanceAuditWidget.setVisible(false);
+            }
+            else if(tabs.getSelectedTab().equals(this.visualisationTab)) {
+                this.aceEditor.setVisible(false);
+                this.schedulerVisualisationDiv.setVisible(true);
+                this.schedulerJobInstanceGridWidget.setVisible(false);
+                this.contextTemplateStatisticsWidget.setVisible(false);
+                this.contextInstanceAuditWidget.setVisible(false);
+            }
+            else if(tabs.getSelectedTab().equals(this.jobsTab)) {
+                this.aceEditor.setVisible(false);
+                this.schedulerVisualisationDiv.setVisible(false);
+                this.schedulerJobInstanceGridWidget.setVisible(true);
+                this.contextTemplateStatisticsWidget.setVisible(false);
+                this.contextInstanceAuditWidget.setVisible(false);
+            }
+            else if(tabs.getSelectedTab().equals(this.auditTab)) {
+                this.aceEditor.setVisible(false);
+                this.schedulerVisualisationDiv.setVisible(false);
+                this.schedulerJobInstanceGridWidget.setVisible(false);
+                this.contextTemplateStatisticsWidget.setVisible(false);
+                this.contextInstanceAuditWidget.setVisible(true);
             }
         });
+
+        if(this.selectedTab != null) {
+            if(this.selectedTab.equals(ContextInstanceWidget.JOB_INSTANCE_TAB)) {
+                this.tabs.setSelectedTab(this.jobsTab);
+            }
+            else if(this.selectedTab.equals(ContextInstanceWidget.AUDIT_TAB)) {
+                this.tabs.setSelectedTab(this.auditTab);
+            }
+            else if(this.selectedTab.equals(ContextInstanceWidget.RAW_CONTEXT_TAB)) {
+                this.tabs.setSelectedTab(this.rawContextTab);
+            }
+            else if(this.selectedTab.equals(ContextInstanceWidget.STATISTICS_TAB)) {
+                this.tabs.setSelectedTab(this.statisticsTab);
+            }
+            else if(this.selectedTab.equals(ContextInstanceWidget.VISUALISATION_TAB)) {
+                this.tabs.setSelectedTab(this.visualisationTab);
+            }
+        }
     }
 
     protected void initialiseEditor()
@@ -467,7 +505,7 @@ public class ContextInstanceWidget extends VerticalLayout {
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobInstanceGridWidget = new SchedulerJobInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextInstance, this.schedulerJobInstanceService,
-            this.jobInitiationService, this.configurationRestService, metaDataRestService, this.jobUtilsService, this.scheduledContextService);
+            this.jobInitiationService, this.configurationRestService, metaDataRestService, this.jobUtilsService, this.scheduledContextService, this.jobStatus);
         this.schedulerJobInstanceGridWidget.setWidthFull();
         this.schedulerJobInstanceGridWidget.setHeight("75vh");
         this.schedulerJobInstanceGridWidget.setVisible(false);
@@ -536,5 +574,12 @@ public class ContextInstanceWidget extends VerticalLayout {
             this.contextInstanceStateChangeRegistration.remove();
             this.contextInstanceStateChangeRegistration = null;
         }
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        this.init(".", moduleMetaDataService, scheduledProcessManagementService,
+            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
+        this.setWidthFull();
     }
 }
