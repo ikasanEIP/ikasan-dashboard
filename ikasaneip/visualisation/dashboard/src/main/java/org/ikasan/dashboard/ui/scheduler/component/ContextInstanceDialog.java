@@ -2,6 +2,8 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -34,6 +36,24 @@ public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService
             , jobUtilsService, scheduledContextService);
+        this.init();
+    }
+
+    public ContextInstanceDialog(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+                                 ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
+                                 MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
+                                 LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
+                                 SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
+                                 JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, String selectedTab, String jobStatus) {
+        this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, dynamicImagePath
+            , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+            , schedulerJobService, logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService
+            , jobUtilsService, scheduledContextService, selectedTab, jobStatus);
+        this.init();
+    }
+
+    private void init() {
+        this.contextInstanceWidget.beforeEnter(null);
 
         this.setHeight("95vh");
         this.setWidth("90vw");

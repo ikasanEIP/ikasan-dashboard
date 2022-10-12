@@ -189,10 +189,6 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
      * @param columnKey
      */
     public void addCheckboxGridFiltering(HeaderRow hr, Consumer<Boolean> setFilter, String columnKey) {
-        Icon filterIcon = VaadinIcon.FILTER.create();
-        filterIcon.setSize("14pt");
-        filterIcon.getElement().getStyle().set("margin-bottom", "0px");
-
         Checkbox checkbox = new Checkbox();
         checkbox.setWidthFull();
         checkbox.getElement().getStyle().set("margin-bottom", "0px");
@@ -206,11 +202,10 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
             filteredDataProvider.refreshAll();
         });
 
-        HorizontalLayout layout = new HorizontalLayout(checkbox, filterIcon);
+        HorizontalLayout layout = new HorizontalLayout(checkbox);
         layout.setMargin(false);
         layout.setWidth("100px");
         layout.getElement().getStyle().set("margin-bottom", "0px");
-        layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, filterIcon);
 
         hr.getCell(getColumnByKey(columnKey)).setComponent(layout);
     }
