@@ -365,6 +365,46 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     }
 
     @Test
+    public void test_find_context_instance_status_aggregate() {
+        IntStream.range(0, 371).forEach(i -> {
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance1",
+                "context1", "job1"+i));
+        });
+
+        IntStream.range(0, 275).forEach(i -> {
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance2",
+                "context2", "job2"+i));
+        });
+
+        IntStream.range(0, 167).forEach(i -> {
+            this.solrSchedulerJobInstanceDao.save(this.createSchedulerJobInstanceRecord("contextInstance3",
+                "context3", "context2Job"+i));
+        });
+
+
+        List<ContextInstanceAggregateJobStatus> searchResults = this.service
+            .getJobStatusCountForContextInstances(List.of("contextInstance1", "contextInstance2", "contextInstance3"));
+
+        Assert.assertNotNull(searchResults);
+        Assert.assertEquals(3, searchResults.size());
+        Assert.assertEquals("contextInstance1", searchResults.get(0).getContextInstanceId());
+        Assert.assertEquals("context1", searchResults.get(0).getContextInstanceName());
+        Assert.assertEquals(371, searchResults.get(0).getStatusCount(InstanceStatus.RUNNING));
+        Assert.assertEquals(0, searchResults.get(0).getStatusCount(InstanceStatus.ERROR));
+        Assert.assertEquals(0, searchResults.get(0).getStatusCount(InstanceStatus.COMPLETE));
+        Assert.assertEquals("contextInstance2", searchResults.get(1).getContextInstanceId());
+        Assert.assertEquals("context2", searchResults.get(1).getContextInstanceName());
+        Assert.assertEquals(275, searchResults.get(1).getStatusCount(InstanceStatus.RUNNING));
+        Assert.assertEquals(0, searchResults.get(1).getStatusCount(InstanceStatus.ERROR));
+        Assert.assertEquals(0, searchResults.get(1).getStatusCount(InstanceStatus.COMPLETE));
+        Assert.assertEquals("contextInstance3", searchResults.get(2).getContextInstanceId());
+        Assert.assertEquals("context3", searchResults.get(2).getContextInstanceName());
+        Assert.assertEquals(167, searchResults.get(2).getStatusCount(InstanceStatus.RUNNING));
+        Assert.assertEquals(0, searchResults.get(2).getStatusCount(InstanceStatus.ERROR));
+        Assert.assertEquals(0, searchResults.get(2).getStatusCount(InstanceStatus.COMPLETE));
+    }
+
+    @Test
     public void test_initialise_scheduler_job_instances() throws SchedulerJobInstanceInitialisationException {
         this.insertFileEventRecords("file", 135, "context");
         this.insertQuartzScheduleEventRecords("quartz", 75, "context");

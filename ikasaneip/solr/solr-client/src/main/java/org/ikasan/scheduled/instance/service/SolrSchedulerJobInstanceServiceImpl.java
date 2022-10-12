@@ -207,4 +207,9 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                 "attempting to initialise scheduler job instances for context[%s]", contextInstance.getName()), e);
         }
     }
+
+    @Override
+    public List<ContextInstanceAggregateJobStatus> getJobStatusCountForContextInstances(List<String> contextInstanceIds) {
+        return this.solrSchedulerJobInstanceDao.getJobStatusCountForContextInstances(contextInstanceIds);
+    }
 }
