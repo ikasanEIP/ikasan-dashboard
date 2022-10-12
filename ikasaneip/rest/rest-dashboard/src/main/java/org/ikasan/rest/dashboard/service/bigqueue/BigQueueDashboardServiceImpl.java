@@ -28,13 +28,18 @@ public class BigQueueDashboardServiceImpl extends AbstractBigQueueManagementServ
     @Override
     public IBigQueue getBigQueue(String queueName) {
 
+        // Avoid null pointer exception if somehow we passed a Null string.
+        if (queueName == null) {
+            return null;
+        }
+
         // Contains the dashboard queue set up in this DashboardComponentFactory class
         // If you are the inbound queue for the dashboard, return it.
         if (inboundQueue != null && INBOUND_QUEUE.equals(queueName)) {
             return inboundQueue;
         }
 
-        // Check the rest of the context, if we find the queues then return it.
+        // Check the rest of the context instances, if we find the queues then return it.
         Set<String> setOfContextInstance = ContextMachineCache.instance().contextInstanceIdentifiers();
         for(String contextInstance : setOfContextInstance) {
             if (queueName.equals(ContextMachineCache.instance().getByContextInstanceId(contextInstance).getInboundQueueName())) {
