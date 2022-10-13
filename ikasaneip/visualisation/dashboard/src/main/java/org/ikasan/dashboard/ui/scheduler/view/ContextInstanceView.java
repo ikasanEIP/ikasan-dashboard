@@ -1,12 +1,10 @@
 package org.ikasan.dashboard.ui.scheduler.view;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.annotation.UIScope;
+import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceWidget;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -17,9 +15,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -33,8 +29,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
-@Push
-@Route(value = "contextInstance")
+@Route(value = "contextInstance", layout = IkasanAppLayout.class)
 @UIScope
 @Component
 @CssImport("./styles/dashboard-view.css")
