@@ -166,9 +166,6 @@ public class SchedulerJobInstanceGridWidget extends Div {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
         }
         this.jobStatus = jobStatus;
-        if(this.jobStatus ==  null) {
-            throw new IllegalArgumentException("jobStatus cannot be null!");
-        }
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
