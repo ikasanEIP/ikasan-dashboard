@@ -85,7 +85,8 @@ public class SecurityConfiguration
                 .requestMatchers()
                 // Below are the paths to allow HTTP Basic for. Restrict it to URLs allowed to be called outside of the dashboard
                         .antMatchers("/rest/export/context/**", // ContextExportControl
-                                                 "/rest/module/bigQueue/size/all/**" // BigQueueModuleController
+                                                 "/rest/module/bigQueue/size/all/**", // BigQueueModuleController
+                                                 "/rest/context/status/**" // ContextStatusServiceController
                         )
                         .and()
                 .authorizeRequests()

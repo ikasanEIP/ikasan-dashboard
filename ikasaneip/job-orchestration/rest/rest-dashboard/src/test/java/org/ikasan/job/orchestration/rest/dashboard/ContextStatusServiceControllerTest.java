@@ -93,4 +93,74 @@ public class ContextStatusServiceControllerTest {
         assertThat(content,
             containsString("An error has occurred attempting to get status for instance instance-name, context context-name, jobIdentifier job-identifier!"));
     }
+
+    @Test
+    public void should_return_response_entity_correctly_json_context_status() throws Exception {
+        when(contextStatusService.getJsonContextStatus("Instance_Name", "Context_Name")).thenReturn("{\"message\":\"good\"}");
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/Instance_Name/Context_Name")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
+
+        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
+        assertEquals("{\"message\":\"good\"}", mvcResult.getResponse().getContentAsString());
+    }
+
+    @Test
+    public void should_return_response_entity_error_json_context_status() throws Exception {
+        when(contextStatusService.getJsonContextStatus("Instance_Name", "Context_Name")).thenThrow(new RuntimeException("expected exception"));
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/Instance_Name/Context_Name")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
+
+        assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
+        String content = mvcResult.getResponse().getContentAsString();
+        assertThat(content,
+            containsString("An error has occurred attempting to get status for instance Instance_Name, context Context_Name, jobIdentifier null!"));
+    }
+
+    @Test
+    public void should_return_response_entity_empty_json_context_status() throws Exception {
+        when(contextStatusService.getJsonContextStatus("Instance_Name", "Context_Name")).thenReturn("");
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/Instance_Name/Context_Name")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
+
+        assertEquals(HttpStatus.NO_CONTENT.value(), mvcResult.getResponse().getStatus());
+    }
+
+    @Test
+    public void should_return_response_entity_correctly_json_context_status_job() throws Exception {
+        when(contextStatusService.getJsonContextStatusForJob("instance-name", "context-name", "job-identifier")).thenReturn("{\"message\":\"good\"}");
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/instance-name/context-name/job-identifier")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
+
+        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
+        assertEquals("{\"message\":\"good\"}", mvcResult.getResponse().getContentAsString());
+    }
+
+    @Test
+    public void should_return_response_entity_error_json_context_status_job() throws Exception {
+
+        when(contextStatusService.getJsonContextStatusForJob("instance-name", "context-name", "job-identifier")).thenThrow(new RuntimeException("expected exception"));
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/instance-name/context-name/job-identifier")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
+
+        assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
+        String content = mvcResult.getResponse().getContentAsString();
+        assertThat(content,
+            containsString("An error has occurred attempting to get status for instance instance-name, context context-name, jobIdentifier job-identifier!"));
+    }
+
+    @Test
+    public void should_return_response_entity_empty_json_context_status_job() throws Exception {
+
+        when(contextStatusService.getJsonContextStatusForJob("instance-name", "context-name", "job-identifier")).thenReturn("");
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/instance-name/context-name/job-identifier")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
+
+        assertEquals(HttpStatus.NO_CONTENT.value(), mvcResult.getResponse().getStatus());
+    }
 }
