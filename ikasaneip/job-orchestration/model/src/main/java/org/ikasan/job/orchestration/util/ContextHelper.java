@@ -3,6 +3,7 @@ package org.ikasan.job.orchestration.util;
 import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -124,4 +125,11 @@ public class ContextHelper {
         }
     }
 
+    public static SchedulerJobInstance getSchedulerJobInstance(String jobIdentifier, String childContextName, ContextInstance contextInstance) {
+        ContextInstance instance = ContextHelper.getChildContextInstance(childContextName, contextInstance);
+        if (instance != null) {
+            return instance.getScheduledJobsMap().get(jobIdentifier);
+        }
+        return null;
+    }
 }
