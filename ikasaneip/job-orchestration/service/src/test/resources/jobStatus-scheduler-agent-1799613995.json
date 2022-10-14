@@ -1,0 +1,12 @@
+{
+  "agentName" : "scheduler-agent",
+  "jobName" : "1799613995",
+  "startupControlType" : "AUTOMATIC",
+  "skippedContexts" : { },
+  "heldContexts" : { },
+  "held" : false,
+  "initiationEventRaised" : false,
+  "status" : "WAITING",
+  "skip" : false,
+  "identifier" : "scheduler-agent-1799613995"
+}
