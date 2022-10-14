@@ -12,6 +12,7 @@ import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 
@@ -38,6 +39,10 @@ public class ContextService {
 
     public String getContextInstanceString(ContextInstance context) throws JsonProcessingException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(context);
+    }
+
+    public String getSchedulerJobInstance(SchedulerJobInstance schedulerJobInstance) throws JsonProcessingException {
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schedulerJobInstance);
     }
 
     public SchedulerJob getSchedulerJob(String schedulerJob) throws JsonProcessingException {
