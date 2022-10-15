@@ -51,6 +51,8 @@ public class ContextInstanceSchedulerServiceTest {
     public void setUp() {
         contextInstanceSchedulerService = new ContextInstanceSchedulerService(scheduler, scheduledJobFactory,
             scheduledContextService, contextInstanceRegistrationService, true);
+        ContextMachineCache.instance().contextInstanceIdentifiers().forEach(id
+            -> ContextMachineCache.instance().remove(ContextMachineCache.instance().getByContextInstanceId(id)));
     }
 
     @Test
