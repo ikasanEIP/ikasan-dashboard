@@ -5,6 +5,7 @@ import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.integration.inbound.component.endpoint.configuration.ScheduleProcessInboundProducerConfiguration;
+import org.ikasan.job.orchestration.integration.inbound.exception.InvalidContextInstanceIdException;
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
@@ -31,11 +32,21 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
 
             ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent
                 = objectMapper.readValue(message, ContextualisedScheduledProcessEventImpl.class);
+
             ContextMachine contextMachine = ContextMachineCache.instance()
-                .getByContextName(contextualisedScheduledProcessEvent.getContextName());
+                .getByContextInstanceId(contextualisedScheduledProcessEvent.getContextInstanceId());
+
+            if(contextMachine == null) {
+
+                throw new InvalidContextInstanceIdException(String.format("Could not resolve context machine with context instance id [%s]." +
+                    " Cache Contents - %s", contextualisedScheduledProcessEvent.getContextInstanceId(), ContextMachineCache.instance().toString()));
+            }
 
             // put the payload straight onto the queue as it is a big message already created by ScheduledProcessEventController
             contextMachine.eventReceived(payload);
+        }
+        catch (InvalidContextInstanceIdException e) {
+            throw e;
         }
         catch (Exception e) {
             if(this.configuration.isIgnoreErrors()) {

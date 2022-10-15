@@ -21,6 +21,7 @@ import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
@@ -66,6 +67,9 @@ public class OverdueFileMonitorTest {
     @Mock
     private JobLockCacheInitialisationService jobLockCacheInitialisationService;
 
+    @Mock
+    private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
+
     @After
     public void tearDown() {
         DateTimeUtils.setCurrentMillisSystem();
@@ -96,14 +100,15 @@ public class OverdueFileMonitorTest {
         SchedulerJobInstanceServiceTestImpl mockSchedulerJobInstanceService = new SchedulerJobInstanceServiceTestImpl();
         mockSchedulerJobInstanceService.setType("file");
 
-        overdueFileMonitor = new OverdueFileMonitorImpl(30, executorService, mockSchedulerJobInstanceService);
+        overdueFileMonitor = new OverdueFileMonitorImpl(30, executorService, mockSchedulerJobInstanceService, true, 1);
         overdueFileMonitor.setNotifiers(Arrays.asList(new TestNotifier()));
 
         MonitorManagement monitorManagement = new MonitorManagement();
         monitorManagement.registerMonitor(overdueFileMonitor);
 
         contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,"./target"
-            ,null,null, null, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
+            ,null,null, null, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
         contextMachine1.init();
 
         ContextMachineCache.instance().put(contextMachine1);

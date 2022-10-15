@@ -39,6 +39,7 @@ import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -77,6 +78,8 @@ public class ContextMachine {
     private ScheduledContextService scheduledContextService;
     private SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener;
     private final JobLockCacheInitialisationService jobLockCacheInitialisationService;
+    private final ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
+    private final ContextParametersInstanceService contextParametersInstanceService;
     private ContextTemplate context;
     private int attempts;
     private long maxWait;
@@ -95,7 +98,8 @@ public class ContextMachine {
                           Map<String, ModuleMetaData> agents, JobLockCache jobLockCache,
                           ContextParametersInstanceService contextParametersInstanceService,
                           ScheduledContextService scheduledContextService, SchedulerJobInstanceService schedulerJobInstanceService,
-                          JobLockCacheInitialisationService jobLockCacheInitialisationService) {
+                          JobLockCacheInitialisationService jobLockCacheInitialisationService,
+                          ContextInstancePublicationService<ContextInstance> contextInstancePublicationService) {
         this.context = context;
         this.contextInstance = contextInstance;
         this.internalEventDrivenJobInstances = internalEventDrivenJobInstances;
@@ -113,6 +117,8 @@ public class ContextMachine {
         this.scheduledContextService = scheduledContextService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
         this.jobLockCacheInitialisationService = jobLockCacheInitialisationService;
+        this.contextInstancePublicationService = contextInstancePublicationService;
+        this.contextParametersInstanceService = contextParametersInstanceService;
         this.jobLockCache = jobLockCache;
         this.jobLogicMachine = new JobLogicMachine(this.agents, this.jobLockCache, contextParametersInstanceService);
     }
@@ -187,9 +193,18 @@ public class ContextMachine {
                 }
             });
 
-            this.saveContext();
+            List<ContextParameterInstance> allContextParameters = contextParametersInstanceService
+                .getAllContextParameters(contextInstance.getName());
+            contextInstance.setContextParameters(allContextParameters);
 
+            // Propagate the new context instance to all agents.
+            this.agents.values().forEach(agent
+                -> this.contextInstancePublicationService.publish(agent.getUrl(), this.contextInstance));
+
+            // Initialise the job lock cache for the new instance
             this.jobLockCacheInitialisationService.initialiseJobLockCache(this.context, true);
+
+            this.saveContext();
         }
     }
 

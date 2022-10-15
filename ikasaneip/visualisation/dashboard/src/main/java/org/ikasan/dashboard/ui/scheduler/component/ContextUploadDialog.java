@@ -34,6 +34,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -69,6 +70,8 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
     private JobLockCacheInitialisationService jobLockCacheInitialisationService;
+
+    private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
 
     /**
      * Constructor
@@ -166,7 +169,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
 
                 ContextMachine contextMachine = new ContextMachine(contextTemplate, contextInstance, scheduledContextInstanceService
                     , internalEventDrivenJobMap, this.queueDir, agents, jobLockCache, this.contextParametersInstanceService, this.scheduledContextService
-                    , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
+                    , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
                 contextMachine.init();
 
                 // We add the listener to write initiation events to the agents.

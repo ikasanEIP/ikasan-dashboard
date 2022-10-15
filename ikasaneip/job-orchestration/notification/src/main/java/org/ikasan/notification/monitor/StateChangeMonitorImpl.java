@@ -22,23 +22,31 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
 
     private List<Future<?>> errorNotificationsExecutors = new ArrayList<>();
 
+    private boolean notificationEnabled;
+
     /**
      * Constructor
      * @param executorService
      */
-    public StateChangeMonitorImpl(ExecutorService executorService) {
+    public StateChangeMonitorImpl(ExecutorService executorService, boolean notificationEnabled) {
         super(executorService);
         LOG.info("StateChangeMonitorImpl is being created!");
+        this.notificationEnabled = notificationEnabled;
 
         errorNotificationsExecutors.clear();
     }
 
     @Override
     public void register(ContextInstance contextInstance) {
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextInstance.getName());
-        errorNotificationsExecutors.add(Executors.newSingleThreadExecutor().submit(new ErrorNotificationsRunner(contextMachine)));
-        LOG.info("StateChangeMonitor has started monitoring on "+contextInstance.getName());
-        LOG.info(errorNotificationsExecutors.size() + " number of Contexts are being monitored now!");
+        if(this.notificationEnabled) {
+            ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextInstance.getName());
+            errorNotificationsExecutors.add(Executors.newSingleThreadExecutor().submit(new ErrorNotificationsRunner(contextMachine)));
+            LOG.info("StateChangeMonitor has started monitoring on " + contextInstance.getName());
+            LOG.info(errorNotificationsExecutors.size() + " number of Contexts are being monitored now!");
+        }
+        else {
+            LOG.info("Notifications are not enabled!");
+        }
     }
 
     @Override
