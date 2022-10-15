@@ -33,17 +33,23 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
 
     private Integer fileArrivalToleranceInMinutes;
 
+    private boolean notificationEnabled;
+    private int notificationPollingInterval;
+
     /**
      * Constructor
      * @param fileArrivalToleranceInMinutes
      * @param executorService
      */
-    public OverdueFileMonitorImpl(Integer fileArrivalToleranceInMinutes, ExecutorService executorService, SchedulerJobInstanceService schedulerJobInstanceService) {
+    public OverdueFileMonitorImpl(Integer fileArrivalToleranceInMinutes, ExecutorService executorService, SchedulerJobInstanceService schedulerJobInstanceService
+        , boolean notificationEnabled, int notificationPollingInterval) {
         super(executorService);
         LOG.info("OverdueFileMonitorImpl is being created!");
 
         this.fileArrivalToleranceInMinutes = fileArrivalToleranceInMinutes;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
+        this.notificationEnabled = notificationEnabled;
+        this.notificationPollingInterval = notificationPollingInterval;
 
         overdueFileNotificationsExecutors.clear();
     }
@@ -56,9 +62,15 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
 
     @Override
     public void register(ContextInstance contextInstance) {
-        overdueFileNotificationsExecutors.add(Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new OverdueFileNotificationsRunner(contextInstance),1,1, TimeUnit.MINUTES));
-        LOG.info("OverdueFileMonitor has started monitoring on "+contextInstance.getName());
-        LOG.info(overdueFileNotificationsExecutors.size() + " number of Contexts are being monitored now!");
+        if(this.notificationEnabled) {
+            overdueFileNotificationsExecutors.add(Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new OverdueFileNotificationsRunner(contextInstance)
+                , 1, this.notificationPollingInterval, TimeUnit.MINUTES));
+            LOG.info("OverdueFileMonitor has started monitoring on " + contextInstance.getName());
+            LOG.info(overdueFileNotificationsExecutors.size() + " number of Contexts are being monitored now!");
+        }
+        else {
+            LOG.info("Notifications are not enabled!");
+        }
     }
 
     protected class OverdueFileNotificationsRunner implements Runnable {

@@ -84,6 +84,7 @@ import com.leansoft.bigqueue.IBigQueue;
 import org.ikasan.component.endpoint.bigqueue.consumer.BigQueueConsumer;
 import org.ikasan.component.endpoint.bigqueue.serialiser.SimpleStringSerialiser;
 import org.ikasan.job.orchestration.integration.inbound.component.endpoint.ScheduleProcessInboundProducer;
+import org.ikasan.job.orchestration.integration.inbound.component.endpoint.configuration.ScheduleProcessInboundProducerConfiguration;
 import org.ikasan.spec.component.endpoint.Consumer;
 import org.ikasan.spec.component.endpoint.Producer;
 import org.springframework.beans.factory.annotation.Value;
@@ -102,10 +103,13 @@ import java.io.IOException;
 public class ScheduledProcessEventInboundFlowComponentFactory
 {
     @Value( "${module.name}" )
-    String moduleName;
+    private String moduleName;
 
     @Resource
-    IBigQueue inboundQueue;
+    private IBigQueue inboundQueue;
+
+    @Value("${scheduler.inbound.producer.ignore.errors:false}")
+    private boolean schedulerInboundProducerIgnoreErrors;
 
 
     @DependsOn("inboundQueue")
@@ -122,7 +126,13 @@ public class ScheduledProcessEventInboundFlowComponentFactory
      */
     public Producer getScheduledStatusProducer()
     {
-        return new ScheduleProcessInboundProducer();
+        ScheduleProcessInboundProducerConfiguration configuration
+            = new ScheduleProcessInboundProducerConfiguration();
+        configuration.setIgnoreErrors(this.schedulerInboundProducerIgnoreErrors);
+        ScheduleProcessInboundProducer producer =  new ScheduleProcessInboundProducer();
+        producer.setConfiguration(configuration);
+        producer.setConfiguredResourceId("scheduleProcessInboundProducer");
+        return producer;
     }
 
 }

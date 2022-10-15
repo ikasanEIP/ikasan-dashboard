@@ -3,9 +3,9 @@ package org.ikasan.job.orchestration.util;
 import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ContextHelper {
@@ -123,5 +123,31 @@ public class ContextHelper {
             });
         }
     }
+    public static List<String> getAllAgents(Context context) {
+        HashSet<String> agentSet = new HashSet<>();
 
+        populateAgentSet(context, agentSet);
+
+        return new ArrayList<>(agentSet);
+    }
+
+    private static void getAllAgents(Context context, HashSet<String> agentSet) {
+        populateAgentSet(context, agentSet);
+    }
+
+    private static void populateAgentSet(Context context, HashSet<String> agentSet) {
+        if(context.getScheduledJobs()!= null && !context.getScheduledJobs().isEmpty()) {
+            context.getScheduledJobs().forEach(job -> {
+                if(!agentSet.contains(((SchedulerJob)job).getAgentName())){
+                    agentSet.add(((SchedulerJob)job).getAgentName());
+                }
+            });
+        }
+
+        if(context.getContexts() != null) {
+            context.getContexts().forEach(c -> {
+                getAllAgents((Context) c, agentSet);
+            });
+        }
+    }
 }

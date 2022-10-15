@@ -280,12 +280,15 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
+        UI ui = attachEvent.getUI();
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
             if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.quartzScheduleDrivenJobInstance.getContextInstanceId())
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.quartzScheduleDrivenJobInstance.getJobName())) {
-                this.quartzScheduleDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-                this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                ui.access(() -> {
+                    this.quartzScheduleDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                });
             }
         });
     }

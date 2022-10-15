@@ -20,6 +20,7 @@ import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
@@ -61,12 +62,15 @@ public class StateChangeMonitorTest {
     @Mock
     private JobLockCacheInitialisationService jobLockCacheInitialisationService;
 
+    @Mock
+    private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
+
     @Before
     public void setup() throws IOException {
         objectMapper = ObjectMapperFactory.newInstance();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-        stateChangeMonitor = new StateChangeMonitorImpl(executorService);
+        stateChangeMonitor = new StateChangeMonitorImpl(executorService, true);
         stateChangeMonitor.setNotifiers(Arrays.asList(new TestNotifier()));
 
         MonitorManagement monitorManagement = new MonitorManagement();
@@ -89,7 +93,7 @@ public class StateChangeMonitorTest {
 
         ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl()
             , null,"./target",null,null, null, this.scheduledContextService,
-            this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
+            this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
 
         contextMachine1.init();
 
@@ -113,7 +117,7 @@ public class StateChangeMonitorTest {
 
         ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, new ScheduledContextInstanceServiceTestImpl()
             , null,"./target",null,null, null, this.scheduledContextService,
-            this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
+            this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
 
         contextMachine2.init();
 

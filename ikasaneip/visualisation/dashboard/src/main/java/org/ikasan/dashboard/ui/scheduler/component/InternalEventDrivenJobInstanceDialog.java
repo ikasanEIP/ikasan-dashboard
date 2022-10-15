@@ -900,20 +900,23 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
+        UI ui = attachEvent.getUI();
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
             if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.internalEventDrivenJobInstance.getContextInstanceId())
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName().equals(this.internalEventDrivenJobInstance.getChildContextName())
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.internalEventDrivenJobInstance.getJobName())) {
-                this.internalEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-                this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                ui.access(() -> {
+                    this.internalEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
 
-                this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
+                    this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
 
-                this.viewOutputLogButton.setVisible(this.scheduledProcessEvent != null);
-                this.viewErrorLogButton.setVisible(this.scheduledProcessEvent != null);
+                    this.viewOutputLogButton.setVisible(this.scheduledProcessEvent != null);
+                    this.viewErrorLogButton.setVisible(this.scheduledProcessEvent != null);
 
-                this.setButtonVisibility();
+                    this.setButtonVisibility();
+                });
             }
         });
     }
