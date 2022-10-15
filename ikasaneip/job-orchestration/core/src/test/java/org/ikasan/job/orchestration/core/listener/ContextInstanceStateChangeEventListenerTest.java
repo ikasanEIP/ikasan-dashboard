@@ -17,6 +17,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.junit.Assert;
@@ -43,6 +44,9 @@ public class ContextInstanceStateChangeEventListenerTest extends AbstractTest {
 
     @Mock
     private JobLockCacheInitialisationService jobLockCacheInitialisationService;
+
+    @Mock
+    private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
 
     @Test
     public void test_context_instance_event_listener_success() throws IOException, InterruptedException {
@@ -71,7 +75,7 @@ public class ContextInstanceStateChangeEventListenerTest extends AbstractTest {
 
         ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService
-            , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
+            , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
         contextMachine.init();
         contextMachine.addContextInstanceStateChangeEventListener(event -> {
             Assert.assertNotNull(event);

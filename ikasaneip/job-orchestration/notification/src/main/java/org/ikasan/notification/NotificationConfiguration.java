@@ -53,6 +53,12 @@ public class NotificationConfiguration {
     @Value("${mail.link.url}")
     private String mailLinkUrl;
 
+    @Value("${notifications.enabled:true}")
+    private boolean notificationEnabled;
+
+    @Value("${notifications.polling.interval.minutes:1}")
+    private int notificationPollingInterval;
+
     /** default executor service is a single thread executor */
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -65,21 +71,23 @@ public class NotificationConfiguration {
 
     @Bean
     public Monitor stateChangeMonitor(List<Notifier> stateChangeNotifiers) {
-        Monitor monitor = new StateChangeMonitorImpl(executorService);
+        Monitor monitor = new StateChangeMonitorImpl(executorService, this.notificationEnabled);
         monitor.setNotifiers(stateChangeNotifiers);
         return monitor;
     }
 
     @Bean
     public Monitor overdueFileMonitor(List<Notifier> overdueFileNotifiers) {
-        Monitor monitor = new OverdueFileMonitorImpl(fileArrivalToleranceInMinutes, executorService, schedulerJobInstanceService);
+        Monitor monitor = new OverdueFileMonitorImpl(fileArrivalToleranceInMinutes, executorService, schedulerJobInstanceService
+            , this.notificationEnabled, this.notificationPollingInterval);
         monitor.setNotifiers(overdueFileNotifiers);
         return monitor;
     }
 
     @Bean
     public Monitor jobRunningTimesMonitor(List<Notifier> jobRunningTimesNotifiers) {
-        Monitor monitor = new JobRunningTimesMonitorImpl(executorService, schedulerJobInstanceService, internalEventDrivenJobService);
+        Monitor monitor = new JobRunningTimesMonitorImpl(executorService, schedulerJobInstanceService, internalEventDrivenJobService
+            , this.notificationEnabled, this.notificationPollingInterval);
         monitor.setNotifiers(jobRunningTimesNotifiers);
         return monitor;
     }

@@ -107,10 +107,13 @@ public class MetaDataController
             List<ConfigurationMetaData> configurationMetaDataList = this.mapper.readValue(configurationMetadataJsonPayload
                 , mapper.getTypeFactory().constructCollectionType(List.class, ConfigurationMetaDataImpl.class));
 
-            this.configurationMetaDataBatchInsert.insert(configurationMetaDataList);
+            if(!configurationMetaDataList.isEmpty()) {
+                this.configurationMetaDataBatchInsert.insert(configurationMetaDataList);
+            }
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to perform a batch insert of ConfigurationMetaData!"),
                 HttpStatus.BAD_REQUEST);

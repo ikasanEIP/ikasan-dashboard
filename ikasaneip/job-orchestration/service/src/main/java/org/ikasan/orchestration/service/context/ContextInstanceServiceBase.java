@@ -12,6 +12,7 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.module.ModuleType;
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -45,7 +46,7 @@ public abstract class ContextInstanceServiceBase {
     protected final ModuleMetaDataService moduleMetadataService;
     protected final InternalEventDrivenJobService internalEventDrivenJobService;
     protected final ContextParametersInstanceService contextParametersInstanceService;
-    protected final ContextInstancePublicationService<ContextInstance> contextParametersUpdateService;
+    protected final ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
     protected final JobLockCacheService jobLockCacheService;
     protected final ScheduledContextService scheduledContextService;
     protected final SchedulerJobInstanceService schedulerJobInstanceService;
@@ -93,8 +94,8 @@ public abstract class ContextInstanceServiceBase {
         if (this.contextParametersInstanceService == null) {
             throw new IllegalArgumentException("contextParametersInstanceService cannot be null!");
         }
-        this.contextParametersUpdateService = contextParametersUpdateService;
-        if (this.contextParametersUpdateService == null) {
+        this.contextInstancePublicationService = contextParametersUpdateService;
+        if (this.contextInstancePublicationService == null) {
             throw new IllegalArgumentException("contextParametersUpdateService cannot be null!");
         }
         this.jobLockCacheService = jobLockCacheService;
@@ -142,7 +143,7 @@ public abstract class ContextInstanceServiceBase {
         }
 
         Map<String, InternalEventDrivenJobInstance> internalJobs = getInternalJobs(instance.getId());
-        HashMap<String, ModuleMetaData> agents = getAgents();
+        HashMap<String, ModuleMetaData> agents = getAgents(context);
 
         internalJobs.entrySet().forEach(job -> {
             if(job.getValue().isSkip()) {
@@ -159,7 +160,7 @@ public abstract class ContextInstanceServiceBase {
 
         ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, internalJobs, queueDirectory, agents,
             initialiseJobLockCache(context, isInitialContextInstantiation), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
-            this.jobLockCacheInitialisationService);
+            this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
         contextMachine.init();
 
         // We add the listener to write initiation events to the agents.
@@ -181,8 +182,9 @@ public abstract class ContextInstanceServiceBase {
         // set the parameters on the instance every time
         setContextParametersOnInstance(instance);
 
+        propagateContextInstanceToAgents(instance, agents);
+
         if (isInitialContextInstantiation) {
-            populateParamsWithAgent(instance, agents);
             this.saveContextInstance(instance, InstanceStatus.WAITING);
         }
 
@@ -190,11 +192,11 @@ public abstract class ContextInstanceServiceBase {
     }
 
     protected void removeAgentInstances(ContextInstance instance) {
-        HashMap<String, ModuleMetaData> agents = getAgents();
+        HashMap<String, ModuleMetaData> agents = getAgents(instance);
         if (!agents.keySet().isEmpty()) {
             for (String key : agents.keySet()) {
                 ModuleMetaData agent = agents.get(key);
-                contextParametersUpdateService.remove(agent.getUrl(), instance);
+                contextInstancePublicationService.remove(agent.getUrl(), instance);
             }
         }
     }
@@ -204,11 +206,13 @@ public abstract class ContextInstanceServiceBase {
         return JobLockCacheImpl.instance();
     }
 
-    private HashMap<String, ModuleMetaData> getAgents() {
+    private HashMap<String, ModuleMetaData> getAgents(Context context) {
         HashMap<String, ModuleMetaData> agents = new HashMap<>();
 
+        List<String> contextAgents = ContextHelper.getAllAgents(context);
+
         ModuleMetadataSearchResults searchResults = moduleMetadataService
-            .find(List.of(), ModuleType.SCHEDULER_AGENT, -1, -1);
+            .find(contextAgents, ModuleType.SCHEDULER_AGENT, -1, -1);
 
         searchResults.getResultList().forEach(agent -> agents.put(agent.getName(), agent));
 
@@ -228,11 +232,11 @@ public abstract class ContextInstanceServiceBase {
         return internalEventDrivenJobMap;
     }
 
-    private void populateParamsWithAgent(ContextInstance contextInstance, HashMap<String, ModuleMetaData> agents) {
+    private void propagateContextInstanceToAgents(ContextInstance contextInstance, HashMap<String, ModuleMetaData> agents) {
         if (!agents.keySet().isEmpty()) {
             for (String key : agents.keySet()) {
                 ModuleMetaData agent = agents.get(key);
-                contextParametersUpdateService.publish(agent.getUrl(), contextInstance);
+                contextInstancePublicationService.publish(agent.getUrl(), contextInstance);
             }
         }
     }
