@@ -8,8 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
-public class StartupApplicationListener implements
-    ApplicationListener<ContextRefreshedEvent> {
+public class StartupApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
 
     private Logger logger = LoggerFactory.getLogger(StartupApplicationListener.class);
 

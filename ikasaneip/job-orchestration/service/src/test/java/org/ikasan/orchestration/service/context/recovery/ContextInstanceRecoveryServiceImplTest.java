@@ -369,6 +369,7 @@ public class ContextInstanceRecoveryServiceImplTest {
 
         verify(schedulerJobInstanceService, times(0)).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
         verify(scheduledContextInstanceService, times(3)).save(any(ScheduledContextInstanceRecord.class));
+        verify(contextInstancePublicationService, times(9)).publish(any(String.class), any(ContextInstance.class));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
