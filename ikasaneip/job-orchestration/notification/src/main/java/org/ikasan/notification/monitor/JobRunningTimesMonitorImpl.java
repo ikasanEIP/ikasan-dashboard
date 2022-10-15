@@ -28,6 +28,9 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private InternalEventDrivenJobService internalEventDrivenJobService;
 
+    private boolean notificationEnabled;
+    private int notificationPollingInterval;
+
     private List<ScheduledFuture<?>> jobRunningTimesNotificationsExecutors = new ArrayList<>();
 
     /**
@@ -35,12 +38,15 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
      * @param executorService
      */
     public JobRunningTimesMonitorImpl(ExecutorService executorService, SchedulerJobInstanceService schedulerJobInstanceService,
-                                      InternalEventDrivenJobService internalEventDrivenJobService) {
+                                      InternalEventDrivenJobService internalEventDrivenJobService, boolean notificationEnabled,
+                                      int notificationPollingInterval) {
         super(executorService);
         LOG.info("JobRunningTimesMonitorImpl is being created!");
 
         this.schedulerJobInstanceService = schedulerJobInstanceService;
         this.internalEventDrivenJobService = internalEventDrivenJobService;
+        this.notificationEnabled = notificationEnabled;
+        this.notificationPollingInterval = notificationPollingInterval;
 
         jobRunningTimesNotificationsExecutors.clear();
     }
@@ -53,9 +59,16 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
 
     @Override
     public void register(ContextInstance contextInstance) {
-        jobRunningTimesNotificationsExecutors.add(Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new JobRunningTimesNotificationsRunner(contextInstance),1,1, TimeUnit.MINUTES));
-        LOG.info("JobRunningTimesMonitor has started monitoring on "+contextInstance.getName());
-        LOG.info(jobRunningTimesNotificationsExecutors.size() + " number of Contexts are being monitored now!");
+        if(this.notificationEnabled) {
+            jobRunningTimesNotificationsExecutors.add(Executors.newSingleThreadScheduledExecutor()
+                .scheduleAtFixedRate(new JobRunningTimesNotificationsRunner(contextInstance), 1, this.notificationPollingInterval, TimeUnit.MINUTES));
+
+            LOG.info("JobRunningTimesMonitor has started monitoring on " + contextInstance.getName());
+            LOG.info(jobRunningTimesNotificationsExecutors.size() + " number of Contexts are being monitored now!");
+        }
+        else {
+            LOG.info("Notifications are not enabled!");
+        }
     }
 
     protected class JobRunningTimesNotificationsRunner implements Runnable {

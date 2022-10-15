@@ -41,7 +41,6 @@
 package org.ikasan.orchestration.service.context.recovery;
 
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
-import org.ikasan.orchestration.service.context.JobLockCacheInitialisationServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -163,7 +162,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                     LOG.info(message);
                     executor.execute(new MissingContextInstanceRecoveryRunnable(
                         this.queueDirectory, this.scheduledContextInstanceService, this.jobInitiationService, this.moduleMetadataService, this.internalEventDrivenJobService,
-                        this.contextParametersInstanceService, this.contextParametersUpdateService, this.jobLockCacheService, this.scheduledContextService,
+                        this.contextParametersInstanceService, this.contextInstancePublicationService, this.jobLockCacheService, this.scheduledContextService,
                         scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster,
                         this.jobLockCacheInitialisationService
                     ));

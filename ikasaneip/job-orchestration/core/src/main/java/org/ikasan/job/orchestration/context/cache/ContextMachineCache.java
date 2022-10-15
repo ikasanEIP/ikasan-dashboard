@@ -52,8 +52,8 @@ public class ContextMachineCache
 
     public ContextMachine getByContextInstanceId(String contextInstanceId)
     {
-        logger.debug(String.format("%s attempting to get context using context instance id[%s]"
-            , this, contextInstanceId));
+        logger.debug(String.format("Attempting to get context using context instance id[%s]"
+            , contextInstanceId));
 
         return this.contextInstanceByContextInstanceIdCache.get(contextInstanceId);
     }
@@ -61,7 +61,7 @@ public class ContextMachineCache
     public boolean containsContextName(String contextName)
     {
         boolean result = this.contextInstanceByContextNameCache.containsKey(contextName);
-        logger.debug(String.format("%s check contains[%s] - result [%s]",this
+        logger.debug(String.format("Check contains[%s] - result [%s]"
             , contextName, result));
         return result;
     }
@@ -70,7 +70,7 @@ public class ContextMachineCache
     {
         boolean result = this.contextInstanceByContextInstanceIdCache.containsKey(contextInstanceId);
 
-        logger.debug(String.format("%s check contains[%s] - result [%s]",this
+        logger.debug(String.format("Check contains[%s] - result [%s]"
             , contextInstanceId, result));
         return result;
     }
@@ -89,4 +89,16 @@ public class ContextMachineCache
         this.contextInstanceByContextInstanceIdCache.remove(contextMachine.getContext().getId(), contextMachine);
     }
 
+    @Override
+    public String toString() {
+        StringBuffer cacheContexts = new StringBuffer("ContextMachineCache[");
+        this.contextInstanceIdentifiers().forEach(id -> {
+            ContextMachine machine = this.getByContextInstanceId(id);
+            cacheContexts.append("{contextName[").append(machine.getContext().getName())
+                .append("], contextInstanceId[").append(machine.getContext().getId()).append("]} ");
+        });
+
+        cacheContexts.append("]");
+        return cacheContexts.toString();
+    }
 }

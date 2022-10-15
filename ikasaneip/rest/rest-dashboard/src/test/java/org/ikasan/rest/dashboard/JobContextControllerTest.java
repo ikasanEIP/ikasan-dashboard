@@ -12,6 +12,7 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.junit.Before;
@@ -68,6 +69,9 @@ public class JobContextControllerTest extends  AbstractRestMvcTest {
     @Mock
     private JobLockCacheInitialisationService jobLockCacheInitialisationService;
 
+    @Mock
+    private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
+
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -110,9 +114,11 @@ public class JobContextControllerTest extends  AbstractRestMvcTest {
         contextTemplate2.setName("context-template-2");
 
         ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, null, null
-            ,null,null,null, null, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
+            ,null,null,null, null, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
         ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, null, null
-            ,null,null,null, null, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService);
+            ,null,null,null, null, this.scheduledContextService, this.schedulerJobInstanceService
+            , this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
 
         ContextMachineCache.instance().put(contextMachine1);
         ContextMachineCache.instance().put(contextMachine2);
