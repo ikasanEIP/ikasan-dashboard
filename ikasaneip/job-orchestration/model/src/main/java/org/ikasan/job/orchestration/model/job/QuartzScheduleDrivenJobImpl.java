@@ -1,7 +1,12 @@
 package org.ikasan.job.orchestration.model.job;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 
+import java.util.List;
 import java.util.Map;
 
 public class QuartzScheduleDrivenJobImpl extends SchedulerJobImpl implements QuartzScheduleDrivenJob {
@@ -27,7 +32,9 @@ public class QuartzScheduleDrivenJobImpl extends SchedulerJobImpl implements Qua
 
     /** tolerance period in millis within which it makes sense to rerun a schedule if it was missed - default 30 minutes */
     private long recoveryTolerance = 30 * 60 * 1000;
-
+    protected List<String> blackoutWindowCronExpressions;
+    protected Map<String,String> blackoutWindowDateTimeRanges;
+    protected boolean isDropEventOnBlackout;
 
     @Override
     public String getCronExpression() {
@@ -120,31 +127,47 @@ public class QuartzScheduleDrivenJobImpl extends SchedulerJobImpl implements Qua
     }
 
     @Override
+    public List<String> getBlackoutWindowCronExpressions() {
+        return blackoutWindowCronExpressions;
+    }
+
+    @Override
+    public void setBlackoutWindowCronExpressions(List<String> blackoutWindowCronExpressions) {
+        this.blackoutWindowCronExpressions = blackoutWindowCronExpressions;
+    }
+
+    @Override
+    public Map<String, String> getBlackoutWindowDateTimeRanges() {
+        return blackoutWindowDateTimeRanges;
+    }
+
+    @Override
+    public void setBlackoutWindowDateTimeRanges(Map<String, String> blackoutWindowDateTimeRanges) {
+        this.blackoutWindowDateTimeRanges = blackoutWindowDateTimeRanges;
+    }
+
+    @Override
+    public boolean isDropEventOnBlackout() {
+        return isDropEventOnBlackout;
+    }
+
+    @Override
+    public void setDropEventOnBlackout(boolean dropEventOnBlackout) {
+        isDropEventOnBlackout = dropEventOnBlackout;
+    }
+
+    @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("QuartzScheduleDrivenJobImpl{");
-        sb.append("cronExpression='").append(cronExpression).append('\'');
-        sb.append(", jobGroup='").append(jobGroup).append('\'');
-        sb.append(", timeZone='").append(timeZone).append('\'');
-        sb.append(", ignoreMisfire=").append(ignoreMisfire);
-        sb.append(", eager=").append(eager);
-        sb.append(", maxEagerCallbacks=").append(maxEagerCallbacks);
-        sb.append(", passthroughProperties=").append(passthroughProperties);
-        sb.append(", persistentRecovery=").append(persistentRecovery);
-        sb.append(", recoveryTolerance=").append(recoveryTolerance);
-        sb.append(", jobIdentifier='").append(jobIdentifier).append('\'');
-        sb.append(", agentName='").append(agentName).append('\'');
-        sb.append(", jobName='").append(jobName).append('\'');
-        sb.append(", contextId='").append(contextName).append('\'');
-        if(childContextNames != null) {
-            sb.append(", childContextIds=[ ");
-            childContextNames.forEach(id -> sb.append("[").append(id).append("] "));
-        }
-        else {
-            sb.append(", childContextIds='").append(this.childContextNames).append('\'');
-        }
-        sb.append("], description='").append(description).append('\'');
-        sb.append(", startupControlType='").append(startupControlType).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 }

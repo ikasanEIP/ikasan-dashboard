@@ -17,6 +17,8 @@
   },
   "persistentRecovery" : true,
   "recoveryTolerance" : 1800000,
+  "blackoutWindowCronExpressions" : [ ],
+  "blackoutWindowDateTimeRanges" : { },
   "filePath" : "filePath",
   "moveDirectory" : "moveDirectory",
   "filenames" : [ "file1", "file2" ],
@@ -29,6 +31,7 @@
   "logMatchedFilenames" : true,
   "ignoreFileRenameWhilstScanning" : false,
   "minFileAgeSeconds" : 180,
-  "jobDescription" : "description",
-  "identifier" : "agentName-jobName"
+  "dropEventOnBlackout" : false,
+  "identifier" : "agentName-jobName",
+  "jobDescription" : "description"
 }
