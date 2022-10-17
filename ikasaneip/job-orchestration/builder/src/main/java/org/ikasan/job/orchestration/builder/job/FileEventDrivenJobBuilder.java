@@ -108,6 +108,8 @@ public class FileEventDrivenJobBuilder extends QuartzScheduleDrivenJobBuilder {
         fileEventDrivenJob.setTimeZone(super.timeZone);
         fileEventDrivenJob.setJobGroup(super.jobGroup);
         fileEventDrivenJob.setStartupControlType(super.startupControlType);
+        fileEventDrivenJob.setBlackoutWindowCronExpressions(super.blackoutWindowCronExpressions);
+        fileEventDrivenJob.setBlackoutWindowDateTimeRanges(super.blackoutWindowDateTimeRanges);
         fileEventDrivenJob.setEncoding(this.encoding);
         fileEventDrivenJob.setIncludeHeader(this.includeHeader);
         fileEventDrivenJob.setIncludeTrailer(this.includeTrailer);

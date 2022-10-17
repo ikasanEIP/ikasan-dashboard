@@ -17,6 +17,9 @@
   },
   "persistentRecovery" : true,
   "recoveryTolerance" : 100,
+  "blackoutWindowCronExpressions" : [ ],
+  "blackoutWindowDateTimeRanges" : { },
+  "dropEventOnBlackout" : false,
   "identifier" : "agentName-jobName",
   "jobDescription" : "description"
 }
