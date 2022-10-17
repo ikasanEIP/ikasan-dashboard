@@ -1,8 +1,13 @@
 package org.ikasan.scheduled.job.model;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SolrQuartzScheduleDrivenJobImpl extends SolrSchedulerJobImpl implements QuartzScheduleDrivenJob {
@@ -10,6 +15,9 @@ public class SolrQuartzScheduleDrivenJobImpl extends SolrSchedulerJobImpl implem
     protected String cronExpression;
     protected String jobGroup;
     protected String timeZone;
+    protected List<String> blackoutWindowCronExpressions;
+    protected Map<String,String> blackoutWindowDateTimeRanges;
+    protected boolean isDropEventOnBlackout;
 
     /** whether to ignore a misfire - default true */
     private boolean ignoreMisfire = true;
@@ -120,24 +128,47 @@ public class SolrQuartzScheduleDrivenJobImpl extends SolrSchedulerJobImpl implem
     }
 
     @Override
+    public List<String> getBlackoutWindowCronExpressions() {
+        return blackoutWindowCronExpressions;
+    }
+
+    @Override
+    public void setBlackoutWindowCronExpressions(List<String> blackoutWindowCronExpressions) {
+        this.blackoutWindowCronExpressions = blackoutWindowCronExpressions;
+    }
+
+    @Override
+    public Map<String, String> getBlackoutWindowDateTimeRanges() {
+        return blackoutWindowDateTimeRanges;
+    }
+
+    @Override
+    public void setBlackoutWindowDateTimeRanges(Map<String, String> blackoutWindowDateTimeRanges) {
+        this.blackoutWindowDateTimeRanges = blackoutWindowDateTimeRanges;
+    }
+
+    @Override
+    public boolean isDropEventOnBlackout() {
+        return isDropEventOnBlackout;
+    }
+
+    @Override
+    public void setDropEventOnBlackout(boolean dropEventOnBlackout) {
+        isDropEventOnBlackout = dropEventOnBlackout;
+    }
+
+    @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("SolrQuartzScheduleDrivenJobImpl{");
-        sb.append("cronExpression='").append(cronExpression).append('\'');
-        sb.append(", jobGroup='").append(jobGroup).append('\'');
-        sb.append(", timeZone='").append(timeZone).append('\'');
-        sb.append(", ignoreMisfire=").append(ignoreMisfire);
-        sb.append(", eager=").append(eager);
-        sb.append(", maxEagerCallbacks=").append(maxEagerCallbacks);
-        sb.append(", passthroughProperties=").append(passthroughProperties);
-        sb.append(", persistentRecovery=").append(persistentRecovery);
-        sb.append(", recoveryTolerance=").append(recoveryTolerance);
-        sb.append(", jobIdentifier='").append(jobIdentifier).append('\'');
-        sb.append(", agentName='").append(agentName).append('\'');
-        sb.append(", jobName='").append(jobName).append('\'');
-        sb.append(", jobDescription='").append(jobDescription).append('\'');
-        sb.append(", contextId='").append(contextName).append('\'');
-        sb.append(", startupControlType='").append(startupControlType).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 }

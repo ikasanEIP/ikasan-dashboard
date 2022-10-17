@@ -62,7 +62,14 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
             ContextInstanceImpl contextInstance = this.objectMapper
                 .readValue(this.objectMapper.writeValueAsBytes(this.scheduledContextRecord.getContext()), ContextInstanceImpl.class);
 
-            initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true);
+            if(!this.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions())
+                && !this.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges())) {
+                initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true);
+            }
+            else {
+                LOG.info(String.format("ContextTemplate [%s] falls withing a blackout time window and will not be registered!"
+                    , scheduledContextRecord.getContext().getName()));
+            }
 
         } catch (Exception e) {
             // TODO hook in notification here

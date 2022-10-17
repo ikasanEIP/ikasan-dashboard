@@ -28,9 +28,12 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
+import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.ParseException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -199,6 +202,40 @@ public abstract class ContextInstanceServiceBase {
                 contextInstancePublicationService.remove(agent.getUrl(), instance);
             }
         }
+    }
+
+    protected boolean fallsWithinCronBlackoutWindows(List<String> blackoutWindowCronExpressions) {
+        if (blackoutWindowCronExpressions != null && !blackoutWindowCronExpressions.isEmpty()) {
+            Date now = new Date();
+            for (String cronExpression : blackoutWindowCronExpressions) {
+                try {
+                    CronExpression cronExpressionObj = new CronExpression(cronExpression);
+                    if (cronExpressionObj.isSatisfiedBy(now)) {
+                        return true;
+                    }
+                } catch (ParseException e) {
+                    LOG.warn("Failed to parse cronExpression [" + cronExpression + "]. Please fix configuration", e);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    protected boolean fallsWithinDateTimeBlackoutRanges(Map<Long, Long> blackoutDateTimeRanges) {
+        if(blackoutDateTimeRanges != null && !blackoutDateTimeRanges.isEmpty())
+        {
+            for(Map.Entry<Long,Long> dateRangeEntry : blackoutDateTimeRanges.entrySet()) {
+                long from = dateRangeEntry.getKey();
+                long to = dateRangeEntry.getValue();
+                long fireTime = System.currentTimeMillis();
+                if(fireTime >= from && fireTime <= to) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private JobLockCache initialiseJobLockCache(ContextTemplate context, boolean isRefresh) {

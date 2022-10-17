@@ -65,6 +65,12 @@ import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.quartz.CronExpression;
+
+import java.text.ParseException;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRegistrationService {
     private static final Log LOG = LogFactory.getLog(ContextInstanceRegistrationServiceImpl.class);
@@ -98,6 +104,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
     }
 
 
+    @Override
     public void deRegister(String contextName) {
         try {
             LOG.info(String.format("De registering context [%s]", contextName));
@@ -124,6 +131,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         }
     }
 
+    @Override
     public void register(String contextName) {
         try {
             LOG.info(String.format("Registering context [%s]", contextName));
@@ -138,14 +146,22 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                 return;
             }
 
-            ContextTemplate context = objectMapper.readValue(objectMapper.writeValueAsBytes(scheduledContextRecord.getContext()), ContextTemplateImpl.class);
-            ContextInstanceImpl contextInstance = objectMapper.readValue(objectMapper.writeValueAsBytes(scheduledContextRecord.getContext()), ContextInstanceImpl.class);
-            initialiseContextMachine(context, contextInstance, true);
+            ContextTemplate context = objectMapper.readValue(objectMapper
+                .writeValueAsBytes(scheduledContextRecord.getContext()), ContextTemplateImpl.class);
+            ContextInstanceImpl contextInstance = objectMapper.readValue(objectMapper
+                .writeValueAsBytes(scheduledContextRecord.getContext()), ContextInstanceImpl.class);
+
+            if(!this.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions())
+                && !this.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges())) {
+                initialiseContextMachine(context, contextInstance, true);
+            }
+            else {
+                LOG.info(String.format("ContextTemplate [%s] falls withing a blackout time window and will not be registered!", contextName));
+            }
 
         } catch (Exception e) {
             LOG.error(String.format("An error has occurred executing registering job [%s]", e.getMessage()), e);
             throw new RuntimeException(e);
         }
-
     }
 }

@@ -13,6 +13,8 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     protected String name;
     protected String description;
     protected String timezone;
+    protected Map<Long, Long> blackoutWindowDateTimeRanges;
+    protected List<String> blackoutWindowCronExpressions;
     protected List<JobDependency> jobDependencies;
     protected List<ContextDependency> contextDependencies = new ArrayList<>();
     protected List<CONTEXT_PARAM> contextParameters = new ArrayList<>() ;
@@ -47,6 +49,26 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     @Override
     public void setTimezone(String timezone) {
         this.timezone = timezone;
+    }
+
+    @Override
+    public List<String> getBlackoutWindowCronExpressions() {
+        return this.blackoutWindowCronExpressions;
+    }
+
+    @Override
+    public void setBlackoutWindowCronExpressions(List<String> blackoutWindowCronExpressions) {
+        this.blackoutWindowCronExpressions = blackoutWindowCronExpressions;
+    }
+
+    @Override
+    public Map<Long, Long> getBlackoutWindowDateTimeRanges() {
+        return this.blackoutWindowDateTimeRanges;
+    }
+
+    @Override
+    public void setBlackoutWindowDateTimeRanges(Map<Long, Long> blackoutWindowDateTimeRanges) {
+        this.blackoutWindowDateTimeRanges = blackoutWindowDateTimeRanges;
     }
 
     @Override
