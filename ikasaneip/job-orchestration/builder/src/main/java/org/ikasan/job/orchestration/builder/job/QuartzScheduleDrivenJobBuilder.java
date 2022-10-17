@@ -1,8 +1,12 @@
 package org.ikasan.job.orchestration.builder.job;
 
+import org.ikasan.job.orchestration.builder.context.ContextTemplateBuilder;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class QuartzScheduleDrivenJobBuilder extends SchedulerJobBuilder {
@@ -15,6 +19,8 @@ public class QuartzScheduleDrivenJobBuilder extends SchedulerJobBuilder {
     protected Map<String,String> passthroughProperties;
     protected boolean persistentRecovery = true;
     protected long recoveryTolerance = 30 * 60 * 1000;
+    protected Map<String, String> blackoutWindowDateTimeRanges = new HashMap<>();
+    protected List<String> blackoutWindowCronExpressions = new ArrayList<>();
 
     public QuartzScheduleDrivenJobBuilder withCronExpression(String cronExpression) {
         this.cronExpression = cronExpression;
@@ -70,6 +76,16 @@ public class QuartzScheduleDrivenJobBuilder extends SchedulerJobBuilder {
         return this;
     }
 
+    public QuartzScheduleDrivenJobBuilder withBlackoutWindowCronExpression(String blackoutWindowCronExpression) {
+        this.blackoutWindowCronExpressions.add(blackoutWindowCronExpression);
+        return this;
+    }
+
+    public QuartzScheduleDrivenJobBuilder withBlackoutDateTimeWindow(long windowStart, long windowEnd) {
+        this.blackoutWindowDateTimeRanges.put(String.valueOf(windowStart), String.valueOf(windowEnd));
+        return this;
+    }
+
     public QuartzScheduleDrivenJob build() {
         QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
         quartzScheduleDrivenJob.setAgentName(super.agentName);
@@ -88,6 +104,8 @@ public class QuartzScheduleDrivenJobBuilder extends SchedulerJobBuilder {
         quartzScheduleDrivenJob.setPassthroughProperties(this.passthroughProperties);
         quartzScheduleDrivenJob.setPersistentRecovery(this.persistentRecovery);
         quartzScheduleDrivenJob.setRecoveryTolerance(this.recoveryTolerance);
+        quartzScheduleDrivenJob.setBlackoutWindowCronExpressions(this.blackoutWindowCronExpressions);
+        quartzScheduleDrivenJob.setBlackoutWindowDateTimeRanges(this.blackoutWindowDateTimeRanges);
 
         return quartzScheduleDrivenJob;
     }
