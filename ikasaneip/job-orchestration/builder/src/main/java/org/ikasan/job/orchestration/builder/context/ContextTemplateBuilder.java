@@ -6,7 +6,9 @@ import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ContextTemplateBuilder {
     protected String name;
@@ -19,6 +21,8 @@ public class ContextTemplateBuilder {
     protected List<SchedulerJob> scheduledJobs = new ArrayList<>();
     protected String timeWindowStartCronExpression;
     protected String timeWindowEndCronExpression;
+    protected Map<Long, Long> blackoutWindowDateTimeRanges = new HashMap<>();
+    protected List<String> blackoutWindowCronExpressions = new ArrayList<>();
     protected List<JobLock> jobLocks = new ArrayList<>();
 
     public ContextTemplateBuilder withName(String name) {
@@ -98,6 +102,16 @@ public class ContextTemplateBuilder {
         return this;
     }
 
+    public ContextTemplateBuilder withBlackoutWindowCronExpression(String blackoutWindowCronExpression) {
+        this.blackoutWindowCronExpressions.add(blackoutWindowCronExpression);
+        return this;
+    }
+
+    public ContextTemplateBuilder withBlackoutDateTimeWindow(long windowStart, long windowEnd) {
+        this.blackoutWindowDateTimeRanges.put(windowStart, windowEnd);
+        return this;
+    }
+
     public SchedulerJobBuilder getSchedulerJobBuilder() {
         return new SchedulerJobBuilder();
     }
@@ -159,6 +173,8 @@ public class ContextTemplateBuilder {
         contextTemplate.setJobDependencies(this.jobDependencies);
         contextTemplate.setScheduledJobs(this.scheduledJobs);
         contextTemplate.setJobLocks(this.jobLocks);
+        contextTemplate.setBlackoutWindowCronExpressions(this.blackoutWindowCronExpressions);
+        contextTemplate.setBlackoutWindowDateTimeRanges(this.blackoutWindowDateTimeRanges);
 
         return contextTemplate;
     }

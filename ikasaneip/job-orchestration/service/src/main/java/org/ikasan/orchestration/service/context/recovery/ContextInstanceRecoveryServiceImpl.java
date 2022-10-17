@@ -152,7 +152,15 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                     try {
                         ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
                         LOG.info(String.format("Recovering instance [%s] id [%s]", contextInstance.getName(), contextInstance.getId()));
-                        initialiseContextMachine(context, contextInstance, false);
+
+                        if(!this.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions())
+                            && !this.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges())) {
+                            initialiseContextMachine(context, contextInstance, false);
+                        }
+                        else {
+                            LOG.info(String.format("ContextTemplate [%s] falls withing a blackout time window and will not be registered!", context.getName()));
+                        }
+
                     } catch (Exception e) {
                         // todo probably want to send a notification here.
                         LOG.error(String.format("An error has occurred recovering context instance [%s]!", scheduledContextInstanceRecord.getContextName()), e);
