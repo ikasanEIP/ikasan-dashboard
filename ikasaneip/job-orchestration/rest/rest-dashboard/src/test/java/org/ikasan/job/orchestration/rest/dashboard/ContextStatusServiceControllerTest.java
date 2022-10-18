@@ -115,7 +115,7 @@ public class ContextStatusServiceControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
         String content = mvcResult.getResponse().getContentAsString();
         assertThat(content,
-            containsString("An error has occurred attempting to get status for instance Instance_Name, context Context_Name, jobIdentifier null!"));
+            containsString("An error has occurred attempting to get status for instance Instance_Name, context Context_Name, jobName null!"));
     }
 
     @Test
@@ -130,9 +130,9 @@ public class ContextStatusServiceControllerTest {
 
     @Test
     public void should_return_response_entity_correctly_json_context_status_job() throws Exception {
-        when(contextStatusService.getJsonContextStatusForJob("instance-name", "context-name", "job-identifier")).thenReturn("{\"message\":\"good\"}");
+        when(contextStatusService.getJsonContextStatusForJob("instance-name", "context-name", "job-name")).thenReturn("{\"message\":\"good\"}");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/instance-name/context-name/job-identifier")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/instance-name/context-name/job-name")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
@@ -142,23 +142,23 @@ public class ContextStatusServiceControllerTest {
     @Test
     public void should_return_response_entity_error_json_context_status_job() throws Exception {
 
-        when(contextStatusService.getJsonContextStatusForJob("instance-name", "context-name", "job-identifier")).thenThrow(new RuntimeException("expected exception"));
+        when(contextStatusService.getJsonContextStatusForJob("instance-name", "context-name", "job-name")).thenThrow(new RuntimeException("expected exception"));
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/instance-name/context-name/job-identifier")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/instance-name/context-name/job-name")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
         String content = mvcResult.getResponse().getContentAsString();
         assertThat(content,
-            containsString("An error has occurred attempting to get status for instance instance-name, context context-name, jobIdentifier job-identifier!"));
+            containsString("An error has occurred attempting to get status for instance instance-name, context context-name, jobName job-name!"));
     }
 
     @Test
     public void should_return_response_entity_empty_json_context_status_job() throws Exception {
 
-        when(contextStatusService.getJsonContextStatusForJob("instance-name", "context-name", "job-identifier")).thenReturn("");
+        when(contextStatusService.getJsonContextStatusForJob("instance-name", "context-name", "job-name")).thenReturn("");
 
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/instance-name/context-name/job-identifier")
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/context/status/json/instance-name/context-name/job-name")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.NO_CONTENT.value(), mvcResult.getResponse().getStatus());

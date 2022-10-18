@@ -99,23 +99,23 @@ public class ContextStatusServiceController {
         return new ResponseEntity(contextNameStatus, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = {"/json/{instanceName}/{contextName}", "/json/{instanceName}/{contextName}/{jobIdentifier}"})
+    @RequestMapping(method = RequestMethod.GET, path = {"/json/{instanceName}/{contextName}", "/json/{instanceName}/{contextName}/{jobName}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
     public ResponseEntity getJsonContextStatusForJob(@PathVariable String instanceName,
                                                  @PathVariable String contextName,
-                                                 @PathVariable(required = false) String jobIdentifier) {
+                                                 @PathVariable(required = false) String jobName) {
         String contextStatus;
 
         try {
-            if (jobIdentifier == null) {
+            if (jobName == null) {
                 contextStatus = contextStatusService.getJsonContextStatus(instanceName, contextName);
             } else {
-                contextStatus = contextStatusService.getJsonContextStatusForJob(instanceName, contextName, jobIdentifier);
+                contextStatus = contextStatusService.getJsonContextStatusForJob(instanceName, contextName, jobName);
             }
         } catch (Exception e) {
             LOG.error(e.getMessage());
-            String errorMessage = String.format("An error has occurred attempting to get status for instance %s, context %s, jobIdentifier %s!",
-                instanceName, contextName, jobIdentifier);
+            String errorMessage = String.format("An error has occurred attempting to get status for instance %s, context %s, jobName %s!",
+                instanceName, contextName, jobName);
             return new ResponseEntity(
                 new ErrorDto(errorMessage + " Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
@@ -123,13 +123,13 @@ public class ContextStatusServiceController {
 
         // HTTP 204 - nothing in payload
         if ("".equals(contextStatus) || contextStatus == null) {
-            LOG.info(String.format("Empty response for instance %s and context %s and jobIdentifier %s",
-                instanceName, contextName, jobIdentifier));
+            LOG.info(String.format("Empty response for instance %s and context %s and jobName %s",
+                instanceName, contextName, jobName));
             return new ResponseEntity(HttpStatus.NO_CONTENT);
         }
 
-        LOG.info(String.format("Got json for instance %s and context %s and jobIdentifier %s",
-            instanceName, contextName, jobIdentifier));
+        LOG.info(String.format("Got json for instance %s and context %s and jobName %s",
+            instanceName, contextName, jobName));
 
         return new ResponseEntity(contextStatus, HttpStatus.OK);
     }
