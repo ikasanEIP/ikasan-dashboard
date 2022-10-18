@@ -3,7 +3,7 @@ package org.ikasan.job.orchestration.rest.dashboard;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.leansoft.bigqueue.IBigQueue;
+import org.ikasan.bigqueue.IBigQueue;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.jupiter.api.Test;
