@@ -124,6 +124,20 @@ public class ContextHelper {
             });
         }
     }
+
+    public static SchedulerJobInstance getSchedulerJobInstance(String jobName, String childContextName, ContextInstance contextInstance) {
+        ContextInstance instance = ContextHelper.getChildContextInstance(childContextName, contextInstance);
+        if (instance != null) {
+            Optional<SchedulerJobInstance> jobInstance = instance.getScheduledJobs().stream()
+                .filter(job -> jobName.equals(job.getJobName())).findFirst();
+
+            if(jobInstance.isPresent()) {
+                return jobInstance.get();
+            }
+        }
+        return null;
+    }
+
     public static List<String> getAllAgents(Context context) {
         HashSet<String> agentSet = new HashSet<>();
 
@@ -136,13 +150,6 @@ public class ContextHelper {
         populateAgentSet(context, agentSet);
     }
 
-    public static SchedulerJobInstance getSchedulerJobInstance(String jobIdentifier, String childContextName, ContextInstance contextInstance) {
-        ContextInstance instance = ContextHelper.getChildContextInstance(childContextName, contextInstance);
-        if (instance != null) {
-            return instance.getScheduledJobsMap().get(jobIdentifier);
-        }
-        return null;
-    }
     private static void populateAgentSet(Context context, HashSet<String> agentSet) {
         if(context.getScheduledJobs()!= null && !context.getScheduledJobs().isEmpty()) {
             context.getScheduledJobs().forEach(job -> {
