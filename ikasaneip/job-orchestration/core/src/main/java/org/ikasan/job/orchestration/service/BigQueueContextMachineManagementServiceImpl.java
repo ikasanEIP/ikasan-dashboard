@@ -1,6 +1,6 @@
 package org.ikasan.job.orchestration.service;
 
-import com.leansoft.bigqueue.IBigQueue;
+import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.component.endpoint.bigqueue.service.AbstractBigQueueManagementService;
 
 /**
