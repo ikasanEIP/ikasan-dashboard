@@ -1,6 +1,6 @@
 package org.ikasan.rest.dashboard.service.bigqueue;
 
-import com.leansoft.bigqueue.IBigQueue;
+import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.component.endpoint.bigqueue.service.AbstractBigQueueManagementService;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 
