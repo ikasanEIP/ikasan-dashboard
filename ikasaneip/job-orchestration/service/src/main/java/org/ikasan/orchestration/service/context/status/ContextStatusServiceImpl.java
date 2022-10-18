@@ -104,12 +104,12 @@ public class ContextStatusServiceImpl implements ContextStatusService {
      * Get the status of a Scheduler Job Instance in JSON format.
      * @param instanceName Context name assigned to the ContextMachineCache
      * @param contextName Context or Child Context to search on
-     * @param jobIdentifier the job name to find the state for
+     * @param jobName the job name to find the state for
      * @return Json representation of the current state of the Scheduler Job Instance at the time of request
      * @throws JsonProcessingException if issue transforming to Json
      */
     @Override
-    public String getJsonContextStatusForJob(String instanceName, String contextName, String jobIdentifier) throws JsonProcessingException {
+    public String getJsonContextStatusForJob(String instanceName, String contextName, String jobName) throws JsonProcessingException {
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(instanceName);
         validateContextMachine(contextMachine, instanceName);
@@ -118,8 +118,8 @@ public class ContextStatusServiceImpl implements ContextStatusService {
         ContextInstance contextInstance = contextMachine.getContext(instanceName);
         validateContextInstance(contextInstance, instanceName);
 
-        SchedulerJobInstance schedulerJobInstance = ContextHelper.getSchedulerJobInstance(jobIdentifier, contextName, contextInstance);
-        validateSchedulerJobInstance(schedulerJobInstance, instanceName, contextName, jobIdentifier);
+        SchedulerJobInstance schedulerJobInstance = ContextHelper.getSchedulerJobInstance(jobName, contextName, contextInstance);
+        validateSchedulerJobInstance(schedulerJobInstance, instanceName, contextName, jobName);
         String json = contextService.getSchedulerJobInstance(schedulerJobInstance);
         // return empty string if json is null
         return (json == null) ? "" : json;
