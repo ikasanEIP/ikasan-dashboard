@@ -285,15 +285,15 @@ public class ContextStatusServiceImplTest {
             , null, null, null, null);
         ContextMachineCache.instance().put(contextMachine);
 
-        String jobStatus = contextStatusService.getJsonContextStatusForJob("CONTEXT-1436221681", "CONTEXT-1616645609", "scheduler-agent-1799613995");
+        String jobStatus = contextStatusService.getJsonContextStatusForJob("CONTEXT-1436221681", "CONTEXT-1616645609", "1799613995");
         jobStatus = formatContextStatus(jobStatus);
         Assertions.assertThat(jsonJobStatusContext1799613995).isEqualToIgnoringNewLines(jobStatus);
 
-        jobStatus = contextStatusService.getJsonContextStatusForJob("CONTEXT-1436221681", "CONTEXT-1589183395", "scheduler-agent-744167903");
+        jobStatus = contextStatusService.getJsonContextStatusForJob("CONTEXT-1436221681", "CONTEXT-1589183395", "744167903");
         jobStatus = formatContextStatus(jobStatus);
         Assertions.assertThat(jsonJobStatusContext744167903).isEqualToIgnoringNewLines(jobStatus);
 
-        jobStatus = contextStatusService.getJsonContextStatusForJob("CONTEXT-1436221681", "CONTEXT-1589183395", "scheduler-agent--1692626050");
+        jobStatus = contextStatusService.getJsonContextStatusForJob("CONTEXT-1436221681", "CONTEXT-1589183395", "-1692626050");
         jobStatus = formatContextStatus(jobStatus);
         Assertions.assertThat(jsonJobStatusContext1692626050).isEqualToIgnoringNewLines(jobStatus);
     }
