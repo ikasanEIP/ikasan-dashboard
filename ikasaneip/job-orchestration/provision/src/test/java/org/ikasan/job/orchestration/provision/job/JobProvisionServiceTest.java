@@ -11,6 +11,7 @@ import org.ikasan.job.orchestration.builder.job.InternalEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.QuartzScheduleDrivenJobBuilder;
 import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
 import org.ikasan.scheduled.general.SearchResultsImpl;
+import org.ikasan.scheduled.job.model.SolrSchedulerJobRecordImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
@@ -19,10 +20,7 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
@@ -92,7 +90,13 @@ public class JobProvisionServiceTest extends AbstractTest {
             moduleMetaDataService, jobProvisionModuleRestService);
 
         List<SchedulerJob> schedulerJobs = this.createSchedulerJobs();
-        SearchResults<SchedulerJob> searchResults = new SearchResultsImpl<>(schedulerJobs, schedulerJobs.size(), 100L);
+        List<SchedulerJobRecord> schedulerJobRecords = new ArrayList<>();
+        schedulerJobs.forEach(job -> {
+            TestSchedulerJobRecord schedulerJobRecord = new TestSchedulerJobRecord(job);
+            schedulerJobRecords.add(schedulerJobRecord);
+        });
+
+        SearchResults<SchedulerJobRecord> searchResults = new SearchResultsImpl<>(schedulerJobRecords, schedulerJobRecords.size(), 100L);
 
         when(schedulerJobService.findByContext(anyString(), anyInt(), anyInt())).thenReturn(searchResults);
 
