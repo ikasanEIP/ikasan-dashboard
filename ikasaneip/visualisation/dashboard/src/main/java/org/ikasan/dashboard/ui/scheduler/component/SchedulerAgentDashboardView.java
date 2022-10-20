@@ -56,8 +56,6 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
 
     private boolean initialised = false;
 
-    private int statusRefreshInterval;
-
     /**
      * Constructor
      *
@@ -75,7 +73,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                                        SchedulerJobInstanceService schedulerJobInstanceService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath,
                                        ModuleMetaDataService moduleMetaDataService, LogStreamingService logStreamingService,
                                        JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
-                                       JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, int statusRefreshInterval) {
+                                       JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService) {
         this.moduleMetadataService = moduleMetadataService;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
@@ -93,7 +91,6 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
         this.contextProfileService = contextProfileService;
         this.jobUtilsService = jobUtilsService;
         this.scheduledContextService = scheduledContextService;
-        this.statusRefreshInterval = statusRefreshInterval;
 
         board = new Board();
         board.addClassName("styled");
@@ -113,7 +110,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
                 , this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
                 this.dynamicImagePath, this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService,
-                this.jobUtilsService, this.scheduledContextService, false, statusRefreshInterval));
+                this.jobUtilsService, this.scheduledContextService, false));
 
             initialised = true;
         }

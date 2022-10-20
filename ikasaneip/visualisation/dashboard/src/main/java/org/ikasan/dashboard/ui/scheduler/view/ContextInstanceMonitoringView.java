@@ -102,9 +102,6 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
     @Resource
     private SchedulerService schedulerService;
 
-    @Value("${context.instance.monitoring.refresh.interval.seconds:15}")
-    private int statusRefreshInterval;
-
     private ContextInstanceDashboardWidget contextInstanceDashboardWidget;
 
     private Board board;
@@ -127,7 +124,7 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
             this.schedulerJobInstanceService, this.scheduledContextInstanceService, "",
             this.moduleMetaDataService, this.logStreamingService,
             this.jobInitiationService, this.contextProfileService,
-            this.jobUtilsService, this.scheduledContextService, true, statusRefreshInterval);
+            this.jobUtilsService, this.scheduledContextService, true);
 
         this.getElement().getStyle().set("padding-top", "0px");
         board = new Board();
