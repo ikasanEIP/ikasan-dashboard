@@ -10,6 +10,7 @@ import org.ikasan.job.orchestration.builder.job.FileEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.InternalEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.QuartzScheduleDrivenJobBuilder;
 import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
+import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
@@ -22,7 +23,9 @@ import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.search.SearchResults;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,11 +38,9 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-@Ignore
-// todo fix this test
 public class JobProvisionServiceTest extends AbstractTest {
     @Mock
     private SchedulerJobService schedulerJobService;
@@ -50,36 +51,71 @@ public class JobProvisionServiceTest extends AbstractTest {
     @Mock
     private ModuleMetaDataService moduleMetaDataService;
     @Mock
-    private MetaDataService metaDataRestService;
+    private JobProvisionModuleService jobProvisionModuleRestService;
     @Mock
     private ModuleMetaData agent;
-    @Mock
-    Environment environment;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
 
-
     @Test
-    public void test() throws IOException {
+    public void test_provision_jobs_success() throws IOException {
         when(moduleMetaDataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")),
                 this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")),
                 this.getModuleMetaData(super.loadDataFile("/data/scheduler-agent1-module-metadata.json")))
                 , 3, 3));
 
-        when(configurationRestService.getModuleConfiguration(anyString())).thenReturn(this.getConfigurarationMetaData());
-
-        when(this.moduleControlRestService.changeModuleActivationState(anyString(), anyString(), anyString())).thenReturn(true);
-
-        when(this.metaDataRestService.getModuleMetadata(anyString(), anyString())).thenReturn(Optional.of(agent));
-
-        when(this.configurationRestService.getConfiguredResourceConfiguration(anyString(), anyString(), anyString(), anyString()))
-            .thenReturn(this.getConfigurarationMetaData());
-
         JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService,
-            moduleMetaDataService, null);
+            moduleMetaDataService, jobProvisionModuleRestService);
 
+        jobProvisionService.provisionJobs(this.createSchedulerJobs());
+
+        verify(schedulerJobService, times(3)).deleteByContextName(anyString());
+        verify(schedulerJobService, times(3)).saveQuartzScheduledJobs(anyList());
+        verify(schedulerJobService, times(3)).saveInternalEventDrivenJobs(anyList());
+        verify(schedulerJobService, times(3)).saveFileEventDrivenJobs(anyList());
+        verify(jobProvisionModuleRestService, times(3)).provisionJobs(anyString(), any());
+        verify(moduleMetaDataService, times(1)).find(anyList(), any(), anyInt(), anyInt());
+
+
+        verifyNoMoreInteractions(configurationRestService
+            , moduleControlRestService
+            , schedulerJobService
+            , jobProvisionModuleRestService
+            , moduleMetaDataService);
+    }
+
+    @Test
+    public void test_remove_jobs_for_context_success() throws IOException {
+        JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService,
+            moduleMetaDataService, jobProvisionModuleRestService);
+
+        List<SchedulerJob> schedulerJobs = this.createSchedulerJobs();
+        SearchResults<SchedulerJob> searchResults = new SearchResultsImpl<>(schedulerJobs, schedulerJobs.size(), 100L);
+
+        when(schedulerJobService.findByContext(anyString(), anyInt(), anyInt())).thenReturn(searchResults);
+
+        ModuleMetadataSearchResults moduleMetadataSearchResults = new ModuleMetadataSearchResults(List.of(agent)
+            , 1, 100L);
+
+        when(moduleMetaDataService.find(anyList(), any(), anyInt(), anyInt())).thenReturn(moduleMetadataSearchResults);
+        when(agent.getUrl()).thenReturn("url");
+
+        jobProvisionService.removeJobs("contextName");
+
+        verify(schedulerJobService).findByContext(anyString(), anyInt(), anyInt());
+        verify(moduleMetaDataService).find(anyList(), any(), anyInt(), anyInt());
+        verify(this.jobProvisionModuleRestService).removeJobsForContext("url", "contextName");
+
+        verifyNoMoreInteractions(configurationRestService
+            , moduleControlRestService
+            , schedulerJobService
+            , jobProvisionModuleRestService
+            , moduleMetaDataService);
+    }
+
+    private List<SchedulerJob> createSchedulerJobs() {
         List<SchedulerJob> schedulerJobs = new ArrayList<>();
 
         schedulerJobs.add(this.createInternalEventDrivenJob("commandLine", "workingDirectory"
@@ -145,7 +181,7 @@ public class JobProvisionServiceTest extends AbstractTest {
         schedulerJobs.add(this.createFileEventDrivenJob("agent3", "contextId", "description"
             , "file-jobName3", "jobGroup", "cronExpression", "timezone"));
 
-        jobProvisionService.provisionJobs(schedulerJobs);
+        return schedulerJobs;
     }
 
     private InternalEventDrivenJob createInternalEventDrivenJob(String commandLine, String workingDirectory

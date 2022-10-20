@@ -21,6 +21,7 @@ import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.StreamResource;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.*;
@@ -58,6 +59,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class ContextTemplateWidget extends Div {
 
@@ -228,20 +231,41 @@ public class ContextTemplateWidget extends Div {
                     , UI.getCurrent().getLocale()));
                 confirmDialog.setCancelable(true);
                 confirmDialog.addConfirmListener(confirmEvent -> {
-                    try {
-                        this.schedulerJobService.deleteByContextName(scheduledContextRecord.getContextName());
-                        this.scheduledContextService.deleteContext(scheduledContextRecord.getContextName());
-                        this.contextTemplateFilteringGrid.getDataProvider().refreshAll();
-                        this.contextInstanceRegistrationService.deRegister(scheduledContextRecord.getContextName());
-                        this.updateActiveContextMenu();
-                        NotificationHelper.showUserNotification(getTranslation("notification.context-deleted-successfully"
-                            , UI.getCurrent().getLocale()));
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                        NotificationHelper.showUserNotification(getTranslation("error.delete-context-template"
-                            , UI.getCurrent().getLocale()));
-                    }
+                    ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+                    dialog.setWidth("700px");
+                    dialog.setHeight("250px");
+                    dialog.open(getTranslation("progress-dialog.delete-context-template-header", UI.getCurrent().getLocale()),
+                        getTranslation("progress-dialog.delete-context-template-body", UI.getCurrent().getLocale()));
+
+                    final UI current = UI.getCurrent();
+                    Executor executor = Executors.newSingleThreadExecutor();
+                    executor.execute(() -> {
+                        try {
+                            this.jobProvisionService.removeJobs(scheduledContextRecord.getContextName());
+                            this.schedulerJobService.deleteByContextName(scheduledContextRecord.getContextName());
+                            this.scheduledContextService.deleteContext(scheduledContextRecord.getContextName());
+                            this.contextInstanceRegistrationService.deRegister(scheduledContextRecord.getContextName());
+
+                            current.access(() -> {
+                                this.contextTemplateFilteringGrid.getDataProvider().refreshAll();
+                                this.updateActiveContextMenu();
+
+                                NotificationHelper.showUserNotification(getTranslation("notification.context-deleted-successfully"
+                                    , UI.getCurrent().getLocale()));
+                            });
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            current.access(() -> {
+                                NotificationHelper.showUserNotification(getTranslation("error.delete-context-template"
+                                    , UI.getCurrent().getLocale()));
+                            });
+                        }
+                        finally {
+                            current.access(() -> {
+                                dialog.close();
+                            });
+                        }
+                    });
                 });
                 confirmDialog.open();
             });
