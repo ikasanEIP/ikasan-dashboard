@@ -47,4 +47,9 @@ public class JobProvisionRestServiceImpl extends DashboardRestServiceImpl<String
             throw new DashboardRestClientException("An exception has occurred provisioning jobs!", e);
         }
     }
+
+    @Override
+    public void removeJobs(String contextName) {
+        throw new UnsupportedOperationException();
+    }
 }
