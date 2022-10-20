@@ -9,6 +9,7 @@ import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
+import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,6 +110,52 @@ public class JobProvisionServiceImpl implements JobProvisionService {
         }
 
         logger.info(String.format("Finished provisioning %s jobs across %s agents. Time taken %s milliseconds.", jobs.size(), uniqueAgentNames.size(), System.currentTimeMillis()-now));
+    }
+
+    @Override
+    public void removeJobs(String contextName) {
+        long now = System.currentTimeMillis();
+        SearchResults<SchedulerJobRecord> searchResults = this.schedulerJobService.findByContext(contextName, -1, -1);
+
+        List<SchedulerJob> schedulerJobs = new ArrayList<>();
+
+        searchResults.getResultList().forEach(schedulerJobRecord -> schedulerJobs.add(schedulerJobRecord.getJob()));
+
+        List<String> uniqueAgentNames = this.getUniqueAgentNames(schedulerJobs);
+
+        ModuleMetadataSearchResults agents = this.moduleMetaDataService
+            .find(uniqueAgentNames, ModuleType.SCHEDULER_AGENT, -1, -1);
+
+        // As it is possible to provision multiple agents as part of the job
+        // provisioning process, we will collect exceptions and report issues
+        // once attempts to provision all agents are complete.
+        List<JobProvisionException> exceptions = new ArrayList<>();
+
+        agents.getResultList().forEach(agent -> {
+            try {
+                logger.info(String.format("Attempting to remove jobs for context[%s] jobs on agent[%s]", contextName, agent.getUrl()));
+                this.jobProvisionModuleRestService.removeJobsForContext(agent.getUrl(), contextName);
+                logger.info(String.format("Successfully removed jobs for context[%s] jobs on agent[%s]", contextName, agent.getUrl()));
+            }
+            catch (JobProvisionException e) {
+                e.printStackTrace();
+                exceptions.add(e);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                exceptions.add(new JobProvisionException(String.format("Agent[%s] Error[%s]", agent.getName(), e.getMessage()),e));
+            }
+        });
+
+        if(!exceptions.isEmpty()) {
+            StringBuffer message = new StringBuffer("\n");
+            exceptions.forEach(e -> message.append(e.getMessage()).append("\n"));
+
+            throw new JobProvisionException(message.toString());
+        }
+
+        logger.info(String.format("Finished removing jobs for %s across %s agents. Time taken %s milliseconds."
+            , contextName, uniqueAgentNames.size(), System.currentTimeMillis()-now));
     }
 
     private List<SchedulerJob> getJobsForAgent(String agentName, List<SchedulerJob> jobs) {

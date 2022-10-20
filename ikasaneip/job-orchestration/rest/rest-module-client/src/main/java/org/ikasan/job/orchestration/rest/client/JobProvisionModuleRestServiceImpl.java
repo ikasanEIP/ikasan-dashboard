@@ -22,11 +22,13 @@ public class JobProvisionModuleRestServiceImpl extends ModuleRestService impleme
     Logger logger = LoggerFactory.getLogger(SchedulerRestServiceImpl.class);
 
     public static final String JOB_PROVISION_REST_URL = "/rest/jobProvision";
+    public static final String JOB_PROVISION_REMOVE_REST_URL = "/rest/jobProvision/remove";
 
     public JobProvisionModuleRestServiceImpl(Environment environment, HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
         super(environment, httpComponentsClientHttpRequestFactory);
     }
 
+    @Override
     public void provisionJobs(String contextUrl, SchedulerJobWrapper jobs) {
         try {
             HttpHeaders headers = createHttpHeaders();
@@ -49,9 +51,27 @@ public class JobProvisionModuleRestServiceImpl extends ModuleRestService impleme
             restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
         }
         catch (Exception e) {
-            logger.warn("An error has occurred attempting to provision scheduler jobs!", e);
-
+            logger.error("An error has occurred attempting to provision scheduler jobs!", e);
             throw new SchedulerAgentRestClientException("An error has occurred attempting to provision scheduler jobs!", e);
+        }
+    }
+
+    @Override
+    public void removeJobsForContext(String contextUrl, String contextName) {
+        try {
+            HttpHeaders headers = createHttpHeaders();
+
+            HttpEntity entity = new HttpEntity(contextName, headers);
+            String url = contextUrl + JOB_PROVISION_REMOVE_REST_URL;
+
+            logger.info("Context URL[{}] Payload[{}] ", url, contextName);
+            restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
+        }
+        catch (Exception e) {
+            logger.error(String.format("An error has occurred attempting to remove jobs for context[%s]!"
+                , contextName), e);
+            throw new SchedulerAgentRestClientException(String.format("An error has occurred attempting to remove jobs for context[%s]!"
+                , contextName), e);
         }
     }
 }
