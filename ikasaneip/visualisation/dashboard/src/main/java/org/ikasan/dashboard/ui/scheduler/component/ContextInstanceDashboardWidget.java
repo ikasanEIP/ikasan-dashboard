@@ -13,6 +13,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.shared.Registration;
@@ -29,44 +30,32 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.ContextInstanceAggregateJobStatus;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 
-import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
 
 public class ContextInstanceDashboardWidget extends Div {
+    private Registration schedulerJobStateChangeRegistration;
     private Grid<ContextInstanceAggregateJobStatus> contextInstanceAggregateJobStatusGrid;
     private ModuleMetaDataService moduleMetadataService;
     private ScheduledProcessManagementService scheduledProcessManagementService;
-//    private TextField textField;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
     private MetaDataService metaDataRestService;
     private SystemEventLogger systemEventLogger;
     private SchedulerService schedulerService;
     private SchedulerJobService schedulerJobService;
-
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private String dynamicImagePath;
@@ -76,13 +65,10 @@ public class ContextInstanceDashboardWidget extends Div {
     private ContextProfileService contextProfileService;
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
-
-    private ScheduledExecutorService statusRefreshExecutor;
-
     private TextField contextNameTf = new TextField();
     private TextField contextInstanceIdTf = new TextField();
 
-    private int statusRefreshInterval;
+    private List<ContextInstanceAggregateJobStatus> jobStatuses;
 
     /**
      * Constructor
@@ -101,7 +87,7 @@ public class ContextInstanceDashboardWidget extends Div {
                                           SchedulerJobInstanceService schedulerJobInstanceService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath,
                                           ModuleMetaDataService moduleMetaDataService, LogStreamingService logStreamingService,
                                           JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
-                                          JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, boolean fullscreen, int statusRefreshInterval) {
+                                          JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, boolean fullscreen) {
 
         this.moduleMetadataService = moduleMetadataService;
         if(this.moduleMetadataService ==  null) {
@@ -172,8 +158,6 @@ public class ContextInstanceDashboardWidget extends Div {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
         }
 
-        this.statusRefreshInterval = statusRefreshInterval;
-
         this.createGrid();
 
         Div div = new Div();
@@ -204,7 +188,7 @@ public class ContextInstanceDashboardWidget extends Div {
         clearFiltersButton.addClickListener(event -> {
             this.contextNameTf.setValue("");
             this.contextInstanceIdTf.setValue("");
-            this.populateGrid();
+            this.addGridFiltering();
         });
 
         HorizontalLayout rightSideButtons = new HorizontalLayout();
@@ -414,10 +398,11 @@ public class ContextInstanceDashboardWidget extends Div {
         this.addGridFiltering(hr, "id", this.contextInstanceIdTf);
 
         List<String> contextInstanceIdentifiers = new ArrayList<>(ContextMachineCache.instance().contextInstanceIdentifiers());
-        List<ContextInstanceAggregateJobStatus> jobStatuses = this.schedulerJobInstanceService
+        this.jobStatuses = this.schedulerJobInstanceService
             .getJobStatusCountForContextInstances(contextInstanceIdentifiers);
 
         contextInstanceAggregateJobStatusGrid.setItems(jobStatuses);
+        this.addGridFiltering();
     }
 
     private Button buildStatusCountButton(String label, String backgroundColour, String fontColour, int count) {
@@ -459,20 +444,23 @@ public class ContextInstanceDashboardWidget extends Div {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
+        schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
+            ui.access(() -> {
+                List<String> identifiers = new ArrayList<>(ContextMachineCache.instance().contextInstanceIdentifiers());
+                this.jobStatuses.clear();
+                this.jobStatuses.addAll(this.schedulerJobInstanceService
+                    .getJobStatusCountForContextInstances(identifiers));
 
-        this.statusRefreshExecutor = Executors.newSingleThreadScheduledExecutor();
-        this.statusRefreshExecutor.scheduleAtFixedRate(
-            () -> {
-                ui.access(() -> this.populateGrid());
-            } ,
-            0 ,
-            Duration.ofSeconds(this.statusRefreshInterval).toSeconds(),
-            TimeUnit.SECONDS );
+                this.jobStatuses.forEach(status -> this.contextInstanceAggregateJobStatusGrid
+                    .getDataProvider().refreshItem(status));
+            });
+        });
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        this.statusRefreshExecutor.shutdown();
+        this.schedulerJobStateChangeRegistration.remove();
+        this.schedulerJobStateChangeRegistration = null;
     }
 
     private void addGridFiltering(HeaderRow hr, String columnKey, TextField textField) {
@@ -482,31 +470,26 @@ public class ContextInstanceDashboardWidget extends Div {
         textField.setWidthFull();
 
         textField.addValueChangeListener(ev->{
-            this.populateGrid();
+            this.addGridFiltering();
         });
 
         hr.getCell(this.contextInstanceAggregateJobStatusGrid.getColumnByKey(columnKey)).setComponent(textField);
     }
 
-    private void populateGrid() {
-        List<String> contextInstanceIdentifiers = new ArrayList<>(ContextMachineCache.instance().contextInstanceIdentifiers());
-        List<ContextInstanceAggregateJobStatus> jobStatuses = this.schedulerJobInstanceService
-            .getJobStatusCountForContextInstances(contextInstanceIdentifiers);
+    private void addGridFiltering() {
 
-        if(this.contextNameTf.getValue() != null && !this.contextNameTf.isEmpty()) {
-            jobStatuses = jobStatuses.stream()
-                .filter(contextInstanceAggregateJobStatus
-                    -> contextInstanceAggregateJobStatus.getContextInstanceName().toLowerCase().contains(this.contextNameTf.getValue().toLowerCase()))
-                .collect(Collectors.toList());
-        }
+        ListDataProvider<ContextInstanceAggregateJobStatus> listDataProvider
+            = (ListDataProvider<ContextInstanceAggregateJobStatus>) contextInstanceAggregateJobStatusGrid.getDataProvider();
+        listDataProvider.setFilter(item -> {
+            if(this.contextNameTf.getValue() != null && !this.contextNameTf.isEmpty()) {
+                return item.getContextInstanceName().toLowerCase().contains(this.contextNameTf.getValue().toLowerCase());
+            }
 
-        if(this.contextInstanceIdTf.getValue() != null && !this.contextInstanceIdTf.isEmpty()) {
-            jobStatuses = jobStatuses.stream()
-                .filter(contextInstanceAggregateJobStatus
-                    -> contextInstanceAggregateJobStatus.getContextInstanceId().toLowerCase().contains(this.contextInstanceIdTf.getValue().toLowerCase()))
-                .collect(Collectors.toList());
-        }
+            if(this.contextInstanceIdTf.getValue() != null && !this.contextInstanceIdTf.isEmpty()) {
+                return item.getContextInstanceId().toLowerCase().contains(this.contextInstanceIdTf.getValue().toLowerCase());
+            }
 
-        this.contextInstanceAggregateJobStatusGrid.setItems(jobStatuses);
+            return true;
+        });
     }
 }

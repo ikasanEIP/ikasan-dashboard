@@ -32,7 +32,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-//@Ignore
+@Ignore
 public class ContextProvisionLocalHostImplTest extends AbstractTest{
 
     private String contextBaseUrl;
