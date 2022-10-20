@@ -152,9 +152,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Value("${ikasan.dashboard.unzip.and.provision.jobs:true}")
     private boolean uploadProvisionJobs;
 
-    @Value("${context.instance.monitoring.refresh.interval.seconds:15}")
-    private int statusRefreshInterval;
-
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
     private UpcomingJobExecutionsWidget upcomingJobExecutionsWidget;
@@ -192,7 +189,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
             , this.systemEventLogger, this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
             "", this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService, this.jobUtilsService,
-            this.scheduledContextService, this.statusRefreshInterval);
+            this.scheduledContextService);
 
         this.schedulerAgentDashboardView.addClassName("styled");
         this.schedulerAgentDashboardView.setSizeFull();
