@@ -13,6 +13,8 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.CallbackDataProvider;
+import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -42,6 +44,8 @@ import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
 
@@ -68,7 +72,7 @@ public class ContextInstanceDashboardWidget extends Div {
     private TextField contextNameTf = new TextField();
     private TextField contextInstanceIdTf = new TextField();
 
-    private List<ContextInstanceAggregateJobStatus> jobStatuses;
+    private StatusFilter statusFilter = new StatusFilter();
 
     /**
      * Constructor
@@ -169,8 +173,6 @@ public class ContextInstanceDashboardWidget extends Div {
             div.setHeight("600px");
         }
 
-
-
         Button breakOut = new Button();
         breakOut.getElement().appendChild(VaadinIcon.EXTERNAL_LINK.create().getElement());
         breakOut.setVisible(!fullscreen);
@@ -183,16 +185,22 @@ public class ContextInstanceDashboardWidget extends Div {
             getUI().ifPresent(ui -> ui.getPage().open(route));
         });
 
+        Button refresh = new Button("Refresh", VaadinIcon.REFRESH.create());
+        refresh.setIconAfterText(true);
+        refresh.addClickListener(event -> {
+            this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
+        });
+
         Button clearFiltersButton = new Button("Clear Filters", VaadinIcon.FILTER.create());
         clearFiltersButton.setIconAfterText(true);
         clearFiltersButton.addClickListener(event -> {
             this.contextNameTf.setValue("");
             this.contextInstanceIdTf.setValue("");
-            this.addGridFiltering();
+            this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
         });
 
         HorizontalLayout rightSideButtons = new HorizontalLayout();
-        rightSideButtons.add(clearFiltersButton, breakOut);
+        rightSideButtons.add(clearFiltersButton, refresh, breakOut);
 
         HorizontalLayout layout = new HorizontalLayout();
         H4 modules = new H4(getTranslation("header.active-context-instances", UI.getCurrent().getLocale()));
@@ -394,15 +402,27 @@ public class ContextInstanceDashboardWidget extends Div {
         this.contextNameTf = new TextField();
         this.contextInstanceIdTf = new TextField();
         HeaderRow hr = this.contextInstanceAggregateJobStatusGrid.appendHeaderRow();
-        this.addGridFiltering(hr, "name", this.contextNameTf);
-        this.addGridFiltering(hr, "id", this.contextInstanceIdTf);
+        this.addGridFiltering(hr, "name", this.contextNameTf, this.statusFilter::setContextName);
+        this.addGridFiltering(hr, "id", this.contextInstanceIdTf, this.statusFilter::setContextInstanceId);
 
-        List<String> contextInstanceIdentifiers = new ArrayList<>(ContextMachineCache.instance().contextInstanceIdentifiers());
-        this.jobStatuses = this.schedulerJobInstanceService
-            .getJobStatusCountForContextInstances(contextInstanceIdentifiers);
+        DataProvider<ContextInstanceAggregateJobStatus, StatusFilter> dataProvider =
+            DataProvider.fromFilteringCallbacks(
+                // First callback fetches items based on a query
+                query -> {
+                    // The index of the first item to load
+                    int offset = query.getOffset();
 
-        contextInstanceAggregateJobStatusGrid.setItems(jobStatuses);
-        this.addGridFiltering();
+                    // The number of items to load
+                    int limit = query.getLimit();
+
+                    return this.filter(this.statusFilter).stream();
+                },
+                // Second callback fetches the total number of items currently in the Grid.
+                // The grid can then use it to properly adjust the scrollbars.
+                query -> this.filter(this.statusFilter).size());
+
+        dataProvider.withConfigurableFilter().setFilter(this.statusFilter);
+        this.contextInstanceAggregateJobStatusGrid.setDataProvider(dataProvider);
     }
 
     private Button buildStatusCountButton(String label, String backgroundColour, String fontColour, int count) {
@@ -446,13 +466,7 @@ public class ContextInstanceDashboardWidget extends Div {
         UI ui = attachEvent.getUI();
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
             ui.access(() -> {
-                List<String> identifiers = new ArrayList<>(ContextMachineCache.instance().contextInstanceIdentifiers());
-                this.jobStatuses.clear();
-                this.jobStatuses.addAll(this.schedulerJobInstanceService
-                    .getJobStatusCountForContextInstances(identifiers));
-
-                this.jobStatuses.forEach(status -> this.contextInstanceAggregateJobStatusGrid
-                    .getDataProvider().refreshItem(status));
+                this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
             });
         });
     }
@@ -463,33 +477,58 @@ public class ContextInstanceDashboardWidget extends Div {
         this.schedulerJobStateChangeRegistration = null;
     }
 
-    private void addGridFiltering(HeaderRow hr, String columnKey, TextField textField) {
+    private void addGridFiltering(HeaderRow hr, String columnKey, TextField textField, Consumer<String> setFilter) {
         Icon filterIcon = VaadinIcon.FILTER.create();
         filterIcon.setSize("12pt");
         textField.setSuffixComponent(filterIcon);
         textField.setWidthFull();
 
-        textField.addValueChangeListener(ev->{
-            this.addGridFiltering();
+        textField.addValueChangeListener(ev-> {
+            setFilter.accept(textField.getValue());
+            this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
         });
 
         hr.getCell(this.contextInstanceAggregateJobStatusGrid.getColumnByKey(columnKey)).setComponent(textField);
     }
 
-    private void addGridFiltering() {
+    private List<ContextInstanceAggregateJobStatus> filter(StatusFilter statusFilter) {
+        List<String> contextInstanceIdentifiers = new ArrayList<>(ContextMachineCache.instance().contextInstanceIdentifiers());
 
-        ListDataProvider<ContextInstanceAggregateJobStatus> listDataProvider
-            = (ListDataProvider<ContextInstanceAggregateJobStatus>) contextInstanceAggregateJobStatusGrid.getDataProvider();
-        listDataProvider.setFilter(item -> {
-            if(this.contextNameTf.getValue() != null && !this.contextNameTf.isEmpty()) {
-                return item.getContextInstanceName().toLowerCase().contains(this.contextNameTf.getValue().toLowerCase());
-            }
+        List<ContextInstanceAggregateJobStatus> jobStatuses =  this.schedulerJobInstanceService
+            .getJobStatusCountForContextInstances(contextInstanceIdentifiers);
 
-            if(this.contextInstanceIdTf.getValue() != null && !this.contextInstanceIdTf.isEmpty()) {
-                return item.getContextInstanceId().toLowerCase().contains(this.contextInstanceIdTf.getValue().toLowerCase());
-            }
+        return jobStatuses.stream().filter(item -> {
+                if(statusFilter.contextName != null && !statusFilter.contextName.isEmpty()) {
+                    return item.getContextInstanceName().toLowerCase().contains(statusFilter.contextName.toLowerCase());
+                }
 
-            return true;
-        });
+                if(statusFilter.contextInstanceId != null && !statusFilter.contextInstanceId.isEmpty()) {
+                    return item.getContextInstanceId().toLowerCase().contains(statusFilter.contextInstanceId.toLowerCase());
+                }
+
+                return true;
+            })
+            .collect(Collectors.toList());
+    }
+
+    private class StatusFilter {
+        private String contextName;
+        private String contextInstanceId;
+
+        public String getContextName() {
+            return contextName;
+        }
+
+        public void setContextName(String contextName) {
+            this.contextName = contextName;
+        }
+
+        public String getContextInstanceId() {
+            return contextInstanceId;
+        }
+
+        public void setContextInstanceId(String contextInstanceId) {
+            this.contextInstanceId = contextInstanceId;
+        }
     }
 }
