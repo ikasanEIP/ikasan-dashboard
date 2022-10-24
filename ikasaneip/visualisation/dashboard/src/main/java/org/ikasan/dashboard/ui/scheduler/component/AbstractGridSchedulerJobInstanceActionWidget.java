@@ -1,0 +1,280 @@
+package org.ikasan.dashboard.ui.scheduler.component;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.util.SystemEventConstants;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
+import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
+import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.module.client.LogStreamingService;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
+    Logger logger = LoggerFactory.getLogger(SchedulerJobInstanceGridWidget.class);
+    protected ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+    protected IkasanAuthentication authentication;
+    protected SchedulerJobInstanceService schedulerJobInstanceService;
+    protected ContextInstance contextInstance;
+    protected SystemEventLogger systemEventLogger;
+    protected ModuleMetaDataService moduleMetaDataService;
+    protected LogStreamingService logStreamingService;
+
+    /**
+     * Constructor
+     *
+     * @param moduleMetaDataService
+     * @param systemEventLogger
+     * @param logStreamingService
+     * @param contextInstance
+     * @param schedulerJobInstanceService
+     */
+    public AbstractGridSchedulerJobInstanceActionWidget(ModuleMetaDataService moduleMetaDataService, SystemEventLogger systemEventLogger,
+                                                        LogStreamingService logStreamingService, ContextInstance contextInstance,
+                                                        SchedulerJobInstanceService schedulerJobInstanceService) {
+
+        this.schedulerJobInstanceService = schedulerJobInstanceService;
+        if(this.schedulerJobInstanceService ==  null) {
+            throw new IllegalArgumentException("schedulerJobInstanceService cannot be null!");
+        }
+        this.contextInstance = contextInstance;
+        if(this.contextInstance ==  null) {
+            throw new IllegalArgumentException("contextInstance cannot be null!");
+        }
+        this.systemEventLogger = systemEventLogger;
+        if(this.systemEventLogger ==  null) {
+            throw new IllegalArgumentException("systemEventLogger cannot be null!");
+        }
+        this.moduleMetaDataService = moduleMetaDataService;
+        if(this.moduleMetaDataService ==  null) {
+            throw new IllegalArgumentException("moduleMetaDataService cannot be null!");
+        }
+        this.logStreamingService = logStreamingService;
+        if(this.logStreamingService ==  null) {
+            throw new IllegalArgumentException("logStreamingService cannot be null!");
+        }
+        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+    }
+
+    /**
+     *
+     * @param schedulerJobInstanceRecord
+     * @return
+     */
+    protected abstract Component getActionsComponent(SchedulerJobInstanceRecord schedulerJobInstanceRecord, HorizontalLayout horizontalLayout);
+
+    /**
+     * Helper method to stream job log files.
+     *
+     * @param schedulerJobInstanceRecord
+     * @param getErrorLog
+     */
+    protected void streamLog(SchedulerJobInstanceRecord schedulerJobInstanceRecord, boolean getErrorLog) {
+        boolean displayLog = false;
+        String host = null;
+        String endPoint = null;
+        String outputLog = null;
+
+        ModuleMetaData agent = moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
+        ScheduledProcessEvent scheduledProcessEvent = schedulerJobInstanceRecord.getSchedulerJobInstance().getScheduledProcessEvent();
+
+        if (scheduledProcessEvent != null && agent != null) {
+            host = agent.getUrl();
+            endPoint = "/rest/logs";
+            outputLog = getErrorLog ? scheduledProcessEvent.getResultError() : scheduledProcessEvent.getResultOutput();
+            logger.info(String.format("Streaming log for host %s, endPoint %s, log %s", host, endPoint, outputLog));
+            if (outputLog != null && host != null) {
+                displayLog = true;
+            }
+        }
+
+        if (displayLog) {
+            SchedulerJobLogFileViewerDialog schedulerJobLogFileViewerDialog = new SchedulerJobLogFileViewerDialog(this.logStreamingService, host, endPoint, outputLog);
+            schedulerJobLogFileViewerDialog.open();
+        } else {
+            String message = "There is no " + (getErrorLog ? "error" : "output") + " log for the job";
+            NotificationHelper.showUserNotification(message);
+        }
+    }
+
+    /**
+     * Helper method to skip the job.
+     *
+     * @return
+     */
+    protected boolean skipJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-skipped", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.skipJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier()
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), true);
+            this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.SKIPPED);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
+                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true)
+                , this.authentication.getName());
+
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.skipped-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper method to enable the job.
+     *
+     * @return
+     */
+    protected boolean enableJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-enabled", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.skipJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), false);
+            this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.WAITING);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SKIPPED, String.format("Agent Name[%s], Scheduled Job Name[%s], Skipped[%s]"
+                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), false)
+                , this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.enabled-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper method to hold the job.
+     *
+     * @return
+     */
+    protected boolean holdJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-held", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.holdJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName());
+            this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.ON_HOLD);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_HELD, String.format("Agent Name[%s], Scheduled Job Name[%s], Held[%s]"
+                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true)
+                , this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.held-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper method to release the job.
+     *
+     * @return
+     */
+    protected boolean releaseJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (schedulerJobInstanceRecord.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.not-active-context-released", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            contextMachine.releaseJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName());
+            this.updateJobState(schedulerJobInstanceRecord, InstanceStatus.WAITING);
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RELEASED, String.format("Agent Name[%s], Scheduled Job Name[%s], Released[%s]"
+                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), true)
+                , this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.released-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper method to update the state of a job and to broadcast that state change.
+     *
+     * @param schedulerJobInstanceRecord
+     * @param newStatus
+     */
+    protected void updateJobState(SchedulerJobInstanceRecord schedulerJobInstanceRecord, InstanceStatus newStatus) {
+        InstanceStatus previousStatus = schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus();
+        SchedulerJobInstance schedulerJobInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
+        schedulerJobInstance.setStatus(newStatus);
+        schedulerJobInstanceRecord.setSchedulerJobInstance(schedulerJobInstance);
+        updateScheduledJob(schedulerJobInstanceRecord, this.authentication);
+
+        SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
+            = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance,
+            this.contextInstance, previousStatus, newStatus);
+
+        SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+    }
+
+    /**
+     * Update a scheduled job.
+     *
+     * @param schedulerJobInstanceRecord
+     * @param authentication
+     */
+    protected void updateScheduledJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord, IkasanAuthentication authentication) {
+
+        schedulerJobInstanceRecord.setModifiedTimestamp(System.currentTimeMillis());
+        schedulerJobInstanceRecord.setModifiedBy(authentication.getName());
+        schedulerJobInstanceRecord.setStatus(schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().name());
+
+        this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+    }
+}

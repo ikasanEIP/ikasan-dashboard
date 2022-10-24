@@ -1,6 +1,8 @@
 package org.ikasan.scheduled.job.model;
 
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
 import java.util.HashMap;
@@ -117,37 +119,6 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("SchedulerJobImpl{");
-        sb.append("jobIdentifier='").append(jobIdentifier).append('\'');
-        sb.append(", agentName='").append(agentName).append('\'');
-        sb.append(", jobName='").append(jobName).append('\'');
-        sb.append(", contextName='").append(contextName).append('\'');
-        if(childContextNames != null) {
-            sb.append(", childContextNames=[ ");
-            childContextNames.forEach(id -> sb.append("[").append(id).append("] "));
-        }
-        else {
-            sb.append(", childContextNames='").append(this.childContextNames).append('\'');
-        }
-        sb.append("], jobDescription='").append(this.jobDescription).append('\'');
-        sb.append(", startupControlType='").append(startupControlType).append('\'');
-        if(this.skippedContexts != null) {
-            sb.append(", skippedContexts=[ ");
-            this.skippedContexts.entrySet()
-                .forEach(id -> sb.append("[").append(id.getKey()).append(", ").append(id.getValue()).append("] "));
-        }
-        else {
-            sb.append(", skippedContexts='").append(this.skippedContexts).append('\'');
-        }
-        if(this.heldContexts != null) {
-            sb.append(", heldContexts=[ ");
-            this.heldContexts.entrySet()
-                .forEach(id -> sb.append("[").append(id.getKey()).append(", ").append(id.getValue()).append("] "));
-        }
-        else {
-            sb.append(", heldContexts='").append(this.heldContexts).append('\'');
-        }
-        sb.append('}');
-        return sb.toString();
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }
