@@ -1,9 +1,12 @@
 package org.ikasan.scheduled.instance.model;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 
 import java.util.List;
+import java.util.Objects;
 
 public class SolrInternalEventDrivenJobInstanceImpl extends SolrSchedulerJobInstanceImpl implements InternalEventDrivenJobInstance {
     private List<String> successfulReturnCodes;
@@ -105,5 +108,26 @@ public class SolrInternalEventDrivenJobInstanceImpl extends SolrSchedulerJobInst
     @Override
     public void setParticipatesInLock(boolean participatesInLock) {
         this.participatesInLock = participatesInLock;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SolrInternalEventDrivenJobInstanceImpl)) return false;
+        if (!super.equals(o)) return false;
+        SolrInternalEventDrivenJobInstanceImpl that = (SolrInternalEventDrivenJobInstanceImpl) o;
+        return Objects.equals(super.jobName, that.jobName)
+            && Objects.equals(super.contextName, that.contextName)
+            && Objects.equals(super.getChildContextName(), that.getChildContextName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.jobName, super.contextName, super.getChildContextName());
     }
 }
