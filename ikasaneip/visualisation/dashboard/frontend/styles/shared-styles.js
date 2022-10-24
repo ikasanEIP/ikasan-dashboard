@@ -62,6 +62,17 @@ $_documentContainer.innerHTML = `<custom-style>
             --lumo-line-height-s: 1.3;
             --lumo-line-height-m: 1.5;
         }
+        
+        :host {
+            --explorer-tree-grid-toggle-level-offset: 2rem;
+            --explorer-tree-grid-icon-type-width: 1.5rem;
+            --explorer-tree-grid-expand-icon-width: 1.2rem;
+            --explorer-tree-grid-icon-type-margin: 0.1rem;
+            --explorer-tree-grid-line-color: var(--lumo-primary-color);
+            --explorer-tree-grid-icon-color: var(--lumo-primary-color-50pct);
+            --explorer-tree-grid-icon-hover-color: var(--lumo-primary-color);
+            --explorer-tree-grid-border-style: solid;
+        }
 
     </style>
 </custom-style>

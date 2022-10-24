@@ -171,6 +171,7 @@ public class ContextMachine {
             this.context = scheduledContextService.findByName(this.context.getName()).getContext();
             this.contextInstance = contextService.getContextInstance(contextService.getContextTemplateString(this.context));
             this.contextInstance.setId(UUID.randomUUID().toString());
+            ContextHelper.enrichJobs(contextInstance);
 
             List<SchedulerJobInstance> schedulerJobInstances = this.schedulerJobInstanceService
                 .initialiseSchedulerJobInstancesForContext(this.contextInstance);
@@ -617,9 +618,7 @@ public class ContextMachine {
                 SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(contextInstance, event.getInternalEventDrivenJob().getChildContextName(),
                     event.getInternalEventDrivenJob().getIdentifier());
 
-                if (schedulerJobInstance != null && schedulerJobInstance.isHeld()) {
-                    this.contextInstance.getHeldJobs().put(schedulerJobInstance.getIdentifier() + "_" + event.getInternalEventDrivenJob().getChildContextName(), event);
-                } else {
+                if (schedulerJobInstance != null && !schedulerJobInstance.isHeld()) {
                     finalEvents.add(event);
                 }
             }

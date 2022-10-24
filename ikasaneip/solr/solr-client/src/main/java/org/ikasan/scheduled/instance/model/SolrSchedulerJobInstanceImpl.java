@@ -1,10 +1,14 @@
 package org.ikasan.scheduled.instance.model;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobImpl;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.model.StatefulEntity;
+
+import java.util.Objects;
 
 public class SolrSchedulerJobInstanceImpl extends SolrSchedulerJobImpl implements SchedulerJobInstance, StatefulEntity {
     private String contextInstanceId;
@@ -67,5 +71,17 @@ public class SolrSchedulerJobInstanceImpl extends SolrSchedulerJobImpl implement
 
     public void setScheduledProcessEvent(ScheduledProcessEvent scheduledProcessEvent) {
         this.scheduledProcessEvent = scheduledProcessEvent;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (childContextName != null ? childContextName.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

@@ -1,5 +1,7 @@
 package org.ikasan.scheduled.instance.model;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.instance.model.QuartzScheduleDrivenJobInstance;
 
 import java.util.HashMap;
@@ -116,5 +118,10 @@ public class SolrQuartzScheduleDrivenJobInstanceImpl extends SolrSchedulerJobIns
     @Override
     public void setRecoveryTolerance(long recoveryTolerance) {
         this.recoveryTolerance = recoveryTolerance;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }
