@@ -101,6 +101,28 @@ public class ContextHelper {
         return contextTemplate;
     }
 
+    public static void enrichJobs(ContextInstance context) {
+        _enrichJobs(context, context);
+    }
+
+
+    private static void enrichJobs(ContextInstance context, Context child) {
+        _enrichJobs(context, child);
+    }
+
+    private static void _enrichJobs(ContextInstance context, Context child) {
+        if(child.getScheduledJobs() != null) {
+            child.getScheduledJobs().forEach(job -> {
+                ((SchedulerJobInstance)job).setContextName(context.getName());
+                ((SchedulerJobInstance)job).setChildContextName(child.getName());
+            });
+        }
+
+        if(child.getContexts() != null) {
+            child.getContexts().forEach(c -> enrichJobs(context, (Context) c));
+        }
+    }
+
     public static Map<String, Context> getAllContexts(Context context) {
         Map<String, Context> contextMap = new HashMap<>();
         contextMap.put(context.getName(), context);

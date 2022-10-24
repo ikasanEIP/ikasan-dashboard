@@ -66,6 +66,7 @@ import java.io.IOException;
 
 public class ContextInstanceWidget extends VerticalLayout implements BeforeEnterObserver {
 
+    public static final String TREE_TAB = "treeTab";
     public static final String VISUALISATION_TAB = "visualisationTab";
     public static final String RAW_CONTEXT_TAB =  "rawContextTab";
     public static final String JOB_INSTANCE_TAB = "jobsTab";
@@ -83,6 +84,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     private SchedulerJobInstanceGridWidget schedulerJobInstanceGridWidget;
     private ContextTemplateStatisticsWidget contextTemplateStatisticsWidget;
     private ContextInstanceAuditWidget contextInstanceAuditWidget;
+    private ContextInstanceTreeViewWidget contextInstanceTreeViewWidget;
     private JobInitiationService jobInitiationService;
     private ContextProfileService contextProfileService;
     private ConfigurationService configurationRestService;
@@ -105,6 +107,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     private TextField startWindowCronExpressionTf;
     private TextField endWindowCronExpressionTf;
 
+    private Tab treeTab;
     private Tab visualisationTab;
     private Tab rawContextTab;
     private Tab jobsTab;
@@ -329,6 +332,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             , this.startWindowCronExpressionTf, this.endWindowCronExpressionTf, this.descriptionTa);
 
         this.initialiseEditor();
+        this.initialiseTree();
         this.initialiseVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
         this.initialiseSchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
@@ -340,19 +344,20 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(this.tabs);
         this.getStyle().set("padding-top", "0px");
-        this.add(this.formLayout, tabLayout, this.aceEditor, this.schedulerVisualisationDiv
+        this.add(this.formLayout, tabLayout, this.contextInstanceTreeViewWidget, this.aceEditor, this.schedulerVisualisationDiv
             , this.schedulerJobInstanceGridWidget, this.contextTemplateStatisticsWidget, this.contextInstanceAuditWidget);
     }
 
     private void initialiseTabs() {
         this.visualisationTab = new Tab(getTranslation("tab.visualisation", UI.getCurrent().getLocale()));
+        this.treeTab = new Tab(getTranslation("tab.tree", UI.getCurrent().getLocale()));
         this.rawContextTab = new Tab(getTranslation("tab.json-raw-format", UI.getCurrent().getLocale()));
         this.jobsTab = new Tab(getTranslation("tab.job-instances", UI.getCurrent().getLocale()));
         this.statisticsTab = new Tab(getTranslation("tab.statistics", UI.getCurrent().getLocale()));
         this.auditTab = new Tab(getTranslation("tab.audit", UI.getCurrent().getLocale()));
 
         this.tabs = new Tabs();
-        this.tabs.add(this.visualisationTab, this.rawContextTab
+        this.tabs.add(this.visualisationTab, this.treeTab,  this.rawContextTab
             , this.jobsTab, this.statisticsTab, this.auditTab);
 
         tabs.addSelectedChangeListener(event -> {
@@ -362,6 +367,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                 this.schedulerJobInstanceGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(true);
                 this.contextInstanceAuditWidget.setVisible(false);
+                this.contextInstanceTreeViewWidget.setVisible(false);
             }
             else if(tabs.getSelectedTab().equals(this.rawContextTab)) {
                 this.aceEditor.setVisible(true);
@@ -369,6 +375,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                 this.schedulerJobInstanceGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(false);
                 this.contextInstanceAuditWidget.setVisible(false);
+                this.contextInstanceTreeViewWidget.setVisible(false);
             }
             else if(tabs.getSelectedTab().equals(this.visualisationTab)) {
                 this.aceEditor.setVisible(false);
@@ -376,6 +383,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                 this.schedulerJobInstanceGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(false);
                 this.contextInstanceAuditWidget.setVisible(false);
+                this.contextInstanceTreeViewWidget.setVisible(false);
             }
             else if(tabs.getSelectedTab().equals(this.jobsTab)) {
                 this.aceEditor.setVisible(false);
@@ -383,6 +391,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                 this.schedulerJobInstanceGridWidget.setVisible(true);
                 this.contextTemplateStatisticsWidget.setVisible(false);
                 this.contextInstanceAuditWidget.setVisible(false);
+                this.contextInstanceTreeViewWidget.setVisible(false);
             }
             else if(tabs.getSelectedTab().equals(this.auditTab)) {
                 this.aceEditor.setVisible(false);
@@ -390,6 +399,15 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                 this.schedulerJobInstanceGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(false);
                 this.contextInstanceAuditWidget.setVisible(true);
+                this.contextInstanceTreeViewWidget.setVisible(false);
+            }
+            else if(tabs.getSelectedTab().equals(this.treeTab)) {
+                this.aceEditor.setVisible(false);
+                this.schedulerVisualisationDiv.setVisible(false);
+                this.schedulerJobInstanceGridWidget.setVisible(false);
+                this.contextTemplateStatisticsWidget.setVisible(false);
+                this.contextInstanceAuditWidget.setVisible(false);
+                this.contextInstanceTreeViewWidget.setVisible(true);
             }
         });
 
@@ -408,6 +426,9 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             }
             else if(this.selectedTab.equals(ContextInstanceWidget.VISUALISATION_TAB)) {
                 this.tabs.setSelectedTab(this.visualisationTab);
+            }
+            else if(this.selectedTab.equals(ContextInstanceWidget.TREE_TAB)) {
+                this.tabs.setSelectedTab(this.treeTab);
             }
         }
     }
@@ -510,6 +531,15 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         this.schedulerJobInstanceGridWidget.setHeight("75vh");
         this.schedulerJobInstanceGridWidget.setVisible(false);
 
+    }
+
+    private void initialiseTree() {
+        this.contextInstanceTreeViewWidget = new ContextInstanceTreeViewWidget(this.contextInstance, this.moduleMetaDataService, this.scheduledProcessManagementService,
+            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
+            this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
+        this.contextInstanceTreeViewWidget.setWidthFull();
+        this.contextInstanceTreeViewWidget.setHeight("75vh");
+        this.contextInstanceTreeViewWidget.setVisible(false);
     }
 
     private void initialiseContextTemplateStatisticsWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
