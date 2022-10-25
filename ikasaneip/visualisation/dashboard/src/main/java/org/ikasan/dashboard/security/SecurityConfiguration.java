@@ -86,7 +86,8 @@ public class SecurityConfiguration
                 // Below are the paths to allow HTTP Basic for. Restrict it to URLs allowed to be called outside of the dashboard
                         .antMatchers("/rest/export/context/**", // ContextExportControl
                                                  "/rest/module/bigQueue/size/all/**", // BigQueueModuleController
-                                                 "/rest/context/status/**" // ContextStatusServiceController
+                                                 "/rest/context/status/**", // ContextStatusServiceController
+                                                 "/actuator/**"// expose spring actuator via basic authentication
                         )
                         .and()
                 .authorizeRequests()
@@ -150,9 +151,10 @@ public class SecurityConfiguration
                                                                                                     "/swagger-ui/**",
                                                                                                     // (production mode) static resources
                                                                                                     "/frontend-es5/**",
-                                                                                                    "/frontend-es6/**")
+                                                                                                    "/frontend-es6/**",
+                                                                                                    "/actuator/**")
                 .permitAll().antMatchers("/authenticate").permitAll()
-                .antMatchers("/swagger-ui.html", "/swagger-ui/**").permitAll()
+                .antMatchers("/swagger-ui.html", "/swagger-ui/**", "/actuator/**").permitAll()
                 // Allow all requests by logged in users.
                 .anyRequest().authenticated()
                 // Configure the login page.
