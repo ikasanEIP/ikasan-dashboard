@@ -5,7 +5,6 @@ import java.util.Map;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersInstanceServiceImpl;
 import org.ikasan.job.orchestration.context.util.SchedulerContextParametersPropertiesProvider;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.module.service.ModuleActivatorDefaultImpl;
 import org.ikasan.module.startup.dao.StartupControlDao;
 import org.ikasan.job.orchestration.context.recovery.ContextInstanceRecoveryManager;
@@ -27,10 +26,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.event.EventListener;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -44,6 +46,9 @@ public class JobOrchestrationAutoConfiguration {
     public JobOrchestrationAutoConfiguration() {
         logger.info("Refreshing - JobOrchestrationAutoConfiguration");
     }
+
+    @Resource
+    private ApplicationContext applicationContext;
 
     @Resource
     ConfigurationService configurationService;
@@ -132,5 +137,15 @@ public class JobOrchestrationAutoConfiguration {
         inboundFlow.start();
 //        Flow outboundFlow = inboundFlowModule.getFlow("Job Initiation Event Outbound Flow");
 //        outboundFlow.start();
+    }
+
+    @EventListener
+    public void onRefreshScopeRefreshed(final RefreshScopeRefreshedEvent event) {
+        logger.info("Received Refresh event");
+        for (String beanName : applicationContext.getBeanDefinitionNames()) {
+            if(beanName.contains("scopedTarget")) {
+                logger.info("Refreshing: bean name: " + beanName + " - Bean class: " + applicationContext.getBean(beanName).getClass());
+            }
+        }
     }
 }
