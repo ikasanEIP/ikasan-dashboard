@@ -5,6 +5,7 @@ import java.util.Map;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersInstanceServiceImpl;
 import org.ikasan.job.orchestration.context.util.SchedulerContextParametersPropertiesProvider;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.module.service.ModuleActivatorDefaultImpl;
 import org.ikasan.module.startup.dao.StartupControlDao;
 import org.ikasan.job.orchestration.context.recovery.ContextInstanceRecoveryManager;
@@ -22,7 +23,10 @@ import org.ikasan.spec.scheduled.context.service.ContextInstanceRecoveryService;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -31,13 +35,15 @@ import org.springframework.context.annotation.Import;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-/**
- * House keeping related configuration required by dashboard.
- * This autoconfig should be excluded from dashboard.
- */
 @Configuration
 @Import({InboundModuleFactory.class})
-public class DashboardJobOrchestrationAutoConfiguration {
+@RefreshScope
+public class JobOrchestrationAutoConfiguration {
+    private Logger logger = LoggerFactory.getLogger(JobOrchestrationAutoConfiguration.class);
+
+    public JobOrchestrationAutoConfiguration() {
+        logger.info("Refreshing - JobOrchestrationAutoConfiguration");
+    }
 
     @Resource
     ConfigurationService configurationService;
