@@ -1,0 +1,10 @@
+BusinessDate=BusinessDateCalculator
+ErrorSearch=blah
+#A Comment if you need to use it
+UseBusinessDate=1
+UseBusinessDate=1
+
+noequalsign
+TestParam= 
+TestParam2='Speech!'
+= abc

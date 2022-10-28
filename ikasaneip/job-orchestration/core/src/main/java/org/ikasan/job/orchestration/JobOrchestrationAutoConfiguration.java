@@ -2,6 +2,8 @@ package org.ikasan.job.orchestration;
 
 import java.util.Map;
 
+import org.ikasan.job.orchestration.configuration.JobContextParamsSetupConfiguration;
+import org.ikasan.job.orchestration.configuration.JobContextParamsSetupFactory;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersInstanceServiceImpl;
 import org.ikasan.job.orchestration.context.util.SchedulerContextParametersPropertiesProvider;
@@ -38,7 +40,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 @Configuration
-@Import({InboundModuleFactory.class})
+@Import({InboundModuleFactory.class, JobContextParamsSetupFactory.class})
 @RefreshScope
 public class JobOrchestrationAutoConfiguration {
     private Logger logger = LoggerFactory.getLogger(JobOrchestrationAutoConfiguration.class);
@@ -65,11 +67,11 @@ public class JobOrchestrationAutoConfiguration {
     @Value("${use.replace.context.params.flag:false}")
     private boolean replaceContextParams;
 
-    @Value("#{${job.context.params.to.replace:{T(java.util.Collections).emptyMap()}}}")
-    private Map<String, Map<String, String>> paramsToReplace;
-
     @Value("${context.lifecycle.active:true}")
     private boolean isContextLifeCycleActive;
+
+    @Resource
+    private JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration;
 
     /**
      * This map with a String key that is an identifier for the spel expression.
@@ -99,8 +101,9 @@ public class JobOrchestrationAutoConfiguration {
     }
 
     @Bean
+    @DependsOn("jobContextParamsSetupConfiguration")
     public SchedulerContextParametersPropertiesProvider schedulerOverrider() {
-        return new SchedulerContextParametersPropertiesProvider(useSkipJobs, jobsToSkip, replaceContextParams, paramsToReplace, spelContextParamsCalculators);
+        return new SchedulerContextParametersPropertiesProvider(useSkipJobs, jobsToSkip, replaceContextParams, jobContextParamsSetupConfiguration.getParamsToReplace(), spelContextParamsCalculators);
     }
 
     @Bean
@@ -139,12 +142,17 @@ public class JobOrchestrationAutoConfiguration {
 //        outboundFlow.start();
     }
 
+    /**
+     * Force refresh to the Refresh Scoped beans.
+     * @param event
+     */
     @EventListener
     public void onRefreshScopeRefreshed(final RefreshScopeRefreshedEvent event) {
         logger.info("Received Refresh event");
         for (String beanName : applicationContext.getBeanDefinitionNames()) {
             if(beanName.contains("scopedTarget")) {
                 logger.info("Refreshing: bean name: " + beanName + " - Bean class: " + applicationContext.getBean(beanName).getClass());
+                logger.debug("jobContextParamsSetupConfiguration = [{}]", jobContextParamsSetupConfiguration.getParamsToReplace());
             }
         }
     }
