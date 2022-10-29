@@ -81,7 +81,7 @@
 package org.ikasan.job.orchestration.integration.inbound.component;
 
 import org.ikasan.bigqueue.IBigQueue;
-import org.ikasan.component.endpoint.bigqueue.consumer.BigQueueConsumer;
+import org.ikasan.builder.BuilderFactory;
 import org.ikasan.component.endpoint.bigqueue.serialiser.SimpleStringSerialiser;
 import org.ikasan.job.orchestration.integration.inbound.component.endpoint.ScheduleProcessInboundProducer;
 import org.ikasan.job.orchestration.integration.inbound.component.endpoint.configuration.ScheduleProcessInboundProducerConfiguration;
@@ -90,6 +90,7 @@ import org.ikasan.spec.component.endpoint.Producer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.transaction.jta.JtaTransactionManager;
 
 import javax.annotation.Resource;
 
@@ -110,12 +111,20 @@ public class ScheduledProcessEventInboundFlowComponentFactory
     @Value("${scheduler.inbound.producer.ignore.errors:false}")
     private boolean schedulerInboundProducerIgnoreErrors;
 
+    @Resource
+    BuilderFactory builderFactory;
+
+    @Resource
+    JtaTransactionManager transactionManager;
+
 
     @DependsOn("inboundQueue")
     public Consumer getInboundBigQueueConsumer() {
-        BigQueueConsumer consumer = new BigQueueConsumer(inboundQueue, true);
-        consumer.setSerialiser(new SimpleStringSerialiser());
-        return consumer;
+        return builderFactory.getComponentBuilder().bigQueueConsumer()
+            .setInboundQueue(inboundQueue)
+            .setPutErrorsToBackOfQueue(true)
+            .setSerialiser(new SimpleStringSerialiser())
+            .build();
     }
 
     /**
@@ -128,7 +137,8 @@ public class ScheduledProcessEventInboundFlowComponentFactory
         ScheduleProcessInboundProducerConfiguration configuration
             = new ScheduleProcessInboundProducerConfiguration();
         configuration.setIgnoreErrors(this.schedulerInboundProducerIgnoreErrors);
-        ScheduleProcessInboundProducer producer =  new ScheduleProcessInboundProducer();
+        ScheduleProcessInboundProducer producer
+            = new ScheduleProcessInboundProducer(this.transactionManager.getTransactionManager());
         producer.setConfiguration(configuration);
         producer.setConfiguredResourceId("scheduleProcessInboundProducer");
         return producer;
