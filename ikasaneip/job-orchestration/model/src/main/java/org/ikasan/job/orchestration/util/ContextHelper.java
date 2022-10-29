@@ -62,9 +62,6 @@ public class ContextHelper {
             }
         }
 
-        System.out.println("************************ " + jobName + " " + childContextName);
-        System.out.println("************************ " + theChildContext.getScheduledJobs());
-
         finalResults = finalResults.stream().filter(job -> !job.getChildContextName().equals(childContextName) &&
                 !theChildContext.getScheduledJobs().stream()
                     .filter(j -> job.getJobName().equals(j.getJobName()))
@@ -72,10 +69,6 @@ public class ContextHelper {
                     .isPresent())
             .filter(distinctByKey(j -> j.getJobName()))
             .collect(Collectors.toList());
-
-        finalResults.stream().distinct().collect(Collectors.toList())
-            .forEach(job -> System.out.println("returning " + job.getJobName()));
-        System.out.println("************************");
 
         return finalResults.stream().collect(Collectors.toList());
     }
