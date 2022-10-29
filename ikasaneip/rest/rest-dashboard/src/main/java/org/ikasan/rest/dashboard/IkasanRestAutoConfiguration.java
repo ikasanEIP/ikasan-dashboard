@@ -40,7 +40,7 @@
  */
 package org.ikasan.rest.dashboard;
 
-import com.leansoft.bigqueue.IBigQueue;
+import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagementServiceImpl;
 import org.ikasan.rest.dashboard.service.bigqueue.BigQueueDashboardServiceImpl;
 import org.ikasan.security.service.UserService;

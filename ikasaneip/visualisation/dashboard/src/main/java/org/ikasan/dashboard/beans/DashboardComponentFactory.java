@@ -1,8 +1,8 @@
 package org.ikasan.dashboard.beans;
 
-import com.leansoft.bigqueue.BigQueueImpl;
-import com.leansoft.bigqueue.IBigQueue;
 import com.vaadin.flow.server.*;
+import org.ikasan.bigqueue.BigQueueImpl;
+import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.business.stream.metadata.dao.SolrBusinessStreamMetadataDao;
 import org.ikasan.business.stream.metadata.service.SolrBusinessStreamMetaDataServiceImpl;
 import org.ikasan.configuration.metadata.dao.SolrComponentConfigurationMetadataDao;
@@ -42,7 +42,6 @@ import org.ikasan.spec.metrics.MetricsService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayEvent;
-import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;

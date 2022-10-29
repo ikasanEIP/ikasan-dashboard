@@ -124,13 +124,13 @@
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
+            <groupId>org.ikasan</groupId>
+            <artifactId>ikasan-big-queue</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.leansoft</groupId>
-            <artifactId>bigqueue</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
         <dependency>

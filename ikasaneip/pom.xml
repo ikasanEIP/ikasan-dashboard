@@ -949,6 +949,12 @@
 
             <dependency>
                 <groupId>org.ikasan</groupId>
+                <artifactId>ikasan-big-queue</artifactId>
+                <version>${ikasan.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.ikasan</groupId>
                 <artifactId>ikasan-bootstrap</artifactId>
                 <version>${ikasan.core.version}</version>
             </dependency>
@@ -1391,13 +1397,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.ikasan</groupId>
-                <artifactId>ikasan-big-queue</artifactId>
-                <version>${ikasan.core.version}</version>
-            </dependency>
-
-
-            <dependency>
                 <groupId>com.esotericsoftware</groupId>
                 <artifactId>kryo</artifactId>
                 <version>${version.kryo}</version>
@@ -1669,12 +1668,6 @@
                 <groupId>commons-logging</groupId>
                 <artifactId>commons-logging</artifactId>
                 <version>${version.commons-logging}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.leansoft</groupId>
-                <artifactId>bigqueue</artifactId>
-                <version>${version.big.queue}</version>
             </dependency>
 
             <dependency>

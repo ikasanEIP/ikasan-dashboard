@@ -42,6 +42,7 @@ package org.ikasan.job.orchestration.rest.dashboard;
 
 import javax.annotation.Resource;
 
+import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.rest.dashboard.JwtAuthenticationController;
 import org.ikasan.rest.dashboard.JwtAuthenticationEntryPoint;
 import org.ikasan.rest.dashboard.JwtRequestFilter;
@@ -58,8 +59,6 @@ import org.ikasan.spec.scheduled.reset.ContextResetService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-
-import com.leansoft.bigqueue.IBigQueue;
 
 @Configuration
 public class IkasanRestAutoConfiguration {
