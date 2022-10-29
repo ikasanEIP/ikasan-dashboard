@@ -6,13 +6,14 @@ import org.ikasan.job.orchestration.configuration.JobContextParamsSetupConfigura
 import org.ikasan.job.orchestration.configuration.JobContextParamsSetupFactory;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersInstanceServiceImpl;
-import org.ikasan.job.orchestration.context.util.SchedulerContextParametersPropertiesProvider;
-import org.ikasan.module.service.ModuleActivatorDefaultImpl;
-import org.ikasan.module.startup.dao.StartupControlDao;
 import org.ikasan.job.orchestration.context.recovery.ContextInstanceRecoveryManager;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.util.SchedulerContextParametersPropertiesProvider;
 import org.ikasan.job.orchestration.integration.StartupApplicationListener;
+import org.ikasan.job.orchestration.integration.StartupCompleteApplicationListener;
 import org.ikasan.job.orchestration.integration.module.InboundModuleFactory;
+import org.ikasan.module.service.ModuleActivatorDefaultImpl;
+import org.ikasan.module.startup.dao.StartupControlDao;
 import org.ikasan.scheduler.CachingScheduledJobFactory;
 import org.ikasan.scheduler.SchedulerFactory;
 import org.ikasan.spec.configuration.ConfigurationService;
@@ -35,9 +36,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.event.EventListener;
+import org.springframework.transaction.jta.JtaTransactionManager;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.Map;
 
 @Configuration
 @Import({InboundModuleFactory.class, JobContextParamsSetupFactory.class})
@@ -57,6 +59,9 @@ public class JobOrchestrationAutoConfiguration {
 
     @Resource
     Module<Flow> inboundFlowModule;
+
+    @Resource
+    JtaTransactionManager transactionManager;
 
     @Value("${use.skip.jobs.flag:false}")
     private boolean useSkipJobs;
@@ -133,13 +138,9 @@ public class JobOrchestrationAutoConfiguration {
             configurationMetadataDashboardRestService, inboundFlowModule);
     }
 
-
-    @PostConstruct
-    public void startInboundFlow() {
-        Flow inboundFlow = inboundFlowModule.getFlow("Scheduled Process Event Inbound Flow");
-        inboundFlow.start();
-//        Flow outboundFlow = inboundFlowModule.getFlow("Job Initiation Event Outbound Flow");
-//        outboundFlow.start();
+    @Bean
+    public StartupCompleteApplicationListener startupCompleteApplicationListener(Module<Flow> inboundFlowModule) {
+        return new StartupCompleteApplicationListener(transactionManager, inboundFlowModule);
     }
 
     /**
