@@ -94,7 +94,9 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
         contextParameterInstances = new ArrayList<>();
 
         this.internalEventDrivenJobInstance.getContextParameters().forEach(param -> {
-            contextParameterInstances.add((ContextParameterInstance) SerializationUtils.clone(this.contextParameterInstanceMap.get(param.getName())));
+            if(this.contextParameterInstanceMap.containsKey(param.getName())) {
+                contextParameterInstances.add((ContextParameterInstance) SerializationUtils.clone(this.contextParameterInstanceMap.get(param.getName())));
+            }
         });
 
         GridPro<ContextParameterInstance> grid = new GridPro<>();

@@ -16,6 +16,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import javax.transaction.TransactionManager;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.Xid;
 import java.io.IOException;
 
 import static org.mockito.Mockito.*;
@@ -29,8 +32,14 @@ public class ScheduleProcessInboundProducerTest {
     @Mock
     private ContextInstance contextInstance;
 
+    @Mock
+    TransactionManager transactionManager;
+
+    @Mock
+    Xid xid;
+
     @Test
-    public void test_invoke_success() throws IOException {
+    public void test_invoke_success() throws IOException, XAException {
         when(contextMachine.getContext()).thenReturn(contextInstance);
         when(contextInstance.getName()).thenReturn("contextInstanceName");
         when(contextInstance.getId()).thenReturn("contextInstanceId");
@@ -44,13 +53,14 @@ public class ScheduleProcessInboundProducerTest {
 
         bigQueueMessage.setMessage(ObjectMapperFactory.newInstance().writeValueAsString(contextualisedScheduledProcessEvent));
 
-        ScheduleProcessInboundProducer scheduleProcessInboundProducer = new ScheduleProcessInboundProducer();
+        ScheduleProcessInboundProducer scheduleProcessInboundProducer = new ScheduleProcessInboundProducer(transactionManager);
         ScheduleProcessInboundProducerConfiguration configuration = new ScheduleProcessInboundProducerConfiguration();
         configuration.setIgnoreErrors(false);
         scheduleProcessInboundProducer.setConfiguration(configuration);
 
 
         scheduleProcessInboundProducer.invoke(ObjectMapperFactory.newInstance().writeValueAsString(bigQueueMessage));
+        scheduleProcessInboundProducer.commit(xid, true);
 
         verify(contextInstance).getName();
         verify(contextInstance).getId();
@@ -77,7 +87,7 @@ public class ScheduleProcessInboundProducerTest {
 
         bigQueueMessage.setMessage(ObjectMapperFactory.newInstance().writeValueAsString(contextualisedScheduledProcessEvent));
 
-        ScheduleProcessInboundProducer scheduleProcessInboundProducer = new ScheduleProcessInboundProducer();
+        ScheduleProcessInboundProducer scheduleProcessInboundProducer = new ScheduleProcessInboundProducer(transactionManager);
         ScheduleProcessInboundProducerConfiguration configuration = new ScheduleProcessInboundProducerConfiguration();
         configuration.setIgnoreErrors(false);
         scheduleProcessInboundProducer.setConfiguration(configuration);
@@ -100,7 +110,7 @@ public class ScheduleProcessInboundProducerTest {
 
         bigQueueMessage.setMessage("bad message");
 
-        ScheduleProcessInboundProducer scheduleProcessInboundProducer = new ScheduleProcessInboundProducer();
+        ScheduleProcessInboundProducer scheduleProcessInboundProducer = new ScheduleProcessInboundProducer(transactionManager);
         ScheduleProcessInboundProducerConfiguration configuration = new ScheduleProcessInboundProducerConfiguration();
         configuration.setIgnoreErrors(false);
         scheduleProcessInboundProducer.setConfiguration(configuration);
@@ -123,7 +133,7 @@ public class ScheduleProcessInboundProducerTest {
 
         bigQueueMessage.setMessage("bad message");
 
-        ScheduleProcessInboundProducer scheduleProcessInboundProducer = new ScheduleProcessInboundProducer();
+        ScheduleProcessInboundProducer scheduleProcessInboundProducer = new ScheduleProcessInboundProducer(transactionManager);
         ScheduleProcessInboundProducerConfiguration configuration = new ScheduleProcessInboundProducerConfiguration();
         configuration.setIgnoreErrors(true);
         scheduleProcessInboundProducer.setConfiguration(configuration);

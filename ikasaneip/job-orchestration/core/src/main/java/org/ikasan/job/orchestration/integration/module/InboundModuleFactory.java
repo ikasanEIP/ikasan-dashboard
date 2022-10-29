@@ -62,7 +62,7 @@ import javax.annotation.Resource;
  */
 @Configuration
 @ImportResource( {
-    "classpath:ikasan-transaction-pointcut-ikasanMessageListener.xml"
+    "classpath:ikasan-transaction-pointcut-ikasanMessageListener-requires-new.xml"
 } )
 @Import({ ScheduledProcessEventInboundFlowComponentFactory.class, ScheduledProcessEventInboundFlowFactory.class})
 public class InboundModuleFactory
