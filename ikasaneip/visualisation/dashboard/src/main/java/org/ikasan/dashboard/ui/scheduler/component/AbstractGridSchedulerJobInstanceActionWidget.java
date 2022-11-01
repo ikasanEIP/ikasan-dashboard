@@ -3,9 +3,11 @@ package org.ikasan.dashboard.ui.scheduler.component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
@@ -13,6 +15,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLog
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -20,15 +23,17 @@ import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
 
 public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
     Logger logger = LoggerFactory.getLogger(SchedulerJobInstanceGridWidget.class);
@@ -81,7 +86,7 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
      * @param schedulerJobInstanceRecord
      * @return
      */
-    protected abstract Component getActionsComponent(SchedulerJobInstanceRecord schedulerJobInstanceRecord, HorizontalLayout horizontalLayout);
+    protected abstract Component getActionsComponent(ComponentKey componentKey, SchedulerJobInstanceRecord schedulerJobInstanceRecord, HorizontalLayout horizontalLayout);
 
     /**
      * Helper method to stream job log files.
@@ -276,5 +281,129 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
         schedulerJobInstanceRecord.setStatus(schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().name());
 
         this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+    }
+
+    protected boolean resetJob(SchedulerJobInstance schedulerJobInstance) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId
+            (schedulerJobInstance.getContextInstanceId());
+
+        if(contextMachine == null) {
+            NotificationHelper.showErrorNotification(getTranslation("error.job-reset-error-no-active-context", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        try {
+            if(schedulerJobInstance instanceof InternalEventDrivenJobInstance) {
+                if(((InternalEventDrivenJobInstance) schedulerJobInstance).isTargetResidingContextOnly()) {
+                    contextMachine.resetJob(schedulerJobInstance.getIdentifier(), schedulerJobInstance.getChildContextName());
+                }
+                else {
+                    schedulerJobInstance.getChildContextNames().forEach(name
+                        -> contextMachine.resetJob(schedulerJobInstance.getIdentifier(), name));
+                }
+            }
+            else {
+                contextMachine.resetJob(schedulerJobInstance.getIdentifier(), schedulerJobInstance.getChildContextName());
+            }
+
+            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET, String.format("Agent Name[%s], Scheduled Job Name[%s], Reset[%s]"
+                , schedulerJobInstance.getAgentName(), schedulerJobInstance.getJobName(), true), this.authentication.getName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.reset-general-error", UI.getCurrent().getLocale()));
+            return false;
+        }
+
+        return true;
+    }
+
+    protected void submitDownstreamJobs(InternalEventDrivenJobInstance internalEventDrivenJobInstance) {
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstance.getName());
+        ContextualisedScheduledProcessEventImpl contextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
+        contextualisedScheduledProcessEvent.setJobStarting(false);
+        contextualisedScheduledProcessEvent.setJobName(internalEventDrivenJobInstance.getJobName());
+        contextualisedScheduledProcessEvent.setAgentName(internalEventDrivenJobInstance.getAgentName());
+        contextualisedScheduledProcessEvent.setContextName(internalEventDrivenJobInstance.getContextName());
+        contextualisedScheduledProcessEvent.setRaisedDueToFailureResubmission(true);
+        contextualisedScheduledProcessEvent.setInternalEventDrivenJob(internalEventDrivenJobInstance);
+
+        List<SchedulerJobInitiationEvent> initiationEvents = contextMachine.getEventsThatCanRun(contextualisedScheduledProcessEvent);
+
+        if(initiationEvents.isEmpty()) {
+            NotificationHelper.showUserNotification(getTranslation("notification.no-downstream-jobs-to-initiate", UI.getCurrent().getLocale()));
+            return;
+        }
+
+        ConfirmDialog confirmDialog = new ConfirmDialog();
+        confirmDialog.setCancelable(true);
+        confirmDialog.setHeader(getTranslation("confirm-dialog.downstream-job-initiation-header", UI.getCurrent().getLocale()));
+
+        VerticalLayout verticalLayout = new VerticalLayout();
+        initiationEvents.forEach(initiationEvent -> {
+            Div jobName = new Div();
+            jobName.setText(initiationEvent.getJobName());
+            verticalLayout.add(jobName);
+        });
+        confirmDialog.setText(verticalLayout);
+
+        confirmDialog.open();
+
+        confirmDialog.addConfirmListener(confirmEvent -> {
+            try {
+                contextMachine.raiseEvent(contextualisedScheduledProcessEvent);
+            } catch (IOException e) {
+                e.printStackTrace();
+                NotificationHelper.showErrorNotification(getTranslation("error.downstream-job-initiation", UI.getCurrent().getLocale()));
+            }
+        });
+    }
+
+    protected class ComponentKey {
+        String contextName;
+        String childContextName;
+        String jobName;
+
+        public ComponentKey(String contextName, String childContextName, String jobName) {
+            this.contextName = contextName;
+            this.childContextName = childContextName;
+            this.jobName = jobName;
+        }
+
+        public String getContextName() {
+            return contextName;
+        }
+
+        public String getChildContextName() {
+            return childContextName;
+        }
+
+        public String getJobName() {
+            return jobName;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ComponentKey that = (ComponentKey) o;
+            return Objects.equals(contextName, that.contextName)
+                && Objects.equals(childContextName, that.childContextName)
+                && Objects.equals(jobName, that.jobName);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(contextName, childContextName, jobName);
+        }
+
+        @Override
+        public String toString() {
+            return "StatusImageKey{" +
+                "contextName='" + contextName + '\'' +
+                ", childContextName='" + childContextName + '\'' +
+                ", jobName='" + jobName + '\'' +
+                '}';
+        }
     }
 }
