@@ -798,7 +798,13 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         }
 
         try {
-            contextMachine.resetJob(this.internalEventDrivenJobInstance.getIdentifier(), this.internalEventDrivenJobInstance.getChildContextName());
+            if(this.internalEventDrivenJobInstance.isTargetResidingContextOnly()) {
+                contextMachine.resetJob(this.internalEventDrivenJobInstance.getIdentifier(), this.internalEventDrivenJobInstance.getChildContextName());
+            }
+            else {
+                this.internalEventDrivenJobInstance.getChildContextNames().forEach(name
+                    -> contextMachine.resetJob(this.internalEventDrivenJobInstance.getIdentifier(), name));
+            }
 
             this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_RESET, String.format("Agent Name[%s], Scheduled Job Name[%s], Reset[%s]"
                 , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName(), true), this.authentication.getName());
