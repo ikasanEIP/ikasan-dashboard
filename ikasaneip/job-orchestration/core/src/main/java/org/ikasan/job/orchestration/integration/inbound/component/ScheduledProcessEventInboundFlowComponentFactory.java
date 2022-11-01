@@ -92,7 +92,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
 import javax.annotation.Resource;
-import java.io.IOException;
 
 /**
  * Scheduler Agent component factory.
