@@ -85,13 +85,16 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             schedulerJobInstance.setContextInstanceId(parentContextInstance.getId());
 
             if(scheduledProcessEvent.isRaisedDueToFailureResubmission()) {
-                if(!schedulerJobInstance.getStatus().equals(InstanceStatus.ERROR)) {
-                    throw new ContextMachineException(String.format("Job[%s], Context[%s], Child Context[%s] was in a State[%s] when attempting" +
-                        " to raise events dues to a failure resubmission. The job must be in ERROR to resubmit due to failure.", schedulerJobInstance.getIdentifier(),
-                        schedulerJobInstance.getContextName(), schedulerJobInstance.getChildContextName(), schedulerJobInstance.getStatus().name()));
+                if(scheduledProcessEvent.getInternalEventDrivenJob().getChildContextName()
+                    .equals(contextInstance.getName())) {
+                    if (!schedulerJobInstance.getStatus().equals(InstanceStatus.ERROR)) {
+                        throw new ContextMachineException(String.format("Job[%s], Context[%s], Child Context[%s] was in a State[%s] when attempting" +
+                                " to raise events dues to a failure resubmission. The job must be in ERROR to resubmit due to failure.", schedulerJobInstance.getIdentifier(),
+                            schedulerJobInstance.getContextName(), schedulerJobInstance.getChildContextName(), schedulerJobInstance.getStatus().name()));
+                    }
+                    // we temporarily set the job to complete so the downstream logic will be assessed
+                    schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
                 }
-                // we temporarily set the job to complete so the downstream logic will be assessed
-                schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
             }
             else {
                 if (scheduledProcessEvent.isJobStarting()) {

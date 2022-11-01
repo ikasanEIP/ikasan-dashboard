@@ -1,0 +1,36 @@
+.precedingItem {
+    color: rgba(241, 90, 35, 1.0);;
+    background-color: rgba(210, 215, 211, 0.3);
+}
+
+.onHold {
+    background-color: rgba(187, 102, 183, 0.1);
+}
+
+.released {
+    background-color: rgba(206, 179, 49, 0.1);
+}
+
+.complete {
+    background-color: rgba(102, 187, 106, 0.1);
+}
+
+.waiting {
+    background-color: rgba(210, 215, 211, 0.1);
+}
+
+.error {
+    background-color: rgba(239, 83, 80, 0.1);
+}
+
+.running {
+    background-color: rgba(133, 181, 225, 0.1);
+}
+
+.lockQueued {
+    background-color: rgba(200, 162, 200, 0.3);
+}
+
+.skipped {
+    background-color: rgba(25, 175, 186, 0.3);
+}
