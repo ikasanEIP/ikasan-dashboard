@@ -56,6 +56,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     public static final String HOSPITAL_EVENT_ACTION = "hospitalEventAction";
     public static final String STATUS = "status";
     public static final String MODIFIED_BY = "modifiedBy";
+    public static final String MANUALLY_SUBMITTED_BY = "manuallySubmittedBy";
     public static final String CHILD_CONTEXT_NAME = "childContextName";
     public static final String ACCESS_GROUPS = "accessGroups";
     public static final String ACCESS_USERS = "accessUsers";
