@@ -60,6 +60,9 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Field(SolrDaoBase.MODIFIED_BY)
     private String modifiedBy;
 
+    @Field(SolrDaoBase.MANUALLY_SUBMITTED_BY)
+    private String manuallySubmittedBy;
+
     @Override
     public String getId() {
         return this.id;
@@ -209,6 +212,16 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Override
     public void setModifiedBy(String modifiedBy) {
         this.modifiedBy = modifiedBy;
+    }
+
+    @Override
+    public String getManuallySubmittedBy() {
+        return manuallySubmittedBy;
+    }
+
+    @Override
+    public void setManuallySubmittedBy(String manuallySubmittedBy) {
+        this.manuallySubmittedBy = manuallySubmittedBy;
     }
 
     @Override
