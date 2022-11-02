@@ -65,4 +65,5 @@
     <field name="targetResidingContextOnly" type="boolean" indexed="true" stored="true"/>
     <field name="participatesInLock" type="boolean" indexed="true" stored="true"/>
     <field name="disabled" type="boolean" indexed="true" stored="true"/>
+    <field name="manuallySubmittedBy" type="strings" multiValued="false" stored="true"/>
 </schema>

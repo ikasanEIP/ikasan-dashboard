@@ -113,6 +113,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         schedulerJobInstanceRecord.setSchedulerJobInstance(solrSchedulerJobInstance);
         schedulerJobInstanceRecord.setTimestamp(1000000L);
         schedulerJobInstanceRecord.setStatus("RUNNING");
+        schedulerJobInstanceRecord.setManuallySubmittedBy("manualUser");
         service.save(schedulerJobInstanceRecord);
 
         SchedulerJobInstanceRecord found = service.findById("jobName_contexInstance_contextContextName_quartzScheduleDrivenJobInstance");
@@ -139,6 +140,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         Assert.assertEquals(78321, found.getSchedulerJobInstance().getScheduledProcessEvent().getPid());
         Assert.assertEquals("RUNNING", found.getStatus());
         Assert.assertEquals(1000000L, found.getTimestamp());
+        Assert.assertEquals("manualUser", found.getManuallySubmittedBy());
 
         Assert.assertNull(service.findById("bad_id"));
     }

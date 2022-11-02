@@ -357,7 +357,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         this.auditTab = new Tab(getTranslation("tab.audit", UI.getCurrent().getLocale()));
 
         this.tabs = new Tabs();
-        this.tabs.add(this.visualisationTab, this.treeTab,  this.rawContextTab
+        this.tabs.add(this.treeTab, this.visualisationTab, this.rawContextTab
             , this.jobsTab, this.statisticsTab, this.auditTab);
 
         tabs.addSelectedChangeListener(event -> {
@@ -505,6 +505,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             this.schedulerInstanceVisualisation.getElement().getStyle().set("margin-bottom", "30px");
 
             this.schedulerVisualisationDiv.add(buttonWrapper, this.schedulerInstanceVisualisation);
+            this.schedulerVisualisationDiv.setVisible(false);
         }
         catch (IOException e) {
             // todo raise message
@@ -539,7 +540,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
         this.contextInstanceTreeViewWidget.setWidthFull();
         this.contextInstanceTreeViewWidget.setHeight("75vh");
-        this.contextInstanceTreeViewWidget.setVisible(false);
+        this.contextInstanceTreeViewWidget.setVisible(true);
     }
 
     private void initialiseContextTemplateStatisticsWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
