@@ -163,6 +163,9 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
                         , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
                         , this.authentication.getName());
 
+                    this.schedulerJobInstanceRecord.setManuallySubmittedBy(authentication.getName());
+                    this.schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+
                     NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
 
                     submitButton.setVisible(false);

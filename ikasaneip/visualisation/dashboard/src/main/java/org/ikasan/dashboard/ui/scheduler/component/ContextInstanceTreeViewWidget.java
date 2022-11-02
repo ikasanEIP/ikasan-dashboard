@@ -17,9 +17,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
@@ -41,6 +39,8 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
@@ -77,7 +77,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private Registration schedulerJobStateChangeRegistration;
     private Registration contextInstanceStateChangeRegistration;
     private SchedulerJobInstanceService schedulerJobInstanceService;
-
     private ModuleMetaDataService moduleMetaDataService;
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
@@ -89,7 +88,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
     private ContextInstance contextInstance;
-
     private Map<ComponentKey, Image> jobImageMap;
     private Map<ComponentKey, Map<String, Icon>> schedulerJobIconMap;
 
@@ -98,6 +96,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private Map<ComponentKey, Div> startTimes;
 
     private Map<ComponentKey, Div> endTimes;
+
+    private Map<ComponentKey, Div> manuallySubmittedBy;
 
     private ExplorerTreeGrid<Object> grid;
 
@@ -167,6 +167,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         this.statusDivMap = new HashMap<>();
         this.startTimes = new HashMap<>();
         this.endTimes = new HashMap<>();
+        this.manuallySubmittedBy = new HashMap<>();
         this.expandedNodes = new ArrayList<>();
 
         parser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(QUARTZ));
@@ -175,238 +176,38 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         ContextHelper.enrichJobs(this.contextInstance);
 
         setSizeFull();
-        TreeGrid<Object> grid = buildGrid();
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-//        Button expand = new Button("Expand", VaadinIcon.EXPAND.create());
-//        expand.setIconAfterText(true);
-//        expand.addClickListener(event -> {
-//            this.grid.expandRecursively(Collections.singleton(this.contextInstance), 99);
-//        });
+        this.buildGrid();
 
-        Button collapse = new Button("Collapse", VaadinIcon.COMPRESS.create());
+        Button collapse = new Button(getTranslation("button.collapse", UI.getCurrent().getLocale()), VaadinIcon.COMPRESS.create());
         collapse.setIconAfterText(true);
+        collapse.getElement().getStyle().set("margin-left", "auto");
         collapse.addClickListener(event -> {
             this.grid.collapseRecursively(this.expandedNodes, 1);
         });
 
-        buttonLayout.add(collapse);
+        Div div = new Div();
+        div.setSizeFull();
 
-        VerticalLayout layout = new VerticalLayout();
-        layout.setSizeFull();
+        HorizontalLayout layout = new HorizontalLayout();
 
-        layout.add(buttonLayout, grid);
-        layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
 
-        super.add(layout);
+        layout.add(collapse);
+        layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, collapse);
+
+        div.add(layout);
+        div.add(this.grid);
+
+        super.add(div);
     }
 
-    private TreeGrid<Object> buildGrid() {
+    /**
+     * Helper method to build the underlying grid.
+     */
+    private void buildGrid() {
         grid = new ExplorerTreeGrid<>();
 
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap
-            = getInternalJobs(contextInstance.getId());
-
-        HierarchicalConfigurableFilterDataProvider<Object, Void, TreeFilter> dataProvider =
-            new AbstractBackEndHierarchicalDataProvider<Object, TreeFilter>() {
-                // returns the number of immediate child items
-                @Override
-                public int getChildCount(HierarchicalQuery<Object, TreeFilter> query) {
-                    List<Object> children = new ArrayList<>();
-                    if(query.getParent() == null) {
-                        if (contextInstance.getContexts() != null
-                            && !(contextInstance.getContexts().isEmpty())) {
-                            if(query.getFilter() != null && query.getFilter().isPresent() && query.getFilter().get().getJobName().isEmpty()) {
-                                children.addAll(contextInstance.getContexts().stream()
-                                    .map(instance -> (Object) instance)
-                                    .collect(Collectors.toList()));
-                            }
-                            else {
-                                children.addAll(contextInstance.getContexts().stream()
-                                    .filter(instance -> ContextHelper.getContextsWhereJobFilterMatchResides
-                                        (instance, query.getFilter().get().getJobName()).size() > 0)
-                                    .map(instance -> (Object) instance)
-                                    .collect(Collectors.toList()));
-                            }
-                        }
-
-                        if (contextInstance.getScheduledJobs() != null
-                            && !contextInstance.getScheduledJobs().isEmpty()) {
-                            children.addAll(contextInstance.getScheduledJobs().stream()
-                                .filter(instance -> query.getFilter() != null && query.getFilter().isPresent()
-                                    ? instance.getJobName().toLowerCase().contains(query.getFilter().get().getJobName().toLowerCase())
-                                    : true)
-                                .map(instance -> (Object) instance)
-                                .collect(Collectors.toList()));
-                        }
-                    }
-                    else if(query.getParent() instanceof ContextInstance) {
-                        if (((ContextInstance)query.getParent()).getContexts() != null
-                            && !((ContextInstance)query.getParent()).getContexts().isEmpty()) {
-                            if(query.getFilter() != null && query.getFilter().isPresent() && query.getFilter().get().getJobName().isEmpty()) {
-                                children.addAll(((ContextInstance) query.getParent()).getContexts().stream()
-                                    .map(instance -> (Object) instance)
-                                    .collect(Collectors.toList()));
-                            }
-                            else {
-                                children.addAll(((ContextInstance) query.getParent()).getContexts().stream()
-                                    .filter(instance -> ContextHelper.getContextsWhereJobFilterMatchResides
-                                        (instance, query.getFilter().get().getJobName()).size() > 0)
-                                    .map(instance -> (Object) instance)
-                                    .collect(Collectors.toList()));
-                            }
-                        }
-
-                        if (((ContextInstance)query.getParent()).getScheduledJobs() != null
-                            && !((ContextInstance)query.getParent()).getScheduledJobs().isEmpty()) {
-                            children.addAll(((ContextInstance)query.getParent()).getScheduledJobs().stream()
-                                .filter(instance -> query.getFilter() != null && query.getFilter().isPresent()
-                                    ? instance.getJobName().toLowerCase().contains(query.getFilter().get().getJobName().toLowerCase())
-                                    : true)
-                                .map(instance -> (Object) instance)
-                                .collect(Collectors.toList()));
-                        }
-                    }
-                    if(query.getParent() instanceof SchedulerJobInstance) {
-                        SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance) query.getParent();
-                        children.addAll(ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance,
-                                schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
-                                , getInternalJobs(contextInstance.getId()))
-                            .stream()
-                            .filter(instance -> query.getFilter() != null && query.getFilter().isPresent()
-                                ? instance.getJobName().toLowerCase().contains(query.getFilter().get().getJobName().toLowerCase())
-                                : true)
-                            .map(instance -> (Object) new PrecedingItem(instance))
-                            .collect(Collectors.toList()));
-                    }
-                    return children.stream().distinct().collect(Collectors.toList()).size();
-                }
-                // checks if a given item should be expandable
-                @Override
-                public boolean hasChildren(Object item) {
-                    List<Object> children = new ArrayList<>();
-                    if(item instanceof ContextInstance) {
-                        if (((ContextInstance)item).getContexts() != null
-                            && !((ContextInstance)item).getContexts().isEmpty()) {
-                            children.addAll(((ContextInstance)item).getContexts().stream()
-                                .map(instance -> (Object) instance)
-                                .collect(Collectors.toList()));
-                        }
-
-                        if (((ContextInstance)item).getScheduledJobs() != null
-                            && !((ContextInstance)item).getScheduledJobs().isEmpty()) {
-                            children.addAll(((ContextInstance)item).getScheduledJobs().stream()
-                                .map(instance -> (Object) instance)
-                                .collect(Collectors.toList()));
-                        }
-                    }
-                    if(item instanceof SchedulerJobInstance) {
-                        SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance) item;
-                        children.addAll(ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance,
-                                schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
-                                , getInternalJobs(contextInstance.getId()))
-                            .stream()
-                            .map(instance -> (Object) new PrecedingItem(instance))
-                            .collect(Collectors.toList()));
-                    }
-                    return children.stream().distinct().collect(Collectors.toList()).size() > 0;
-                }
-
-                // returns the immediate child items based on offset and limit
-                @Override
-                protected Stream<Object> fetchChildrenFromBackEnd(
-                    HierarchicalQuery<Object, TreeFilter> query) {
-                    List<Object> children = new ArrayList<>();
-                    if(query.getParent() == null) {
-                        if(query.getFilter() != null && query.getFilter().isPresent() && query.getFilter().get().getJobName().isEmpty()) {
-                            children.addAll(contextInstance.getContexts().stream()
-                                .map(instance -> (Object) instance)
-                                .collect(Collectors.toList()));
-                        }
-                        else {
-                            children.addAll(contextInstance.getContexts().stream()
-                                .filter(instance -> ContextHelper.getContextsWhereJobFilterMatchResides
-                                    (instance, query.getFilter().get().getJobName()).size() > 0)
-                                .map(instance -> (Object) instance)
-                                .collect(Collectors.toList()));
-                        }
-
-                        if (contextInstance.getScheduledJobs() != null
-                            && !contextInstance.getScheduledJobs().isEmpty()) {
-                            children.addAll(contextInstance.getScheduledJobs().stream()
-                                .filter(instance -> query.getFilter() != null && query.getFilter().isPresent()
-                                    ? instance.getJobName().toLowerCase().contains(query.getFilter().get().getJobName().toLowerCase())
-                                    : true)
-                                .map(instance -> (Object) instance)
-                                .collect(Collectors.toList()));
-                        }
-                    }
-                    else if(query.getParent() instanceof ContextInstance) {
-                        if (((ContextInstance)query.getParent()).getContexts() != null
-                            && !((ContextInstance)query.getParent()).getContexts().isEmpty()) {
-                            if(query.getFilter() != null && query.getFilter().isPresent() && query.getFilter().get().getJobName().isEmpty()) {
-                                children.addAll(((ContextInstance) query.getParent()).getContexts().stream()
-                                    .map(instance -> (Object) instance)
-                                    .collect(Collectors.toList()));
-                            }
-                            else {
-                                children.addAll(((ContextInstance) query.getParent()).getContexts().stream()
-                                    .filter(instance -> ContextHelper.getContextsWhereJobFilterMatchResides
-                                        (instance, query.getFilter().get().getJobName()).size() > 0)
-                                    .map(instance -> (Object) instance)
-                                    .collect(Collectors.toList()));
-                            }
-                        }
-
-                        if (((ContextInstance)query.getParent()).getScheduledJobs() != null
-                            && !((ContextInstance)query.getParent()).getScheduledJobs().isEmpty()) {
-                            children.addAll(((ContextInstance)query.getParent()).getScheduledJobs().stream()
-                                .map(instance -> (Object) instance)
-                                .filter(instance -> query.getFilter() != null && query.getFilter().isPresent()
-                                    ? ((SchedulerJobInstance) instance).getJobName().toLowerCase().contains(query.getFilter().get().getJobName().toLowerCase())
-                                    : true)
-                                .collect(Collectors.toList()));
-                        }
-                    }
-                    if(query.getParent() instanceof SchedulerJobInstance) {
-                        SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance) query.getParent();
-                        children.addAll(ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance,
-                                schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
-                                , getInternalJobs(contextInstance.getId()))
-                            .stream()
-                            .filter(instance -> query.getFilter() != null && query.getFilter().isPresent()
-                                ? instance.getJobName().toLowerCase().contains(query.getFilter().get().getJobName().toLowerCase())
-                                : true)
-                            .map(instance -> (Object) new PrecedingItem(instance))
-                            .collect(Collectors.toList()));
-                    }
-                    return children.stream();
-                }
-            }.withConfigurableFilter();
-
-        TreeFilter filter = new TreeFilter();
-        dataProvider.setFilter(filter);
-
-        TextField filterField = new TextField();
-        filterField.setWidth("100%");
-        Icon filterIcon = VaadinIcon.FILTER.create();
-        filterIcon.setSize("12pt");
-        filterField.setSuffixComponent(filterIcon);
-
-        filterField.addValueChangeListener(event -> {
-            if (event.getValue() == null || event.getValue().isEmpty()) {
-                filter.setJobName("");
-                dataProvider.refreshAll();
-                grid.collapseRecursively(Collections.singleton(contextInstance), 1);
-                grid.expand(this.expandedNodes);
-            } else {
-                filter.setJobName(event.getValue());
-                dataProvider.refreshAll();
-                grid.expandRecursively(Collections.singleton(contextInstance), 99);
-            }
-        });
-
-        grid.addExpandListener(e -> this.expandedNodes.addAll(e.getItems()));
-        grid.addCollapseListener(e -> this.expandedNodes.removeAll(e.getItems()));
+            = getCommandExecutionJobsForContextInstance(contextInstance.getId());
 
         grid.addComponentHierarchyColumn(value -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -422,7 +223,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                 if (ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance, schedulerJobInstance.getJobName()
                     , schedulerJobInstance.getChildContextName(), internalEventDrivenJobInstanceMap).size() > 0) {
-                    horizontalLayout.add(VaadinIcon.ARROW_DOWN.create());
+                    horizontalLayout.add(VaadinIcon.ARROW_RIGHT.create());
                 }
 
                 Image image = new Image(this.getJobImage(schedulerJobInstanceRecord.getSchedulerJobInstance()), "");
@@ -552,7 +353,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 return horizontalLayout;
             })
             .setResizable(true)
-            .setHeader("Scheduled Time")
+            .setHeader(getTranslation("table-header.scheduled-time", UI.getCurrent().getLocale()))
             .setFlexGrow(1);
         grid.addComponentColumn(value -> {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -590,7 +391,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 return horizontalLayout;
             })
             .setResizable(true)
-            .setHeader("Timezone")
+            .setHeader(getTranslation("table-header.timezone", UI.getCurrent().getLocale()))
             .setFlexGrow(1);
         grid.addComponentColumn(value -> {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -639,7 +440,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 return horizontalLayout;
             })
             .setResizable(true)
-            .setHeader("Fire Time")
+            .setHeader(getTranslation("table-header.fire-time", UI.getCurrent().getLocale()))
             .setFlexGrow(1);
         grid.addComponentColumn(value -> {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -707,7 +508,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 return horizontalLayout;
             })
             .setResizable(true)
-            .setHeader("Status")
+            .setHeader(getTranslation("table-header.status", UI.getCurrent().getLocale()))
             .setFlexGrow(1);
         grid.addComponentColumn(value -> {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -755,34 +556,89 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 return horizontalLayout;
             })
             .setResizable(true)
-            .setHeader("Completion Time")
+            .setHeader(getTranslation("table-header.completion-time", UI.getCurrent().getLocale()))
             .setFlexGrow(1);
+
+        grid.addComponentColumn(value -> {
+                HorizontalLayout horizontalLayout = new HorizontalLayout();
+                if(value instanceof SchedulerJobInstance || value instanceof PrecedingItem) {
+                    SchedulerJobInstance schedulerJobInstance;
+
+                    if(value instanceof SchedulerJobInstance) {
+                        schedulerJobInstance =(SchedulerJobInstance) value;
+                    }
+                    else  {
+                        schedulerJobInstance = ((PrecedingItem) value).schedulerJobInstance;
+                    }
+
+                    SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService
+                        .findByContextIdJobNameChildContextName(this.contextInstance.getId()
+                            , schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName());
+
+                    Div label = new Div();
+                    label.getElement().getStyle().set("word-wrap", "normal");
+                    label.getElement().getStyle().set("white-space", "normal");
+
+                    ComponentKey key;
+
+                    if(value instanceof SchedulerJobInstance) {
+                        key = new ComponentKey(this.contextInstance.getName()
+                            , schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), schedulerJobInstanceRecord.getJobName());
+                    }
+                    else  {
+                        key = new ComponentKey(PRECEDING_ITEM_COMPONENT+this.contextInstance.getName()
+                            , schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), schedulerJobInstanceRecord.getJobName());
+
+                    }
+
+                    this.manuallySubmittedBy.put(key, label);
+
+                    horizontalLayout.add(label);
+
+                    if(schedulerJobInstanceRecord.getManuallySubmittedBy() != null) {
+                        label.setText(schedulerJobInstanceRecord.getManuallySubmittedBy());
+                    }
+                }
+
+                return horizontalLayout;
+            })
+            .setResizable(true)
+            .setHeader(getTranslation("table-header.manually-submitted-by", UI.getCurrent().getLocale()))
+            .setFlexGrow(1);
+
+        HierarchicalConfigurableFilterDataProvider dataProvider = this.createTreeGridDataProvider();
+
+        this.addGridFiltering(dataProvider);
+
+        grid.setDataProvider(dataProvider);
 
         grid.setSizeFull();
         grid.expand(contextInstance.getContexts());
 
-        grid.setDataProvider(dataProvider);
+        grid.addExpandListener(e -> this.expandedNodes.addAll(e.getItems()));
+        grid.addCollapseListener(e -> this.expandedNodes.removeAll(e.getItems()));
 
         grid.setClassNameGenerator(item -> {
             if(item instanceof PrecedingItem) {
                 return "precedingItem";
             }
-            else if(item instanceof SchedulerJobInstance) {
-                SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance) item;
-                if (ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance, schedulerJobInstance.getJobName()
-                    , schedulerJobInstance.getChildContextName(), internalEventDrivenJobInstanceMap).size() > 0) {
-                    return "precedingItem";
-                }
-            }
+//            else if(item instanceof SchedulerJobInstance) {
+//                SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance) item;
+//                if (ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance, schedulerJobInstance.getJobName()
+//                    , schedulerJobInstance.getChildContextName(), internalEventDrivenJobInstanceMap).size() > 0) {
+//                    return "precedingItem";
+//                }
+//            }
             return null;
         });
-
-        HeaderRow hr = grid.appendHeaderRow();
-        hr.getCell(grid.getColumnByKey("name")).setComponent(filterField);
-
-        return grid;
     }
 
+    /**
+     * Helper method to set the background colour on an image in order to reflect the status.
+     *
+     * @param image the image to set the background colour on.
+     * @param instanceStatus the status to be reflected.
+     */
     private void setImageBackgroundColour(Image image, InstanceStatus instanceStatus) {
         image.getElement().getStyle().remove("background-color");
         if(instanceStatus.equals(InstanceStatus.COMPLETE)) {
@@ -808,6 +664,13 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         }
     }
 
+    /**
+     * Helper method to get the functional context visualisation icon.
+     *
+     * @param contextInstance the context instance that will be opened when the icon is clicked.
+     *
+     * @return the initialised functional icon.
+     */
     private Icon createContextVisualisationIcon(ContextInstance contextInstance) {
         Icon visualisation = IconDecorator.decorate(new Icon(VaadinIcon.SITEMAP), getTranslation("tooltip.open-visualisation"
             , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
@@ -837,6 +700,13 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         return visualisation;
     }
 
+    /**
+     * Get a reference to the image path associated with a job type.
+     *
+     * @param schedulerJob the job to get the image path for.
+     *
+     * @return the image path.
+     */
     protected String getJobImage(SchedulerJob schedulerJob) {
         String image = "frontend/images/command_black.png";
 
@@ -850,7 +720,14 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         return image;
     }
 
-    protected Component getActionsComponent(ComponentKey key, SchedulerJobInstanceRecord schedulerJobInstanceRecord, HorizontalLayout layout) {
+    /**
+     * Method to initialise and create all action icons for a given job record. All icons are added to the provided layout.
+     *
+     * @param key
+     * @param schedulerJobInstanceRecord
+     * @param layout
+     */
+    protected void getActionsComponent(ComponentKey key, SchedulerJobInstanceRecord schedulerJobInstanceRecord, HorizontalLayout layout) {
         layout.setWidthFull();
 
         if(!this.schedulerJobIconMap.containsKey(key)) {
@@ -994,7 +871,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         submit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
             if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
                 InternalEventDrivenJobSubmissionDialog internalEventDrivenJobSubmissionDialog = new InternalEventDrivenJobSubmissionDialog(this.systemEventLogger,
-                    this.moduleMetaDataService, this.contextInstance, this.jobInitiationService, (InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance());
+                    this.moduleMetaDataService, this.contextInstance, this.jobInitiationService, schedulerJobInstanceRecord, this.schedulerJobInstanceService);
 
                 internalEventDrivenJobSubmissionDialog.open();
             }
@@ -1010,6 +887,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 confirmDialog.addConfirmListener(confirmEvent -> {
                     try {
                         ModuleMetaData agent = this.moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
+                        schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
+                        schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+
                         this.jobInitiationService.raiseFileEventSchedulerJob(agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getJobName());
 
                         logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
@@ -1045,6 +925,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                         this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
                                 , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
                             , this.authentication.getName());
+
+                        schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
+                        schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
                         NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                     }
@@ -1132,11 +1015,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 confirmDialog.open();
 
                 confirmDialog.addConfirmListener(confirmEvent -> {
-                    if(this.resetJob(schedulerJobInstanceRecord.getSchedulerJobInstance())) {
-//                        this.statusDiv.setStatus(InstanceStatus.WAITING);
-//                        this.internalEventDrivenJobInstance.setStatus(InstanceStatus.WAITING);
-//                        setButtonVisibility();
-                    }
+                    super.resetJob(schedulerJobInstanceRecord.getSchedulerJobInstance());
                 });
             });
 
@@ -1164,10 +1043,14 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         }
 
         layout.add(submitDownstreamJobs);
-
-        return layout;
     }
 
+    /**
+     * Helper method to set the visibility of all action items associated with a individual job.
+     *
+     * @param schedulerJobInstanceRecord the job we are setting the action visibility for.
+     * @param key the key to the map containing icons for the job
+     */
     protected void setIconVisibility(SchedulerJobInstanceRecord schedulerJobInstanceRecord, ComponentKey key) {
         Map<String, Icon> iconMap = this.schedulerJobIconMap.get(key);
         Icon skip = iconMap.get(SKIP_ICON);
@@ -1258,98 +1141,11 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
-            ComponentKey key = new ComponentKey(jobInstanceStateChangeEvent.getContextInstance().getName(),
-                jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
-            ComponentKey precedingJobKey = new ComponentKey(PRECEDING_ITEM_COMPONENT+jobInstanceStateChangeEvent.getContextInstance().getName(),
-                jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
-
-
-            SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(jobInstanceStateChangeEvent.getContextInstance().getId()
-                , jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName());
-
-
-            Image statusImage = this.jobImageMap.get(key);
-
-            if(statusImage != null) {
-                ui.access(() -> {
-                    logger.info(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
-                        , jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
-                        jobInstanceStateChangeEvent.getNewStatus()));
-                    this.setImageBackgroundColour(statusImage, jobInstanceStateChangeEvent.getNewStatus());
-                });
-            }
-
-            Image preccedingJobStatusImage = this.jobImageMap.get(precedingJobKey);
-
-            if(preccedingJobStatusImage != null) {
-                ui.access(() -> {
-                    logger.info(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
-                        , jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
-                        jobInstanceStateChangeEvent.getNewStatus()));
-                    this.setImageBackgroundColour(preccedingJobStatusImage, jobInstanceStateChangeEvent.getNewStatus());
-                });
-            }
-
-            if(this.schedulerJobIconMap.containsKey(key)) {
-                schedulerJobInstanceRecord.setStatus(jobInstanceStateChangeEvent.getNewStatus().name());
-                SchedulerJobInstance schedulerJobInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
-                schedulerJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-                schedulerJobInstanceRecord.setSchedulerJobInstance(schedulerJobInstance);
-                ui.access(() -> this.setIconVisibility(schedulerJobInstanceRecord, key));
-            }
-
-            if(this.schedulerJobIconMap.containsKey(precedingJobKey)) {
-                schedulerJobInstanceRecord.setStatus(jobInstanceStateChangeEvent.getNewStatus().name());
-                SchedulerJobInstance schedulerJobInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
-                schedulerJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-                schedulerJobInstanceRecord.setSchedulerJobInstance(schedulerJobInstance);
-                ui.access(() -> this.setIconVisibility(schedulerJobInstanceRecord, precedingJobKey));
-            }
-
-            if(this.statusDivMap.containsKey(key)) {
-                ui.access(() -> this.statusDivMap.get(key).setStatus(jobInstanceStateChangeEvent.getNewStatus()));
-            }
-
-            if(this.statusDivMap.containsKey(precedingJobKey)) {
-                ui.access(() -> this.statusDivMap.get(precedingJobKey).setStatus(jobInstanceStateChangeEvent.getNewStatus()));
-            }
-
-            if(this.startTimes.containsKey(key) && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null
-                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime() > 0) {
-                ui.access(() -> this.startTimes.get(key).setText(DateFormatter.instance()
-                    .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime())));
-            }
-
-            if(this.startTimes.containsKey(precedingJobKey) && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null
-                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime() > 0) {
-                ui.access(() -> this.startTimes.get(precedingJobKey).setText(DateFormatter.instance()
-                    .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime())));
-            }
-
-            if(this.endTimes.containsKey(key) && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null
-                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime() > 0) {
-                ui.access(() -> this.endTimes.get(key).setText(DateFormatter.instance()
-                    .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime())));
-            }
-
-            if(this.endTimes.containsKey(precedingJobKey) && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null
-                && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime() > 0) {
-                ui.access(() -> this.endTimes.get(precedingJobKey).setText(DateFormatter.instance()
-                    .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime())));
-            }
+            manageJobStatusStateChangeEvent(ui, jobInstanceStateChangeEvent);
         });
 
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-            if (contextInstanceStateChangeEvent.getContextInstance() != null) {
-
-                ComponentKey key = new ComponentKey(contextInstance.getName()
-                    , contextInstanceStateChangeEvent.getContextInstance().getId(), contextInstanceStateChangeEvent.getContextInstance().getName());
-
-                if(this.statusDivMap.containsKey(key)) {
-                    ui.access(() -> this.statusDivMap.get(key)
-                        .setStatus(contextInstanceStateChangeEvent.getNewStatus()));
-                }
-            }
+            this.manageContextInstanceStateChangeEvent(ui, contextInstanceStateChangeEvent);
         });
     }
 
@@ -1366,7 +1162,180 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         }
     }
 
-    private Map<String, InternalEventDrivenJobInstance> getInternalJobs(String contextInstanceId) {
+    /**
+     * Helper method to create the data provider for the underlying tree grid.
+     *
+     * @return the initialised data provider.
+     */
+    private HierarchicalConfigurableFilterDataProvider<Object, Void, TreeFilter> createTreeGridDataProvider() {
+        return new AbstractBackEndHierarchicalDataProvider<Object, TreeFilter>() {
+                // returns the number of immediate child items
+                @Override
+                public int getChildCount(HierarchicalQuery<Object, TreeFilter> query) {
+                    return getNodeChildren(query.getParent(), query.getFilter()).size();
+                }
+                // checks if a given item should be expandable
+                @Override
+                public boolean hasChildren(Object item) {
+                    List<Object> children = new ArrayList<>();
+                    if(item instanceof ContextInstance) {
+                        if (((ContextInstance)item).getContexts() != null
+                            && !((ContextInstance)item).getContexts().isEmpty()) {
+                            children.addAll(((ContextInstance)item).getContexts().stream()
+                                .map(instance -> (Object) instance)
+                                .collect(Collectors.toList()));
+                        }
+
+                        if (((ContextInstance)item).getScheduledJobs() != null
+                            && !((ContextInstance)item).getScheduledJobs().isEmpty()) {
+                            children.addAll(((ContextInstance)item).getScheduledJobs().stream()
+                                .map(instance -> (Object) instance)
+                                .collect(Collectors.toList()));
+                        }
+                    }
+                    if(item instanceof SchedulerJobInstance) {
+                        SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance) item;
+                        children.addAll(ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance,
+                                schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
+                                , getCommandExecutionJobsForContextInstance(contextInstance.getId()))
+                            .stream()
+                            .map(instance -> (Object) new PrecedingItem(instance))
+                            .collect(Collectors.toList()));
+                    }
+                    return children.stream().distinct().collect(Collectors.toList()).size() > 0;
+                }
+
+                // returns the immediate child items based on offset and limit
+                @Override
+                protected Stream<Object> fetchChildrenFromBackEnd(HierarchicalQuery<Object, TreeFilter> query) {
+                    return getNodeChildren(query.getParent(), query.getFilter()).stream();
+                }
+            }.withConfigurableFilter();
+    }
+
+    /**
+     * For a node in the tree determine if there are any children associated with the node
+     * and return a list of those children. Children are loaded lazily when a node is
+     * expanded or the tree filtered.
+     *
+     * @param node the node to load the children for.
+     * @param filter the filter to apply
+     *
+     * @return relevant filtered children for the given node.
+     */
+    private List<Object> getNodeChildren(Object node, Optional<TreeFilter> filter) {
+        List<Object> children = new ArrayList<>();
+        if(node == null) {
+            if (contextInstance.getContexts() != null
+                && !(contextInstance.getContexts().isEmpty())) {
+                if(filter != null && filter.isPresent() && filter.get().getJobName().isEmpty()) {
+                    children.addAll(contextInstance.getContexts().stream()
+                        .map(instance -> (Object) instance)
+                        .collect(Collectors.toList()));
+                }
+                else {
+                    children.addAll(contextInstance.getContexts().stream()
+                        .filter(instance -> ContextHelper.getContextsWhereJobFilterMatchResides
+                            (instance, filter.get().getJobName()).size() > 0)
+                        .map(instance -> (Object) instance)
+                        .collect(Collectors.toList()));
+                }
+            }
+
+            if (contextInstance.getScheduledJobs() != null
+                && !contextInstance.getScheduledJobs().isEmpty()) {
+                children.addAll(contextInstance.getScheduledJobs().stream()
+                    .filter(instance -> filter != null && filter.isPresent()
+                        ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase())
+                        : true)
+                    .map(instance -> (Object) instance)
+                    .collect(Collectors.toList()));
+            }
+        }
+        else if(node instanceof ContextInstance) {
+            if (((ContextInstance)node).getContexts() != null
+                && !((ContextInstance)node).getContexts().isEmpty()) {
+                if(filter != null && filter.isPresent() && filter.get().getJobName().isEmpty()) {
+                    children.addAll(((ContextInstance) node).getContexts().stream()
+                        .map(instance -> (Object) instance)
+                        .collect(Collectors.toList()));
+                }
+                else {
+                    children.addAll(((ContextInstance) node).getContexts().stream()
+                        .filter(instance -> ContextHelper.getContextsWhereJobFilterMatchResides
+                            (instance, filter.get().getJobName()).size() > 0)
+                        .map(instance -> (Object) instance)
+                        .collect(Collectors.toList()));
+                }
+            }
+
+            if (((ContextInstance)node).getScheduledJobs() != null
+                && !((ContextInstance)node).getScheduledJobs().isEmpty()) {
+                children.addAll(((ContextInstance)node).getScheduledJobs().stream()
+                    .filter(instance -> filter != null && filter.isPresent()
+                        ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase())
+                        : true)
+                    .map(instance -> (Object) instance)
+                    .collect(Collectors.toList()));
+            }
+        }
+        if(node instanceof SchedulerJobInstance) {
+            SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance) node;
+            children.addAll(ContextHelper.getPrecedingJobsFromOutsideContext(contextInstance,
+                    schedulerJobInstance.getJobName(), schedulerJobInstance.getChildContextName()
+                    , getCommandExecutionJobsForContextInstance(contextInstance.getId()))
+                .stream()
+                .filter(instance -> filter != null && filter.isPresent()
+                    ? instance.getJobName().toLowerCase().contains(filter.get().getJobName().toLowerCase())
+                    : true)
+                .map(instance -> (Object) new PrecedingItem(instance))
+                .collect(Collectors.toList()));
+        }
+        return children.stream().distinct().collect(Collectors.toList());
+    }
+
+    /**
+     * Add filtering to the tree grid.
+     *
+     * @param dataProvider the data provider associated with the tree
+     */
+    private void addGridFiltering(HierarchicalConfigurableFilterDataProvider dataProvider) {
+
+        TreeFilter filter = new TreeFilter();
+        dataProvider.setFilter(filter);
+
+        TextField filterField = new TextField();
+        filterField.setWidth("100%");
+        Icon filterIcon = VaadinIcon.FILTER.create();
+        filterIcon.setSize("12pt");
+        filterField.setSuffixComponent(filterIcon);
+
+        filterField.addValueChangeListener(event -> {
+            if (event.getValue() == null || event.getValue().isEmpty()) {
+                filter.setJobName("");
+                dataProvider.refreshAll();
+                grid.collapseRecursively(Collections.singleton(contextInstance), 1);
+                grid.expand(this.expandedNodes);
+            } else {
+                filter.setJobName(event.getValue());
+                dataProvider.refreshAll();
+                grid.expandRecursively(Collections.singleton(contextInstance), 99);
+            }
+        });
+
+        HeaderRow hr = grid.appendHeaderRow();
+        hr.getCell(grid.getColumnByKey("name")).setComponent(filterField);
+    }
+
+    /**
+     * Helper method to get all command execution jobs associated with an context instance.
+     *
+     * @param contextInstanceId the id of the context instance that we want the jobs for.
+     *
+     * @return Map<String, InternalEventDrivenJobInstance> containing the command execution jobs
+     * keyed on their identifier.
+     */
+    private Map<String, InternalEventDrivenJobInstance> getCommandExecutionJobsForContextInstance(String contextInstanceId) {
         SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setContextInstanceId(contextInstanceId);
         filter.setJobType("internalEventDrivenJobInstance");
@@ -1377,6 +1346,121 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             .map(internalEventDrivenJobRecord -> (InternalEventDrivenJobInstance)internalEventDrivenJobRecord.getSchedulerJobInstance())
             .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity()));
         return internalEventDrivenJobMap;
+    }
+
+    /**
+     * Helper method to manage the representation of all components associated with the a job in the tree.
+     *
+     * @param ui the current UI
+     * @param jobInstanceStateChangeEvent the event received when a jobs state changes.
+     */
+    private void manageJobStatusStateChangeEvent(UI ui, SchedulerJobInstanceStateChangeEvent jobInstanceStateChangeEvent) {
+        ComponentKey key = new ComponentKey(jobInstanceStateChangeEvent.getContextInstance().getName(),
+            jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
+        ComponentKey precedingJobKey = new ComponentKey(PRECEDING_ITEM_COMPONENT+jobInstanceStateChangeEvent.getContextInstance().getName(),
+            jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
+
+
+        SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(jobInstanceStateChangeEvent.getContextInstance().getId()
+            , jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName());
+
+
+        Image statusImage = this.jobImageMap.get(key);
+
+        if(statusImage != null) {
+            ui.access(() -> {
+                logger.info(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
+                    , jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
+                    jobInstanceStateChangeEvent.getNewStatus()));
+                this.setImageBackgroundColour(statusImage, jobInstanceStateChangeEvent.getNewStatus());
+            });
+        }
+
+        Image preccedingJobStatusImage = this.jobImageMap.get(precedingJobKey);
+
+        if(preccedingJobStatusImage != null) {
+            ui.access(() -> {
+                logger.info(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
+                    , jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
+                    jobInstanceStateChangeEvent.getNewStatus()));
+                this.setImageBackgroundColour(preccedingJobStatusImage, jobInstanceStateChangeEvent.getNewStatus());
+            });
+        }
+
+        if(this.schedulerJobIconMap.containsKey(key)) {
+            schedulerJobInstanceRecord.setStatus(jobInstanceStateChangeEvent.getNewStatus().name());
+            SchedulerJobInstance schedulerJobInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
+            schedulerJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+            schedulerJobInstanceRecord.setSchedulerJobInstance(schedulerJobInstance);
+            ui.access(() -> this.setIconVisibility(schedulerJobInstanceRecord, key));
+        }
+
+        if(this.schedulerJobIconMap.containsKey(precedingJobKey)) {
+            schedulerJobInstanceRecord.setStatus(jobInstanceStateChangeEvent.getNewStatus().name());
+            SchedulerJobInstance schedulerJobInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
+            schedulerJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+            schedulerJobInstanceRecord.setSchedulerJobInstance(schedulerJobInstance);
+            ui.access(() -> this.setIconVisibility(schedulerJobInstanceRecord, precedingJobKey));
+        }
+
+        if(this.statusDivMap.containsKey(key)) {
+            ui.access(() -> this.statusDivMap.get(key).setStatus(jobInstanceStateChangeEvent.getNewStatus()));
+        }
+
+        if(this.statusDivMap.containsKey(precedingJobKey)) {
+            ui.access(() -> this.statusDivMap.get(precedingJobKey).setStatus(jobInstanceStateChangeEvent.getNewStatus()));
+        }
+
+        if(this.startTimes.containsKey(key) && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null
+            && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime() > 0) {
+            ui.access(() -> this.startTimes.get(key).setText(DateFormatter.instance()
+                .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime())));
+        }
+
+        if(this.startTimes.containsKey(precedingJobKey) && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null
+            && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime() > 0) {
+            ui.access(() -> this.startTimes.get(precedingJobKey).setText(DateFormatter.instance()
+                .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime())));
+        }
+
+        if(this.endTimes.containsKey(key) && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null
+            && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime() > 0) {
+            ui.access(() -> this.endTimes.get(key).setText(DateFormatter.instance()
+                .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime())));
+        }
+
+        if(this.endTimes.containsKey(precedingJobKey) && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null
+            && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime() > 0) {
+            ui.access(() -> this.endTimes.get(precedingJobKey).setText(DateFormatter.instance()
+                .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime())));
+        }
+
+        if(this.manuallySubmittedBy.containsKey(key) && schedulerJobInstanceRecord.getManuallySubmittedBy() != null) {
+            ui.access(() -> this.manuallySubmittedBy.get(key).setText(schedulerJobInstanceRecord.getManuallySubmittedBy()));
+        }
+
+        if(this.manuallySubmittedBy.containsKey(precedingJobKey) && schedulerJobInstanceRecord.getManuallySubmittedBy() != null) {
+            ui.access(() -> this.manuallySubmittedBy.get(precedingJobKey).setText(schedulerJobInstanceRecord.getManuallySubmittedBy()));
+        }
+    }
+
+    /**
+     * Helper method to manage updates related to context components in the tree when a contexts state changes.
+     *
+     * @param ui the current UI
+     * @param contextInstanceStateChangeEvent event received when a context instance state change occurs.
+     */
+    private void manageContextInstanceStateChangeEvent(UI ui, ContextInstanceStateChangeEvent contextInstanceStateChangeEvent) {
+        if (contextInstanceStateChangeEvent.getContextInstance() != null) {
+
+            ComponentKey key = new ComponentKey(contextInstance.getName()
+                , contextInstanceStateChangeEvent.getContextInstance().getId(), contextInstanceStateChangeEvent.getContextInstance().getName());
+
+            if(this.statusDivMap.containsKey(key)) {
+                ui.access(() -> this.statusDivMap.get(key)
+                    .setStatus(contextInstanceStateChangeEvent.getNewStatus()));
+            }
+        }
     }
 
     private class PrecedingItem {

@@ -415,7 +415,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
             submit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
                     InternalEventDrivenJobSubmissionDialog internalEventDrivenJobSubmissionDialog = new InternalEventDrivenJobSubmissionDialog(this.systemEventLogger,
-                        this.moduleMetaDataService, this.contextInstance, this.jobInitiationService, (InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance());
+                        this.moduleMetaDataService, this.contextInstance, this.jobInitiationService, schedulerJobInstanceRecord, this.schedulerJobInstanceService);
 
                     internalEventDrivenJobSubmissionDialog.open();
                 }
@@ -438,6 +438,9 @@ public class SchedulerJobInstanceGridWidget extends Div {
                             this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
                                 , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
                                 , this.authentication.getName());
+
+                            schedulerJobInstanceRecord.setManuallySubmittedBy(authentication.getName());
+                            schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
                             NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                         }
@@ -466,6 +469,9 @@ public class SchedulerJobInstanceGridWidget extends Div {
                             this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
                                 , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
                                 , this.authentication.getName());
+
+                            schedulerJobInstanceRecord.setManuallySubmittedBy(authentication.getName());
+                            schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
                             NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                         }
@@ -598,6 +604,20 @@ public class SchedulerJobInstanceGridWidget extends Div {
         .setHeader(getTranslation("table-header.modified-by", UI.getCurrent().getLocale()))
         .setSortable(true)
         .setFlexGrow(2);
+
+        this.schedulerJobInstanceFilteringGrid.addComponentColumn(schedulerJobInstanceRecord -> {
+                HorizontalLayout horizontalLayout = new HorizontalLayout();
+
+                if(schedulerJobInstanceRecord.getManuallySubmittedBy() != null) {
+                    Text text = new Text(schedulerJobInstanceRecord.getManuallySubmittedBy());
+                    horizontalLayout.add(text);
+                }
+
+                return horizontalLayout;
+            })
+            .setResizable(true)
+            .setHeader(getTranslation("table-header.manually-submitted-by", UI.getCurrent().getLocale()))
+            .setFlexGrow(2);
 
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();

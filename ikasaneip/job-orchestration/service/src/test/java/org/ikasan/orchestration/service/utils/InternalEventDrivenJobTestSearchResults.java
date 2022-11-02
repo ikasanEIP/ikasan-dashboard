@@ -198,5 +198,15 @@ public class InternalEventDrivenJobTestSearchResults implements SearchResults<Sc
         @Override
         public void setModifiedBy(String modifiedBy) {
         }
+
+        @Override
+        public String getManuallySubmittedBy() {
+            return null;
+        }
+
+        @Override
+        public void setManuallySubmittedBy(String manuallySubmittedBy) {
+
+        }
     }
 }
