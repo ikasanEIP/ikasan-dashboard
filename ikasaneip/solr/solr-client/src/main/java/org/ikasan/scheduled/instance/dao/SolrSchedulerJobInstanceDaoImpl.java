@@ -82,6 +82,7 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         document.addField(CREATED_DATE_TIME, schedulerJobInstanceRecord.getTimestamp());
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
         document.addField(MODIFIED_BY, schedulerJobInstanceRecord.getModifiedBy());
+        document.addField(MANUALLY_SUBMITTED_BY, schedulerJobInstanceRecord.getManuallySubmittedBy());
         document.setField(EXPIRY, expiry);
 
         logger.debug(String.format("Converted scheduled context instance to SolrDocument[%s]", document));

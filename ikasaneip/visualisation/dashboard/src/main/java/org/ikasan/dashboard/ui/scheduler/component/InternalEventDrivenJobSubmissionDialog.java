@@ -23,6 +23,8 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,13 +39,14 @@ import java.util.stream.Collectors;
 public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableResizableDialog {
     Logger logger = LoggerFactory.getLogger(InternalEventDrivenJobSubmissionDialog.class);
     private ModuleMetaDataService moduleMetaDataService;
-    private InternalEventDrivenJobInstance internalEventDrivenJobInstance;
+    private SchedulerJobInstanceRecord schedulerJobInstanceRecord;
     private SystemEventLogger systemEventLogger;
     private IkasanAuthentication authentication;
     private ContextInstance contextInstance;
     private JobInitiationService jobInitiationService;
     private Map<String, ContextParameterInstance> contextParameterInstanceMap;
     private List<ContextParameterInstance> contextParameterInstances;
+    private SchedulerJobInstanceService schedulerJobInstanceService;
 
 
     /**
@@ -53,11 +56,13 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
      * @param moduleMetaDataService
      * @param contextInstance
      * @param jobInitiationService
-     * @param internalEventDrivenJobInstance
+     * @param schedulerJobInstanceRecord
+     * @param schedulerJobInstanceService
      */
     public InternalEventDrivenJobSubmissionDialog(SystemEventLogger systemEventLogger, ModuleMetaDataService moduleMetaDataService,
                                                   ContextInstance contextInstance, JobInitiationService jobInitiationService,
-                                                  InternalEventDrivenJobInstance internalEventDrivenJobInstance) {
+                                                  SchedulerJobInstanceRecord schedulerJobInstanceRecord,
+                                                  SchedulerJobInstanceService schedulerJobInstanceService) {
         super.showResize(false);
         super.title.setText(getTranslation("label.command-execution-job-submission", UI.getCurrent().getLocale()));
 
@@ -65,7 +70,8 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
         this.moduleMetaDataService = moduleMetaDataService;
         this.contextInstance = contextInstance;
         this.jobInitiationService = jobInitiationService;
-        this.internalEventDrivenJobInstance = internalEventDrivenJobInstance;
+        this.schedulerJobInstanceRecord = schedulerJobInstanceRecord;
+        this.schedulerJobInstanceService = schedulerJobInstanceService;
 
         authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -93,8 +99,10 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
 
         contextParameterInstances = new ArrayList<>();
 
-        this.internalEventDrivenJobInstance.getContextParameters().forEach(param -> {
-            contextParameterInstances.add((ContextParameterInstance) SerializationUtils.clone(this.contextParameterInstanceMap.get(param.getName())));
+        ((InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()).getContextParameters().forEach(param -> {
+            if(this.contextParameterInstanceMap.containsKey(param.getName())) {
+                contextParameterInstances.add((ContextParameterInstance) SerializationUtils.clone(this.contextParameterInstanceMap.get(param.getName())));
+            }
         });
 
         GridPro<ContextParameterInstance> grid = new GridPro<>();
@@ -146,17 +154,17 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
      */
     private void submitJob() {
         try {
-            ModuleMetaData agent = this.moduleMetaDataService.findById(this.internalEventDrivenJobInstance.getAgentName());
-            SchedulerJobInitiationEvent schedulerJobInitiationEvent = createSchedulerJobInitiationEvent(agent, this.internalEventDrivenJobInstance
+            ModuleMetaData agent = this.moduleMetaDataService.findById(this.schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
+            SchedulerJobInitiationEvent schedulerJobInitiationEvent = createSchedulerJobInitiationEvent(agent, (InternalEventDrivenJobInstance) this.schedulerJobInstanceRecord.getSchedulerJobInstance()
                 , this.contextParameterInstances, this.contextInstance);
             logger.info("Submitting job[{}] to [{}]", schedulerJobInitiationEvent, agent.getUrl());
 
-            if(JobLockCacheImpl.instance().doesJobParticipateInLock(internalEventDrivenJobInstance.getIdentifier()
-                , internalEventDrivenJobInstance.getChildContextName())) {
+            if(JobLockCacheImpl.instance().doesJobParticipateInLock(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier()
+                , schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName())) {
                 // Now that we have determined that a job participates in a lock, we determine if the lock it participates in
                 // is already locked.
-                if(JobLockCacheImpl.instance().locked(internalEventDrivenJobInstance.getIdentifier()
-                    , internalEventDrivenJobInstance.getChildContextName())) {
+                if(JobLockCacheImpl.instance().locked(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier()
+                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName())) {
                     ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstance.getName());
                     if(contextMachine != null) {
                         contextMachine.addQueuedSchedulerJobInitiationEvent(schedulerJobInitiationEvent);
@@ -170,8 +178,8 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
                 else {
                     // Otherwise the job takes a lock and adds the initiation event to the finalSchedulerJobInitiationEvents so that
                     // the initiation event will be sent to the relevant agent.
-                    JobLockCacheImpl.instance().lock(internalEventDrivenJobInstance.getIdentifier(), internalEventDrivenJobInstance.getChildContextName());
-                    logger.info("Lock {}", internalEventDrivenJobInstance);
+                    JobLockCacheImpl.instance().lock(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName());
+                    logger.info("Lock {}", schedulerJobInstanceRecord.getSchedulerJobInstance());
                     this.jobInitiationService.raiseSchedulerJobInitiationEvent(agent.getUrl(), schedulerJobInitiationEvent);
                     NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
                 }
@@ -181,8 +189,10 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
                 NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
             }
 
+            this.schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
+            this.schedulerJobInstanceService.save(this.schedulerJobInstanceRecord);
             this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
-                , this.internalEventDrivenJobInstance.getAgentName(), internalEventDrivenJobInstance.getJobName()), this.authentication.getName());
+                , this.schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName()), this.authentication.getName());
 
             this.close();
         }

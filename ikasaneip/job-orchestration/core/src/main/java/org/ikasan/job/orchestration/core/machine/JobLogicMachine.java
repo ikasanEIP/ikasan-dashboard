@@ -85,8 +85,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             schedulerJobInstance.setContextInstanceId(parentContextInstance.getId());
 
             if(scheduledProcessEvent.isRaisedDueToFailureResubmission()) {
-                if(scheduledProcessEvent.getInternalEventDrivenJob().getChildContextName()
-                    .equals(contextInstance.getName())) {
+                if(scheduledProcessEvent.getInternalEventDrivenJob().getChildContextName() != null
+                    && scheduledProcessEvent.getInternalEventDrivenJob().getChildContextName().equals(contextInstance.getName())) {
                     if (!schedulerJobInstance.getStatus().equals(InstanceStatus.ERROR)) {
                         throw new ContextMachineException(String.format("Job[%s], Context[%s], Child Context[%s] was in a State[%s] when attempting" +
                                 " to raise events dues to a failure resubmission. The job must be in ERROR to resubmit due to failure.", schedulerJobInstance.getIdentifier(),

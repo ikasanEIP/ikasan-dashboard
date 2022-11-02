@@ -82,11 +82,13 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
     }
 
     /**
+     * Method to initialise and create all action icons for a given job record. All icons are added to the provided layout.
      *
+     * @param componentKey
      * @param schedulerJobInstanceRecord
-     * @return
+     * @param horizontalLayout
      */
-    protected abstract Component getActionsComponent(ComponentKey componentKey, SchedulerJobInstanceRecord schedulerJobInstanceRecord, HorizontalLayout horizontalLayout);
+    protected abstract void getActionsComponent(ComponentKey componentKey, SchedulerJobInstanceRecord schedulerJobInstanceRecord, HorizontalLayout horizontalLayout);
 
     /**
      * Helper method to stream job log files.
