@@ -1998,6 +1998,7 @@ public class ContextMachineTest extends AbstractTest {
         // We resubmit the job events but with raisedDueToFailureResubmission == true
         eventInstance = scheduledProcessEventInstance("jobName2",
             "agentName2", false);
+        eventInstance.getInternalEventDrivenJob().setChildContextName("Context3");
         eventInstance.setRaisedDueToFailureResubmission(true);
         List<SchedulerJobInitiationEvent> events = contextMachine.eventReceived(eventInstance);
 
@@ -2060,6 +2061,7 @@ public class ContextMachineTest extends AbstractTest {
         // We resubmit the job events but with raisedDueToFailureResubmission == true
         eventInstance = scheduledProcessEventInstance("jobName2",
             "agentName2", false);
+        eventInstance.getInternalEventDrivenJob().setChildContextName("Context3");
         eventInstance.setRaisedDueToFailureResubmission(true);
         contextMachine.eventReceived(eventInstance);
     }
@@ -2103,6 +2105,7 @@ public class ContextMachineTest extends AbstractTest {
         eventInstance = scheduledProcessEventInstance("jobName2",
             "agentName2", false);
         eventInstance.setRaisedDueToFailureResubmission(true);
+        eventInstance.getInternalEventDrivenJob().setChildContextName("Context3");
         List<SchedulerJobInitiationEvent> events = contextMachine.getEventsThatCanRun(eventInstance);
 
         // We get the downstream jobs to execute as expected.
