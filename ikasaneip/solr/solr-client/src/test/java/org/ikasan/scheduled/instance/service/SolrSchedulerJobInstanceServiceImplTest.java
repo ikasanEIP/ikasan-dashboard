@@ -24,6 +24,7 @@ import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstancesInitialisationParameters;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.search.SearchResults;
@@ -437,8 +438,10 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
             .collect(Collectors.toList())
         );
 
+        SchedulerJobInstancesInitialisationParameters parameters = new SolrSchedulerJobInstancesInitialisationParametersImpl(false);
+
         List<SchedulerJobInstance> schedulerJobInstances = this.service.initialiseSchedulerJobInstancesForContext
-            (contextInstance);
+            (contextInstance, parameters);
 
         Assert.assertEquals(610, schedulerJobInstances.size());
 
@@ -446,6 +449,61 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
             ("contextInstanceId", 610, 0, null, null);
 
         Assert.assertEquals(610, searchResults.getResultList().size());
+    }
+
+    @Test
+    public void test_initialise_scheduler_job_instances_with_jobs_on_hold() throws SchedulerJobInstanceInitialisationException {
+        this.insertFileEventRecords("file", 135, "context");
+        this.insertQuartzScheduleEventRecords("quartz", 75, "context");
+        this.insertInternalEventDrivenRecords("internal", 400, "context");
+
+        ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+
+        ContextInstanceImpl contextInstance = new ContextInstanceImpl();
+        contextInstance.setName("context");
+        contextInstance.setId("contextInstanceId");
+        contextInstance.setScheduledJobs(this.solrSchedulerJobDao.findByContext("context", 1000, 0).getResultList()
+            .stream()
+            .map(schedulerJobRecord -> {
+                try {
+                    if (schedulerJobRecord.getJob() instanceof SolrFileEventDrivenJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrFileEventDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrInternalEventDrivenJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrInternalEventDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrQuartzScheduleDrivenJobInstanceImpl.class);
+                    }
+                }
+                catch (Exception e) {
+                    return null;
+                }
+                return null;
+            })
+            .collect(Collectors.toList())
+        );
+
+        SchedulerJobInstancesInitialisationParameters parameters = new SolrSchedulerJobInstancesInitialisationParametersImpl(true);
+
+        List<SchedulerJobInstance> schedulerJobInstances = this.service.initialiseSchedulerJobInstancesForContext
+            (contextInstance, parameters);
+
+        Assert.assertEquals(610, schedulerJobInstances.size());
+
+        SearchResults<SchedulerJobInstanceRecord> searchResults = this.service.getSchedulerJobInstancesByContextInstanceId
+            ("contextInstanceId", 610, 0, null, null);
+
+        Assert.assertEquals(610, searchResults.getResultList().size());
+
+        searchResults.getResultList().forEach(job -> {
+            if(job.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
+                Assert.assertEquals(true, job.getSchedulerJobInstance().isHeld());
+                Assert.assertEquals(InstanceStatus.ON_HOLD, job.getSchedulerJobInstance().getStatus());
+                if(job.getSchedulerJobInstance().getChildContextNames() != null) {
+                    job.getSchedulerJobInstance().getChildContextNames()
+                        .forEach(name ->);
+                }
+            }
+        });
     }
 
     private SchedulerJobInstanceRecord createSchedulerJobInstanceRecord(String contextInstanceId, String contextName, String jobName) {
