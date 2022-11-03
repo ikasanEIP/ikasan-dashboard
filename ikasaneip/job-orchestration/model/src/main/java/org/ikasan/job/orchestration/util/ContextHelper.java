@@ -311,6 +311,32 @@ public class ContextHelper {
         return contextTemplate;
     }
 
+    public static void holdAllJobs(Context context) {
+        _holdAllJobs(context);
+    }
+
+    private static void _holdAllJobs(Context context) {
+        if(context.getScheduledJobs() != null) {
+            context.getScheduledJobs().forEach(job -> {
+                if(((SchedulerJob) job).getChildContextNames() != null) {
+                    Map<String, Boolean> heldMap = new HashMap<>();
+                    ((SchedulerJob) job).getChildContextNames()
+                        .forEach(name -> heldMap.put(name, Boolean.TRUE));
+                    ((SchedulerJob) job).setHeldContexts(heldMap);
+                }
+
+                if(job instanceof SchedulerJobInstance) {
+                    ((SchedulerJobInstance) job).setHeld(true);
+                    ((SchedulerJobInstance) job).setStatus(InstanceStatus.ON_HOLD);
+                }
+            });
+        }
+
+        if(context.getContexts() != null) {
+            context.getContexts().forEach(c -> _holdAllJobs((Context) c));
+        }
+    }
+
     public static void enrichJobs(ContextInstance context) {
         _enrichJobs(context, context);
     }
