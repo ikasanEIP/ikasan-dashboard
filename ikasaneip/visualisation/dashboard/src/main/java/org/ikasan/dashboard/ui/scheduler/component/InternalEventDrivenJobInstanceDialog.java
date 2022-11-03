@@ -385,6 +385,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             contextualisedScheduledProcessEvent.setJobName(this.internalEventDrivenJobInstance.getJobName());
             contextualisedScheduledProcessEvent.setAgentName(this.internalEventDrivenJobInstance.getAgentName());
             contextualisedScheduledProcessEvent.setContextName(this.internalEventDrivenJobInstance.getContextName());
+            contextualisedScheduledProcessEvent.setInternalEventDrivenJob(this.internalEventDrivenJobInstance);
             contextualisedScheduledProcessEvent.setRaisedDueToFailureResubmission(true);
 
             List<SchedulerJobInitiationEvent> initiationEvents = contextMachine.getEventsThatCanRun(contextualisedScheduledProcessEvent);
