@@ -23,6 +23,7 @@ import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
+import org.ikasan.scheduled.instance.service.SolrSchedulerJobInstancesInitialisationParametersImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -34,10 +35,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
-import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
-import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
-import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.instance.service.*;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
@@ -151,7 +149,10 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
                 contextInstance.setId(UUID.randomUUID().toString());
 
                 // initialise all the scheduler job instances.
-                this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextInstance);
+                SchedulerJobInstancesInitialisationParameters schedulerJobInstancesInitialisationParameters
+                    = new SolrSchedulerJobInstancesInitialisationParametersImpl(false);
+                this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextInstance
+                    , schedulerJobInstancesInitialisationParameters);
 
                 Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobMap = this.getInternalJobs(contextInstance.getId());
 

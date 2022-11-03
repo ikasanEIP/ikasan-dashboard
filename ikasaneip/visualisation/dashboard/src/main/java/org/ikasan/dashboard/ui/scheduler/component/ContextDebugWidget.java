@@ -23,6 +23,7 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.DryRunParametersImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.instance.service.SolrSchedulerJobInstancesInitialisationParametersImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -35,6 +36,7 @@ import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstancesInitialisationParameters;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
@@ -224,7 +226,11 @@ public class ContextDebugWidget extends Div {
                 ContextMachineCache.instance().put(contextMachine);
 
                 this.schedulerInstanceVisualisation.createSchedulerVisualisation(contextMachine.getContext(), contextMachine.getContext(), null);
-                this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextMachine.getContext());
+
+                SchedulerJobInstancesInitialisationParameters schedulerJobInstancesInitialisationParameters
+                    = new SolrSchedulerJobInstancesInitialisationParametersImpl(false);
+                this.schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(contextMachine.getContext()
+                    , schedulerJobInstancesInitialisationParameters);
 
                 if(tabs.getSelectedTab().equals(this.fullContextInstance)) {
                     if(this.contextInstances.getValue() != null && !this.contextInstances.getValue().isEmpty()){
