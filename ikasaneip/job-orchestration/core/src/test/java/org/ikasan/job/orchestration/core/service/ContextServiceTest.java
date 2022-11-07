@@ -11,6 +11,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
 
+// todo pad out tests
 public class ContextServiceTest extends AbstractTest {
 
     private ContextService contextService = new ContextService();
@@ -21,7 +22,6 @@ public class ContextServiceTest extends AbstractTest {
 
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
 
-        System.out.println(contextService.getContextTemplateString(contextTemplate));
     }
 
     @Test

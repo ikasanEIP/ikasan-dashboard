@@ -62,7 +62,7 @@ public class ContextResetServiceImplTest {
         ContextMachineCache.instance().put(contextMachine);
 
         try {
-            contextResetService.resetContext("UNKNOWN_CONTEXT");
+            contextResetService.resetContext("UNKNOWN_CONTEXT", false);
             fail("should not get here");
         } catch (ContextResetException e) {
             assertEquals("Could not find context for UNKNOWN_CONTEXT to reset", e.getMessage());
@@ -81,7 +81,7 @@ public class ContextResetServiceImplTest {
             , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
         ContextMachineCache.instance().put(contextMachine);
 
-        contextResetService.resetContext("CONTEXT-1436221681");
+        contextResetService.resetContext("CONTEXT-1436221681", false);
 
         InstanceStatus instanceStatus = contextMachine.getContextStatus("CONTEXT-1436221681");
         assertEquals("WAITING", instanceStatus.toString());

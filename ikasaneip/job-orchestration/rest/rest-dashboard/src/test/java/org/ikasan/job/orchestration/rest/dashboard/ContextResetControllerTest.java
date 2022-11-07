@@ -52,12 +52,12 @@ public class ContextResetControllerTest {
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
-        verify(contextResetService).resetContext("ContextName");
+        verify(contextResetService).resetContext("ContextName", false);
     }
 
     @Test
     public void should_return_response_entity_error_context_status() throws Exception {
-        doThrow(new RuntimeException("expected exception")).when(contextResetService).resetContext("ContextName");
+        doThrow(new RuntimeException("expected exception")).when(contextResetService).resetContext("ContextName", false);
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put("/rest/context/reset/ContextName")
             .contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
@@ -67,6 +67,6 @@ public class ContextResetControllerTest {
         String content = mvcResult.getResponse().getContentAsString();
         assertThat(content, containsString("An error has occurred attempting to reset context for ContextName! Error message [expected exception]"));
 
-        verify(contextResetService).resetContext("ContextName");
+        verify(contextResetService).resetContext("ContextName", false);
     }
 }

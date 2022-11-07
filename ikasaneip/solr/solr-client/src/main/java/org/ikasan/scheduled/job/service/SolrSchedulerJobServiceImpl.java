@@ -331,20 +331,11 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         filter.setContextSearchFilter(contextName);
         filter.setHeld(true);
 
-        SearchResults<SchedulerJobRecord> searchResults = (SearchResults<SchedulerJobRecord>) this.schedulerJobRecordDao
-            .findByFilter(filter, -1, -1, null, null);
+        List<InternalEventDrivenJobRecord> jobsToRelease = this.getFilteredInternalEventDrivenJobRecords(filter);
 
-        ArrayList<InternalEventDrivenJobRecord> jobsToRelease = new ArrayList<>();
-        searchResults.getResultList().forEach(schedulerJobRecord -> {
-            if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
-                InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
-                    ((InternalEventDrivenJob)schedulerJobRecord.getJob());
-                internalEventDrivenJobRecord.setTimestamp(schedulerJobRecord.getTimestamp());
-                jobsToRelease.add(internalEventDrivenJobRecord);
-            }
-        });
-
-        this.internalEventDrivenJobRecordDao.releaseAll(jobsToRelease, actor);
+        if(jobsToRelease.size() > 0) {
+            this.internalEventDrivenJobRecordDao.releaseAll(jobsToRelease, actor);
+        }
     }
 
     @Override
@@ -353,19 +344,39 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         filter.setContextSearchFilter(contextName);
         filter.setSkipped(true);
 
+        List<InternalEventDrivenJobRecord> jobsToRelease = this.getFilteredInternalEventDrivenJobRecords(filter);
+
+        if(jobsToRelease.size() > 0) {
+            this.internalEventDrivenJobRecordDao.enableAll(jobsToRelease, actor);
+        }
+    }
+
+    @Override
+    public void holdAll(String contextName, String actor) {
+        SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
+        filter.setContextSearchFilter(contextName);
+
+        List<InternalEventDrivenJobRecord> jobsToRelease = this.getFilteredInternalEventDrivenJobRecords(filter);
+
+        if(jobsToRelease.size() > 0) {
+            this.internalEventDrivenJobRecordDao.holdAll(jobsToRelease, actor);
+        }
+    }
+
+    private List<InternalEventDrivenJobRecord> getFilteredInternalEventDrivenJobRecords(SchedulerJobSearchFilter filter) {
         SearchResults<SchedulerJobRecord> searchResults = (SearchResults<SchedulerJobRecord>) this.schedulerJobRecordDao
             .findByFilter(filter, -1, -1, null, null);
 
-        ArrayList<InternalEventDrivenJobRecord> jobsToRelease = new ArrayList<>();
+        ArrayList<InternalEventDrivenJobRecord> filteredJobs = new ArrayList<>();
         searchResults.getResultList().forEach(schedulerJobRecord -> {
             if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
                 InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
                     ((InternalEventDrivenJob)schedulerJobRecord.getJob());
                 internalEventDrivenJobRecord.setTimestamp(schedulerJobRecord.getTimestamp());
-                jobsToRelease.add(internalEventDrivenJobRecord);
+                filteredJobs.add(internalEventDrivenJobRecord);
             }
         });
 
-        this.internalEventDrivenJobRecordDao.enableAll(jobsToRelease, actor);
+        return filteredJobs;
     }
 }

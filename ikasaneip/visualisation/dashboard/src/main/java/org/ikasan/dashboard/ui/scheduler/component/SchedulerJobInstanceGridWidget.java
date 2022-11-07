@@ -62,7 +62,6 @@ public class SchedulerJobInstanceGridWidget extends Div {
     Logger logger = LoggerFactory.getLogger(SchedulerJobInstanceGridWidget.class);
 
     private Registration schedulerJobStateChangeRegistration;
-
     private SchedulerJobInstanceFilteringGrid schedulerJobInstanceFilteringGrid;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
