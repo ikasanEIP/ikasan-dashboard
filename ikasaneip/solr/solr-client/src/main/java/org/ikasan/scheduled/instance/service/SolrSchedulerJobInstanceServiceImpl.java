@@ -2,6 +2,8 @@ package org.ikasan.scheduled.instance.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.SerializationUtils;
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
 import org.ikasan.scheduled.instance.model.*;
 import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
@@ -13,6 +15,7 @@ import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstancesInitialisationParameters;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
@@ -78,6 +81,11 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
     @Override
     public void save(SchedulerJobInstanceRecord scheduledContextInstanceRecord) {
         this.solrSchedulerJobInstanceDao.save(scheduledContextInstanceRecord);
+    }
+
+    @Override
+    public void save(List<SchedulerJobInstanceRecord> scheduledContextInstanceRecords) {
+        this.solrSchedulerJobInstanceDao.save(scheduledContextInstanceRecords);
     }
 
     @Override
@@ -227,5 +235,119 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
     @Override
     public List<ContextInstanceAggregateJobStatus> getJobStatusCountForContextInstances(List<String> contextInstanceIds) {
         return this.solrSchedulerJobInstanceDao.getJobStatusCountForContextInstances(contextInstanceIds);
+    }
+
+    @Override
+    public Map<String, InternalEventDrivenJobInstance> getCommandExecutionJobsForContextInstance(String contextInstanceId) {
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        filter.setJobType("internalEventDrivenJobInstance");
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults
+            = this.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
+            .map(internalEventDrivenJobRecord -> (InternalEventDrivenJobInstance)internalEventDrivenJobRecord.getSchedulerJobInstance())
+            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (a1, a2) -> a1));
+        return internalEventDrivenJobMap;
+    }
+
+    @Override
+    public Map<String, InternalEventDrivenJobInstance> getCommandExecutionJobsForContextInstanceChildContext(String contextInstanceId) {
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        filter.setJobType("internalEventDrivenJobInstance");
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults
+            = this.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
+            .map(internalEventDrivenJobRecord -> (InternalEventDrivenJobInstance)internalEventDrivenJobRecord.getSchedulerJobInstance())
+            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity()));
+        return internalEventDrivenJobMap;
+    }
+
+    @Override
+    public List<SchedulerJobInstanceRecord> holdJobsWithinContext(ContextInstance contextInstance, String childContextName) {
+        ContextInstance childContext = ContextHelper.getChildContextInstance(childContextName, contextInstance);
+        Map<String, SchedulerJobInstance> childContextJobs = ContextHelper.getAllJobs(childContext);
+
+        Map<String, InternalEventDrivenJobInstance> contextJobs
+            = this.getCommandExecutionJobsForContextInstanceChildContext(contextInstance.getId());
+
+        ContextHelper.holdAllJobs(childContext, contextJobs);
+
+        SchedulerJobInstanceSearchFilter searchFilter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        searchFilter.setContextInstanceId(contextInstance.getId());
+        searchFilter.setJobType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+        SearchResults<SchedulerJobInstanceRecord> searchResults = this.getScheduledContextInstancesByFilter(searchFilter
+            , -1, -1, null, null);
+
+        List<SchedulerJobInstanceRecord> updatedRecords = new ArrayList<>();
+        searchResults.getResultList().forEach(schedulerJobInstanceRecord -> {
+            if (schedulerJobInstanceRecord.getStatus().equals(InstanceStatus.WAITING.name()) &&
+                    childContextJobs.containsKey(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier()
+                        + schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName())) {
+
+                SchedulerJobInstance job = childContextJobs
+                    .get(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier()
+                        + schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName());
+
+                if(!((InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()).isTargetResidingContextOnly() ||
+                    schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName().equals(job.getChildContextName())) {
+                    schedulerJobInstanceRecord.setStatus(InstanceStatus.ON_HOLD.name());
+                    InternalEventDrivenJobInstance instance
+                        = (InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance();
+                    instance.setStatus(InstanceStatus.ON_HOLD);
+                    instance.setHeld(true);
+
+                    if (instance.getChildContextNames() != null) {
+                        HashMap<String, Boolean> heldContexts = new HashMap<>();
+                        instance.getChildContextNames().forEach(name -> {
+                            heldContexts.put(name, Boolean.TRUE);
+                        });
+                        instance.setHeldContexts(heldContexts);
+                    }
+
+                    schedulerJobInstanceRecord.setSchedulerJobInstance(instance);
+
+                    updatedRecords.add(schedulerJobInstanceRecord);
+                }
+            }
+        });
+
+        if(updatedRecords.size() > 0) {
+            this.save(updatedRecords);
+        }
+
+        return updatedRecords;
+    }
+
+    public List<SchedulerJobInstanceRecord> getJobsToReleaseWithinContext(ContextInstance contextInstance, String childContextName) {
+        ContextInstance childContext = ContextHelper.getChildContextInstance(childContextName, contextInstance);
+        Map<String, SchedulerJobInstance> contextJobs = ContextHelper.getAllJobs(childContext);
+
+        SchedulerJobInstanceSearchFilter searchFilter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        searchFilter.setContextInstanceId(contextInstance.getId());
+        searchFilter.setJobType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
+        SearchResults<SchedulerJobInstanceRecord> searchResults = this.getScheduledContextInstancesByFilter(searchFilter
+            , -1, -1, null, null);
+
+        List<SchedulerJobInstanceRecord> updatedRecords = new ArrayList<>();
+        searchResults.getResultList().forEach(schedulerJobInstanceRecord -> {
+            if (schedulerJobInstanceRecord.getStatus().equals(InstanceStatus.ON_HOLD.name())
+                && contextJobs.containsKey(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier()
+                + schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName())) {
+                SchedulerJobInstance job = contextJobs
+                    .get(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier()
+                        +schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName());
+
+                if(!((InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()).isTargetResidingContextOnly() ||
+                    schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName().equals(job.getChildContextName())) {
+
+                    updatedRecords.add(schedulerJobInstanceRecord);
+                }
+            }
+        });
+
+        return updatedRecords;
     }
 }

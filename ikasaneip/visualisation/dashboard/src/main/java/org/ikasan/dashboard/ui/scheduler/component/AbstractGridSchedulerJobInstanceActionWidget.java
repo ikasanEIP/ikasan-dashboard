@@ -1,10 +1,8 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -88,7 +86,7 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
      * @param schedulerJobInstanceRecord
      * @param horizontalLayout
      */
-    protected abstract void getActionsComponent(ComponentKey componentKey, SchedulerJobInstanceRecord schedulerJobInstanceRecord, HorizontalLayout horizontalLayout);
+    protected abstract void getJobInstanceActionComponents(ComponentKey componentKey, SchedulerJobInstanceRecord schedulerJobInstanceRecord, HorizontalLayout horizontalLayout);
 
     /**
      * Helper method to stream job log files.
