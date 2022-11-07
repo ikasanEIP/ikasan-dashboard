@@ -70,12 +70,10 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
         SearchResults<? extends ScheduledContextRecord> searchResults = this
             .findByQuery(query, SolrScheduledContextRecordImpl.class, 0, 1);
 
-        if(searchResults.getResultList().size() > 0)
-        {
+        if(searchResults.getResultList().size() > 0) {
             return searchResults.getResultList().get(0);
         }
-        else
-        {
+        else {
             return null;
         }
     }

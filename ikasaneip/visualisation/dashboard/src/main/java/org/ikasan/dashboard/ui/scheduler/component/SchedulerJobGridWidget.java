@@ -18,6 +18,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.server.StreamResource;
+import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobTemplateVisualisationDialog;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
@@ -589,16 +590,93 @@ public class SchedulerJobGridWidget extends Div {
         Button refreshButton = this.createRefreshButton();
         Button enableAllSkippedButton = new Button(getTranslation("button.enabled-all-skipped", UI.getCurrent().getLocale()));
         enableAllSkippedButton.addClickListener(event -> {
-            this.schedulerJobService.enableAll(this.contextTemplate.getName(), this.authentication.getName());
-            this.refresh();
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.enabled-all-skipped-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.enabled-all-skipped-body", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                boolean error = false;
+                try {
+                    this.schedulerJobService.enableAll(this.contextTemplate.getName(), this.authentication.getName());
+                    this.refresh();
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    error = true;
+                }
+                finally {
+                    if(error) {
+                        NotificationHelper.showErrorNotification(getTranslation("notification.all-jobs-enable-error"
+                            , UI.getCurrent().getLocale()));
+                    }
+                    else {
+                        NotificationHelper.showErrorNotification(getTranslation("notification.all-jobs-successfully-enabled"
+                            , UI.getCurrent().getLocale()));
+                    }
+                }
+            });
+        });
+        Button holdAllButton = new Button(getTranslation("button.hold-all", UI.getCurrent().getLocale()));
+        holdAllButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.hold-all-jobs-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.hold-all-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                boolean error = false;
+                try {
+                    this.schedulerJobService.holdAll(this.contextTemplate.getName(), this.authentication.getName());
+                    this.refresh();
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    error = true;
+                }
+                finally {
+                    if(error) {
+                        NotificationHelper.showErrorNotification(getTranslation("notification.all-jobs-hold-error"
+                            , UI.getCurrent().getLocale()));
+                    }
+                    else {
+                        NotificationHelper.showErrorNotification(getTranslation("notification.all-jobs-successfully-held"
+                            , UI.getCurrent().getLocale()));
+                    }
+                }
+            });
         });
         Button releaseAllHeldButton = new Button(getTranslation("button.release-all-held", UI.getCurrent().getLocale()));
         releaseAllHeldButton.addClickListener(event -> {
-            this.schedulerJobService.releaseAll(this.contextTemplate.getName(), this.authentication.getName());
-            this.refresh();
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.release-all-jobs-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.release-all-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                boolean error = false;
+                try {
+                    this.schedulerJobService.releaseAll(this.contextTemplate.getName(), this.authentication.getName());
+                    this.refresh();
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    error = true;
+                }
+                finally {
+                    if(error) {
+                        NotificationHelper.showErrorNotification(getTranslation("notification.all-jobs-released-error"
+                            , UI.getCurrent().getLocale()));
+                    }
+                    else {
+                        NotificationHelper.showErrorNotification(getTranslation("notification.all-jobs-successfully-released"
+                            , UI.getCurrent().getLocale()));
+                    }
+                }
+            });
         });
 
-        buttonLayout.add(enableAllSkippedButton, releaseAllHeldButton,  refreshButton);
+        buttonLayout.add(enableAllSkippedButton, holdAllButton, releaseAllHeldButton,  refreshButton);
 
         buttonWrapper.add(buttonLayout);
         buttonWrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);

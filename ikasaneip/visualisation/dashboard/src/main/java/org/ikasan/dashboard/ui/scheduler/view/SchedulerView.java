@@ -216,11 +216,11 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
         this.schedulerDashboardTab = new Tab(getTranslation("tab.label.scheduler-dashboard", UI.getCurrent().getLocale()));
         this.schedulerDashboardTab.setId("schedulerDashboardTab");
-        this.contextTemplateTab = new Tab("Context Templates");
+        this.contextTemplateTab = new Tab(getTranslation("tab.label.job-plans", UI.getCurrent().getLocale()));
         this.contextTemplateTab.setId("contextTemplateTab");
         this.schedulerJobTab = new Tab(getTranslation("tab.label.scheduled-jobs", UI.getCurrent().getLocale()));
         this.schedulerJobTab.setId("scheduledJobsTab");
-        this.contextDebugTab = new Tab("Context Debug");
+        this.contextDebugTab = new Tab(getTranslation("tab.label.job-plan-debug", UI.getCurrent().getLocale()));
         this.contextDebugTab.setId("contextDebugTab");
         this.tabs = new Tabs(schedulerDashboardTab, this.contextTemplateTab, schedulerJobTab, contextDebugTab);
 

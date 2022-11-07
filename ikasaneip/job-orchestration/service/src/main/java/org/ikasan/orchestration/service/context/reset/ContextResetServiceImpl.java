@@ -9,13 +9,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public class ContextResetServiceImpl implements ContextResetService {
 
     @Override
-    public void resetContext(String contextName) {
+    public void resetContext(String contextName, boolean holdCommandExecutionJob) {
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
         if (contextMachine == null) {
             throw new ContextResetException(String.format("Could not find context for %s to reset", contextName));
         }
         try {
-            contextMachine.resetContextInstance();
+            contextMachine.resetContextInstance(holdCommandExecutionJob);
         } catch (Exception e) {
             throw new ContextResetException("Failed to reset context " + e.getMessage());
         }

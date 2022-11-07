@@ -159,6 +159,11 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     }
 
     @Override
+    public void holdAll(String contextName, String actor) {
+
+    }
+
+    @Override
     public void enableAll(String contextName, String actor) {
 
     }

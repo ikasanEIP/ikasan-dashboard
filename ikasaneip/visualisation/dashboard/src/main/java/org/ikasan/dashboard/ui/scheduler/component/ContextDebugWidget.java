@@ -222,7 +222,7 @@ public class ContextDebugWidget extends Div {
                 this.saveContextInstance(contextMachine.getContext(), InstanceStatus.ENDED);
                 setDryRunCheckbox(contextMachine.getContext().getName());
                 ContextMachineCache.instance().remove(contextMachine);
-                contextMachine.resetContextInstance();
+                contextMachine.resetContextInstance(false);
                 ContextMachineCache.instance().put(contextMachine);
 
                 this.schedulerInstanceVisualisation.createSchedulerVisualisation(contextMachine.getContext(), contextMachine.getContext(), null);

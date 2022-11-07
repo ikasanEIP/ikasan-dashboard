@@ -13,10 +13,7 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstancesInitialis
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
 import org.ikasan.spec.search.SearchResults;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class SchedulerJobInstanceServiceTestImpl implements SchedulerJobInstanceService {
 
@@ -38,6 +35,11 @@ public class SchedulerJobInstanceServiceTestImpl implements SchedulerJobInstance
 
     @Override
     public void save(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
+
+    }
+
+    @Override
+    public void save(List<SchedulerJobInstanceRecord> scheduledContextInstanceRecords) {
 
     }
 
@@ -102,6 +104,26 @@ public class SchedulerJobInstanceServiceTestImpl implements SchedulerJobInstance
 
     @Override
     public List<ContextInstanceAggregateJobStatus> getJobStatusCountForContextInstances(List<String> contextInstanceIds) {
+        return null;
+    }
+
+    @Override
+    public Map<String, InternalEventDrivenJobInstance> getCommandExecutionJobsForContextInstance(String contextInstanceId) {
+        return null;
+    }
+
+    @Override
+    public Map<String, InternalEventDrivenJobInstance> getCommandExecutionJobsForContextInstanceChildContext(String contextInstanceId) {
+        return null;
+    }
+
+    @Override
+    public List<SchedulerJobInstanceRecord> holdJobsWithinContext(ContextInstance contextInstance, String childContextName) {
+        return null;
+    }
+
+    @Override
+    public List<SchedulerJobInstanceRecord> getJobsToReleaseWithinContext(ContextInstance contextInstance, String childContextName) {
         return null;
     }
 }
