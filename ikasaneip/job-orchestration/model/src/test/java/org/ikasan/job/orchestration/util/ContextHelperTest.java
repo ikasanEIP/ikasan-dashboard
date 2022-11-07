@@ -2,7 +2,6 @@ package org.ikasan.job.orchestration.util;
 
 import org.apache.commons.io.IOUtils;
 import org.ikasan.job.orchestration.service.ContextService;
-import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.junit.Test;
@@ -13,6 +12,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+// todo extensive tests need to be written here
 public class ContextHelperTest {
 
     ContextService contextService = new ContextService();
@@ -35,19 +35,9 @@ public class ContextHelperTest {
         ContextInstance contextInstance = this.contextService
             .getContextInstance(loadDataFile("/data/-1793100514.json"));
 
-        ContextHelper.holdAllJobs(contextInstance);
+        ContextHelper.holdAllJobs(contextInstance, new HashMap<>());
 
         System.out.println(contextInstance);
-    }
-
-    @Test
-    public void test_hold_all_jobs_for_context_template() throws IOException {
-        ContextTemplate contextTemplate = this.contextService
-            .getContextTemplate(loadDataFile("/data/-1793100514.json"));
-
-        ContextHelper.holdAllJobs(contextTemplate);
-
-        System.out.println(contextTemplate);
     }
 
     @Test

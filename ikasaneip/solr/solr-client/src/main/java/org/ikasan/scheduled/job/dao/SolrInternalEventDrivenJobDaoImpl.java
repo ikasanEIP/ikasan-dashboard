@@ -189,6 +189,28 @@ public class SolrInternalEventDrivenJobDaoImpl extends SolrDaoBase<InternalEvent
     }
 
     @Override
+    public void holdAll(List<InternalEventDrivenJobRecord> jobRecords, String actor) {
+        jobRecords.forEach(jobRecord -> {
+            InternalEventDrivenJob internalEventDrivenJob = jobRecord.getInternalEventDrivenJob();
+            if(internalEventDrivenJob.getChildContextNames() != null) {
+                HashMap<String, Boolean> heldContexts = new HashMap<>();
+
+                internalEventDrivenJob.getChildContextNames()
+                    .forEach(name -> heldContexts.put(name, Boolean.TRUE));
+
+                internalEventDrivenJob.setHeldContexts(heldContexts);
+            }
+            internalEventDrivenJob.setSkippedContexts(new HashMap<>());
+            jobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
+            jobRecord.setSkipped(false);
+            jobRecord.setHeld(true);
+            jobRecord.setModifiedBy(actor);
+        });
+
+        save(jobRecords);
+    }
+
+    @Override
     public void enableAll(List<InternalEventDrivenJobRecord> jobRecords, String actor) {
         jobRecords.forEach(jobRecord -> {
             InternalEventDrivenJob internalEventDrivenJob = jobRecord.getInternalEventDrivenJob();

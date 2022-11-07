@@ -6,6 +6,7 @@ import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstancesInitialisationParametersImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -19,10 +20,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.*;
-import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
-import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
-import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.instance.service.*;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
@@ -142,7 +140,9 @@ public abstract class ContextInstanceServiceBase {
 
     protected void initialiseContextMachine(ContextTemplate context, ContextInstance instance, boolean isInitialContextInstantiation) throws Exception {
         if(isInitialContextInstantiation) {
-            schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(instance);
+            SchedulerJobInstancesInitialisationParameters parameters
+                = new SchedulerJobInstancesInitialisationParametersImpl(false);
+            schedulerJobInstanceService.initialiseSchedulerJobInstancesForContext(instance, parameters);
         }
 
         Map<String, InternalEventDrivenJobInstance> internalJobs = getInternalJobs(instance.getId());

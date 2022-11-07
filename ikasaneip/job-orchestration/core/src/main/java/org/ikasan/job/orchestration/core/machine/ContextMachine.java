@@ -19,6 +19,7 @@ import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeE
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditAggregateImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceAuditAggregateRecordImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstancesInitialisationParametersImpl;
 import org.ikasan.job.orchestration.model.status.ContextInstanceStatus;
 import org.ikasan.job.orchestration.service.BigQueueContextMachineManagementServiceImpl;
 import org.ikasan.job.orchestration.service.ContextService;
@@ -39,16 +40,14 @@ import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
-import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
-import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
-import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.instance.service.*;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -165,7 +164,7 @@ public class ContextMachine {
      *
      * @throws JsonProcessingException
      */
-    public void resetContextInstance() throws JsonProcessingException, SchedulerJobInstanceInitialisationException {
+    public void resetContextInstance(boolean holdCommandJobs) throws JsonProcessingException, SchedulerJobInstanceInitialisationException {
         if(this.context != null) {
             ContextService contextService = new ContextService();
             this.context = scheduledContextService.findByName(this.context.getName()).getContext();
@@ -173,13 +172,19 @@ public class ContextMachine {
             this.contextInstance.setId(UUID.randomUUID().toString());
             ContextHelper.enrichJobs(contextInstance);
 
+            SchedulerJobInstancesInitialisationParameters parameters
+                = new SchedulerJobInstancesInitialisationParametersImpl(holdCommandJobs);
             List<SchedulerJobInstance> schedulerJobInstances = this.schedulerJobInstanceService
-                .initialiseSchedulerJobInstancesForContext(this.contextInstance);
+                .initialiseSchedulerJobInstancesForContext(this.contextInstance, parameters);
 
             this.internalEventDrivenJobInstances  = schedulerJobInstances.stream()
                 .filter(job -> job instanceof InternalEventDrivenJobInstance)
                 .map(job -> (InternalEventDrivenJobInstance)job)
                 .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (job1, job2) -> job1));
+
+            if(holdCommandJobs) {
+                ContextHelper.holdAllJobs(this.contextInstance, this.internalEventDrivenJobInstances);
+            }
 
             this.internalEventDrivenJobInstances.entrySet().forEach(job -> {
                 if(job.getValue().isSkip()) {
@@ -189,7 +194,7 @@ public class ContextMachine {
                 }
                 if(job.getValue().isHeld()) {
                     ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), this.contextInstance);
-                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isHeld());
+                    child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setHeld(job.getValue().isHeld());
                     child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
                 }
             });
@@ -557,10 +562,10 @@ public class ContextMachine {
             SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, childContextName, jobIdentifier);
             InstanceStatus previousState = schedulerJobInstance.getStatus();
             schedulerJobInstance.setHeld(false);
-            schedulerJobInstance.setStatus(InstanceStatus.RELEASED);
+            schedulerJobInstance.setStatus(InstanceStatus.WAITING);
             this.saveContext();
-            logger.info(String.format("Successfully released job[%s]. Context[%s], Context Instance[%s]."
-                , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId()));
+            logger.info(String.format("Successfully released job[%s]. Context[%s], ChildContext[%s] Context Instance[%s]."
+                , jobIdentifier, this.contextInstance.getName(), childContextName, this.contextInstance.getId()));
             jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, this.contextInstance
                 , previousState, schedulerJobInstance.getStatus()));
         }
@@ -570,15 +575,15 @@ public class ContextMachine {
             if(schedulerJobInstance != null) {
                 if(!schedulerJobInstance.getStatus().equals(InstanceStatus.ON_HOLD)) {
                     throw new ContextMachineException(String.format("Attempting to release job[%s], " +
-                            "in context[%s] with instance id[%s]. The job currently has a status of [%s] which cannot be released."
-                        , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId(), schedulerJobInstance.getStatus()));
+                            "in context[%s], childContext[%s] with instance id[%s]. The job currently has a status of [%s] which cannot be released."
+                        , jobIdentifier, this.contextInstance.getName(), childContextName, this.contextInstance.getId(), schedulerJobInstance.getStatus()));
                 }
                 InstanceStatus previousState = schedulerJobInstance.getStatus();
                 schedulerJobInstance.setHeld(false);
-                schedulerJobInstance.setStatus(InstanceStatus.RELEASED);
+                schedulerJobInstance.setStatus(InstanceStatus.WAITING);
                 this.saveContext();
-                logger.info(String.format("Successfully released job[%s]. Context[%s], Context Instance[%s]."
-                    , jobIdentifier, this.contextInstance.getName(), this.contextInstance.getId()));
+                logger.info(String.format("Successfully released job[%s]. Context[%s], ChildContext[%s], Context Instance[%s]."
+                    , jobIdentifier, this.contextInstance.getName(), childContextName, this.contextInstance.getId()));
                 jobLogicMachine.issueSchedulerJobStateChangeEvent(new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstance, this.contextInstance
                     , previousState, schedulerJobInstance.getStatus()));
             }

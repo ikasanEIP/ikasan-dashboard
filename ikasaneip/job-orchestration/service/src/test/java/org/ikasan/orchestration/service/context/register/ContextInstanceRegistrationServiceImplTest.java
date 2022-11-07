@@ -26,10 +26,7 @@ import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEv
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.*;
-import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
-import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
-import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.instance.service.*;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
@@ -182,7 +179,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(scheduledContextService).findById(contextName);
         verify(schedulerJobInstanceService).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
-        verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
+        verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class), any(SchedulerJobInstancesInitialisationParameters.class));
         verify(contextParametersInstanceService).populateContextParameters();
         verify(contextParametersInstanceService).getAllContextParameters(contextName);
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
@@ -271,7 +268,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
-        verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
+        verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class), any(SchedulerJobInstancesInitialisationParameters.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -358,7 +355,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
-        verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
+        verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class), any(SchedulerJobInstancesInitialisationParameters.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -444,7 +441,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "2"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
-        verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
+        verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class), any(SchedulerJobInstancesInitialisationParameters.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -662,7 +659,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         verify(contextParametersInstanceService).getAllContextParameters(contextName);
         verify(contextInstancePublicationService).publish(eq(AGENT_URL + "1")
             , argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
-        verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
+        verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class), any(SchedulerJobInstancesInitialisationParameters.class));
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
@@ -739,7 +736,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         // verify
         verify(scheduledContextService).findById(contextName);
         verify(schedulerJobInstanceService).getScheduledContextInstancesByFilter(any(), eq(-1), eq(-1), isNull(), isNull());
-        verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class));
+        verify(schedulerJobInstanceService).initialiseSchedulerJobInstancesForContext(any(ContextInstance.class), any(SchedulerJobInstancesInitialisationParameters.class));
         verify(contextParametersInstanceService).populateContextParameters();
         verify(contextParametersInstanceService).getAllContextParameters(contextName);
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
