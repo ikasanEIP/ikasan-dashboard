@@ -5,6 +5,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
@@ -27,17 +28,21 @@ import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.ContextSchedulerInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -47,12 +52,11 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateSearchFilter;
-import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -63,6 +67,11 @@ import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class ContextInstanceWidget extends VerticalLayout implements BeforeEnterObserver {
 
@@ -73,12 +82,10 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     public static final String STATISTICS_TAB = "statisticsTab";
     public static final String AUDIT_TAB = "auditTab";
     private Registration contextInstanceStateChangeRegistration;
-
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private FormLayout formLayout;
     private IkasanAuthentication authentication;
-
     private AceEditor aceEditor;
     protected SchedulerInstanceVisualisation schedulerInstanceVisualisation;
     private SchedulerJobInstanceGridWidget schedulerJobInstanceGridWidget;
@@ -266,15 +273,122 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         contextInstanceLabel.getStyle().set("margin", "20px");
         formLayout.add(contextInstanceLabel, 2);
 
-        Button jobLogDashboard = new Button("Job Locks", VaadinIcon.LOCK.create());
-        jobLogDashboard.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
-        jobLogDashboard.setIconAfterText(true);
-        jobLogDashboard.addClickListener(event -> {
+        Button jobLockDashboard = new Button("Job Locks", VaadinIcon.LOCK.create());
+        jobLockDashboard.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+        jobLockDashboard.setIconAfterText(true);
+        jobLockDashboard.addClickListener(event -> {
             JobLockCacheDialog jobLockCacheDialog = new JobLockCacheDialog(this.contextInstance, this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobInstanceService,
                 this.logStreamingService, this.jobInitiationService, this.scheduledContextService, this.jobUtilsService);
 
             jobLockCacheDialog.open();
+        });
+
+        Button holdContextButton = new Button(getTranslation("button.hold-context"
+            , UI.getCurrent().getLocale()), VaadinIcon.HAND.create());
+        holdContextButton.setIconAfterText(true);
+        holdContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+        holdContextButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.hold-jobs-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.hold-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                ContextMachine contextMachine = ContextMachineCache.instance()
+                    .getByContextInstanceId(this.contextInstance.getId());
+
+                if (contextMachine != null) {
+                    boolean error = false;
+                    try {
+                        List<SchedulerJobInstanceRecord> updatedRecords = this.schedulerJobInstanceService
+                            .holdJobsWithinContext(contextMachine.getContext(), contextMachine.getContext().getName());
+
+                        if (updatedRecords.size() > 0) {
+                            updatedRecords.forEach(schedulerJobInstanceRecord -> {
+                                SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
+                                    = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstanceRecord.getSchedulerJobInstance(),
+                                    this.contextInstance, InstanceStatus.WAITING, InstanceStatus.ON_HOLD);
+                                SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+                            });
+                        }
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        error = true;
+                    }
+                    finally {
+                        if (error) {
+                            NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-hold-error"
+                                , UI.getCurrent().getLocale()));
+                        } else {
+                            NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-held"
+                                , UI.getCurrent().getLocale()));
+                        }
+                    }
+                }
+            });
+        });
+
+        Button releaseContextButton = new Button(getTranslation("button.release-all-held-jobs"
+            , UI.getCurrent().getLocale()), VaadinIcon.HANDS_UP.create());
+        releaseContextButton.setIconAfterText(true);
+        releaseContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+
+
+        releaseContextButton.addClickListener(event -> {
+            ContextMachine contextMachine = ContextMachineCache.instance()
+                .getByContextInstanceId(this.contextInstance.getId());
+            if (contextMachine != null) {
+                List<SchedulerJobInstanceRecord> jobsToReleaseWithinContext = this.schedulerJobInstanceService
+                    .getJobsToReleaseWithinContext(contextMachine.getContext(), contextMachine.getContext().getName());
+
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog.release-jobs-header", UI.getCurrent().getLocale()));
+                confirmDialog.setText(String.format(getTranslation("confirm-dialog.release-jobs-body", UI.getCurrent().getLocale())
+                    , jobsToReleaseWithinContext.size()));
+                confirmDialog.setCancelable(true);
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent -> {
+                    ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+                    dialog.setWidth("600px");
+                    dialog.setHeight("250px");
+                    dialog.open(getTranslation("progress-dialog.release-all-jobs-jobs-header", UI.getCurrent().getLocale()),
+                        getTranslation("progress-dialog.release-all-jobs-jobs-body", UI.getCurrent().getLocale()));
+
+                    final UI current = UI.getCurrent();
+                    Executor executor = Executors.newSingleThreadExecutor();
+                    executor.execute(() -> {
+                        boolean error = false;
+                        try {
+                            if (jobsToReleaseWithinContext.size() > 0) {
+                                for (SchedulerJobInstanceRecord schedulerJobInstanceRecord : jobsToReleaseWithinContext) {
+                                    contextMachine.releaseJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(),
+                                        schedulerJobInstanceRecord.getChildContextName());
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            error = true;
+                        } finally {
+                            boolean finalError = error;
+                            current.access(() -> {
+                                dialog.close();
+
+                                if (finalError) {
+                                    NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-released-error"
+                                        , UI.getCurrent().getLocale()));
+                                } else {
+                                    NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-released"
+                                        , UI.getCurrent().getLocale()));
+                                }
+                            });
+                        }
+                    });
+                });
+            }
         });
 
         Button resetButton = new Button(getTranslation("button.reset-context", UI.getCurrent().getLocale()), VaadinIcon.TIME_BACKWARD.create());
@@ -283,21 +397,29 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         resetButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.reset-context", UI.getCurrent().getLocale()));
-            confirmDialog.setText(getTranslation("confirm-dialog-text.reset-context", UI.getCurrent().getLocale()));
+
+            Checkbox hold = new Checkbox("Hold All Command Execution Jobs");
+            VerticalLayout verticalLayout = new VerticalLayout();
+            verticalLayout.setWidthFull();
+            Div body = new Div();
+            body.setText(getTranslation("confirm-dialog-text.reset-context", UI.getCurrent().getLocale()));
+            verticalLayout.add(body, hold);
+            confirmDialog.setText(verticalLayout);
 
             confirmDialog.setCancelable(true);
 
             confirmDialog.open();
 
             confirmDialog.addConfirmListener(confirmEvent -> {
-                ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+                ContextMachine contextMachine = ContextMachineCache.instance()
+                    .getByContextInstanceId(this.contextInstance.getId());
                 if (contextMachine != null) {
                     try {
                         contextMachine.setDryRunParameters(null);
                         this.saveContextInstance(contextMachine.getContext(), InstanceStatus.ENDED);
                         this.statusDiv.setStatus(InstanceStatus.ENDED);
                         ContextMachineCache.instance().remove(contextMachine);
-                        contextMachine.resetContextInstance();
+                        contextMachine.resetContextInstance(hold.getValue());
                         ContextMachineCache.instance().put(contextMachine);
                         String route = RouteConfiguration.forSessionScope()
                             .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
@@ -316,7 +438,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         });
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.add(jobLogDashboard, resetButton);
+        buttonLayout.add(jobLockDashboard, holdContextButton, releaseContextButton, resetButton);
         buttonLayout.setMargin(false);
         buttonLayout.setSpacing(true);
 

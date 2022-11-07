@@ -82,7 +82,7 @@ public class ContextHelper {
         }
     }
 
-    public static <T> Predicate<T> distinctByKey(
+    private static <T> Predicate<T> distinctByKey(
         Function<? super T, ?> keyExtractor) {
 
         Map<Object, Boolean> seen = new ConcurrentHashMap<>();
@@ -152,6 +152,7 @@ public class ContextHelper {
 
         return results;
     }
+
     public static void _traceJobThroughContextInstance(LinkedList<List<SchedulerJobInstance>> results, ContextInstance context, String jobName, String childContextName) {
         ContextInstance child = ContextHelper.getChildContextInstance(childContextName, context);
 
@@ -175,7 +176,6 @@ public class ContextHelper {
             jobs.forEach(job -> {
                 getContextsWhereJobResides(context, job.getJobName())
                             .forEach(filtered -> {
-                                System.out.println(filtered);
                                 _traceJobThroughContextInstance(results, context, job.getJobName(), filtered);
                             });
             });
@@ -311,29 +311,49 @@ public class ContextHelper {
         return contextTemplate;
     }
 
-    public static void holdAllJobs(Context context) {
-        _holdAllJobs(context);
+    public static void holdAllJobs(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap) {
+        _holdAllJobs(context, internalEventDrivenJobInstanceMap);
     }
 
-    private static void _holdAllJobs(Context context) {
+    private static void _holdAllJobs(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap) {
         if(context.getScheduledJobs() != null) {
             context.getScheduledJobs().forEach(job -> {
-                if(((SchedulerJob) job).getChildContextNames() != null) {
-                    Map<String, Boolean> heldMap = new HashMap<>();
-                    ((SchedulerJob) job).getChildContextNames()
-                        .forEach(name -> heldMap.put(name, Boolean.TRUE));
-                    ((SchedulerJob) job).setHeldContexts(heldMap);
-                }
+                if(internalEventDrivenJobInstanceMap.containsKey(job.getIdentifier() + "-" + job.getChildContextName())) {
+                    if (job.getChildContextNames() != null) {
+                        Map<String, Boolean> heldMap = new HashMap<>();
+                        job.getChildContextNames()
+                            .forEach(name -> heldMap.put(name, Boolean.TRUE));
+                        job.setHeldContexts(heldMap);
+                    }
 
-                if(job instanceof SchedulerJobInstance) {
-                    ((SchedulerJobInstance) job).setHeld(true);
-                    ((SchedulerJobInstance) job).setStatus(InstanceStatus.ON_HOLD);
+                    job.setHeld(true);
+                    job.setStatus(InstanceStatus.ON_HOLD);
                 }
             });
         }
 
         if(context.getContexts() != null) {
-            context.getContexts().forEach(c -> _holdAllJobs((Context) c));
+            context.getContexts().forEach(c -> _holdAllJobs((ContextInstance) c, internalEventDrivenJobInstanceMap));
+        }
+    }
+
+    public static void releaseAllJobs(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap) {
+        _releaseAllJobs(context, internalEventDrivenJobInstanceMap);
+    }
+
+    private static void _releaseAllJobs(ContextInstance context, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap) {
+        if(context.getScheduledJobs() != null) {
+            context.getScheduledJobs().stream().filter(job -> internalEventDrivenJobInstanceMap.containsKey(job.getIdentifier()+job.getChildContextName()))
+                .forEach(job -> {
+                    Map<String, Boolean> heldMap = new HashMap<>();
+                    job.setHeldContexts(heldMap);
+                    job.setHeld(false);
+                    job.setStatus(InstanceStatus.RELEASED);
+            });
+        }
+
+        if(context.getContexts() != null) {
+            context.getContexts().forEach(c -> _holdAllJobs((ContextInstance) c, internalEventDrivenJobInstanceMap));
         }
     }
 
@@ -419,6 +439,43 @@ public class ContextHelper {
         if(context.getContexts() != null) {
             context.getContexts().forEach(c -> {
                 getAllContexts((Context) c, contextMap);
+            });
+        }
+    }
+
+    public static Map<String, SchedulerJobInstance> getAllJobs(ContextInstance context) {
+        Map<String, SchedulerJobInstance> contextMap = new HashMap<>();
+
+        if(context.getScheduledJobsMap() != null
+            && !context.getScheduledJobsMap().isEmpty()) {
+            context.getScheduledJobsMap().entrySet().forEach(entry -> {
+                contextMap.put(entry.getKey()+entry.getValue().getChildContextName()
+                    , entry.getValue());
+            });
+        }
+
+        if(context.getContexts() != null) {
+            context.getContexts().forEach(c -> {
+                getAllJobs(c, contextMap);
+            });
+        }
+
+        return contextMap;
+    }
+
+
+    private static void getAllJobs(ContextInstance context, Map<String, SchedulerJobInstance> contextMap) {
+        if(context.getScheduledJobsMap() != null
+            && !context.getScheduledJobsMap().isEmpty()) {
+            context.getScheduledJobsMap().entrySet().forEach(entry -> {
+                contextMap.put(entry.getKey()+entry.getValue().getChildContextName()
+                    , entry.getValue());
+            });
+        }
+
+        if(context.getContexts() != null) {
+            context.getContexts().forEach(c -> {
+                getAllJobs(c, contextMap);
             });
         }
     }

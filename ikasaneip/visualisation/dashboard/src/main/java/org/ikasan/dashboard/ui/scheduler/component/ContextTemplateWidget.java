@@ -111,7 +111,7 @@ public class ContextTemplateWidget extends Div {
 
         HorizontalLayout headerLayout = new HorizontalLayout();
         headerLayout.setWidth("100%");
-        H4 contextTemplates = new H4("Context Templates");
+        H4 contextTemplates = new H4(getTranslation("label.job-plans", UI.getCurrent().getLocale()));
         headerLayout.add(contextTemplates);
 
         HorizontalLayout actionButtonLayout = new HorizontalLayout();
@@ -120,7 +120,7 @@ public class ContextTemplateWidget extends Div {
         MenuBar quickAccessMenu = this.createQuickAccessMenu();
 
         Icon uploadIcon = VaadinIcon.UPLOAD_ALT.create();
-        Button addContextButton = new Button("Upload Context",uploadIcon);
+        Button addContextButton = new Button(getTranslation("button.upload-job-plan", UI.getCurrent().getLocale()), uploadIcon);
         addContextButton.setIconAfterText(true);
         addContextButton.addClickListener(buttonClickEvent -> {
             ContextImportFileDialog importer = new ContextImportFileDialog(contextProvisionService, provisionJobs);
@@ -128,7 +128,7 @@ public class ContextTemplateWidget extends Div {
         });
 
         Icon newContextIcon = VaadinIcon.PLUS.create();
-        Button newContextButton = new Button("New Context",newContextIcon);
+        Button newContextButton = new Button(getTranslation("button.new-job-plan", UI.getCurrent().getLocale()), newContextIcon);
         newContextButton.setIconAfterText(true);
         newContextButton.addClickListener(buttonClickEvent -> {
             NewContextTemplateDialog newContextTemplateDialog = new NewContextTemplateDialog(this.scheduledContextService
