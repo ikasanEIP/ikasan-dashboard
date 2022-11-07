@@ -27,17 +27,6 @@ public class StartupCompleteApplicationListener implements ApplicationListener<A
 
     @Override
     public void onApplicationEvent(ApplicationStartedEvent event) {
-//        try {
-//
-//            transactionManager.getTransactionManager();
-//            transactionManager.getTransactionManager().begin();
-//            transactionManager.getTransactionManager().commit();
-//        }
-//        catch (SystemException | HeuristicRollbackException | HeuristicMixedException | NotSupportedException | RollbackException e) {
-//            e.printStackTrace();
-//            // ignore
-//        }
-
         TxControl.setXANodeName("bigQueue");
 
         Flow inboundFlow = inboundFlowModule.getFlow("Scheduled Process Event Inbound Flow");
