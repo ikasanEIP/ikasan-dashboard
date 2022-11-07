@@ -24,12 +24,14 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceVisualisationDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaData;
@@ -49,7 +51,6 @@ import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
-import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vaadin.olli.FileDownloadWrapper;
@@ -57,7 +58,8 @@ import org.vaadin.olli.FileDownloadWrapper;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Function;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -270,10 +272,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         grid.addComponentColumn(value -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
             if (value instanceof ContextInstance) {
-                if(((ContextInstance) value).getScheduledJobs() != null
-                    && !((ContextInstance) value).getScheduledJobs().isEmpty()) {
-                    horizontalLayout.add(this.createContextVisualisationIcon((ContextInstance) value));
-                }
+                this.getComponentInstanceActionComponents((ContextInstance) value, horizontalLayout);
             }
             else if(value instanceof SchedulerJobInstance || value instanceof PrecedingItem) {
 
@@ -306,7 +305,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 logger.info(String.format("refreshing icons JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName()
                     , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(),
                     schedulerJobInstanceRecord.getStatus()));
-                this.getActionsComponent(key, schedulerJobInstanceRecord, horizontalLayout);
+                this.getJobInstanceActionComponents(key, schedulerJobInstanceRecord, horizontalLayout);
                 this.setIconVisibility(schedulerJobInstanceRecord, key);
 
                 if(value instanceof PrecedingItem) {
@@ -720,6 +719,115 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         return image;
     }
 
+    protected void getComponentInstanceActionComponents(ContextInstance contextInstance, HorizontalLayout horizontalLayout) {
+        if(contextInstance.getScheduledJobs() != null
+            && !contextInstance.getScheduledJobs().isEmpty()){
+            horizontalLayout.add(this.createContextVisualisationIcon(contextInstance));
+        }
+        Icon hold = IconDecorator.decorate(new Icon(VaadinIcon.HAND), getTranslation("tooltip.hold-all-nested-jobs", UI.getCurrent().getLocale()
+            , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+        hold.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.hold-jobs-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.hold-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                boolean error = false;
+                try {
+                    if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                        List<SchedulerJobInstanceRecord> updatedJobs = schedulerJobInstanceService.holdJobsWithinContext(ContextMachineCache
+                            .instance().getByContextInstanceId(this.contextInstance.getId()).getContext(), contextInstance.getName());
+
+                        if (updatedJobs.size() > 0) {
+                            updatedJobs.forEach(schedulerJobInstanceRecord -> {
+                                SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
+                                    = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstanceRecord.getSchedulerJobInstance(),
+                                    this.contextInstance, InstanceStatus.WAITING, InstanceStatus.ON_HOLD);
+                                SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+                            });
+                        }
+                    }
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    error = true;
+                }
+                finally {
+                    if (error) {
+                        NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-hold-error"
+                            , UI.getCurrent().getLocale()));
+                    } else {
+                        NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-held"
+                            , UI.getCurrent().getLocale()));
+                    }
+                }
+            });
+        });
+
+        horizontalLayout.add(hold);
+
+        Icon release = IconDecorator.decorate(new Icon(VaadinIcon.HANDS_UP), getTranslation("tooltip.release-all-nested-jobs", UI.getCurrent().getLocale()
+            , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+        release.addClickListener(event -> {
+            List<SchedulerJobInstanceRecord> jobsToReleaseWithinContext = schedulerJobInstanceService.getJobsToReleaseWithinContext(ContextMachineCache
+                .instance().getByContextInstanceId(this.contextInstance.getId()).getContext(), contextInstance.getName());
+
+            if(jobsToReleaseWithinContext.size() > 0) {
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog.release-jobs-header", UI.getCurrent().getLocale()));
+                confirmDialog.setText(String.format(getTranslation("confirm-dialog.release-jobs-body", UI.getCurrent().getLocale())
+                    , jobsToReleaseWithinContext.size()));
+                confirmDialog.setCancelable(true);
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent -> {
+                    ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+                    dialog.setWidth("600px");
+                    dialog.setHeight("250px");
+                    dialog.open(getTranslation("progress-dialog.release-all-jobs-jobs-header", UI.getCurrent().getLocale()),
+                        getTranslation("progress-dialog.release-all-jobs-jobs-body", UI.getCurrent().getLocale()));
+
+                    final UI current = UI.getCurrent();
+                    Executor executor = Executors.newSingleThreadExecutor();
+                    executor.execute(() -> {
+                        boolean error = false;
+                        try {
+                            if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                                if (jobsToReleaseWithinContext.size() > 0) {
+                                    for (SchedulerJobInstanceRecord schedulerJobInstanceRecord : jobsToReleaseWithinContext) {
+                                        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+                                        contextMachine.releaseJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(),
+                                            schedulerJobInstanceRecord.getChildContextName());
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            error = true;
+                        } finally {
+                            boolean finalError = error;
+                            current.access(() -> {
+                                dialog.close();
+
+                                if (finalError) {
+                                    NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-released-error"
+                                        , UI.getCurrent().getLocale()));
+                                } else {
+                                    NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-released"
+                                        , UI.getCurrent().getLocale()));
+                                }
+                            });
+                        }
+                    });
+                });
+            }
+        });
+
+        horizontalLayout.add(release);
+    }
+
     /**
      * Method to initialise and create all action icons for a given job record. All icons are added to the provided layout.
      *
@@ -727,7 +835,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * @param schedulerJobInstanceRecord
      * @param layout
      */
-    protected void getActionsComponent(ComponentKey key, SchedulerJobInstanceRecord schedulerJobInstanceRecord, HorizontalLayout layout) {
+    protected void getJobInstanceActionComponents(ComponentKey key, SchedulerJobInstanceRecord schedulerJobInstanceRecord, HorizontalLayout layout) {
         layout.setWidthFull();
 
         if(!this.schedulerJobIconMap.containsKey(key)) {
@@ -1336,16 +1444,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * keyed on their identifier.
      */
     private Map<String, InternalEventDrivenJobInstance> getCommandExecutionJobsForContextInstance(String contextInstanceId) {
-        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
-        filter.setContextInstanceId(contextInstanceId);
-        filter.setJobType("internalEventDrivenJobInstance");
-        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults
-            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
-
-        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
-            .map(internalEventDrivenJobRecord -> (InternalEventDrivenJobInstance)internalEventDrivenJobRecord.getSchedulerJobInstance())
-            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity()));
-        return internalEventDrivenJobMap;
+        return this.schedulerJobInstanceService.getCommandExecutionJobsForContextInstanceChildContext(contextInstanceId);
     }
 
     /**

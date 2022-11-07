@@ -53,7 +53,6 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
                 .getByContextInstanceId(contextualisedScheduledProcessEvent.getContextInstanceId());
 
             if(contextMachine == null) {
-
                 throw new InvalidContextInstanceIdException(String.format("Could not resolve context machine with context instance id [%s]." +
                     " Cache Contents - %s", contextualisedScheduledProcessEvent.getContextInstanceId(), ContextMachineCache.instance().toString()));
             }
@@ -64,6 +63,7 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
             throw e;
         }
         catch (Exception e) {
+            e.printStackTrace();
             if(this.configuration.isIgnoreErrors()) {
                 logger.info("Ignoring error [{}] for payload [{}]", e.getMessage(), payload);
             }

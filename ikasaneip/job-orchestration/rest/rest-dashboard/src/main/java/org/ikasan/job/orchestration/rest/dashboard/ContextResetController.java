@@ -70,7 +70,7 @@ public class ContextResetController {
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
     public ResponseEntity getContextStatusForJob(@PathVariable String contextName) {
         try {
-            resetService.resetContext(contextName);
+            resetService.resetContext(contextName, false);
         } catch (Exception e) {
             LOG.error(e.getMessage());
             String errorMessage = String.format("An error has occurred attempting to reset context for %s!", contextName);

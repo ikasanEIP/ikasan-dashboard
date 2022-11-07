@@ -74,7 +74,6 @@ public class Tree<T> {
 
                         if (!branch.equals(b) && !b.isLeaf()) {
                             if (this.isBranchInLowerBranches(branch, b.getBranches())) {
-                                System.out.println("trim");
                                 trimmedBranches.remove(branch);
                             }
                         }

@@ -131,7 +131,6 @@ public class ContextTemplateValidatorTest extends AbstractTest {
             validator.validate(contextTemplate);
         }
         catch (InvalidContextTemplateException e) {
-            System.out.println(e.getMessage());
             Assert.assertEquals("Context[Context Template 2] must not contain any context parameters. " +
                     "Context parameters can only be present in the root context.\n"
                 , e.getMessage());
