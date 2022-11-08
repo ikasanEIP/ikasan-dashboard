@@ -17,6 +17,7 @@ import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.ConfigurationParameterMetaData;
 import org.ikasan.spec.metadata.FlowMetaData;
+import org.ikasan.spec.scheduled.event.model.Outcome;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.junit.*;
 import org.springframework.util.FileSystemUtils;

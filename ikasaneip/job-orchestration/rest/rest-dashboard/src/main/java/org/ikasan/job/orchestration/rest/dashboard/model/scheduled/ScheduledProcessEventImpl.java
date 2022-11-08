@@ -1,5 +1,8 @@
 package org.ikasan.job.orchestration.rest.dashboard.model.scheduled;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.ikasan.spec.scheduled.event.model.Outcome;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 
 import java.util.Objects;
@@ -213,27 +216,10 @@ public class ScheduledProcessEventImpl implements ScheduledProcessEvent<Outcome,
         return this.dryRunParameters;
     }
 
-    //    @Override
-//    public String getContextId() {
-//        return null;
-//    }
-//
-//    @Override
-//    public void setContextId(String contextId) {
-//
-//    }
-//
-//    @Override
-//    public String getContextInstanceId() {
-//        return null;
-//    }
-//
-//    @Override
-//    public void setContextInstanceId(String contextInstanceId) {
-//
-//    }
-
-
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
 
     @Override
     public boolean equals(Object o) {
