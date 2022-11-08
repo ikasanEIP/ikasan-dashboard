@@ -36,8 +36,8 @@ public class SolrEmailNotificationDetailsServiceImpl extends SolrServiceBase imp
     }
 
     @Override
-    public EmailNotificationDetailsRecord findByJobNameAndMonitorType(String jobName, String contextName, String monitorType) {
-        return this.dao.findByJobNameAndMonitorType(jobName,contextName, monitorType);
+    public EmailNotificationDetailsRecord findByJobNameAndMonitorType(String jobName, String childContextName, String monitorType) {
+        return this.dao.findByJobNameAndMonitorType(jobName,childContextName, monitorType);
     }
 
     @Override
@@ -73,4 +73,9 @@ public class SolrEmailNotificationDetailsServiceImpl extends SolrServiceBase imp
 
     @Override
     public void deleteByContextName(String contextName) { this.dao.deleteByContextName(contextName); }
+
+    @Override
+    public void deleteByJobNameAndMonitorType(String jobName, String childContextName, String monitorType) {
+        this.dao.deleteByJobNameAndMonitorType(jobName, childContextName, monitorType);
+    }
 }
