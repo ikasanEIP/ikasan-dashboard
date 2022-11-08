@@ -8,10 +8,7 @@ import org.ikasan.spec.scheduled.context.model.JobDependency;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEventListener;
-import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
-import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
-import org.ikasan.spec.scheduled.event.model.DryRunParameters;
-import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
+import org.ikasan.spec.scheduled.event.model.*;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.slf4j.Logger;
@@ -104,7 +101,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                         schedulerJobInstance.setStatus(InstanceStatus.RUNNING);
                     }
                 } else if (scheduledProcessEvent.isSuccessful()) {
-                    if (schedulerJobInstance.isSkip()) {
+                    if (schedulerJobInstance.isSkip() || (scheduledProcessEvent.getOutcome() != null
+                            && scheduledProcessEvent.getOutcome().equals(Outcome.EXECUTION_INVOKED_IGNORED_DAY_OF_WEEK.name()))) {
                         schedulerJobInstance.setStatus(InstanceStatus.SKIPPED_COMPLETE);
                     } else {
                         schedulerJobInstance.setStatus(InstanceStatus.COMPLETE);
