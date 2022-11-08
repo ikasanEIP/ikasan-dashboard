@@ -16,6 +16,15 @@ public class SolrEmailNotificationDetailsRecord implements EmailNotificationDeta
     @Field(SolrDaoBase.ID)
     private String id;
 
+    @Field(SolrDaoBase.MODULE_NAME)
+    private String jobName;
+
+    @Field(SolrDaoBase.COMPONENT_NAME)
+    private String contextName;
+
+    @Field(SolrDaoBase.RELATED_EVENT)
+    private String monitorType;
+
     @Field(SolrDaoBase.PAYLOAD_CONTENT)
     private String emailNotificationDetails;
 
@@ -35,6 +44,36 @@ public class SolrEmailNotificationDetailsRecord implements EmailNotificationDeta
     @Override
     public void setId(String id) {
         this.id = id;
+    }
+
+    @Override
+    public String getJobName() {
+        return jobName;
+    }
+
+    @Override
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
+    }
+
+    @Override
+    public String getContextName() {
+        return contextName;
+    }
+
+    @Override
+    public void setContextName(String contextName) {
+        this.contextName = contextName;
+    }
+
+    @Override
+    public String getMonitorType() {
+        return monitorType;
+    }
+
+    @Override
+    public void setMonitorType(String monitorType) {
+        this.monitorType = monitorType;
     }
 
     public long getTimestamp() {

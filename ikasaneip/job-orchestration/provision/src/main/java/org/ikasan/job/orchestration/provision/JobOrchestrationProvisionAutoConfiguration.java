@@ -9,18 +9,18 @@ import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationServ
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
-import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 
 @Configuration
 public class JobOrchestrationProvisionAutoConfiguration {
 
     @Value("${ikasan.dashboard.unzip.and.provision.jobs:true}")
     private boolean uploadProvisionJobs;
+
     @Bean
     public JobProvisionServiceImpl jobProvisionService(SchedulerJobService schedulerJobService, ModuleMetaDataService moduleMetadataService,
                                                        JobProvisionModuleService jobProvisionModuleService) {
@@ -35,7 +35,8 @@ public class JobOrchestrationProvisionAutoConfiguration {
         SchedulerJobService schedulerJobService,
         JobProvisionModuleService jobProvisionModuleRestService,
         ContextInstanceRegistrationService contextInstanceRegistrationService,
-        ContextProfileService contextProfileService) {
+        ContextProfileService contextProfileService,
+        EmailNotificationDetailsService emailNotificationDetailsService) {
 
         return new ContextProvisionServiceImpl(
             SchedulerFactory.getInstance().getScheduler(),
@@ -46,6 +47,7 @@ public class JobOrchestrationProvisionAutoConfiguration {
             jobProvisionModuleRestService,
             contextInstanceRegistrationService,
             contextProfileService,
+            emailNotificationDetailsService,
             uploadProvisionJobs
         );
     }

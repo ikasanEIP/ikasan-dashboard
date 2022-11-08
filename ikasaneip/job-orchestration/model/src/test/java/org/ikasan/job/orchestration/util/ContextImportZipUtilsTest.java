@@ -1,12 +1,12 @@
 package org.ikasan.job.orchestration.util;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 
@@ -165,4 +165,75 @@ public class ContextImportZipUtilsTest {
         }
     }
 
+    @Test
+    public void should_unzip_file_context_and_no_jobs_no_notification() {
+        try {
+            InputStream inputStream = new ClassPathResource("data/zip/CONTEXT-NOT-SO-COMPLEX-EMPTY-NOTIFICATION.zip").getInputStream();
+            ContextBundle contextBundle = ContextImportZipUtils.extractZipFile(inputStream);
+
+            ContextTemplate contextTemplate = contextBundle.getContextTemplate();
+            assertNotNull(contextTemplate);
+            assertEquals("CONTEXT-NOT-SO-COMPLEX-EMPTY-NOTIFICATION", contextTemplate.getName());
+
+            List<SchedulerJob> jobs = contextBundle.getSchedulerJobs();
+            assertEquals(0, jobs.size());
+
+            List<EmailNotificationDetails> notification = contextBundle.getEmailNotificationDetails();
+            assertEquals(0, notification.size());
+        } catch (Exception e) {
+            fail("Got exception " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void should_unzip_file_context_and_jobs_and_notification() {
+        try {
+            InputStream inputStream = new ClassPathResource("data/zip/CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS.zip").getInputStream();
+            ContextBundle contextBundle = ContextImportZipUtils.extractZipFile(inputStream);
+
+            ContextTemplate contextTemplate = contextBundle.getContextTemplate();
+            assertNotNull(contextTemplate);
+            assertEquals("CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS", contextTemplate.getName());
+
+            List<SchedulerJob> jobs = contextBundle.getSchedulerJobs();
+            assertEquals(3, jobs.size());
+
+            int count = 0;
+            for (SchedulerJob schedulerJob : jobs) {
+                if (schedulerJob instanceof FileEventDrivenJob) {
+                    FileEventDrivenJob job = (FileEventDrivenJob) schedulerJob;
+                    assertEquals("jobName2", job.getJobName());
+                    count++;
+                } else if (schedulerJob instanceof QuartzScheduleDrivenJob) {
+                    QuartzScheduleDrivenJob job = (QuartzScheduleDrivenJob) schedulerJob;
+                    assertEquals("jobName3", job.getJobName());
+                    count++;
+                } else if (schedulerJob instanceof InternalEventDrivenJob) {
+                    InternalEventDrivenJob job = (InternalEventDrivenJob) schedulerJob;
+                    assertEquals("jobName1", job.getJobName());
+                    count++;
+                }
+            }
+
+            assertEquals(3, count);
+
+            List<EmailNotificationDetails> notification = contextBundle.getEmailNotificationDetails();
+            assertEquals(2, notification.size());
+
+            assertEquals("CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS", notification.get(0).getContextName());
+            assertEquals("CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS", notification.get(0).getChildContextName());
+            if (!(notification.get(0).getJobName().equals("jobName1") || notification.get(0).getJobName().equals("jobName3"))) {
+                fail(notification.get(0).getJobName() + " is not equal to jobName1 or jobName3");
+            }
+
+            assertEquals("CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS", notification.get(1).getContextName());
+            assertEquals("CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS", notification.get(1).getChildContextName());
+            if (!(notification.get(1).getJobName().equals("jobName1") || notification.get(1).getJobName().equals("jobName3"))) {
+                fail(notification.get(1).getJobName() + " is not equal to jobName1 or jobName3");
+            }
+
+        } catch (Exception e) {
+            fail("Got exception " + e.getMessage());
+        }
+    }
 }
