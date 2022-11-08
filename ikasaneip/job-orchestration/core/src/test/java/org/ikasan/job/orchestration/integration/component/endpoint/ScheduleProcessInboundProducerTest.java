@@ -95,6 +95,22 @@ public class ScheduleProcessInboundProducerTest {
         scheduleProcessInboundProducer.invoke(ObjectMapperFactory.newInstance().writeValueAsString(bigQueueMessage));
     }
 
+    @Test(expected = InvalidContextInstanceIdException.class)
+    public void test_invoke_exception_null_context_instance_id_in_scheduler_event() throws IOException {
+        BigQueueMessageImpl<String> bigQueueMessage = new BigQueueMessageImpl();
+        ContextualisedScheduledProcessEventImpl contextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
+        contextualisedScheduledProcessEvent.setContextInstanceId(null);
+
+        bigQueueMessage.setMessage(ObjectMapperFactory.newInstance().writeValueAsString(contextualisedScheduledProcessEvent));
+
+        ScheduleProcessInboundProducer scheduleProcessInboundProducer = new ScheduleProcessInboundProducer(transactionManager);
+        ScheduleProcessInboundProducerConfiguration configuration = new ScheduleProcessInboundProducerConfiguration();
+        configuration.setIgnoreErrors(false);
+        scheduleProcessInboundProducer.setConfiguration(configuration);
+
+        scheduleProcessInboundProducer.invoke(ObjectMapperFactory.newInstance().writeValueAsString(bigQueueMessage));
+    }
+
     @Test(expected = EndpointException.class)
     public void test_invoke_exception_bad_inbound_message() throws IOException {
         when(contextMachine.getContext()).thenReturn(contextInstance);
