@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 public class SolrEmailNotificationDetailsDaoTest extends SolrTestCaseJ4 {
 
@@ -75,7 +76,8 @@ public class SolrEmailNotificationDetailsDaoTest extends SolrTestCaseJ4 {
 
             EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
             emailNotificationDetails.setJobName("job-1");
-            emailNotificationDetails.setContextName("context-1");
+            emailNotificationDetails.setContextName("parent-context-1");
+            emailNotificationDetails.setChildContextName("context-1");
             emailNotificationDetails.setMonitorType("ERROR");
             emailNotificationDetails.setEmailSendTo(Arrays.asList("to-1", "to-2"));
             emailNotificationDetails.setEmailNotificationTemplateParameters(emailTemplateParameters);
@@ -113,7 +115,8 @@ public class SolrEmailNotificationDetailsDaoTest extends SolrTestCaseJ4 {
 
             EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
             emailNotificationDetails.setJobName("job-1");
-            emailNotificationDetails.setContextName("context-1");
+            emailNotificationDetails.setContextName("parent-context-1");
+            emailNotificationDetails.setChildContextName("context-1");
             emailNotificationDetails.setMonitorType("ERROR");
             emailNotificationDetails.setEmailSendTo(Arrays.asList("to-1", "to-2"));
             emailNotificationDetails.setEmailBody("email-body-1");
@@ -131,10 +134,43 @@ public class SolrEmailNotificationDetailsDaoTest extends SolrTestCaseJ4 {
             Assert.assertEquals(1, found.getResultList().size());
 
             Assert.assertEquals("job-1", found.getResultList().get(0).getEmailNotificationDetails().getJobName());
-            Assert.assertEquals("context-1", found.getResultList().get(0).getEmailNotificationDetails().getContextName());
+            Assert.assertEquals("parent-context-1", found.getResultList().get(0).getEmailNotificationDetails().getContextName());
+            Assert.assertEquals("context-1", found.getResultList().get(0).getEmailNotificationDetails().getChildContextName());
             Assert.assertEquals("email-body-1", found.getResultList().get(0).getEmailNotificationDetails().getEmailBody());
             Assert.assertEquals("email-subject-1", found.getResultList().get(0).getEmailNotificationDetails().getEmailSubject());
             Assert.assertEquals(false, found.getResultList().get(0).getEmailNotificationDetails().isHtml());
+        }
+    }
+
+    @Test
+    public void test_delete_by_context_id() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            this.addRecords("Context-One", 10);
+            this.addRecords("Context-Two", 15);
+            this.addRecords("Context-Three", 5);
+
+            SearchResults<EmailNotificationDetailsRecord> found =  this.dao.findAll(100,0);
+            Assert.assertEquals(30, found.getResultList().size());
+
+            this.dao.deleteByContextName("Context-One");
+            found =  this.dao.findAll(100,0);
+            Assert.assertEquals(20, found.getResultList().size());
+
+            this.dao.deleteByContextName("Context-Three");
+            found =  this.dao.findAll(100,0);
+            Assert.assertEquals(15, found.getResultList().size());
+
+            this.dao.deleteByContextName("Context-Three"); // Delete Context-Three again, but it will not do anything
+            found =  this.dao.findAll(100,0);
+            Assert.assertEquals(15, found.getResultList().size());
+
+            this.dao.deleteByContextName("Context-Two");
+            found =  this.dao.findAll(100,0);
+            Assert.assertEquals(0, found.getResultList().size());
         }
     }
 
@@ -158,5 +194,23 @@ public class SolrEmailNotificationDetailsDaoTest extends SolrTestCaseJ4 {
         return getClass().getResourceAsStream(fileName);
     }
 
+    private void addRecords(String contextName, int size) {
+        IntStream.range(0, size).forEach(i -> {
+            EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+            emailNotificationDetails.setJobName(contextName + "-job-" + i);
+            emailNotificationDetails.setContextName(contextName);
+            emailNotificationDetails.setChildContextName(contextName + "-child-" + i);
+            emailNotificationDetails.setMonitorType("ERROR");
+            emailNotificationDetails.setEmailSendTo(Arrays.asList("to-1", "to-2"));
+            emailNotificationDetails.setEmailBody("email-body-1");
+            emailNotificationDetails.setEmailSubject("email-subject-1");
+            emailNotificationDetails.setHtml(false);
 
+            SolrEmailNotificationDetailsRecord solrEmailNotificationDetailsRecord = new SolrEmailNotificationDetailsRecord();
+            solrEmailNotificationDetailsRecord.setEmailNotificationDetails(emailNotificationDetails);
+            solrEmailNotificationDetailsRecord.setModifiedBy("ikasan");
+
+            this.dao.save(solrEmailNotificationDetailsRecord);
+        });
+    }
 }

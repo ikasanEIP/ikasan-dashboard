@@ -12,6 +12,8 @@ public class SolrEmailNotificationDetails implements EmailNotificationDetails {
 
     private String contextName;
 
+    private String childContextName;
+
     private String monitorType;
 
     private Map<String,String> emailNotificationTemplateParameters;
@@ -37,7 +39,7 @@ public class SolrEmailNotificationDetails implements EmailNotificationDetails {
     public SolrEmailNotificationDetails() {
     }
 
-    public SolrEmailNotificationDetails(String jobName, String contextName, String monitorType, Map<String,String> emailNotificationTemplateParameters, List<String> emailSendTo,
+    public SolrEmailNotificationDetails(String jobName, String contextName, String childContextName, String monitorType, Map<String,String> emailNotificationTemplateParameters, List<String> emailSendTo,
                                         List<String> emailSendCc, List<String> emailSendBcc, String emailSubject, String emailBody, String emailSubjectTemplate,
                                         String emailBodyTemplate, String attachment, boolean isHtml) {
         this.jobName = jobName;
@@ -53,6 +55,7 @@ public class SolrEmailNotificationDetails implements EmailNotificationDetails {
         this.attachment = attachment;
         this.isHtml = isHtml;
         this.contextName = contextName;
+        this.childContextName = childContextName;
     }
 
     public String getJobName() {
@@ -151,6 +154,14 @@ public class SolrEmailNotificationDetails implements EmailNotificationDetails {
         this.contextName = contextName;
     }
 
+    public String getChildContextName() {
+        return childContextName;
+    }
+
+    public void setChildContextName(String childContextName) {
+        this.childContextName = childContextName;
+    }
+
     @Override
     public Map<String,String> getEmailNotificationTemplateParameters() {
         if (emailNotificationTemplateParameters == null) {
@@ -169,6 +180,7 @@ public class SolrEmailNotificationDetails implements EmailNotificationDetails {
         return "SolrEmailNotificationDetails{" +
             "jobName='" + jobName + '\'' +
             ", contextName=" + contextName +
+            ", childContextName=" + childContextName +
             ", monitorType=" + monitorType +
             ", emailNotificationTemplateParameters=" + emailNotificationTemplateParameters +
             ", emailSendTo=" + emailSendTo +

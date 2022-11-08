@@ -39,6 +39,7 @@ import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
@@ -125,6 +126,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private ContextProfileService contextProfileService;
 
+    @Resource
+    private EmailNotificationDetailsService emailNotificationDetailsService;
+
     @Value("${ikasan.dashboard.zip.working.directory:.}")
     private String zipWorkingDirectory;
 
@@ -209,7 +213,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.contextTemplateWidget = new ContextTemplateWidget(this.scheduledContextService, ".", this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
-            this.contextProfileService, this.jobProvisionService, userService, securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService);
+            this.contextProfileService, this.jobProvisionService, userService, securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService,
+            this.emailNotificationDetailsService);
         this.contextTemplateWidget.setVisible(false);
 
 

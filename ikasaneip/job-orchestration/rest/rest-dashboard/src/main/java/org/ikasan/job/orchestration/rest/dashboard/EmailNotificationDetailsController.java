@@ -40,13 +40,12 @@
  */
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
-import org.ikasan.job.orchestration.rest.dashboard.model.scheduled.EmailNotificationDetailsRecordImpl;
+import org.ikasan.job.orchestration.rest.dashboard.model.scheduled.EmailNotificationDetailsRecordRestImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.rest.dashboard.model.dto.ErrorDto;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
@@ -95,7 +94,7 @@ public class EmailNotificationDetailsController
         {
             EmailNotificationDetails emailNotificationDetails = this.mapper.readValue(emailNotificationDetailsJsonPayload, EmailNotificationDetailsImpl.class);
 
-            EmailNotificationDetailsRecord record = new EmailNotificationDetailsRecordImpl();
+            EmailNotificationDetailsRecord record = new EmailNotificationDetailsRecordRestImpl();
             record.setEmailNotificationDetails(emailNotificationDetails);
             record.setModifiedTimestamp(new Date().getTime());
 
@@ -133,7 +132,7 @@ public class EmailNotificationDetailsController
             List<EmailNotificationDetailsRecord> records = new ArrayList<>();
 
             for (EmailNotificationDetails details : wrapper.getEmailNotificationDetails()) {
-                EmailNotificationDetailsRecord record = new EmailNotificationDetailsRecordImpl();
+                EmailNotificationDetailsRecord record = new EmailNotificationDetailsRecordRestImpl();
                 record.setEmailNotificationDetails(details);
                 record.setModifiedTimestamp(new Date().getTime());
                 records.add(record);
@@ -152,4 +151,5 @@ public class EmailNotificationDetailsController
         return new ResponseEntity( HttpStatus.OK);
     }
 
+    // TODO should we add a delete??? Maybe not required
 }

@@ -10,6 +10,7 @@ public class EmailNotificationDetailsImpl implements EmailNotificationDetails {
 
     private String jobName;
     private String contextName;
+    private String childContextName;
     private String monitorType;
     private Map<String,String> emailNotificationTemplateParameters;
     private List<String> emailSendTo;
@@ -118,6 +119,14 @@ public class EmailNotificationDetailsImpl implements EmailNotificationDetails {
         this.contextName = contextName;
     }
 
+    public String getChildContextName() {
+        return childContextName;
+    }
+
+    public void setChildContextName(String childContextName) {
+        this.childContextName = childContextName;
+    }
+
     @Override
     public Map<String,String> getEmailNotificationTemplateParameters() {
         if (emailNotificationTemplateParameters == null) {
@@ -136,6 +145,7 @@ public class EmailNotificationDetailsImpl implements EmailNotificationDetails {
         return "EmailNotificationDetailsImpl{" +
             "jobName='" + jobName + '\'' +
             ", contextName='" + contextName + '\'' +
+            ", childContextName='" + childContextName + '\'' +
             ", monitorType='" + monitorType + '\'' +
             ", emailNotificationTemplateParameters=" + emailNotificationTemplateParameters +
             ", emailSendTo=" + emailSendTo +

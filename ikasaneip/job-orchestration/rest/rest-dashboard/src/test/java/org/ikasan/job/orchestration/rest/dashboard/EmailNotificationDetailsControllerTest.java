@@ -51,7 +51,7 @@ public class EmailNotificationDetailsControllerTest extends AbstractRestMvcTest
     @Autowired
     WebApplicationContext webApplicationContext;
     @Autowired
-    EmailNotificationDetailsService<EmailNotificationDetailsRecord> emailNotificationDetailsService;
+    EmailNotificationDetailsService emailNotificationDetailsService;
 
     @BeforeEach
     @Before
@@ -96,7 +96,8 @@ public class EmailNotificationDetailsControllerTest extends AbstractRestMvcTest
         List<EmailNotificationDetails> emailNotificationDetails = new ArrayList<>();
 
         EmailNotificationDetails emailDetails = new EmailNotificationDetailsImpl();
-        emailDetails.setContextName("context-1");
+        emailDetails.setContextName("parent-context-1");
+        emailDetails.setChildContextName("context-1");
         emailDetails.setJobName("job-1");
         emailDetails.setEmailBody("body-1");
         emailDetails.setEmailSubject("subject-1");

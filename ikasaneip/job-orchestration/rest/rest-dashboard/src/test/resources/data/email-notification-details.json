@@ -1,6 +1,7 @@
 {
   "jobName" : "job-from-template-1",
-  "contextName" : "context-from-template-1",
+  "contextName" : "parent-context-from-template-1",
+  "childContextName" : "context-from-template-1",
   "monitorType" : "ERROR",
   "emailNotificationTemplateParameters" : {
     "EMAIL_BODY_TEXT" : "body-text-from-template-1",

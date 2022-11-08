@@ -42,6 +42,7 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -49,6 +50,7 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
@@ -74,6 +76,8 @@ public class ContextTemplateWidget extends Div {
     private SchedulerJobService schedulerJobService;
     private String zipWorkingDirectory;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
+    private EmailNotificationDetailsService emailNotificationDetailsService;
+
     private SubMenu activeContextSubMenu;
 
     /**
@@ -87,7 +91,8 @@ public class ContextTemplateWidget extends Div {
                                  LogStreamingService logStreamingService, ScheduledContextInstanceService scheduledContextInstanceService, SchedulerJobInstanceService schedulerJobInstanceService,
                                  JobInitiationService jobInitiationService, String zipWorkingDirectory, ContextProvisionService contextProvisionService,
                                  ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
-                                 SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs, ContextInstanceRegistrationService contextInstanceRegistrationService) {
+                                 SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs, ContextInstanceRegistrationService contextInstanceRegistrationService,
+                                 EmailNotificationDetailsService emailNotificationDetailsService) {
 
         this.scheduledContextService = scheduledContextService;
         this.schedulerJobService = schedulerJobService;
@@ -96,6 +101,7 @@ public class ContextTemplateWidget extends Div {
         this.jobProvisionService = jobProvisionService;
         this.jobUtilsService = jobUtilsService;
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
+        this.emailNotificationDetailsService = emailNotificationDetailsService;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
@@ -250,6 +256,7 @@ public class ContextTemplateWidget extends Div {
                             this.schedulerJobService.deleteByContextName(scheduledContextRecord.getContextName());
                             this.scheduledContextService.deleteContext(scheduledContextRecord.getContextName());
                             this.contextInstanceRegistrationService.deRegister(scheduledContextRecord.getContextName());
+                            this.emailNotificationDetailsService.deleteByContextName(scheduledContextRecord.getContextName());
 
                             current.access(() -> {
                                 this.contextTemplateFilteringGrid.getDataProvider().refreshAll();
@@ -303,6 +310,7 @@ public class ContextTemplateWidget extends Div {
                         scheduledContextRecord.getContext(),
                         this.zipWorkingDirectory,
                         this.schedulerJobService,
+                        this.emailNotificationDetailsService,
                         50 // limit to loop searching solr
                     );
                     return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
