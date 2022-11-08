@@ -44,7 +44,7 @@ public class SolrEmailNotificationDetailsDaoImpl extends SolrDaoBase<EmailNotifi
 
         EmailNotificationDetails emailNotificationDetails = emailNotificationDetailsRecord.getEmailNotificationDetails();
 
-        document.addField(ID, emailNotificationDetails.getJobName()+"_"+emailNotificationDetails.getChildContextName()+"_"+emailNotificationDetails.getMonitorType() );
+        document.addField(ID, generateId(emailNotificationDetails.getJobName(), emailNotificationDetails.getChildContextName(),emailNotificationDetails.getMonitorType()) );
         document.addField(MODULE_NAME, emailNotificationDetails.getJobName()); // JOB NAME
         document.addField(COMPONENT_NAME, emailNotificationDetails.getContextName()); // CONTEXT NAME
         document.addField(RELATED_EVENT, emailNotificationDetails.getMonitorType()); // MONITOR TYPE
@@ -96,8 +96,8 @@ public class SolrEmailNotificationDetailsDaoImpl extends SolrDaoBase<EmailNotifi
     }
 
     @Override
-    public EmailNotificationDetailsRecord findByJobNameAndMonitorType(String jobName, String contextName, String monitorType) {
-        SolrQuery query = super.buildIdQuery(jobName+"_"+contextName+"_"+monitorType, EMAIL_NOTIFICATION_DETAILS);
+    public EmailNotificationDetailsRecord findByJobNameAndMonitorType(String jobName, String childContextName, String monitorType) {
+        SolrQuery query = super.buildIdQuery(generateId(jobName, childContextName, monitorType), EMAIL_NOTIFICATION_DETAILS);
 
         logger.debug("query: " + query);
 
@@ -122,5 +122,22 @@ public class SolrEmailNotificationDetailsDaoImpl extends SolrDaoBase<EmailNotifi
         queryBuffer.append("\"").append(contextName).append("\" ");
         logger.debug("deleteByContextName query: " + queryBuffer.toString());
         super.deleteByQuery(queryBuffer.toString());
+    }
+
+    @Override
+    public void deleteByJobNameAndMonitorType(String jobName, String childContextName, String monitorType) {
+        logger.debug("deleteByJobNameAndMonitorType id [{}] and type [{}]",generateId(jobName, childContextName, monitorType), EMAIL_NOTIFICATION_DETAILS);
+        super.removeById(EMAIL_NOTIFICATION_DETAILS, generateId(jobName, childContextName, monitorType));
+    }
+
+    /**
+     * Generates ID so that the format is correct
+     * @param jobName jobName
+     * @param childContextName childContextName
+     * @param monitorType of Type org.ikasan.job.orchestration.model.notification.MonitorType
+     * @return format = jobName_childContextName_monitorType
+     */
+    private static String generateId(String jobName, String childContextName, String monitorType) {
+        return jobName+"_"+childContextName+"_"+monitorType;
     }
 }
