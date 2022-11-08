@@ -957,6 +957,8 @@ public class ContextMachine {
                     return;
                 }
 
+                String stringEvent = new String(event);
+                logger.info(stringEvent);
                 bigQueueMessage = objectMapper.readValue(event, BigQueueMessageImpl.class);
                 String messageAsString = new String(objectMapper.writeValueAsBytes(bigQueueMessage.getMessage()));
                 SchedulerJobInitiationEvent schedulerJobInitiationEvent

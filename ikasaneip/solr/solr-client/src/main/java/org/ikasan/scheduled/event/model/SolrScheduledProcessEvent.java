@@ -1,5 +1,8 @@
 package org.ikasan.scheduled.event.model;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.ikasan.spec.scheduled.event.model.Outcome;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 
 import java.util.Objects;
@@ -18,6 +21,7 @@ public class SolrScheduledProcessEvent implements ScheduledProcessEvent<Outcome,
     private long fireTime;
     private long nextFireTime;
     private boolean successful;
+    private boolean jobStarting;
     private long completionTime;
     private int returnCode;
     private Outcome outcome;
@@ -185,12 +189,12 @@ public class SolrScheduledProcessEvent implements ScheduledProcessEvent<Outcome,
 
     @Override
     public boolean isJobStarting() {
-        return false;
+        return this.jobStarting;
     }
 
     @Override
     public void setJobStarting(boolean jobStarting) {
-
+        this.jobStarting = jobStarting;
     }
 
     @Override
@@ -213,40 +217,11 @@ public class SolrScheduledProcessEvent implements ScheduledProcessEvent<Outcome,
         return this.dryRunParameters;
     }
 
-    //    @Override
-//    public String getContextId() {
-//        return null;
-//    }
-//
-//    @Override
-//    public void setContextId(String contextId) {
-//
-//    }
-//
-//    @Override
-//    public String getContextInstanceId() {
-//        return null;
-//    }
-//
-//    @Override
-//    public void setContextInstanceId(String contextInstanceId) {
-//
-//    }
+
 
     @Override
     public String toString() {
-        return "ScheduledProcessEvent{" +
-            "agentName='" + agentName + '\'' +
-            ", jobName='" + jobName + '\'' +
-            ", jobGroup='" + jobGroup + '\'' +
-            ", commandLine='" + commandLine + '\'' +
-            ", resultOutput='" + resultOutput + '\'' +
-            ", resultError='" + resultError + '\'' +
-            ", pid=" + pid +
-            ", user='" + user + '\'' +
-            ", fireTime=" + fireTime +
-            ", nextFireTime=" + nextFireTime +
-            '}';
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 
     @Override
