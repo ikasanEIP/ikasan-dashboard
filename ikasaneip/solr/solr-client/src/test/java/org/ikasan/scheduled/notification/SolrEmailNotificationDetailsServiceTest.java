@@ -169,6 +169,41 @@ public class SolrEmailNotificationDetailsServiceTest extends SolrTestCaseJ4 {
         }
     }
 
+    @Test
+    public void test_delete_by_job_id_context_monitor_type() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan")) {
+            init(server);
+
+            this.addRecords("Context-One", 10);
+            this.addRecords("Context-Two", 15);
+            this.addRecords("Context-Three", 5);
+
+            SearchResults<EmailNotificationDetailsRecord> found =  this.service.findAll(100,0);
+            Assert.assertEquals(30, found.getResultList().size());
+
+            // DELETE one
+            this.service.deleteByJobNameAndMonitorType("Context-One-job-2", "Context-One-child-2", "ERROR");
+            found =  this.service.findAll(100,0);
+            Assert.assertEquals(29, found.getResultList().size());
+
+            //DELETE the same one, nothing changed
+            this.service.deleteByJobNameAndMonitorType("Context-One-job-2", "Context-One-child-2", "ERROR");
+            found =  this.service.findAll(100,0);
+            Assert.assertEquals(29, found.getResultList().size());
+
+            // DELETE one that does not exist, nothing changed
+            this.service.deleteByJobNameAndMonitorType("Context-One-job-5", "Context-One-child-6", "ERROR");
+            found =  this.service.findAll(100,0);
+            Assert.assertEquals(29, found.getResultList().size());
+
+            // DELETE one that does exist
+            this.service.deleteByJobNameAndMonitorType("Context-One-job-5", "Context-One-child-5", "ERROR");
+            found =  this.service.findAll(100,0);
+            Assert.assertEquals(28, found.getResultList().size());
+        }
+    }
+
     public static String TEST_HOME() {
         return getFile("solr/ikasan").getParent();
     }

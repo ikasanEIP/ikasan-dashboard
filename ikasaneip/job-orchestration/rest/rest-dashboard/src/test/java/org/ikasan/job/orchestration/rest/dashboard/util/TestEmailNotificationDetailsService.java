@@ -1,33 +1,39 @@
 package org.ikasan.job.orchestration.rest.dashboard.util;
 
 import org.ikasan.job.orchestration.rest.dashboard.model.scheduled.EmailNotificationDetailsRecordRestImpl;
+import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.search.SearchResults;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TestEmailNotificationDetailsService implements EmailNotificationDetailsService {
 
     private Map<String, EmailNotificationDetailsRecord> cache = new HashMap<>();
 
     @Override
-    public SearchResults findAll(int limit, int offset) {
-        return null;
+    public SearchResults<EmailNotificationDetailsRecord> findAll(int limit, int offset) {
+        List<EmailNotificationDetailsRecord> recordList = new ArrayList<>(cache.values());
+        return new SearchResultsImpl<>(recordList, recordList.size(), 1L);
     }
 
     @Override
     public SearchResults<EmailNotificationDetailsRecord> findByContextName(String contextName, int limit, int offset) {
-        return null;
+        // ignore limit and offset for test implementation
+        List<EmailNotificationDetailsRecord> recordList = new ArrayList<>();
+        for(EmailNotificationDetailsRecord record : cache.values()) {
+            if(contextName.equals(record.getContextName())) {
+                recordList.add(record);
+            }
+        }
+        return new SearchResultsImpl<>(recordList, recordList.size(), 1L);
     }
 
     @Override
-    public EmailNotificationDetailsRecord findByJobNameAndMonitorType(String jobName, String contextName, String monitorType) {
-        return cache.get(jobName+"-"+contextName+"-"+monitorType);
+    public EmailNotificationDetailsRecord findByJobNameAndMonitorType(String jobName, String childContextName, String monitorType) {
+        return cache.get(generateId(jobName, childContextName, monitorType));
     }
 
     @Override
@@ -53,16 +59,36 @@ public class TestEmailNotificationDetailsService implements EmailNotificationDet
 
     @Override
     public void deleteByContextName(String contextName) {
+        Set<String> keys = new HashSet<>();
         cache.forEach((k, v) -> {
-            if (v.getContextName().equals(contextName)) {
-                cache.remove(k);
+            if (contextName.equals(v.getContextName())) {
+                keys.add(k);
             }
         });
+        for (String k : keys) {
+            cache.remove(k);
+        }
     }
 
-    private String createKey(EmailNotificationDetailsRecord emailNotificationDetailsRecord){
-        return emailNotificationDetailsRecord.getEmailNotificationDetails().getJobName()+"-"+
-               emailNotificationDetailsRecord.getEmailNotificationDetails().getChildContextName()+"-"+
-               emailNotificationDetailsRecord.getEmailNotificationDetails().getMonitorType();
+    @Override
+    public void deleteByJobNameAndMonitorType(String jobName, String childContextName, String monitorType) {
+        cache.remove(generateId(jobName, childContextName, monitorType));
+    }
+
+    public String createKey(EmailNotificationDetailsRecord emailNotificationDetailsRecord){
+        return generateId(emailNotificationDetailsRecord.getEmailNotificationDetails().getJobName(),
+                          emailNotificationDetailsRecord.getEmailNotificationDetails().getChildContextName(),
+                          emailNotificationDetailsRecord.getEmailNotificationDetails().getMonitorType());
+    }
+
+    /**
+     * Generates ID so that the format is correct
+     * @param jobName jobName
+     * @param childContextName childContextName
+     * @param monitorType of Type org.ikasan.job.orchestration.model.notification.MonitorType
+     * @return format = jobName_childContextName_monitorType
+     */
+    private static String generateId(String jobName, String childContextName, String monitorType) {
+        return jobName+"_"+childContextName+"_"+monitorType;
     }
 }

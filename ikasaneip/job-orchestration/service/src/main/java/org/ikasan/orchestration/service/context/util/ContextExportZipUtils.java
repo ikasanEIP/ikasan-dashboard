@@ -1,6 +1,7 @@
 package org.ikasan.orchestration.service.context.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
@@ -45,7 +46,7 @@ public final class ContextExportZipUtils {
                                                       int searchLimit) {
         try {
             ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-            //objectMapper.writerWithDefaultPrettyPrinter(); // TODO enable print pretty so we have line separators when creating the zip files
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Export with pretty lines
             String template = objectMapper.writeValueAsString(context);
 
             String contextName = context.getName();
@@ -63,7 +64,7 @@ public final class ContextExportZipUtils {
             Path jobsInternalDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + INTERNAL_DIR);
             Path jobsQuartzDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + QUARTZ_DIR);
             Path notificationDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + NOTIFICATION_DIR);
-            //TODO where is profiles for exporting???
+            //TODO where is profiles for exporting???   
             Files.createDirectories(contextDir);
             Files.createDirectories(jobsDir);
             Files.createDirectories(jobsFileDir);
