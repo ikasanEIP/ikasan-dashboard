@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 public class SolrEmailNotificationDetailsDaoImpl extends SolrDaoBase<EmailNotificationDetailsRecord>
-                        implements EmailNotificationDetailsDao<EmailNotificationDetailsRecord>
+                        implements EmailNotificationDetailsDao
 {
     /**
      * Logger for this class
@@ -30,6 +30,7 @@ public class SolrEmailNotificationDetailsDaoImpl extends SolrDaoBase<EmailNotifi
      */
     public static final String EMAIL_NOTIFICATION_DETAILS = "emailNotificationDetails";
 
+    @Override
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, EmailNotificationDetailsRecord emailNotificationDetailsRecord)
     {
         SolrInputDocument document = new SolrInputDocument();
@@ -43,7 +44,10 @@ public class SolrEmailNotificationDetailsDaoImpl extends SolrDaoBase<EmailNotifi
 
         EmailNotificationDetails emailNotificationDetails = emailNotificationDetailsRecord.getEmailNotificationDetails();
 
-        document.addField(ID, emailNotificationDetails.getJobName()+"_"+emailNotificationDetails.getContextName()+"_"+emailNotificationDetails.getMonitorType() );
+        document.addField(ID, emailNotificationDetails.getJobName()+"_"+emailNotificationDetails.getChildContextName()+"_"+emailNotificationDetails.getMonitorType() );
+        document.addField(MODULE_NAME, emailNotificationDetails.getJobName()); // JOB NAME
+        document.addField(COMPONENT_NAME, emailNotificationDetails.getContextName()); // CONTEXT NAME
+        document.addField(RELATED_EVENT, emailNotificationDetails.getMonitorType()); // MONITOR TYPE
         document.addField(CREATED_DATE_TIME, emailNotificationDetailsRecord.getTimestamp());
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
         document.addField(MODIFIED_BY, emailNotificationDetailsRecord.getModifiedBy());
@@ -74,6 +78,24 @@ public class SolrEmailNotificationDetailsDaoImpl extends SolrDaoBase<EmailNotifi
     }
 
     @Override
+    public SearchResults<EmailNotificationDetailsRecord> findByContextName(String contextName, int limit, int offset) {
+        StringBuffer typeBuffer = new StringBuffer();
+        typeBuffer.append(TYPE + COLON);
+        typeBuffer.append("\"").append(EMAIL_NOTIFICATION_DETAILS).append("\" ");
+        typeBuffer.append(AND).append(" ").append(COMPONENT_NAME).append(COLON); // COMPONENT_NAME = contextName
+        typeBuffer.append("\"").append(contextName).append("\" ");
+
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery(typeBuffer.toString());
+        solrQuery.setRows(limit);
+        solrQuery.setStart(offset);
+
+        logger.debug("query: " + solrQuery);
+
+        return this.findByQuery(solrQuery, SolrEmailNotificationDetailsRecord.class);
+    }
+
+    @Override
     public EmailNotificationDetailsRecord findByJobNameAndMonitorType(String jobName, String contextName, String monitorType) {
         SolrQuery query = super.buildIdQuery(jobName+"_"+contextName+"_"+monitorType, EMAIL_NOTIFICATION_DETAILS);
 
@@ -89,5 +111,16 @@ public class SolrEmailNotificationDetailsDaoImpl extends SolrDaoBase<EmailNotifi
         {
             return null;
         }
+    }
+
+    @Override
+    public void deleteByContextName(String contextName) {
+        StringBuffer queryBuffer = new StringBuffer();
+        queryBuffer.append(TYPE + COLON);
+        queryBuffer.append("\"").append(EMAIL_NOTIFICATION_DETAILS).append("\" ");
+        queryBuffer.append(AND).append(" ").append(COMPONENT_NAME).append(COLON); // COMPONENT_NAME = contextName
+        queryBuffer.append("\"").append(contextName).append("\" ");
+        logger.debug("deleteByContextName query: " + queryBuffer.toString());
+        super.deleteByQuery(queryBuffer.toString());
     }
 }

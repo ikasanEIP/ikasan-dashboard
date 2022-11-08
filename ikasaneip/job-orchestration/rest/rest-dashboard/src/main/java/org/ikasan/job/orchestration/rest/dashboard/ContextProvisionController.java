@@ -85,6 +85,8 @@ public class ContextProvisionController
             .allowIfSubType("org.ikasan.job.orchestration.model.job")
             .allowIfSubType("org.ikasan.job.orchestration.model.context")
             .allowIfSubType("org.ikasan.job.orchestration.model.profile")
+            .allowIfSubType("org.ikasan.job.orchestration.model.notification")
+            .allowIfSubType("org.ikasan.spec.scheduled.notification.model")
             .allowIfSubType("java.util.ArrayList")
             .allowIfSubType("java.util.HashMap")
             .build();
