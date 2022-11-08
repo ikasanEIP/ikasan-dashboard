@@ -47,6 +47,8 @@ public class ContextMachineCache
         logger.debug(String.format("%s attempting to get context using context name[%s]"
             , this, contextName));
 
+        if(contextName == null) return null;
+
         return this.contextInstanceByContextNameCache.get(contextName);
     }
 
@@ -55,11 +57,15 @@ public class ContextMachineCache
         logger.debug(String.format("Attempting to get context using context instance id[%s]"
             , contextInstanceId));
 
+        if(contextInstanceId == null) return null;
+
         return this.contextInstanceByContextInstanceIdCache.get(contextInstanceId);
     }
 
     public boolean containsContextName(String contextName)
     {
+        if(contextName == null) return false;
+
         boolean result = this.contextInstanceByContextNameCache.containsKey(contextName);
         logger.debug(String.format("Check contains[%s] - result [%s]"
             , contextName, result));
@@ -68,6 +74,8 @@ public class ContextMachineCache
 
     public boolean containsInstanceIdentifier(String contextInstanceId)
     {
+        if(contextInstanceId == null) return false;
+
         boolean result = this.contextInstanceByContextInstanceIdCache.containsKey(contextInstanceId);
 
         logger.debug(String.format("Check contains[%s] - result [%s]"

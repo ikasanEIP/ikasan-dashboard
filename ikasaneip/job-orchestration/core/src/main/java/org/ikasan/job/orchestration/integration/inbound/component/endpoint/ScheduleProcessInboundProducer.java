@@ -49,6 +49,11 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
             ContextualisedScheduledProcessEvent contextualisedScheduledProcessEvent
                 = objectMapper.readValue(message, ContextualisedScheduledProcessEventImpl.class);
 
+            if(contextualisedScheduledProcessEvent.getContextInstanceId() == null) {
+                throw new InvalidContextInstanceIdException(String.format("Received scheduler event with null context instance id [%s]." +
+                    " Cache Contents - %s", contextualisedScheduledProcessEvent, ContextMachineCache.instance().toString()));
+            }
+
             ContextMachine contextMachine = ContextMachineCache.instance()
                 .getByContextInstanceId(contextualisedScheduledProcessEvent.getContextInstanceId());
 
@@ -60,7 +65,13 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
             this.scheduledProcessProducerConnectionCallback = new ScheduledProcessProducerConnectionCallbackImpl(payload, contextMachine);
         }
         catch (InvalidContextInstanceIdException e) {
-            throw e;
+            e.printStackTrace();
+            if(this.configuration.isIgnoreErrors()) {
+                logger.info("Ignoring error [{}] for payload [{}]", e.getMessage(), payload);
+            }
+            else {
+                throw e;
+            }
         }
         catch (Exception e) {
             e.printStackTrace();
