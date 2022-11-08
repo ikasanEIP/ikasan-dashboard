@@ -663,7 +663,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         if(instanceStatus.equals(InstanceStatus.COMPLETE)) {
             image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_COMPLETE);
         }
-        else if(instanceStatus.equals(InstanceStatus.RUNNING)) {
+        else if(instanceStatus.equals(InstanceStatus.RUNNING) || instanceStatus.equals(InstanceStatus.SKIPPED_RUNNING)) {
             image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_RUNNING);
         }
         else if(instanceStatus.equals(InstanceStatus.WAITING)) {
@@ -675,7 +675,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         else if(instanceStatus.equals(InstanceStatus.LOCK_QUEUED)) {
             image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_LOCK_QUEUED);
         }
-        else if(instanceStatus.equals(InstanceStatus.SKIPPED)) {
+        else if(instanceStatus.equals(InstanceStatus.SKIPPED) || instanceStatus.equals(InstanceStatus.SKIPPED_COMPLETE)) {
             image.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_SKIPPED);
         }
         else if(instanceStatus.equals(InstanceStatus.ON_HOLD)) {
@@ -1206,9 +1206,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         if(enable != null) {
             if (schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
                 (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
-                    !(schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED) ||
-                        schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
-                        schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)))) {
+                    !(schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED)))) {
                 enable.setVisible(false);
             } else if (schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)) {
                 enable.setVisible(true);
@@ -1220,11 +1218,11 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         if(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
             (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ON_HOLD) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED) ||
-                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
-                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_COMPLETE) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.COMPLETE) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.RUNNING) ||
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_RUNNING) ||
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.SKIPPED_COMPLETE) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.LOCK_QUEUED))) {
             hold.setVisible(false);
         }
@@ -1258,7 +1256,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         reset.setVisible((schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) ||
             schedulerJobInstanceRecord.getType().equals(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE)) &&
             (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.COMPLETE)
-            || schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR)));
+                || schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR)));
 
         Icon submitDownstreamJobs = iconMap.get(SUBMIT_DOWNSTREAM_JOBS_ICON);
         submitDownstreamJobs.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
