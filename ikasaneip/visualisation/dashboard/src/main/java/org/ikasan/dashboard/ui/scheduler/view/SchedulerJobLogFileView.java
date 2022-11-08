@@ -84,8 +84,8 @@ public class SchedulerJobLogFileView extends VerticalLayout implements BeforeEnt
     public void setParameter(BeforeEvent beforeEvent, String param) {
 
         // uuid:childContextName:jobName:isErrorLog
-        if(param.contains(":")) {
-            String[] tokens = param.split(":");
+        if(param.contains(":::")) {
+            String[] tokens = param.split(":::");
             this.uuid = tokens[0];
             this.childContextName = tokens[1];
             this.jobName = tokens[2];

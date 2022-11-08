@@ -23,6 +23,8 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobWrapper;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
@@ -47,6 +49,7 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
     private JobProvisionModuleService jobProvisionModuleRestService;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
     private ContextProfileService contextProfileService;
+    private EmailNotificationDetailsService emailNotificationDetailsService;
     private boolean uploadProvisionJobs;
 
     public ContextProvisionServiceImpl(Scheduler scheduler,
@@ -57,6 +60,7 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
                                        JobProvisionModuleService jobProvisionModuleRestService,
                                        ContextInstanceRegistrationService contextInstanceRegistrationService,
                                        ContextProfileService contextProfileService,
+                                       EmailNotificationDetailsService emailNotificationDetailsService,
                                        boolean uploadProvisionJobs) {
 
         super(scheduler, scheduledJobFactory);
@@ -85,6 +89,10 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
         if (this.contextProfileService == null) {
             throw new IllegalArgumentException("contextProfileService cannot be null!");
         }
+        this.emailNotificationDetailsService = emailNotificationDetailsService;
+        if (this.emailNotificationDetailsService == null) {
+            throw new IllegalArgumentException("emailNotificationDetailsService cannot be null!");
+        }
 
         this.uploadProvisionJobs = uploadProvisionJobs;
     }
@@ -102,6 +110,8 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
             this.deleteAllJobs(contextBundle.getContextTemplate().getName());
             // delete the context profiles
             this.deleteContextProfiles(contextBundle.getContextTemplate().getName());
+            // delete the email notification associated to the context
+            this.deleteEmailNotificationDetailsByContext(contextBundle.getContextTemplate().getName());
             // set job participates in lock flag on relevant jobs
             this.setJobsParticipateInJobLock(contextBundle.getContextTemplate(), contextBundle.getSchedulerJobs());
             // save the jobs
@@ -112,6 +122,11 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
             if(contextBundle.getContextProfiles() != null &&
                 !contextBundle.getContextProfiles().isEmpty()) {
                 this.saveContextProfiles(contextBundle.getContextProfiles());
+            }
+            // provision the email notification associated to the context
+            if(contextBundle.getEmailNotificationDetails() != null &&
+               !contextBundle.getEmailNotificationDetails().isEmpty()) {
+                this.saveEmailNotificationDetails(contextBundle.getEmailNotificationDetails());
             }
             if (this.uploadProvisionJobs) {
                 provisionJobs(contextBundle.getSchedulerJobs());
@@ -129,7 +144,7 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
             }
         } catch (Exception e) {
             String message = String.format("Could not upload context and jobs. Error [%s]", e.getMessage());
-            LOG.warn(message);
+            LOG.warn(message, e);
             throw new RuntimeException(message);
         }
     }
@@ -241,5 +256,13 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
 
     private void deleteContextProfiles(String contextName) {
         this.contextProfileService.deleteByContextName(contextName);
+    }
+
+    private void saveEmailNotificationDetails(List<EmailNotificationDetails> getEmailNotificationDetails) {
+        this.emailNotificationDetailsService.saveEmailNotificationDetails(getEmailNotificationDetails);
+    }
+
+    private void deleteEmailNotificationDetailsByContext(String contextName) {
+        this.emailNotificationDetailsService.deleteByContextName(contextName);
     }
 }

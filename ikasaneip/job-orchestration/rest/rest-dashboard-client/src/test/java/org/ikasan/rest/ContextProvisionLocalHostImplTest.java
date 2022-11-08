@@ -3,10 +3,7 @@ package org.ikasan.rest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.ikasan.job.orchestration.rest.client.ContextProvisionRestServiceImpl;
-import org.ikasan.job.orchestration.rest.client.DashboardRestClientException;
 import org.ikasan.job.orchestration.util.ContextImportZipUtils;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
@@ -14,21 +11,17 @@ import org.ikasan.spec.scheduled.profile.model.ContextProfile;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -49,6 +42,8 @@ public class ContextProvisionLocalHostImplTest extends AbstractTest{
             .allowIfSubType("org.ikasan.job.orchestration.model.job")
             .allowIfSubType("org.ikasan.job.orchestration.model.context")
             .allowIfSubType("org.ikasan.job.orchestration.model.profile")
+            .allowIfSubType("org.ikasan.job.orchestration.model.notification")
+            .allowIfSubType("org.ikasan.spec.scheduled.notification.model")
             .allowIfSubType("java.util.ArrayList")
             .allowIfSubType("java.util.HashMap")
             .build();
@@ -72,6 +67,7 @@ public class ContextProvisionLocalHostImplTest extends AbstractTest{
             new HttpComponentsClientHttpRequestFactory(), "/rest/provision/context");
 
         InputStream inputStream = new ClassPathResource("data/SAMPLE_CONTEXT/CONTEXT-1793100514_WITH-PROFILES.zip").getInputStream();
+        //InputStream inputStream = new ClassPathResource("data/SAMPLE_CONTEXT/CONTEXT-1793100514-TEST.zip").getInputStream();
         ContextBundle contextBundle = ContextImportZipUtils.extractZipFile(inputStream);
 
         ContextProfileRecord contextProfileRecord = contextBundle.getContextProfiles().get(0);

@@ -91,13 +91,13 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
             }
             else if (!event.getPreviousStatus().name().equalsIgnoreCase(InstanceStatus.RUNNING.name()) &&
                        event.getNewStatus().name().equalsIgnoreCase(InstanceStatus.RUNNING.name())) {
-                GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(event.getSchedulerJobInstance().getContextName(),
+                GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(event.getSchedulerJobInstance().getChildContextName(),
                     event.getSchedulerJobInstance().getJobName(), event.getSchedulerJobInstance().getContextInstanceId(), MonitorType.START, event.getNewStatus());
 
                 invoke(genericNotificationDetails);
             }
             else if (event.getNewStatus().name().equalsIgnoreCase(InstanceStatus.COMPLETE.name())) {
-                GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(event.getSchedulerJobInstance().getContextName(),
+                GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(event.getSchedulerJobInstance().getChildContextName(),
                     event.getSchedulerJobInstance().getJobName(), event.getSchedulerJobInstance().getContextInstanceId(), MonitorType.COMPLETE, event.getNewStatus());
 
                 invoke(genericNotificationDetails);

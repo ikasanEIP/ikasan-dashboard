@@ -6,14 +6,15 @@ import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.job.*;
+import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
 import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
-import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -83,6 +84,10 @@ public class ContextService {
 
     public ContextProfileRecord getContextProfileRecord(String contextProfileRecord) throws JsonProcessingException {
         return objectMapper.readValue(contextProfileRecord, ContextProfileRecordImpl.class);
+    }
+
+    public EmailNotificationDetails getEmailNotificationDetails(String emailNotificationDetails) throws JsonProcessingException {
+        return objectMapper.readValue(emailNotificationDetails, EmailNotificationDetailsImpl.class);
     }
 
     public ContextTemplate getParent(ContextTemplate context, ContextTemplate currentContext) {
