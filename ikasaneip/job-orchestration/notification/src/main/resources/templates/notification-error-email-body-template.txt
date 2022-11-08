@@ -1,5 +1,5 @@
 [( ${emailNotificationDetails.emailNotificationTemplateParameters.EMAIL_BODY_TEXT} )]
 
-You can access to log file : [( ${emailNotificationDetails.emailNotificationTemplateParameters.EMAIL_BODY_LINK_1} )]
+You can access the log file : [( ${emailNotificationDetails.emailNotificationTemplateParameters.EMAIL_BODY_LINK_1} )]
 
 Error log file : [( ${emailNotificationDetails.emailNotificationTemplateParameters.EMAIL_BODY_LINK_2} )]

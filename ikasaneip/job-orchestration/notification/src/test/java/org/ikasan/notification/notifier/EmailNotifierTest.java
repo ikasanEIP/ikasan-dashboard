@@ -239,8 +239,8 @@ public class EmailNotifierTest {
         BodyPart bodyPart = mimeMultipart.getBodyPart(0);
         String content = (String)bodyPart.getContent();
         Assert.assertTrue(content.contains("from template body text!"));
-        Assert.assertTrue(content.contains("You can access to log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:context-id-1:job-1:false"));
-        Assert.assertTrue(content.contains("Error log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:context-id-1:job-1:true"));
+        Assert.assertTrue(content.contains("You can access to log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:::context-id-1:::job-1:::false"));
+        Assert.assertTrue(content.contains("Error log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:::context-id-1:::job-1:::true"));
         Assert.assertEquals("subject-1", mimeMessage.getSubject());
 
     }

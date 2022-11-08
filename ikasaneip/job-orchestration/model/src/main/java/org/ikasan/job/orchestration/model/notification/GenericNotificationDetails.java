@@ -4,23 +4,23 @@ import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 
 public class GenericNotificationDetails {
 
-    private String contextName;
+    private String childContextName;
     private String jobName;
     private String contextInstanceId;
     private MonitorType monitorType;
     private InstanceStatus status;
     private String message;
 
-    public GenericNotificationDetails(String contextName, String jobName, String contextInstanceId, MonitorType monitorType, InstanceStatus status) {
-        this.contextName = contextName;
+    public GenericNotificationDetails(String childContextName, String jobName, String contextInstanceId, MonitorType monitorType, InstanceStatus status) {
+        this.childContextName = childContextName;
         this.jobName = jobName;
         this.monitorType = monitorType;
         this.status = status;
         this.contextInstanceId = contextInstanceId;
     }
 
-    public String getContextName() {
-        return contextName;
+    public String getChildContextName() {
+        return childContextName;
     }
 
     public MonitorType getMonitorType() {

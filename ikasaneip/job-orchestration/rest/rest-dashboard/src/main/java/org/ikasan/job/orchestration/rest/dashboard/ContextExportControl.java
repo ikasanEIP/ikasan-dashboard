@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -30,8 +31,11 @@ public class ContextExportControl {
 
     private ScheduledContextService scheduledContextService;
     private SchedulerJobService schedulerJobService;
+    private EmailNotificationDetailsService emailNotificationDetailsService;
 
-    public ContextExportControl(ScheduledContextService scheduledContextService, SchedulerJobService schedulerJobService) {
+    public ContextExportControl(ScheduledContextService scheduledContextService,
+                                SchedulerJobService schedulerJobService,
+                                EmailNotificationDetailsService emailNotificationDetailsService) {
         this.scheduledContextService = scheduledContextService;
         if(this.scheduledContextService == null) {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
@@ -40,6 +44,11 @@ public class ContextExportControl {
         this.schedulerJobService = schedulerJobService;
         if(this.schedulerJobService == null) {
             throw new IllegalArgumentException("schedulerJobService cannot be null!");
+        }
+
+        this.emailNotificationDetailsService = emailNotificationDetailsService;
+        if(this.emailNotificationDetailsService == null) {
+            throw new IllegalArgumentException("emailNotificationDetailsService cannot be null!");
         }
     }
 
@@ -62,6 +71,7 @@ public class ContextExportControl {
                 scheduledContextService.findByName(contextName).getContext(),
                 System.currentTimeMillis() + "-", // make sure directory is unique due to same request running at same time
                 schedulerJobService,
+                emailNotificationDetailsService,
                 50);
 
             // If nothing found throw null pointer exception.

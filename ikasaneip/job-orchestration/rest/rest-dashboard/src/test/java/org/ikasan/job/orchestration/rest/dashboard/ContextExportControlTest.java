@@ -9,10 +9,14 @@ import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
+import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
+import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -52,6 +56,9 @@ public class ContextExportControlTest extends AbstractRestMvcTest{
     @MockBean
     private SchedulerJobService schedulerJobService;
 
+    @MockBean
+    private EmailNotificationDetailsService emailNotificationDetailsService;
+
     private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     @Autowired
@@ -77,6 +84,9 @@ public class ContextExportControlTest extends AbstractRestMvcTest{
 
         doReturn(searchResults).when(schedulerJobService).findByContext(contextName, 50, 0);
 
+        //Email Notification
+        searchResults = new SearchResultsImpl(createListOfEmailNotification(contextName), 0, 100);
+        doReturn(searchResults).when(emailNotificationDetailsService).findByContextName(contextName, 50, 0);
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/export/context/" + contextName)).andReturn();
 
@@ -107,6 +117,9 @@ public class ContextExportControlTest extends AbstractRestMvcTest{
 
         doReturn(searchResults).when(schedulerJobService).findByContext(contextName, 50, 0);
 
+        //Email Notification
+        searchResults = new SearchResultsImpl(createListOfEmailNotification(contextName), 0, 100);
+        doReturn(searchResults).when(emailNotificationDetailsService).findByContextName(contextName, 50, 0);
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/export/context/" + contextName)).andReturn();
 
@@ -136,6 +149,9 @@ public class ContextExportControlTest extends AbstractRestMvcTest{
 
         doReturn(searchResults).when(schedulerJobService).findByContext(contextName, 50, 0);
 
+        //Email Notification
+        searchResults = new SearchResultsImpl(createListOfEmailNotification(contextName), 0, 100);
+        doReturn(searchResults).when(emailNotificationDetailsService).findByContextName(contextName, 50, 0);
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/export/context/DOESNOTEXIST")).andReturn();
 
@@ -194,5 +210,26 @@ public class ContextExportControlTest extends AbstractRestMvcTest{
             schedulerJobRecords.add(quartzRecord);
         }
         return schedulerJobRecords;
+    }
+
+    private static List<EmailNotificationDetailsRecord> createListOfEmailNotification(String contextName) {
+        List<EmailNotificationDetailsRecord> records = new ArrayList<>();
+
+        // Create 3 notification
+        for (int i = 0; i < 3; i++) {
+            SolrEmailNotificationDetailsRecord r = new SolrEmailNotificationDetailsRecord();
+            r.setContextName(contextName);
+            r.setJobName("jobName-" + i);
+            r.setId("jobName-" + i + "-" + contextName + "-child-" + i + "-ERROR");
+            r.setMonitorType("ERROR");
+
+            SolrEmailNotificationDetails email = new SolrEmailNotificationDetails();
+            email.setContextName(contextName);
+            email.setChildContextName(contextName + "-child-" + i);
+            email.setJobName("jobName-" + i);
+            r.setEmailNotificationDetails(email);
+            records.add(r);
+        }
+        return records;
     }
 }

@@ -55,7 +55,7 @@ import java.util.Date;
 
 public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier<GenericNotificationDetails> {
 
-    private EmailNotificationDetailsService<EmailNotificationDetailsRecord> emailNotificationDetailsService;
+    private EmailNotificationDetailsService emailNotificationDetailsService;
     private NotificationSendAuditService<NotificationSendAuditRecord> notificationSendAuditService;
     private TemplateEngine templateEngine;
     private String mailLinkUrl;
@@ -70,13 +70,13 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
     @Override
     public void invoke(GenericNotificationDetails notificationDetails) {
         EmailNotificationDetailsRecord emailNotificationDetailsRecord = emailNotificationDetailsService.
-                        findByJobNameAndMonitorType(notificationDetails.getJobName(), notificationDetails.getContextName(), notificationDetails.getMonitorType().name());
+                        findByJobNameAndMonitorType(notificationDetails.getJobName(), notificationDetails.getChildContextName(), notificationDetails.getMonitorType().name());
 
         if (emailNotificationDetailsRecord != null) {
             EmailNotificationDetails emailNotificationDetails = emailNotificationDetailsRecord.getEmailNotificationDetails();
 
             NotificationSendAuditRecord notificationSendAuditRecord = notificationSendAuditService.find(notificationDetails.getContextInstanceId(),
-                notificationDetails.getContextName(), notificationDetails.getJobName(), notificationDetails.getMonitorType().name(), NotificationType.EMAIL.name());
+                notificationDetails.getChildContextName(), notificationDetails.getJobName(), notificationDetails.getMonitorType().name(), NotificationType.EMAIL.name());
 
             if (notificationSendAuditRecord == null || notificationSendAuditRecord.getNotificationSendAudit() == null ||
                   !notificationSendAuditRecord.getNotificationSendAudit().isNotificationSend()) {
@@ -101,7 +101,7 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
                 NotificationSendAudit notificationSendAudit = new SolrNotificationSendAudit();
                 notificationSendAudit.setContextInstanceId(notificationDetails.getContextInstanceId());
                 notificationSendAudit.setJobName(notificationDetails.getJobName());
-                notificationSendAudit.setContextName(notificationDetails.getContextName());
+                notificationSendAudit.setContextName(notificationDetails.getChildContextName());
                 notificationSendAudit.setMonitorType(notificationDetails.getMonitorType().name());
                 notificationSendAudit.setNotifierType(NotificationType.EMAIL.name());
                 notificationSendAudit.setNotificationSend(true);
@@ -116,7 +116,7 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
     }
 
     private String createMailLink(GenericNotificationDetails notificationDetails, boolean isErrorLog) {
-        // http://localhost:9090/schedulerJobLogFile/526879ab-58e7-4cd7-8661-2d48baf47d40:CONTEXT-140537370:97656185:true
-        return mailLinkUrl+notificationDetails.getContextInstanceId()+":"+notificationDetails.getContextName()+":"+notificationDetails.getJobName()+":"+isErrorLog;
+        // http://localhost:9090/schedulerJobLogFile/526879ab-58e7-4cd7-8661-2d48baf47d40:::CONTEXT-140537370:::97656185:::true
+        return mailLinkUrl+notificationDetails.getContextInstanceId()+":::"+notificationDetails.getChildContextName()+":::"+notificationDetails.getJobName()+":::"+isErrorLog;
     }
 }

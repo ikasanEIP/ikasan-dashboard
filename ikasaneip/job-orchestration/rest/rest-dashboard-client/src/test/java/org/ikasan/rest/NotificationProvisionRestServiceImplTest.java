@@ -65,7 +65,8 @@ public class NotificationProvisionRestServiceImplTest extends AbstractTest {
         List<EmailNotificationDetails> emailNotificationDetails = new ArrayList<>();
 
         EmailNotificationDetails details = new EmailNotificationDetailsImpl();
-        details.setContextName("context-1");
+        details.setContextName("parent-context-1");
+        details.setChildContextName("context-1");
         details.setJobName("job-1");
         details.setEmailBody("body-1");
         details.setEmailSubject("subject-1");

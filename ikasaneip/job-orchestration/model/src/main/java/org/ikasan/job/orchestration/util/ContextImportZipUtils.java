@@ -1,18 +1,17 @@
 package org.ikasan.job.orchestration.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.ikasan.job.orchestration.model.context.ContextBundleImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +29,7 @@ public final class ContextImportZipUtils {
     public static ContextBundle extractZipFile(InputStream inputStream) {
         List<SchedulerJob> contextJobs = new ArrayList<>();
         List<ContextProfileRecord> contextProfileRecords = new ArrayList<>();
+        List<EmailNotificationDetails> emailNotificationDetails = new ArrayList<>();
         AtomicReference<ContextTemplate> contextTemplate = new AtomicReference<>();
         try {
             ContextService contextService = new ContextService();
@@ -44,6 +44,7 @@ public final class ContextImportZipUtils {
                     String internalJobsDirectory = parentDirectory + JOBS_DIR + "/" + INTERNAL_DIR + "/";
                     String quartzJobsDirectory = parentDirectory + JOBS_DIR + "/" + QUARTZ_DIR + "/";
                     String contextProfileDirectory = parentDirectory + PROFILE_DIR + "/";
+                    String emailNotificationDirectory = parentDirectory + NOTIFICATION_DIR + "/";
 
                     if (!entry.isDirectory() && entry.getName().startsWith(contextDirectory)
                         && entry.getName().endsWith(".json")) {
@@ -60,6 +61,9 @@ public final class ContextImportZipUtils {
                     } else if (!entry.isDirectory() && entry.getName().startsWith(contextProfileDirectory)
                         && entry.getName().endsWith(".json")) {
                         contextProfileRecords.add((ContextProfileRecord) getContextArtifact(PROFILE_DIR, outputStream.toString(), contextService));
+                    } else if (!entry.isDirectory() && entry.getName().startsWith(emailNotificationDirectory)
+                        && entry.getName().endsWith(".json")) {
+                        emailNotificationDetails.add((EmailNotificationDetails) getContextArtifact(NOTIFICATION_DIR, outputStream.toString(), contextService));
                     }
                 }
             );
@@ -68,7 +72,7 @@ public final class ContextImportZipUtils {
             throw new RuntimeException(e);
         }
 
-        return new ContextBundleImpl(contextTemplate.get(), contextJobs, contextProfileRecords);
+        return new ContextBundleImpl(contextTemplate.get(), contextJobs, contextProfileRecords, emailNotificationDetails);
     }
 
     private static void readZipInputStream(InputStream inputStream, BiConsumer<ZipEntry, ByteArrayOutputStream> biConsumer) {
@@ -102,6 +106,8 @@ public final class ContextImportZipUtils {
                     return service.getQuartzScheduleDrivenJob(json);
                 case PROFILE_DIR:
                     return service.getContextProfileRecord(json);
+                case NOTIFICATION_DIR:
+                    return service.getEmailNotificationDetails(json);
                 default:
                     throw new RuntimeException("Unknown job type: " + type);
             }
