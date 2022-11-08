@@ -311,6 +311,7 @@ public class ContextTemplateWidget extends Div {
                         this.zipWorkingDirectory,
                         this.schedulerJobService,
                         this.emailNotificationDetailsService,
+                        this.contextProfileService,
                         50 // limit to loop searching solr
                     );
                     return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());

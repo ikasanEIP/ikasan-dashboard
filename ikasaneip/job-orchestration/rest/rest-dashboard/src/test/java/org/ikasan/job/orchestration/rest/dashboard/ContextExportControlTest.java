@@ -3,6 +3,7 @@ package org.ikasan.job.orchestration.rest.dashboard;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
+import org.ikasan.job.orchestration.model.profile.ContextProfileRecordImpl;
 import org.ikasan.job.orchestration.rest.dashboard.util.TestSchedulerJobRecord;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.general.SearchResultsImpl;
@@ -17,6 +18,9 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
+import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
+import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +41,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -58,6 +64,9 @@ public class ContextExportControlTest extends AbstractRestMvcTest{
 
     @MockBean
     private EmailNotificationDetailsService emailNotificationDetailsService;
+
+    @MockBean
+    private ContextProfileService contextProfileService;
 
     private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -87,6 +96,10 @@ public class ContextExportControlTest extends AbstractRestMvcTest{
         //Email Notification
         searchResults = new SearchResultsImpl(createListOfEmailNotification(contextName), 0, 100);
         doReturn(searchResults).when(emailNotificationDetailsService).findByContextName(contextName, 50, 0);
+
+        //ContextProfile
+        searchResults = new SearchResultsImpl(createListOfContextProfileRecord(contextName),0, 100);
+        doReturn(searchResults).when(contextProfileService).findByFilter(any(ContextProfileSearchFilter.class), eq(50), eq(0), eq(null), eq(null));
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/export/context/" + contextName)).andReturn();
 
@@ -121,6 +134,10 @@ public class ContextExportControlTest extends AbstractRestMvcTest{
         searchResults = new SearchResultsImpl(createListOfEmailNotification(contextName), 0, 100);
         doReturn(searchResults).when(emailNotificationDetailsService).findByContextName(contextName, 50, 0);
 
+        //ContextProfile
+        searchResults = new SearchResultsImpl(createListOfContextProfileRecord(contextName),0, 100);
+        doReturn(searchResults).when(contextProfileService).findByFilter(any(ContextProfileSearchFilter.class), eq(50), eq(0), eq(null), eq(null));
+
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/export/context/" + contextName)).andReturn();
 
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
@@ -152,6 +169,10 @@ public class ContextExportControlTest extends AbstractRestMvcTest{
         //Email Notification
         searchResults = new SearchResultsImpl(createListOfEmailNotification(contextName), 0, 100);
         doReturn(searchResults).when(emailNotificationDetailsService).findByContextName(contextName, 50, 0);
+
+        //ContextProfile
+        searchResults = new SearchResultsImpl(createListOfContextProfileRecord(contextName),0, 100);
+        doReturn(searchResults).when(contextProfileService).findByFilter(any(ContextProfileSearchFilter.class), eq(50), eq(0), eq(null), eq(null));
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/rest/export/context/DOESNOTEXIST")).andReturn();
 
@@ -231,5 +252,14 @@ public class ContextExportControlTest extends AbstractRestMvcTest{
             records.add(r);
         }
         return records;
+    }
+
+    private static List<ContextProfileRecord> createListOfContextProfileRecord(String contextName) {
+        List<ContextProfileRecord> recordList = new ArrayList<>();
+        ContextProfileRecord record = new ContextProfileRecordImpl();
+        record.setProfileName("Profile-" + contextName);
+        record.setContextName(contextName);
+        recordList.add(record);
+        return  recordList;
     }
 }
