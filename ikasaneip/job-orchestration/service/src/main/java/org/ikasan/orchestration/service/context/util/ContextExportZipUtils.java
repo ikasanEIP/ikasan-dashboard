@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.ikasan.job.orchestration.model.profile.ContextProfileSearchFilterImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
@@ -11,6 +12,9 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
+import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
+import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +47,7 @@ public final class ContextExportZipUtils {
                                                       String workingDirectory,
                                                       SchedulerJobService schedulerJobService,
                                                       EmailNotificationDetailsService emailNotificationDetailsService,
+                                                      ContextProfileService contextProfileService,
                                                       int searchLimit) {
         try {
             ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
@@ -64,13 +69,15 @@ public final class ContextExportZipUtils {
             Path jobsInternalDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + INTERNAL_DIR);
             Path jobsQuartzDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + QUARTZ_DIR);
             Path notificationDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + NOTIFICATION_DIR);
-            //TODO where is profiles for exporting???   
+            Path profilesDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + PROFILE_DIR);
+
             Files.createDirectories(contextDir);
             Files.createDirectories(jobsDir);
             Files.createDirectories(jobsFileDir);
             Files.createDirectories(jobsInternalDir);
             Files.createDirectories(jobsQuartzDir);
             Files.createDirectories(notificationDir);
+            Files.createDirectories(profilesDir);
 
             // create the context template as json
             Path contextFilePath = Paths.get(contextDir + File.separator + contextFileName + ".json");
@@ -101,6 +108,22 @@ public final class ContextExportZipUtils {
                 offset += retrievedNumber;
                 notificationResults = emailNotificationDetailsService.findByContextName(contextName, searchLimit, offset);
                 addNotificationFilesToZip(objectMapper, notificationDir, notificationResults);
+            }
+
+            // get the profiles for the context
+            offset = 0;
+            ContextProfileSearchFilter profileFilter = new ContextProfileSearchFilterImpl();
+            profileFilter.setContextName(contextName); //search by contextName
+
+            SearchResults<ContextProfileRecord> profileResults = contextProfileService.findByFilter(profileFilter, searchLimit, offset, null, null);
+            addProfilesFilesToZip(objectMapper, profilesDir, profileResults);
+
+            retrievedNumber = profileResults.getResultList().size();
+            totalNumberOfResults = profileResults.getTotalNumberOfResults();
+            while (offset < totalNumberOfResults) {
+                offset += retrievedNumber;
+                profileResults = contextProfileService.findByFilter(profileFilter, searchLimit, offset, null, null);
+                addProfilesFilesToZip(objectMapper, profilesDir, profileResults);
             }
 
             // create the outputstream
@@ -196,6 +219,21 @@ public final class ContextExportZipUtils {
             String fileName = StringUtils.replaceEach(record.getId(),
                 UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR);
             Path path = Paths.get(notificationPath + File.separator + fileName + ".json");
+
+            // Create the file
+            Files.createFile(path);
+            Files.write(path, jsonString.getBytes());
+        }
+    }
+
+    private static void addProfilesFilesToZip(ObjectMapper objectMapper, Path profilesDir, SearchResults<ContextProfileRecord> results) throws IOException {
+        for (ContextProfileRecord record : results.getResultList()) {
+            String jsonString = objectMapper.writeValueAsString(record);
+
+            // Use the contextName and profileName as the filename
+            String fileName = StringUtils.replaceEach(record.getContextName()+"-"+record.getProfileName(),
+                UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR);
+            Path path = Paths.get(profilesDir + File.separator + fileName + ".json");
 
             // Create the file
             Files.createFile(path);
