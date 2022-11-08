@@ -40,8 +40,10 @@
  */
 package org.ikasan.job.orchestration.rest.dashboard;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
@@ -52,6 +54,7 @@ import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsWrapper;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
+import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -70,7 +73,7 @@ import java.util.List;
 @RestController
 public class EmailNotificationDetailsController
 {
-    private static Logger logger = LoggerFactory.getLogger(EmailNotificationDetailsController.class);
+    private static final Logger logger = LoggerFactory.getLogger(EmailNotificationDetailsController.class);
 
     private ObjectMapper mapper;
     private EmailNotificationDetailsService emailNotificationDetailsService;
@@ -151,5 +154,80 @@ public class EmailNotificationDetailsController
         return new ResponseEntity( HttpStatus.OK);
     }
 
-    // TODO should we add a delete??? Maybe not required
+    @RequestMapping(method = RequestMethod.GET, path = {"/emailNotificationDetails/get/{contextName}/{limit}/{offset}"})
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity getAllEmailNotificationByContextName(@PathVariable String contextName,
+                                                               @PathVariable int limit,
+                                                               @PathVariable int offset) {
+        SearchResults<EmailNotificationDetailsRecord> notificationResults = emailNotificationDetailsService.findByContextName(contextName, limit, offset);
+
+        ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Export with pretty lines
+        try {
+            String jsonString = objectMapper.writeValueAsString(notificationResults);
+            if (jsonString == null || "".equals(jsonString)) {
+                return new ResponseEntity(HttpStatus.NO_CONTENT);
+            } else {
+                return new ResponseEntity(jsonString, HttpStatus.OK);
+            }
+        } catch (JsonProcessingException e) {
+            logger.error("Error converting to JSON", e);
+            return new ResponseEntity("Error converting to JSON", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = {"/emailNotificationDetails/getById/{jobName}/{childContextName}/{monitorType}"})
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity getEmailNotificationByJobNameAndMonitorType(@PathVariable String jobName,
+                                                                      @PathVariable String childContextName,
+                                                                      @PathVariable String monitorType) {
+        EmailNotificationDetailsRecord notificationResults = emailNotificationDetailsService.findByJobNameAndMonitorType(jobName, childContextName, monitorType);
+
+        ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Export with pretty lines
+        try {
+            String jsonString = objectMapper.writeValueAsString(notificationResults);
+            if (jsonString == null || "".equals(jsonString)) {
+                return new ResponseEntity(HttpStatus.NO_CONTENT);
+            } else {
+                return new ResponseEntity(jsonString, HttpStatus.OK);
+            }
+        } catch (JsonProcessingException e) {
+            logger.error("Error converting to JSON", e);
+            return new ResponseEntity("Error converting to JSON", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE,
+        value = "/emailNotificationDetails/deleteByContextName/{contextName}")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity deleteByContextName(@PathVariable("contextName") String contextName) {
+        try {
+            emailNotificationDetailsService.deleteByContextName(contextName);
+            return new ResponseEntity(HttpStatus.OK);
+
+        } catch (Exception e) {
+            String message = String.format("Got exception trying to delete all notification for the context [%s]. Error [%s]", contextName, e.getMessage());
+            logger.warn(message);
+            return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE,
+        value = "/emailNotificationDetails/deleteById/{jobName}/{childContextName}/{monitorType}")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity deleteByJobNameAndMonitorType(@PathVariable String jobName,
+                                                        @PathVariable String childContextName,
+                                                        @PathVariable String monitorType) {
+        try {
+            emailNotificationDetailsService.deleteByJobNameAndMonitorType(jobName, childContextName, monitorType);
+            return new ResponseEntity(HttpStatus.OK);
+
+        } catch (Exception e) {
+            String message = String.format("Got exception trying to delete notification for the jobName [%s], " +
+                "childContextName [%s] and monitorType [%s]. Error [%s]", jobName, childContextName, monitorType, e.getMessage());
+            logger.warn(message);
+            return new ResponseEntity(message, HttpStatus.BAD_REQUEST);
+        }
+    }
 }
