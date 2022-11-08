@@ -52,6 +52,7 @@ import org.ikasan.spec.scheduled.context.service.ContextStatusService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.scheduled.reset.ContextResetService;
@@ -91,6 +92,9 @@ public class IkasanRestAutoConfiguration {
     @Resource
     private EmailNotificationDetailsService emailNotificationDetailsService;
 
+    @Resource
+    private ContextProfileService contextProfileService;
+
     @Bean
     public ScheduledProcessEventController scheduledProcessEventController() {
         return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert, this.inboundQueue);
@@ -123,7 +127,7 @@ public class IkasanRestAutoConfiguration {
 
     @Bean
     public ContextExportControl contextBundleDownloadControl() {
-        return new ContextExportControl(scheduledContextService, schedulerJobService, emailNotificationDetailsService);
+        return new ContextExportControl(scheduledContextService, schedulerJobService, emailNotificationDetailsService, contextProfileService);
     }
 
     @Bean
