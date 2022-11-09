@@ -1262,13 +1262,13 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--2125239559", agentName, "1164721449", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--2125239559", "asset-control-scheduler-agent-1164721449"));
+        // CONTEXT--2125239559 now complete
+        workingStatuses.put("CONTEXT--2125239559", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--2125239559", agentName, "-391607564", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--2125239559", "asset-control-scheduler-agent--391607564"));
-        // CONTEXT--2125239559 now complete
-        workingStatuses.put("CONTEXT--2125239559", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
 
 
@@ -1329,6 +1329,7 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1208521119", agentName, "1164721449", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1208521119", "asset-control-scheduler-agent-1164721449"));
+        workingStatuses.put("CONTEXT-1208521119", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1208521119", agentName, "761640319", true);
@@ -1336,7 +1337,6 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1208521119", "asset-control-scheduler-agent-761640319"));
 
         // CONTEXT-1208521119 now complete
-        workingStatuses.put("CONTEXT-1208521119", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
 
         /**
@@ -1396,6 +1396,7 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1034431901", agentName, "1164721449", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1034431901", "asset-control-scheduler-agent-1164721449"));
+        workingStatuses.put("CONTEXT-1034431901", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1034431901", agentName, "-167881789", true);
@@ -1403,7 +1404,6 @@ public class ContextMachineJobLocksTest extends AbstractTest {
 
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1034431901", "asset-control-scheduler-agent--167881789"));
         // CONTEXT-1034431901 now complete
-        workingStatuses.put("CONTEXT-1034431901", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
 
         /**
@@ -1462,14 +1462,14 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1405621029", agentName, "1164721449", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1405621029", "asset-control-scheduler-agent-1164721449"));
+        // CONTEXT--1405621029 now complete
+        workingStatuses.put("CONTEXT--1405621029", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1405621029", agentName, "1781592067", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1405621029", "asset-control-scheduler-agent-1781592067"));
 
-        // CONTEXT--1405621029 now complete
-        workingStatuses.put("CONTEXT--1405621029", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
 
         /**
@@ -1528,14 +1528,14 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1596119798", agentName, "1164721449", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1596119798", "asset-control-scheduler-agent-1164721449"));
+        // CONTEXT--1596119798 now complete
+        workingStatuses.put("CONTEXT--1596119798", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT--1596119798", agentName, "1685894164", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT--1596119798", "asset-control-scheduler-agent-1685894164"));
 
-        // CONTEXT--1596119798 now complete
-        workingStatuses.put("CONTEXT--1596119798", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
 
         /**
@@ -1593,14 +1593,14 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1967431808", agentName, "1164721449", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1967431808", "asset-control-scheduler-agent-1164721449"));
+        // CONTEXT-1967431808 now complete
+        workingStatuses.put("CONTEXT-1967431808", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
 
         events = this.sendScheduledEventToContextMachine(contextMachine, "CONTEXT-369160711", "CONTEXT-1967431808", agentName, "1779796515", true);
         assertEquals(0, events.size());
         assertEquals(InstanceStatus.COMPLETE, contextMachine.getJobStatus("CONTEXT-1967431808", "asset-control-scheduler-agent-1779796515"));
 
-        // CONTEXT-1967431808 now complete
-        workingStatuses.put("CONTEXT-1967431808", InstanceStatus.COMPLETE);
         assertContextStatuses(contextMachine, workingStatuses);
 
         /**
