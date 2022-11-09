@@ -19,6 +19,80 @@ import java.util.stream.Collectors;
 
 public class ContextHelper {
 
+    public static Map<String, SchedulerJobInstance> getJobsOutsideLogicalGrouping(ContextInstance contextInstance) {
+        Map<String, SchedulerJobInstance> jobsOutsideLogicConstructs
+            = new HashMap<>(contextInstance.getScheduledJobsMap());
+
+        if(contextInstance.getJobDependencies() != null) {
+            contextInstance.getJobDependencies().forEach(jobDependency -> {
+                if(jobDependency.getLogicalGrouping() != null) {
+                    removeJobsInLogicalConstructs(jobDependency.getLogicalGrouping(),
+                        jobsOutsideLogicConstructs);
+                }
+            });
+        }
+
+        return jobsOutsideLogicConstructs;
+    }
+
+    private static void removeJobsInLogicalConstructs(LogicalGrouping logicalGrouping,
+                                                Map<String, SchedulerJobInstance> schedulerJobInstanceMap) {
+        if(logicalGrouping != null) {
+            removeJobsInAndConstructs(logicalGrouping, schedulerJobInstanceMap);
+            removeJobsInOrConstructs(logicalGrouping, schedulerJobInstanceMap);
+            removeJobsInNotConstructs(logicalGrouping, schedulerJobInstanceMap);
+
+            if(logicalGrouping.getLogicalGrouping() != null) {
+                removeJobsInLogicalConstructs(logicalGrouping.getLogicalGrouping(), schedulerJobInstanceMap);
+            }
+        }
+    }
+
+    private static void removeJobsInAndConstructs(LogicalGrouping logicalGrouping,
+                                     Map<String, SchedulerJobInstance> schedulerJobInstanceMap) {
+        if(logicalGrouping.getAnd() != null && !logicalGrouping.getAnd().isEmpty()) {
+            logicalGrouping.getAnd().forEach(operator -> {
+                if(operator.getLogicalGrouping() != null) {
+                    removeJobsInLogicalConstructs(operator.getLogicalGrouping(),
+                        schedulerJobInstanceMap);
+                }
+                else {
+                    schedulerJobInstanceMap.remove(operator.getIdentifier());
+                }
+            });
+        }
+    }
+
+    private static void removeJobsInNotConstructs(LogicalGrouping logicalGrouping,
+                                     Map<String, SchedulerJobInstance> schedulerJobInstanceMap) {
+        if(logicalGrouping.getNot() != null && !logicalGrouping.getNot().isEmpty()) {
+            logicalGrouping.getNot().forEach(operator -> {
+                if(operator.getLogicalGrouping() != null) {
+                    removeJobsInLogicalConstructs(operator.getLogicalGrouping(),
+                        schedulerJobInstanceMap);
+                }
+                else {
+                    schedulerJobInstanceMap.remove(operator.getIdentifier());
+                }
+            });
+        }
+    }
+
+    private static void removeJobsInOrConstructs(LogicalGrouping logicalGrouping,
+                                    Map<String, SchedulerJobInstance> schedulerJobInstanceMap) {
+        if(logicalGrouping.getOr() != null && !logicalGrouping.getOr().isEmpty()) {
+            logicalGrouping.getOr().forEach(operator -> {
+                if(operator.getLogicalGrouping() != null) {
+                    removeJobsInLogicalConstructs(operator.getLogicalGrouping(),
+                        schedulerJobInstanceMap);
+                }
+                else {
+                    schedulerJobInstanceMap.remove(operator.getIdentifier());
+                }
+            });
+        }
+    }
+
     public static List<SchedulerJobInstance> getPrecedingJobsFromOutsideContext(ContextInstance contextInstance
         , String jobName, String childContextName, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap) {
         ContextInstance theChildContext = getChildContextInstance(childContextName, contextInstance);
