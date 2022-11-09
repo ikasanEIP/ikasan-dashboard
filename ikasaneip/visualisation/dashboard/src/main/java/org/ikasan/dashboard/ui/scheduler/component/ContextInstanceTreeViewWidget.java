@@ -18,6 +18,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.hierarchy.AbstractBackEndHierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
@@ -92,20 +93,14 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private ContextInstance contextInstance;
     private Map<ComponentKey, Image> jobImageMap;
     private Map<ComponentKey, Map<String, Icon>> schedulerJobIconMap;
-
     private Map<ComponentKey, SchedulerStatusDiv> statusDivMap;
-
+    private Map<ComponentKey, SchedulerStatusFreeTextDiv> schedulerStatusFreeTextDivMap;
     private Map<ComponentKey, Div> startTimes;
-
     private Map<ComponentKey, Div> endTimes;
-
     private Map<ComponentKey, Div> manuallySubmittedBy;
-
-    private ExplorerTreeGrid<Object> grid;
-
+    private TreeGrid<Object> grid;
     private CronParser parser;
     private CronDescriptor descriptor;
-
     private ArrayList<Object> expandedNodes;
 
     public ContextInstanceTreeViewWidget(ContextInstance contextInstance, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
@@ -167,6 +162,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         this.jobImageMap = new HashMap<>();
         this.schedulerJobIconMap = new HashMap<>();
         this.statusDivMap = new HashMap<>();
+        this.schedulerStatusFreeTextDivMap = new HashMap<>();
         this.startTimes = new HashMap<>();
         this.endTimes = new HashMap<>();
         this.manuallySubmittedBy = new HashMap<>();
@@ -213,10 +209,27 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         grid.addComponentHierarchyColumn(value -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
+
             if(value instanceof ContextInstance) {
 
-                horizontalLayout.add(VaadinIcon.COG.create()
-                    , new Label(((ContextInstance)value).getName()));
+                SchedulerStatusFreeTextDiv schedulerStatusFreeTextDiv
+                    = new SchedulerStatusFreeTextDiv();
+                schedulerStatusFreeTextDiv.setWidthFull();
+                schedulerStatusFreeTextDiv.getElement().getStyle().set("font-size", "10pt");
+                schedulerStatusFreeTextDiv.getElement().getStyle().set("margin-top", "1px");
+                schedulerStatusFreeTextDiv.getElement().getStyle().set("padding-left", "50px");
+                schedulerStatusFreeTextDiv.getElement().getStyle().set("margin-bottom", "1px");
+                schedulerStatusFreeTextDiv.getElement().getStyle().set("padding-right", "50px");
+
+                schedulerStatusFreeTextDiv.setStatus(((ContextInstance)value).getStatus()
+                    , ((ContextInstance)value).getName());
+                horizontalLayout.add(schedulerStatusFreeTextDiv);
+                horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, schedulerStatusFreeTextDiv);
+                horizontalLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
+
+                ComponentKey componentKey = new ComponentKey(contextInstance.getName()
+                    , ((ContextInstance)value).getId(), ((ContextInstance)value).getName());
+                this.schedulerStatusFreeTextDivMap.put(componentKey, schedulerStatusFreeTextDiv);
             }
             else if(value instanceof SchedulerJobInstance) {
                 SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance)value;
@@ -314,7 +327,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                             schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(), schedulerJobInstanceRecord.getJobName());
                     }
 
-                    logger.info(String.format("refreshing icons JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName()
+                    logger.debug(String.format("refreshing icons JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName()
                         , schedulerJobInstanceRecord.getSchedulerJobInstance().getContextName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName(),
                         schedulerJobInstanceRecord.getStatus()));
                     this.getJobInstanceActionComponents(key, schedulerJobInstanceRecord, horizontalLayout);
@@ -460,24 +473,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             .setFlexGrow(1);
         grid.addComponentColumn(value -> {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
-                if(value instanceof ContextInstance) {
-                    ContextInstance instance = (ContextInstance)value;
-
-                    SchedulerStatusDiv statusDiv = new SchedulerStatusDiv();
-                    statusDiv.setWidthFull();
-                    statusDiv.getElement().getStyle().set("font-size", "10pt");
-                    statusDiv.getElement().getStyle().set("margin-top", "1px");
-                    statusDiv.getElement().getStyle().set("margin-bottom", "1px");
-
-                    //horizontalLayout.add(statusDiv);
-                    horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, statusDiv);
-
-                    statusDiv.setStatus(instance.getStatus());
-
-                    ComponentKey componentKey = new ComponentKey(contextInstance.getName()
-                        , instance.getId(), instance.getName());
-                    this.statusDivMap.put(componentKey, statusDiv);
-                }
                 if(value instanceof SchedulerJobInstance) {
                     SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance)value;
                     SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService
@@ -1486,7 +1481,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         if(statusImage != null) {
             ui.access(() -> {
-                logger.info(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
+                logger.debug(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
                     , jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
                     jobInstanceStateChangeEvent.getNewStatus()));
                 this.setImageBackgroundColour(statusImage, jobInstanceStateChangeEvent.getNewStatus());
@@ -1497,7 +1492,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         if(preccedingJobStatusImage != null) {
             ui.access(() -> {
-                logger.info(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
+                logger.debug(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
                     , jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
                     jobInstanceStateChangeEvent.getNewStatus()));
                 this.setImageBackgroundColour(preccedingJobStatusImage, jobInstanceStateChangeEvent.getNewStatus());
@@ -1573,8 +1568,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             ComponentKey key = new ComponentKey(contextInstance.getName()
                 , contextInstanceStateChangeEvent.getContextInstance().getId(), contextInstanceStateChangeEvent.getContextInstance().getName());
 
-            if(this.statusDivMap.containsKey(key)) {
-                ui.access(() -> this.statusDivMap.get(key)
+            if(this.schedulerStatusFreeTextDivMap.containsKey(key)) {
+                ui.access(() -> this.schedulerStatusFreeTextDivMap.get(key)
                     .setStatus(contextInstanceStateChangeEvent.getNewStatus()));
             }
         }
