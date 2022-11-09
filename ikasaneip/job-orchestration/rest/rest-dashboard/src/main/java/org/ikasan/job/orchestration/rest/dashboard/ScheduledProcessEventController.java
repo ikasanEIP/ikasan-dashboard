@@ -126,7 +126,7 @@ public class ScheduledProcessEventController
     {
         try
         {
-            logger.info("Received - {}", scheduledProcessEventPayload);
+            logger.debug("Received - {}", scheduledProcessEventPayload);
 
             BigQueueMessage bigQueueMessage =
                 new BigQueueMessageBuilder()
