@@ -91,6 +91,7 @@ public class ContextMachine {
     private OutboundQueueMessageRunner outboundQueueMessageRunner;
 
     private InboundQueueMessageRunner inboundQueueMessageRunner;
+    private ContextStateHelper contextStateHelper;
 
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
                           Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstances, String queueDir,
@@ -120,6 +121,7 @@ public class ContextMachine {
         this.contextParametersInstanceService = contextParametersInstanceService;
         this.jobLockCache = jobLockCache;
         this.jobLogicMachine = new JobLogicMachine(this.agents, this.jobLockCache, contextParametersInstanceService);
+        this.contextStateHelper = new ContextStateHelper();
     }
 
     /**
@@ -556,9 +558,9 @@ public class ContextMachine {
                 .build();
 
             String serialised = objectMapper.writeValueAsString(bigQueueMessage);
-            logger.info("Enqueue job initiation event: " + serialised);
+            logger.debug("Enqueue job initiation event: " + serialised);
             outboundQueue.enqueue(serialised.getBytes());
-            logger.info("Outbound queue size: " + outboundQueue.size());
+            logger.debug("Outbound queue size: " + outboundQueue.size());
             SchedulerJobInstance schedulerJobInstance = this.getSchedulerJob(this.contextInstance, childContextName, jobIdentifier);
             InstanceStatus previousState = schedulerJobInstance.getStatus();
             schedulerJobInstance.setHeld(false);
@@ -703,8 +705,8 @@ public class ContextMachine {
         , MutableBoolean lockRaised, boolean markAsRaised) {
         List<SchedulerJobInitiationEvent> results = new ArrayList<>();
 
-        if(!contextInstance.getStatus().equals(InstanceStatus.COMPLETE)
-             && contextInstance.getScheduledJobsMap().containsKey(scheduledProcessEvent.getAgentName()
+        if(//!contextInstance.getStatus().equals(InstanceStatus.COMPLETE) &&
+            contextInstance.getScheduledJobsMap().containsKey(scheduledProcessEvent.getAgentName()
                 + "-" + scheduledProcessEvent.getJobName())) {
 
              // Delegate to the JobLogicMachine to determine if any SchedulerJobInitiationEvents are
@@ -769,34 +771,49 @@ public class ContextMachine {
      */
     private void setContextStatus(ContextInstance contextInstance) {
         AtomicBoolean allJobsComplete = new AtomicBoolean(true);
-        AtomicBoolean anyRunningOrCompletedJobs = new AtomicBoolean(false);
+        AtomicBoolean allLogicSatisfied = new AtomicBoolean(true);
+        AtomicBoolean anyRunningOrCompletedOrQueuedJobs = new AtomicBoolean(false);
         AtomicBoolean anyErrorJobs = new AtomicBoolean(false);
         AtomicBoolean allContextsComplete = new AtomicBoolean(true);
         AtomicBoolean anyRunningOrCompletedContexts = new AtomicBoolean(false);
         AtomicBoolean anyErrorContexts = new AtomicBoolean(false);
 
-        if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
 
-            contextInstance.getScheduledJobs().forEach(job -> {
-                if (!job.getStatus().equals(InstanceStatus.COMPLETE)
-                    && !job.getStatus().equals(InstanceStatus.SKIPPED)
-                    && !job.getStatus().equals(InstanceStatus.SKIPPED_RUNNING)
-                    && !job.getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
+        if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
+            // Get all jobs that are not part of a logical construct
+            Map<String, SchedulerJobInstance> jobsOutsideLogicConstructs
+                = ContextHelper.getJobsOutsideLogicalGrouping(contextInstance);
+
+            // Confirm that all jobs outside logical constructs are complete.
+            jobsOutsideLogicConstructs.entrySet().forEach(entry -> {
+                if (!entry.getValue().getStatus().equals(InstanceStatus.COMPLETE)
+                    && !entry.getValue().getStatus().equals(InstanceStatus.SKIPPED)
+                    && !entry.getValue().getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
                     allJobsComplete.set(false);
                 }
+            });
+
+            // Confirm that all logical constructs have been satisfied
+            allLogicSatisfied.set(this.contextStateHelper.isAllLogicSatisfied
+                (contextInstance, contextInstance.getScheduledJobsMap()));
+
+            // Now determine if there running or queued jobs or those
+            // in a error state.
+            contextInstance.getScheduledJobs().forEach(job -> {
                 if (job.getStatus().equals(InstanceStatus.RUNNING)
                     || job.getStatus().equals(InstanceStatus.COMPLETE)
                     || job.getStatus().equals(InstanceStatus.LOCK_QUEUED)) {
-                    anyRunningOrCompletedJobs.set(true);
+                    anyRunningOrCompletedOrQueuedJobs.set(true);
                 }
+
                 if (job.getStatus().equals(InstanceStatus.ERROR)) {
                     anyErrorJobs.set(true);
                 }
             });
         }
 
+        // Determine the state of all nested context instances.
         if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
-
             contextInstance.getContexts().forEach(context -> {
                 if (!context.getStatus().equals(InstanceStatus.COMPLETE)) {
                     allContextsComplete.set(false);
@@ -811,21 +828,24 @@ public class ContextMachine {
             });
         }
 
+        // Armed with the information aquired above, determine the state of
+        // the current context instance.
         InstanceStatus previousStatus = contextInstance.getStatus();
 
         if (anyErrorJobs.get() || anyErrorContexts.get()) {
             contextInstance.setStatus(InstanceStatus.ERROR);
             contextInstance.setUpdatedDateTime(System.currentTimeMillis());
-        } else if(allJobsComplete.get() && allContextsComplete.get()) {
+        } else if(allJobsComplete.get() && allContextsComplete.get() && allLogicSatisfied.get()) {
             contextInstance.setStatus(InstanceStatus.COMPLETE);
             contextInstance.setUpdatedDateTime(System.currentTimeMillis());
-        } else if(anyRunningOrCompletedJobs.get() || anyRunningOrCompletedContexts.get()){
+        } else if(anyRunningOrCompletedOrQueuedJobs.get() || anyRunningOrCompletedContexts.get()){
             contextInstance.setStatus(InstanceStatus.RUNNING);
             contextInstance.setUpdatedDateTime(System.currentTimeMillis());
         }
 
         InstanceStatus newStatus = contextInstance.getStatus();
 
+        // If the context instance has had as state change, notify all interested parties.
         if(!previousStatus.equals(newStatus)) {
             this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl(contextInstance, previousStatus, newStatus));
         }
@@ -914,9 +934,9 @@ public class ContextMachine {
                         .build();
 
                     String serialised = objectMapper.writeValueAsString(outgoingBigQueueMessage);
-                    logger.info("Enqueue job initiation event: " + serialised);
+                    logger.debug("Enqueue job initiation event: " + serialised);
                     outboundQueue.enqueue(serialised.getBytes());
-                    logger.info("Outbound queue size: " + outboundQueue.size());
+                    logger.debug("Outbound queue size: " + outboundQueue.size());
                 }
 
                 inboundQueue.dequeue();
@@ -958,7 +978,6 @@ public class ContextMachine {
                 }
 
                 String stringEvent = new String(event);
-                logger.info(stringEvent);
                 bigQueueMessage = objectMapper.readValue(event, BigQueueMessageImpl.class);
                 String messageAsString = new String(objectMapper.writeValueAsBytes(bigQueueMessage.getMessage()));
                 SchedulerJobInitiationEvent schedulerJobInitiationEvent
@@ -998,8 +1017,8 @@ public class ContextMachine {
                     try {
                         outboundQueue.dequeue();
                         outboundQueue.gc();
-                        logger.info("Dequeue event: " + bigQueueMessage);
-                        logger.info("Outbound queue size: " + outboundQueue.size());
+                        logger.debug("Dequeue event: " + bigQueueMessage);
+                        logger.debug("Outbound queue size: " + outboundQueue.size());
                     }
                     catch (IOException e) {
                         e.printStackTrace();
