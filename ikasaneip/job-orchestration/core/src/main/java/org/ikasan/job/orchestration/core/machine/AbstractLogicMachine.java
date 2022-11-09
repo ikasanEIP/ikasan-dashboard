@@ -111,7 +111,7 @@ public class AbstractLogicMachine<STATEFUL_ENTITY extends StatefulEntity> {
     }
 
     /**
-     * This method allows us to have an infinite depth of logical groupings and facilitate the recursion that supports that.
+     * This method allows us to have an infinite depth of logical groupings and facilitates the recursion that supports that.
      *
      * @param logicalGrouping
      * @param statefulEntityMap
