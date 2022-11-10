@@ -118,7 +118,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
             = new Binder<>(QuartzScheduleDrivenJob.class);
 
         this.setHeight("500px");
-        this.setWidth("1200px");
+        this.setWidth("90vw");
 
         saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
         saveButton.setId("scheduledJobSaveButton");
@@ -151,10 +151,10 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
             }
 
             this.schedulerJobSelectedListeners.forEach(listener -> listener.jobSelected(this.quartzScheduleDrivenJob));
-            this.close();
+            NotificationHelper.showErrorNotification(getTranslation("notification.scheduler-job-saved", UI.getCurrent().getLocale()));
         });
 
-        cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
+        cancelButton = new Button(getTranslation("button.close", UI.getCurrent().getLocale()));
         cancelButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.close());
 
         HorizontalLayout buttonLayout = new HorizontalLayout();

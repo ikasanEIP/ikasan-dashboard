@@ -27,6 +27,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateCha
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.instance.model.QuartzScheduleDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -75,6 +76,10 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
 
     private IkasanAuthentication authentication;
 
+    private Button viewProcessEventButton;
+
+    private ScheduledProcessEvent scheduledProcessEvent;
+
     /**
      * Constructor
      *
@@ -101,7 +106,7 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
             = new Binder<>(QuartzScheduleDrivenJobInstance.class);
 
         this.setHeight("550px");
-        this.setWidth("1200px");
+        this.setWidth("90vw");
 
         VerticalLayout layout = new VerticalLayout();
         layout.getStyle().set("padding-top", "0px");
@@ -159,7 +164,17 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
             });
         });
 
-        Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", IkasanColours.IKASAN_ORANGE);
+        this.viewProcessEventButton = new Button(getTranslation
+            ("button.view-event", UI.getCurrent().getLocale()), VaadinIcon.CALENDAR_CLOCK.create());
+        this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
+        this.viewProcessEventButton.setIconAfterText(true);
+        this.viewProcessEventButton.addClickListener(event -> {
+            JsonViewerDialog dialog = new JsonViewerDialog(this.scheduledProcessEvent
+                , getTranslation("header.scheduled-process-event", UI.getCurrent().getLocale()));
+            dialog.open();
+        });
+
+        Button export = new Button(getTranslation("button.download", UI.getCurrent().getLocale()), VaadinIcon.DOWNLOAD_ALT.create());
         StreamResource streamResource = new StreamResource(schedulerJobInstanceRecord.getJobName()+".json"
             , () -> {
             try {
@@ -175,7 +190,7 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
         exportWrapper.wrapComponent(export);
 
         HorizontalLayout actionsLayout = new HorizontalLayout();
-        actionsLayout.add(submitButton, exportWrapper);
+        actionsLayout.add(submitButton, this.viewProcessEventButton, exportWrapper);
         actionsLayout.setMargin(false);
         actionsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, submitButton);
         actionsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, exportWrapper);
@@ -277,6 +292,8 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
 
     public void setJob(SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
         this.schedulerJobInstanceRecord = schedulerJobInstanceRecord;
+        this.scheduledProcessEvent = schedulerJobInstanceRecord.getSchedulerJobInstance()
+            .getScheduledProcessEvent();
         this.setJob((QuartzScheduleDrivenJobInstance) this.schedulerJobInstanceService
             .findById(schedulerJobInstanceRecord.getId()).getSchedulerJobInstance());
     }
@@ -288,9 +305,12 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
             if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.quartzScheduleDrivenJobInstance.getContextInstanceId())
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.quartzScheduleDrivenJobInstance.getJobName())) {
+                this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
+
                 ui.access(() -> {
                     this.quartzScheduleDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
                     this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
                 });
             }
         });
