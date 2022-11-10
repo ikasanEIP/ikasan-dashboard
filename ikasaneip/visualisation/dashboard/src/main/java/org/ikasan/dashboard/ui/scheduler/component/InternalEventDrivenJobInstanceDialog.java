@@ -130,6 +130,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
     private Button viewErrorLogButton;
     private Button viewOutputLogButton;
+    private Button viewProcessEventButton;
 
     private ScheduledProcessEvent scheduledProcessEvent;
 
@@ -217,18 +218,38 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.formBinder
             = new Binder<>(InternalEventDrivenJobInstance.class);
 
-        this.setHeight("1100px");
-        this.setWidth("1400px");
+        this.setHeight("95vh");
+        this.setWidth("95vw");
 
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
         layout.setMargin(false);
-        layout.add(this.createJobForm());
+        layout.add(this.createJobForm(), this.createEditorLayout());
         layout.getStyle().set("padding-top", "0px");
         layout.getStyle().set("padding-bottom", "10px");
         super.content.getStyle().set("padding-top", "0px");
         super.content.add(layout);
+    }
+
+    private VerticalLayout createEditorLayout() {
+        VerticalLayout editorLayout = new VerticalLayout();
+        editorLayout.setPadding(false);
+        editorLayout.setSpacing(false);
+        editorLayout.setSizeFull();
+
+        this.commandLineTa = new AceEditor();
+        this.commandLineTa.setSizeFull();
+        this.commandLineTa.setMode(AceMode.batchfile);
+        this.commandLineTa.setTheme(AceTheme.dracula);
+        this.commandLineTa.setId("commandLineTa");
+
+        editorLayout.add(commandLineTa);
+        editorLayout.expand(this.commandLineTa);
+
+        commandLineTa.getStyle().set("minHeight", "100px");
+
+        return editorLayout;
     }
 
     /**
@@ -577,18 +598,27 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             });
         });
 
-        this.viewOutputLogButton = new Button("Output Log", VaadinIcon.FILE_PROCESS.create());
+        this.viewOutputLogButton = new Button(getTranslation("button.view-output-log", UI.getCurrent().getLocale()), VaadinIcon.FILE_PROCESS.create());
         this.viewOutputLogButton.setVisible(this.scheduledProcessEvent != null);
         this.viewOutputLogButton.setIconAfterText(true);
         this.viewOutputLogButton.addClickListener(event -> {
            this.streamLog(false);
         });
 
-        this.viewErrorLogButton = new Button("Error Log", VaadinIcon.FILE_PROCESS.create());
+        this.viewErrorLogButton = new Button(getTranslation("button.view-error-log", UI.getCurrent().getLocale()), VaadinIcon.FILE_REMOVE.create());
         this.viewErrorLogButton.setVisible(this.scheduledProcessEvent != null);
         this.viewErrorLogButton.setIconAfterText(true);
         this.viewErrorLogButton.addClickListener(event -> {
             this.streamLog(true);
+        });
+
+        this.viewProcessEventButton = new Button(getTranslation("button.view-event", UI.getCurrent().getLocale()), VaadinIcon.CALENDAR_CLOCK.create());
+        this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
+        this.viewProcessEventButton.setIconAfterText(true);
+        this.viewProcessEventButton.addClickListener(event -> {
+            JsonViewerDialog dialog = new JsonViewerDialog(this.scheduledProcessEvent
+                , getTranslation("header.scheduled-process-event", UI.getCurrent().getLocale()));
+            dialog.open();
         });
 
         Button downloadButton = new Button(getTranslation("button.download", UI.getCurrent().getLocale()), new Icon(VaadinIcon.DOWNLOAD_ALT));
@@ -607,11 +637,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         FileDownloadWrapper buttonWrapper = new FileDownloadWrapper(streamResource);
         buttonWrapper.wrapComponent(downloadButton);
 
-        Button expandButton = new Button(getTranslation("button.expand", UI.getCurrent().getLocale()), new Icon(VaadinIcon.EXTERNAL_LINK));
-        expandButton.setIconAfterText(true);
-
         HorizontalLayout jobActionsButtonLayout = new HorizontalLayout();
-        jobActionsButtonLayout.add(executionDaysButton, parametersButton, successfulReturnCodesButton, this.viewOutputLogButton, this.viewErrorLogButton);
+        jobActionsButtonLayout.add(executionDaysButton, parametersButton, successfulReturnCodesButton
+            , this.viewOutputLogButton, this.viewErrorLogButton, this.viewProcessEventButton);
         jobActionsButtonLayout.setMargin(false);
         VerticalLayout wrapperLayout = new VerticalLayout();
         wrapperLayout.setWidth("100%");
@@ -620,7 +648,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         wrapperLayout.setMargin(false);
 
         HorizontalLayout horizontalLayout = new HorizontalLayout();
-        horizontalLayout.add(buttonWrapper, expandButton);
+        horizontalLayout.add(buttonWrapper);
 
         VerticalLayout newButtonLayout = new VerticalLayout();
         newButtonLayout.setWidth("100%");
@@ -629,15 +657,6 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         newButtonLayout.setMargin(false);
 
         formLayout.add(wrapperLayout, newButtonLayout);
-
-        this.commandLineTa = new AceEditor();
-        this.commandLineTa.setHeight("450px");
-        this.commandLineTa.setMode(AceMode.batchfile);
-        this.commandLineTa.setTheme(AceTheme.dracula);
-        this.commandLineTa.setId("commandLineTa");
-
-        formLayout.add(commandLineTa, 2);
-        commandLineTa.getStyle().set("minHeight", "100px");
 
         this.setButtonVisibility();
 
@@ -921,6 +940,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
                     this.viewOutputLogButton.setVisible(this.scheduledProcessEvent != null);
                     this.viewErrorLogButton.setVisible(this.scheduledProcessEvent != null);
+                    this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
 
                     this.setButtonVisibility();
                 });

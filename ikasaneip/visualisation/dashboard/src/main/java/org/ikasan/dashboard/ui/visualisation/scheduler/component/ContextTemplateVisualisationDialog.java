@@ -48,13 +48,11 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
     private MetaDataService metaDataRestService;
     private SystemEventLogger systemEventLogger;
     private SchedulerJobService schedulerJobService;
-    //private SchedulerJobInstanceService schedulerJobInstanceService;
     private JobInitiationService jobInitiationService;
     private ContextProfileService contextProfileService;
     private UserService userService;
     private SecurityService securityService;
     private JobProvisionService jobProvisionService;
-    //private ScheduledContextInstanceService scheduledContextInstanceService;
     private ScheduledContextService scheduledContextService;
 
     private ContextService contextService = new ContextService();
@@ -68,8 +66,8 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
                                               JobInitiationService jobInitiationService, ContextProfileService contextProfileService, UserService userService,
                                               SecurityService securityService, JobProvisionService jobProvisionService,
                                               ScheduledContextService scheduledContextService) {
-        this.setHeight("90%");
-        this.setWidth("90%");
+        this.setHeight("98vh");
+        this.setWidth("98vw");
 
         this.moduleMetaDataService = moduleMetaDataService;
         if(this.moduleMetaDataService == null) {

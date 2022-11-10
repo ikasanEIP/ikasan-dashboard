@@ -22,6 +22,12 @@ public class JsonViewerDialog extends AbstractCloseableResizableDialog  {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    public JsonViewerDialog(Object contents, String header) {
+        this(contents);
+
+        super.title.setText(header);
+    }
+
     public JsonViewerDialog(Object contents) {
         this.setHeight("90%");
         this.setWidth("90%");
@@ -36,6 +42,7 @@ public class JsonViewerDialog extends AbstractCloseableResizableDialog  {
         if(!initialised) {
             this.initialiseEditor();
             this.layout.add(aceEditor);
+            this.layout.expand(aceEditor);
 
             try {
                 this.aceEditor.setValue(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contents));
@@ -54,8 +61,9 @@ public class JsonViewerDialog extends AbstractCloseableResizableDialog  {
         aceEditor.setMode(AceMode.text);
         aceEditor.setFontSize(11);
         aceEditor.setTabSize(4);
-        aceEditor.setWidth("100%");
-        aceEditor.setHeight("80vh");
+//        aceEditor.setWidth("100%");
+//        aceEditor.setHeight("80vh");
+        aceEditor.setSizeFull();
         aceEditor.setReadOnly(true);
         aceEditor.setWrap(false);
     }
