@@ -69,8 +69,8 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
                                           LogStreamingService logStreamingService,
                                           SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
                                           JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService) {
-        this.setHeight("95%");
-        this.setWidth("90%");
+        this.setHeight("98vh");
+        this.setWidth("98vw");
 
         this.moduleMetaDataService = moduleMetaDataService;
         if(this.moduleMetaDataService == null) {

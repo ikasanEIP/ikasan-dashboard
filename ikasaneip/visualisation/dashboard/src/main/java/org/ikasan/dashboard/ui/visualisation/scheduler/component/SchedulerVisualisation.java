@@ -158,11 +158,6 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             throw new IllegalArgumentException("logStreamingService cannot be null!");
         }
 
-//        this.schedulerJobInstanceService = schedulerJobInstanceService;
-//        if(this.schedulerJobInstanceService == null) {
-//            throw new IllegalArgumentException("schedulerJobInstanceService cannot be null!");
-//        }
-
         this.jobInitiationService = jobInitiationService;
         if(this.jobInitiationService == null) {
             throw new IllegalArgumentException("jobInitiationService cannot be null!");
@@ -182,11 +177,6 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         if(this.securityService == null) {
             throw new IllegalArgumentException("securityService cannot be null!");
         }
-
-//        this.scheduledContextInstanceService = scheduledContextInstanceService;
-//        if(this.scheduledContextInstanceService == null) {
-//            throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
-//        }
 
         this.jobProvisionService = jobProvisionService;
         if(this.jobProvisionService == null) {

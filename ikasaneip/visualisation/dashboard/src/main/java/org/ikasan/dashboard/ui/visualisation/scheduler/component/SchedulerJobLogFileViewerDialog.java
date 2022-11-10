@@ -31,8 +31,8 @@ public class SchedulerJobLogFileViewerDialog extends AbstractCloseableResizableD
                                            String host,
                                            String endPoint,
                                            String logFile) {
-        this.setHeight("80%");
-        this.setWidth("80%");
+        this.setHeight("90vw");
+        this.setWidth("90vh");
 
         layout = new VerticalLayout();
         layout.setSizeFull();
