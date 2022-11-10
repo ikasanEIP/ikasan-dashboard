@@ -117,7 +117,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             = new Binder<>(FileEventDrivenJob.class);
 
         this.setHeight("700px");
-        this.setWidth("1200px");
+        this.setWidth("95vw");
 
         saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
         saveButton.setId("scheduledJobSaveButton");
@@ -150,10 +150,11 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             }
 
             this.schedulerJobSelectedListeners.forEach(listener -> listener.jobSelected(this.fileEventDrivenJob));
-            this.close();
+            NotificationHelper.showErrorNotification(getTranslation("notification.scheduler-job-saved"
+                , UI.getCurrent().getLocale()));
         });
 
-        cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
+        cancelButton = new Button(getTranslation("button.close", UI.getCurrent().getLocale()));
         cancelButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.close());
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
@@ -218,9 +219,6 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.filenameTf = new TextField("File path");
         this.filenameTf.setRequired(true);
         this.filenameTf.setId("filePathTf");
-        formBinder.forField(this.filenameTf)
-            .withValidator(filePath -> !filePath.isEmpty(), getTranslation("error.missing-file-path", UI.getCurrent().getLocale()))
-            .bind(FileEventDrivenJob::getFilePath, FileEventDrivenJob::setFilePath);
         formLayout.add(filenameTf, 2);
 
         archiveDirectoryTf = new TextField(getTranslation("label.archive-directory", UI.getCurrent().getLocale()));
@@ -290,6 +288,10 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
                 solrFileEventDrivenJob.setTimeZone(this.timezoneCb.getValue().zoneId);
             }
 
+            if(this.filenameTf.getValue() != null) {
+                solrFileEventDrivenJob.setFilenames(List.of(this.filenameTf.getValue()));
+            }
+
             formBinder.writeBean(solrFileEventDrivenJob);
 
             if(!isValid.get()){
@@ -311,7 +313,6 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
      */
     public void createOrUpdateScheduledJob(FileEventDrivenJob fileEventDrivenJob, IkasanAuthentication authentication) {
         fileEventDrivenJob.setIdentifier(fileEventDrivenJob.getAgentName()+"-"+fileEventDrivenJob.getJobName());
-        fileEventDrivenJob.setFilenames(List.of(fileEventDrivenJob.getFilePath()));
 
         SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
         solrFileEventDrivenJobRecord.setAgentName(fileEventDrivenJob.getAgentName());
@@ -361,6 +362,14 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.enabled = editMode == EditMode.NEW || editMode == EditMode.EDIT ? true : false;
         this.fileEventDrivenJob = fileEventDrivenJob;
         this.formBinder.readBean(this.fileEventDrivenJob);
+
+        // because file names are a collection we need to manually set
+        if(this.fileEventDrivenJob != null &&
+            this.fileEventDrivenJob.getFilenames() != null &&
+            !this.fileEventDrivenJob.getFilenames().isEmpty()) {
+            this.filenameTf.setValue(this.fileEventDrivenJob.getFilenames().get(0));
+        }
+
         this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(fileEventDrivenJob.getTimeZone()));
         this.editMode = editMode;
 

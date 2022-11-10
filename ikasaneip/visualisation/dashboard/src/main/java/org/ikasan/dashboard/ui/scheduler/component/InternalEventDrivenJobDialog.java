@@ -18,13 +18,17 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.binder.ValueContext;
+import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.data.converter.StringToLongConverter;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.scheduler.component.validator.StringToDefaultLongConverter;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
@@ -139,13 +143,12 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.formBinder
             = new Binder<>(InternalEventDrivenJob.class);
 
-        this.setHeight("1100px");
-        this.setWidth("1400px");
+        this.setHeight("95vh");
+        this.setWidth("95vw");
 
         saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
         saveButton.setId("scheduledJobSaveButton");
         saveButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->  {
-
             IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
             if(!this.performFormValidation(this.internalEventDrivenJob)) {
@@ -173,24 +176,45 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             }
 
             this.schedulerJobSelectedListeners.forEach(listener -> listener.jobSelected(this.internalEventDrivenJob));
-            this.close();
+            NotificationHelper.showErrorNotification(getTranslation("notification.scheduler-job-saved", UI.getCurrent().getLocale()));
         });
 
-        cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
+        cancelButton = new Button(getTranslation("button.close", UI.getCurrent().getLocale()));
         cancelButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.close());
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.setMargin(true);
+        buttonLayout.setMargin(false);
         buttonLayout.setSpacing(true);
+        buttonLayout.setPadding(true);
         buttonLayout.add(saveButton, cancelButton);
-        buttonLayout.getStyle().set("padding-bottom", "20px");
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
-        layout.add(this.createConfigurationForm(), buttonLayout);
+        layout.setPadding(true);
+        layout.setSpacing(false);
+        layout.add(this.createConfigurationForm(), createEditorLayout(), buttonLayout);
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
-        layout.getStyle().set("padding-bottom", "20px");
         super.content.add(layout);
+    }
+
+    private VerticalLayout createEditorLayout() {
+        VerticalLayout editorLayout = new VerticalLayout();
+        editorLayout.setPadding(false);
+        editorLayout.setSpacing(false);
+        editorLayout.setSizeFull();
+
+        this.commandLineTa = new AceEditor();
+        this.commandLineTa.setSizeFull();
+        this.commandLineTa.setMode(AceMode.batchfile);
+        this.commandLineTa.setTheme(AceTheme.dracula);
+        this.commandLineTa.setId("commandLineTa");
+
+        editorLayout.add(commandLineTa);
+        editorLayout.expand(this.commandLineTa);
+
+        commandLineTa.getStyle().set("minHeight", "100px");
+
+        return editorLayout;
     }
 
     /**
@@ -244,14 +268,14 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         formBinder.forField(this.minExecutionTimeTf)
             .withNullRepresentation("")
             .withConverter(
-                new StringToLongConverter(getTranslation("error.please-enter-a-number", UI.getCurrent().getLocale())))
+                new StringToDefaultLongConverter(getTranslation("error.please-enter-a-number", UI.getCurrent().getLocale()), -1))
             .bind(InternalEventDrivenJob::getMinExecutionTime, InternalEventDrivenJob::setMinExecutionTime);
 
         this.maxExecutionTimeTf = new TextField(getTranslation("label.maximum-execution-time", UI.getCurrent().getLocale()));
         formBinder.forField(this.maxExecutionTimeTf)
             .withNullRepresentation("")
             .withConverter(
-                new StringToLongConverter(getTranslation("error.please-enter-a-number", UI.getCurrent().getLocale())))
+                new StringToDefaultLongConverter(getTranslation("error.please-enter-a-number", UI.getCurrent().getLocale()), -1))
             .bind(InternalEventDrivenJob::getMaxExecutionTime, InternalEventDrivenJob::setMaxExecutionTime);
 
         formLayout.add(minExecutionTimeTf, maxExecutionTimeTf);
@@ -312,15 +336,6 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         newButtonLayout.add(horizontalLayout);
 
         formLayout.add(newButtonLayout, 2);
-
-        this.commandLineTa = new AceEditor();
-        this.commandLineTa.setHeight("500px");
-        this.commandLineTa.setMode(AceMode.batchfile);
-        this.commandLineTa.setTheme(AceTheme.dracula);
-        this.commandLineTa.setId("commandLineTa");
-
-        formLayout.add(commandLineTa, 2);
-        commandLineTa.getStyle().set("minHeight", "100px");
 
         return formLayout;
     }
