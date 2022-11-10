@@ -83,8 +83,8 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                                           ContextProfileService contextProfileService, UserService userService, SecurityService securityService,
                                           JobProvisionService jobProvisionService,
                                           ScheduledContextService scheduledContextService) {
-        this.setHeight("90%");
-        this.setWidth("90%");
+        this.setHeight("98vh");
+        this.setWidth("98vw");
 
         this.moduleMetaDataService = moduleMetaDataService;
         if(this.moduleMetaDataService == null) {

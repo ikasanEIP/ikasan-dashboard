@@ -30,6 +30,7 @@ import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeE
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
+import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.FileEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -84,6 +85,10 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
 
     private IkasanAuthentication authentication;
 
+    private Button viewProcessEventButton;
+
+    private ScheduledProcessEvent scheduledProcessEvent;
+
     /**
      * Constructor
      *
@@ -110,7 +115,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
             = new Binder<>(FileEventDrivenJobInstance.class);
 
         this.setHeight("750px");
-        this.setWidth("1200px");
+        this.setWidth("95vw");
 
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
@@ -195,7 +200,17 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
             });
         });
 
-        Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale()), "14pt", IkasanColours.IKASAN_ORANGE);
+        this.viewProcessEventButton = new Button(getTranslation
+            ("button.view-event", UI.getCurrent().getLocale()), VaadinIcon.CALENDAR_CLOCK.create());
+        this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
+        this.viewProcessEventButton.setIconAfterText(true);
+        this.viewProcessEventButton.addClickListener(event -> {
+            JsonViewerDialog dialog = new JsonViewerDialog(this.scheduledProcessEvent
+                , getTranslation("header.scheduled-process-event", UI.getCurrent().getLocale()));
+            dialog.open();
+        });
+
+        Button export = new Button(getTranslation("button.download", UI.getCurrent().getLocale()), VaadinIcon.DOWNLOAD_ALT.create());
         StreamResource streamResource = new StreamResource(schedulerJobInstanceRecord.getJobName()+".json"
             , () -> {
             try {
@@ -211,7 +226,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         exportWrapper.wrapComponent(export);
 
         HorizontalLayout actionsLayout = new HorizontalLayout();
-        actionsLayout.add(submitButton, resetButton, exportWrapper);
+        actionsLayout.add(submitButton, resetButton, this.viewProcessEventButton, exportWrapper);
         actionsLayout.setMargin(false);
         actionsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, submitButton);
         actionsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, exportWrapper);
@@ -313,6 +328,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
      */
     private void setJob(FileEventDrivenJobInstance fileEventDrivenJob) {
         this.fileEventDrivenJobInstance = fileEventDrivenJob;
+        this.scheduledProcessEvent = this.fileEventDrivenJobInstance.getScheduledProcessEvent();
 
         this.init();
 
@@ -358,9 +374,11 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
             if (jobInstanceStateChangeEvent.getSchedulerJobInstance() != null
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.fileEventDrivenJobInstance.getContextInstanceId())
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.fileEventDrivenJobInstance.getJobName())) {
+                this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
                 ui.access(() -> {
                     this.fileEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
                     this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                    this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
                 });
             }
         });

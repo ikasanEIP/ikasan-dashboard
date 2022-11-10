@@ -14,8 +14,8 @@ public class SolrInternalEventDrivenJobImpl extends SolrSchedulerJobImpl impleme
     private List<String> successfulReturnCodes;
     private String workingDirectory;
     private String commandLine;
-    private long minExecutionTime;
-    private long maxExecutionTime;
+    private long minExecutionTime = -1;
+    private long maxExecutionTime = -1;
     private List<ContextParameter> contextParameters;
     private List<Integer> daysOfWeekToRun;
     private boolean targetResidingContextOnly;
