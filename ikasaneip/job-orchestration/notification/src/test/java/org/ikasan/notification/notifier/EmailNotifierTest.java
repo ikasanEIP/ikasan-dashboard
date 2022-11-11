@@ -1,8 +1,10 @@
 package org.ikasan.notification.notifier;
 
+import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.MonitorType;
 import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
+import org.ikasan.notification.configuration.EmailNotificationParamsConfiguration;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
 import org.ikasan.scheduled.notification.model.SolrNotificationSendAudit;
@@ -54,6 +56,7 @@ public class EmailNotifierTest {
     private EmailNotifier emailNotifier;
     private EmailNotificationDetailsService emailNotificationDetailsService = mockery.mock(EmailNotificationDetailsService.class);
     private NotificationSendAuditService notificationSendAuditService = mockery.mock(NotificationSendAuditService.class);
+    private EmailNotificationParamsConfiguration emailNotificationParamsConfiguration;
 
     @Before
     public void setup()
@@ -73,7 +76,10 @@ public class EmailNotifierTest {
                 }
             }
 
-        emailNotifier = new EmailNotifier(emailNotificationDetailsService, notificationSendAuditService, emailTemplateEngine(), "http://localhost:9090/schedulerJobLogFile/");
+        // Create configuration
+        emailNotificationParamsConfiguration = this.emailNotificationParamsConfiguration();
+
+        emailNotifier = new EmailNotifier(emailNotificationDetailsService, notificationSendAuditService, emailNotificationParamsConfiguration, emailTemplateEngine(), "http://localhost:9090/schedulerJobLogFile/");
         emailNotifier.setConfiguration(getConfiguration());
     }
 
@@ -106,6 +112,7 @@ public class EmailNotifierTest {
         GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
         EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+        emailNotificationDetails.setContextName("ContextParent1");
         emailNotificationDetails.setJobName("job-1");
         emailNotificationDetails.setMonitorType("ERROR");
         emailNotificationDetails.setEmailSendTo(Arrays.asList("to-1", "to-2"));
@@ -152,6 +159,7 @@ public class EmailNotifierTest {
         GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
         EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+        emailNotificationDetails.setContextName("ContextParent1");
         emailNotificationDetails.setJobName("job-1");
         emailNotificationDetails.setMonitorType("ERROR");
         emailNotificationDetails.setEmailSendTo(Arrays.asList("to-1"));
@@ -198,6 +206,7 @@ public class EmailNotifierTest {
         GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
         EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+        emailNotificationDetails.setContextName("ContextParent1");
         emailNotificationDetails.setJobName("job-1");
         emailNotificationDetails.setMonitorType("ERROR");
         emailNotificationDetails.setEmailSendTo(Arrays.asList("to-1"));
@@ -239,10 +248,70 @@ public class EmailNotifierTest {
         BodyPart bodyPart = mimeMultipart.getBodyPart(0);
         String content = (String)bodyPart.getContent();
         Assert.assertTrue(content.contains("from template body text!"));
-        Assert.assertTrue(content.contains("You can access to log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:::context-id-1:::job-1:::false"));
+        Assert.assertTrue(content.contains("You can access the log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:::context-id-1:::job-1:::false"));
         Assert.assertTrue(content.contains("Error log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:::context-id-1:::job-1:::true"));
         Assert.assertEquals("subject-1", mimeMessage.getSubject());
 
+    }
+
+    @Test
+    public void test_with_a_template_2_with_param_to_replace() throws MessagingException, IOException {
+
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
+
+        EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+        emailNotificationDetails.setContextName("ContextParent1");
+        emailNotificationDetails.setJobName("job-1");
+        emailNotificationDetails.setMonitorType("ERROR");
+        emailNotificationDetails.setEmailSendTo(Arrays.asList("${EMAIL2}"));
+        emailNotificationDetails.setEmailBody("body-1");
+        emailNotificationDetails.setEmailSubject("subject-1 with replace = ${ABC}");
+        emailNotificationDetails.setEmailBodyTemplate("src/main/resources/templates/notification-error-email-body-template.txt");
+        emailNotificationDetails.setHtml(false);
+
+        Map<String,String> templateParams = new HashMap<>();
+        templateParams.put(EmailNotificationTemplateParameters.EMAIL_BODY_TEXT.name(), "EMAIL_BODY_TEXT = do some replacing with email addresses = ${EMAIL}");
+
+        emailNotificationDetails.setEmailNotificationTemplateParameters(templateParams);
+
+        SolrEmailNotificationDetailsRecord record = new SolrEmailNotificationDetailsRecord();
+        record.setEmailNotificationDetails(emailNotificationDetails);
+
+        mockery.checking(new Expectations(){{
+            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1", "context-id-1","ERROR");
+            will(returnValue(record));
+            oneOf(notificationSendAuditService).find("context-instance-id-1", "context-id-1","job-1", "ERROR", "EMAIL");
+            will(returnValue(null));
+            oneOf(notificationSendAuditService).save(with(any(NotificationSendAuditRecord.class)));
+        }});
+
+        emailNotifier.invoke(notificationDetails);
+
+
+        List<WiserMessage> messages = wiser.getMessages();
+
+        Assert.assertTrue("Should be three messages due to enrichment parameters", messages.size() == 3);
+
+        for (WiserMessage w : messages) {
+            Assert.assertTrue(w.getEnvelopeReceiver().equals("replace1@abc.com") ||
+                w.getEnvelopeReceiver().equals("replace2@abc.com") ||
+                w.getEnvelopeReceiver().equals("replace3@abc.com"));
+        }
+
+        // Just check the first one as all body should get the replacement
+        WiserMessage message = wiser.getMessages().get(0);
+
+        Assert.assertEquals("sender-1" , message.getEnvelopeSender());
+
+        MimeMessage mimeMessage = message.getMimeMessage();
+        MimeMultipart mimeMultipart = (MimeMultipart)mimeMessage.getContent();
+        Assert.assertTrue("should be only 1 bodypart", mimeMultipart.getCount() == 1);
+        BodyPart bodyPart = mimeMultipart.getBodyPart(0);
+        String content = (String)bodyPart.getContent();
+        Assert.assertTrue(content.contains("EMAIL_BODY_TEXT = do some replacing with email addresses = replace0@abc.com"));
+        Assert.assertTrue(content.contains("You can access the log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:::context-id-1:::job-1:::false"));
+        Assert.assertTrue(content.contains("Error log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:::context-id-1:::job-1:::true"));
+        Assert.assertEquals("subject-1 with replace = Value1", mimeMessage.getSubject());
     }
 
     @Test
@@ -251,6 +320,7 @@ public class EmailNotifierTest {
         GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1",MonitorType.ERROR, InstanceStatus.ERROR);
 
         EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+        emailNotificationDetails.setContextName("ContextParent1");
         emailNotificationDetails.setJobName("job-1");
         emailNotificationDetails.setMonitorType("ERROR");
         emailNotificationDetails.setEmailSendTo(Arrays.asList("to-1", "to-2"));
@@ -293,6 +363,7 @@ public class EmailNotifierTest {
         GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1","context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
         EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
+        emailNotificationDetails.setContextName("ContextParent1");
         emailNotificationDetails.setJobName("job-1");
         emailNotificationDetails.setMonitorType("ERROR");
         emailNotificationDetails.setEmailSendTo(Arrays.asList("to-1", "to-2"));
@@ -341,6 +412,98 @@ public class EmailNotifierTest {
             Assert.assertTrue(content.contains("body-1"));
             Assert.assertEquals("subject-1", mimeMessage.getSubject());
         }
+    }
+
+    @Test
+    public void testParameterReplace() {
+        EmailNotificationDetails details = new EmailNotificationDetailsImpl();
+        details.setContextName("ContextParent1");
+        Map<String, String> emailNotificationTemplateParameters = new HashMap<>();
+        emailNotificationTemplateParameters.put("KEY1", "Something Not Replace");
+        emailNotificationTemplateParameters.put("KEY2", "Something To Replace = ${ABC}");
+        emailNotificationTemplateParameters.put("KEY3", "Something To Replace = ${DEF}");
+        emailNotificationTemplateParameters.put("KEY4", "Something To Replace = ${ABC}+${DEF}");
+        emailNotificationTemplateParameters.put("KEY5", "Something To Replace = ${ABC}+${ABC}");
+        details.setEmailNotificationTemplateParameters(emailNotificationTemplateParameters);
+
+        List<String> emailTo = new ArrayList<>();
+        emailTo.add("${ABC}@abc.com");
+        emailTo.add("${ABC}${DEF}@abc.com");
+        emailTo.add("${EMAIL}");
+        emailTo.add("${EMAIL2}");
+        emailTo.add("donottouch@abc.com");
+        details.setEmailSendTo(emailTo);
+
+        List<String> emailCc = new ArrayList<>();
+        emailCc.add("cc-dont-touch@abc.com");
+        emailCc.add("${EMAIL2}");
+        emailCc.add("${ABC}@ab-cc-carbon.com");
+        details.setEmailSendCc(emailCc);
+
+        List<String> emailBcc = new ArrayList<>();
+        emailBcc.add("bcc-leave@abc.com");
+        emailBcc.add("${EMAIL2}");
+        emailBcc.add("${ABC}@bcc-test.com");
+        details.setEmailSendBcc(emailBcc);
+
+        details.setEmailSubject("Email subject for ${EMAIL} to review");
+        details.setEmailSubjectTemplate("${URL}some_path/subject.txt");
+
+        details.setEmailBody("Body with ${ABC} to replace and also ${ABC} and ${DEF} with ${EMAIL2}");
+        details.setEmailBodyTemplate("${URL}some_path/body.txt");
+
+        emailNotifier.parameterReplace(details, emailNotificationParamsConfiguration);
+        logger.info("Enriched EmailNotificationDetails = {}", details);
+
+        Assert.assertEquals("Something Not Replace", details.getEmailNotificationTemplateParameters().get("KEY1"));
+        Assert.assertEquals("Something To Replace = Value1", details.getEmailNotificationTemplateParameters().get("KEY2"));
+        Assert.assertEquals("Something To Replace = Value21", details.getEmailNotificationTemplateParameters().get("KEY3"));
+        Assert.assertEquals("Something To Replace = Value1+Value21", details.getEmailNotificationTemplateParameters().get("KEY4"));
+        Assert.assertEquals("Something To Replace = Value1+Value1", details.getEmailNotificationTemplateParameters().get("KEY5"));
+
+        Assert.assertTrue(details.getEmailSendTo().contains("Value1@abc.com"));
+        Assert.assertTrue(details.getEmailSendTo().contains("Value1Value21@abc.com"));
+        Assert.assertTrue(details.getEmailSendTo().contains("replace0@abc.com"));
+        Assert.assertTrue(details.getEmailSendTo().contains("replace1@abc.com"));
+        Assert.assertTrue(details.getEmailSendTo().contains("replace2@abc.com"));
+        Assert.assertTrue(details.getEmailSendTo().contains("replace3@abc.com"));
+        Assert.assertTrue(details.getEmailSendTo().contains("donottouch@abc.com"));
+        Assert.assertEquals(7, details.getEmailSendTo().size());
+
+        Assert.assertTrue(details.getEmailSendCc().contains("cc-dont-touch@abc.com"));
+        Assert.assertTrue(details.getEmailSendCc().contains("Value1@ab-cc-carbon.com"));
+        Assert.assertTrue(details.getEmailSendCc().contains("replace1@abc.com"));
+        Assert.assertTrue(details.getEmailSendCc().contains("replace2@abc.com"));
+        Assert.assertTrue(details.getEmailSendCc().contains("replace3@abc.com"));
+        Assert.assertEquals(5, details.getEmailSendCc().size());
+
+        Assert.assertTrue(details.getEmailSendBcc().contains("bcc-leave@abc.com"));
+        Assert.assertTrue(details.getEmailSendBcc().contains("Value1@bcc-test.com"));
+        Assert.assertTrue(details.getEmailSendBcc().contains("replace1@abc.com"));
+        Assert.assertTrue(details.getEmailSendBcc().contains("replace2@abc.com"));
+        Assert.assertTrue(details.getEmailSendBcc().contains("replace3@abc.com"));
+        Assert.assertEquals(5, details.getEmailSendBcc().size());
+
+        Assert.assertEquals("Email subject for replace0@abc.com to review", details.getEmailSubject());
+        Assert.assertEquals("/opt/config/some_path/subject.txt", details.getEmailSubjectTemplate());
+
+        Assert.assertEquals("Body with Value1 to replace and also Value1 and Value21 with replace1@abc.com,replace2@abc.com,replace3@abc.com", details.getEmailBody());
+        Assert.assertEquals("/opt/config/some_path/body.txt", details.getEmailBodyTemplate());
+
+    }
+
+    private EmailNotificationParamsConfiguration emailNotificationParamsConfiguration() {
+        EmailNotificationParamsConfiguration param = new EmailNotificationParamsConfiguration();
+        Map<String, String> paramValues = new HashMap<>();
+        paramValues.put("${ABC}", "Value1");
+        paramValues.put("${DEF}", "Value21");
+        paramValues.put("${EMAIL}", "replace0@abc.com");
+        paramValues.put("${EMAIL2}", "replace1@abc.com,replace2@abc.com,replace3@abc.com");
+        paramValues.put("${URL}", "/opt/config/");
+        Map<String, Map<String, String>> paramMaps = new HashMap<>();
+        paramMaps.put("ContextParent1", paramValues);
+        param.setParamsToReplace(paramMaps);
+        return param;
     }
 
     private TemplateEngine emailTemplateEngine() {

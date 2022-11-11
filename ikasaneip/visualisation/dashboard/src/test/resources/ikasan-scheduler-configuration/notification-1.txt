@@ -1,0 +1,2 @@
+EMAIL=example.example.com
+SUBJECT=[Environment] Subject For Email
