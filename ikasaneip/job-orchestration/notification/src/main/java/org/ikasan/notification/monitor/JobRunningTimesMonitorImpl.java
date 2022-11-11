@@ -110,6 +110,8 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
 
                                 InternalEventDrivenJobRecord internalEventDrivenJobRecord = jobMap.get(internalEventDrivenJobInstance.getJobName());
 
+                                // TODO min and max are minutes!!!
+                                // TODO min and max if either is set to -1 then ignore and do not create GenericNotification.
                                 long processTime = internalEventDrivenJobInstance.getScheduledProcessEvent().getCompletionTime() - internalEventDrivenJobInstance.getScheduledProcessEvent().getFireTime();
                                 if (processTime < internalEventDrivenJobRecord.getInternalEventDrivenJob().getMinExecutionTime() ||
                                     processTime > internalEventDrivenJobRecord.getInternalEventDrivenJob().getMaxExecutionTime() ) {

@@ -2,6 +2,8 @@ package org.ikasan.notification;
 
 import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.ikasan.job.orchestration.core.notification.MonitorManagement;
+import org.ikasan.notification.configuration.EmailNotificationParamsConfiguration;
+import org.ikasan.notification.configuration.EmailNotificationParamsFactory;
 import org.ikasan.notification.monitor.JobRunningTimesMonitorImpl;
 import org.ikasan.notification.monitor.StateChangeMonitorImpl;
 import org.ikasan.notification.monitor.OverdueFileMonitorImpl;
@@ -16,6 +18,8 @@ import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditServi
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.spring5.SpringTemplateEngine;
@@ -30,6 +34,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Component
+@Import({EmailNotificationParamsFactory.class})
 public class NotificationConfiguration {
 
     @Resource
@@ -47,6 +52,9 @@ public class NotificationConfiguration {
     @Resource
     private NotificationSendAuditService notificationSendAuditService;
 
+    @Resource
+    private EmailNotificationParamsConfiguration emailNotificationParamsConfiguration;
+
     @Value("${scheduler.notification.file.overdue.tolerance.minutes:30}")
     private Integer fileArrivalToleranceInMinutes;
 
@@ -63,8 +71,9 @@ public class NotificationConfiguration {
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Bean
-    public EmailNotifier notificationEmailNotifier(TemplateEngine emailTemplateEngine, EmailNotifierConfiguration emailConfiguration) {
-        EmailNotifier emailNotifier = new EmailNotifier(emailNotificationDetailsService, notificationSendAuditService, emailTemplateEngine, mailLinkUrl);
+    @DependsOn("emailNotificationParamsConfiguration")
+    public EmailNotifier notificationEmailNotifier(TemplateEngine emailTemplateEngine, EmailNotifierConfiguration emailConfiguration, EmailNotificationParamsConfiguration emailNotificationParamsConfiguration) {
+        EmailNotifier emailNotifier = new EmailNotifier(emailNotificationDetailsService, notificationSendAuditService, emailNotificationParamsConfiguration, emailTemplateEngine, mailLinkUrl);
         emailNotifier.setConfiguration(emailConfiguration);
         return emailNotifier;
     }
