@@ -43,26 +43,37 @@ package org.ikasan.notification.notifier;
 import org.apache.commons.lang3.StringUtils;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.NotificationType;
+import org.ikasan.notification.configuration.EmailNotificationParamsConfiguration;
 import org.ikasan.scheduled.notification.model.SolrNotificationSendAudit;
 import org.ikasan.scheduled.notification.model.SolrNotificationSendAuditRecord;
 import org.ikasan.spec.scheduled.notification.model.*;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.util.Date;
+import java.util.*;
 
 public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier<GenericNotificationDetails> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(EmailNotifier.class);
+
     private EmailNotificationDetailsService emailNotificationDetailsService;
     private NotificationSendAuditService<NotificationSendAuditRecord> notificationSendAuditService;
+    private EmailNotificationParamsConfiguration emailNotificationParamsConfiguration;
     private TemplateEngine templateEngine;
     private String mailLinkUrl;
 
-    public EmailNotifier(EmailNotificationDetailsService emailNotificationDetailsService, NotificationSendAuditService notificationSendAuditService, TemplateEngine templateEngine, String mailLinkUrl) {
+    public EmailNotifier(EmailNotificationDetailsService emailNotificationDetailsService,
+                         NotificationSendAuditService notificationSendAuditService,
+                         EmailNotificationParamsConfiguration emailNotificationParamsConfiguration,
+                         TemplateEngine templateEngine,
+                         String mailLinkUrl) {
         this.emailNotificationDetailsService = emailNotificationDetailsService;
         this.notificationSendAuditService = notificationSendAuditService;
+        this.emailNotificationParamsConfiguration = emailNotificationParamsConfiguration;
         this.templateEngine = templateEngine;
         this.mailLinkUrl = mailLinkUrl;
     }
@@ -80,6 +91,13 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
 
             if (notificationSendAuditRecord == null || notificationSendAuditRecord.getNotificationSendAudit() == null ||
                   !notificationSendAuditRecord.getNotificationSendAudit().isNotificationSend()) {
+
+                LOG.info("Email Notification being sent for Context [{}], Child Context [{}], Job Name [{}] and Monitor Type [{}]",
+                    emailNotificationDetails.getContextName(), emailNotificationDetails.getChildContextName(),
+                    emailNotificationDetails.getJobName(), emailNotificationDetails.getMonitorType());
+
+                // enrich the emailNotificationDetails with parameters from the emailNotificationParamsConfiguration
+                this.parameterReplace(emailNotificationDetails, emailNotificationParamsConfiguration);
 
                 final Context ctx = new Context();
                 ctx.setVariable("emailNotificationDetails", emailNotificationDetails);
@@ -118,5 +136,130 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
     private String createMailLink(GenericNotificationDetails notificationDetails, boolean isErrorLog) {
         // http://localhost:9090/schedulerJobLogFile/526879ab-58e7-4cd7-8661-2d48baf47d40:::CONTEXT-140537370:::97656185:::true
         return mailLinkUrl+notificationDetails.getContextInstanceId()+":::"+notificationDetails.getChildContextName()+":::"+notificationDetails.getJobName()+":::"+isErrorLog;
+    }
+
+    /**
+     * This method will enrich the email notification template with values found in the configuration.
+     * This will analyse the following attributes from emailNotificationDetails only:
+     *
+     * emailNotificationTemplateParameters
+     * emailSendTo
+     * emailSendCc
+     * emailSendBcc
+     * emailSubject
+     * emailSubjectTemplate
+     * emailBody
+     * emailBodyTemplate
+     *
+     * In the emailNotificationDetails, the format of the value you want to replace needs to be in the format of ${key}
+     * If this is found on the emailNotificationParamsConfiguration then it will do a replace
+     *
+     * For emailSendTo/Cc/Bcc, as these are list, it will replace and create new list based on the values if there is an
+     * exact match, else it will do a find and replace.
+     *
+     * Please read org.ikasan.notification.configuration.EmailNotificationParamsConfiguration.loadMapFromFile for more
+     * details on how the key value pairs are read and created from the config file.
+     *
+     * @param emailNotificationDetails the notification template that is store on solr to based the email on
+     * @param emailNotificationParamsConfiguration key value pairs of config to update the template with
+     */
+    void parameterReplace(EmailNotificationDetails emailNotificationDetails, EmailNotificationParamsConfiguration emailNotificationParamsConfiguration) {
+
+        // Get the map of all the parameters to replace with based on the Context Name
+        Map<String, String> mapOfParamToReplace = emailNotificationParamsConfiguration.getParamsToReplace().get(emailNotificationDetails.getContextName());
+        if (mapOfParamToReplace != null && !mapOfParamToReplace.isEmpty()) {
+
+            // Iterate through all the parameters to replace and try and update the emailNotificationDetails
+            mapOfParamToReplace.forEach((key, value) -> {
+
+                // EmailNotificationTemplateParameters
+                if (emailNotificationDetails.getEmailNotificationTemplateParameters() != null &&
+                    !emailNotificationDetails.getEmailNotificationTemplateParameters().isEmpty()) {
+
+                    // For each EmailNotificationTemplateParameters, find and replace the value if we match the key from mapOfParamToReplace
+                    emailNotificationDetails.getEmailNotificationTemplateParameters().forEach((ke ,ve) -> {
+                        emailNotificationDetails.getEmailNotificationTemplateParameters().put(ke, StringUtils.replace(ve, key, value));
+                    });
+                }
+
+                // EmailSendTo
+                List<String> emailSendTo = new ArrayList<>(); // create and rebuild SendTo
+                if (emailNotificationDetails.getEmailSendTo() != null &&
+                    !emailNotificationDetails.getEmailSendTo().isEmpty()) {
+
+                    emailNotificationDetails.getEmailSendTo().forEach(s -> {
+                        // If the key from mapOfParamToReplace matches exactly the value in List then replace it,
+                        // making sure if there are commas in the value from the mapOfParamToReplace that we create new list items
+                        if (key.equals(s)) {
+                            emailSendTo.addAll(Arrays.asList(value.split(",")));
+                        } else {
+                            // else treat it like a find and replace
+                            emailSendTo.add(StringUtils.replace(s, key, value));
+                        }
+                    });
+                    // update with the new list
+                    emailNotificationDetails.setEmailSendTo(emailSendTo);
+                }
+
+                // EmailSendCc
+                List<String> emailSendCc = new ArrayList<>(); // create and rebuild SendCc
+                if (emailNotificationDetails.getEmailSendCc() != null &&
+                    !emailNotificationDetails.getEmailSendCc().isEmpty()) {
+
+                    emailNotificationDetails.getEmailSendCc().forEach(s -> {
+                        // If the key from mapOfParamToReplace matches exactly the value in List then replace it,
+                        // making sure if there are commas in the value from the mapOfParamToReplace that we create new list items
+                        if (key.equals(s)) {
+                            emailSendCc.addAll(Arrays.asList(value.split(",")));
+                        } else {
+                            // else treat it like a find and replace
+                            emailSendCc.add(StringUtils.replace(s, key, value));
+                        }
+                    });
+                    // update with the new list
+                    emailNotificationDetails.setEmailSendCc(emailSendCc);
+                }
+
+                // EmailSendBcc
+                List<String> emailSendBcc = new ArrayList<>(); // create and rebuild SendBcc
+                if (emailNotificationDetails.getEmailSendBcc() != null &&
+                    !emailNotificationDetails.getEmailSendBcc().isEmpty()) {
+
+                    emailNotificationDetails.getEmailSendBcc().forEach(s -> {
+                        // If the key from mapOfParamToReplace matches exactly the value in List then replace it,
+                        // making sure if there are commas in the value from the mapOfParamToReplace that we create new list items
+                        if (key.equals(s)) {
+                            emailSendBcc.addAll(Arrays.asList(value.split(",")));
+                        } else {
+                            // else treat it like a find and replace
+                            emailSendBcc.add(StringUtils.replace(s, key, value));
+                        }
+                    });
+                    // update with the new list
+                    emailNotificationDetails.setEmailSendBcc(emailSendBcc);
+                }
+
+                // EmailSubject
+                if (StringUtils.isNotBlank(emailNotificationDetails.getEmailSubject())) {
+                    emailNotificationDetails.setEmailSubject(StringUtils.replace(emailNotificationDetails.getEmailSubject(), key, value));
+                }
+
+                // EmailSubjectTemplate
+                if (StringUtils.isNotBlank(emailNotificationDetails.getEmailSubjectTemplate())) {
+                    emailNotificationDetails.setEmailSubjectTemplate(StringUtils.replace(emailNotificationDetails.getEmailSubjectTemplate(), key, value));
+                }
+
+                // EmailBody
+                if (StringUtils.isNotBlank(emailNotificationDetails.getEmailBody())) {
+                    emailNotificationDetails.setEmailBody(StringUtils.replace(emailNotificationDetails.getEmailBody(), key, value));
+                }
+
+                // EmailBodyTemplate
+                if (StringUtils.isNotBlank(emailNotificationDetails.getEmailBodyTemplate())) {
+                    emailNotificationDetails.setEmailBodyTemplate(StringUtils.replace(emailNotificationDetails.getEmailBodyTemplate(), key, value));
+                }
+
+            });
+        }
     }
 }
