@@ -43,7 +43,6 @@ import java.util.Map;
 
 @Configuration
 @Import({InboundModuleFactory.class, JobContextParamsSetupFactory.class})
-@RefreshScope
 public class JobOrchestrationAutoConfiguration {
     private Logger logger = LoggerFactory.getLogger(JobOrchestrationAutoConfiguration.class);
 
@@ -108,7 +107,7 @@ public class JobOrchestrationAutoConfiguration {
     @Bean
     @DependsOn("jobContextParamsSetupConfiguration")
     public SchedulerContextParametersPropertiesProvider schedulerOverrider() {
-        return new SchedulerContextParametersPropertiesProvider(useSkipJobs, jobsToSkip, replaceContextParams, jobContextParamsSetupConfiguration.getParamsToReplace(), spelContextParamsCalculators);
+        return new SchedulerContextParametersPropertiesProvider(useSkipJobs, jobsToSkip, replaceContextParams, jobContextParamsSetupConfiguration, spelContextParamsCalculators);
     }
 
     @Bean

@@ -3,6 +3,7 @@ package org.ikasan.job.orchestration.core;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
+import org.ikasan.job.orchestration.configuration.JobContextParamsSetupConfiguration;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersInstanceServiceImpl;
@@ -29,7 +30,8 @@ import static org.junit.Assert.*;
 public class AbstractTest
 {
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
-    private final SchedulerContextParametersPropertiesProvider schedulerContextParametersPropertiesProvider = new SchedulerContextParametersPropertiesProvider(false, null, false, null, null);
+    private JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+    private final SchedulerContextParametersPropertiesProvider schedulerContextParametersPropertiesProvider = new SchedulerContextParametersPropertiesProvider(false, null, false, jobContextParamsSetupConfiguration, null);
     private final ContextParametersFactory contextParametersFactory = new ContextParametersFactory(schedulerContextParametersPropertiesProvider);
     protected final ContextParametersInstanceService contextParametersInstanceService = new ContextParametersInstanceServiceImpl(contextParametersFactory);
 
