@@ -50,7 +50,7 @@ public class SchedulerJobInstanceServiceTestImpl implements SchedulerJobInstance
 
     @Override
     public SearchResults<SchedulerJobInstanceRecord> getSchedulerJobInstancesByContextInstanceId(String s, int i, int i1, String s1, String s2) {
-        return null;
+        return getSchedulerJobInstancesByContextName(s, i, i1, s1, s2);
     }
 
     @Override

@@ -91,8 +91,7 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
                     contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.WAITING.toString()) ||
                     contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.RELEASED.toString())) {
 
-                    SearchResults<SchedulerJobInstanceRecord> searchResults = schedulerJobInstanceService.getSchedulerJobInstancesByContextName(contextInstance.getName(), -1, -1, null, null);
-
+                    SearchResults<SchedulerJobInstanceRecord> searchResults = schedulerJobInstanceService.getSchedulerJobInstancesByContextInstanceId(contextInstance.getId(), -1, -1, null, null);
                     SearchResults<InternalEventDrivenJobRecord> jobDetailsResults = internalEventDrivenJobService.findByContext(contextInstance.getName(), -1, -1);
 
                     Map<String,InternalEventDrivenJobRecord> jobMap = createJobMap(jobDetailsResults);

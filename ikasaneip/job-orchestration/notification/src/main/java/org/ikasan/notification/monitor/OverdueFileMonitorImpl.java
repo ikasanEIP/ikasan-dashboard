@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-// TODO code review on this, it looks like this is spamming the EmailNotifier...
+
 public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificationDetails> implements Monitor<GenericNotificationDetails> {
 
     private static final Logger LOG = LoggerFactory.getLogger(OverdueFileMonitorImpl.class);
@@ -95,7 +95,7 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
 
                     DateTime dateTime = new DateTime().withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(1);
 
-                    SearchResults<SchedulerJobInstanceRecord> searchResults = schedulerJobInstanceService.getSchedulerJobInstancesByContextName(contextInstance.getName(), -1, -1, null, null);
+                    SearchResults<SchedulerJobInstanceRecord> searchResults = schedulerJobInstanceService.getSchedulerJobInstancesByContextInstanceId(contextInstance.getId(), -1, -1, null, null);
 
                     for (SchedulerJobInstanceRecord schedulerJobInstanceRecord : searchResults.getResultList()) {
 
