@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.context.util;
 
 import java.util.*;
 
+import org.ikasan.job.orchestration.configuration.JobContextParamsSetupConfiguration;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.slf4j.Logger;
@@ -16,24 +17,30 @@ public class SchedulerContextParametersPropertiesProvider extends Properties {
     private final boolean useSkipJobs;
     private final Map<String, Map<String, Boolean>> jobsToSkip;
     private final boolean replaceContextParameters;
-    private final Map<String, Map<String, String>> parametersToReplace;
     private Map<String, String> spelExpressionMap;
+
+    // Reference to the bean object, reference by this so we can get updates after spring actuator refresh
+    private JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration;
 
     public SchedulerContextParametersPropertiesProvider(boolean useSkipJobs,
                                                         Map<String, Map<String, Boolean>> jobsToSkip,
                                                         boolean replaceContextParameters,
-                                                        Map<String, Map<String, String>> parametersToReplace,
+                                                        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration,
                                                         Map<String, String> spelExpressionMap) {
 
         this.useSkipJobs = useSkipJobs;
         this.jobsToSkip = jobsToSkip == null ? Collections.emptyMap() : jobsToSkip;
         this.replaceContextParameters = replaceContextParameters;
-        this.parametersToReplace = parametersToReplace == null ? Collections.emptyMap() : parametersToReplace;
+        this.jobContextParamsSetupConfiguration = jobContextParamsSetupConfiguration;
+        if(this.jobContextParamsSetupConfiguration == null || this.jobContextParamsSetupConfiguration.getParamsToReplace() == null) {
+            throw new IllegalArgumentException("jobContextParamsSetupConfiguration cannot be null!");
+        }
+        //this.parametersToReplace = parametersToReplace == null ? Collections.emptyMap() : parametersToReplace;
         this.spelExpressionMap = spelExpressionMap == null ? Collections.emptyMap() : spelExpressionMap;
 
         String message = String.format("Creating SchedulerContextParametersPropertiesProvider configuration with use jobsToSkip %b, " +
             "jobsToSkips %s, replaceContextParameters %b, parametersToReplace %s, spelExpressionMap %s",
-            this.useSkipJobs, this.jobsToSkip, this.replaceContextParameters, this.parametersToReplace, this.spelExpressionMap);
+            this.useSkipJobs, this.jobsToSkip, this.replaceContextParameters, this.jobContextParamsSetupConfiguration.getParamsToReplace(), this.spelExpressionMap);
         LOG.info(message);
     }
 
@@ -50,7 +57,7 @@ public class SchedulerContextParametersPropertiesProvider extends Properties {
 
     public String getContextParameter(String contextName, String paramName) {
         if (replaceContextParameters && contextName != null && paramName != null) {
-            Map<String, String> paramMap = parametersToReplace.get(contextName);
+            Map<String, String> paramMap = jobContextParamsSetupConfiguration.getParamsToReplace().get(contextName);
             if (paramMap != null) {
                 return replaceParameterWithSpel(paramName, paramMap.get(paramName));
             }
@@ -61,7 +68,7 @@ public class SchedulerContextParametersPropertiesProvider extends Properties {
     public List<ContextParameterInstance> getAllContextParameters(String contextName) {
         List<ContextParameterInstance> params = new ArrayList<>();
         if (contextName != null) {
-            Map<String, String> paramMap = parametersToReplace.get(contextName);
+            Map<String, String> paramMap = jobContextParamsSetupConfiguration.getParamsToReplace().get(contextName);
             if (paramMap != null) {
                 for (String name : paramMap.keySet()) {
                     ContextParameterInstanceImpl param = new ContextParameterInstanceImpl();

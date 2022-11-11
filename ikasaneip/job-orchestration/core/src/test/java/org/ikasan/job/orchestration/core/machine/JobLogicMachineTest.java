@@ -1,6 +1,7 @@
 package org.ikasan.job.orchestration.core.machine;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.ikasan.job.orchestration.configuration.JobContextParamsSetupConfiguration;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersInstanceServiceImpl;
@@ -1874,8 +1875,10 @@ public class JobLogicMachineTest extends AbstractTest {
 
         Map<String, Map<String, Boolean>> jobsToSkip = Map.of("Context1", Map.of("AC_SCRIPT_Interface_SOII", true));
         Map<String, Map<String, String>> paramsToReplace = Map.of("Context1", Map.of("BusinessDate", "20220428", "ErrorSearch", "blah", "UseBusinessDate", "1"));
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        jobContextParamsSetupConfiguration.setParamsToReplace(paramsToReplace);
 
-        SchedulerContextParametersPropertiesProvider schedulerOverrider = new SchedulerContextParametersPropertiesProvider(true, jobsToSkip, true, paramsToReplace, null);
+        SchedulerContextParametersPropertiesProvider schedulerOverrider = new SchedulerContextParametersPropertiesProvider(true, jobsToSkip, true, jobContextParamsSetupConfiguration, null);
         ContextParametersFactory contextParametersFactory = new ContextParametersFactory(schedulerOverrider);
         ContextParametersInstanceService contextParametersInstanceService = new ContextParametersInstanceServiceImpl(contextParametersFactory);
         jobLogicMachine = new JobLogicMachine(new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService);
