@@ -411,8 +411,6 @@ public class UserDirectoriesView extends VerticalLayout implements BeforeEnterOb
                         progressIndicatorDialog.close();
                         NotificationHelper.showErrorNotification(getTranslation("notification.error-sync-ldap", UI.getCurrent().getLocale()));
                     });
-
-                    return;
                 }
             });
         });
