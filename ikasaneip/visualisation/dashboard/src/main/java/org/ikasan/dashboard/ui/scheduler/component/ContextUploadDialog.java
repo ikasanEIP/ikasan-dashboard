@@ -5,8 +5,7 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -100,16 +99,14 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
 
         VerticalLayout verticalLayout = new VerticalLayout();
 
-        Image mrSquidImage = new Image("/frontend/images/mr-squid-head.png", "");
-        mrSquidImage.setHeight("35px");
-
-        Label uploadContextHeader = new Label("Upload Context");
+        H3 uploadContextHeader = new H3(getTranslation("label.context-upload", UI.getCurrent().getLocale()));
 
         HorizontalLayout header = new HorizontalLayout();
         header.setWidthFull();
         header.setHeight("40px");
-        header.add(mrSquidImage, uploadContextHeader);
-        header.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, mrSquidImage, uploadContextHeader);
+        header.add(uploadContextHeader);
+        header.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, uploadContextHeader);
+        header.getElement().getStyle().set("padding-bottom", "40px");
 
         verticalLayout.add(header);
         verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, header);
@@ -195,7 +192,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
                 ContextMachineCache.instance().put(contextMachine);
             }
             catch (Exception e) {
-                NotificationHelper.showErrorNotification("Unable to load the context. Please contact Ikasan Support.");
+                NotificationHelper.showErrorNotification(getTranslation("error.context-upload", UI.getCurrent().getLocale()));
                 e.printStackTrace();
             }
 
@@ -212,7 +209,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
         verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, upload, buttonLayout);
         this.content.add(verticalLayout);
         super.setWidth("600px");
-        super.setHeight("400px");
+        super.setHeight("300px");
     }
 
     private Map<String, InternalEventDrivenJobInstance> getInternalJobs(String contextInstanceId) {

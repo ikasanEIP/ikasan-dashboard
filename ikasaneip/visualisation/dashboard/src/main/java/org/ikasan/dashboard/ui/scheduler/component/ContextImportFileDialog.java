@@ -5,6 +5,7 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -51,16 +52,14 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
 
         VerticalLayout verticalLayout = new VerticalLayout();
 
-        Image mrSquidImage = new Image("/frontend/images/mr-squid-head.png", "");
-        mrSquidImage.setHeight("35px");
-
-        Label uploadContextHeader = new Label("Upload Context And Jobs");
+        H3 uploadContextHeader = new H3(getTranslation("label.context-upload", UI.getCurrent().getLocale()));
 
         HorizontalLayout horizontalLayout = new HorizontalLayout();
         horizontalLayout.setWidthFull();
         horizontalLayout.setHeight("40px");
-        horizontalLayout.add(mrSquidImage, uploadContextHeader);
-        horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, mrSquidImage, uploadContextHeader);
+        horizontalLayout.add(uploadContextHeader);
+        horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, uploadContextHeader);
+        horizontalLayout.getElement().getStyle().set("padding-bottom", "40px");
 
         verticalLayout.add(horizontalLayout);
         verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, horizontalLayout);
@@ -144,6 +143,6 @@ public class ContextImportFileDialog extends AbstractCloseableResizableDialog {
         verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, upload, buttonLayout);
         this.content.add(verticalLayout);
         super.setWidth("600px");
-        super.setHeight("400px");
+        super.setHeight("300px");
     }
 }

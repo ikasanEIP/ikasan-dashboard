@@ -18,9 +18,13 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.scheduler.util.ContextViewUpdateEventBroadcaster;
+import org.ikasan.dashboard.ui.scheduler.util.NewSchedulerJobEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobTemplateVisualisationDialog;
+import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
@@ -55,6 +59,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class SchedulerJobGridWidget extends Div {
 
+    private Registration newSchedulerJobEventBroadcasterRegistration;
     private SchedulerJobFilteringGrid schedulerJobFilteringGrid;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private IkasanAuthentication authentication;
@@ -708,5 +713,22 @@ public class SchedulerJobGridWidget extends Div {
         item.getElement().getStyle().set("padding-right", "5px");
 
         return item;
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        UI ui = attachEvent.getUI();
+
+        newSchedulerJobEventBroadcasterRegistration = NewSchedulerJobEventBroadcaster.register
+            (event -> ui.access(() -> this.schedulerJobFilteringGrid.getDataProvider().refreshAll()));
+
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        if(this.newSchedulerJobEventBroadcasterRegistration != null) {
+            this.newSchedulerJobEventBroadcasterRegistration.remove();
+            this.newSchedulerJobEventBroadcasterRegistration = null;
+        }
     }
 }

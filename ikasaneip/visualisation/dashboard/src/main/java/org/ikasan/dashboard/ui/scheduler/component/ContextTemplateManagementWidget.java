@@ -69,7 +69,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-    public class ContextTemplateManagementWidget extends VerticalLayout {
+public class ContextTemplateManagementWidget extends VerticalLayout {
 
     private ScheduledContextService scheduledContextService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
@@ -667,12 +667,15 @@ import java.util.stream.Collectors;
         MenuItem jobTypesMenuItem = activeContextInstancesSubMenu.addItem(getTranslation("menu-item.job-type", UI.getCurrent().getLocale()));
         SubMenu jobTypesSubMenu = jobTypesMenuItem.getSubMenu();
 
-        jobTypesSubMenu.addItem(getTranslation(" menu-item.command-execution-job", UI.getCurrent().getLocale())
-            , event -> {UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog(); underConstructionDialog.open();});
+        jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale())
+            , event -> {SchedulerJobUploadDialog schedulerJobUploadDialog = new SchedulerJobUploadDialog(this.contextTemplate, this.schedulerJobService
+                , InternalEventDrivenJob.class, getTranslation("label.command-job-upload", UI.getCurrent().getLocale())); schedulerJobUploadDialog.open();});
         jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale())
-            , event -> {UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog(); underConstructionDialog.open();});
+            , event -> {SchedulerJobUploadDialog schedulerJobUploadDialog = new SchedulerJobUploadDialog(this.contextTemplate, this.schedulerJobService
+                , FileEventDrivenJob.class, getTranslation("label.file-watcher-job-upload", UI.getCurrent().getLocale())); schedulerJobUploadDialog.open();});
         jobTypesSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale())
-            , event -> {UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog(); underConstructionDialog.open();});
+            , event -> {SchedulerJobUploadDialog schedulerJobUploadDialog = new SchedulerJobUploadDialog(this.contextTemplate, this.schedulerJobService
+                , QuartzScheduleDrivenJob.class, getTranslation("label.scheduled-job-upload", UI.getCurrent().getLocale())); schedulerJobUploadDialog.open();});
 
         return uploadJobMenuBar;
     }

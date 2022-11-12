@@ -1,9 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
@@ -20,8 +17,12 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.shared.Registration;
+import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
+import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
+import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateEnableDisableEventBroadcaster;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.*;
@@ -63,6 +64,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class ContextTemplateWidget extends Div {
+
+    private Registration contextEnableBroadcasterRegistration;
 
     private ContextTemplateFilteringGrid contextTemplateFilteringGrid;
     private ScheduledContextService scheduledContextService;
@@ -382,15 +385,31 @@ public class ContextTemplateWidget extends Div {
                 }
 
                 enabled.addClickListener(event -> {
-                    ContextTemplate contextTemplate = scheduledContextRecord.getContext();
-                    ScheduledContextRecord refreshedScheduledContextRecord = this.scheduledContextService.findByName(contextTemplate.getName());
-                    contextTemplate = refreshedScheduledContextRecord.getContext();
-                    contextTemplate.setDisabled(false);
-                    refreshedScheduledContextRecord.setContext(contextTemplate);
-                    this.scheduledContextService.save(refreshedScheduledContextRecord);
-                    this.contextInstanceRegistrationService.register(contextTemplate.getName());
-                    contextTemplateFilteringGrid.getDataProvider().refreshAll();
-                    this.updateActiveContextMenu();
+                    ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(false);
+                    progressIndicatorDialog.setWidth("550px");
+                    progressIndicatorDialog.open(getTranslation("progress-dialog.enable-context-template-header", UI.getCurrent().getLocale())
+                        , getTranslation("progress-dialog.enable-context-template-text", UI.getCurrent().getLocale()));
+
+                    Executor executor = Executors.newSingleThreadExecutor();
+                    executor.execute(() -> {
+                        try {
+                            ContextTemplate contextTemplate = scheduledContextRecord.getContext();
+                            ScheduledContextRecord refreshedScheduledContextRecord = this.scheduledContextService.findByName(contextTemplate.getName());
+                            contextTemplate = refreshedScheduledContextRecord.getContext();
+                            contextTemplate.setDisabled(false);
+                            refreshedScheduledContextRecord.setContext(contextTemplate);
+                            scheduledContextRecord.setModifiedBy(authentication.getName());
+                            this.scheduledContextService.save(refreshedScheduledContextRecord);
+                            this.contextInstanceRegistrationService.register(contextTemplate.getName());
+                            contextTemplateFilteringGrid.getDataProvider().refreshAll();
+                            this.updateActiveContextMenu();
+                            ContextTemplateEnableDisableEventBroadcaster.broadcast(scheduledContextRecord.getContext());
+                            progressIndicatorDialog.close();
+                        } catch (Exception e) {
+                            progressIndicatorDialog.close();
+                            NotificationHelper.showErrorNotification(getTranslation("error.enabling-context", UI.getCurrent().getLocale()));
+                        }
+                    });
                 });
 
                 disabled.addClickListener(event -> {
@@ -401,24 +420,34 @@ public class ContextTemplateWidget extends Div {
                     confirmDialog.open();
 
                     confirmDialog.addConfirmListener(confirmEvent -> {
-                        try {
-                            ContextTemplate contextTemplate = scheduledContextRecord.getContext();
-                            contextTemplate.setDisabled(true);
-                            scheduledContextRecord.setContext(contextTemplate);
-                            scheduledContextRecord.setModifiedBy(SecurityContextHolder.getContext()
-                                .getAuthentication().getName());
-                            ContextMachine contextMachine = ContextMachineCache.instance()
-                                .getByContextName(contextTemplate.getName());
-                            if (contextMachine != null) {
-                                ContextMachineCache.instance().remove(contextMachine);
-                                contextMachine.teardown();
+                        ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(false);
+                        progressIndicatorDialog.setWidth("550px");
+                        progressIndicatorDialog.open(getTranslation("progress-dialog.disable-context-template-header", UI.getCurrent().getLocale())
+                            , getTranslation("progress-dialog.disable-context-template-text", UI.getCurrent().getLocale()));
+
+                        Executor executor = Executors.newSingleThreadExecutor();
+                        executor.execute(() -> {
+                            try {
+                                ContextTemplate contextTemplate = scheduledContextRecord.getContext();
+                                contextTemplate.setDisabled(true);
+                                scheduledContextRecord.setContext(contextTemplate);
+                                scheduledContextRecord.setModifiedBy(authentication.getName());
+                                ContextMachine contextMachine = ContextMachineCache.instance()
+                                    .getByContextName(contextTemplate.getName());
+                                if (contextMachine != null) {
+                                    ContextMachineCache.instance().remove(contextMachine);
+                                    contextMachine.teardown();
+                                }
+                                this.scheduledContextService.save(scheduledContextRecord);
+                                contextTemplateFilteringGrid.getDataProvider().refreshAll();
+                                this.updateActiveContextMenu();
+                                ContextTemplateEnableDisableEventBroadcaster.broadcast(scheduledContextRecord.getContext());
+                                progressIndicatorDialog.close();
+                            } catch (Exception e) {
+                                progressIndicatorDialog.close();
+                                NotificationHelper.showErrorNotification(getTranslation("error.disabling-context", UI.getCurrent().getLocale()));
                             }
-                            this.scheduledContextService.save(scheduledContextRecord);
-                            contextTemplateFilteringGrid.getDataProvider().refreshAll();
-                            this.updateActiveContextMenu();
-                        } catch (IOException e) {
-                            NotificationHelper.showErrorNotification(getTranslation("error.disabling-context", UI.getCurrent().getLocale()));
-                        }
+                        });
                     });
                 });
 
@@ -473,5 +502,20 @@ public class ContextTemplateWidget extends Div {
         MenuItem item = menu.addItem(quickAccessButton);
 
         return item;
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        UI ui = attachEvent.getUI();
+        this.contextEnableBroadcasterRegistration = ContextTemplateEnableDisableEventBroadcaster.register(flowState ->
+            ui.access(() -> this.contextTemplateFilteringGrid.getDataProvider().refreshAll()));
+    }
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        if(this.contextEnableBroadcasterRegistration != null) {
+            this.contextEnableBroadcasterRegistration.remove();
+            this.contextEnableBroadcasterRegistration = null;
+        }
     }
 }
