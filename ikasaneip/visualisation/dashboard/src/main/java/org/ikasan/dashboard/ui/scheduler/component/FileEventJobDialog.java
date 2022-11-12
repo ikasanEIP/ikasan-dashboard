@@ -216,13 +216,14 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             .bind(FileEventDrivenJob::getJobDescription, FileEventDrivenJob::setJobDescription);
         formLayout.add(jobDescriptionTa, 2);
 
-        this.filenameTf = new TextField("File path");
+        this.filenameTf = new TextField(getTranslation("label.file-path", UI.getCurrent().getLocale()));
         this.filenameTf.setRequired(true);
         this.filenameTf.setId("filePathTf");
+        this.filenameTf.setErrorMessage(getTranslation("error.missing-file-path", UI.getCurrent().getLocale()));
         formLayout.add(filenameTf, 2);
 
         archiveDirectoryTf = new TextField(getTranslation("label.archive-directory", UI.getCurrent().getLocale()));
-        this.filenameTf.setId("archiveDirectoryTf");
+        this.archiveDirectoryTf.setId("archiveDirectoryTf");
         formBinder.forField(this.archiveDirectoryTf)
             .bind(FileEventDrivenJob::getMoveDirectory, FileEventDrivenJob::setMoveDirectory);
         formLayout.add(this.archiveDirectoryTf, 2);
@@ -288,8 +289,13 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
                 solrFileEventDrivenJob.setTimeZone(this.timezoneCb.getValue().zoneId);
             }
 
-            if(this.filenameTf.getValue() != null) {
+            if(this.filenameTf.getValue() != null && !this.filenameTf.getValue().isEmpty()) {
                 solrFileEventDrivenJob.setFilenames(List.of(this.filenameTf.getValue()));
+                this.filenameTf.setInvalid(false);
+            }
+            else {
+                this.filenameTf.setInvalid(true);
+                isValid.set(false);
             }
 
             formBinder.writeBean(solrFileEventDrivenJob);

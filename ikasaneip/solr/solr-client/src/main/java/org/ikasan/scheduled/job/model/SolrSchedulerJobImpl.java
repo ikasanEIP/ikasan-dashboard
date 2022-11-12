@@ -1,6 +1,7 @@
 package org.ikasan.scheduled.job.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -17,6 +18,7 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
     protected String contextName;
     protected List<String> childContextNames;
     protected String startupControlType = "AUTOMATIC";
+    @JsonIgnore
     protected boolean skip = false;
     protected Map<String, Boolean> skippedContexts = new HashMap<>();
     protected Map<String, Boolean> heldContexts = new HashMap<>();
@@ -89,10 +91,12 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
         this.startupControlType = startupControlType;
     }
 
+    @JsonIgnore
     public boolean isSkip() {
         return skip;
     }
 
+    @JsonIgnore
     public void setSkip(boolean skip) {
         this.skip = skip;
     }
