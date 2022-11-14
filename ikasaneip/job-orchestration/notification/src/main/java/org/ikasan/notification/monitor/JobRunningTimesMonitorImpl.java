@@ -96,6 +96,9 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
 
                     Map<String,InternalEventDrivenJobRecord> jobMap = createJobMap(jobDetailsResults);
 
+                    // Time at execution of the notification polling.
+                    long currentTime = System.currentTimeMillis();
+
                     for (SchedulerJobInstanceRecord schedulerJobInstanceRecord : searchResults.getResultList()) {
 
                         SchedulerJobInstance schedulerJobInstance  = schedulerJobInstanceRecord.getSchedulerJobInstance();
@@ -109,18 +112,33 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
 
                                 InternalEventDrivenJobRecord internalEventDrivenJobRecord = jobMap.get(internalEventDrivenJobInstance.getJobName());
 
-                                // TODO min and max are minutes!!!
-                                // TODO min and max if either is set to -1 then ignore and do not create GenericNotification.
-                                long processTime = internalEventDrivenJobInstance.getScheduledProcessEvent().getCompletionTime() - internalEventDrivenJobInstance.getScheduledProcessEvent().getFireTime();
-                                if (processTime < internalEventDrivenJobRecord.getInternalEventDrivenJob().getMinExecutionTime() ||
-                                    processTime > internalEventDrivenJobRecord.getInternalEventDrivenJob().getMaxExecutionTime() ) {
+                                // Millis representation of time taken to execute
+                                long completionTime = internalEventDrivenJobInstance.getScheduledProcessEvent().getCompletionTime();
+                                long fireTime = internalEventDrivenJobInstance.getScheduledProcessEvent().getFireTime();
+                                long processTime;
+                                // If job is running, completionTime will be 0, therefore use the time right now to work out the duration of the processing job.
+                                if (completionTime == 0) {
+                                    processTime = completionTime - fireTime;
+                                } else {
+                                    processTime = currentTime - fireTime;
+                                }
 
-                                    GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(internalEventDrivenJobInstance.getChildContextNames().get(0),
-                                        internalEventDrivenJobInstance.getJobName(), contextInstance.getId(), MonitorType.RUNNING_TIME, internalEventDrivenJobInstance.getStatus());
-                                    genericNotificationDetails.setMessage("Processing time:"+processTime+", job min. running time:"+internalEventDrivenJobRecord.getInternalEventDrivenJob().getMinExecutionTime()+
-                                        ", job max. running time:"+internalEventDrivenJobRecord.getInternalEventDrivenJob().getMaxExecutionTime());
+                                // Convert processTime to minutes as a decimal representation.
+                                double processedTimeInMinutes = (double) processTime / 1000.0 / 60.0;
+                                // Only check if min and max execution time != -1 - Else ignore notification
+                                if (!(internalEventDrivenJobRecord.getInternalEventDrivenJob().getMinExecutionTime() == -1 ||
+                                    internalEventDrivenJobRecord.getInternalEventDrivenJob().getMaxExecutionTime() == -1)) {
 
-                                    invoke(genericNotificationDetails);
+                                    if (processedTimeInMinutes < internalEventDrivenJobRecord.getInternalEventDrivenJob().getMinExecutionTime() ||
+                                        processedTimeInMinutes > internalEventDrivenJobRecord.getInternalEventDrivenJob().getMaxExecutionTime() ) {
+
+                                        GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(internalEventDrivenJobInstance.getChildContextNames().get(0),
+                                            internalEventDrivenJobInstance.getJobName(), contextInstance.getId(), MonitorType.RUNNING_TIME, internalEventDrivenJobInstance.getStatus());
+                                        genericNotificationDetails.setMessage("Processing time:"+processTime+", job min. running time:"+internalEventDrivenJobRecord.getInternalEventDrivenJob().getMinExecutionTime()+
+                                            ", job max. running time:"+internalEventDrivenJobRecord.getInternalEventDrivenJob().getMaxExecutionTime());
+
+                                        invoke(genericNotificationDetails);
+                                    }
                                 }
                             }
                         }
