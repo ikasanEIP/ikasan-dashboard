@@ -3,11 +3,15 @@ package org.ikasan.job.orchestration.rest.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
+import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
+import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.rest.client.exception.SchedulerAgentRestClientException;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.rest.client.ModuleRestService;
 import org.ikasan.rest.client.SchedulerRestServiceImpl;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobWrapper;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +20,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class JobProvisionModuleRestServiceImpl extends ModuleRestService implements JobProvisionModuleService {
 
