@@ -18,8 +18,6 @@ import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
-import org.ikasan.dashboard.broadcast.FlowStateBroadcaster;
-import org.ikasan.dashboard.cache.CacheStateBroadcaster;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateEnableDisableEventBroadcaster;
@@ -44,9 +42,10 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -58,15 +57,15 @@ import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class ContextTemplateWidget extends Div {
 
     private Registration contextEnableBroadcasterRegistration;
-
     private ContextTemplateFilteringGrid contextTemplateFilteringGrid;
     private ScheduledContextService scheduledContextService;
     private ContextProfileService contextProfileService;
@@ -76,7 +75,6 @@ public class ContextTemplateWidget extends Div {
     private SchedulerJobService schedulerJobService;
     private String zipWorkingDirectory;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
-
     private SubMenu activeContextSubMenu;
 
     /**
@@ -397,15 +395,17 @@ public class ContextTemplateWidget extends Div {
                             ScheduledContextRecord refreshedScheduledContextRecord = this.scheduledContextService.findByName(contextTemplate.getName());
                             contextTemplate = refreshedScheduledContextRecord.getContext();
                             contextTemplate.setDisabled(false);
+                            this.jobProvisionService.provisionJobs(this.getSchedulerJobForContext(contextTemplate.getName()));
+                            this.contextInstanceRegistrationService.register(contextTemplate.getName());
                             refreshedScheduledContextRecord.setContext(contextTemplate);
                             scheduledContextRecord.setModifiedBy(authentication.getName());
                             this.scheduledContextService.save(refreshedScheduledContextRecord);
-                            this.contextInstanceRegistrationService.register(contextTemplate.getName());
                             contextTemplateFilteringGrid.getDataProvider().refreshAll();
                             this.updateActiveContextMenu();
                             ContextTemplateEnableDisableEventBroadcaster.broadcast(scheduledContextRecord.getContext());
                             progressIndicatorDialog.close();
                         } catch (Exception e) {
+                            e.printStackTrace();
                             progressIndicatorDialog.close();
                             NotificationHelper.showErrorNotification(getTranslation("error.enabling-context", UI.getCurrent().getLocale()));
                         }
@@ -432,6 +432,7 @@ public class ContextTemplateWidget extends Div {
                                 contextTemplate.setDisabled(true);
                                 scheduledContextRecord.setContext(contextTemplate);
                                 scheduledContextRecord.setModifiedBy(authentication.getName());
+                                this.jobProvisionService.removeJobs(contextTemplate.getName());
                                 ContextMachine contextMachine = ContextMachineCache.instance()
                                     .getByContextName(contextTemplate.getName());
                                 if (contextMachine != null) {
@@ -444,6 +445,7 @@ public class ContextTemplateWidget extends Div {
                                 ContextTemplateEnableDisableEventBroadcaster.broadcast(scheduledContextRecord.getContext());
                                 progressIndicatorDialog.close();
                             } catch (Exception e) {
+                                e.printStackTrace();
                                 progressIndicatorDialog.close();
                                 NotificationHelper.showErrorNotification(getTranslation("error.disabling-context", UI.getCurrent().getLocale()));
                             }
@@ -479,6 +481,15 @@ public class ContextTemplateWidget extends Div {
         this.updateActiveContextMenu();
 
         return quickStartMenuBar;
+    }
+
+    private List<SchedulerJob> getSchedulerJobForContext(String contextName) {
+        List< SchedulerJobRecord> schedulerJobRecordList = this.schedulerJobService
+            .findByContext(contextName, -1, -1).getResultList();
+
+        return schedulerJobRecordList.stream()
+            .map(schedulerJobRecord -> schedulerJobRecord.getJob())
+            .collect(Collectors.toList());
     }
 
     private void updateActiveContextMenu() {
