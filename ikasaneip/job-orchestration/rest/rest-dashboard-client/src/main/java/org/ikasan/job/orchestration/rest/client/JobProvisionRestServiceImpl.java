@@ -29,7 +29,7 @@ public class JobProvisionRestServiceImpl extends DashboardRestServiceImpl<String
         super(environment, httpComponentsClientHttpRequestFactory, path);
     }
 
-    public void provisionJobs(List<SchedulerJob> jobs) {
+    public void provisionJobs(List<SchedulerJob> jobs, String actor) {
         try {
             PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
                 .allowIfSubType("org.ikasan.spec.scheduled.job.model")

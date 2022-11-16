@@ -59,6 +59,8 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
 
     private ContextProfileService contextProfileService;
 
+    private IkasanAuthentication authentication;
+
     public CloneContextTemplateDialog(ScheduledContextService scheduledContextService, ContextTemplateFilteringGrid contextTemplateFilteringGrid,
                                       ContextInstanceRegistrationService contextInstanceRegistrationService, SchedulerJobService schedulerJobService,
                                       ContextProfileService contextProfileService, ScheduledContextRecord contextToClone) {
@@ -67,6 +69,8 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
         this.schedulerJobService = schedulerJobService;
         this.contextProfileService = contextProfileService;
+
+        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.contextTemplate = contextToClone.getContext();
         this.contextTemplate.setName(null);
@@ -96,7 +100,7 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
                     binder.writeBean(this.contextTemplate);
                 } catch (ValidationException e) {
                     e.printStackTrace();
-                    NotificationHelper.showErrorNotification(getTranslation("error.error-validating-new-context-template-form"
+                    NotificationHelper.showErrorNotification(getTranslation("error.error-validating-context-template-form"
                         , UI.getCurrent().getLocale()));
                     return;
                 }
@@ -127,7 +131,7 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
                         contextProfileRecord.setContextName(contextTemplate.getName());
                     });
 
-                    this.schedulerJobService.save(clonedJobs);
+                    this.schedulerJobService.save(clonedJobs, authentication.getName());
                     this.contextProfileService.save(searchResults.getResultList());
                     this.scheduledContextService.save(scheduledContextRecord);
 

@@ -42,9 +42,9 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
 
     private TextField cronExpressionTf;
     private TextField naturalLanguageTf;
-    private String secondPart = "*";
-    private String minutePart = "*";
-    private String hourPart = "*";
+    private String secondPart = "0";
+    private String minutePart = "0";
+    private String hourPart = "0";
     private String dayOfMonthPart = "?";
     private String monthPart = "*";
     private String dayOfWeekPart = "*";
@@ -89,7 +89,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
      */
     public void init(String cronExpression) {
         if(cronExpression == null || cronExpression.isEmpty()) {
-            this.cronExpression = "* * * ? * * *";
+            this.cronExpression = "0 0 0 ? * * *";
         }
         else {
             this.cronExpression = cronExpression;

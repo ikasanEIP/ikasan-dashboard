@@ -35,12 +35,9 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
     private SolrFileEventDrivenJobDaoImpl fileEventDrivenJobRecordDao;
     private SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao;
     private SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobRecordDao;
-
     private SolrSchedulerJobDaoImpl schedulerJobRecordDao;
-
     private Path tmpPath;
     private EmbeddedSolrServer server;
-
     private SchedulerJobService service;
 
     @Before
@@ -85,7 +82,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
 
     @Test
     public void test_save_scheduler_records_null_records_should_not_npe() {
-        service.save(null);
+        service.save(null, "system");
     }
 
     @Test
@@ -101,8 +98,8 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         results = service.findByContext(contextId2, 100, 0);
         assertEquals(0, results.getResultList().size());
 
-        service.save(listOfRecords1);
-        service.save(listOfRecords2);
+        service.save(listOfRecords1, "system");
+        service.save(listOfRecords2, "system");
 
         results = service.findByContext(contextId1, 100, 0);
         validateResults(results, 9, contextId1);
@@ -130,7 +127,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
 
         List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
 
-        service.save(listOfRecords1);
+        service.save(listOfRecords1, "system");
 
         SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
 
@@ -152,7 +149,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
 
         List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
 
-        service.save(listOfRecords1);
+        service.save(listOfRecords1, "system");
 
         SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
 
@@ -179,7 +176,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
 
         List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
 
-        service.save(listOfRecords1);
+        service.save(listOfRecords1, "system");
 
         SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
 
@@ -218,7 +215,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
 
         List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
 
-        service.save(listOfRecords1);
+        service.save(listOfRecords1, "system");
 
         SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
 
@@ -256,7 +253,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
 
         List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
 
-        service.save(listOfRecords1);
+        service.save(listOfRecords1, "system");
 
         SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
 
@@ -278,7 +275,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
 
         List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
 
-        service.save(listOfRecords1);
+        service.save(listOfRecords1, "system");
 
         SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
 
@@ -305,7 +302,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
 
         List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
 
-        service.save(listOfRecords1);
+        service.save(listOfRecords1, "system");
 
         SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
 
@@ -344,7 +341,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
 
         List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1);
 
-        service.save(listOfRecords1);
+        service.save(listOfRecords1, "system");
 
         SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextId1, -1, -1);
 
@@ -376,6 +373,35 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         });
     }
 
+    @Test
+    public void test_rename_context_on_scheduler_jobs() {
+        String contextName = "Context-" + RandomStringUtils.randomAlphanumeric(10);
+
+        List<SchedulerJob> listOfRecords1 = createListOfRecords(contextName);
+
+        service.save(listOfRecords1, "system");
+
+        SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextName, -1, -1);
+
+        Assert.assertEquals(9, results.getResultList().size());
+
+        this.service.renameContextForJobs(contextName, "newContextName", "actor");
+
+        results = this.service.findByContext(contextName, -1, -1);
+
+        Assert.assertEquals(0, results.getResultList().size());
+
+        results = this.service.findByContext("newContextName", -1, -1);
+
+        Assert.assertEquals(9, results.getResultList().size());
+
+        results.getResultList().forEach(schedulerJobRecord -> {
+            Assert.assertEquals("newContextName", schedulerJobRecord.getContextName());
+            Assert.assertEquals("newContextName", schedulerJobRecord.getJob().getContextName());
+        });
+    }
+
+    @Test
     public void test_save_internal_event_driven_job() {
         String contextName = "contextName";
         InternalEventDrivenJob solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
@@ -417,6 +443,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         Assert.assertEquals("pwd", internalEventDrivenJob.getCommandLine());
     }
 
+    @Test
     public void test_save_quartz_driven_job() {
         String contextName = "contextName";
         QuartzScheduleDrivenJob quartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
@@ -458,6 +485,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         Assert.assertEquals("updatedCronExpression", found.getCronExpression());
     }
 
+    @Test
     public void test_save_file_driven_job() {
         String contextName = "contextName";
         FileEventDrivenJob fileEventDrivenJob = new SolrFileEventDrivenJobImpl();

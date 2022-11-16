@@ -38,6 +38,7 @@ import javax.annotation.Resource;
 @CssImport(value="./styles/chart-styling.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 @CssImport(value="./styles/live-errors.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
 @CssImport(value="./styles/tree-view.css", themeFor = "vaadin-grid")
+@CssImport(value = "./styles/grid-header.css", themeFor = "vaadin-grid")
 public class ContextTemplateManagementView extends VerticalLayout implements BeforeEnterObserver, HasUrlParameter<String>
 {
     Logger logger = LoggerFactory.getLogger(ContextTemplateManagementView.class);

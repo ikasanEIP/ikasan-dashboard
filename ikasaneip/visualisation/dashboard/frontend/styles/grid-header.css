@@ -1,0 +1,7 @@
+:host(.error-header) [part~="header-cell"] {
+    color:rgba(176, 0, 32, 1);
+}
+
+:host(.small-header) [part~="header-cell"] {
+    font-size: 9pt;
+}

@@ -69,7 +69,7 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     }
 
     @Override
-    public void save(List records) {
+    public void save(List records, String actor) {
 
     }
 
@@ -104,17 +104,17 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     }
 
     @Override
-    public void saveFileEventDrivenJobs(List quartzScheduleDrivenJobs) {
+    public void saveFileEventDrivenJobs(List quartzScheduleDrivenJobs, String actor) {
 
     }
 
     @Override
-    public void saveQuartzScheduledJobs(List list) {
+    public void saveQuartzScheduledJobs(List list, String actor) {
 
     }
 
     @Override
-    public void saveInternalEventDrivenJobs(List quartzScheduleDrivenJobs) {
+    public void saveInternalEventDrivenJobs(List quartzScheduleDrivenJobs, String actor) {
 
     }
 
@@ -165,6 +165,11 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
 
     @Override
     public void enableAll(String contextName, String actor) {
+
+    }
+
+    @Override
+    public void renameContextForJobs(String oldName, String newName, String actor) {
 
     }
 }

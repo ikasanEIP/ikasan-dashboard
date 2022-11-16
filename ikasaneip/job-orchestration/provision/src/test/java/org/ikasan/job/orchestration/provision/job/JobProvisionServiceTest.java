@@ -67,12 +67,12 @@ public class JobProvisionServiceTest extends AbstractTest {
         JobProvisionServiceImpl jobProvisionService = new JobProvisionServiceImpl(schedulerJobService,
             moduleMetaDataService, jobProvisionModuleRestService);
 
-        jobProvisionService.provisionJobs(this.createSchedulerJobs());
+        jobProvisionService.provisionJobs(this.createSchedulerJobs(), "system");
 
         verify(schedulerJobService, times(3)).deleteByContextName(anyString());
-        verify(schedulerJobService, times(3)).saveQuartzScheduledJobs(anyList());
-        verify(schedulerJobService, times(3)).saveInternalEventDrivenJobs(anyList());
-        verify(schedulerJobService, times(3)).saveFileEventDrivenJobs(anyList());
+        verify(schedulerJobService, times(3)).saveQuartzScheduledJobs(anyList(), anyString());
+        verify(schedulerJobService, times(3)).saveInternalEventDrivenJobs(anyList(), anyString());
+        verify(schedulerJobService, times(3)).saveFileEventDrivenJobs(anyList(), anyString());
         verify(jobProvisionModuleRestService, times(3)).provisionJobs(anyString(), any());
         verify(moduleMetaDataService, times(1)).find(anyList(), any(), anyInt(), anyInt());
 
