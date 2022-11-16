@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 public class JobProvisionModuleRestServiceImpl extends ModuleRestService implements JobProvisionModuleService {
 
-    Logger logger = LoggerFactory.getLogger(SchedulerRestServiceImpl.class);
+    Logger logger = LoggerFactory.getLogger(JobProvisionModuleRestServiceImpl.class);
 
     public static final String JOB_PROVISION_REST_URL = "/rest/jobProvision";
     public static final String JOB_PROVISION_REMOVE_REST_URL = "/rest/jobProvision/remove";
@@ -54,7 +54,7 @@ public class JobProvisionModuleRestServiceImpl extends ModuleRestService impleme
             HttpEntity entity = new HttpEntity(serialised, headers);
             String url = contextUrl + JOB_PROVISION_REST_URL;
 
-            logger.info("Context URL[{}] Payload[{}] ", url, serialised);
+            logger.debug("Context URL[{}] Payload[{}] ", url, serialised);
             restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
         }
         catch (Exception e) {
@@ -71,7 +71,7 @@ public class JobProvisionModuleRestServiceImpl extends ModuleRestService impleme
             HttpEntity entity = new HttpEntity(contextName, headers);
             String url = contextUrl + JOB_PROVISION_REMOVE_REST_URL;
 
-            logger.info("Context URL[{}] Payload[{}] ", url, contextName);
+            logger.debug("Context URL[{}] Payload[{}] ", url, contextName);
             restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
         }
         catch (Exception e) {

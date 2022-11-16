@@ -159,6 +159,7 @@ $_documentContainer.innerHTML = `<custom-style>
 <dom-module id="ikasan-grid-styles" theme-for="vaadin-grid">
     <template>
         <style>
+            
             [part~="header-cell"] {
                 font-size: 11pt;
                 height: 20px;
@@ -184,50 +185,30 @@ $_documentContainer.innerHTML = `<custom-style>
             /* Background needs a stronger selector to not be overridden */
             [part~="cell"].running {
                 background-color: rgba(5,227,108, 0.3);
-                /*background-clip: padding-box; !* this has been added *!*/
-                /*border-radius: 5px;*/
-                /*color: white;*/
-                /*border: 5px solid white;*/
             }
 
             [part~="cell"].stoppedInError {
                 background-color: rgba(255, 0, 0, 0.3);
-                /*!*background-clip: padding-box; !* this has been added *!*!*/
-                /*border-radius: 5px;*/
-                /*color: rgba(255, 0, 0, 0.3);*/
-                /*border: 5px solid rgba(255, 0, 0, 0.3);*/
             }
 
             [part~="cell"].recovering {
                 background-color: rgba(253,185,19, 0.3);
-                /*background-clip: padding-box; !* this has been added *!*/
-                /*border-radius: 5px;*/
-                /*color: white;*/
-                /*border: 5px solid white;*/
             }
 
             [part~="cell"].paused {
                 background-color: rgba(133,181,225, 0.3);
-                /*background-clip: padding-box; !* this has been added *!*/
-                /*border-radius: 5px;*/
-                /*color: white;*/
-                /*border: 5px solid white;*/
             }
 
             [part~="cell"].startPause {
                 background-color: rgba(133,181,225, 0.3);
-                /*background-clip: padding-box; !* this has been added *!*/
-                /*border-radius: 5px;*/
-                /*color: white;*/
-                /*border: 5px solid white;*/
             }
 
             [part~="cell"].stopped {
                 background-color: rgba(211,211,211, 0.3);
-                /*background-clip: padding-box; !* this has been added *!*/
-                /*border-radius: 5px;*/
-                /*color: white;*/
-                /*border: 5px solid white;*/
+            }
+            
+            [part~="cell"].error {
+               background-color: rgba(222, 40, 57, 0.3);
             }
 
         </style>

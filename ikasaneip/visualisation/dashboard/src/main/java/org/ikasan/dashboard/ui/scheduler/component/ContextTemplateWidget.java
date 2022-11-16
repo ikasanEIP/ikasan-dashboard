@@ -57,7 +57,6 @@ import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -132,10 +131,15 @@ public class ContextTemplateWidget extends Div {
         Button newContextButton = new Button(getTranslation("button.new-job-plan", UI.getCurrent().getLocale()), newContextIcon);
         newContextButton.setIconAfterText(true);
         newContextButton.addClickListener(buttonClickEvent -> {
-            NewContextTemplateDialog newContextTemplateDialog = new NewContextTemplateDialog(this.scheduledContextService
-                , this.contextTemplateFilteringGrid, this.contextInstanceRegistrationService);
-            newContextTemplateDialog.open();
-            newContextTemplateDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> this.updateActiveContextMenu());
+            ContextTemplateDialog contextTemplateDialog = new ContextTemplateDialog(this.scheduledContextService, this.schedulerJobService
+                , getTranslation("label.new-context-template", UI.getCurrent().getLocale()), true);
+            contextTemplateDialog.open();
+            contextTemplateDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> this.updateActiveContextMenu());
+            contextTemplateDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> {
+                if (!dialogOpenedChangeEvent.isOpened()) {
+                    this.contextTemplateFilteringGrid.getDataProvider().refreshAll();
+                }
+            });
         });
 
         actionButtonLayout.add(newContextButton, addContextButton, quickAccessMenu);
@@ -395,11 +399,11 @@ public class ContextTemplateWidget extends Div {
                             ScheduledContextRecord refreshedScheduledContextRecord = this.scheduledContextService.findByName(contextTemplate.getName());
                             contextTemplate = refreshedScheduledContextRecord.getContext();
                             contextTemplate.setDisabled(false);
-                            this.jobProvisionService.provisionJobs(this.getSchedulerJobForContext(contextTemplate.getName()));
-                            this.contextInstanceRegistrationService.register(contextTemplate.getName());
                             refreshedScheduledContextRecord.setContext(contextTemplate);
                             scheduledContextRecord.setModifiedBy(authentication.getName());
                             this.scheduledContextService.save(refreshedScheduledContextRecord);
+                            this.jobProvisionService.provisionJobs(this.getSchedulerJobForContext(contextTemplate.getName()), this.authentication.getName());
+                            this.contextInstanceRegistrationService.register(contextTemplate.getName());
                             contextTemplateFilteringGrid.getDataProvider().refreshAll();
                             this.updateActiveContextMenu();
                             ContextTemplateEnableDisableEventBroadcaster.broadcast(scheduledContextRecord.getContext());

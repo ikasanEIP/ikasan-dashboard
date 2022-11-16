@@ -105,7 +105,7 @@ public class SchedulerJobProvisionController
 
             logger.info("Attempting to provision {} scheduler jobs.", schedulerJobWrapper.getJobs().size());
 
-            this.jobProvisionService.provisionJobs(schedulerJobWrapper.getJobs());
+            this.jobProvisionService.provisionJobs(schedulerJobWrapper.getJobs(), "system");
 
             logger.info("Successfully provisioned {} scheduler jobs.", schedulerJobWrapper.getJobs().size());
         }
