@@ -92,7 +92,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     }
 
     @Override
-    public void save(List<SchedulerJob> records) {
+    public void save(List<SchedulerJob> records, String actor) {
         if (records != null && !records.isEmpty()) {
             List<FileEventDrivenJob> fileEventDrivenJobs = new ArrayList<>();
             List<InternalEventDrivenJob> internalEventDrivenJobs = new ArrayList<>();
@@ -108,15 +108,15 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
             });
 
             if (!internalEventDrivenJobs.isEmpty()) {
-                this.saveInternalEventDrivenJobs(internalEventDrivenJobs);
+                this.saveInternalEventDrivenJobs(internalEventDrivenJobs, actor);
             }
 
             if (!fileEventDrivenJobs.isEmpty()) {
-                this.saveFileEventDrivenJobs(fileEventDrivenJobs);
+                this.saveFileEventDrivenJobs(fileEventDrivenJobs, actor);
             }
 
             if (!quartzScheduleDrivenJobs.isEmpty()) {
-                this.saveQuartzScheduledJobs(quartzScheduleDrivenJobs);
+                this.saveQuartzScheduledJobs(quartzScheduleDrivenJobs, actor);
             }
         }
     }
@@ -158,7 +158,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
                 + internalEventDrivenJob.getJobName() + "_" + internalEventDrivenJob.getContextName());
 
         if(internalEventDrivenJobRecord == null) {
-            internalEventDrivenJobRecord = this.internalEventDrivenJobRecord(internalEventDrivenJob);
+            internalEventDrivenJobRecord = this.internalEventDrivenJobRecord(internalEventDrivenJob, modifiedBy);
         }
 
         internalEventDrivenJobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
@@ -187,19 +187,20 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     }
 
     @Override
-    public void saveInternalEventDrivenJobs(List<InternalEventDrivenJob> quartzScheduleDrivenJobs) {
+    public void saveInternalEventDrivenJobs(List<InternalEventDrivenJob> quartzScheduleDrivenJobs, String actor) {
         List<InternalEventDrivenJobRecord> records = new ArrayList<>();
-        quartzScheduleDrivenJobs.forEach(job -> records.add(internalEventDrivenJobRecord(job)));
+        quartzScheduleDrivenJobs.forEach(job -> records.add(internalEventDrivenJobRecord(job, actor)));
         this.saveInternalEventDrivenJobRecords(records);
     }
 
-    private InternalEventDrivenJobRecord internalEventDrivenJobRecord(InternalEventDrivenJob internalEventDrivenJob) {
+    private InternalEventDrivenJobRecord internalEventDrivenJobRecord(InternalEventDrivenJob internalEventDrivenJob, String actor) {
         SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
         solrInternalEventDrivenJobRecord.setAgentName(internalEventDrivenJob.getAgentName());
         solrInternalEventDrivenJobRecord.setJobName(internalEventDrivenJob.getJobName());
         solrInternalEventDrivenJobRecord.setContextName(internalEventDrivenJob.getContextName());
         solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
         solrInternalEventDrivenJobRecord.setTimestamp(System.currentTimeMillis());
+
 
         return solrInternalEventDrivenJobRecord;
     }
@@ -211,7 +212,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
                 + quartzScheduleDrivenJob.getJobName() + "_" + quartzScheduleDrivenJob.getContextName());
 
         if(quartzScheduleDrivenJobRecord == null) {
-            quartzScheduleDrivenJobRecord = quartzScheduleDrivenJobRecord(quartzScheduleDrivenJob);
+            quartzScheduleDrivenJobRecord = quartzScheduleDrivenJobRecord(quartzScheduleDrivenJob, modifiedBy);
         }
 
         quartzScheduleDrivenJobRecord.setQuartzScheduleDrivenJob(quartzScheduleDrivenJob);
@@ -221,19 +222,20 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     }
 
     @Override
-    public void saveQuartzScheduledJobs(List<QuartzScheduleDrivenJob> quartzScheduleDrivenJobs) {
+    public void saveQuartzScheduledJobs(List<QuartzScheduleDrivenJob> quartzScheduleDrivenJobs, String actor) {
         List<QuartzScheduleDrivenJobRecord> records = new ArrayList<>();
-        quartzScheduleDrivenJobs.forEach(job -> records.add(quartzScheduleDrivenJobRecord(job)));
+        quartzScheduleDrivenJobs.forEach(job -> records.add(quartzScheduleDrivenJobRecord(job, actor)));
         this.saveQuartzScheduledJobRecords(records);
     }
 
-    private QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord(QuartzScheduleDrivenJob quartzScheduleDrivenJob) {
+    private QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord(QuartzScheduleDrivenJob quartzScheduleDrivenJob, String actor) {
         QuartzScheduleDrivenJobRecord quartzScheduleDrivenJobRecord = new SolrQuartzScheduleDrivenJobRecordImpl();
         quartzScheduleDrivenJobRecord.setAgentName(quartzScheduleDrivenJob.getAgentName());
         quartzScheduleDrivenJobRecord.setContextName(quartzScheduleDrivenJob.getContextName());
         quartzScheduleDrivenJobRecord.setJobName(quartzScheduleDrivenJob.getJobName());
         quartzScheduleDrivenJobRecord.setTimestamp(System.currentTimeMillis());
         quartzScheduleDrivenJobRecord.setQuartzScheduleDrivenJob(quartzScheduleDrivenJob);
+        quartzScheduleDrivenJobRecord.setModifiedBy(actor);
 
         return quartzScheduleDrivenJobRecord;
     }
@@ -243,10 +245,10 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         FileEventDrivenJobRecord fileEventDrivenJobRecord =  this.fileEventDrivenJobRecordDao
             .findById(JobConstants.FILE_EVENT_DRIVEN_JOB + "_" + fileEventDrivenJob.getAgentName() + "_"
                 + fileEventDrivenJob.getJobName() + "_" + fileEventDrivenJob.getContextName());
-        this.saveFileEventDrivenJobRecord(fileEventDrivenJobRecord(fileEventDrivenJob));
+        this.saveFileEventDrivenJobRecord(fileEventDrivenJobRecord(fileEventDrivenJob, modifiedBy));
 
         if(fileEventDrivenJobRecord == null) {
-            fileEventDrivenJobRecord = fileEventDrivenJobRecord(fileEventDrivenJob);
+            fileEventDrivenJobRecord = fileEventDrivenJobRecord(fileEventDrivenJob, modifiedBy);
         }
 
         fileEventDrivenJobRecord.setFileEventDrivenJob(fileEventDrivenJob);
@@ -255,19 +257,20 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     }
 
     @Override
-    public void saveFileEventDrivenJobs(List<FileEventDrivenJob> quartzScheduleDrivenJobs) {
+    public void saveFileEventDrivenJobs(List<FileEventDrivenJob> quartzScheduleDrivenJobs, String actor) {
         List<FileEventDrivenJobRecord> records = new ArrayList<>();
-        quartzScheduleDrivenJobs.forEach(job -> records.add(fileEventDrivenJobRecord(job)));
+        quartzScheduleDrivenJobs.forEach(job -> records.add(fileEventDrivenJobRecord(job, actor)));
         this.saveFileEventDrivenJobRecords(records);
     }
 
-    private SolrFileEventDrivenJobRecordImpl fileEventDrivenJobRecord(FileEventDrivenJob fileEventDrivenJob) {
+    private SolrFileEventDrivenJobRecordImpl fileEventDrivenJobRecord(FileEventDrivenJob fileEventDrivenJob, String actor) {
         SolrFileEventDrivenJobRecordImpl solrFileEventDrivenJobRecord = new SolrFileEventDrivenJobRecordImpl();
         solrFileEventDrivenJobRecord.setAgentName(fileEventDrivenJob.getAgentName());
         solrFileEventDrivenJobRecord.setJobName(fileEventDrivenJob.getJobName());
         solrFileEventDrivenJobRecord.setContextName(fileEventDrivenJob.getContextName());
         solrFileEventDrivenJobRecord.setTimestamp(System.currentTimeMillis());
         solrFileEventDrivenJobRecord.setFileEventDrivenJob(fileEventDrivenJob);
+        solrFileEventDrivenJobRecord.setModifiedBy(actor);
 
         return solrFileEventDrivenJobRecord;
     }
@@ -276,7 +279,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     public void skip(SchedulerJobRecord jobRecord, List<String> childContextNames, String actor) {
         if(jobRecord.getJob() instanceof InternalEventDrivenJob) {
             InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
-                ((InternalEventDrivenJob)jobRecord.getJob());
+                ((InternalEventDrivenJob)jobRecord.getJob(), actor);
             internalEventDrivenJobRecord.setTimestamp(jobRecord.getTimestamp());
             this.internalEventDrivenJobRecordDao.skip(internalEventDrivenJobRecord, childContextNames, actor);
         }
@@ -289,7 +292,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     public void hold(SchedulerJobRecord jobRecord, List<String> childContextNames, String actor) {
         if(jobRecord.getJob() instanceof InternalEventDrivenJob) {
             InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
-                ((InternalEventDrivenJob)jobRecord.getJob());
+                ((InternalEventDrivenJob)jobRecord.getJob(), actor);
             internalEventDrivenJobRecord.setTimestamp(jobRecord.getTimestamp());
             this.internalEventDrivenJobRecordDao.hold(internalEventDrivenJobRecord,
                 childContextNames, actor);
@@ -303,7 +306,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     public void enable(SchedulerJobRecord jobRecord, String actor) {
         if(jobRecord.getJob() instanceof InternalEventDrivenJob) {
             InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
-                ((InternalEventDrivenJob)jobRecord.getJob());
+                ((InternalEventDrivenJob)jobRecord.getJob(),actor);
             internalEventDrivenJobRecord.setTimestamp(jobRecord.getTimestamp());
             this.internalEventDrivenJobRecordDao.enable(internalEventDrivenJobRecord, actor);
         }
@@ -316,7 +319,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     public void release(SchedulerJobRecord jobRecord, String actor) {
         if(jobRecord.getJob() instanceof InternalEventDrivenJob) {
             InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
-                ((InternalEventDrivenJob)jobRecord.getJob());
+                ((InternalEventDrivenJob)jobRecord.getJob(), actor);
             internalEventDrivenJobRecord.setTimestamp(jobRecord.getTimestamp());
             this.internalEventDrivenJobRecordDao.release(internalEventDrivenJobRecord, actor);
         }
@@ -371,12 +374,43 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         searchResults.getResultList().forEach(schedulerJobRecord -> {
             if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
                 InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
-                    ((InternalEventDrivenJob)schedulerJobRecord.getJob());
+                    ((InternalEventDrivenJob)schedulerJobRecord.getJob(),"");
                 internalEventDrivenJobRecord.setTimestamp(schedulerJobRecord.getTimestamp());
                 filteredJobs.add(internalEventDrivenJobRecord);
             }
         });
 
         return filteredJobs;
+    }
+
+    @Override
+    public void renameContextForJobs(String oldName, String newName, String actor) {
+        SearchResults<? extends SchedulerJobRecord> schedulerJobRecords = this.findByContext(oldName, -1, -1);
+
+        List<InternalEventDrivenJob> internalEventDrivenJobs = new ArrayList<>();
+        List<QuartzScheduleDrivenJob> quartzScheduleDrivenJobs = new ArrayList<>();
+        List<FileEventDrivenJob> fileEventDrivenJobs = new ArrayList<>();
+
+        schedulerJobRecords.getResultList().forEach(schedulerJobRecord -> {
+            SchedulerJob job = schedulerJobRecord.getJob();
+
+            job.setContextName(newName);
+
+            if(job instanceof InternalEventDrivenJob) {
+                internalEventDrivenJobs.add((InternalEventDrivenJob) job);
+            }
+            else if(job instanceof FileEventDrivenJob) {
+                fileEventDrivenJobs.add((FileEventDrivenJob) job);
+            }
+            else if(job instanceof QuartzScheduleDrivenJob) {
+                quartzScheduleDrivenJobs.add((QuartzScheduleDrivenJob) job);
+            }
+
+        });
+
+        this.deleteByContextName(oldName);
+        this.saveInternalEventDrivenJobs(internalEventDrivenJobs, actor);
+        this.saveQuartzScheduledJobs(quartzScheduleDrivenJobs, actor);
+        this.saveFileEventDrivenJobs(fileEventDrivenJobs, actor);
     }
 }

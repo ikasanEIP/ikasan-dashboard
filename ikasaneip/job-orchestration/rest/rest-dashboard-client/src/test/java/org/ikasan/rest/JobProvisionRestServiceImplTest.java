@@ -93,7 +93,7 @@ public class JobProvisionRestServiceImplTest extends AbstractTest{
                 .withStatus(200)
             ));
 
-        jobProvisionService.provisionJobs(schedulerJobs);
+        jobProvisionService.provisionJobs(schedulerJobs, "system");
 
         verify(putRequestedFor(urlEqualTo("/rest/provision/jobs"))
             .withHeader(HttpHeaders.USER_AGENT, equalTo("useragent"))
@@ -129,7 +129,7 @@ public class JobProvisionRestServiceImplTest extends AbstractTest{
                 .withStatus(400)
             ));
 
-        jobProvisionService.provisionJobs(schedulerJobs);
+        jobProvisionService.provisionJobs(schedulerJobs, "system");
     }
 
     private List<SchedulerJob> createSchedulerJobs() {

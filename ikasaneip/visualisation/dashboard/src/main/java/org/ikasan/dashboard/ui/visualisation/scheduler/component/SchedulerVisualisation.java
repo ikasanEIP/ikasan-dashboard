@@ -508,7 +508,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             });
 
             this.schedulerJobService.save(jobsToSave.values().stream()
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList()), authentication.getName());
             logger.info(this.parentContextTemplate.toString());
 
             ContextHelper.replaceChildContextTemplate(this.parentContextTemplate, updatedContext);

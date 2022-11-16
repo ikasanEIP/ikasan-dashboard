@@ -212,7 +212,7 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
     }
 
     private void saveJobs(List<SchedulerJob> contextJobs) {
-        this.schedulerJobService.save(contextJobs);
+        this.schedulerJobService.save(contextJobs, "system");
     }
 
     private void setJobsParticipateInJobLock(ContextTemplate contextTemplate, List<SchedulerJob> contextJobs) {
