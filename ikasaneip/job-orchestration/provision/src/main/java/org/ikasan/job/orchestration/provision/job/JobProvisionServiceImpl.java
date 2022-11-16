@@ -55,7 +55,8 @@ public class JobProvisionServiceImpl implements JobProvisionService {
         }
     }
 
-    public void provisionJobs(List<SchedulerJob> jobs) {
+    @Override
+    public void provisionJobs(List<SchedulerJob> jobs, String actor) {
         long now = System.currentTimeMillis();
         List<String> uniqueAgentNames = this.getUniqueAgentNames(jobs);
         logger.info(String.format("Provisioning %s jobs across %s agents", jobs.size(), uniqueAgentNames.size()));
@@ -93,7 +94,7 @@ public class JobProvisionServiceImpl implements JobProvisionService {
 
                 logger.info(String.format("Attempting to provision %s jobs on agent[%s]", jobs.size(), agent.getUrl()));
                 this.jobProvisionModuleRestService.provisionJobs(agent.getUrl(), schedulerJobWrapper);
-                persistJobs(jobs);
+                persistJobs(jobs, actor);
                 logger.info(String.format("Successfully provisioned %s jobs on agent[%s]", jobs.size(), agent.getUrl()));
             }
             catch (JobProvisionException e) {
@@ -255,7 +256,7 @@ public class JobProvisionServiceImpl implements JobProvisionService {
             .collect(Collectors.toList());
     }
 
-    private void persistJobs(List<SchedulerJob> jobs) {
+    private void persistJobs(List<SchedulerJob> jobs, String actor) {
         Set<String> contextNames = jobs.stream().map(SchedulerJob::getContextName).collect(Collectors.toSet());
         for (String contextName : contextNames) {
             this.schedulerJobService.deleteByContextName(contextName);
@@ -277,15 +278,15 @@ public class JobProvisionServiceImpl implements JobProvisionService {
         });
 
         if(!internalEventDrivenJobs.isEmpty()) {
-            this.schedulerJobService.saveInternalEventDrivenJobs(internalEventDrivenJobs);
+            this.schedulerJobService.saveInternalEventDrivenJobs(internalEventDrivenJobs, actor);
         }
 
         if(!fileEventDrivenJobs.isEmpty()) {
-            this.schedulerJobService.saveFileEventDrivenJobs(fileEventDrivenJobs);
+            this.schedulerJobService.saveFileEventDrivenJobs(fileEventDrivenJobs, actor);
         }
 
         if(!quartzScheduleDrivenJobs.isEmpty()) {
-            this.schedulerJobService.saveQuartzScheduledJobs(quartzScheduleDrivenJobs);
+            this.schedulerJobService.saveQuartzScheduledJobs(quartzScheduleDrivenJobs, actor);
         }
     }
 

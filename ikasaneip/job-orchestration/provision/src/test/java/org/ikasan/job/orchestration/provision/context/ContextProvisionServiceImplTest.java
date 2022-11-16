@@ -122,7 +122,7 @@ public class ContextProvisionServiceImplTest {
 
         verify(schedulerJobService).deleteByContextName(contextName);
         verify(contextProfileService).deleteByContextName(contextName);
-        verify(schedulerJobService).save(contextJobs);
+        verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
         verify(scheduledContextService).save(contextCaptor.capture());
@@ -182,7 +182,7 @@ public class ContextProvisionServiceImplTest {
 
         verify(schedulerJobService).deleteByContextName(contextName);
         verify(contextProfileService).deleteByContextName(contextName);
-        verify(schedulerJobService).save(contextJobs);
+        verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
         verify(scheduledContextService).save(contextCaptor.capture());
@@ -263,7 +263,7 @@ public class ContextProvisionServiceImplTest {
 
         verify(schedulerJobService).deleteByContextName(contextName);
         verify(contextProfileService).deleteByContextName(contextName);
-        verify(schedulerJobService).save(contextJobs);
+        verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
         verify(scheduledContextService).save(contextCaptor.capture());
@@ -340,7 +340,7 @@ public class ContextProvisionServiceImplTest {
 
         verify(schedulerJobService).deleteByContextName(contextName);
         verify(contextProfileService).deleteByContextName(contextName);
-        verify(schedulerJobService).save(contextJobs);
+        verify(schedulerJobService).save(contextJobs, "system");
         verify(contextProfileService).save(contextProfileRecords);
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
@@ -399,7 +399,7 @@ public class ContextProvisionServiceImplTest {
 
         verify(schedulerJobService).deleteByContextName(contextName);
         verify(contextProfileService).deleteByContextName(contextName);
-        verify(schedulerJobService).save(contextJobs);
+        verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
         verify(scheduledContextService).save(contextCaptor.capture());

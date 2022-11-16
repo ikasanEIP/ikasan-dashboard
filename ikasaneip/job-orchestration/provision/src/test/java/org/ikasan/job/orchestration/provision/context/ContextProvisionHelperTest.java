@@ -147,7 +147,7 @@ public class ContextProvisionHelperTest extends AbstractTest {
         SchedulerJobWrapperImpl schedulerJobWrapper1 = objectMapper.readValue(serialised, SchedulerJobWrapperImpl.class);
 
 
-        jobProvisionService.provisionJobs(schedulerJobWrapper1.getJobs());
+        jobProvisionService.provisionJobs(schedulerJobWrapper1.getJobs(), "system");
     }
 
 
