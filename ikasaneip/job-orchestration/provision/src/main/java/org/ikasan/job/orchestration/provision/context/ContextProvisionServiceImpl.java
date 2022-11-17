@@ -149,10 +149,10 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
     private void registerContext(ContextTemplate contextTemplate) {
         // overwrites any existing details of registered jobs
         ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(contextTemplate.getName(),
-            contextTemplate.getTimeWindowStart(), this.contextInstanceRegistrationService);
+            contextTemplate.getTimeWindowStart(), contextTemplate.getTimezone(), this.contextInstanceRegistrationService);
 
         ContextInstanceEndJob endJob = new ContextInstanceEndJob(contextTemplate.getName() + END_JOB_EXTENSION,
-            contextTemplate.getTimeWindowEnd(), this.contextInstanceRegistrationService);
+            contextTemplate.getTimeWindowEnd(), contextTemplate.getTimezone(), this.contextInstanceRegistrationService);
 
         JobDetail jobDetail = this.scheduledJobFactory.createJobDetail(job, ContextInstanceRegisterJob.class, job.getJobName(), "context");
 

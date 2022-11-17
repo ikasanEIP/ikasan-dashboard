@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.time.ZoneId;
 import java.util.Optional;
 
 public class BusinessStreamNotificationJob implements DashboardJob {
@@ -27,6 +28,7 @@ public class BusinessStreamNotificationJob implements DashboardJob {
     private BusinessStreamNotificationService businessStreamNotificationService;
     private PlatformConfigurationService platformConfigurationService;
     private EmailNotifier emailNotifier;
+    private String timezone = ZoneId.systemDefault().getId();
 
     public BusinessStreamNotificationJob(TemplateEngine templateEngine, BusinessStreamNotification businessStreamNotification,
                                          BusinessStreamNotificationService businessStreamNotificationService,
@@ -51,6 +53,18 @@ public class BusinessStreamNotificationJob implements DashboardJob {
         this.emailNotifier = emailNotifier;
         if(this.emailNotifier == null) {
             throw new IllegalArgumentException("emailNotifier cannot be null!");
+        }
+    }
+
+    public BusinessStreamNotificationJob(TemplateEngine templateEngine, BusinessStreamNotification businessStreamNotification,
+                                         BusinessStreamNotificationService businessStreamNotificationService,
+                                         PlatformConfigurationService platformConfigurationService,
+                                         EmailNotifier emailNotifier, String timezone) {
+        this(templateEngine, businessStreamNotification, businessStreamNotificationService,
+            platformConfigurationService, emailNotifier);
+        this.timezone = timezone;
+        if(this.timezone == null) {
+            throw new IllegalArgumentException("timezone cannot be null!");
         }
     }
 
@@ -119,5 +133,10 @@ public class BusinessStreamNotificationJob implements DashboardJob {
     @Override
     public String getCronExpression() {
         return this.businessStreamNotification.getCronExpression();
+    }
+
+    @Override
+    public String getTimezone() {
+        return this.timezone;
     }
 }

@@ -72,6 +72,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private static final String ENABLE_ICON = "ENABLE_ICON";
     private static final String HOLD_ICON = "HOLD_ICON";
     private static final String RELEASE_ICON = "RELEASE_ICON";
+    private static final String SUBMIT_ICON = "SUBMIT_ICON";
     private static final String LOG_ICON = "LOG_ICON";
     private static final String ERROR_LOG_ICON = "ERROR_LOG_ICON";
     private static final String RESET_JOB_ICON = "RESET_JOB_ICON";
@@ -990,82 +991,83 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         layout.add(release);
 
-        Icon submit = IconDecorator.decorate(new Icon(VaadinIcon.PAPERPLANE), getTranslation("tooltip.submit-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
-        submit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-            if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
-                InternalEventDrivenJobSubmissionDialog internalEventDrivenJobSubmissionDialog = new InternalEventDrivenJobSubmissionDialog(this.systemEventLogger,
-                    this.moduleMetaDataService, this.contextInstance, this.jobInitiationService, schedulerJobInstanceRecord, this.schedulerJobInstanceService);
+        Icon submit;
 
-                internalEventDrivenJobSubmissionDialog.open();
-            }
-            else if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof FileEventDrivenJobInstance) {
-                ConfirmDialog confirmDialog = new ConfirmDialog();
-                confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-file-job", UI.getCurrent().getLocale()));
-                confirmDialog.setText(getTranslation("confirm-dialog-text.submit-file-job", UI.getCurrent().getLocale()));
+        if(!iconMap.containsKey(SUBMIT_ICON)) {
+            submit = IconDecorator.decorate(new Icon(VaadinIcon.PAPERPLANE), getTranslation("tooltip.submit-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            submit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if (schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
+                    InternalEventDrivenJobSubmissionDialog internalEventDrivenJobSubmissionDialog = new InternalEventDrivenJobSubmissionDialog(this.systemEventLogger,
+                        this.moduleMetaDataService, this.contextInstance, this.jobInitiationService, schedulerJobInstanceRecord, this.schedulerJobInstanceService);
 
-                confirmDialog.setCancelable(true);
+                    internalEventDrivenJobSubmissionDialog.open();
+                } else if (schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof FileEventDrivenJobInstance) {
+                    ConfirmDialog confirmDialog = new ConfirmDialog();
+                    confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-file-job", UI.getCurrent().getLocale()));
+                    confirmDialog.setText(getTranslation("confirm-dialog-text.submit-file-job", UI.getCurrent().getLocale()));
 
-                confirmDialog.open();
+                    confirmDialog.setCancelable(true);
 
-                confirmDialog.addConfirmListener(confirmEvent -> {
-                    try {
-                        ModuleMetaData agent = this.moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
-                        schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
-                        schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+                    confirmDialog.open();
 
-                        this.jobInitiationService.raiseFileEventSchedulerJob(agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getJobName());
+                    confirmDialog.addConfirmListener(confirmEvent -> {
+                        try {
+                            ModuleMetaData agent = this.moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
+                            schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
+                            schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
-                        logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
+                            this.jobInitiationService.raiseFileEventSchedulerJob(agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getJobName());
 
-                        this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
-                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
-                            , this.authentication.getName());
+                            logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
 
-                        NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                        NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
-                    }
-                });
-            }
-            else if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof QuartzScheduleDrivenJobInstance) {
-                ConfirmDialog confirmDialog = new ConfirmDialog();
-                confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-quartz-job", UI.getCurrent().getLocale()));
-                confirmDialog.setText(getTranslation("confirm-dialog-text.submit-quartz-job", UI.getCurrent().getLocale()));
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
+                                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
+                                , this.authentication.getName());
 
-                confirmDialog.setCancelable(true);
+                            NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
+                        }
+                    });
+                } else if (schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof QuartzScheduleDrivenJobInstance) {
+                    ConfirmDialog confirmDialog = new ConfirmDialog();
+                    confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-quartz-job", UI.getCurrent().getLocale()));
+                    confirmDialog.setText(getTranslation("confirm-dialog-text.submit-quartz-job", UI.getCurrent().getLocale()));
 
-                confirmDialog.open();
+                    confirmDialog.setCancelable(true);
 
-                confirmDialog.addConfirmListener(confirmEvent -> {
-                    try {
-                        ModuleMetaData agent = this.moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
-                        this.jobInitiationService.raiseQuartzSchedulerJob(agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getJobName());
+                    confirmDialog.open();
 
-                        logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
+                    confirmDialog.addConfirmListener(confirmEvent -> {
+                        try {
+                            ModuleMetaData agent = this.moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
+                            this.jobInitiationService.raiseQuartzSchedulerJob(agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getJobName());
 
-                        this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
-                                , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
-                            , this.authentication.getName());
+                            logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
 
-                        schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
-                        schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
+                                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
+                                , this.authentication.getName());
 
-                        NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                        NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
-                    }
-                });
-            }
-        });
+                            schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
+                            schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+
+                            NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
+                        }
+                    });
+                }
+            });
+            iconMap.put(SUBMIT_ICON, submit);
+        }
+        else {
+            submit = iconMap.get(SUBMIT_ICON);
+        }
 
         layout.add(submit);
-        submit.setVisible(schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.WAITING) ||
-            schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.COMPLETE) ||
-            schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR));
 
         Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("label.download-job", UI.getCurrent().getLocale())
             , "14pt", "rgba(0, 0, 0, 1.0)");
@@ -1256,6 +1258,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         Icon submitDownstreamJobs = iconMap.get(SUBMIT_DOWNSTREAM_JOBS_ICON);
         submitDownstreamJobs.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
             schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR));
+
+        Icon submit = iconMap.get(SUBMIT_ICON);
+        submit.setVisible(schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.WAITING));
     }
 
     @Override

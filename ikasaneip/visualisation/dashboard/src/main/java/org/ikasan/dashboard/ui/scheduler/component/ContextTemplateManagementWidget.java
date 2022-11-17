@@ -843,7 +843,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
     private void populateBlackoutWindowPairs(ContextTemplate contextTemplate) {
         if(contextTemplate.getBlackoutWindowDateTimeRanges() != null) {
             contextTemplate.getBlackoutWindowDateTimeRanges().entrySet().forEach(entry -> {
-                blackoutWindowDateTimePairs.add(new BlackoutWindowDateTimePair(entry.getKey(), entry.getValue()));
+                blackoutWindowDateTimePairs.add(new BlackoutWindowDateTimePair(entry.getKey()
+                    , entry.getValue(), contextTemplate.getTimezone()));
             });
         }
 

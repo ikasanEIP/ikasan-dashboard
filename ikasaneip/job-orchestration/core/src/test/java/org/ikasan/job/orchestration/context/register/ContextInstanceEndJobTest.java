@@ -23,15 +23,24 @@ public class ContextInstanceEndJobTest {
 
     private String contextName;
 
+    private String timezone;
+
     @Before
     public void setUp() {
         contextName = RandomStringUtils.randomAlphabetic(22);
-        contextInstanceEndJob = new ContextInstanceEndJob(contextName + END_JOB_EXTENSION, "0 0 2 ? * * *", contextInstanceRegistrationService);
+        timezone = RandomStringUtils.randomAlphabetic(22);
+        contextInstanceEndJob = new ContextInstanceEndJob(contextName + END_JOB_EXTENSION, "0 0 2 ? * * *"
+            , timezone, contextInstanceRegistrationService);
     }
 
     @Test
     public void getJobName() {
         assertEquals(contextName + "-EndJob", contextInstanceEndJob.getJobName());
+    }
+
+    @Test
+    public void getTimezone() {
+        assertEquals(timezone, contextInstanceEndJob.getTimezone());
     }
 
     @Test

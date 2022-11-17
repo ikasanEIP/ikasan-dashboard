@@ -31,8 +31,8 @@ public class SchedulerJobLogFileViewerDialog extends AbstractCloseableResizableD
                                            String host,
                                            String endPoint,
                                            String logFile) {
-        this.setHeight("90vw");
-        this.setWidth("90vh");
+        this.setHeight("90vh");
+        this.setWidth("90vw");
 
         layout = new VerticalLayout();
         layout.setSizeFull();
@@ -41,12 +41,14 @@ public class SchedulerJobLogFileViewerDialog extends AbstractCloseableResizableD
         this.host = host;
         this.endPoint = endPoint;
         this.logFile = logFile;
+        super.title.setText(logFile);
         init();
     }
 
     private void init() {
         this.initialiseEditor();
         this.layout.add(aceEditor);
+        this.layout.expand(aceEditor);
         AceEditorLogConsumer aceEditorLogConsumer = new AceEditorLogConsumer(aceEditor, UI.getCurrent());
         this.logStreamer = new LogStreamer(
             logStreamingService,
@@ -66,7 +68,6 @@ public class SchedulerJobLogFileViewerDialog extends AbstractCloseableResizableD
         aceEditor.setFontSize(11);
         aceEditor.setTabSize(4);
         aceEditor.setWidth("100%");
-        aceEditor.setHeight("80vh");
         aceEditor.setReadOnly(true);
         aceEditor.setWrap(false);
     }
