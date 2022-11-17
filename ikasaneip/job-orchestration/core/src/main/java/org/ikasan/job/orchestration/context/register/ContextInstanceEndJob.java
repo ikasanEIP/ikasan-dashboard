@@ -7,6 +7,8 @@ import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.ZoneId;
+
 public class ContextInstanceEndJob implements DashboardJob {
 
     public static final String END_JOB_EXTENSION = "-EndJob";
@@ -15,9 +17,11 @@ public class ContextInstanceEndJob implements DashboardJob {
 
     private final String jobName;
     private final String cronExpressionEndTime;
+    private String timezone;
     private final ContextInstanceRegistrationService contextInstanceRegistrationService;
 
-    public ContextInstanceEndJob(String jobName, String cronExpressionEndTime, ContextInstanceRegistrationService contextInstanceRegistrationService) {
+    public ContextInstanceEndJob(String jobName, String cronExpressionEndTime, String timezone
+        , ContextInstanceRegistrationService contextInstanceRegistrationService) {
 
         this.jobName = jobName;
         if (this.jobName == null) {
@@ -29,6 +33,10 @@ public class ContextInstanceEndJob implements DashboardJob {
         this.cronExpressionEndTime = cronExpressionEndTime;
         if (this.cronExpressionEndTime == null) {
             throw new IllegalArgumentException("cronExpressionEndTime cannot be null!");
+        }
+        this.timezone = timezone;
+        if (this.timezone == null) {
+            this.timezone = ZoneId.systemDefault().getId();
         }
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
         if (this.contextInstanceRegistrationService == null) {
@@ -44,6 +52,11 @@ public class ContextInstanceEndJob implements DashboardJob {
     @Override
     public String getCronExpression() {
         return this.cronExpressionEndTime;
+    }
+
+    @Override
+    public String getTimezone() {
+        return timezone;
     }
 
     @Override

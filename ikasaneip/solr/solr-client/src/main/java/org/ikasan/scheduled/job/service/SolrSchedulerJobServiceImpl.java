@@ -200,7 +200,8 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         solrInternalEventDrivenJobRecord.setContextName(internalEventDrivenJob.getContextName());
         solrInternalEventDrivenJobRecord.setInternalEventDrivenJob(internalEventDrivenJob);
         solrInternalEventDrivenJobRecord.setTimestamp(System.currentTimeMillis());
-
+        solrInternalEventDrivenJobRecord.setHeld(!internalEventDrivenJob.getHeldContexts().isEmpty());
+        solrInternalEventDrivenJobRecord.setSkipped(!internalEventDrivenJob.getSkippedContexts().isEmpty());
 
         return solrInternalEventDrivenJobRecord;
     }

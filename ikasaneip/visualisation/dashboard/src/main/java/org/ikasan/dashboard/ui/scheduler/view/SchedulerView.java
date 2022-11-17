@@ -160,6 +160,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     private ContextDebugWidget contextDebugWidget;
 
+    // Todo get rid of board.
     private Board scheduledJobsBoard;
     private Board contextDebugBoard;
 
@@ -167,9 +168,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     private Tab schedulerDashboardTab;
     private Tab contextTemplateTab;
-    private Tab contextTemplateInstanceTab;
-    private Tab schedulerJobTab;
-    private Tab maintenanceTab;
+//    private Tab schedulerJobTab;
     private Tab contextDebugTab;
     private Tabs tabs;
 
@@ -218,15 +217,12 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.schedulerDashboardTab.setId("schedulerDashboardTab");
         this.contextTemplateTab = new Tab(getTranslation("tab.label.job-plans", UI.getCurrent().getLocale()));
         this.contextTemplateTab.setId("contextTemplateTab");
-        this.schedulerJobTab = new Tab(getTranslation("tab.label.scheduled-jobs", UI.getCurrent().getLocale()));
-        this.schedulerJobTab.setId("scheduledJobsTab");
         this.contextDebugTab = new Tab(getTranslation("tab.label.job-plan-debug", UI.getCurrent().getLocale()));
         this.contextDebugTab.setId("contextDebugTab");
-        this.tabs = new Tabs(schedulerDashboardTab, this.contextTemplateTab, schedulerJobTab, contextDebugTab);
+        this.tabs = new Tabs(schedulerDashboardTab, this.contextTemplateTab, contextDebugTab);
 
         Map<Tab, com.vaadin.flow.component.Component> tabsToPages = new HashMap<>();
         tabsToPages.put(this.schedulerDashboardTab, this.schedulerAgentDashboardView);
-        tabsToPages.put(this.schedulerJobTab, this.scheduledJobsBoard);
         tabsToPages.put(this.contextDebugTab, this.contextDebugBoard);
         tabsToPages.put(this.contextTemplateTab, this.contextTemplateWidget);
 

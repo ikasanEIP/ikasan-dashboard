@@ -151,8 +151,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             ContextInstanceImpl contextInstance = objectMapper.readValue(objectMapper
                 .writeValueAsBytes(scheduledContextRecord.getContext()), ContextInstanceImpl.class);
 
-            if(!this.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions())
-                && !this.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges())) {
+            if(!this.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone())
+                && !this.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), contextInstance.getTimezone())) {
                 initialiseContextMachine(context, contextInstance, true);
             }
             else {

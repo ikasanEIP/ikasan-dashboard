@@ -66,7 +66,6 @@ public class SchedulerJobLogFileViewerDialogTest extends UITest {
         assertEquals(11, aceEditor.getFontSize());
         assertEquals(4, aceEditor.getTabSize());
         assertEquals("100%", aceEditor.getWidth());
-        assertEquals("80vh", aceEditor.getHeight());
         assertTrue(aceEditor.isReadOnly());
         assertFalse(aceEditor.isWrap());
     }
