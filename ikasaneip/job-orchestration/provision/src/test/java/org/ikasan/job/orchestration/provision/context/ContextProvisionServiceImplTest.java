@@ -34,11 +34,14 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.Trigger;
 import org.quartz.impl.JobDetailImpl;
+import org.quartz.impl.triggers.CronTriggerImpl;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.ZoneId;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -141,8 +144,79 @@ public class ContextProvisionServiceImplTest {
         verify(scheduler, times(2)).checkExists(endDetail.getKey());
         verify(scheduler, times(2)).checkExists(detail.getKey());
         verify(scheduler, times(2)).checkExists(endDetail.getKey());
-        verify(scheduler).scheduleJob(eq(detail), any(Trigger.class));
-        verify(scheduler).scheduleJob(eq(endDetail), any(Trigger.class));
+
+        ArgumentCaptor<Trigger> triggerCaptor = ArgumentCaptor.forClass(Trigger.class);
+        verify(scheduler, times(1)).scheduleJob(eq(detail), triggerCaptor.capture());
+        Assert.assertEquals(ZoneId.systemDefault().getId(), ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
+        verify(scheduler, times(1)).scheduleJob(eq(endDetail), triggerCaptor.capture());
+        Assert.assertEquals(ZoneId.systemDefault().getId(), ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
+
+        verifyNoMoreInteractions(scheduler, scheduledJobFactory, scheduledContextService, moduleMetadataService, schedulerJobService,
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService);
+    }
+
+    @Test
+    public void should_upload_provision_jobs_and_not_create_context_outside_of_window_with_timezone() throws Exception {
+        ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
+        String contextName = "ContextName";
+        contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
+        contextTemplate.setTimeWindowEnd("0 0 0 ? * * *");
+        contextTemplate.setTimezone("Asia/Singapore");
+        contextTemplate.setName(contextName);
+
+        List<SchedulerJob> contextJobs = new ArrayList<>();
+        FileEventDrivenJob fileJobRecord = new FileEventDrivenJobImpl();
+        fileJobRecord.setAgentName("agentName1");
+        QuartzScheduleDrivenJob quartzDrivenJob = new QuartzScheduleDrivenJobImpl();
+        quartzDrivenJob.setAgentName("agentName1");
+        contextJobs.add(fileJobRecord);
+        contextJobs.add(quartzDrivenJob);
+
+        ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
+        moduleMetaData.setUrl("http://some/url");
+        when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
+
+        JobDetailImpl detail = new JobDetailImpl();
+        detail.setName("ContextName");
+        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName), eq("context"))).thenReturn(detail);
+
+        JobDetailImpl endDetail = new JobDetailImpl();
+        endDetail.setName("ContextName-EndJob");
+        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
+
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST);
+        service.provisionContext(contextBundle);
+
+        verify(schedulerJobService).deleteByContextName(contextName);
+        verify(contextProfileService).deleteByContextName(contextName);
+        verify(schedulerJobService).save(contextJobs, "system");
+
+        ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
+        verify(scheduledContextService).save(contextCaptor.capture());
+        ScheduledContextRecord actualContextRecord = contextCaptor.getValue();
+        assertEquals(contextName, actualContextRecord.getContextName());
+        assertEquals("Asia/Singapore", actualContextRecord.getContext().getTimezone());
+        assertNull(null, actualContextRecord.getId());
+        assertNotNull(actualContextRecord.getContext());
+        assertTrue(actualContextRecord.getTimestamp() >= System.currentTimeMillis() - 2000
+            && actualContextRecord.getTimestamp() <= System.currentTimeMillis());
+
+        verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
+        verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
+
+        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName"), eq("context"));
+        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName-EndJob"), eq("context"));
+        verify(scheduler, times(2)).checkExists(detail.getKey());
+        verify(scheduler, times(2)).checkExists(endDetail.getKey());
+        verify(scheduler, times(2)).checkExists(detail.getKey());
+        verify(scheduler, times(2)).checkExists(endDetail.getKey());
+
+        ArgumentCaptor<Trigger> triggerCaptor = ArgumentCaptor.forClass(Trigger.class);
+        verify(scheduler, times(1)).scheduleJob(eq(detail), triggerCaptor.capture());
+        Assert.assertEquals("Asia/Singapore", ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
+        verify(scheduler, times(1)).scheduleJob(eq(endDetail), triggerCaptor.capture());
+        Assert.assertEquals("Asia/Singapore", ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
 
         verifyNoMoreInteractions(scheduler, scheduledJobFactory, scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService);
@@ -201,8 +275,79 @@ public class ContextProvisionServiceImplTest {
         verify(scheduler, times(2)).checkExists(endDetail.getKey());
         verify(scheduler, times(2)).checkExists(detail.getKey());
         verify(scheduler, times(2)).checkExists(endDetail.getKey());
-        verify(scheduler).scheduleJob(eq(detail), any(Trigger.class));
-        verify(scheduler).scheduleJob(eq(endDetail), any(Trigger.class));
+
+        ArgumentCaptor<Trigger> triggerCaptor = ArgumentCaptor.forClass(Trigger.class);
+        verify(scheduler, times(1)).scheduleJob(eq(detail), triggerCaptor.capture());
+        Assert.assertEquals(ZoneId.systemDefault().getId(), ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
+        verify(scheduler, times(1)).scheduleJob(eq(endDetail), triggerCaptor.capture());
+        Assert.assertEquals(ZoneId.systemDefault().getId(), ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
+
+        verify(contextInstanceRegistrationService).register(contextName);
+
+        verifyNoMoreInteractions(scheduler, scheduledJobFactory, scheduledContextService, moduleMetadataService, schedulerJobService,
+            jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService);
+    }
+
+    @Test
+    public void should_upload_provision_jobs_and_create_context_with_timezone() throws Exception {
+        ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
+        String contextName = "ContextName";
+        contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
+        contextTemplate.setTimeWindowEnd("59 59 23 ? * * *");
+        contextTemplate.setTimezone("Asia/Singapore");
+        contextTemplate.setName(contextName);
+
+        List<SchedulerJob> contextJobs = new ArrayList<>();
+        FileEventDrivenJob fileJobRecord = new FileEventDrivenJobImpl();
+        fileJobRecord.setAgentName("agentName1");
+        QuartzScheduleDrivenJob quartzDrivenJob = new QuartzScheduleDrivenJobImpl();
+        quartzDrivenJob.setAgentName("agentName1");
+        contextJobs.add(fileJobRecord);
+        contextJobs.add(quartzDrivenJob);
+
+        ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
+        moduleMetaData.setUrl("http://some/url");
+        when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
+
+        JobDetailImpl detail = new JobDetailImpl();
+        detail.setName("ContextName");
+        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName), eq("context"))).thenReturn(detail);
+
+        JobDetailImpl endDetail = new JobDetailImpl();
+        endDetail.setName("ContextName-EndJob");
+        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
+
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST);
+        service.provisionContext(contextBundle);
+
+        verify(schedulerJobService).deleteByContextName(contextName);
+        verify(contextProfileService).deleteByContextName(contextName);
+        verify(schedulerJobService).save(contextJobs, "system");
+
+        ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
+        verify(scheduledContextService).save(contextCaptor.capture());
+        ScheduledContextRecord actualContextRecord = contextCaptor.getValue();
+        assertEquals(contextName, actualContextRecord.getContextName());
+        assertNull(null, actualContextRecord.getId());
+        assertNotNull(actualContextRecord.getContext());
+        assertTrue(actualContextRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextRecord.getTimestamp() <= System.currentTimeMillis());
+
+        verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
+        verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
+
+        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName"), eq("context"));
+        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName-EndJob"), eq("context"));
+        verify(scheduler, times(2)).checkExists(detail.getKey());
+        verify(scheduler, times(2)).checkExists(endDetail.getKey());
+        verify(scheduler, times(2)).checkExists(detail.getKey());
+        verify(scheduler, times(2)).checkExists(endDetail.getKey());
+
+        ArgumentCaptor<Trigger> triggerCaptor = ArgumentCaptor.forClass(Trigger.class);
+        verify(scheduler, times(1)).scheduleJob(eq(detail), triggerCaptor.capture());
+        Assert.assertEquals("Asia/Singapore", ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
+        verify(scheduler, times(1)).scheduleJob(eq(endDetail), triggerCaptor.capture());
+        Assert.assertEquals("Asia/Singapore", ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
 
         verify(contextInstanceRegistrationService).register(contextName);
 

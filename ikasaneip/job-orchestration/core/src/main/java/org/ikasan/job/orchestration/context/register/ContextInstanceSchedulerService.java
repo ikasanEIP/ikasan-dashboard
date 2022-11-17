@@ -22,7 +22,6 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
      * Logger for this class
      */
     private static Logger logger = LoggerFactory.getLogger(ContextInstanceSchedulerService.class);
-
     private final ScheduledContextService scheduledContextService;
     private final ContextInstanceRegistrationService contextInstanceRegistrationService;
     private final boolean isContextLifeCycleActive;
@@ -61,10 +60,10 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
 
             for (ScheduledContextRecord scheduledContextRecord : scheduledContextRecords.getResultList()) {
                 ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(scheduledContextRecord.getContextName(),
-                    scheduledContextRecord.getContext().getTimeWindowStart(), this.contextInstanceRegistrationService);
+                    scheduledContextRecord.getContext().getTimeWindowStart(), scheduledContextRecord.getContext().getTimezone(), this.contextInstanceRegistrationService);
 
                 ContextInstanceEndJob endJob = new ContextInstanceEndJob(scheduledContextRecord.getContextName() + END_JOB_EXTENSION,
-                    scheduledContextRecord.getContext().getTimeWindowEnd(), this.contextInstanceRegistrationService);
+                    scheduledContextRecord.getContext().getTimeWindowEnd(), scheduledContextRecord.getContext().getTimezone(), this.contextInstanceRegistrationService);
 
                 JobDetail jobDetail = this.scheduledJobFactory.createJobDetail(job, ContextInstanceRegisterJob.class, job.getJobName(), "context");
 

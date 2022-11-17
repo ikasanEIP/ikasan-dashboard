@@ -31,6 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -156,7 +159,7 @@ public abstract class ContextInstanceServiceBase {
             }
             if(job.getValue().isHeld()) {
                 ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), instance);
-                child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isHeld());
+                child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setHeld(job.getValue().isHeld());
                 child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
             }
         });
@@ -204,7 +207,7 @@ public abstract class ContextInstanceServiceBase {
         }
     }
 
-    protected boolean fallsWithinCronBlackoutWindows(List<String> blackoutWindowCronExpressions) {
+    protected boolean fallsWithinCronBlackoutWindows(List<String> blackoutWindowCronExpressions, String timezone) {
         if (blackoutWindowCronExpressions != null && !blackoutWindowCronExpressions.isEmpty()) {
             Date now = new Date();
             for (String cronExpression : blackoutWindowCronExpressions) {
@@ -222,13 +225,17 @@ public abstract class ContextInstanceServiceBase {
         return false;
     }
 
-    protected boolean fallsWithinDateTimeBlackoutRanges(Map<Long, Long> blackoutDateTimeRanges) {
+    protected boolean fallsWithinDateTimeBlackoutRanges(Map<Long, Long> blackoutDateTimeRanges, String timezone) {
         if(blackoutDateTimeRanges != null && !blackoutDateTimeRanges.isEmpty())
         {
+            LocalDateTime now = LocalDateTime.now();
+            ZoneId zone = timezone != null ? ZoneId.of(timezone) : ZoneId.systemDefault();
+            ZoneOffset zoneOffSet = zone.getRules().getOffset(now);
+
             for(Map.Entry<Long,Long> dateRangeEntry : blackoutDateTimeRanges.entrySet()) {
                 long from = dateRangeEntry.getKey();
                 long to = dateRangeEntry.getValue();
-                long fireTime = System.currentTimeMillis();
+                long fireTime = now.atZone(zoneOffSet).toInstant().toEpochMilli();
                 if(fireTime >= from && fireTime <= to) {
                     return true;
                 }

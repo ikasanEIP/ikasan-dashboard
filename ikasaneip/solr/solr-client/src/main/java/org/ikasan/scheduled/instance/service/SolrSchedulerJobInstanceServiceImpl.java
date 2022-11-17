@@ -268,6 +268,7 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
     @Override
     public List<SchedulerJobInstanceRecord> holdJobsWithinContext(ContextInstance contextInstance, String childContextName) {
         ContextInstance childContext = ContextHelper.getChildContextInstance(childContextName, contextInstance);
+        ContextHelper.enrichJobs(childContext);
         Map<String, SchedulerJobInstance> childContextJobs = ContextHelper.getAllJobs(childContext);
 
         Map<String, InternalEventDrivenJobInstance> contextJobs
@@ -323,6 +324,7 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
 
     public List<SchedulerJobInstanceRecord> getJobsToReleaseWithinContext(ContextInstance contextInstance, String childContextName) {
         ContextInstance childContext = ContextHelper.getChildContextInstance(childContextName, contextInstance);
+        ContextHelper.enrichJobs(childContext);
         Map<String, SchedulerJobInstance> contextJobs = ContextHelper.getAllJobs(childContext);
 
         SchedulerJobInstanceSearchFilter searchFilter = new SolrSchedulerJobInstanceSearchFilterImpl();

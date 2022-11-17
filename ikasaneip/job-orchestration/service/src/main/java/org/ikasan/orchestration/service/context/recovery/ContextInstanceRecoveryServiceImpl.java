@@ -152,8 +152,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                         ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
                         LOG.info(String.format("Recovering instance [%s] id [%s]", contextInstance.getName(), contextInstance.getId()));
 
-                        if(!this.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions())
-                            && !this.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges())) {
+                        if(!this.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone())
+                            && !this.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), contextInstance.getTimezone())) {
                             initialiseContextMachine(context, contextInstance, false);
                         }
                         else {

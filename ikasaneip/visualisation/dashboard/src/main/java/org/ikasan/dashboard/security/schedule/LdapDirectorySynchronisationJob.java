@@ -10,6 +10,7 @@ import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.ZoneId;
 import java.util.Date;
 
 public class LdapDirectorySynchronisationJob implements DashboardJob {
@@ -20,6 +21,7 @@ public class LdapDirectorySynchronisationJob implements DashboardJob {
 
     private LdapService ldapService;
     private SecurityService securityService;
+    private String timezone = ZoneId.systemDefault().getId();
 
     public LdapDirectorySynchronisationJob(AuthenticationMethod authenticationMethod, LdapService ldapService,
                                            SecurityService securityService) {
@@ -34,6 +36,15 @@ public class LdapDirectorySynchronisationJob implements DashboardJob {
         this.securityService = securityService;
         if(this.securityService == null) {
             throw new IllegalArgumentException("securityService cannot be null!");
+        }
+    }
+
+    public LdapDirectorySynchronisationJob(AuthenticationMethod authenticationMethod, LdapService ldapService,
+                                           SecurityService securityService, String timezone) {
+        this(authenticationMethod, ldapService, securityService);
+        this.timezone = timezone;
+        if(this.timezone == null) {
+            throw new IllegalArgumentException("timezone cannot be null!");
         }
     }
 
@@ -61,5 +72,10 @@ public class LdapDirectorySynchronisationJob implements DashboardJob {
     @Override
     public String getCronExpression() {
         return this.authenticationMethod.getSynchronisationCronExpression();
+    }
+
+    @Override
+    public String getTimezone() {
+        return this.timezone;
     }
 }

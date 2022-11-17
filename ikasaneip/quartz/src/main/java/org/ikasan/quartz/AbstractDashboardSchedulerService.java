@@ -8,14 +8,17 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import java.text.ParseException;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 public abstract class AbstractDashboardSchedulerService {
+
     /** Logger for this class */
     private static Logger logger = LoggerFactory.getLogger
         (AbstractDashboardSchedulerService.class);
@@ -63,7 +66,8 @@ public abstract class AbstractDashboardSchedulerService {
             {
                 JobDetail jobDetail = this.dashboardJobDetailsMap.get(jobName);
                 JobKey jobkey = jobDetail.getKey();
-                Trigger trigger = getCronTrigger(jobkey, this.dashboardJobsMap.get(jobkey.toString()).getCronExpression());
+                Trigger trigger = getCronTrigger(jobkey, this.dashboardJobsMap.get(jobkey.toString()).getCronExpression(),
+                    this.dashboardJobsMap.get(jobkey.toString()).getTimezone());
                 Date scheduledDate = scheduler.scheduleJob(jobDetail, trigger);
                 logger.info("Scheduled   job ["
                     + jobkey.toString()
@@ -93,17 +97,13 @@ public abstract class AbstractDashboardSchedulerService {
         }
     }
 
-    /**
-     * Method factory for creating a cron trigger
-     *
-     * @return jobDetail
-     * @throws ParseException
-     */
-    protected Trigger getCronTrigger(JobKey jobkey, String cronExpression)
+    protected Trigger getCronTrigger(JobKey jobkey, String cronExpression, String zoneId)
     {
-        TriggerBuilder triggerBuilder = newTrigger().withIdentity(jobkey.getName(), jobkey.getGroup());
+        TriggerBuilder triggerBuilder = newTrigger()
+            .withIdentity(jobkey.getName(), jobkey.getGroup());
 
         CronScheduleBuilder cronScheduleBuilder = cronSchedule(cronExpression);
+        cronScheduleBuilder.inTimeZone(TimeZone.getTimeZone(ZoneId.of(zoneId)));
 
         triggerBuilder.withSchedule(cronScheduleBuilder);
         return triggerBuilder.build();
