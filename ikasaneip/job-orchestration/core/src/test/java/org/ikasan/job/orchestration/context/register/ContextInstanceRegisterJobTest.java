@@ -22,15 +22,24 @@ public class ContextInstanceRegisterJobTest {
 
     private String contextName;
 
+    private String timezone;
+
     @Before
     public void setUp() {
         contextName = RandomStringUtils.randomAlphabetic(22);
-        contextInstanceRegisterJob = new ContextInstanceRegisterJob(contextName, "0 0 6 ? * * *", contextInstanceRegistrationService);
+        timezone = RandomStringUtils.randomAlphabetic(22);
+        contextInstanceRegisterJob = new ContextInstanceRegisterJob(contextName, "0 0 6 ? * * *", timezone,
+            contextInstanceRegistrationService);
     }
 
     @Test
     public void getJobName() {
         assertEquals(contextName, contextInstanceRegisterJob.getJobName());
+    }
+
+    @Test
+    public void getTimezone() {
+        assertEquals(timezone, contextInstanceRegisterJob.getTimezone());
     }
 
     @Test

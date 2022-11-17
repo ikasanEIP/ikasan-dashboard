@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +29,7 @@ public class SchedulerNotificationJob implements DashboardJob {
     private SchedulerNotificationService schedulerNotificationService;
     private PlatformConfigurationService platformConfigurationService;
     private EmailNotifier emailNotifier;
+    private String timezone = ZoneId.systemDefault().getId();
 
     public SchedulerNotificationJob(TemplateEngine templateEngine, SchedulerNotification schedulerNotification,
                                     SchedulerNotificationService schedulerNotificationService,
@@ -52,6 +54,18 @@ public class SchedulerNotificationJob implements DashboardJob {
         this.emailNotifier = emailNotifier;
         if(this.emailNotifier == null) {
             throw new IllegalArgumentException("emailNotifier cannot be null!");
+        }
+    }
+
+    public SchedulerNotificationJob(TemplateEngine templateEngine, SchedulerNotification schedulerNotification,
+                                    SchedulerNotificationService schedulerNotificationService,
+                                    PlatformConfigurationService platformConfigurationService,
+                                    EmailNotifier emailNotifier, String timezone) {
+        this(templateEngine, schedulerNotification, schedulerNotificationService,
+            platformConfigurationService, emailNotifier);
+        this.timezone = timezone;
+        if(this.timezone == null) {
+            throw new IllegalArgumentException("timezone cannot be null!");
         }
     }
 
@@ -116,5 +130,10 @@ public class SchedulerNotificationJob implements DashboardJob {
     @Override
     public String getCronExpression() {
         return this.schedulerNotification.getCronExpression();
+    }
+
+    @Override
+    public String getTimezone() {
+        return this.timezone;
     }
 }

@@ -158,7 +158,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.scheduledContextRecord = this.loadContextTemplateRecord();
         this.contextTemplate = this.scheduledContextRecord.getContext();
         this.binder.readBean(contextTemplate);
-        this.populateBlackoutWindowPairs(contextTemplate);
+        this.bindContextToFields(contextTemplate);
     }
 
     /**
@@ -291,12 +291,6 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.timezoneCb.setPlaceholder(getTranslation("label.choose-a-timezone", UI.getCurrent().getLocale()));
         this.timezoneCb.setErrorMessage(getTranslation("error.timezone-required", UI.getCurrent().getLocale()));
 
-        if(contextTemplate.getTimezone() != null) {
-            this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(contextTemplate.getTimezone()));
-        }
-        else {
-            this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(ZoneId.systemDefault().getId()));
-        }
 
         Button addDateTimePairButton = new Button("Add", VaadinIcon.PLUS.create());
         addDateTimePairButton.setIconAfterText(true);
@@ -327,15 +321,19 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
      * @param contextTemplate
      */
     private void bindFieldsToContext(ContextTemplate contextTemplate) {
+        contextTemplate.setTimezone(this.timezoneCb.getValue().zoneId);
+        LocalDateTime now = LocalDateTime.now();
+        ZoneId zone = ZoneId.of(contextTemplate.getTimezone());
+        ZoneOffset zoneOffSet = zone.getRules().getOffset(now);
+
         Map<Long, Long> blackoutWindowRanges = new HashMap<>();
 
         this.blackoutWindowDateTimePairs.forEach(pair -> {
-            blackoutWindowRanges.put(pair.getBlackoutWindowStartTime().getValue().atZone(ZoneOffset.UTC).toInstant().toEpochMilli(),
-                pair.getBlackoutWindowEndTime().getValue().atZone(ZoneOffset.UTC).toInstant().toEpochMilli());
+            blackoutWindowRanges.put(pair.getBlackoutWindowStartTime().getValue().atZone(zoneOffSet).toInstant().toEpochMilli(),
+                pair.getBlackoutWindowEndTime().getValue().atZone(zoneOffSet).toInstant().toEpochMilli());
         });
 
         contextTemplate.setBlackoutWindowDateTimeRanges(blackoutWindowRanges);
-        contextTemplate.setTimezone(this.timezoneCb.getValue().zoneId);
     }
 
     /**
@@ -344,11 +342,19 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
      *
      * @param contextTemplate
      */
-    private void populateBlackoutWindowPairs(ContextTemplate contextTemplate) {
+    private void bindContextToFields(ContextTemplate contextTemplate) {
         if(contextTemplate.getBlackoutWindowDateTimeRanges() != null) {
             contextTemplate.getBlackoutWindowDateTimeRanges().entrySet().forEach(entry -> {
-                blackoutWindowDateTimePairs.add(new BlackoutWindowDateTimePair(entry.getKey(), entry.getValue()));
+                blackoutWindowDateTimePairs.add(new BlackoutWindowDateTimePair(entry.getKey(), entry.getValue()
+                    , contextTemplate.getTimezone()));
             });
+        }
+
+        if(contextTemplate.getTimezone() != null) {
+            this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(contextTemplate.getTimezone()));
+        }
+        else {
+            this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(ZoneId.systemDefault().getId()));
         }
 
         this.blackoutWindowsGrid.getDataProvider().refreshAll();
