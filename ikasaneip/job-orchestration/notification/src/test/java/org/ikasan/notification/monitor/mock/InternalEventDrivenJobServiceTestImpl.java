@@ -9,6 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InternalEventDrivenJobServiceTestImpl implements InternalEventDrivenJobService {
+
+    private long min;
+    private long max;
+
+    public InternalEventDrivenJobServiceTestImpl(long min, long max) {
+        this.min = min;
+        this.max = max;
+    }
+
     @Override
     public SearchResults<InternalEventDrivenJobRecord> findAll(int limit, int offset) {
         return null;
@@ -18,7 +27,7 @@ public class InternalEventDrivenJobServiceTestImpl implements InternalEventDrive
     public SearchResults<InternalEventDrivenJobRecord> findByContext(String contextId, int limit, int offset) {
 
         List<InternalEventDrivenJobRecord> list = new ArrayList<>();
-        list.add(new InternalEventDrivenJobRecordTestImpl());
+        list.add(new InternalEventDrivenJobRecordTestImpl(min, max));
         return new SearchResultsImpl(list,1,100);
     }
 

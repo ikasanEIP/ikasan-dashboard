@@ -40,6 +40,9 @@ public class SolrFileEventDrivenJobInstanceImpl extends SolrQuartzScheduleDriven
 
     private int minFileAgeSeconds;
 
+    /** sla for file availability **/
+    private String slaCronExpression;
+
     @Override
     public String getFilePath() {
         return filePath;
@@ -158,6 +161,16 @@ public class SolrFileEventDrivenJobInstanceImpl extends SolrQuartzScheduleDriven
     @Override
     public void setMinFileAgeSeconds(int minFileAgeSeconds) {
         this.minFileAgeSeconds = minFileAgeSeconds;
+    }
+
+    @Override
+    public String getSlaCronExpression() {
+        return slaCronExpression;
+    }
+
+    @Override
+    public void setSlaCronExpression(String slaCronExpression) {
+        this.slaCronExpression = slaCronExpression;
     }
 
     @Override

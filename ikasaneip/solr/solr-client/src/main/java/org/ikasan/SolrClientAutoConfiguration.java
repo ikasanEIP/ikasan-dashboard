@@ -18,8 +18,10 @@ import org.ikasan.scheduled.job.service.SolrSchedulerJobServiceImpl;
 import org.ikasan.scheduled.joblock.dao.SolrJobLockCacheAuditDaoImpl;
 import org.ikasan.scheduled.joblock.dao.SolrJobLockCacheDaoImpl;
 import org.ikasan.scheduled.joblock.service.SolrJobLockCacheServiceImpl;
+import org.ikasan.scheduled.notification.dao.SolrEmailNotificationContextDaoImpl;
 import org.ikasan.scheduled.notification.dao.SolrEmailNotificationDetailsDaoImpl;
 import org.ikasan.scheduled.notification.dao.SolrNotificationSendAuditDaoImpl;
+import org.ikasan.scheduled.notification.service.SolrEmailNotificationContextServiceImpl;
 import org.ikasan.scheduled.notification.service.SolrEmailNotificationDetailsServiceImpl;
 import org.ikasan.scheduled.notification.service.SolrNotificationSendAuditServiceImpl;
 import org.ikasan.scheduled.profile.dao.SolrContextProfileDaoImpl;
@@ -31,6 +33,7 @@ import org.ikasan.spec.scheduled.job.dao.InternalEventDrivenJobDao;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -111,6 +114,19 @@ public class SolrClientAutoConfiguration {
 
         return new SolrScheduledContextInstanceServiceImpl(scheduledContextInstanceDao, scheduledContextInstanceAuditDao, scheduledContextInstanceAuditAggregateDao
             , saveContextInstanceAuditRecords);
+    }
+
+    @Bean
+    public EmailNotificationContextService emailNotificationContextService() {
+        SolrEmailNotificationContextDaoImpl dao = new SolrEmailNotificationContextDaoImpl();
+        dao.initStandalone(solrUrl, solrRetentionDays);
+        dao.setSolrUsername(solrUsername);
+        dao.setSolrPassword(solrPassword);
+
+        SolrEmailNotificationContextServiceImpl service = new SolrEmailNotificationContextServiceImpl(dao);
+        service.setSolrPassword(solrPassword);
+        service.setSolrUsername(solrUsername);
+        return service;
     }
 
     @Bean

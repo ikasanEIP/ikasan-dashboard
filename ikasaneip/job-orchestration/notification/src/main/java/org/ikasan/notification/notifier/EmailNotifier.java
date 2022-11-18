@@ -41,14 +41,19 @@
 package org.ikasan.notification.notifier;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.NotificationType;
 import org.ikasan.notification.configuration.EmailNotificationParamsConfiguration;
 import org.ikasan.scheduled.notification.model.SolrNotificationSendAudit;
 import org.ikasan.scheduled.notification.model.SolrNotificationSendAuditRecord;
 import org.ikasan.spec.scheduled.notification.model.*;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
+import org.ikasan.spec.search.SearchResults;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
@@ -61,17 +66,20 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
     private static final Logger LOG = LoggerFactory.getLogger(EmailNotifier.class);
 
     private EmailNotificationDetailsService emailNotificationDetailsService;
+    private EmailNotificationContextService emailNotificationContextService;
     private NotificationSendAuditService<NotificationSendAuditRecord> notificationSendAuditService;
     private EmailNotificationParamsConfiguration emailNotificationParamsConfiguration;
     private TemplateEngine templateEngine;
     private String mailLinkUrl;
 
     public EmailNotifier(EmailNotificationDetailsService emailNotificationDetailsService,
+                         EmailNotificationContextService emailNotificationContextService,
                          NotificationSendAuditService notificationSendAuditService,
                          EmailNotificationParamsConfiguration emailNotificationParamsConfiguration,
                          TemplateEngine templateEngine,
                          String mailLinkUrl) {
         this.emailNotificationDetailsService = emailNotificationDetailsService;
+        this.emailNotificationContextService = emailNotificationContextService;
         this.notificationSendAuditService = notificationSendAuditService;
         this.emailNotificationParamsConfiguration = emailNotificationParamsConfiguration;
         this.templateEngine = templateEngine;
@@ -80,12 +88,80 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
 
     @Override
     public void invoke(GenericNotificationDetails notificationDetails) {
+
+        // Create an EmailNotification which will be the template to create the email, if needed;
+        EmailNotificationDetails emailNotificationDetails = null;
+
+        // Check if we have an Detail Record for the notification - this tell us if we have a specific notification for a given job/child context
         EmailNotificationDetailsRecord emailNotificationDetailsRecord = emailNotificationDetailsService.
                         findByJobNameAndMonitorType(notificationDetails.getJobName(), notificationDetails.getChildContextName(), notificationDetails.getMonitorType().name());
 
-        if (emailNotificationDetailsRecord != null) {
-            EmailNotificationDetails emailNotificationDetails = emailNotificationDetailsRecord.getEmailNotificationDetails();
+        // If we don't have a Detail Record for the notification, check the general notification for the context and build a detail record for it.
+        if (emailNotificationDetailsRecord == null) {
 
+            String contextName = notificationDetails.getContextName();
+            SearchResults<EmailNotificationContextRecord> emailNotificationContextRecordSearchResults =
+                emailNotificationContextService.findByContextName(contextName, 50, 0);
+
+            // Only if we return one record from solr which will have the definition of the general notification for this context.
+            if (emailNotificationContextRecordSearchResults != null &&
+                emailNotificationContextRecordSearchResults.getResultList() != null &&
+                !emailNotificationContextRecordSearchResults.getResultList().isEmpty() &&
+                emailNotificationContextRecordSearchResults.getResultList().size() == 1) {
+
+                // Check general notification if we are interested in the Monitor Type that has been issued
+                EmailNotificationContextRecord emailNotificationContextRecord = emailNotificationContextRecordSearchResults.getResultList().get(0);
+                EmailNotificationContext emailNotificationContext = emailNotificationContextRecord.getEmailNotificationContext();
+                boolean foundMonitorType = false;
+                if(emailNotificationContext.getMonitorTypes() != null && !emailNotificationContext.getMonitorTypes().isEmpty()) {
+                    for (String monitorType : emailNotificationContext.getMonitorTypes()) {
+                        if (monitorType.equals(notificationDetails.getMonitorType().name())) {
+                            foundMonitorType = true;
+                            break;
+                        }
+                    }
+                }
+
+                // Start creating notification details if we have a general notification for this monitor type
+                if(foundMonitorType) {
+                    emailNotificationDetails = new EmailNotificationDetailsImpl();
+                    emailNotificationDetails.setJobName(notificationDetails.getJobName());
+                    emailNotificationDetails.setContextName(contextName);
+                    emailNotificationDetails.setChildContextName(notificationDetails.getChildContextName());
+                    emailNotificationDetails.setMonitorType(notificationDetails.getMonitorType().name());
+                    // Email Send To
+                    if (emailNotificationContext.getEmailSendToByMonitorType().containsKey(notificationDetails.getMonitorType().name())) {
+                        emailNotificationDetails.setEmailSendTo(emailNotificationContext.getEmailSendToByMonitorType().get(notificationDetails.getMonitorType().name()));
+                    } else {
+                        emailNotificationDetails.setEmailSendTo(emailNotificationContext.getEmailSendTo());
+                    }
+                    // Email Send CC
+                    if (emailNotificationContext.getEmailSendCcByMonitorType().containsKey(notificationDetails.getMonitorType().name())) {
+                        emailNotificationDetails.setEmailSendCc(emailNotificationContext.getEmailSendCcByMonitorType().get(notificationDetails.getMonitorType().name()));
+                    } else {
+                        emailNotificationDetails.setEmailSendCc(emailNotificationContext.getEmailSendCc());
+                    }
+                    // Email Send Bcc
+                    if (emailNotificationContext.getEmailSendBccByMonitorType().containsKey(notificationDetails.getMonitorType().name())) {
+                        emailNotificationDetails.setEmailSendBcc(emailNotificationContext.getEmailSendBccByMonitorType().get(notificationDetails.getMonitorType().name()));
+                    } else {
+                        emailNotificationDetails.setEmailSendBcc(emailNotificationContext.getEmailSendBcc());
+                    }
+                    emailNotificationDetails.setAttachment(emailNotificationContext.getAttachment());
+                    emailNotificationDetails.setHtml(emailNotificationContext.isHtml());
+                    emailNotificationDetails.setEmailSubjectTemplate(emailNotificationContext.getEmailSubjectNotificationTemplate().get(notificationDetails.getMonitorType().name()));
+                    emailNotificationDetails.setEmailBodyTemplate(emailNotificationContext.getEmailBodyNotificationTemplate().get(notificationDetails.getMonitorType().name()));
+                }
+            }
+
+        } else {
+            //Add the Detail Record for the notification to the details ready to be sent.
+            emailNotificationDetails = emailNotificationDetailsRecord.getEmailNotificationDetails();
+        }
+
+        if (emailNotificationDetails != null) {
+
+            // Check if we have already sent an notification for this job, childContext, monitor type and context id.
             NotificationSendAuditRecord notificationSendAuditRecord = notificationSendAuditService.find(notificationDetails.getContextInstanceId(),
                 notificationDetails.getChildContextName(), notificationDetails.getJobName(), notificationDetails.getMonitorType().name(), NotificationType.EMAIL.name());
 
@@ -102,16 +178,25 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
                 final Context ctx = new Context();
                 ctx.setVariable("emailNotificationDetails", emailNotificationDetails);
 
+                // apply template parameters
+                applyEmailNotificationTemplateParameters(emailNotificationDetails, notificationDetails);
+
+
+                emailNotificationDetails.setEmailBody(this.templateEngine.process(emailNotificationDetails.getEmailBodyTemplate(), ctx));
+                emailNotificationDetails.setEmailSubject(this.templateEngine.process(emailNotificationDetails.getEmailSubjectTemplate(), ctx));
+
+                /*
                 if (StringUtils.isNotBlank(emailNotificationDetails.getEmailBodyTemplate())) {
                     emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK_1.name(), createMailLink(notificationDetails, false));
                     emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK_2.name(), createMailLink(notificationDetails, true));
                     emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_BODY_MESSAGE_FROM_MONITOR.name(), notificationDetails.getMessage());
-                    emailNotificationDetails.setEmailBody(this.templateEngine.process(emailNotificationDetails.getEmailBodyTemplate(), ctx));
+
                 }
                 if (StringUtils.isNotBlank(emailNotificationDetails.getEmailSubjectTemplate())) {
                     emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_SUBJECT_LINK.name(), "link-3");
-                    emailNotificationDetails.setEmailSubject(this.templateEngine.process(emailNotificationDetails.getEmailSubjectTemplate(), ctx));
+
                 }
+                 */
 
                 super.sendEmail(emailNotificationDetails);
 
@@ -131,6 +216,26 @@ public class EmailNotifier extends AbstractEmailNotifierBase implements Notifier
                 notificationSendAuditService.save(record);
             }
         }
+    }
+
+    /**
+     * Method to apply the parameters required for the templates.
+     * @param emailNotificationDetails
+     * @param notificationDetails
+     */
+    private void applyEmailNotificationTemplateParameters(EmailNotificationDetails emailNotificationDetails, GenericNotificationDetails notificationDetails) {
+        emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK_1.name(), createMailLink(notificationDetails, false));
+        emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_BODY_LINK_2.name(), createMailLink(notificationDetails, true));
+        emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_BODY_MESSAGE_FROM_MONITOR.name(), notificationDetails.getMessage());
+        emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_AGENT_NAME.name(), notificationDetails.getAgentName());
+        emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_CONTEXT_NAME.name(), emailNotificationDetails.getContextName());
+        emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_JOB_NAME.name(), notificationDetails.getJobName());
+        emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_CHILD_CONTEXT.name(), notificationDetails.getChildContextName());
+        emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_FILE_NAME.name(), notificationDetails.getFileName());
+        emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_FILE_PATH.name(), notificationDetails.getFilePath());
+
+        DateTimeFormatter dtf = DateTimeFormat.forPattern("dd-MM-yyyy HH:mm:ss z");
+        emailNotificationDetails.getEmailNotificationTemplateParameters().put(EmailNotificationTemplateParameters.EMAIL_FIRE_TIME.name(), dtf.print(notificationDetails.getFiredTime()));
     }
 
     private String createMailLink(GenericNotificationDetails notificationDetails, boolean isErrorLog) {
