@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
+@DirtiesContext
 public class JobRunningTimesMonitorTest {
 
     /** default executor service is a single thread executor */
@@ -59,6 +61,8 @@ public class JobRunningTimesMonitorTest {
     private ContextMachine contextMachine1;
 
     private Monitor jobRunningTimesMonitor;
+
+    private MonitorManagement monitorManagement;
 
     @Mock
     private ScheduledContextService scheduledContextService;
@@ -73,14 +77,14 @@ public class JobRunningTimesMonitorTest {
     private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
 
     @After
-    public void tearDown() {
+    public void tearDown() throws IOException {
         DateTimeUtils.setCurrentMillisSystem();
-
+        contextMachine1.teardown();
+        monitorManagement.unRegisterMonitor(jobRunningTimesMonitor);
         ContextMachineCache.instance().remove(contextMachine1);
     }
 
-    @Before
-    public void startup() throws IOException {
+    public void startup(long min, long max) throws IOException {
         objectMapper = ObjectMapperFactory.newInstance();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -99,13 +103,14 @@ public class JobRunningTimesMonitorTest {
         contextInstance1.setScheduledJobs(Arrays.asList(schedulerJobInstance1));
         contextInstance1.setJobDependencies(new ArrayList<>());
 
+        // SchedulerJobInstanceServiceTestImpl.getSchedulerJobInstancesByContextName returns fire job 15 minutes in the past
         SchedulerJobInstanceServiceTestImpl mockSchedulerJobInstanceService = new SchedulerJobInstanceServiceTestImpl();
         mockSchedulerJobInstanceService.setType("internal");
 
-        jobRunningTimesMonitor = new JobRunningTimesMonitorImpl(executorService, mockSchedulerJobInstanceService, new InternalEventDrivenJobServiceTestImpl(), true, 1);
+        jobRunningTimesMonitor = new JobRunningTimesMonitorImpl(executorService, mockSchedulerJobInstanceService, new InternalEventDrivenJobServiceTestImpl(min, max), true, 1);
         jobRunningTimesMonitor.setNotifiers(Arrays.asList(new TestNotifier()));
 
-        MonitorManagement monitorManagement = new MonitorManagement();
+        monitorManagement = new MonitorManagement();
         monitorManagement.registerMonitor(jobRunningTimesMonitor);
 
         contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null
@@ -118,7 +123,8 @@ public class JobRunningTimesMonitorTest {
 
     @Test
     public void test_with_long_running() throws IOException {
-
+        //Min = 0, Max = 3 minutes
+        startup(0, 3);
         ContextualisedScheduledProcessEvent scheduledProcessEvent1 = new ContextualisedScheduledProcessEventImpl();
         scheduledProcessEvent1.setAgentName("agent-1");
         scheduledProcessEvent1.setJobName("job-1");
@@ -133,6 +139,46 @@ public class JobRunningTimesMonitorTest {
             .atMost(90, TimeUnit.SECONDS).untilAsserted(() -> {
                 assertEquals("from testNotifier!", result);
             });
+    }
+
+    @Test
+    public void test_with_long_running_not_long_max_time_no_notification() throws IOException {
+        //Min = 0, Max = 3 minutes
+        startup(0, 30);
+        ContextualisedScheduledProcessEvent scheduledProcessEvent1 = new ContextualisedScheduledProcessEventImpl();
+        scheduledProcessEvent1.setAgentName("agent-1");
+        scheduledProcessEvent1.setJobName("job-1");
+        scheduledProcessEvent1.setJobStarting(true);
+        scheduledProcessEvent1.setSuccessful(false);
+
+        BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
+        ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
+
+        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(60, TimeUnit.SECONDS).await()
+            .during(29, TimeUnit.SECONDS)
+            .atMost(90, TimeUnit.SECONDS)
+            .until(checkResult());
+
+    }
+
+    @Test
+    public void test_with_notification_disabled() throws IOException {
+        //Min = 0, Max = 3 minutes
+        startup(-1, -1);
+        ContextualisedScheduledProcessEvent scheduledProcessEvent1 = new ContextualisedScheduledProcessEventImpl();
+        scheduledProcessEvent1.setAgentName("agent-1");
+        scheduledProcessEvent1.setJobName("job-1");
+        scheduledProcessEvent1.setJobStarting(true);
+        scheduledProcessEvent1.setSuccessful(false);
+
+        BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
+        ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
+
+        with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(60, TimeUnit.SECONDS).await()
+            .during(29, TimeUnit.SECONDS)
+            .atMost(90, TimeUnit.SECONDS)
+            .until(checkResult());
+
     }
 
     private Callable<Boolean> checkResult() {

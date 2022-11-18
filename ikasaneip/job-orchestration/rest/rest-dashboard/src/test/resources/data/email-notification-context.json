@@ -1,0 +1,17 @@
+{
+  "contextName" : "job-plan-1",
+  "monitorTypes" : ["ERROR","OVERDUE","RUNNING_TIME"],
+  "emailSendTo" : [ "11@email.com", "22@email.com" ],
+  "emailSubjectNotificationTemplate" : {
+    "ERROR" : "subject-error-template-1",
+    "OVERDUE" : "subject-overdue-template-1",
+    "RUNNING_TIME": "subject-running-time-template-1"
+  },
+  "emailBodyNotificationTemplate" : {
+    "ERROR" : "error-template-1",
+    "OVERDUE" : "overdue-template-1",
+    "RUNNING_TIME": "running-time-template-1"
+  },
+  "attachment" : "stderr.log",
+  "html" : false
+}

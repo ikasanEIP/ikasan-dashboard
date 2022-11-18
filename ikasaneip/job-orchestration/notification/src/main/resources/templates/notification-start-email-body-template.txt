@@ -1,0 +1,6 @@
+Agent Name [( ${emailNotificationDetails.emailNotificationTemplateParameters.EMAIL_AGENT_NAME} )]
+Job Plan [( ${emailNotificationDetails.emailNotificationTemplateParameters.EMAIL_CONTEXT_NAME} )]
+
+The job [( ${emailNotificationDetails.emailNotificationTemplateParameters.EMAIL_JOB_NAME} )] for the Context [( ${emailNotificationDetails.emailNotificationTemplateParameters.EMAIL_CHILD_CONTEXT} )] has started
+
+Start Time: [( ${emailNotificationDetails.emailNotificationTemplateParameters.EMAIL_FIRE_TIME} )]
