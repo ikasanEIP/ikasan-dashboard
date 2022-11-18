@@ -18,6 +18,10 @@ public class MonitorManagement {
         monitors.add(monitor);
     }
 
+    public void unRegisterMonitor(Monitor monitor) {
+        monitors.remove(monitor);
+    }
+
     public static void startMonitoring(ContextMachine contextMachine) {
         for (Monitor monitor : monitors) {
             monitor.register(contextMachine.getContext());

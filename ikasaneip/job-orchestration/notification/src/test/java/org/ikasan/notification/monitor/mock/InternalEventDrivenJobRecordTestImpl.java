@@ -5,6 +5,15 @@ import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJobRecord;
 
 public class InternalEventDrivenJobRecordTestImpl implements InternalEventDrivenJobRecord {
+
+    private long min;
+    private long max;
+
+    public InternalEventDrivenJobRecordTestImpl(long min, long max) {
+        this.min = min;
+        this.max = max;
+    }
+
     @Override
     public String getId() {
         return null;
@@ -43,8 +52,8 @@ public class InternalEventDrivenJobRecordTestImpl implements InternalEventDriven
     @Override
     public InternalEventDrivenJob getInternalEventDrivenJob() {
         InternalEventDrivenJob job = new InternalEventDrivenJobImpl();
-        job.setMinExecutionTime(200);
-        job.setMaxExecutionTime(25000);
+        job.setMinExecutionTime(min);
+        job.setMaxExecutionTime(max);
         job.setJobName("job-1");
         return job;
     }

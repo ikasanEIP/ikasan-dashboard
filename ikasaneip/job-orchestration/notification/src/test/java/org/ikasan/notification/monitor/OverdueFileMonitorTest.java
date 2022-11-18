@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.io.IOException;
 import java.util.*;
@@ -45,6 +46,7 @@ import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
+@DirtiesContext
 public class OverdueFileMonitorTest {
 
     /** default executor service is a single thread executor */
@@ -57,6 +59,8 @@ public class OverdueFileMonitorTest {
     private ContextMachine contextMachine1;
 
     private Monitor overdueFileMonitor;
+
+    private MonitorManagement monitorManagement;
 
     @Mock
     private ScheduledContextService scheduledContextService;
@@ -71,14 +75,14 @@ public class OverdueFileMonitorTest {
     private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
 
     @After
-    public void tearDown() {
+    public void tearDown() throws IOException {
         DateTimeUtils.setCurrentMillisSystem();
-
+        contextMachine1.teardown();
+        monitorManagement.unRegisterMonitor(overdueFileMonitor);
         ContextMachineCache.instance().remove(contextMachine1);
     }
 
-    @Before
-    public void startup() throws IOException {
+    public void startup(String testType) throws IOException {
         objectMapper = ObjectMapperFactory.newInstance();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -98,12 +102,12 @@ public class OverdueFileMonitorTest {
         contextInstance1.setJobDependencies(new ArrayList<>());
 
         SchedulerJobInstanceServiceTestImpl mockSchedulerJobInstanceService = new SchedulerJobInstanceServiceTestImpl();
-        mockSchedulerJobInstanceService.setType("file");
+        mockSchedulerJobInstanceService.setType(testType);
 
-        overdueFileMonitor = new OverdueFileMonitorImpl(30, executorService, mockSchedulerJobInstanceService, true, 1);
+        overdueFileMonitor = new OverdueFileMonitorImpl(0, executorService, mockSchedulerJobInstanceService, true, 1);
         overdueFileMonitor.setNotifiers(Arrays.asList(new TestNotifier()));
 
-        MonitorManagement monitorManagement = new MonitorManagement();
+        monitorManagement = new MonitorManagement();
         monitorManagement.registerMonitor(overdueFileMonitor);
 
         contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,"./target"
@@ -116,6 +120,8 @@ public class OverdueFileMonitorTest {
 
     @Test
     public void test_with_completed_status() throws IOException {
+
+        startup("file-no-notify");
 
         ContextualisedScheduledProcessEvent scheduledProcessEvent1 = new ContextualisedScheduledProcessEventImpl();
         scheduledProcessEvent1.setAgentName("agent-1");
@@ -137,13 +143,13 @@ public class OverdueFileMonitorTest {
     @Test
     public void test_with_running_and_overdued() throws IOException {
 
+        startup("file-notify");
+
         ContextualisedScheduledProcessEvent scheduledProcessEvent1 = new ContextualisedScheduledProcessEventImpl();
         scheduledProcessEvent1.setAgentName("agent-1");
         scheduledProcessEvent1.setJobName("job-1");
         scheduledProcessEvent1.setJobStarting(true);
         scheduledProcessEvent1.setSuccessful(false);
-
-        DateTimeUtils.setCurrentMillisFixed(1490688000000L); // 09:00:00
 
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
         ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
