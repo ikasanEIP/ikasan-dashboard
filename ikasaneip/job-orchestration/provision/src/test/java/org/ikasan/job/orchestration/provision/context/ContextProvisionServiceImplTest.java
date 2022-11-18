@@ -191,7 +191,7 @@ public class ContextProvisionServiceImplTest {
         endDetail.setName("ContextName-EndJob");
         when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
 
-        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST);
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -325,7 +325,7 @@ public class ContextProvisionServiceImplTest {
         endDetail.setName("ContextName-EndJob");
         when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
 
-        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST);
+        ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
         service.provisionContext(contextBundle);
 
         verify(schedulerJobService).deleteByContextName(contextName);
@@ -625,7 +625,7 @@ public class ContextProvisionServiceImplTest {
         verify(schedulerJobService).deleteByContextName(contextName);
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
-        verify(schedulerJobService).save(contextJobs);
+        verify(schedulerJobService).save(contextJobs, "system");
         verify(contextProfileService).save(contextProfileRecords);
         verify(emailNotificationDetailsService).saveEmailNotificationDetails(emailNotificationDetails);
 
