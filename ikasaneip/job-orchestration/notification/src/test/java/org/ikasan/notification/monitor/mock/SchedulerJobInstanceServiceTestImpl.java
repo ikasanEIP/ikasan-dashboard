@@ -60,10 +60,21 @@ public class SchedulerJobInstanceServiceTestImpl implements SchedulerJobInstance
 
         SchedulerJobInstanceRecord record = new SolrSchedulerJobInstanceRecordImpl();
 
-        if (type.equalsIgnoreCase("file")) {
+        if (type.equalsIgnoreCase("file-notify")) {
 
             FileEventDrivenJobInstance fileEventDrivenJobInstance = new SolrFileEventDrivenJobInstanceImpl();
             fileEventDrivenJobInstance.setCronExpression("0 0/1 05-23 ? * MON-SUN *");
+            fileEventDrivenJobInstance.setSlaCronExpression("0 0/1 05-23 ? * MON-SUN *");
+            fileEventDrivenJobInstance.setJobName("job-1");
+            fileEventDrivenJobInstance.setChildContextNames(Arrays.asList("context-instance-1"));
+            fileEventDrivenJobInstance.setStatus(InstanceStatus.COMPLETE);
+
+            record.setSchedulerJobInstance(fileEventDrivenJobInstance);
+
+        } else if (type.equalsIgnoreCase("file-no-notify")) {
+
+            FileEventDrivenJobInstance fileEventDrivenJobInstance = new SolrFileEventDrivenJobInstanceImpl();
+            fileEventDrivenJobInstance.setSlaCronExpression("0 0/1 05-23 ? * MON-SUN *");
             fileEventDrivenJobInstance.setJobName("job-1");
             fileEventDrivenJobInstance.setChildContextNames(Arrays.asList("context-instance-1"));
             fileEventDrivenJobInstance.setStatus(InstanceStatus.COMPLETE);

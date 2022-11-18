@@ -13,6 +13,7 @@ import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +48,9 @@ public class NotificationConfiguration {
     private InternalEventDrivenJobService internalEventDrivenJobService;
 
     @Resource
+    private EmailNotificationContextService emailNotificationContextService;
+
+    @Resource
     private EmailNotificationDetailsService emailNotificationDetailsService;
 
     @Resource
@@ -55,7 +59,7 @@ public class NotificationConfiguration {
     @Resource
     private EmailNotificationParamsConfiguration emailNotificationParamsConfiguration;
 
-    @Value("${scheduler.notification.file.overdue.tolerance.minutes:30}")
+    @Value("${scheduler.notification.file.overdue.tolerance.minutes:0}")
     private Integer fileArrivalToleranceInMinutes;
 
     @Value("${mail.link.url}")
@@ -73,7 +77,7 @@ public class NotificationConfiguration {
     @Bean
     @DependsOn("emailNotificationParamsConfiguration")
     public EmailNotifier notificationEmailNotifier(TemplateEngine emailTemplateEngine, EmailNotifierConfiguration emailConfiguration, EmailNotificationParamsConfiguration emailNotificationParamsConfiguration) {
-        EmailNotifier emailNotifier = new EmailNotifier(emailNotificationDetailsService, notificationSendAuditService, emailNotificationParamsConfiguration, emailTemplateEngine, mailLinkUrl);
+        EmailNotifier emailNotifier = new EmailNotifier(emailNotificationDetailsService, emailNotificationContextService, notificationSendAuditService, emailNotificationParamsConfiguration, emailTemplateEngine, mailLinkUrl);
         emailNotifier.setConfiguration(emailConfiguration);
         return emailNotifier;
     }

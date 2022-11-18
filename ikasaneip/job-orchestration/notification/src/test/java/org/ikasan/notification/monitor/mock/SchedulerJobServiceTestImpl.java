@@ -41,7 +41,7 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
         }
         else if (type.equalsIgnoreCase("internal")) {
             List<InternalEventDrivenJobRecord> list = new ArrayList<>();
-            list.add(new InternalEventDrivenJobRecordTestImpl());
+            list.add(new InternalEventDrivenJobRecordTestImpl(0, 3));
             return new SearchResultsImpl(list,1,100);
         }
 

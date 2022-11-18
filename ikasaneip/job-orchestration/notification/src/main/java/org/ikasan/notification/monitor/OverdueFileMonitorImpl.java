@@ -1,5 +1,6 @@
 package org.ikasan.notification.monitor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.MonitorType;
@@ -93,10 +94,13 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
                     contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.WAITING.toString()) ||
                     contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.RELEASED.toString())) {
 
-                    DateTime dateTime = new DateTime().withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(1);
+                    //DateTime dateTime = new DateTime().withHourOfDay(0).withMinuteOfHour(0).withSecondOfMinute(1);
+                    // set the start time based on when the context instance was started
+                    DateTime dateTime = new DateTime().withMillis(contextInstance.getCreatedDateTime());
 
                     SearchResults<SchedulerJobInstanceRecord> searchResults = schedulerJobInstanceService.getSchedulerJobInstancesByContextInstanceId(contextInstance.getId(), -1, -1, null, null);
 
+                    int count = 0;
                     for (SchedulerJobInstanceRecord schedulerJobInstanceRecord : searchResults.getResultList()) {
 
                         SchedulerJobInstance schedulerJobInstance  = schedulerJobInstanceRecord.getSchedulerJobInstance();
@@ -109,20 +113,35 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
 
                                 FileEventDrivenJobInstance fileEventDrivenJobInstance = (FileEventDrivenJobInstance) schedulerJobInstance;
 
+                                // Check if SLA has not been defined, if it has not then no test for notification will be done.
+                                if (StringUtils.isBlank(fileEventDrivenJobInstance.getSlaCronExpression())) {
+                                    continue;
+                                }
+
                                 long fireTime = new DateTime().toDate().getTime();
                                 if (fileEventDrivenJobInstance.getScheduledProcessEvent() != null && fileEventDrivenJobInstance.getScheduledProcessEvent().getFireTime() > 0) {
                                     fireTime = fileEventDrivenJobInstance.getScheduledProcessEvent().getFireTime();
                                 }
 
-                                if (isJobOverdued(dateTime.toDate(), fireTime, fileEventDrivenJobInstance.getCronExpression())) {
-                                    GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(fileEventDrivenJobInstance.getChildContextNames().get(0),
+                                if (isJobOverdued(dateTime.toDate(), fireTime, fileEventDrivenJobInstance.getSlaCronExpression())) {
+                                    GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(fileEventDrivenJobInstance.getAgentName(), contextInstance.getName(), fileEventDrivenJobInstance.getChildContextNames().get(0),
                                         fileEventDrivenJobInstance.getJobName(), contextInstance.getId(), MonitorType.OVERDUE, InstanceStatus.ERROR);
 
+                                    // Add FileNames and Paths
+                                    StringBuilder fileNames = new StringBuilder();
+                                    fileEventDrivenJobInstance.getFilenames().forEach(s -> {
+                                        fileNames.append(s).append(System.lineSeparator());
+                                    });
+                                    genericNotificationDetails.setFileName(fileNames.toString());
+                                    genericNotificationDetails.setFilePath(fileEventDrivenJobInstance.getFilePath());
+
                                     invoke(genericNotificationDetails);
+                                    count++;
                                 }
                             }
                         }
                     }
+                    LOG.info("OVERDUE HAS CREATED {} EVENTS!", count);
                 }
 
             } catch (Exception e) {
@@ -142,6 +161,8 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
         Date firstFireTime = fireTimes.iterator().next();
 
         Date firstFireTimeWithTolerance = DateUtils.addMinutes(firstFireTime, fileArrivalToleranceInMinutes);
+        LOG.info("Start Time = {}, FireTime = {}, cronExpression = {}, firstFireTime = {}, firstFireTimeWithTolerance = {}, Return is = {}",
+            startTime, new DateTime(fireTime).toDate(), cronExpression, firstFireTime, firstFireTimeWithTolerance, firstFireTimeWithTolerance.before(new DateTime(fireTime).toDate()));
         return firstFireTimeWithTolerance.before(new DateTime(fireTime).toDate());
     }
 

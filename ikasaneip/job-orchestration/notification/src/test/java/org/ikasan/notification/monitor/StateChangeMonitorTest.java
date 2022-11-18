@@ -25,6 +25,8 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
+import org.joda.time.DateTimeUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,6 +55,8 @@ public class StateChangeMonitorTest {
 
     Monitor stateChangeMonitor;
 
+    private MonitorManagement monitorManagement;
+
     @Mock
     private ScheduledContextService scheduledContextService;
 
@@ -65,6 +69,11 @@ public class StateChangeMonitorTest {
     @Mock
     private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
 
+    @After
+    public void tearDown() throws IOException {
+        monitorManagement.unRegisterMonitor(stateChangeMonitor);
+    }
+
     @Before
     public void setup() throws IOException {
         objectMapper = ObjectMapperFactory.newInstance();
@@ -73,7 +82,7 @@ public class StateChangeMonitorTest {
         stateChangeMonitor = new StateChangeMonitorImpl(executorService, true);
         stateChangeMonitor.setNotifiers(Arrays.asList(new TestNotifier()));
 
-        MonitorManagement monitorManagement = new MonitorManagement();
+        monitorManagement = new MonitorManagement();
         monitorManagement.registerMonitor(stateChangeMonitor);
 
         ContextInstance contextInstance1 = new ContextInstanceImpl();
