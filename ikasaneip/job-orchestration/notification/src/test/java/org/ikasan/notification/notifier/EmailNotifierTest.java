@@ -1,5 +1,9 @@
 package org.ikasan.notification.notifier;
 
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
+import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.model.notification.MonitorType;
@@ -9,8 +13,11 @@ import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
 import org.ikasan.scheduled.notification.model.SolrNotificationSendAudit;
 import org.ikasan.scheduled.notification.model.SolrNotificationSendAuditRecord;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.notification.model.*;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
 import org.jmock.Expectations;
@@ -54,6 +61,7 @@ public class EmailNotifierTest {
     Wiser wiser;
 
     private EmailNotifier emailNotifier;
+    private EmailNotificationContextService emailNotificationContextService = mockery.mock(EmailNotificationContextService.class);
     private EmailNotificationDetailsService emailNotificationDetailsService = mockery.mock(EmailNotificationDetailsService.class);
     private NotificationSendAuditService notificationSendAuditService = mockery.mock(NotificationSendAuditService.class);
     private EmailNotificationParamsConfiguration emailNotificationParamsConfiguration;
@@ -79,8 +87,20 @@ public class EmailNotifierTest {
         // Create configuration
         emailNotificationParamsConfiguration = this.emailNotificationParamsConfiguration();
 
-        emailNotifier = new EmailNotifier(emailNotificationDetailsService, notificationSendAuditService, emailNotificationParamsConfiguration, emailTemplateEngine(), "http://localhost:9090/schedulerJobLogFile/");
+        emailNotifier = new EmailNotifier(emailNotificationDetailsService, emailNotificationContextService, notificationSendAuditService, emailNotificationParamsConfiguration, emailTemplateEngine(), "http://localhost:9090/schedulerJobLogFile/");
         emailNotifier.setConfiguration(getConfiguration());
+
+        ContextTemplate contextTemplate1 = new ContextTemplateImpl();
+        contextTemplate1.setName("context-template-1");
+        ContextInstance contextInstance1 = new ContextInstanceImpl();
+        contextInstance1.setName("context-instance-1");
+        ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, null
+            , null,"./target",null,null, null, null,
+            null, null, null);
+        if (ContextMachineCache.instance().getByContextName("context-instance-1") == null) {
+            ContextMachineCache.instance().put(contextMachine1);
+        }
+        logger.info("CONTEXT MACHINE CACHE SETUP : {}",ContextMachineCache.instance().toString());
     }
 
     @After
@@ -92,10 +112,12 @@ public class EmailNotifierTest {
     @Test
     public void test_with_no_record_from_config() {
 
-        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "context-instance-1", "context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
         mockery.checking(new Expectations(){{
             oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1","context-id-1","ERROR");
+            will(returnValue(null));
+            oneOf(emailNotificationContextService).findByContextName("context-instance-1", 50, 0);
             will(returnValue(null));
         }});
 
@@ -109,7 +131,7 @@ public class EmailNotifierTest {
     @Test
     public void test_with_a_record_from_config() throws MessagingException, IOException {
 
-        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
         EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
         emailNotificationDetails.setContextName("ContextParent1");
@@ -120,6 +142,8 @@ public class EmailNotifierTest {
         emailNotificationDetails.setEmailSendBcc(Arrays.asList("bcc-1"));
         emailNotificationDetails.setEmailBody("body-1");
         emailNotificationDetails.setEmailSubject("subject-1");
+        emailNotificationDetails.setEmailBodyTemplate("src/main/resources/templates/notification-error-email-body-template.txt");
+        emailNotificationDetails.setEmailSubjectTemplate("src/main/resources/templates/notification-error-email-subject-template.txt");
         emailNotificationDetails.setHtml(true);
 
         SolrEmailNotificationDetailsRecord emailNotificationDetailsRecord = new SolrEmailNotificationDetailsRecord();
@@ -148,15 +172,15 @@ public class EmailNotifierTest {
             Assert.assertTrue("should be only 1 bodypart", mimeMultipart.getCount() == 1);
             BodyPart bodyPart = mimeMultipart.getBodyPart(0);
             String content = (String)bodyPart.getContent();
-            Assert.assertTrue(content.contains("body-1"));
-            Assert.assertEquals("subject-1", mimeMessage.getSubject());
+            Assert.assertTrue(content.contains("The job job-1 for the Context context-id-1 had issues."));
+            Assert.assertEquals("[DEVELOPMENT] *** ERROR *** ContextParent1 for job context-id-1/job-1 has error!!!", mimeMessage.getSubject());
         }
     }
 
     @Test
     public void test_with_a_template() throws MessagingException, IOException {
 
-        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
         EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
         emailNotificationDetails.setContextName("ContextParent1");
@@ -166,6 +190,7 @@ public class EmailNotifierTest {
         emailNotificationDetails.setEmailBody("body-1");
         emailNotificationDetails.setEmailSubject("subject-1");
         emailNotificationDetails.setEmailBodyTemplate("src/test/resources/email/notification-email-template.txt");
+        emailNotificationDetails.setEmailSubjectTemplate("src/main/resources/templates/notification-error-email-subject-template.txt");
         emailNotificationDetails.setHtml(false);
 
         SolrEmailNotificationDetailsRecord record = new SolrEmailNotificationDetailsRecord();
@@ -196,14 +221,14 @@ public class EmailNotifierTest {
         BodyPart bodyPart = mimeMultipart.getBodyPart(0);
         String content = (String)bodyPart.getContent();
         Assert.assertTrue(content.contains("from template: job-1"));
-        Assert.assertEquals("subject-1", mimeMessage.getSubject());
+        Assert.assertEquals("[DEVELOPMENT] *** ERROR *** ContextParent1 for job context-id-1/job-1 has error!!!", mimeMessage.getSubject());
 
     }
 
     @Test
     public void test_with_a_template_2() throws MessagingException, IOException {
 
-        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
         EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
         emailNotificationDetails.setContextName("ContextParent1");
@@ -213,12 +238,8 @@ public class EmailNotifierTest {
         emailNotificationDetails.setEmailBody("body-1");
         emailNotificationDetails.setEmailSubject("subject-1");
         emailNotificationDetails.setEmailBodyTemplate("src/main/resources/templates/notification-error-email-body-template.txt");
+        emailNotificationDetails.setEmailSubjectTemplate("src/main/resources/templates/notification-error-email-subject-template.txt");
         emailNotificationDetails.setHtml(false);
-
-        Map<String,String> templateParams = new HashMap<>();
-        templateParams.put(EmailNotificationTemplateParameters.EMAIL_BODY_TEXT.name(), "from template body text!");
-
-        emailNotificationDetails.setEmailNotificationTemplateParameters(templateParams);
 
         SolrEmailNotificationDetailsRecord record = new SolrEmailNotificationDetailsRecord();
         record.setEmailNotificationDetails(emailNotificationDetails);
@@ -247,17 +268,16 @@ public class EmailNotifierTest {
         Assert.assertTrue("should be only 1 bodypart", mimeMultipart.getCount() == 1);
         BodyPart bodyPart = mimeMultipart.getBodyPart(0);
         String content = (String)bodyPart.getContent();
-        Assert.assertTrue(content.contains("from template body text!"));
-        Assert.assertTrue(content.contains("You can access the log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:::context-id-1:::job-1:::false"));
+        Assert.assertTrue(content.contains("Log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:::context-id-1:::job-1:::false"));
         Assert.assertTrue(content.contains("Error log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:::context-id-1:::job-1:::true"));
-        Assert.assertEquals("subject-1", mimeMessage.getSubject());
+        Assert.assertEquals("[DEVELOPMENT] *** ERROR *** ContextParent1 for job context-id-1/job-1 has error!!!", mimeMessage.getSubject());
 
     }
 
     @Test
     public void test_with_a_template_2_with_param_to_replace() throws MessagingException, IOException {
 
-        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
         EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
         emailNotificationDetails.setContextName("ContextParent1");
@@ -267,12 +287,8 @@ public class EmailNotifierTest {
         emailNotificationDetails.setEmailBody("body-1");
         emailNotificationDetails.setEmailSubject("subject-1 with replace = ${ABC}");
         emailNotificationDetails.setEmailBodyTemplate("src/main/resources/templates/notification-error-email-body-template.txt");
+        emailNotificationDetails.setEmailSubjectTemplate("src/main/resources/templates/notification-error-email-subject-template.txt");
         emailNotificationDetails.setHtml(false);
-
-        Map<String,String> templateParams = new HashMap<>();
-        templateParams.put(EmailNotificationTemplateParameters.EMAIL_BODY_TEXT.name(), "EMAIL_BODY_TEXT = do some replacing with email addresses = ${EMAIL}");
-
-        emailNotificationDetails.setEmailNotificationTemplateParameters(templateParams);
 
         SolrEmailNotificationDetailsRecord record = new SolrEmailNotificationDetailsRecord();
         record.setEmailNotificationDetails(emailNotificationDetails);
@@ -308,16 +324,16 @@ public class EmailNotifierTest {
         Assert.assertTrue("should be only 1 bodypart", mimeMultipart.getCount() == 1);
         BodyPart bodyPart = mimeMultipart.getBodyPart(0);
         String content = (String)bodyPart.getContent();
-        Assert.assertTrue(content.contains("EMAIL_BODY_TEXT = do some replacing with email addresses = replace0@abc.com"));
-        Assert.assertTrue(content.contains("You can access the log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:::context-id-1:::job-1:::false"));
+        Assert.assertTrue(content.contains("The job job-1 for the Context context-id-1 had issues."));
+        Assert.assertTrue(content.contains("Log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:::context-id-1:::job-1:::false"));
         Assert.assertTrue(content.contains("Error log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:::context-id-1:::job-1:::true"));
-        Assert.assertEquals("subject-1 with replace = Value1", mimeMessage.getSubject());
+        Assert.assertEquals("[DEVELOPMENT] *** ERROR *** ContextParent1 for job context-id-1/job-1 has error!!!", mimeMessage.getSubject());
     }
 
     @Test
     public void test_with_already_sent_before() throws MessagingException, IOException {
 
-        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1", "context-instance-id-1",MonitorType.ERROR, InstanceStatus.ERROR);
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1", "context-instance-id-1",MonitorType.ERROR, InstanceStatus.ERROR);
 
         EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
         emailNotificationDetails.setContextName("ContextParent1");
@@ -360,7 +376,7 @@ public class EmailNotifierTest {
     @Test
     public void test_with_not_sent_before() throws MessagingException, IOException {
 
-        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("context-id-1", "job-1","context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1","context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
 
         EmailNotificationDetails emailNotificationDetails = new SolrEmailNotificationDetails();
         emailNotificationDetails.setContextName("ContextParent1");
@@ -371,6 +387,8 @@ public class EmailNotifierTest {
         emailNotificationDetails.setEmailSendBcc(Arrays.asList("bcc-1"));
         emailNotificationDetails.setEmailBody("body-1");
         emailNotificationDetails.setEmailSubject("subject-1");
+        emailNotificationDetails.setEmailBodyTemplate("src/main/resources/templates/notification-error-email-body-template.txt");
+        emailNotificationDetails.setEmailSubjectTemplate("src/main/resources/templates/notification-error-email-subject-template.txt");
         emailNotificationDetails.setHtml(true);
 
         EmailNotificationDetailsRecord emailNotificationDetailsRecord = new SolrEmailNotificationDetailsRecord();
@@ -409,8 +427,8 @@ public class EmailNotifierTest {
             Assert.assertTrue("should be only 1 bodypart", mimeMultipart.getCount() == 1);
             BodyPart bodyPart = mimeMultipart.getBodyPart(0);
             String content = (String)bodyPart.getContent();
-            Assert.assertTrue(content.contains("body-1"));
-            Assert.assertEquals("subject-1", mimeMessage.getSubject());
+            Assert.assertTrue(content.contains("The job job-1 for the Context context-id-1 had issues."));
+            Assert.assertEquals("[DEVELOPMENT] *** ERROR *** ContextParent1 for job context-id-1/job-1 has error!!!", mimeMessage.getSubject());
         }
     }
 

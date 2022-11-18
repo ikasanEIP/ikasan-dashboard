@@ -51,6 +51,7 @@ import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
@@ -90,6 +91,9 @@ public class IkasanRestAutoConfiguration {
     private SchedulerJobService schedulerJobService;
 
     @Resource
+    private EmailNotificationContextService emailNotificationContextService;
+
+    @Resource
     private EmailNotificationDetailsService emailNotificationDetailsService;
 
     @Resource
@@ -113,6 +117,11 @@ public class IkasanRestAutoConfiguration {
     @Bean
     EmailNotificationDetailsController emailNotificationDetailsController() {
         return new EmailNotificationDetailsController(this.emailNotificationDetailsService);
+    }
+
+    @Bean
+    EmailNotificationContextController emailNotificationContextController() {
+        return new EmailNotificationContextController(this.emailNotificationContextService);
     }
 
     @Bean
