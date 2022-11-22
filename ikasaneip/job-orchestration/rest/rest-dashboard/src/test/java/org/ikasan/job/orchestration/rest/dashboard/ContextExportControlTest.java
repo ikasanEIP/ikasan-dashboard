@@ -10,13 +10,18 @@ import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
+import org.ikasan.scheduled.notification.model.SolrEmailNotificationContextImpl;
+import org.ikasan.scheduled.notification.model.SolrEmailNotificationContextRecordImpl;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationContextRecord;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
@@ -66,6 +71,9 @@ public class ContextExportControlTest extends AbstractRestMvcTest{
     private EmailNotificationDetailsService emailNotificationDetailsService;
 
     @MockBean
+    private EmailNotificationContextService emailNotificationContextService;
+
+    @MockBean
     private ContextProfileService contextProfileService;
 
     private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
@@ -96,6 +104,10 @@ public class ContextExportControlTest extends AbstractRestMvcTest{
         //Email Notification
         searchResults = new SearchResultsImpl(createListOfEmailNotification(contextName), 0, 100);
         doReturn(searchResults).when(emailNotificationDetailsService).findByContextName(contextName, 50, 0);
+
+        //Email Notification Context
+        searchResults = new SearchResultsImpl(createListOfEmailNotificationConext(contextName), 0, 100);
+        doReturn(searchResults).when(emailNotificationContextService).findByContextName(contextName, 50, 0);
 
         //ContextProfile
         searchResults = new SearchResultsImpl(createListOfContextProfileRecord(contextName),0, 100);
@@ -130,9 +142,13 @@ public class ContextExportControlTest extends AbstractRestMvcTest{
 
         doReturn(searchResults).when(schedulerJobService).findByContext(contextName, 50, 0);
 
-        //Email Notification
+        //Email Notification Details
         searchResults = new SearchResultsImpl(createListOfEmailNotification(contextName), 0, 100);
         doReturn(searchResults).when(emailNotificationDetailsService).findByContextName(contextName, 50, 0);
+
+        //Email Notification Context test empty responds from solr
+        searchResults = new SearchResultsImpl(new ArrayList<EmailNotificationContext>(), 0, 100);
+        doReturn(searchResults).when(emailNotificationContextService).findByContextName(contextName, 50, 0);
 
         //ContextProfile
         searchResults = new SearchResultsImpl(createListOfContextProfileRecord(contextName),0, 100);
@@ -231,6 +247,21 @@ public class ContextExportControlTest extends AbstractRestMvcTest{
             schedulerJobRecords.add(quartzRecord);
         }
         return schedulerJobRecords;
+    }
+
+    private static List<EmailNotificationContextRecord> createListOfEmailNotificationConext(String contextName) {
+        List<EmailNotificationContextRecord> records = new ArrayList<>();
+
+        SolrEmailNotificationContextRecordImpl r = new SolrEmailNotificationContextRecordImpl();
+        r.setId(contextName);
+        r.setContextName(contextName);
+
+        SolrEmailNotificationContextImpl email = new SolrEmailNotificationContextImpl();
+        email.setContextName(contextName);
+        r.setEmailNotificationContext(email);
+        records.add(r);
+
+        return records;
     }
 
     private static List<EmailNotificationDetailsRecord> createListOfEmailNotification(String contextName) {
