@@ -153,4 +153,37 @@ public class ContextProvisionRestServiceImplTest extends AbstractTest{
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withRequestBody(containing(json)));
     }
+
+    @Test
+    public void test_success_provision_contex_with_notification_context() throws IOException {
+        when(environment.getProperty("ikasan.dashboard.extract.enabled", "false")).thenReturn("true");
+        when(environment.getProperty("ikasan.dashboard.extract.username")).thenReturn("admin");
+        when(environment.getProperty("ikasan.dashboard.extract.password")).thenReturn("admin");
+        when(environment.getProperty("module.name")).thenReturn("useragent");
+        when(environment.getProperty("ikasan.dashboard.extract.base.url")).thenReturn(contextBaseUrl);
+        when(environment.getProperty("ikasan.dashboard.extract.exceptions", "false")).thenReturn("true");
+
+        ContextProvisionRestServiceImpl contextProvisionRestService = new ContextProvisionRestServiceImpl(environment,
+            new HttpComponentsClientHttpRequestFactory(), "/rest/provision/context");
+
+        InputStream inputStream = new ClassPathResource("data/SAMPLE_CONTEXT/CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS-2.zip").getInputStream();
+        ContextBundle contextBundle = ContextImportZipUtils.extractZipFile(inputStream);
+
+        String json = objectMapper.writeValueAsString(contextBundle);
+
+        stubFor(put(urlEqualTo("/rest/provision/context"))
+            .withHeader(HttpHeaders.USER_AGENT, equalTo("useragent"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withRequestBody(containing(json))
+            .willReturn(aResponse()
+                .withStatus(200)
+            ));
+
+        contextProvisionRestService.provisionContext(contextBundle);
+
+        verify(putRequestedFor(urlEqualTo("/rest/provision/context"))
+            .withHeader(HttpHeaders.USER_AGENT, equalTo("useragent"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withRequestBody(containing(json)));
+    }
 }

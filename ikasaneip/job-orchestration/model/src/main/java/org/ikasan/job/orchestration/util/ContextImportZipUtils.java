@@ -6,6 +6,7 @@ import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ public final class ContextImportZipUtils {
         List<SchedulerJob> contextJobs = new ArrayList<>();
         List<ContextProfileRecord> contextProfileRecords = new ArrayList<>();
         List<EmailNotificationDetails> emailNotificationDetails = new ArrayList<>();
+        AtomicReference<EmailNotificationContext> emailNotificationContexts = new AtomicReference<>();
         AtomicReference<ContextTemplate> contextTemplate = new AtomicReference<>();
         try {
             ContextService contextService = new ContextService();
@@ -45,6 +47,7 @@ public final class ContextImportZipUtils {
                     String quartzJobsDirectory = parentDirectory + JOBS_DIR + "/" + QUARTZ_DIR + "/";
                     String contextProfileDirectory = parentDirectory + PROFILE_DIR + "/";
                     String emailNotificationDirectory = parentDirectory + NOTIFICATION_DIR + "/";
+                    String emailNotificationDetailDirectory = parentDirectory + NOTIFICATION_DETAILS_DIR + "/";
 
                     if (!entry.isDirectory() && entry.getName().startsWith(contextDirectory)
                         && entry.getName().endsWith(".json")) {
@@ -63,7 +66,10 @@ public final class ContextImportZipUtils {
                         contextProfileRecords.add((ContextProfileRecord) getContextArtifact(PROFILE_DIR, outputStream.toString(), contextService));
                     } else if (!entry.isDirectory() && entry.getName().startsWith(emailNotificationDirectory)
                         && entry.getName().endsWith(".json")) {
-                        emailNotificationDetails.add((EmailNotificationDetails) getContextArtifact(NOTIFICATION_DIR, outputStream.toString(), contextService));
+                        emailNotificationContexts.set((EmailNotificationContext) getContextArtifact(NOTIFICATION_DIR, outputStream.toString(), contextService));
+                    } else if (!entry.isDirectory() && entry.getName().startsWith(emailNotificationDetailDirectory)
+                        && entry.getName().endsWith(".json")) {
+                        emailNotificationDetails.add((EmailNotificationDetails) getContextArtifact(NOTIFICATION_DETAILS_DIR, outputStream.toString(), contextService));
                     }
                 }
             );
@@ -72,7 +78,7 @@ public final class ContextImportZipUtils {
             throw new RuntimeException(e);
         }
 
-        return new ContextBundleImpl(contextTemplate.get(), contextJobs, contextProfileRecords, emailNotificationDetails);
+        return new ContextBundleImpl(contextTemplate.get(), contextJobs, contextProfileRecords, emailNotificationDetails, emailNotificationContexts.get());
     }
 
     private static void readZipInputStream(InputStream inputStream, BiConsumer<ZipEntry, ByteArrayOutputStream> biConsumer) {
@@ -107,6 +113,8 @@ public final class ContextImportZipUtils {
                 case PROFILE_DIR:
                     return service.getContextProfileRecord(json);
                 case NOTIFICATION_DIR:
+                    return service.getEmailNotificationContext(json);
+                case NOTIFICATION_DETAILS_DIR:
                     return service.getEmailNotificationDetails(json);
                 default:
                     throw new RuntimeException("Unknown job type: " + type);

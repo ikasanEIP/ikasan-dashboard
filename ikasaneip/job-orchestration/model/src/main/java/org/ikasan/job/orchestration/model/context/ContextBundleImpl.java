@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 
@@ -16,12 +17,14 @@ public class ContextBundleImpl implements ContextBundle {
     private List<SchedulerJob> schedulerJobs;
     private List<ContextProfileRecord> contextProfiles;
     private List<EmailNotificationDetails> emailNotificationDetails;
+    private EmailNotificationContext emailNotificationContexts;
 
     @JsonCreator
     public ContextBundleImpl(@JsonProperty("contextTemplate") ContextTemplate contextTemplate,
                              @JsonProperty("schedulerJobs") List<SchedulerJob> schedulerJobs,
                              @JsonProperty("contextProfiles") List<ContextProfileRecord> contextProfiles,
-                             @JsonProperty("emailNotificationDetails") List<EmailNotificationDetails> emailNotificationDetails) {
+                             @JsonProperty("emailNotificationDetails") List<EmailNotificationDetails> emailNotificationDetails,
+                             @JsonProperty("emailNotificationContext") EmailNotificationContext emailNotificationContexts) {
         this.contextTemplate = contextTemplate;
         if(this.contextTemplate == null) {
             throw new IllegalArgumentException("contextTemplate cannot be null!");
@@ -38,6 +41,8 @@ public class ContextBundleImpl implements ContextBundle {
         if(this.emailNotificationDetails == null) {
             throw new IllegalArgumentException("emailNotificationDetails cannot by null!");
         }
+        // this can be null
+        this.emailNotificationContexts = emailNotificationContexts;
     }
 
     @Override
@@ -58,5 +63,10 @@ public class ContextBundleImpl implements ContextBundle {
     @Override
     public List<EmailNotificationDetails> getEmailNotificationDetails() {
         return this.emailNotificationDetails;
+    }
+
+    @Override
+    public EmailNotificationContext getEmailNotificationContext() {
+        return this.emailNotificationContexts;
     }
 }

@@ -10,7 +10,9 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationContextRecord;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetailsRecord;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
@@ -47,6 +49,7 @@ public final class ContextExportZipUtils {
                                                       String workingDirectory,
                                                       SchedulerJobService schedulerJobService,
                                                       EmailNotificationDetailsService emailNotificationDetailsService,
+                                                      EmailNotificationContextService emailNotificationContextService,
                                                       ContextProfileService contextProfileService,
                                                       int searchLimit) {
         try {
@@ -69,6 +72,7 @@ public final class ContextExportZipUtils {
             Path jobsInternalDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + INTERNAL_DIR);
             Path jobsQuartzDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + QUARTZ_DIR);
             Path notificationDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + NOTIFICATION_DIR);
+            Path notificationDetailDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + NOTIFICATION_DETAILS_DIR);
             Path profilesDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + PROFILE_DIR);
 
             Files.createDirectories(contextDir);
@@ -77,6 +81,7 @@ public final class ContextExportZipUtils {
             Files.createDirectories(jobsInternalDir);
             Files.createDirectories(jobsQuartzDir);
             Files.createDirectories(notificationDir);
+            Files.createDirectories(notificationDetailDir);
             Files.createDirectories(profilesDir);
 
             // create the context template as json
@@ -97,17 +102,30 @@ public final class ContextExportZipUtils {
                 addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, results);
             }
 
-            // get the notification for the context
+            // get the overall notifications settings for the context
             offset = 0;
-            SearchResults<EmailNotificationDetailsRecord> notificationResults = emailNotificationDetailsService.findByContextName(contextName, searchLimit, offset);
+            SearchResults<EmailNotificationContextRecord> notificationResults = emailNotificationContextService.findByContextName(contextName, searchLimit, offset);
             addNotificationFilesToZip(objectMapper, notificationDir, notificationResults);
 
             retrievedNumber = notificationResults.getResultList().size();
             totalNumberOfResults = notificationResults.getTotalNumberOfResults();
             while (offset < totalNumberOfResults) {
                 offset += retrievedNumber;
-                notificationResults = emailNotificationDetailsService.findByContextName(contextName, searchLimit, offset);
+                notificationResults = emailNotificationContextService.findByContextName(contextName, searchLimit, offset);
                 addNotificationFilesToZip(objectMapper, notificationDir, notificationResults);
+            }
+
+            // get the notification details for the context - these are the individual notification defined per context, child context and job.
+            offset = 0;
+            SearchResults<EmailNotificationDetailsRecord> notificationDetailResults = emailNotificationDetailsService.findByContextName(contextName, searchLimit, offset);
+            addNotificationDetailFilesToZip(objectMapper, notificationDetailDir, notificationDetailResults);
+
+            retrievedNumber = notificationDetailResults.getResultList().size();
+            totalNumberOfResults = notificationDetailResults.getTotalNumberOfResults();
+            while (offset < totalNumberOfResults) {
+                offset += retrievedNumber;
+                notificationDetailResults = emailNotificationDetailsService.findByContextName(contextName, searchLimit, offset);
+                addNotificationDetailFilesToZip(objectMapper, notificationDetailDir, notificationDetailResults);
             }
 
             // get the profiles for the context
@@ -142,6 +160,7 @@ public final class ContextExportZipUtils {
 
             return baos;
         } catch (Exception e) {
+            e.printStackTrace();
             LOG.warn(String.format("Got exception creating zip file. Error [%s]", e.getMessage()));
             // clean up everything in case there is anything there
             try {
@@ -211,14 +230,29 @@ public final class ContextExportZipUtils {
         }
     }
 
-    private static void addNotificationFilesToZip(ObjectMapper objectMapper, Path notificationPath, SearchResults<EmailNotificationDetailsRecord> results) throws IOException {
+    private static void addNotificationFilesToZip(ObjectMapper objectMapper, Path notificationPath, SearchResults<EmailNotificationContextRecord> results) throws IOException {
+        for (EmailNotificationContextRecord record : results.getResultList()) {
+            String jsonString = objectMapper.writeValueAsString(record.getEmailNotificationContext());
+
+            // Use the EmailNotificationContextRecord.id as the filename
+            String fileName = StringUtils.replaceEach(record.getId(),
+                UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR);
+            Path path = Paths.get(notificationPath + File.separator + fileName + "-notification.json");
+
+            // Create the file
+            Files.createFile(path);
+            Files.write(path, jsonString.getBytes());
+        }
+    }
+
+    private static void addNotificationDetailFilesToZip(ObjectMapper objectMapper, Path notificationDetailPath, SearchResults<EmailNotificationDetailsRecord> results) throws IOException {
         for (EmailNotificationDetailsRecord record : results.getResultList()) {
             String jsonString = objectMapper.writeValueAsString(record.getEmailNotificationDetails());
 
             // Use the EmailNotificationDetailsRecord.id as the filename
             String fileName = StringUtils.replaceEach(record.getId(),
                 UNSAFE_FILENAME_CHAR, REPLACE_UNSAFE_FILENAME_CHAR);
-            Path path = Paths.get(notificationPath + File.separator + fileName + ".json");
+            Path path = Paths.get(notificationDetailPath + File.separator + fileName + ".json");
 
             // Create the file
             Files.createFile(path);
