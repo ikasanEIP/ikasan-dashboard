@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.slf4j.Logger;
@@ -33,11 +34,13 @@ public class ContextExportControl {
     private ScheduledContextService scheduledContextService;
     private SchedulerJobService schedulerJobService;
     private EmailNotificationDetailsService emailNotificationDetailsService;
+    private EmailNotificationContextService emailNotificationContextService;
     private ContextProfileService contextProfileService;
 
     public ContextExportControl(ScheduledContextService scheduledContextService,
                                 SchedulerJobService schedulerJobService,
                                 EmailNotificationDetailsService emailNotificationDetailsService,
+                                EmailNotificationContextService emailNotificationContextService,
                                 ContextProfileService contextProfileService) {
         this.scheduledContextService = scheduledContextService;
         if(this.scheduledContextService == null) {
@@ -52,6 +55,11 @@ public class ContextExportControl {
         this.emailNotificationDetailsService = emailNotificationDetailsService;
         if(this.emailNotificationDetailsService == null) {
             throw new IllegalArgumentException("emailNotificationDetailsService cannot be null!");
+        }
+
+        this.emailNotificationContextService = emailNotificationContextService;
+        if(this.emailNotificationContextService == null) {
+            throw new IllegalArgumentException("emailNotificationContextService cannot be null!");
         }
 
         this.contextProfileService = contextProfileService;
@@ -80,6 +88,7 @@ public class ContextExportControl {
                 System.currentTimeMillis() + "-", // make sure directory is unique due to same request running at same time
                 schedulerJobService,
                 emailNotificationDetailsService,
+                emailNotificationContextService,
                 contextProfileService,
                 50);
 

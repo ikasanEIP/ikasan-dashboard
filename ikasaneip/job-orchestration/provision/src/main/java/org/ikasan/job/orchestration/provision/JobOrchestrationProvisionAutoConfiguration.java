@@ -9,6 +9,7 @@ import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationServ
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,7 +37,8 @@ public class JobOrchestrationProvisionAutoConfiguration {
         JobProvisionModuleService jobProvisionModuleRestService,
         ContextInstanceRegistrationService contextInstanceRegistrationService,
         ContextProfileService contextProfileService,
-        EmailNotificationDetailsService emailNotificationDetailsService) {
+        EmailNotificationDetailsService emailNotificationDetailsService,
+        EmailNotificationContextService emailNotificationContextService) {
 
         return new ContextProvisionServiceImpl(
             SchedulerFactory.getInstance().getScheduler(),
@@ -48,6 +50,7 @@ public class JobOrchestrationProvisionAutoConfiguration {
             contextInstanceRegistrationService,
             contextProfileService,
             emailNotificationDetailsService,
+            emailNotificationContextService,
             uploadProvisionJobs
         );
     }
