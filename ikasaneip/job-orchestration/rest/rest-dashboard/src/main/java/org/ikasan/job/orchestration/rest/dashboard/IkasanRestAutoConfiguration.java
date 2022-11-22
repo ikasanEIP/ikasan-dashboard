@@ -136,7 +136,7 @@ public class IkasanRestAutoConfiguration {
 
     @Bean
     public ContextExportControl contextBundleDownloadControl() {
-        return new ContextExportControl(scheduledContextService, schedulerJobService, emailNotificationDetailsService, contextProfileService);
+        return new ContextExportControl(scheduledContextService, schedulerJobService, emailNotificationDetailsService, emailNotificationContextService, contextProfileService);
     }
 
     @Bean

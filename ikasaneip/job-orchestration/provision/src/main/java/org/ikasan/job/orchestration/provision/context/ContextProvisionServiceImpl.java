@@ -23,7 +23,9 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobWrapper;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -50,6 +52,7 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
     private ContextProfileService contextProfileService;
     private EmailNotificationDetailsService emailNotificationDetailsService;
+    private EmailNotificationContextService emailNotificationContextService;
     private boolean uploadProvisionJobs;
 
     public ContextProvisionServiceImpl(Scheduler scheduler,
@@ -61,6 +64,7 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
                                        ContextInstanceRegistrationService contextInstanceRegistrationService,
                                        ContextProfileService contextProfileService,
                                        EmailNotificationDetailsService emailNotificationDetailsService,
+                                       EmailNotificationContextService emailNotificationContextService,
                                        boolean uploadProvisionJobs) {
 
         super(scheduler, scheduledJobFactory);
@@ -94,6 +98,11 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
             throw new IllegalArgumentException("emailNotificationDetailsService cannot be null!");
         }
 
+        this.emailNotificationContextService = emailNotificationContextService;
+        if (this.emailNotificationContextService == null) {
+            throw new IllegalArgumentException("emailNotificationContextService cannot be null!");
+        }
+
         this.uploadProvisionJobs = uploadProvisionJobs;
     }
 
@@ -112,6 +121,7 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
             this.deleteContextProfiles(contextBundle.getContextTemplate().getName());
             // delete the email notification associated to the context
             this.deleteEmailNotificationDetailsByContext(contextBundle.getContextTemplate().getName());
+            this.deleteEmailNotificationContextByContext(contextBundle.getContextTemplate().getName());
             // set job participates in lock flag on relevant jobs
             this.setJobsParticipateInJobLock(contextBundle.getContextTemplate(), contextBundle.getSchedulerJobs());
             // save the jobs
@@ -127,6 +137,9 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
             if(contextBundle.getEmailNotificationDetails() != null &&
                !contextBundle.getEmailNotificationDetails().isEmpty()) {
                 this.saveEmailNotificationDetails(contextBundle.getEmailNotificationDetails());
+            }
+            if(contextBundle.getEmailNotificationContext() != null) {
+                this.saveEmailNotificationContext(contextBundle.getEmailNotificationContext());
             }
             if (this.uploadProvisionJobs) {
                 provisionJobs(contextBundle.getSchedulerJobs());
@@ -264,5 +277,13 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
 
     private void deleteEmailNotificationDetailsByContext(String contextName) {
         this.emailNotificationDetailsService.deleteByContextName(contextName);
+    }
+
+    private void saveEmailNotificationContext(EmailNotificationContext emailNotificationContext) {
+        this.emailNotificationContextService.saveEmailNotificationContext(emailNotificationContext);
+    }
+
+    private void deleteEmailNotificationContextByContext(String contextName) {
+        this.emailNotificationContextService.deleteByContextName(contextName);
     }
 }
