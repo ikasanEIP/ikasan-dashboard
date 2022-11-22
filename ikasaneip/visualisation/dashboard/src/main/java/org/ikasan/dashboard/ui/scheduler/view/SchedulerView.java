@@ -39,6 +39,7 @@ import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
@@ -129,6 +130,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private EmailNotificationDetailsService emailNotificationDetailsService;
 
+    @Resource
+    private EmailNotificationContextService emailNotificationContextService;
+
     @Value("${ikasan.dashboard.zip.working.directory:.}")
     private String zipWorkingDirectory;
 
@@ -214,7 +218,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
             this.contextProfileService, this.jobProvisionService, userService, securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService,
-            this.emailNotificationDetailsService);
+            this.emailNotificationDetailsService, this.emailNotificationContextService);
         this.contextTemplateWidget.setVisible(false);
 
 

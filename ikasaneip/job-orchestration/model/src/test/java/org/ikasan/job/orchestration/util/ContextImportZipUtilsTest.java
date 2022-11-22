@@ -6,6 +6,7 @@ import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationDetails;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -231,6 +232,123 @@ public class ContextImportZipUtilsTest {
             if (!(notification.get(1).getJobName().equals("jobName1") || notification.get(1).getJobName().equals("jobName3"))) {
                 fail(notification.get(1).getJobName() + " is not equal to jobName1 or jobName3");
             }
+
+            EmailNotificationContext notificationContext = contextBundle.getEmailNotificationContext();
+            assertNull(notificationContext);
+
+        } catch (Exception e) {
+            fail("Got exception " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void should_unzip_file_context_and_jobs_and_notification_plus_notifContext() {
+        try {
+            InputStream inputStream = new ClassPathResource("data/zip/CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS-2.zip").getInputStream();
+            ContextBundle contextBundle = ContextImportZipUtils.extractZipFile(inputStream);
+
+            ContextTemplate contextTemplate = contextBundle.getContextTemplate();
+            assertNotNull(contextTemplate);
+            assertEquals("CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS", contextTemplate.getName());
+
+            List<SchedulerJob> jobs = contextBundle.getSchedulerJobs();
+            assertEquals(3, jobs.size());
+
+            int count = 0;
+            for (SchedulerJob schedulerJob : jobs) {
+                if (schedulerJob instanceof FileEventDrivenJob) {
+                    FileEventDrivenJob job = (FileEventDrivenJob) schedulerJob;
+                    assertEquals("jobName2", job.getJobName());
+                    count++;
+                } else if (schedulerJob instanceof QuartzScheduleDrivenJob) {
+                    QuartzScheduleDrivenJob job = (QuartzScheduleDrivenJob) schedulerJob;
+                    assertEquals("jobName3", job.getJobName());
+                    count++;
+                } else if (schedulerJob instanceof InternalEventDrivenJob) {
+                    InternalEventDrivenJob job = (InternalEventDrivenJob) schedulerJob;
+                    assertEquals("jobName1", job.getJobName());
+                    count++;
+                }
+            }
+
+            assertEquals(3, count);
+
+            List<EmailNotificationDetails> notification = contextBundle.getEmailNotificationDetails();
+            assertEquals(2, notification.size());
+
+            assertEquals("CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS", notification.get(0).getContextName());
+            assertEquals("CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS", notification.get(0).getChildContextName());
+            if (!(notification.get(0).getJobName().equals("jobName1") || notification.get(0).getJobName().equals("jobName3"))) {
+                fail(notification.get(0).getJobName() + " is not equal to jobName1 or jobName3");
+            }
+
+            assertEquals("CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS", notification.get(1).getContextName());
+            assertEquals("CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS", notification.get(1).getChildContextName());
+            if (!(notification.get(1).getJobName().equals("jobName1") || notification.get(1).getJobName().equals("jobName3"))) {
+                fail(notification.get(1).getJobName() + " is not equal to jobName1 or jobName3");
+            }
+
+            EmailNotificationContext notificationContext = contextBundle.getEmailNotificationContext();
+            assertNotNull(notificationContext);
+
+            assertEquals("CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS", notificationContext.getContextName());
+            assertEquals(5, notificationContext.getMonitorTypes().size());
+            assertEquals(5, notificationContext.getEmailBodyNotificationTemplate().size());
+            assertEquals(5, notificationContext.getEmailSubjectNotificationTemplate().size());
+            assertEquals("some@email.com", notificationContext.getEmailSendTo().get(0));
+            assertEquals("some@email.com", notificationContext.getEmailSendToByMonitorType().get("OVERDUE").get(0));
+            assertEquals("some@email.com", notificationContext.getEmailSendCcByMonitorType().get("COMPLETE").get(0));
+
+        } catch (Exception e) {
+            fail("Got exception " + e.getMessage());
+        }
+    }
+
+    @Test
+    public void should_unzip_file_context_and_jobs_and_notification_context() {
+        try {
+            InputStream inputStream = new ClassPathResource("data/zip/CONTEXT-NOT-SO-COMPLEX-WITH-CONTEXT-NOTIFICATIONS-ONLY.zip").getInputStream();
+            ContextBundle contextBundle = ContextImportZipUtils.extractZipFile(inputStream);
+
+            ContextTemplate contextTemplate = contextBundle.getContextTemplate();
+            assertNotNull(contextTemplate);
+            assertEquals("CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS", contextTemplate.getName());
+
+            List<SchedulerJob> jobs = contextBundle.getSchedulerJobs();
+            assertEquals(3, jobs.size());
+
+            int count = 0;
+            for (SchedulerJob schedulerJob : jobs) {
+                if (schedulerJob instanceof FileEventDrivenJob) {
+                    FileEventDrivenJob job = (FileEventDrivenJob) schedulerJob;
+                    assertEquals("jobName2", job.getJobName());
+                    count++;
+                } else if (schedulerJob instanceof QuartzScheduleDrivenJob) {
+                    QuartzScheduleDrivenJob job = (QuartzScheduleDrivenJob) schedulerJob;
+                    assertEquals("jobName3", job.getJobName());
+                    count++;
+                } else if (schedulerJob instanceof InternalEventDrivenJob) {
+                    InternalEventDrivenJob job = (InternalEventDrivenJob) schedulerJob;
+                    assertEquals("jobName1", job.getJobName());
+                    count++;
+                }
+            }
+
+            assertEquals(3, count);
+
+            List<EmailNotificationDetails> notification = contextBundle.getEmailNotificationDetails();
+            assertEquals(0, notification.size());
+
+            EmailNotificationContext notificationContext = contextBundle.getEmailNotificationContext();
+            assertNotNull(notificationContext);
+
+            assertEquals("CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS", notificationContext.getContextName());
+            assertEquals(5, notificationContext.getMonitorTypes().size());
+            assertEquals(5, notificationContext.getEmailBodyNotificationTemplate().size());
+            assertEquals(5, notificationContext.getEmailSubjectNotificationTemplate().size());
+            assertEquals("some@email.com", notificationContext.getEmailSendTo().get(0));
+            assertEquals("some@email.com", notificationContext.getEmailSendToByMonitorType().get("OVERDUE").get(0));
+            assertEquals("some@email.com", notificationContext.getEmailSendCcByMonitorType().get("COMPLETE").get(0));
 
         } catch (Exception e) {
             fail("Got exception " + e.getMessage());

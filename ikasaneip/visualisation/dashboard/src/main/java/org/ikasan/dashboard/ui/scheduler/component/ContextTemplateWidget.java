@@ -50,6 +50,7 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
@@ -77,6 +78,7 @@ public class ContextTemplateWidget extends Div {
     private String zipWorkingDirectory;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
     private EmailNotificationDetailsService emailNotificationDetailsService;
+    private EmailNotificationContextService emailNotificationContextService;
 
     private SubMenu activeContextSubMenu;
 
@@ -92,7 +94,7 @@ public class ContextTemplateWidget extends Div {
                                  JobInitiationService jobInitiationService, String zipWorkingDirectory, ContextProvisionService contextProvisionService,
                                  ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
                                  SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs, ContextInstanceRegistrationService contextInstanceRegistrationService,
-                                 EmailNotificationDetailsService emailNotificationDetailsService) {
+                                 EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService) {
 
         this.scheduledContextService = scheduledContextService;
         this.schedulerJobService = schedulerJobService;
@@ -102,6 +104,7 @@ public class ContextTemplateWidget extends Div {
         this.jobUtilsService = jobUtilsService;
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
         this.emailNotificationDetailsService = emailNotificationDetailsService;
+        this.emailNotificationContextService = emailNotificationContextService;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
@@ -257,6 +260,7 @@ public class ContextTemplateWidget extends Div {
                             this.scheduledContextService.deleteContext(scheduledContextRecord.getContextName());
                             this.contextInstanceRegistrationService.deRegister(scheduledContextRecord.getContextName());
                             this.emailNotificationDetailsService.deleteByContextName(scheduledContextRecord.getContextName());
+                            this.emailNotificationContextService.deleteByContextName(scheduledContextRecord.getContextName());
 
                             current.access(() -> {
                                 this.contextTemplateFilteringGrid.getDataProvider().refreshAll();
@@ -311,6 +315,7 @@ public class ContextTemplateWidget extends Div {
                         this.zipWorkingDirectory,
                         this.schedulerJobService,
                         this.emailNotificationDetailsService,
+                        this.emailNotificationContextService,
                         this.contextProfileService,
                         50 // limit to loop searching solr
                     );

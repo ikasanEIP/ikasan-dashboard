@@ -78,6 +78,40 @@ public class ContextProvisionControllerTest {
         assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
     }
 
+    /**
+     * Test for all files in the directories
+     * root
+     *  - context
+     *  - job
+     *    - file
+     *    - internal
+     *    - quartz
+     *  - notification
+     *  - notification_details
+     */
+    @Test
+    public void test_provision_context_success_all() throws Exception {
+        ContextBundle contextBundle = loadContextBundleAll();
+
+        ObjectMapper mapper = ObjectMapperFactory.newInstance();
+        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+            .allowIfSubType("org.ikasan.spec.scheduled.job.model")
+            .allowIfSubType("org.ikasan.job.orchestration.model.job")
+            .allowIfSubType("org.ikasan.job.orchestration.model.context")
+            .allowIfSubType("org.ikasan.job.orchestration.model.profile")
+            .allowIfSubType("org.ikasan.job.orchestration.model.notification")
+            .allowIfSubType("org.ikasan.spec.scheduled.notification.model")
+            .allowIfSubType("java.util.ArrayList")
+            .allowIfSubType("java.util.HashMap")
+            .build();
+        mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put("/rest/provision/context")
+            .contentType(MediaType.APPLICATION_JSON_VALUE).content(mapper.writeValueAsBytes(contextBundle))).andReturn();
+
+        assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
+    }
+
     @Test
     public void test_exception_provision_context_bad_content() throws Exception {
 
@@ -90,6 +124,12 @@ public class ContextProvisionControllerTest {
 
     private ContextBundle loadContextBundle() throws IOException {
         InputStream inputStream = new ClassPathResource("data/CONTEXT-1793100514.zip").getInputStream();
+        return ContextImportZipUtils.extractZipFile(inputStream);
+    }
+
+    // Test all context bundles
+    private ContextBundle loadContextBundleAll() throws IOException {
+        InputStream inputStream = new ClassPathResource("data/CONTEXT-NOT-SO-COMPLEX-WITH-NOTIFICATIONS-2.zip").getInputStream();
         return ContextImportZipUtils.extractZipFile(inputStream);
     }
 }
