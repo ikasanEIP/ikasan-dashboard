@@ -83,12 +83,12 @@ public class JobContextControllerTest extends  AbstractRestMvcTest {
 
         ContextParameterInstance contextParameterInstance1 = new ContextParameterInstanceImpl();
         contextParameterInstance1.setName("BusinessDate");
-        contextParameterInstance1.setType("java.lang.String");
+        contextParameterInstance1.setDefaultValue("value");
         contextParameterInstance1.setValue("20220530");
 
         ContextParameterInstance contextParameterInstance2 = new ContextParameterInstanceImpl();
         contextParameterInstance2.setName("localFilePath");
-        contextParameterInstance2.setType("path");
+        contextParameterInstance2.setDefaultValue("value");
         contextParameterInstance2.setValue("/opt/data/files");
 
         ContextInstance contextInstance1 = new ContextInstanceImpl();

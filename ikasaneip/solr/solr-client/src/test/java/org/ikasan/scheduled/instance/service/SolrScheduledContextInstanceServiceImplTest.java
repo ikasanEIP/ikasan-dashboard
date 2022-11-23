@@ -721,7 +721,7 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         internalEventDrivenJob.setMaxExecutionTime(System.currentTimeMillis() + 3000);
 
         SolrContextParameterImpl contextParameter = new SolrContextParameterImpl();
-        contextParameter.setType("type " + RandomStringUtils.randomAlphabetic(5));
+        contextParameter.setDefaultValue("defaultValue " + RandomStringUtils.randomAlphabetic(5));
         contextParameter.setName("name " + RandomStringUtils.randomAlphabetic(5));
         internalEventDrivenJob.setContextParameters(List.of(contextParameter));
         internalEventDrivenJob.setDaysOfWeekToRun(List.of(1, 2, 3, 4, 5));
@@ -745,7 +745,7 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         internalEventDrivenJob.setMaxExecutionTime(System.currentTimeMillis() + 3000);
 
         SolrContextParameterImpl contextParameter = new SolrContextParameterImpl();
-        contextParameter.setType("type " + RandomStringUtils.randomAlphabetic(5));
+        contextParameter.setDefaultValue("defaultValue " + RandomStringUtils.randomAlphabetic(5));
         contextParameter.setName("name " + RandomStringUtils.randomAlphabetic(5));
         internalEventDrivenJob.setContextParameters(List.of(contextParameter));
         internalEventDrivenJob.setDaysOfWeekToRun(List.of(1, 2, 3, 4, 5));
@@ -756,10 +756,10 @@ public class SolrScheduledContextInstanceServiceImplTest extends SolrTestCaseJ4 
         event.setContextInstanceId("contextInstanceId " + RandomStringUtils.randomAlphabetic(5));
 
         SolrContextParameterInstanceImpl contextParameter1 = new SolrContextParameterInstanceImpl();
-        contextParameter1.setType("type1 " + RandomStringUtils.randomAlphabetic(5));
+        contextParameter1.setDefaultValue("defaultValue " + RandomStringUtils.randomAlphabetic(5));
         contextParameter1.setName("name1 " + RandomStringUtils.randomAlphabetic(5));
         SolrContextParameterInstanceImpl contextParameter2 = new SolrContextParameterInstanceImpl();
-        contextParameter2.setType("type1 " + RandomStringUtils.randomAlphabetic(5));
+        contextParameter2.setDefaultValue("defaultValue " + RandomStringUtils.randomAlphabetic(5));
         contextParameter2.setName("name1 " + RandomStringUtils.randomAlphabetic(5));
         event.setContextParameters(List.of(contextParameter1, contextParameter2));
 

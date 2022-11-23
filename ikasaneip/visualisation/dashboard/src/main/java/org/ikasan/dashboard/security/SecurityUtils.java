@@ -91,6 +91,45 @@ public final class SecurityUtils {
 
         return results;
     }
+
+    /**
+     * Get modules available for a given user.
+     *
+     * @param authentication
+     * @return
+     */
+    public static Set<String> getAccessibleJobPlans(IkasanAuthentication authentication)
+    {
+        Set<String> results = new HashSet<>();
+
+        if(authentication == null) {
+            return results;
+        }
+
+        User user = (User)authentication.getPrincipal();
+
+        if(authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) ||
+            authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ALL_ADMIN) ||
+            authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ALL_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ALL_READ)){
+            return results;
+        }
+
+        user.getPrincipals()
+            .forEach(principal -> principal.getRoles()
+                .forEach(role -> role.getRoleJobPlans()
+                    .forEach(roleJobPlan -> results.add(roleJobPlan.getJobPlanName()))));
+
+        return results;
+    }
+
+    public static boolean canAccessAllJobPlans(IkasanAuthentication authentication) {
+        return authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY) ||
+            authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ALL_WRITE) ||
+            authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ALL_READ) ||
+            authentication.hasGrantedAuthority(SecurityConstants.SCHEDULER_ALL_WRITE);
+
+    }
 }
 
 

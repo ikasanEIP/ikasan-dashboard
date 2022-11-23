@@ -78,7 +78,8 @@ public class JobContextMenuTest extends UITest {
 
     @Test
     public void shouldDisplayNoOutputLogNotification_IfNotCorrectStatus() {
-        EnumSet<InstanceStatus> instanceStatuses = EnumSet.complementOf(EnumSet.of(InstanceStatus.COMPLETE, InstanceStatus.RUNNING, InstanceStatus.ERROR));
+        EnumSet<InstanceStatus> instanceStatuses = EnumSet.complementOf(EnumSet.of(InstanceStatus.COMPLETE
+            , InstanceStatus.RUNNING, InstanceStatus.ERROR));
         for (InstanceStatus status : instanceStatuses) {
             testStreamLog(false, status);
         }
@@ -86,7 +87,8 @@ public class JobContextMenuTest extends UITest {
 
     @Test
     public void shouldDisplayNoErrorLogNotification_IfNotCorrectStatus() {
-        EnumSet<InstanceStatus> instanceStatuses = EnumSet.complementOf(EnumSet.of(InstanceStatus.COMPLETE, InstanceStatus.RUNNING, InstanceStatus.ERROR));
+        EnumSet<InstanceStatus> instanceStatuses = EnumSet.complementOf(EnumSet.of(InstanceStatus.COMPLETE
+            , InstanceStatus.RUNNING, InstanceStatus.ERROR));
         for (InstanceStatus status : instanceStatuses) {
             testStreamLog(true, status);
         }

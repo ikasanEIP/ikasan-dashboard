@@ -18,6 +18,7 @@ import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
+import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateEnableDisableEventBroadcaster;
@@ -42,7 +43,6 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -61,6 +61,7 @@ import org.vaadin.olli.FileDownloadWrapper;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -86,6 +87,27 @@ public class ContextTemplateWidget extends Div {
      * Constructor
      *
      * @param scheduledContextService
+     * @param dynamicImagePath
+     * @param moduleMetaDataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param schedulerJobService
+     * @param logStreamingService
+     * @param scheduledContextInstanceService
+     * @param schedulerJobInstanceService
+     * @param jobInitiationService
+     * @param zipWorkingDirectory
+     * @param contextProvisionService
+     * @param contextProfileService
+     * @param jobProvisionService
+     * @param userService
+     * @param securityService
+     * @param jobUtilsService
+     * @param provisionJobs
+     * @param contextInstanceRegistrationService
      */
     public ContextTemplateWidget(ScheduledContextService scheduledContextService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -97,14 +119,41 @@ public class ContextTemplateWidget extends Div {
                                  EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService) {
 
         this.scheduledContextService = scheduledContextService;
+        if (this.scheduledContextService == null) {
+            throw new IllegalArgumentException("scheduledContextService cannot be null!");
+        }
         this.schedulerJobService = schedulerJobService;
+        if (this.schedulerJobService == null) {
+            throw new IllegalArgumentException("schedulerJobService cannot be null!");
+        }
         this.zipWorkingDirectory = zipWorkingDirectory;
+        if (this.zipWorkingDirectory == null) {
+            throw new IllegalArgumentException("zipWorkingDirectory cannot be null!");
+        }
         this.contextProfileService = contextProfileService;
+        if (this.contextProfileService == null) {
+            throw new IllegalArgumentException("contextProfileService cannot be null!");
+        }
         this.jobProvisionService = jobProvisionService;
+        if (this.jobProvisionService == null) {
+            throw new IllegalArgumentException("jobProvisionService cannot be null!");
+        }
         this.jobUtilsService = jobUtilsService;
+        if (this.jobUtilsService == null) {
+            throw new IllegalArgumentException("jobUtilsService cannot be null!");
+        }
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
+        if (this.contextInstanceRegistrationService == null) {
+            throw new IllegalArgumentException("contextInstanceRegistrationService cannot be null!");
+        }
         this.emailNotificationDetailsService = emailNotificationDetailsService;
+        if (this.emailNotificationDetailsService == null) {
+            throw new IllegalArgumentException("emailNotificationDetailsService cannot be null!");
+        }
         this.emailNotificationContextService = emailNotificationContextService;
+        if (this.emailNotificationContextService == null) {
+            throw new IllegalArgumentException("emailNotificationContextService cannot be null!");
+        }
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
@@ -129,12 +178,17 @@ public class ContextTemplateWidget extends Div {
         MenuBar quickAccessMenu = this.createQuickAccessMenu();
 
         Icon uploadIcon = VaadinIcon.UPLOAD_ALT.create();
-        Button addContextButton = new Button(getTranslation("button.upload-job-plan", UI.getCurrent().getLocale()), uploadIcon);
-        addContextButton.setIconAfterText(true);
-        addContextButton.addClickListener(buttonClickEvent -> {
+        Button uploadJobPlan = new Button(getTranslation("button.upload-job-plan", UI.getCurrent().getLocale()), uploadIcon);
+        uploadJobPlan.setIconAfterText(true);
+        uploadJobPlan.addClickListener(buttonClickEvent -> {
             ContextImportFileDialog importer = new ContextImportFileDialog(contextProvisionService, provisionJobs);
             importer.open();
         });
+
+        ComponentSecurityVisibility.applySecurity(authentication, uploadJobPlan
+            , SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_ADMIN
+            , SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE
+            , SecurityConstants.SCHEDULER_ALL_ADMIN);
 
         Icon newContextIcon = VaadinIcon.PLUS.create();
         Button newContextButton = new Button(getTranslation("button.new-job-plan", UI.getCurrent().getLocale()), newContextIcon);
@@ -151,7 +205,12 @@ public class ContextTemplateWidget extends Div {
             });
         });
 
-        actionButtonLayout.add(newContextButton, addContextButton, quickAccessMenu);
+        ComponentSecurityVisibility.applySecurity(authentication, newContextButton
+            , SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_ADMIN
+            , SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE
+            , SecurityConstants.SCHEDULER_ALL_ADMIN);
+
+        actionButtonLayout.add(newContextButton, uploadJobPlan, quickAccessMenu);
         actionButtonLayout.getElement().getStyle().set("position", "absolute");
         actionButtonLayout.getElement().getStyle().set("right", "30px");
 
@@ -165,6 +224,24 @@ public class ContextTemplateWidget extends Div {
         this.setSizeFull();
     }
 
+    /**
+     * Method to create the job plan grid.
+     *
+     * @param dynamicImagePath
+     * @param moduleMetaDataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param schedulerJobService
+     * @param logStreamingService
+     * @param scheduledContextInstanceService
+     * @param schedulerJobInstanceService
+     * @param jobInitiationService
+     * @param userService
+     * @param securityService
+     */
     private void createGrid(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
@@ -207,33 +284,27 @@ public class ContextTemplateWidget extends Div {
         contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
-            Icon edit = IconDecorator.decorate(new Icon(VaadinIcon.EDIT), getTranslation("tooltip.manage-context", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            Icon edit = IconDecorator.decorate(new Icon(VaadinIcon.MODAL), getTranslation("tooltip.manage-context", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             edit.setId("editScheduledJob");
-            ComponentSecurityVisibility.applySecurity(this.authentication,  edit, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
+            ComponentSecurityVisibility.applySecurity(this.authentication,  edit, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE
+                , SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ, SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE
+                , SecurityConstants.SCHEDULER_ALL_READ);
 
             edit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 ContextTemplateManagementDialog contextTemplateManagementDialog
                     = new ContextTemplateManagementDialog(this.scheduledContextService, scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService
-                    , this.jobProvisionService, userService, securityService, this.jobUtilsService);
+                    , this.jobProvisionService, userService, securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
+                    , this.emailNotificationContextService
+                );
                 contextTemplateManagementDialog.open();
             });
 
             layout.add(edit);
 
-            Icon view = IconDecorator.decorate(new Icon(VaadinIcon.EYE), getTranslation("tooltip.view-context", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
-            ComponentSecurityVisibility.applySecurity(this.authentication, view, SecurityConstants.SCHEDULER_READ);
-
-            view.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
-                underConstructionDialog.open();
-            });
-
-            layout.add(view);
-
             Icon delete = IconDecorator.decorate(new Icon(VaadinIcon.TRASH), getTranslation("tooltip.delete-context", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
-            ComponentSecurityVisibility.applySecurity(this.authentication, delete, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
+            ComponentSecurityVisibility.applySecurity(this.authentication, delete, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_ADMIN);
 
             layout.add(delete);
 
@@ -287,7 +358,8 @@ public class ContextTemplateWidget extends Div {
             });
 
             Icon clone = IconDecorator.decorate(new Icon(VaadinIcon.COPY), getTranslation("tooltip.clone-context", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
-            ComponentSecurityVisibility.applySecurity(this.authentication, clone, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN);
+            ComponentSecurityVisibility.applySecurity(this.authentication, clone, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
+                , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
             clone.addClickListener(iconClickEvent -> {
                 CloneContextTemplateDialog cloneContextTemplateDialog = new CloneContextTemplateDialog(this.scheduledContextService
                     , this.contextTemplateFilteringGrid, this.contextInstanceRegistrationService, this.schedulerJobService
@@ -300,6 +372,8 @@ public class ContextTemplateWidget extends Div {
             layout.add(clone);
 
             Icon chart = IconDecorator.decorate(new Icon(VaadinIcon.CHART), getTranslation("tooltip.contexts-statistics", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            ComponentSecurityVisibility.applySecurity(this.authentication, chart, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
+                , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_READ);
             chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
                 underConstructionDialog.open();
@@ -308,6 +382,8 @@ public class ContextTemplateWidget extends Div {
             layout.add(chart);
 
             Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("tooltip.export-jobs-and-associated-artifacts", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            ComponentSecurityVisibility.applySecurity(this.authentication, export, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
+                , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_READ);
             StreamResource streamResource = new StreamResource(ContextExportZipUtils.getExportZipFileName(scheduledContextRecord.getContextName()), () -> {
                 try {
                     ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
@@ -333,6 +409,8 @@ public class ContextTemplateWidget extends Div {
             layout.add(exportWrapper);
 
             Icon newWindow = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), getTranslation("tooltip.open-in-new-window", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            ComponentSecurityVisibility.applySecurity(this.authentication, export, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
+                , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_READ);
             newWindow.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 String route = RouteConfiguration.forSessionScope()
                     .getUrl(ContextTemplateManagementView.class, scheduledContextRecord.getContextName());
@@ -430,6 +508,11 @@ public class ContextTemplateWidget extends Div {
                     });
                 });
 
+                ComponentSecurityVisibility.applyEnabledSecurity(authentication, enabled
+                    , SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_ADMIN
+                    , SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE
+                    , SecurityConstants.SCHEDULER_ALL_ADMIN);
+
                 disabled.addClickListener(event -> {
                     ConfirmDialog confirmDialog = new ConfirmDialog();
                     confirmDialog.setHeader(getTranslation("confirm.disable-context-header", UI.getCurrent().getLocale()));
@@ -471,6 +554,11 @@ public class ContextTemplateWidget extends Div {
                     });
                 });
 
+                ComponentSecurityVisibility.applyEnabledSecurity(authentication, disabled
+                    , SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_ADMIN
+                    , SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE
+                    , SecurityConstants.SCHEDULER_ALL_ADMIN);
+
                 HorizontalLayout buttons = new HorizontalLayout();
                 buttons.setWidth("200px");
                 buttons.add(enabled, disabled);
@@ -487,20 +575,33 @@ public class ContextTemplateWidget extends Div {
         this.contextTemplateFilteringGrid.addGridFiltering(hr, contextSearchFilter::setContextName, "moduleName");
     }
 
+    /**
+     * Helper method to create the quick action menu bar.
+     *
+     * @return
+     */
     private MenuBar createQuickAccessMenu() {
         MenuBar quickStartMenuBar = new MenuBar();
         quickStartMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
 
-        MenuItem quickAccess = createQuickAccessButton(quickStartMenuBar, VaadinIcon.COG, getTranslation("menu-item.quick-access", UI.getCurrent().getLocale()));
+        MenuItem quickAccess = createQuickActionMenuItem(quickStartMenuBar
+            , VaadinIcon.COG, getTranslation("menu-item.quick-access", UI.getCurrent().getLocale()));
 
         SubMenu activeContextInstancesSubMenu = quickAccess.getSubMenu();
-        MenuItem activeContexts = activeContextInstancesSubMenu.addItem(getTranslation("menu-item.active-contexts", UI.getCurrent().getLocale()));
+        MenuItem activeContexts = activeContextInstancesSubMenu
+            .addItem(getTranslation("menu-item.active-contexts", UI.getCurrent().getLocale()));
         this.activeContextSubMenu = activeContexts.getSubMenu();
         this.updateActiveContextMenu();
 
         return quickStartMenuBar;
     }
 
+    /**
+     * Helper method to get all the scheduler jobs associated with the context.
+     *
+     * @param contextName
+     * @return
+     */
     private List<SchedulerJob> getSchedulerJobForContext(String contextName) {
         List< SchedulerJobRecord> schedulerJobRecordList = this.schedulerJobService
             .findByContext(contextName, -1, -1).getResultList();
@@ -510,20 +611,36 @@ public class ContextTemplateWidget extends Div {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Helper method to update the contents of the active context menu.
+     */
     private void updateActiveContextMenu() {
         this.activeContextSubMenu.removeAll();
-        ContextMachineCache.instance().contextNames().forEach(name ->
-            this.activeContextSubMenu.addItem(name, itemClickEvent -> {
-                String route = RouteConfiguration.forSessionScope()
-                    .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
-                        .getByContextName(name).getContext().getId()+"_scheduledContextInstance");
+        boolean canAccessAllJobPlans = SecurityUtils.canAccessAllJobPlans(authentication);
+        Set<String> accessibleJobPlans = SecurityUtils.getAccessibleJobPlans(authentication);
 
-                getUI().ifPresent(ui -> ui.getPage().open(route));
-            })
-        );
+        ContextMachineCache.instance().contextNames().forEach(name -> {
+            if (canAccessAllJobPlans || accessibleJobPlans.contains(name)) {
+                this.activeContextSubMenu.addItem(name, itemClickEvent -> {
+                    String route = RouteConfiguration.forSessionScope()
+                        .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
+                            .getByContextName(name).getContext().getId() + "_scheduledContextInstance");
+
+                    getUI().ifPresent(ui -> ui.getPage().open(route));
+                });
+            }
+        });
     }
 
-    private MenuItem createQuickAccessButton(MenuBar menu, VaadinIcon iconName, String label) {
+    /**
+     * Helper method to create the quick action menu item.
+     *
+     * @param menu
+     * @param iconName
+     * @param label
+     * @return
+     */
+    private MenuItem createQuickActionMenuItem(MenuBar menu, VaadinIcon iconName, String label) {
         Icon icon = new Icon(iconName);
         Button quickAccessButton = new Button(label, icon);
         quickAccessButton.setIconAfterText(true);

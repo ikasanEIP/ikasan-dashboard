@@ -43,7 +43,7 @@ public class CollapsableLayout extends VerticalLayout {
         header.getStyle().set("border-bottom", "1px solid #eee");
 
         content = new Div();
-        content.setSizeFull();
+        content.setWidthFull();
         content.setVisible(startVisible);
 
         header.addClickListener(this::onHeaderClick);
@@ -53,6 +53,8 @@ public class CollapsableLayout extends VerticalLayout {
 
         add(header);
         addAndExpand(content);
+
+        this.getElement().getStyle().remove("height");
     }
 
     protected void onHeaderClick(ClickEvent<HorizontalLayout> horizontalLayoutClickEvent) {
