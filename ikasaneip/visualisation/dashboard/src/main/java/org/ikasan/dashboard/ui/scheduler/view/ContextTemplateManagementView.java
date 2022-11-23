@@ -1,15 +1,18 @@
 package org.ikasan.dashboard.ui.scheduler.view;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.annotation.UIScope;
+import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextTemplateManagementWidget;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -27,9 +30,11 @@ import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Set;
 
 @Route(value = "contextTemplateManagement", layout = IkasanAppLayout.class)
 @UIScope
@@ -76,6 +81,9 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     @Value("${scheduled.job.context.queue.directory}")
     private String queueDirectory;
 
+    @Value("${ikasan.dashboard.zip.working.directory:.}")
+    private String zipWorkingDirectory;
+
     @Resource
     private LogStreamingService logStreamingService;
 
@@ -103,25 +111,37 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
 
     private String contextName;
 
+    private IkasanAuthentication ikasanAuthentication;
+
     /**
      * Constructor
      */
     public ContextTemplateManagementView() {
         this.setSpacing(false);
         this.setMargin(false);
+
+        this.ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
     }
 
     /**
      * Initialise the internals of the object.
      */
     private void init() {
-        this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, ""
-            , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-            , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
-            , this.jobProvisionService, this.userService, this.securityService, this.jobUtilsService);
+        boolean canAccessAllJobPlans = SecurityUtils.canAccessAllJobPlans(ikasanAuthentication);
+        Set<String> accessibleJobPlans = SecurityUtils.getAccessibleJobPlans(ikasanAuthentication);
 
-        this.getElement().getStyle().set("padding-top", "0px");
-        this.add(this.contextTemplateManagementWidget);
+        if(!canAccessAllJobPlans && !accessibleJobPlans.contains(this.contextTemplate.getName())) {
+            UI.getCurrent().getPage().setLocation("/scheduler");
+        }
+        else {
+            this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, ""
+                , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+                , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
+                , this.jobProvisionService, this.userService, this.securityService, this.jobUtilsService, this.zipWorkingDirectory);
+
+            this.getElement().getStyle().set("padding-top", "0px");
+            this.add(this.contextTemplateManagementWidget);
+        }
     }
 
     @Override

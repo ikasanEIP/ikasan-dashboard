@@ -316,11 +316,11 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
 
             SolrContextParameterImpl contextParameter1 = new SolrContextParameterImpl();
             contextParameter1.setName("businessDate");
-            contextParameter1.setType("java.lang.String");
+            contextParameter1.setDefaultValue("defaultValue");
 
             SolrContextParameterImpl contextParameter2 = new SolrContextParameterImpl();
             contextParameter2.setName("aNumber");
-            contextParameter2.setType("java.lang.Integer");
+            contextParameter1.setDefaultValue("defaultValue");
 
             solrInternalEventDrivenJob.setContextParameters(List.of(contextParameter1, contextParameter2));
 
@@ -424,15 +424,15 @@ public class SolrSchedulerJobRecordDaoImplTest extends SolrTestCaseJ4 {
 
                 SolrContextParameterImpl contextParameter1 = new SolrContextParameterImpl();
                 contextParameter1.setName("BusinessDate");
-                contextParameter1.setType("java.lang.String");
+                contextParameter1.setDefaultValue("defaultValue");
 
                 SolrContextParameterImpl contextParameter2 = new SolrContextParameterImpl();
                 contextParameter2.setName("ErrorSearch");
-                contextParameter2.setType("java.lang.String");
+                contextParameter1.setDefaultValue("defaultValue");
 
                 SolrContextParameterImpl contextParameter3 = new SolrContextParameterImpl();
                 contextParameter3.setName("UseBusinessDate");
-                contextParameter3.setType("java.lang.String");
+                contextParameter1.setDefaultValue("defaultValue");
 
                 solrInternalEventDrivenJob.setContextParameters(List.of(contextParameter1, contextParameter2, contextParameter3));
 

@@ -69,7 +69,6 @@ public class SchedulerContextParametersPropertiesProvider extends Properties {
                     String value = paramMap.get(name);
                     value = replaceParameterWithSpel(name, value);
                     param.setValue(value);
-                    param.setType("java.lang.String");
                     params.add(param);
                 }
             }

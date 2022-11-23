@@ -140,16 +140,20 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
 
         formLayout.add(this.statusDiv, 2);
 
-        Button submitButton = new Button(getTranslation("button.submit", UI.getCurrent().getLocale()), new Icon(VaadinIcon.PAPERPLANE));
+        Button submitButton = new Button(getTranslation("button.submit"
+            , UI.getCurrent().getLocale()), new Icon(VaadinIcon.PAPERPLANE));
         submitButton.setIconAfterText(true);
-        submitButton.getElement().setAttribute("title", "Submit Job");
-
-        submitButton.setVisible(!this.fileEventDrivenJobInstance.getStatus().equals(InstanceStatus.COMPLETE));
+        submitButton.setVisible(!this.fileEventDrivenJobInstance.getStatus().equals(InstanceStatus.COMPLETE) &&
+            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
         Button resetButton = new Button("Reset", new Icon(VaadinIcon.ARROW_BACKWARD));
         resetButton.setIconAfterText(true);
-        resetButton.getElement().setAttribute("title", "Reset Job");
-        resetButton.setVisible(this.fileEventDrivenJobInstance.getStatus().equals(InstanceStatus.COMPLETE));
+        resetButton.setVisible(this.fileEventDrivenJobInstance.getStatus().equals(InstanceStatus.COMPLETE)&&
+            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
         submitButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
@@ -174,7 +178,10 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
                     NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
 
                     submitButton.setVisible(false);
-                    resetButton.setVisible(true);
+                    resetButton.setVisible(true &&
+                        ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                        SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                        SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
                 }
                 catch (Exception e) {
                     e.printStackTrace();
@@ -182,6 +189,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
                 }
             });
         });
+
         resetButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.reset-job-header", UI.getCurrent().getLocale()));
@@ -194,7 +202,10 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
             confirmDialog.addConfirmListener(confirmEvent -> {
                 if(this.resetJob()) {
                     this.statusDiv.setStatus(InstanceStatus.WAITING);
-                    submitButton.setVisible(true);
+                    submitButton.setVisible(true &&
+                        ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
                     resetButton.setVisible(false);
                 }
             });
@@ -202,7 +213,10 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
 
         this.viewProcessEventButton = new Button(getTranslation
             ("button.view-event", UI.getCurrent().getLocale()), VaadinIcon.CALENDAR_CLOCK.create());
-        this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
+        this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null &&
+            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         this.viewProcessEventButton.setIconAfterText(true);
         this.viewProcessEventButton.addClickListener(event -> {
             JsonViewerDialog dialog = new JsonViewerDialog(this.scheduledProcessEvent
@@ -224,6 +238,10 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
 
         FileDownloadWrapper exportWrapper = new FileDownloadWrapper(streamResource);
         exportWrapper.wrapComponent(export);
+
+        ComponentSecurityVisibility.applySecurity(exportWrapper, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
         HorizontalLayout actionsLayout = new HorizontalLayout();
         actionsLayout.add(submitButton, resetButton, this.viewProcessEventButton, exportWrapper);

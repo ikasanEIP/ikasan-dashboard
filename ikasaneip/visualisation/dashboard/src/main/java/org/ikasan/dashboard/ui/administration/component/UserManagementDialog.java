@@ -104,8 +104,8 @@ public class UserManagementDialog extends AbstractCloseableResizableDialog
         layout.add(initUserForm(), accordion);
 
         layout.setSizeFull();
-        this.setWidth("1400px");
-        this.setHeight("100%");
+        this.setWidth("90vw");
+        this.setHeight("90vh");
         super.content.add(layout);
     }
 
@@ -114,8 +114,15 @@ public class UserManagementDialog extends AbstractCloseableResizableDialog
         Grid<SystemEvent> dashboardActivityGrid = new Grid<>();
 
         dashboardActivityGrid.setClassName("my-grid");
-        dashboardActivityGrid.addColumn(SystemEvent::getAction).setKey("action").setHeader(getTranslation("table-header.action", UI.getCurrent().getLocale(), null)).setSortable(true).setFlexGrow(4);
-        dashboardActivityGrid.addColumn(SystemEvent::getTimestamp).setKey("datetime").setHeader(getTranslation("table-header.date-time", UI.getCurrent().getLocale(), null)).setSortable(true).setFlexGrow(1);
+        dashboardActivityGrid.addColumn(SystemEvent::getAction)
+            .setKey("action")
+            .setHeader(getTranslation("table-header.action", UI.getCurrent().getLocale(), null))
+            .setSortable(true)
+            .setFlexGrow(4);
+        dashboardActivityGrid.addColumn(SystemEvent::getTimestamp)
+            .setKey("datetime").setHeader(getTranslation("table-header.date-time", UI.getCurrent().getLocale(), null))
+            .setSortable(true)
+            .setFlexGrow(1);
 
         dashboardActivityGrid.setSizeFull();
 

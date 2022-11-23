@@ -23,11 +23,11 @@ public class ContextTemplateBuilderTest extends AbstractTest {
             .withTimeWindowEndCronExpression("* * 15 ? * * *")
 
             // add some context parameters
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param2").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param3").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param4").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param5").withType("java.lang.String").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param2").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param3").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param4").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param5").withDefaultValue("value").build())
 
             // add the scheduler jobs that will be orchestrated
             .addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
@@ -55,11 +55,11 @@ public class ContextTemplateBuilderTest extends AbstractTest {
             .withTimeWindowEndCronExpression("* * 15 ? * * *")
 
             // add some context parameters
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param2").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param3").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param4").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param5").withType("java.lang.String").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param2").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param3").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param4").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param5").withDefaultValue("value").build())
 
             // add the scheduler jobs that will be orchestrated
             .addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
@@ -171,11 +171,11 @@ public class ContextTemplateBuilderTest extends AbstractTest {
             .withTimeWindowEndCronExpression("* * 15 ? * * *")
 
             // add some context parameters
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param2").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param3").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param4").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param5").withType("java.lang.String").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param2").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param3").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param4").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param5").withDefaultValue("value").build())
 
             // add the scheduler jobs that will be orchestrated
             .addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
@@ -553,11 +553,11 @@ public class ContextTemplateBuilderTest extends AbstractTest {
             .withTimeWindowEndCronExpression("* * 15 ? * * *")
 
             // add some context parameters
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param2").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param3").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param4").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param5").withType("java.lang.String").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param2").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param3").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param4").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param5").withDefaultValue("value").build())
 
             // add the scheduler jobs that will be orchestrated
             .addSchedulerJob(job1)
@@ -783,11 +783,11 @@ public class ContextTemplateBuilderTest extends AbstractTest {
             .withTimeWindowEndCronExpression("* * 15 ? * * *")
 
             // add some context parameters
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param2").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param3").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param4").withType("java.lang.String").build())
-            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param5").withType("java.lang.String").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param2").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param3").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param4").withDefaultValue("value").build())
+            .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param5").withDefaultValue("value").build())
 
             .addContext(contextTemplate1)
             .addContext(contextTemplate2)

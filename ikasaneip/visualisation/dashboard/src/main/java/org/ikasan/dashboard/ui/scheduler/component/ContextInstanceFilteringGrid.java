@@ -100,8 +100,12 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
         datePicker.setWidthFull();
 
         datePicker.addValueChangeListener(ev->{
-
-            setFilter.accept(ev.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
+            if(ev.getValue() == null) {
+                setFilter.accept(-1L);
+            }
+            else {
+                setFilter.accept(ev.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli());
+            }
 
             filteredDataProvider.refreshAll();
         });
@@ -219,6 +223,7 @@ public class ContextInstanceFilteringGrid extends Grid<ScheduledContextInstanceR
             results = this.scheduledContextInstanceService.getScheduledContextInstancesByFilter(filter, limit, offset, sortField, sortDirection);
         }
         catch (Exception e) {
+            e.printStackTrace();
             final UI current = UI.getCurrent();
             final I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator().getI18NProvider();
             NotificationHelper.showErrorNotification(i18NProvider.getTranslation("error.solr-unavailable"

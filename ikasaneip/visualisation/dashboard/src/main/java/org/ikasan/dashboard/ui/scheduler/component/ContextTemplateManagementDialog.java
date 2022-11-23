@@ -31,11 +31,11 @@ public class ContextTemplateManagementDialog extends AbstractCloseableResizableD
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
                                            JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
-                                           SecurityService securityService, JobUtilsService jobUtilsService) {
+                                           SecurityService securityService, JobUtilsService jobUtilsService, String zipWorkingDirectory) {
         this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService, jobProvisionService
-            , userService, securityService, jobUtilsService);
+            , userService, securityService, jobUtilsService, zipWorkingDirectory);
 
         this.setHeight("95vh");
         this.setWidth("90vw");

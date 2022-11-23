@@ -184,7 +184,7 @@ public class SolrBusinessStreamMetadataDao extends SolrDaoBase<SolrBusinessStrea
 
         try
         {
-            JsonQueryRequest req = new JsonQueryRequest(query);
+            QueryRequest req = new QueryRequest(query, SolrRequest.METHOD.POST);
             req.setBasicAuthCredentials(this.solrUsername, this.solrPassword);
 
             QueryResponse rsp = req.process(this.solrClient, SolrConstants.CORE);

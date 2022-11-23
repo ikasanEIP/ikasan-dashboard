@@ -9,6 +9,7 @@ import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
@@ -24,6 +25,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
@@ -32,9 +34,7 @@ import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.model.BlackoutWindowDateTimePair;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
-import org.ikasan.dashboard.ui.util.DateTimeUtil;
-import org.ikasan.dashboard.ui.util.IkasanColours;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.ContextSchedulerVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
@@ -42,6 +42,7 @@ import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
 import org.ikasan.security.service.SecurityService;
@@ -67,7 +68,10 @@ import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.search.SearchResults;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -117,6 +121,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
     private Binder<ContextTemplate> binder;
     private List<BlackoutWindowDateTimePair> blackoutWindowDateTimePairs;
     private Grid<BlackoutWindowDateTimePair> blackoutWindowsGrid;
+    private String zipWorkingDirectory;
 
     /**
      * Constructor
@@ -147,7 +152,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
                                            JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobProvisionService jobProvisionService,
-                                           UserService userService, SecurityService securityService, JobUtilsService jobUtilsService) {
+                                           UserService userService, SecurityService securityService, JobUtilsService jobUtilsService, String zipWorkingDirectory) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -221,6 +226,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
         if (this.systemEventLogger == null) {
             throw new IllegalArgumentException("systemEventLogger cannot be null!");
         }
+        this.zipWorkingDirectory = zipWorkingDirectory;
+        if (this.zipWorkingDirectory == null) {
+            throw new IllegalArgumentException("zipWorkingDirectory cannot be null!");
+        }
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -235,6 +244,20 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
         this.setWidthFull();
     }
 
+    /**
+     * General widget initialisation.
+     *
+     * @param dynamicImagePath
+     * @param moduleMetaDataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param schedulerJobService
+     * @param logStreamingService
+     * @param jobInitiationService
+     */
     private void init(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                       ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                       MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
@@ -300,7 +323,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
         headerLayout.setWidth("100%");
         headerLayout.setMargin(false);
         headerLayout.setPadding(false);
-        H4 contextTemplateManagementLabel = new H4(String.format(getTranslation("label.context-template-management", UI.getCurrent().getLocale())));
+        H4 contextTemplateManagementLabel
+            = new H4(String.format(getTranslation("label.context-template-management", UI.getCurrent().getLocale()))
+                + " - " + this.contextTemplate.getName());
         contextTemplateManagementLabel.getElement().getStyle().set("margin-top", "10px");
         HorizontalLayout labelLayout = new HorizontalLayout();
         labelLayout.setWidth("100%");
@@ -503,6 +528,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
                 addChildContextDialog.addNewContextListener(this.schedulerVisualisation);
             });
 
+            ComponentSecurityVisibility.applySecurity(addContextButton, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
             buttonLayout.add(addContextButton, this.contextViewMenuBar());
 
             buttonWrapper.add(buttonLayout);
@@ -607,7 +636,12 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
      * @return
      */
     private MenuBar contextViewMenuBar() {
-        MenuBar contextViewsMenuBar = new ContextTemplateViewMenuBar(this.contextTemplate, this.contextProfileService, this.schedulerVisualisation);
+        MenuBar contextViewsMenuBar = new ContextTemplateViewMenuBar(this.contextTemplate
+            , this.contextProfileService, this.schedulerVisualisation);
+
+        ComponentSecurityVisibility.applySecurity(contextViewsMenuBar, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
         return contextViewsMenuBar;
     }
@@ -626,32 +660,48 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
         buttonLayout.setPadding(false);
         Button provisionButton = this.createSynchroniseJobsButton();
 
-        Button downloadContextTemplateButton = new Button(getTranslation("button.download-context-template", UI.getCurrent().getLocale()), VaadinIcon.DOWNLOAD_ALT.create());
-        downloadContextTemplateButton.setIconAfterText(true);
+        MenuBar actionsMenuBar = new MenuBar();
+        actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
 
-        Button editButton =  new Button(getTranslation("button.edit-context-template", UI.getCurrent().getLocale()), VaadinIcon.EDIT.create());
-        editButton.setIconAfterText(true);
-        editButton.addClickListener(event -> {
-            ContextTemplateDialog contextTemplateDialog = new ContextTemplateDialog(this.scheduledContextService, this.schedulerJobService
-                , getTranslation("header.manage-context-template", UI.getCurrent().getLocale()), false);
-            contextTemplateDialog.setContextTemplate(this.contextTemplate);
-            contextTemplateDialog.open();
-        });
+        MenuItem actionsMenuItem = this.createIconItem(actionsMenuBar, VaadinIcon.LINES, "Actions");
+        SubMenu actions = actionsMenuItem.getSubMenu();
 
-        Button manageJobLocksButton =  new Button(getTranslation("button.manage-job-locks", UI.getCurrent().getLocale()), VaadinIcon.LOCK.create());
-        manageJobLocksButton.setIconAfterText(true);
-        manageJobLocksButton.addClickListener(event -> {
-            JobLockManagementDialog jobLockManagementDialog = new JobLockManagementDialog(this.contextTemplate, this.moduleMetaDataService, this.scheduledProcessManagementService,
-                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
-                this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService);
-            jobLockManagementDialog.open();
-        });
+        actions.addItem(getTranslation("button.edit-context-template", UI.getCurrent().getLocale()),
+            menuItemClickEvent -> {
+                ContextTemplateDialog contextTemplateDialog = new ContextTemplateDialog(this.scheduledContextService, this.schedulerJobService
+                    , getTranslation("header.manage-context-template", UI.getCurrent().getLocale()), false);
+                contextTemplateDialog.setContextTemplate(this.contextTemplate);
+                contextTemplateDialog.open();
+            })
+            .getElement()
+            .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
-        buttonLayout.add(editButton, manageJobLocksButton, this.createJobUploadMenuBar(), this.createNewJobMenuBar(), downloadContextTemplateButton, provisionButton);
+        actions.addItem(getTranslation("button.manage-job-locks", UI.getCurrent().getLocale()),
+            menuItemClickEvent -> {
+                JobLockManagementDialog jobLockManagementDialog = new JobLockManagementDialog(this.contextTemplate, this.moduleMetaDataService, this.scheduledProcessManagementService,
+                    this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
+                    this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService);
+                jobLockManagementDialog.open();
+            })
+            .getElement()
+            .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+
+        this.createJobUploadMenuBar(actions);
+        this.createNewJobMenuBar(actions);
+        Anchor download = new Anchor(new StreamResource("jobPlanBundle.zip", () -> this.getContextBundleStreamResource()), getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
+        download.getElement().setAttribute("download", true);
+        actions.addItem(download);
+
+        buttonLayout.add(actionsMenuBar, provisionButton);
         buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, provisionButton);
 
         buttonWrapper.add(buttonLayout);
         buttonWrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
+
         return buttonWrapper;
     }
 
@@ -666,6 +716,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
         synchroniseJobsButton.getStyle().set("color","white");
         synchroniseJobsButton.getElement().setAttribute("title", getTranslation("tooltip.synch-jobs-required", UI.getCurrent().getLocale()));
         synchroniseJobsButton.setIconAfterText(true);
+
+        ComponentSecurityVisibility.applySecurity(synchroniseJobsButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
         synchroniseJobsButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
@@ -717,11 +771,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
      *
      * @return
      */
-    private MenuBar createJobUploadMenuBar() {
-        MenuBar uploadJobMenuBar = new MenuBar();
-        uploadJobMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
-
-        MenuItem jobUploadMenutItem = createIconItem(uploadJobMenuBar, VaadinIcon.UPLOAD_ALT, getTranslation("menu-item.upload-job-template", UI.getCurrent().getLocale()));
+    private void createJobUploadMenuBar(SubMenu actions) {
+        MenuItem jobUploadMenutItem = actions.addItem(getTranslation("menu-item.upload-job-template", UI.getCurrent().getLocale()));
 
         SubMenu activeContextInstancesSubMenu = jobUploadMenutItem.getSubMenu();
         MenuItem jobTypesMenuItem = activeContextInstancesSubMenu.addItem(getTranslation("menu-item.job-type", UI.getCurrent().getLocale()));
@@ -729,79 +780,100 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
 
         jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale())
             , event -> {SchedulerJobUploadDialog schedulerJobUploadDialog = new SchedulerJobUploadDialog(this.contextTemplate, this.schedulerJobService
-                , InternalEventDrivenJob.class, getTranslation("label.command-job-upload", UI.getCurrent().getLocale())); schedulerJobUploadDialog.open();});
+                , InternalEventDrivenJob.class, getTranslation("label.command-job-upload", UI.getCurrent().getLocale())); schedulerJobUploadDialog.open();})
+            .getElement()
+            .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+
         jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale())
             , event -> {SchedulerJobUploadDialog schedulerJobUploadDialog = new SchedulerJobUploadDialog(this.contextTemplate, this.schedulerJobService
-                , FileEventDrivenJob.class, getTranslation("label.file-watcher-job-upload", UI.getCurrent().getLocale())); schedulerJobUploadDialog.open();});
+                , FileEventDrivenJob.class, getTranslation("label.file-watcher-job-upload", UI.getCurrent().getLocale())); schedulerJobUploadDialog.open();})
+            .getElement()
+            .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+
         jobTypesSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale())
             , event -> {SchedulerJobUploadDialog schedulerJobUploadDialog = new SchedulerJobUploadDialog(this.contextTemplate, this.schedulerJobService
-                , QuartzScheduleDrivenJob.class, getTranslation("label.scheduled-job-upload", UI.getCurrent().getLocale())); schedulerJobUploadDialog.open();});
-
-        return uploadJobMenuBar;
+                , QuartzScheduleDrivenJob.class, getTranslation("label.scheduled-job-upload", UI.getCurrent().getLocale())); schedulerJobUploadDialog.open();})
+            .getElement()
+            .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
     }
 
-    private MenuBar createNewJobMenuBar() {
-        MenuBar newJobMenuBar = new MenuBar();
-        newJobMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
-
-        MenuItem newJobMenuItem = createIconItem(newJobMenuBar, VaadinIcon.PLUS, getTranslation("menu-item.create-new-job", UI.getCurrent().getLocale()));
+    private void createNewJobMenuBar(SubMenu actions) {
+        MenuItem newJobMenuItem = actions.addItem(getTranslation("menu-item.create-new-job", UI.getCurrent().getLocale()));
 
         SubMenu newJobSubMenu = newJobMenuItem.getSubMenu();
         MenuItem jobTypeMenuItem = newJobSubMenu.addItem(getTranslation("menu-item.job-type", UI.getCurrent().getLocale()));
         SubMenu jobTypesSubMenu = jobTypeMenuItem.getSubMenu();
 
         jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale()), event -> {
-            InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
-                this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+                InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+                    this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
 
-            InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
-            internalEventDrivenJob.setContextName(this.contextTemplate.getName());
+                InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
+                internalEventDrivenJob.setContextName(this.contextTemplate.getName());
 
-            internalEventDrivenJobDialog.setJob(internalEventDrivenJob, EditMode.NEW);
-            internalEventDrivenJobDialog.open();
+                internalEventDrivenJobDialog.setJob(internalEventDrivenJob, EditMode.NEW);
+                internalEventDrivenJobDialog.open();
 
-            internalEventDrivenJobDialog.addOpenedChangeListener(openedChangeEvent -> {
-                if(!openedChangeEvent.isOpened()) {
-                    this.schedulerJobGridWidget.refresh();
-                }
-            });
-        });
+                internalEventDrivenJobDialog.addOpenedChangeListener(openedChangeEvent -> {
+                    if(!openedChangeEvent.isOpened()) {
+                        this.schedulerJobGridWidget.refresh();
+                    }
+                });
+            })
+            .getElement()
+            .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+
         jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
-            FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
-                this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+                FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
+                    this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
 
-            FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
-            fileEventDrivenJob.setContextName(contextTemplate.getName());
+                FileEventDrivenJob fileEventDrivenJob = new FileEventDrivenJobImpl();
+                fileEventDrivenJob.setContextName(contextTemplate.getName());
 
-            fileEventJobDialog.setJob(fileEventDrivenJob, EditMode.NEW);
+                fileEventJobDialog.setJob(fileEventDrivenJob, EditMode.NEW);
 
-            fileEventJobDialog.open();
+                fileEventJobDialog.open();
 
-            fileEventJobDialog.addOpenedChangeListener(openedChangeEvent -> {
-                if(!openedChangeEvent.isOpened()) {
-                    this.schedulerJobGridWidget.refresh();
-                }
-            });
-        });
+                fileEventJobDialog.addOpenedChangeListener(openedChangeEvent -> {
+                    if(!openedChangeEvent.isOpened()) {
+                        this.schedulerJobGridWidget.refresh();
+                    }
+                });
+            })
+            .getElement()
+            .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+
         jobTypesSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale()), event -> {
-            QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(null, this.scheduledProcessManagementService,
-                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+                QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(null, this.scheduledProcessManagementService,
+                    this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
 
-            QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
-            quartzScheduleDrivenJob.setContextName(this.contextTemplate.getName());
+                QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
+                quartzScheduleDrivenJob.setContextName(this.contextTemplate.getName());
 
-            quartzDrivenScheduledJobDialog.setJob(quartzScheduleDrivenJob, EditMode.NEW);
+                quartzDrivenScheduledJobDialog.setJob(quartzScheduleDrivenJob, EditMode.NEW);
 
-            quartzDrivenScheduledJobDialog.open();
+                quartzDrivenScheduledJobDialog.open();
 
-            quartzDrivenScheduledJobDialog  .addOpenedChangeListener(openedChangeEvent -> {
-                if(!openedChangeEvent.isOpened()) {
-                    this.schedulerJobGridWidget.refresh();
-                }
-            });
-        });
-
-        return newJobMenuBar;
+                quartzDrivenScheduledJobDialog  .addOpenedChangeListener(openedChangeEvent -> {
+                    if(!openedChangeEvent.isOpened()) {
+                        this.schedulerJobGridWidget.refresh();
+                    }
+                });
+            })
+            .getElement()
+            .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
     }
 
     /**
@@ -863,6 +935,22 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
         item.getElement().getStyle().set("padding-right", "5px");
 
         return item;
+    }
+
+    private InputStream getContextBundleStreamResource() {
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = ContextExportZipUtils.createZipFile(
+                this.contextTemplate,
+                this.zipWorkingDirectory,
+                this.schedulerJobService,
+                50 // limit to loop searching solr
+            );
+            return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("error.download-context", UI.getCurrent().getLocale()));
+            return null;
+        }
     }
 
     @Override

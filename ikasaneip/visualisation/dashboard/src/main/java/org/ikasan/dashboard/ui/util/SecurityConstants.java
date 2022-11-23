@@ -154,9 +154,9 @@ public class SecurityConstants
 	public static String USER_DIRECTORY_WRITE = "user_directory-write";
 	public static String USER_DIRECTORY_ADMIN = "user_directory-admin";
 
-	public static String PLATORM_CONFIGURATON_READ = "platform_configuration-read";
-	public static String PLATORM_CONFIGURATON_WRITE = "platform_configuration-write";
-	public static String PLATORM_CONFIGURATON_ADMIN = "platform_configuration-admin";
+	public static String PLATFORM_CONFIGURATION_READ = "platform_configuration-read";
+	public static String PLATFORM_CONFIGURATION_WRITE = "platform_configuration-write";
+	public static String PLATFORM_CONFIGURATION_ADMIN = "platform_configuration-admin";
 
 	public static String NOTIFICATION_READ = "notification-read";
 	public static String NOTIFICATION_WRITE = "notification-write";
@@ -169,6 +169,10 @@ public class SecurityConstants
     public static String SCHEDULER_READ = "scheduler-read";
     public static String SCHEDULER_WRITE = "scheduler-write";
     public static String SCHEDULER_ADMIN = "scheduler-admin";
+
+    public static String SCHEDULER_ALL_READ = "scheduler-all-read";
+    public static String SCHEDULER_ALL_WRITE = "scheduler-all-write";
+    public static String SCHEDULER_ALL_ADMIN = "scheduler-all-admin";
 
     public static String BUSINESS_STREAM_READ = "business-stream-read";
     public static String BUSINESS_STREAM_WRITE = "business-stream-write";
@@ -331,9 +335,9 @@ public class SecurityConstants
 		ADMINISTRATION_VIEW_PERMISSIONS.add(USER_DIRECTORY_WRITE);
 		ADMINISTRATION_VIEW_PERMISSIONS.add(USER_DIRECTORY_ADMIN);
 		ADMINISTRATION_VIEW_PERMISSIONS.add(USER_DIRECTORY_READ);
-		ADMINISTRATION_VIEW_PERMISSIONS.add(PLATORM_CONFIGURATON_WRITE);
-		ADMINISTRATION_VIEW_PERMISSIONS.add(PLATORM_CONFIGURATON_ADMIN);
-		ADMINISTRATION_VIEW_PERMISSIONS.add(PLATORM_CONFIGURATON_READ);
+		ADMINISTRATION_VIEW_PERMISSIONS.add(PLATFORM_CONFIGURATION_WRITE);
+		ADMINISTRATION_VIEW_PERMISSIONS.add(PLATFORM_CONFIGURATION_ADMIN);
+		ADMINISTRATION_VIEW_PERMISSIONS.add(PLATFORM_CONFIGURATION_READ);
 		ADMINISTRATION_VIEW_PERMISSIONS.add(NOTIFICATION_WRITE);
 		ADMINISTRATION_VIEW_PERMISSIONS.add(NOTIFICATION_ADMIN);
 		ADMINISTRATION_VIEW_PERMISSIONS.add(NOTIFICATION_READ);
@@ -370,9 +374,9 @@ public class SecurityConstants
 
 		PLATFORM_CONFIGURATION_VIEW_PERMISSIONS = new ArrayList<String>();
 
-		PLATFORM_CONFIGURATION_VIEW_PERMISSIONS.add(PLATORM_CONFIGURATON_ADMIN);
-		PLATFORM_CONFIGURATION_VIEW_PERMISSIONS.add(PLATORM_CONFIGURATON_WRITE);
-		PLATFORM_CONFIGURATION_VIEW_PERMISSIONS.add(PLATORM_CONFIGURATON_READ);
+		PLATFORM_CONFIGURATION_VIEW_PERMISSIONS.add(PLATFORM_CONFIGURATION_ADMIN);
+		PLATFORM_CONFIGURATION_VIEW_PERMISSIONS.add(PLATFORM_CONFIGURATION_WRITE);
+		PLATFORM_CONFIGURATION_VIEW_PERMISSIONS.add(PLATFORM_CONFIGURATION_READ);
 
 		NOTIFICATION_VIEW_PERMISSIONS = new ArrayList<String>();
 

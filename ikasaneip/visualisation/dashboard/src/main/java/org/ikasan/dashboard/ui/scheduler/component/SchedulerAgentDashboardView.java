@@ -106,7 +106,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
                 , this.schedulerService, this.schedulerJobService), new SchedulerStatusWidget(this.moduleMetadataService, UI.getCurrent()));
 
-            board.addRow(new ContextInstanceDashboardWidget(this.moduleMetadataService, this.scheduledProcessManagementService
+            board.addRow(new ContextInstanceDashboardWidget(this.scheduledProcessManagementService
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
                 , this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
                 this.dynamicImagePath, this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService,

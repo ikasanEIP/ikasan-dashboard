@@ -101,13 +101,14 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
 
         ((InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()).getContextParameters().forEach(param -> {
             if(this.contextParameterInstanceMap.containsKey(param.getName())) {
-                contextParameterInstances.add((ContextParameterInstance) SerializationUtils.clone(this.contextParameterInstanceMap.get(param.getName())));
+                contextParameterInstances.add((ContextParameterInstance) SerializationUtils
+                    .clone(this.contextParameterInstanceMap.get(param.getName())));
             }
         });
 
         GridPro<ContextParameterInstance> grid = new GridPro<>();
         grid.addColumn(ContextParameterInstance::getName).setHeader(getTranslation("table-header.name", UI.getCurrent().getLocale()));
-        grid.addColumn(ContextParameterInstance::getType)
+        grid.addColumn(ContextParameterInstance::getDefaultValue)
             .setHeader(getTranslation("table-header.type", UI.getCurrent().getLocale()));
         grid.addEditColumn(ContextParameterInstance::getValue)
             .text(ContextParameterInstance::setValue)

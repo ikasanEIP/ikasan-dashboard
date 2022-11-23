@@ -48,6 +48,11 @@ public class ComponentSecurityVisibility
         }
     }
 
+    public static void applyEnabledSecurity(HasEnabled component, String ... securityConstants) {
+        IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        applyEnabledSecurity(authentication, component, securityConstants);
+    }
+
     public static boolean hasAuthorisation(String ... securityConstants)
     {
         if(SecurityContextHolder.getContext().getAuthentication() instanceof  IkasanAuthentication) {
