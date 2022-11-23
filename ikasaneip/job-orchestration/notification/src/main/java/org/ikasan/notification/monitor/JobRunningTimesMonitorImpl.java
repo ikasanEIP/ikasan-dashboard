@@ -128,7 +128,7 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
                                 double processedTimeInMinutes = (double) processTime / 1000.0 / 60.0;
                                 // Only check if min and max execution time != -1 - Else ignore notification
 
-                                LOG.info("MIN = {}, MAX = {} AND PROCESSED MINS = {} - {} FIRED {} CURRENT {} COMPLETED {} ", internalEventDrivenJobRecord.getInternalEventDrivenJob().getMinExecutionTime(),
+                                LOG.debug("MIN = {}, MAX = {} AND PROCESSED MINS = {} - {} FIRED {} CURRENT {} COMPLETED {} ", internalEventDrivenJobRecord.getInternalEventDrivenJob().getMinExecutionTime(),
                                     internalEventDrivenJobRecord.getInternalEventDrivenJob().getMaxExecutionTime(),
                                     processedTimeInMinutes, processTime, new DateTime().withMillis(fireTime),
                                     new DateTime().withMillis(currentTime), new DateTime().withMillis(completionTime));
@@ -141,10 +141,9 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
 
                                         GenericNotificationDetails genericNotificationDetails = new GenericNotificationDetails(internalEventDrivenJobInstance.getAgentName(), contextInstance.getName(), internalEventDrivenJobInstance.getChildContextNames().get(0),
                                             internalEventDrivenJobInstance.getJobName(), contextInstance.getId(), MonitorType.RUNNING_TIME, internalEventDrivenJobInstance.getStatus());
-                                        genericNotificationDetails.setMessage("Processing time:"+processTime+", job min. running time:"+internalEventDrivenJobRecord.getInternalEventDrivenJob().getMinExecutionTime()+
-                                            ", job max. running time:"+internalEventDrivenJobRecord.getInternalEventDrivenJob().getMaxExecutionTime());
-
-                                        LOG.info(genericNotificationDetails.getMessage());
+                                        genericNotificationDetails.setMessage("Job has been running for over " + TimeUnit.MINUTES.convert(processTime, TimeUnit.MILLISECONDS) + " minutes. " + System.lineSeparator() +
+                                            "Job is configured to alert when running time is less than " + internalEventDrivenJobRecord.getInternalEventDrivenJob().getMinExecutionTime()+
+                                            "minutes, and max running time " + internalEventDrivenJobRecord.getInternalEventDrivenJob().getMaxExecutionTime());
 
                                         invoke(genericNotificationDetails);
                                     }
