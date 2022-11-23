@@ -16,6 +16,7 @@ import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
+import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -101,14 +102,20 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
 
         ((InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()).getContextParameters().forEach(param -> {
             if(this.contextParameterInstanceMap.containsKey(param.getName())) {
-                contextParameterInstances.add((ContextParameterInstance) SerializationUtils.clone(this.contextParameterInstanceMap.get(param.getName())));
+                contextParameterInstances.add((ContextParameterInstance) SerializationUtils
+                    .clone(this.contextParameterInstanceMap.get(param.getName())));
+            }
+            else {
+                ContextParameterInstance contextParameterInstance = new ContextParameterInstanceImpl();
+                contextParameterInstance.setName(param.getName());
+                contextParameterInstance.setValue(param.getDefaultValue());
+
+                contextParameterInstances.add(contextParameterInstance);
             }
         });
 
         GridPro<ContextParameterInstance> grid = new GridPro<>();
         grid.addColumn(ContextParameterInstance::getName).setHeader(getTranslation("table-header.name", UI.getCurrent().getLocale()));
-        grid.addColumn(ContextParameterInstance::getType)
-            .setHeader(getTranslation("table-header.type", UI.getCurrent().getLocale()));
         grid.addEditColumn(ContextParameterInstance::getValue)
             .text(ContextParameterInstance::setValue)
             .setHeader(getTranslation("table-header.value", UI.getCurrent().getLocale()));

@@ -6,22 +6,26 @@ import java.util.Objects;
 
 public class ContextParameterImpl implements ContextParameter {
     protected String name;
-    protected String type;
+    protected String defaultValue;
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
 
-    public String getType() {
-        return type;
+    @Override
+    public String getDefaultValue() {
+        return defaultValue;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    @Override
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
     @Override

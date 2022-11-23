@@ -15,6 +15,10 @@ import org.ikasan.spec.solr.SolrDaoBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRecord> implements ScheduledContextDao
 {
     private static ObjectMapper objectMapper = new ObjectMapper();
@@ -94,17 +98,26 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
 
     @Override
     public SearchResults<ScheduledContextRecord> findByFilter(ScheduledContextSearchFilter filter, int limit, int offset, String sortColumn, String sortOrder) {
-        StringBuffer typeBuffer = new StringBuffer();
-        typeBuffer.append(TYPE + COLON);
-        typeBuffer.append("\"").append(SCHEDULED_CONTEXT).append("\" ");
+        StringBuffer queryBuffer = new StringBuffer();
+        queryBuffer.append(TYPE + COLON);
+        queryBuffer.append("\"").append(SCHEDULED_CONTEXT).append("\" ");
 
         if(filter.getContextName() != null && !filter.getContextName().isEmpty()) {
-            typeBuffer.append(AND);
-            typeBuffer.append(MODULE_NAME).append(COLON).append(WILDCARD).append(filter.getContextName()).append(WILDCARD);
+            queryBuffer.append(AND);
+            queryBuffer.append(MODULE_NAME).append(COLON).append(WILDCARD).append(filter.getContextName()).append(WILDCARD);
+        }
+
+        if(filter.getContextNames() != null && !filter.getContextNames().isEmpty()) {
+            queryBuffer.append(AND).append(OPEN_BRACKET);
+            List<String> predicates = new ArrayList<>();
+            filter.getContextNames().forEach(name -> predicates.add(new StringBuffer().append(MODULE_NAME)
+                .append(COLON).append("\"").append(name).append("\"").toString()));
+            queryBuffer.append(predicates.stream().collect(Collectors.joining(OR)));
+            queryBuffer.append(CLOSE_BRACKET);
         }
 
         SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery(typeBuffer.toString());
+        solrQuery.setQuery(queryBuffer.toString());
 
         logger.debug("query: " + solrQuery);
 

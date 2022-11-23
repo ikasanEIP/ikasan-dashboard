@@ -6,12 +6,13 @@ import org.ikasan.scheduled.event.model.UpcomingScheduledProcess;
 import org.ikasan.spec.metadata.BusinessStreamMetaData;
 import org.ikasan.spec.metadata.ConfigurationMetaData;
 import org.ikasan.spec.metadata.FlowMetaData;
+import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
 import org.ikasan.spec.solr.BatchInsertListener;
 
 import java.util.List;
 
-public interface ScheduledProcessManagementService {
+public interface ScheduledProcessManagementService extends BatchInsert<ScheduledProcessEvent> {
 
     /**
      * Method to get all scheduled agent names.

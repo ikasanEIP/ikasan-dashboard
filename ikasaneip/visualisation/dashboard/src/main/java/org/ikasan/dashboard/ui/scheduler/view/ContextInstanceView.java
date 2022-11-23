@@ -1,13 +1,17 @@
 package org.ikasan.dashboard.ui.scheduler.view;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.annotation.UIScope;
+import org.ikasan.dashboard.security.SecurityUtils;
+import org.ikasan.dashboard.ui.dashboard.view.DashboardView;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceWidget;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -25,9 +29,11 @@ import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Set;
 
 @Route(value = "contextInstance", layout = IkasanAppLayout.class)
 @UIScope
@@ -93,34 +99,45 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
     private String selectedTab;
     private String jobStatus;
 
+    private IkasanAuthentication ikasanAuthentication;
+
     /**
      * Constructor
      */
     public ContextInstanceView() {
         this.setSpacing(false);
         this.setMargin(false);
+
+        this.ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
     }
 
     /**
      * Initialise the internals of the object.
      */
     private void init(BeforeEnterEvent beforeEnterEvent) {
-        if(this.selectedTab != null && this.jobStatus != null) {
-            this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
-                , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-                , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
-                , this.jobUtilsService, this.scheduledContextService, this.selectedTab, this.jobStatus);
+        boolean canAccessAllJobPlans = SecurityUtils.canAccessAllJobPlans(ikasanAuthentication);
+        Set<String> accessibleJobPlans = SecurityUtils.getAccessibleJobPlans(ikasanAuthentication);
+
+        if(!canAccessAllJobPlans && !accessibleJobPlans.contains(this.contextTemplate.getName())) {
+            UI.getCurrent().getPage().setLocation("/scheduler");
         }
         else {
-            this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
-                , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
-                , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
-                , this.jobUtilsService, this.scheduledContextService);
-        }
+            if (this.selectedTab != null && this.jobStatus != null) {
+                this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
+                    , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+                    , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
+                    , this.jobUtilsService, this.scheduledContextService, this.selectedTab, this.jobStatus);
+            } else {
+                this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
+                    , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
+                    , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
+                    , this.jobUtilsService, this.scheduledContextService);
+            }
 
-        this.getStyle().set("padding-top", "0px");
-        this.add(this.contextInstanceWidget);
-        this.contextInstanceWidget.beforeEnter(beforeEnterEvent);
+            this.getStyle().set("padding-top", "0px");
+            this.add(this.contextInstanceWidget);
+            this.contextInstanceWidget.beforeEnter(beforeEnterEvent);
+        }
     }
 
     @Override

@@ -13,7 +13,9 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.scheduled.instance.model.SolrContextInstanceSearchFilterImpl;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregate;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregateRecord;
@@ -36,6 +38,9 @@ public class ContextInstanceAuditWidget extends Div {
         , ScheduledContextInstanceAuditAggregateSearchFilter contextInstanceAuditAggregateSearchFilter, boolean displayContextInstanceIdColumn) {
         this(contextInstanceService);
         this.contextInstanceAuditAggregateSearchFilter = contextInstanceAuditAggregateSearchFilter;
+        if (this.contextInstanceAuditAggregateSearchFilter == null) {
+            throw new IllegalArgumentException("contextInstanceAuditAggregateSearchFilter cannot be null!");
+        }
         this.displayContextInstanceIdColumn = displayContextInstanceIdColumn;
     }
 
@@ -46,10 +51,15 @@ public class ContextInstanceAuditWidget extends Div {
      * @param contextInstanceService
      */
     public ContextInstanceAuditWidget(ScheduledContextInstanceService contextInstanceService) {
-
         this.contextInstanceService = contextInstanceService;
+        if (this.contextInstanceService == null) {
+            throw new IllegalArgumentException("contextInstanceService cannot be null!");
+        }
     }
 
+    /**
+     * Helper method to initialise the widget.
+     */
     private void init() {
         this.createGrid();
 
@@ -80,6 +90,9 @@ public class ContextInstanceAuditWidget extends Div {
         this.setSizeFull();
     }
 
+    /**
+     * Helper method to create the audit grid.
+     */
     private void createGrid() {
         if(this.contextInstanceAuditAggregateSearchFilter == null) {
             this.contextInstanceAuditAggregateSearchFilter = new ScheduledContextInstanceAuditAggregateSearchFilter();
@@ -111,9 +124,14 @@ public class ContextInstanceAuditWidget extends Div {
             ScheduledContextInstanceAuditAggregate scheduledContextInstanceAudit = scheduledContextInstanceAuditRecord.getScheduledContextInstanceAuditAggregate();
             Button button = new Button(scheduledContextInstanceAudit.getProcessEvent().getJobName());
             button.addClickListener(event -> {
-                JsonViewerDialog dialog = new JsonViewerDialog(scheduledContextInstanceAudit.getProcessEvent());
+                JsonViewerDialog dialog = new JsonViewerDialog(scheduledContextInstanceAudit.getProcessEvent()
+                    , scheduledContextInstanceAudit.getProcessEvent().getJobName());
                 dialog.open();
             });
+
+            ComponentSecurityVisibility.applySecurity(button, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
             horizontalLayout.add(button);
             return horizontalLayout;
@@ -133,9 +151,13 @@ public class ContextInstanceAuditWidget extends Div {
                     HorizontalLayout horizontalLayout = new HorizontalLayout();
                     Button button = new Button(schedulerJobInitiationEvent.getJobName());
                     button.addClickListener(event -> {
-                        JsonViewerDialog dialog = new JsonViewerDialog(schedulerJobInitiationEvent);
+                        JsonViewerDialog dialog = new JsonViewerDialog(schedulerJobInitiationEvent, schedulerJobInitiationEvent.getJobName());
                         dialog.open();
                     });
+
+                    ComponentSecurityVisibility.applySecurity(button, SecurityConstants.ALL_AUTHORITY,
+                        SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                        SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
                     horizontalLayout.add(button);
                     verticalLayout.add(horizontalLayout);
@@ -160,6 +182,10 @@ public class ContextInstanceAuditWidget extends Div {
                 dialog.open();
             });
 
+            ComponentSecurityVisibility.applySecurity(button, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+
             horizontalLayout.add(button);
             return horizontalLayout;
         })).setHeader(getTranslation("table-header.instance-before", UI.getCurrent().getLocale()))
@@ -175,6 +201,10 @@ public class ContextInstanceAuditWidget extends Div {
                         .getUpdatedContextInstanceAuditId()));
                 dialog.open();
             });
+
+            ComponentSecurityVisibility.applySecurity(button, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
             horizontalLayout.add(button);
             return horizontalLayout;
@@ -198,10 +228,6 @@ public class ContextInstanceAuditWidget extends Div {
         }
         this.contextInstanceAuditFilteringGrid.addGridFiltering(hr, this.contextInstanceAuditAggregateSearchFilter::setScheduledProcessEventName, "componentName");
         this.contextInstanceAuditFilteringGrid.addGridFiltering(hr, this.contextInstanceAuditAggregateSearchFilter::setRaisedInitiationEventName, "event");
-    }
-
-    public void setContextInstanceId(String contextInstanceId) {
-        this.contextInstanceAuditAggregateSearchFilter.setContextInstanceId(contextInstanceId);
     }
 
     @Override

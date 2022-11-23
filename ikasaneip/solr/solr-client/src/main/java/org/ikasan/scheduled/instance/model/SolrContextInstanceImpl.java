@@ -19,8 +19,8 @@ public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, Co
     private String id;
     private long createdDateTime;
     private long updatedDateTime;
-    private long startTime;
-    private long endTime;
+    private long startTime = 0L;
+    private long endTime = 0L;
     private String timezone;
     private InstanceStatus status;
     private Map<String, SchedulerJobInitiationEvent> heldJobs;

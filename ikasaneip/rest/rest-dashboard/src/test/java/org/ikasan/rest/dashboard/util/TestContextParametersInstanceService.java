@@ -17,7 +17,7 @@ public class TestContextParametersInstanceService implements ContextParametersIn
     }
 
     @Override
-    public Object getContextParameterValue(String contextName, String parameterValue) {
+    public String getContextParameterValue(String contextName, String parameterValue) {
         return null;
     }
 

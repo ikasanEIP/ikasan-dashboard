@@ -9,8 +9,6 @@ public class ConfigurationParameterMetaDataImpl implements ConfigurationParamete
     private Object value;
     private String description;
     private String implementingClass;
-
-
     @Override
     public Long getId()
     {

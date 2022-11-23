@@ -6,6 +6,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
+import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
 import org.ikasan.scheduled.context.model.SolrContextTemplateImpl;
 import org.ikasan.scheduled.context.model.SolrJobLockImpl;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
@@ -278,28 +279,37 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setContext(solrContextTemplate);
             this.dao.save(scheduledContextRecord);
 
-//            SearchResults<ScheduledContextRecord> found = this.dao.findByKeyword("Context-Locks-1", 100, 0);
-//
-//            Assert.assertEquals(1, found.getResultList().size());
-//            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
-//            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
-//
-//            found = this.dao.findByKeyword("Context-Loc", 100, 0);
-//
-//            Assert.assertEquals(1, found.getResultList().size());
-//            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
-//            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
-//
-//            found = this.dao.findByKeyword("xt-Locks-1", 100, 0);
-//
-//            Assert.assertEquals(1, found.getResultList().size());
-//            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
-//            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
-//
-//
-//            found = this.dao.findByKeyword("agent", 100, 0);
-//
-//            Assert.assertEquals(2, found.getResultList().size());
+            ScheduledContextSearchFilterImpl filter = new ScheduledContextSearchFilterImpl();
+            filter.setContextName("Context-Locks-1");
+
+            SearchResults<ScheduledContextRecord> found = this.dao.findByFilter(filter, 100, 0, null, null);
+
+            Assert.assertEquals(1, found.getResultList().size());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
+
+            filter.setContextName("Context-Loc");
+            found = this.dao.findByFilter(filter, 100, 0, null, null);
+
+            Assert.assertEquals(1, found.getResultList().size());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
+
+            filter.setContextName("xt-Locks-1");
+            found = this.dao.findByFilter(filter, 100, 0, null, null);
+
+            Assert.assertEquals(1, found.getResultList().size());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
+
+            filter.setContextName(null);
+            filter.setContextNames(List.of("Context-Locks-1", "Context-Locks-2", "Context-Locks-3"));
+
+            found = this.dao.findByFilter(filter, 100, 0, null, null);
+
+            Assert.assertEquals(1, found.getResultList().size());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
+            Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
         }
     }
 
