@@ -54,6 +54,8 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
         document.addField(MODIFIED_BY, scheduledContextInstanceRecord.getModifiedBy());
         document.setField(EXPIRY, expiry);
+        document.setField(START_TIME, scheduledContextInstanceRecord.getContextInstance().getStartTime());
+        document.setField(END_TIME, scheduledContextInstanceRecord.getContextInstance().getEndTime());
 
         logger.debug(String.format("Converted scheduled context instance to SolrDocument[%s]", document));
         return document;
@@ -159,6 +161,16 @@ public class SolrScheduledContextInstanceDaoImpl extends SolrDaoBase<ScheduledCo
         if(filter.getModifiedTimestamp() > 0) {
             queryString.append(AND).append(UPDATED_DATE_TIME).append(COLON).append("[").append(this.atStartOfDay(new Date(filter.getModifiedTimestamp())))
                 .append(TO).append(this.atEndOfDay(new Date(filter.getModifiedTimestamp()))).append("]");
+        }
+
+        if(filter.getStartTime() > 0) {
+            queryString.append(AND).append(START_TIME).append(COLON).append("[").append(this.atStartOfDay(new Date(filter.getStartTime())))
+                .append(TO).append(this.atEndOfDay(new Date(filter.getStartTime()))).append("]");
+        }
+
+        if(filter.getEndTime() > 0) {
+            queryString.append(AND).append(END_TIME).append(COLON).append("[").append(this.atStartOfDay(new Date(filter.getEndTime())))
+                .append(TO).append(this.atEndOfDay(new Date(filter.getEndTime()))).append("]");
         }
 
         if(filter.getStatus() != null && !filter.getStatus().isEmpty()) {

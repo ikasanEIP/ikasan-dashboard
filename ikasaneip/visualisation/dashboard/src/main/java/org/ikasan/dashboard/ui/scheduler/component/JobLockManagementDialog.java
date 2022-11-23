@@ -23,9 +23,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
-import org.ikasan.dashboard.ui.util.IconDecorator;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobTemplateVisualisationDialog;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
@@ -221,6 +219,10 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
 
                             });
 
+                            ComponentSecurityVisibility.applySecurity(visualisation, SecurityConstants.ALL_AUTHORITY,
+                                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+
                             verticalLayout.add(contextButton);
                         });
                     }
@@ -251,6 +253,10 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                             , UI.getCurrent().getLocale()), job.getJobName(), jobLock.getName()));
                     }
                 });
+
+                ComponentSecurityVisibility.applySecurity(delete, SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
                 buttonLayout.add(delete);
                 buttonLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, delete);
@@ -305,6 +311,10 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
             });
         });
 
+        ComponentSecurityVisibility.applySecurity(newJobLockButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
         layout.add(newJobLockButton);
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, newJobLockButton);
 
@@ -341,6 +351,10 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
             });
         });
 
+        ComponentSecurityVisibility.applySecurity(deleteJobLockButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
         VerticalLayout deleteButtonLayout = new VerticalLayout();
         deleteButtonLayout.setSpacing(false);
         deleteButtonLayout.setPadding(false);
@@ -361,6 +375,10 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
             filteredSchedulerJobSelectDialog.open();
             filteredSchedulerJobSelectDialog.addSchedulerJobSelectedListener(this);
         });
+
+        ComponentSecurityVisibility.applySecurity(addJobButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
         layout.add(formLayout, addJobButton, grid);
 

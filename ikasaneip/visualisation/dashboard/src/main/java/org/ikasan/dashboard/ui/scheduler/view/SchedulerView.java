@@ -162,23 +162,18 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     private SchedulerAgentDashboardView schedulerAgentDashboardView;
 
-    private UpcomingJobExecutionsWidget upcomingJobExecutionsWidget;
-
     private ContextTemplateWidget contextTemplateWidget;
 
     private ContextDebugWidget contextDebugWidget;
 
-    // Todo get rid of board.
-    private Board scheduledJobsBoard;
     private Board contextDebugBoard;
-
-    private boolean initialised = false;
 
     private Tab schedulerDashboardTab;
     private Tab contextTemplateTab;
-//    private Tab schedulerJobTab;
     private Tab contextDebugTab;
     private Tabs tabs;
+
+    private boolean initialised = false;
 
     /**
      * Constructor
@@ -202,12 +197,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.schedulerAgentDashboardView.setSizeFull();
         this.schedulerAgentDashboardView.setVisible(true);
 
-        this.scheduledJobsBoard = new Board();
-        this.scheduledJobsBoard.addClassName("styled");
-        this.scheduledJobsBoard.setSizeFull();
-        this.scheduledJobsBoard.setVisible(false);
-        this.scheduledJobsBoard.setId("scheduledJobsBoard");
-
         this.contextDebugBoard = new Board();
         this.contextDebugBoard.addClassName("styled");
         this.contextDebugBoard.setSizeFull();
@@ -228,6 +217,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.contextTemplateTab.setId("contextTemplateTab");
         this.contextDebugTab = new Tab(getTranslation("tab.label.job-plan-debug", UI.getCurrent().getLocale()));
         this.contextDebugTab.setId("contextDebugTab");
+        ComponentSecurityVisibility.applySecurity(contextDebugTab, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_ADMIN);
+
         this.tabs = new Tabs(schedulerDashboardTab, this.contextTemplateTab, contextDebugTab);
 
         Map<Tab, com.vaadin.flow.component.Component> tabsToPages = new HashMap<>();
@@ -240,14 +232,10 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             com.vaadin.flow.component.Component selectedPage = tabsToPages.get(tabs.getSelectedTab());
             selectedPage.setVisible(true);
 
-            if(selectedPage.equals(this.scheduledJobsBoard)) {
-                this.upcomingJobExecutionsWidget.initialise();
-            }
-            else if(selectedPage.equals(contextDebugBoard)) {
+            if(selectedPage.equals(contextDebugBoard)) {
                 this.contextDebugWidget.updateContextDropdownContents();
             }
         });
-
 
         IronIcon addIcon = IronIcons.ADD.create();
         addIcon.setSize("16pt");
@@ -256,7 +244,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         tabsLayout.setMargin(false);
         tabsLayout.add(tabs);
         tabsLayout.setWidth("100%");
-        this.add(tabsLayout, this.schedulerAgentDashboardView, this.contextTemplateWidget, scheduledJobsBoard, contextDebugBoard);
+        this.add(tabsLayout, this.schedulerAgentDashboardView, this.contextTemplateWidget, contextDebugBoard);
     }
 
     @Override
@@ -270,11 +258,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         if(!initialised) {
             this.init();
             this.schedulerAgentDashboardView.beforeEnter(beforeEnterEvent);
-            this.upcomingJobExecutionsWidget = new UpcomingJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter, this.configurationRestService,
-                this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger);
-            scheduledJobsBoard.addRow(this.upcomingJobExecutionsWidget);
-            scheduledJobsBoard.addRow(new RunningAndRecentlyCompletedJobExecutionsWidget(this.scheduledProcessManagementService, this.dateFormatter,
-                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.moduleMetadataService, false, this.systemEventLogger));
 
             this.contextDebugWidget = new ContextDebugWidget(this.scheduledContextInstanceService, this.jobInitiationService
                 , this.scheduledContextService, this.systemEventLogger, this.internalEventDrivenJobService, this.queueDirectory

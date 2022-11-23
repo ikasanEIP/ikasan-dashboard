@@ -630,7 +630,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         internalEventDrivenJob.setMaxExecutionTime(System.currentTimeMillis() + 3000);
 
         SolrContextParameterImpl contextParameter = new SolrContextParameterImpl();
-        contextParameter.setType("type " + RandomStringUtils.randomAlphabetic(5));
+        contextParameter.setDefaultValue("defaultValue " + RandomStringUtils.randomAlphabetic(5));
         contextParameter.setName("name " + RandomStringUtils.randomAlphabetic(5));
         internalEventDrivenJob.setContextParameters(List.of(contextParameter));
         internalEventDrivenJob.setDaysOfWeekToRun(List.of(1, 2, 3, 4, 5));

@@ -32,7 +32,7 @@ public class TestUtils {
     public static ContextParameterInstanceImpl createParam(String name, String value) {
         ContextParameterInstanceImpl param = new ContextParameterInstanceImpl();
         param.setName(name);
-        param.setType("java.lang.String");
+        param.setDefaultValue("defaultValue");
         param.setValue(value);
         return param;
     }

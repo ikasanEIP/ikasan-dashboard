@@ -119,7 +119,7 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
      * Initialise the internals of the object.
      */
     private void init() {
-        this.contextInstanceDashboardWidget = new ContextInstanceDashboardWidget(this.moduleMetadataService, this.scheduledProcessManagementService,
+        this.contextInstanceDashboardWidget = new ContextInstanceDashboardWidget(this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService,
             this.systemEventLogger, this.schedulerService, this.schedulerJobService,
             this.schedulerJobInstanceService, this.scheduledContextInstanceService, "",
