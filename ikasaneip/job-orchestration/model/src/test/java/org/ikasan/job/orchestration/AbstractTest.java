@@ -30,10 +30,10 @@ public class AbstractTest
         return eventInstance;
     }
 
-    protected ContextParameter getContextParameter(String name, String type) {
+    protected ContextParameter getContextParameter(String name, String defaultValue) {
         ContextParameterImpl contextParameter = new ContextParameterImpl();
         contextParameter.setName(name);
-        contextParameter.setType(type);
+        contextParameter.setDefaultValue(defaultValue);
 
         return contextParameter;
     }

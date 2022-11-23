@@ -24,8 +24,10 @@ import org.ikasan.dashboard.ui.general.component.Divider;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.model.BlackoutWindowDateTimePair;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.dashboard.ui.util.IconDecorator;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -130,6 +132,10 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
                 }
             }
         });
+
+        ComponentSecurityVisibility.applySecurity(saveButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
         Button cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
         cancelButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.close());
@@ -292,12 +298,16 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.timezoneCb.setErrorMessage(getTranslation("error.timezone-required", UI.getCurrent().getLocale()));
 
 
-        Button addDateTimePairButton = new Button("Add", VaadinIcon.PLUS.create());
+        Button addDateTimePairButton = new Button(getTranslation("button.add", UI.getCurrent().getLocale()), VaadinIcon.PLUS.create());
         addDateTimePairButton.setIconAfterText(true);
         addDateTimePairButton.addClickListener(event -> {
             this.blackoutWindowDateTimePairs.add(new BlackoutWindowDateTimePair());
             blackoutWindowsGrid.getDataProvider().refreshAll();
         });
+
+        ComponentSecurityVisibility.applySecurity(addDateTimePairButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
         this.formLayout = new FormLayout();
         this.formLayout.setResponsiveSteps(

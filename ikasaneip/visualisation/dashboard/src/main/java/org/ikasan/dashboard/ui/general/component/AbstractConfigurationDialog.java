@@ -174,12 +174,12 @@ public abstract class AbstractConfigurationDialog extends AbstractCloseableResiz
         buttonLayout.add(saveButton, deleteButton);
 
         ComponentSecurityVisibility.applySecurity(saveButton, SecurityConstants.ALL_AUTHORITY
-            , SecurityConstants.PLATORM_CONFIGURATON_ADMIN
-            , SecurityConstants.PLATORM_CONFIGURATON_WRITE);
+            , SecurityConstants.PLATFORM_CONFIGURATION_ADMIN
+            , SecurityConstants.PLATFORM_CONFIGURATION_WRITE);
 
         ComponentSecurityVisibility.applySecurity(deleteButton, SecurityConstants.ALL_AUTHORITY
-            , SecurityConstants.PLATORM_CONFIGURATON_ADMIN
-            , SecurityConstants.PLATORM_CONFIGURATON_WRITE);
+            , SecurityConstants.PLATFORM_CONFIGURATION_ADMIN
+            , SecurityConstants.PLATFORM_CONFIGURATION_WRITE);
 
         layout.add(buttonLayout);
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);

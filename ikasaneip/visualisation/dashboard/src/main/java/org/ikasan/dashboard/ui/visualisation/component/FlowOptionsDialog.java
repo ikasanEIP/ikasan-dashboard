@@ -57,9 +57,9 @@ public class FlowOptionsDialog extends AbstractCloseableResizableDialog
             buttonClickEvent -> openFlowConfigurationDialog());
 
         ComponentSecurityVisibility.applySecurity(invokerConfigurationButton, SecurityConstants.ALL_AUTHORITY
-            , SecurityConstants.PLATORM_CONFIGURATON_ADMIN
-            , SecurityConstants.PLATORM_CONFIGURATON_READ
-            , SecurityConstants.PLATORM_CONFIGURATON_WRITE);
+            , SecurityConstants.PLATFORM_CONFIGURATION_ADMIN
+            , SecurityConstants.PLATFORM_CONFIGURATION_READ
+            , SecurityConstants.PLATFORM_CONFIGURATION_WRITE);
 
         verticalLayout.add(invokerConfigurationButton);
 

@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 public class JobProvisionServiceImpl implements JobProvisionService {
 
     Logger logger = LoggerFactory.getLogger(JobProvisionServiceImpl.class);
-
     private SchedulerJobService schedulerJobService;
     private JobProvisionModuleService jobProvisionModuleRestService;
     private ModuleMetaDataService moduleMetaDataService;
@@ -181,7 +180,7 @@ public class JobProvisionServiceImpl implements JobProvisionService {
                         .map(p -> {
                             ContextParameterImpl contextParameter = new ContextParameterImpl();
                             contextParameter.setName(p.getName());
-                            contextParameter.setType(p.getType());
+                            contextParameter.setDefaultValue(p.getDefaultValue());
 
                             return contextParameter;
                         }).collect(Collectors.toList()));

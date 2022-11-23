@@ -480,6 +480,8 @@
   <field name="participatesInLock" type="boolean" indexed="true" stored="true"/>
   <field name="disabled" type="boolean" indexed="true" stored="true"/>
   <field name="manuallySubmittedBy" type="strings" multiValued="false" stored="true"/>
+  <field name="startTime" type="plongs" multiValued="false" stored="true"/>
+  <field name="endTime" type="plongs" multiValued="false" stored="true"/>
   <!-- END Ikasan Managed Schema Fields -->
 
   <dynamicField name="*_txt_en_split_tight" type="text_en_splitting_tight" indexed="true" stored="true"/>

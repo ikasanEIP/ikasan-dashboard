@@ -170,13 +170,10 @@ public class SchedulerContextParametersPropertiesProviderTest {
         context1.sort(Comparator.comparing(ContextParameter::getName));
         assertEquals("ParamName11", context1.get(0).getName());
         assertEquals("20220731", context1.get(0).getValue());
-        assertEquals("java.lang.String", context1.get(0).getType());
         assertEquals("ParamName12", context1.get(1).getName());
         assertEquals("20220801", context1.get(1).getValue());
-        assertEquals("java.lang.String", context1.get(1).getType());
         assertEquals("ParamName13", context1.get(2).getName());
         assertEquals("Param13", context1.get(2).getValue());
-        assertEquals("java.lang.String", context1.get(2).getType());
 
         assertEquals("20220731", config.getContextParameter("Context1", "ParamName11"));
         assertEquals("20220801", config.getContextParameter("Context1", "ParamName12"));
@@ -201,25 +198,19 @@ public class SchedulerContextParametersPropertiesProviderTest {
         context1.sort(Comparator.comparing(ContextParameter::getName));
         assertEquals("ParamName11", context1.get(0).getName());
         assertEquals("Param11", context1.get(0).getValue());
-        assertEquals("java.lang.String", context1.get(0).getType());
         assertEquals("ParamName12", context1.get(1).getName());
         assertEquals("Param12", context1.get(1).getValue());
-        assertEquals("java.lang.String", context1.get(1).getType());
         assertEquals("ParamName13", context1.get(2).getName());
         assertEquals("Param13", context1.get(2).getValue());
-        assertEquals("java.lang.String", context1.get(2).getType());
 
         List<ContextParameterInstance> context2 = config.getAllContextParameters("Context2");
         assertEquals(3, context2.size());
         context2.sort(Comparator.comparing(ContextParameter::getName));
         assertEquals("ParamName21", context2.get(0).getName());
         assertEquals("Param21", context2.get(0).getValue());
-        assertEquals("java.lang.String", context2.get(0).getType());
         assertEquals("ParamName22", context2.get(1).getName());
         assertEquals("Param22", context2.get(1).getValue());
-        assertEquals("java.lang.String", context2.get(1).getType());
         assertEquals("ParamName23", context2.get(2).getName());
         assertEquals("Param23", context2.get(2).getValue());
-        assertEquals("java.lang.String", context2.get(2).getType());
     }
 }

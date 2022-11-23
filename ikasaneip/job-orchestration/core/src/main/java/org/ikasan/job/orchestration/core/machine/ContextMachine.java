@@ -212,6 +212,8 @@ public class ContextMachine {
             // Initialise the job lock cache for the new instance
             this.jobLockCacheInitialisationService.initialiseJobLockCache(this.context, true);
 
+            this.contextInstance.setStartTime(System.currentTimeMillis());
+
             this.saveContext();
         }
     }
@@ -224,6 +226,7 @@ public class ContextMachine {
         try {
             InstanceStatus previousStatus = contextInstance.getStatus();
             this.contextInstance.setStatus(InstanceStatus.ENDED);
+            this.contextInstance.setEndTime(System.currentTimeMillis());
             InstanceStatus newStatus = contextInstance.getStatus();
             this.issueContextInstanceStateChangeEvent(new ContextInstanceStateChangeEventImpl
                 (contextInstance, previousStatus, newStatus));

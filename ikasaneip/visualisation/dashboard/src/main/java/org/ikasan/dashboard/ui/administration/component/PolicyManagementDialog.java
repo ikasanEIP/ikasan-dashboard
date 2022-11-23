@@ -74,8 +74,8 @@ public class PolicyManagementDialog extends AbstractCloseableResizableDialog
         layout.add(initPolicyForm(), accordion);
 
         layout.setSizeFull();
-        this.setWidth("1400px");
-        this.setHeight("100%");
+        this.setWidth("90vw");
+        this.setHeight("90vh");
         super.content.add(layout);
     }
 

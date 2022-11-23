@@ -20,10 +20,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import org.ikasan.dashboard.ui.administration.filter.GroupFilter;
-import org.ikasan.dashboard.ui.administration.filter.PolicyFilter;
-import org.ikasan.dashboard.ui.administration.filter.RoleModuleFilter;
-import org.ikasan.dashboard.ui.administration.filter.UserLiteFilter;
+import org.ikasan.dashboard.ui.administration.filter.*;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.general.component.FilteringGrid;
@@ -35,6 +32,7 @@ import org.ikasan.security.model.*;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.systemevent.SystemEventService;
 
 import java.util.ArrayList;
@@ -50,14 +48,12 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
     private SystemEventLogger systemEventLogger;
     private UserService userService;
     private ModuleMetaDataService moduleMetadataService;
-
     private FilteringGrid<UserLite> userGrid;
-
     private FilteringGrid<IkasanPrincipalLite> groupGrid;
-
     private FilteringGrid<Policy> policyGrid;
-
     private FilteringGrid<RoleModule> roleModuleGrid;
+    private FilteringGrid<RoleJobPlan> roleJobPlanGrid;
+    private ScheduledContextService scheduledContextService;
 
     /**
      * Constructor
@@ -71,7 +67,7 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
      */
     public RoleManagementDialog(Role role, SecurityService securityService, UserService userService,
                                 SystemEventService systemEventService, SystemEventLogger systemEventLogger,
-                                ModuleMetaDataService moduleMetadataService)
+                                ModuleMetaDataService moduleMetadataService, ScheduledContextService scheduledContextService)
     {
         this.role = role;
         if(this.role == null)
@@ -103,6 +99,11 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
         {
             throw new IllegalArgumentException("moduleMetadataService cannot be null!");
         }
+        this.scheduledContextService = scheduledContextService;
+        if(this.scheduledContextService == null)
+        {
+            throw new IllegalArgumentException("scheduledContextService cannot be null!");
+        }
 
         init();
     }
@@ -113,10 +114,16 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
     private void init()
     {
         Accordion accordion = new Accordion();
-        accordion.add(getTranslation("accordian-label.associated-users", UI.getCurrent().getLocale(), null), createAssociatedUserLayout());
-        accordion.add(getTranslation("accordian-label.associated-groups", UI.getCurrent().getLocale(), null), createAssociatedGroupsLayout());
-        accordion.add(getTranslation("accordian-label.associated-policies", UI.getCurrent().getLocale(), null), createIkasanPoliciesLayout());
-        accordion.add(getTranslation("accordian-label.associated-integration-modules", UI.getCurrent().getLocale(), null), this.createAssociatedIntegrationModules());
+        accordion.add(getTranslation("accordian-label.associated-users", UI.getCurrent().getLocale())
+            , createAssociatedUserLayout());
+        accordion.add(getTranslation("accordian-label.associated-groups", UI.getCurrent().getLocale())
+            , createAssociatedGroupsLayout());
+        accordion.add(getTranslation("accordian-label.associated-policies", UI.getCurrent().getLocale())
+            , createIkasanPoliciesLayout());
+        accordion.add(getTranslation("accordian-label.associated-integration-modules", UI.getCurrent().getLocale())
+            , this.createAssociatedIntegrationModules());
+        accordion.add(getTranslation("accordian-label.associated-job-plans", UI.getCurrent().getLocale())
+            , createAssociatedJobPlans());
 
         accordion.close();
 
@@ -129,8 +136,8 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
             .withSpacing(true)
             .withOverflow(FluentGridLayout.Overflow.AUTO);
         layout.setSizeFull();
-        this.setWidth("1400px");
-        this.setHeight("100%");
+        this.setWidth("90vw");
+        this.setHeight("90vh");
         this.content.add(layout);
     }
 
@@ -523,9 +530,77 @@ public class RoleManagementDialog extends AbstractCloseableResizableDialog
         return this.layoutAssociatedEntityComponents(this.roleModuleGrid, addModule, associatedRoleModulesLabel);
     }
 
+    /**
+     * Create the associated jobs plans
+     *
+     * @return layout containing the relevant associated job plans components.
+     */
+    private VerticalLayout createAssociatedJobPlans()
+    {
+        VerticalLayout verticalLayout = new VerticalLayout();
+
+        H3 associatedRoleModulesLabel = new H3(getTranslation("label.role-associated-job-plans", UI.getCurrent().getLocale(), null));
+
+        verticalLayout.add(associatedRoleModulesLabel);
+
+        RoleJobPlanFilter roleJobPlanFilter = new RoleJobPlanFilter();
+
+        this.roleJobPlanGrid = new FilteringGrid<>(roleJobPlanFilter);
+        this.roleJobPlanGrid.setClassName("my-userGrid");
+        this.roleJobPlanGrid.addColumn(RoleJobPlan::getJobPlanName).setKey("name").setHeader(getTranslation("table-header.moduleName", UI.getCurrent().getLocale(), null)).setSortable(true).setFlexGrow(2);
+        this.roleJobPlanGrid.addColumn(new ComponentRenderer<>(roleJobPlan->
+        {
+            Button deleteButton = new TableButton(VaadinIcon.TRASH.create());
+            deleteButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
+            {
+                this.role.getRoleJobPlans().remove(roleJobPlan);
+                this.securityService.saveRole(role);
+                this.securityService.deleteRoleJobPlan(roleJobPlan);
+
+                String action = String.format("Job plan [%s] removed from role [%s]", roleJobPlan.getJobPlanName(), role.getName());
+
+                this.systemEventLogger.logEvent(SystemEventConstants.DASHBOARD_JOB_PLAN_ROLE_CHANGE_CONSTANTS, action, null);
+
+                this.updateRoleJobPlanGrid();
+            });
+
+            deleteButton.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ROLE_ADMINISTRATION_WRITE,
+                SecurityConstants.ROLE_ADMINISTRATION_WRITE, SecurityConstants.ALL_AUTHORITY));
+
+            VerticalLayout layout = new VerticalLayout();
+            layout.setSizeFull();
+            layout.add(deleteButton);
+            layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, deleteButton);
+            return layout;
+        })).setFlexGrow(1);
+
+        HeaderRow hr = roleJobPlanGrid.appendHeaderRow();
+        this.roleJobPlanGrid.addGridFiltering(hr, roleJobPlanFilter::setModuleNameFilter, "name");
+
+        Button addJobPlan = new Button(getTranslation("button.add-job-plan", UI.getCurrent().getLocale(), null));
+        addJobPlan.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->
+        {
+            SelectJobPlanForRoleDialog dialog = new SelectJobPlanForRoleDialog(this.role, this.scheduledContextService,
+                this.securityService, this.systemEventLogger, this.roleJobPlanGrid);
+
+            dialog.open();
+        });
+
+        userGrid.setSizeFull();
+
+        this.updateRoleJobPlanGrid();
+
+        return this.layoutAssociatedEntityComponents(this.roleJobPlanGrid, addJobPlan, associatedRoleModulesLabel);
+    }
+
     protected void updateRoleModuleGrid()
     {
         this.roleModuleGrid.setItems(this.role.getRoleModules());
+    }
+
+    protected void updateRoleJobPlanGrid()
+    {
+        this.roleJobPlanGrid.setItems(this.role.getRoleJobPlans());
     }
 
     /**

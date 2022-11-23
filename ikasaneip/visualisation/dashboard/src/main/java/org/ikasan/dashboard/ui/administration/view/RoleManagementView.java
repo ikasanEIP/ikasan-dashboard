@@ -32,6 +32,7 @@ import org.ikasan.security.model.Role;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
+import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.systemevent.SystemEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,9 @@ public class RoleManagementView extends VerticalLayout implements BeforeEnterObs
 
     @Autowired
     private ModuleMetaDataService moduleMetadataService;
+
+    @Autowired
+    private ScheduledContextService scheduledContextService;
 
     private FilteringGrid<Role> roleGrid;
 
@@ -154,7 +158,7 @@ public class RoleManagementView extends VerticalLayout implements BeforeEnterObs
         {
             RoleManagementDialog dialog = new RoleManagementDialog(userItemDoubleClickEvent.getItem()
                 , this.securityService, this.userService, this.systemEventService, this.systemEventLogger,
-                this.moduleMetadataService);
+                this.moduleMetadataService, this.scheduledContextService);
 
             dialog.open();
         });

@@ -55,6 +55,23 @@ public class ContextInstanceGridWidget extends Div {
 
     /**
      * Constructor
+     *
+     * @param scheduledContextInstanceService
+     * @param dynamicImagePath
+     * @param moduleMetaDataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param schedulerJobService
+     * @param logStreamingService
+     * @param contextTemplate
+     * @param schedulerJobInstanceService
+     * @param jobInitiationService
+     * @param contextProfileService
+     * @param jobUtilsService
+     * @param scheduledContextService
      */
     public ContextInstanceGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -107,6 +124,21 @@ public class ContextInstanceGridWidget extends Div {
         this.setSizeFull();
     }
 
+    /**
+     * Helper method to create the context instances grid.
+     *
+     * @param dynamicImagePath
+     * @param moduleMetaDataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param schedulerJobService
+     * @param logStreamingService
+     * @param contextTemplate
+     * @param schedulerJobInstanceService
+     */
     private void createGrid(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                             ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                             MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
@@ -139,7 +171,7 @@ public class ContextInstanceGridWidget extends Div {
         contextInstanceFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextInstanceRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
 
-            Icon view = VaadinIcon.EYE.create();
+            Icon view = VaadinIcon.MODAL.create();
             view.setSize("14pt");
             view.getStyle().set("cursor", "pointer");
             view.getElement().setAttribute("title", getTranslation("tooltip.view-job", UI.getCurrent().getLocale()));
@@ -154,6 +186,10 @@ public class ContextInstanceGridWidget extends Div {
                 contextInstanceDialog.open();
             });
 
+            ComponentSecurityVisibility.applySecurity(view, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+
             layout.add(view);
 
             Icon chart = VaadinIcon.CHART.create();
@@ -164,6 +200,10 @@ public class ContextInstanceGridWidget extends Div {
 
             });
 
+            ComponentSecurityVisibility.applySecurity(chart, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+
             layout.add(chart);
 
             Icon export = VaadinIcon.DOWNLOAD_ALT.create();
@@ -173,6 +213,10 @@ public class ContextInstanceGridWidget extends Div {
             export.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
 
             });
+
+            ComponentSecurityVisibility.applySecurity(export, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
             layout.add(export);
 
@@ -189,6 +233,10 @@ public class ContextInstanceGridWidget extends Div {
 
             layout.add(newWindow);
 
+            ComponentSecurityVisibility.applySecurity(newWindow, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+
             return layout;
         }))
             .setResizable(true)
@@ -196,9 +244,9 @@ public class ContextInstanceGridWidget extends Div {
             .setFlexGrow(2);
 
         this.contextInstanceFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
-            "<div>[[item.start-date-time]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">[[item.start-date-time]]</div>")
             .withProperty("start-date-time",
-                ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getContextInstance().getStartTime())))
+                ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getStartTime())))
             .setHeader(getTranslation("table-header.start-date-time", UI.getCurrent().getLocale()))
             .setKey("startTime")
             .setResizable(true)
@@ -206,9 +254,9 @@ public class ContextInstanceGridWidget extends Div {
             .setFlexGrow(3);
 
         this.contextInstanceFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
-            "<div>[[item.end-date-time]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">[[item.end-date-time]]</div>")
             .withProperty("end-date-time",
-                ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getContextInstance().getEndTime())))
+                ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getEndTime())))
             .setHeader(getTranslation("table-header.end-date-time", UI.getCurrent().getLocale()))
             .setKey("endTime")
             .setResizable(true)
@@ -216,7 +264,7 @@ public class ContextInstanceGridWidget extends Div {
             .setFlexGrow(3);
 
         this.contextInstanceFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
-            "<div>[[item.created-date-time]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">[[item.created-date-time]]</div>")
             .withProperty("created-date-time",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
             .setHeader(getTranslation("table-header.created-date-time", UI.getCurrent().getLocale()))
@@ -226,7 +274,7 @@ public class ContextInstanceGridWidget extends Div {
             .setFlexGrow(3);
 
         this.contextInstanceFilteringGrid.addColumn(TemplateRenderer.<ScheduledContextInstanceRecord>of(
-            "<div>[[item.modified-date-time]]</div>")
+            "<div style=\"word-wrap:normal; white-space:normal\">[[item.modified-date-time]]</div>")
             .withProperty("modified-date-time",
                 ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
             .setHeader(getTranslation("table-header.modified-date-time", UI.getCurrent().getLocale()))
@@ -253,6 +301,8 @@ public class ContextInstanceGridWidget extends Div {
         this.contextInstanceFilteringGrid.addGridFiltering(hr, contextInstanceSearchFilter::setContextInstanceId, "componentName");
         this.contextInstanceFilteringGrid.addDateGridFiltering(hr, contextInstanceSearchFilter::setCreatedTimestamp, "timestamp");
         this.contextInstanceFilteringGrid.addDateGridFiltering(hr, contextInstanceSearchFilter::setModifiedTimestamp, "modifiedTimestamp");
+        this.contextInstanceFilteringGrid.addDateGridFiltering(hr, contextInstanceSearchFilter::setStartTime, "startTime");
+        this.contextInstanceFilteringGrid.addDateGridFiltering(hr, contextInstanceSearchFilter::setEndTime, "endTime");
         this.contextInstanceFilteringGrid.addSelectGridFiltering(hr, contextInstanceSearchFilter::setStatus
             , Arrays.asList(InstanceStatus.values()).stream().map(instanceStatus -> instanceStatus.name()).collect(Collectors.toList()), "status");
         this.contextInstanceFilteringGrid.getElement().getStyle().set("margin-top", "0px");
