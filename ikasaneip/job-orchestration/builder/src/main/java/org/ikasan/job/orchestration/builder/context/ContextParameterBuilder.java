@@ -5,7 +5,7 @@ import org.ikasan.spec.scheduled.context.model.ContextParameter;
 
 public class ContextParameterBuilder {
     protected String name;
-    protected String type;
+    protected String defaultValue;
 
     public ContextParameterBuilder() {
     }
@@ -16,8 +16,8 @@ public class ContextParameterBuilder {
         return this;
     }
 
-    public ContextParameterBuilder withType(String type) {
-        this.type = type;
+    public ContextParameterBuilder withDefaultValue(String value) {
+        this.defaultValue = value;
 
         return this;
     }
@@ -25,7 +25,7 @@ public class ContextParameterBuilder {
     public ContextParameter build() {
         ContextParameter contextParameter = new ContextParameterImpl();
         contextParameter.setName(this.name);
-        contextParameter.setType(this.type);
+        contextParameter.setDefaultValue(this.defaultValue);
 
         return contextParameter;
     }

@@ -261,81 +261,83 @@ public class SchedulerStatusWidget extends Div {
      * Helper method to recalculate the flow states and update the UI.
      */
     public void recalculate() {
-        this.initialiseStateMap();
+        if(ui.isAttached()) {
+            this.initialiseStateMap();
 
-        List<ModuleMetaData> moduleMetaData = this.moduleMetadataService.findAll();
+            List<ModuleMetaData> moduleMetaData = this.moduleMetadataService.findAll();
 
-        moduleMetaData = moduleMetaData.stream()
-            .filter(metadata -> metadata.getType() == ModuleType.SCHEDULER_AGENT)
-            .collect(Collectors.toList());
+            moduleMetaData = moduleMetaData.stream()
+                .filter(metadata -> metadata.getType() == ModuleType.SCHEDULER_AGENT)
+                .collect(Collectors.toList());
 
-        IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        final Set<String> accessibleModules = SecurityUtils.getAccessibleModules(authentication);
+            IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+            final Set<String> accessibleModules = SecurityUtils.getAccessibleModules(authentication);
 
-        moduleMetaData.stream()
-            .filter(module ->  {
-                if(authentication == null || authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)) {
-                    return true;
+            moduleMetaData.stream()
+                .filter(module ->  {
+                    if(authentication == null || authentication.hasGrantedAuthority(SecurityConstants.ALL_AUTHORITY)) {
+                        return true;
+                    }
+                    else {
+                        return accessibleModules.contains(module.getName());
+                    }
+                })
+                .forEach(module -> module.getFlows().forEach(flow -> {
+                    FlowState flowState = FlowStateCache.instance().get(module,flow.getName());
+
+                    flow.setName(module.getName() + "." + flow.getName());
+
+                    if(flowState == null) {
+                        stateMap.get(State.UNKNOWN_STATE).add(flow);
+                    }
+                    else {
+                        stateMap.get(flowState.getState()).add(flow);
+                    }
+                }));
+
+            ui.access(() -> {
+                this.runningDiv.removeAll();
+                this.runningDiv.setText(stateMap.get(State.RUNNING_STATE).size() + " "
+                    + getTranslation("status-label.running", UI.getCurrent().getLocale()));
+                if (stateMap.get(State.RUNNING_STATE).size() > 0) {
+                    this.runningDiv.add(this.runningIcon);
                 }
-                else {
-                    return accessibleModules.contains(module.getName());
+
+                this.stoppedDiv.removeAll();
+                this.stoppedDiv.setText(stateMap.get(State.STOPPED_STATE).size() + " "
+                    + getTranslation("status-label.stopped", UI.getCurrent().getLocale()));
+                if (stateMap.get(State.STOPPED_STATE).size() > 0) {
+                    this.stoppedDiv.add(this.stoppedIcon);
                 }
-            })
-            .forEach(module -> module.getFlows().forEach(flow -> {
-                FlowState flowState = FlowStateCache.instance().get(module,flow.getName());
 
-                flow.setName(module.getName() + "." + flow.getName());
-
-                if(flowState == null) {
-                    stateMap.get(State.UNKNOWN_STATE).add(flow);
+                this.errorDiv.removeAll();
+                this.errorDiv.setText(stateMap.get(State.STOPPED_IN_ERROR_STATE).size() + " "
+                    + getTranslation("status-label.stopped-in-error", UI.getCurrent().getLocale()));
+                if (stateMap.get(State.STOPPED_IN_ERROR_STATE).size() > 0) {
+                    this.errorDiv.add(this.errorIcon);
                 }
-                else {
-                    stateMap.get(flowState.getState()).add(flow);
+
+                this.recoveringDiv.removeAll();
+                this.recoveringDiv.setText(stateMap.get(State.RECOVERING_STATE).size() + " "
+                    + getTranslation("status-label.recovering", UI.getCurrent().getLocale()));
+                if (stateMap.get(State.RECOVERING_STATE).size() > 0) {
+                    this.recoveringDiv.add(this.recoveringIcon);
                 }
-            }));
 
-        ui.access(() -> {
-            this.runningDiv.removeAll();
-            this.runningDiv.setText(stateMap.get(State.RUNNING_STATE).size() + " "
-                + getTranslation("status-label.running", UI.getCurrent().getLocale()));
-            if(stateMap.get(State.RUNNING_STATE).size() > 0){
-                this.runningDiv.add(this.runningIcon);
-            }
+                this.pausedDiv.removeAll();
+                this.pausedDiv.setText(stateMap.get(State.PAUSED_STATE).size() + " "
+                    + getTranslation("status-label.paused", UI.getCurrent().getLocale()));
+                if (stateMap.get(State.PAUSED_STATE).size() > 0) {
+                    this.pausedDiv.add(this.pausedDivIcon);
+                }
 
-            this.stoppedDiv.removeAll();
-            this.stoppedDiv.setText(stateMap.get(State.STOPPED_STATE).size() + " "
-                + getTranslation("status-label.stopped", UI.getCurrent().getLocale()));
-            if(stateMap.get(State.STOPPED_STATE).size() > 0){
-                this.stoppedDiv.add(this.stoppedIcon);
-            }
-
-            this.errorDiv.removeAll();
-            this.errorDiv.setText(stateMap.get(State.STOPPED_IN_ERROR_STATE).size() + " "
-                + getTranslation("status-label.stopped-in-error", UI.getCurrent().getLocale()));
-            if(stateMap.get(State.STOPPED_IN_ERROR_STATE).size() > 0){
-                this.errorDiv.add(this.errorIcon);
-            }
-
-            this.recoveringDiv.removeAll();
-            this.recoveringDiv.setText(stateMap.get(State.RECOVERING_STATE).size() + " "
-                + getTranslation("status-label.recovering", UI.getCurrent().getLocale()));
-            if(stateMap.get(State.RECOVERING_STATE).size() > 0){
-                this.recoveringDiv.add(this.recoveringIcon);
-            }
-
-            this.pausedDiv.removeAll();
-            this.pausedDiv.setText(stateMap.get(State.PAUSED_STATE).size() + " "
-                + getTranslation("status-label.paused", UI.getCurrent().getLocale()));
-            if(stateMap.get(State.PAUSED_STATE).size() > 0){
-                this.pausedDiv.add(this.pausedDivIcon);
-            }
-
-            this.unknownDiv.removeAll();
-            this.unknownDiv.setText(stateMap.get(State.UNKNOWN_STATE).size() + " " + getTranslation("status-label.unknown", UI.getCurrent().getLocale()));
-            if(stateMap.get(State.UNKNOWN_STATE).size() > 0){
-                this.unknownDiv.add(this.unknownDivIcon);
-            }
-        });
+                this.unknownDiv.removeAll();
+                this.unknownDiv.setText(stateMap.get(State.UNKNOWN_STATE).size() + " " + getTranslation("status-label.unknown", UI.getCurrent().getLocale()));
+                if (stateMap.get(State.UNKNOWN_STATE).size() > 0) {
+                    this.unknownDiv.add(this.unknownDivIcon);
+                }
+            });
+        }
     }
 
     /**

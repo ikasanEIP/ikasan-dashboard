@@ -7,6 +7,8 @@ public class SolrContextInstanceSearchFilterImpl implements ContextInstanceSearc
     private String contextInstanceId = null;
     private long createdTimestamp;
     private long modifiedTimestamp;
+    private long startTime;
+    private long endTime;
     private String status;
 
     public String getContextSearchFilter()
@@ -41,6 +43,26 @@ public class SolrContextInstanceSearchFilterImpl implements ContextInstanceSearc
 
     public void setModifiedTimestamp(long modifiedTimestamp) {
         this.modifiedTimestamp = modifiedTimestamp;
+    }
+
+    @Override
+    public long getStartTime() {
+        return startTime;
+    }
+
+    @Override
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    @Override
+    public long getEndTime() {
+        return endTime;
+    }
+
+    @Override
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
     }
 
     public String getStatus() {

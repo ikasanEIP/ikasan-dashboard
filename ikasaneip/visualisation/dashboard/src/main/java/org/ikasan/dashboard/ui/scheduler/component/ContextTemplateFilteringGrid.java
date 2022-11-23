@@ -10,7 +10,9 @@ import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
+import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -35,6 +37,8 @@ public class ContextTemplateFilteringGrid extends Grid<ScheduledContextRecord> {
 
     private ScheduledContextSearchFilter searchFilter;
 
+    private IkasanAuthentication authentication;
+
     private long resultSize = 0;
 
     /**
@@ -53,6 +57,8 @@ public class ContextTemplateFilteringGrid extends Grid<ScheduledContextRecord> {
         if(this.searchFilter ==  null) {
             throw new IllegalArgumentException("searchFilter cannot be null!");
         }
+
+        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
     }
 
     /**
@@ -137,7 +143,9 @@ public class ContextTemplateFilteringGrid extends Grid<ScheduledContextRecord> {
     }
 
     private SearchResults getResults(ScheduledContextSearchFilter filter, int offset, int limit, String sortColumn, String sortOrder) {
-        IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        if(!SecurityUtils.canAccessAllJobPlans(this.authentication)) {
+            filter.setContextNames(new ArrayList<>(SecurityUtils.getAccessibleJobPlans(this.authentication)));
+        }
 
         SearchResults results;
 

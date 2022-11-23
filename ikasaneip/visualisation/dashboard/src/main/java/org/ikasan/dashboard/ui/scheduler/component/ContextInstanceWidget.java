@@ -30,6 +30,9 @@ import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.DateFormatter;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.ContextSchedulerInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerInstanceVisualisation;
@@ -42,7 +45,6 @@ import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecor
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -56,7 +58,6 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEven
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -64,17 +65,18 @@ import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.search.SearchResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class ContextInstanceWidget extends VerticalLayout implements BeforeEnterObserver {
 
+    private static Logger logger = LoggerFactory.getLogger(ContextInstanceWidget.class);
     public static final String TREE_TAB = "treeTab";
     public static final String VISUALISATION_TAB = "visualisationTab";
     public static final String RAW_CONTEXT_TAB =  "rawContextTab";
@@ -82,6 +84,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     public static final String STATISTICS_TAB = "statisticsTab";
     public static final String AUDIT_TAB = "auditTab";
     private Registration contextInstanceStateChangeRegistration;
+    private Registration schedulerJobInstanceStateChangeRegistration;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private FormLayout formLayout;
@@ -108,11 +111,14 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     private Div schedulerVisualisationDiv;
 
     private TextField contextInstanceId;
-    private TextField contextInstanceStatus;
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
     private TextField endWindowCronExpressionTf;
+    private TextField startTimeTf;
+    private TextField endTimeTf;
+
+    private TextField timezoneTf;
 
     private Tab treeTab;
     private Tab visualisationTab;
@@ -124,11 +130,33 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
 
     private ContextInstance contextInstance;
     private ContextTemplate contextTemplate;
-
     private SchedulerStatusDiv statusDiv;
     private String selectedTab;
     private String jobStatus;
 
+    /**
+     * Constructor
+     *
+     * @param scheduledContextInstanceService
+     * @param dynamicImagePath
+     * @param moduleMetaDataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param schedulerJobService
+     * @param logStreamingService
+     * @param contextInstance
+     * @param contextTemplate
+     * @param schedulerJobInstanceService
+     * @param jobInitiationService
+     * @param contextProfileService
+     * @param jobUtilsService
+     * @param scheduledContextService
+     * @param selectedTab
+     * @param jobStatus
+     */
     public ContextInstanceWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
@@ -147,6 +175,23 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     /**
      * Constructor
      *
+     * @param scheduledContextInstanceService
+     * @param dynamicImagePath
+     * @param moduleMetaDataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param schedulerJobService
+     * @param logStreamingService
+     * @param contextInstance
+     * @param contextTemplate
+     * @param schedulerJobInstanceService
+     * @param jobInitiationService
+     * @param contextProfileService
+     * @param jobUtilsService
+     * @param scheduledContextService
      */
     public ContextInstanceWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -221,8 +266,25 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         }
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+
+        this.setMargin(false);
+        this.setSpacing(false);
+        this.setPadding(false);
     }
 
+    /**
+     * Method to initialise the widget.
+     *
+     * @param dynamicImagePath
+     * @param moduleMetaDataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param schedulerJobService
+     * @param logStreamingService
+     */
     private void init(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                       ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                       MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
@@ -230,234 +292,127 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         Binder<ContextInstance> binder = new Binder<>(ContextInstance.class);
 
         this.contextInstanceId = new TextField(getTranslation("label.context-instance-id", UI.getCurrent().getLocale()));
+        this.contextInstanceId.getElement().getThemeList().add("always-float-label");
         binder.forField(contextInstanceId)
             .bind(ContextInstance::getId, ContextInstance::setId);
-        this.contextInstanceStatus = new TextField(getTranslation("table-header.status", UI.getCurrent().getLocale()));
-        this.contextInstanceStatus.setValue(this.contextInstance.getStatus().name());
+        this.contextInstanceId.setEnabled(false);
 
         this.contextNameTf = new TextField(getTranslation("label.context-name", UI.getCurrent().getLocale()));
+        this.contextNameTf.getElement().getThemeList().add("always-float-label");
         binder.forField(contextNameTf)
             .bind(ContextInstance::getName, ContextInstance::setName);
+        this.contextNameTf.setEnabled(false);
+
         this.descriptionTa = new TextArea(getTranslation("table-header.description", UI.getCurrent().getLocale()));
+        this.descriptionTa.getElement().getThemeList().add("always-float-label");
         binder.forField(descriptionTa)
             .bind(ContextInstance::getDescription, ContextInstance::setDescription);
+        this.descriptionTa.setEnabled(false);
 
         this.startWindowCronExpressionTf = new TextField(getTranslation("label.time-window-start", UI.getCurrent().getLocale()));
+        this.startWindowCronExpressionTf.getElement().getThemeList().add("always-float-label");
         binder.forField(startWindowCronExpressionTf)
             .bind(ContextInstance::getTimeWindowStart, ContextInstance::setTimeWindowStart);
+        this.startWindowCronExpressionTf.setEnabled(false);
 
 
         this.endWindowCronExpressionTf = new TextField(getTranslation("label.time-window-end", UI.getCurrent().getLocale()));
+        this.endWindowCronExpressionTf.getElement().getThemeList().add("always-float-label");
         binder.forField(endWindowCronExpressionTf)
             .bind(ContextInstance::getTimeWindowEnd, ContextInstance::setTimeWindowEnd);
+        this.endWindowCronExpressionTf.setEnabled(false);
+
+        this.timezoneTf = new TextField(getTranslation("label.timezone", UI.getCurrent().getLocale()));
+        this.timezoneTf.getElement().getThemeList().add("always-float-label");
+        binder.forField(this.timezoneTf)
+            .bind(ContextInstance::getTimezone, ContextInstance::setTimezone);
+        this.timezoneTf.setEnabled(false);
+
+        this.startTimeTf = new TextField(getTranslation("label.start-date-time", UI.getCurrent().getLocale()));
+        this.startTimeTf.getElement().getThemeList().add("always-float-label");
+        if(this.contextInstance.getStartTime() > 0) {
+            this.startTimeTf.setValue(DateFormatter.instance().getFormattedDate(this.contextInstance.getStartTime()));
+        }
+        this.startTimeTf.setEnabled(false);
+
+        this.endTimeTf = new TextField(getTranslation("label.end-date-time", UI.getCurrent().getLocale()));
+        this.endTimeTf.getElement().getThemeList().add("always-float-label");
+        if(this.contextInstance.getEndTime() > 0) {
+            this.endTimeTf.setValue(DateFormatter.instance().getFormattedDate(this.contextInstance.getEndTime()));
+        }
+        this.endTimeTf.setEnabled(false);
 
         binder.readBean(this.contextInstance);
 
-        this.formLayout = new FormLayout();
-        formLayout.getStyle().set("padding-top", "0px");
+        HorizontalLayout statusLayout = new HorizontalLayout();
+        statusLayout.getElement().getStyle().set("padding-top", "0px");
+        statusLayout.getElement().getStyle().set("padding-bottom", "10px");
         this.statusDiv = new SchedulerStatusDiv();
         this.statusDiv.setHeight("45px");
         this.statusDiv.setWidth("100%");
         this.statusDiv.setStatus(this.contextInstance.getStatus());
 
-        formLayout.add(this.statusDiv, 4);
+        statusLayout.add(this.statusDiv);
+        statusLayout.setWidth("100%");
+
+        HorizontalLayout headerLayout = new HorizontalLayout();
+        headerLayout.setWidth("100%");
+        headerLayout.setMargin(false);
+        headerLayout.setPadding(false);
+        H4 contextInstanceManagementLabel
+            = new H4(String.format(getTranslation("label.context-instance", UI.getCurrent().getLocale()))
+                + " - " + this.contextTemplate.getName());
+        contextInstanceManagementLabel.getElement().getStyle().set("margin-top", "10px");
+        HorizontalLayout labelLayout = new HorizontalLayout();
+        labelLayout.setWidth("100%");
+        labelLayout.setMargin(false);
+        labelLayout.setPadding(false);
+        labelLayout.add(contextInstanceManagementLabel);
+        headerLayout.add(labelLayout, createButtonLayout());
+
+        this.formLayout = new FormLayout();
+        formLayout.getStyle().set("padding-top", "0px");
+
         formLayout.setResponsiveSteps(
             // Use four columns by default
-            new FormLayout.ResponsiveStep("0", 4)
+            new FormLayout.ResponsiveStep("0", 10)
         );
 
         this.formLayout.setWidth("100%");
 
-        H4 contextInstanceLabel = new H4(String.format(getTranslation("label.context-instance", UI.getCurrent().getLocale())));
-        contextInstanceLabel.getStyle().set("padding-top", "5px");
-        contextInstanceLabel.getStyle().set("margin", "20px");
-        formLayout.add(contextInstanceLabel, 2);
+        this.formLayout.add(this.contextInstanceId, 4);
+        this.formLayout.add(this.startWindowCronExpressionTf, 2);
+        this.formLayout.add(this.endWindowCronExpressionTf, 2);
+        this.formLayout.add(this.timezoneTf, 2);
+        this.formLayout.add(this.descriptionTa, 4);
+        this.formLayout.add(this.startTimeTf, 2);
+        this.formLayout.add(this.endTimeTf, 2);
 
-        Button jobLockDashboard = new Button("Job Locks", VaadinIcon.LOCK.create());
-        jobLockDashboard.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
-        jobLockDashboard.setIconAfterText(true);
-        jobLockDashboard.addClickListener(event -> {
-            JobLockCacheDialog jobLockCacheDialog = new JobLockCacheDialog(this.contextInstance, this.moduleMetaDataService, this.scheduledProcessManagementService,
-                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobInstanceService,
-                this.logStreamingService, this.jobInitiationService, this.scheduledContextService, this.jobUtilsService);
+        CollapsableLayout collapsableLayout = new CollapsableLayout();
+        add(collapsableLayout);
 
-            jobLockCacheDialog.open();
+        //A border to show the outline of the layout itself
+        collapsableLayout.getElement().getStyle().set("border", "1px solid #aaa");
+
+        collapsableLayout.addContentComponent(formLayout);
+
+        //Add a header button that toggles the visibility on click
+        Button collapseButton = new Button(getTranslation("button.show", UI.getCurrent().getLocale())
+            , e -> collapsableLayout.toggleContentVisibility());
+        collapsableLayout.addHeaderComponentAsLastAndAlignToRight(collapseButton);
+
+        //Change the button caption based on the collapse state change
+        collapsableLayout.addCollapseChangeListener(e -> {
+            collapseButton.setText(e.isCurrentlyVisible() ? getTranslation("button.hide", UI.getCurrent().getLocale())
+                : getTranslation("button.show", UI.getCurrent().getLocale()));
+            collapsableLayout.getElement().getStyle().set("border", !e.isCurrentlyVisible() ? "1px solid #aaa" : "");
         });
-
-        Button holdContextButton = new Button(getTranslation("button.hold-context"
-            , UI.getCurrent().getLocale()), VaadinIcon.HAND.create());
-        holdContextButton.setIconAfterText(true);
-        holdContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
-        holdContextButton.addClickListener(event -> {
-            ConfirmDialog confirmDialog = new ConfirmDialog();
-            confirmDialog.setHeader(getTranslation("confirm-dialog.hold-jobs-header", UI.getCurrent().getLocale()));
-            confirmDialog.setText(getTranslation("confirm-dialog.hold-jobs-body", UI.getCurrent().getLocale()));
-            confirmDialog.setCancelable(true);
-            confirmDialog.open();
-
-            confirmDialog.addConfirmListener(confirmEvent -> {
-                ContextMachine contextMachine = ContextMachineCache.instance()
-                    .getByContextInstanceId(this.contextInstance.getId());
-
-                if (contextMachine != null) {
-                    boolean error = false;
-                    try {
-                        List<SchedulerJobInstanceRecord> updatedRecords = this.schedulerJobInstanceService
-                            .holdJobsWithinContext(contextMachine.getContext(), contextMachine.getContext().getName());
-
-                        if (updatedRecords.size() > 0) {
-                            updatedRecords.forEach(schedulerJobInstanceRecord -> {
-                                SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
-                                    = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstanceRecord.getSchedulerJobInstance(),
-                                    this.contextInstance, InstanceStatus.WAITING, InstanceStatus.ON_HOLD);
-                                SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
-                            });
-                        }
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                        error = true;
-                    }
-                    finally {
-                        if (error) {
-                            NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-hold-error"
-                                , UI.getCurrent().getLocale()));
-                        } else {
-                            NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-held"
-                                , UI.getCurrent().getLocale()));
-                        }
-                    }
-                }
-            });
-        });
-
-        Button releaseContextButton = new Button(getTranslation("button.release-all-held-jobs"
-            , UI.getCurrent().getLocale()), VaadinIcon.HANDS_UP.create());
-        releaseContextButton.setIconAfterText(true);
-        releaseContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
-
-
-        releaseContextButton.addClickListener(event -> {
-            ContextMachine contextMachine = ContextMachineCache.instance()
-                .getByContextInstanceId(this.contextInstance.getId());
-            if (contextMachine != null) {
-                List<SchedulerJobInstanceRecord> jobsToReleaseWithinContext = this.schedulerJobInstanceService
-                    .getJobsToReleaseWithinContext(contextMachine.getContext(), contextMachine.getContext().getName());
-
-                ConfirmDialog confirmDialog = new ConfirmDialog();
-                confirmDialog.setHeader(getTranslation("confirm-dialog.release-jobs-header", UI.getCurrent().getLocale()));
-                confirmDialog.setText(String.format(getTranslation("confirm-dialog.release-jobs-body", UI.getCurrent().getLocale())
-                    , jobsToReleaseWithinContext.size()));
-                confirmDialog.setCancelable(true);
-                confirmDialog.open();
-
-                confirmDialog.addConfirmListener(confirmEvent -> {
-                    ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
-                    dialog.setWidth("600px");
-                    dialog.setHeight("250px");
-                    dialog.open(getTranslation("progress-dialog.release-all-jobs-jobs-header", UI.getCurrent().getLocale()),
-                        getTranslation("progress-dialog.release-all-jobs-jobs-body", UI.getCurrent().getLocale()));
-
-                    final UI current = UI.getCurrent();
-                    Executor executor = Executors.newSingleThreadExecutor();
-                    executor.execute(() -> {
-                        boolean error = false;
-                        try {
-                            if (jobsToReleaseWithinContext.size() > 0) {
-                                for (SchedulerJobInstanceRecord schedulerJobInstanceRecord : jobsToReleaseWithinContext) {
-                                    contextMachine.releaseJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(),
-                                        schedulerJobInstanceRecord.getChildContextName());
-                                }
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            error = true;
-                        } finally {
-                            boolean finalError = error;
-                            current.access(() -> {
-                                dialog.close();
-
-                                if (finalError) {
-                                    NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-released-error"
-                                        , UI.getCurrent().getLocale()));
-                                } else {
-                                    NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-released"
-                                        , UI.getCurrent().getLocale()));
-                                }
-                            });
-                        }
-                    });
-                });
-            }
-        });
-
-        Button resetButton = new Button(getTranslation("button.reset-context", UI.getCurrent().getLocale()), VaadinIcon.TIME_BACKWARD.create());
-        resetButton.setIconAfterText(true);
-        resetButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
-        resetButton.addClickListener(event -> {
-            ConfirmDialog confirmDialog = new ConfirmDialog();
-            confirmDialog.setHeader(getTranslation("confirm-dialog-header.reset-context", UI.getCurrent().getLocale()));
-
-            Checkbox hold = new Checkbox("Hold All Command Execution Jobs");
-            VerticalLayout verticalLayout = new VerticalLayout();
-            verticalLayout.setWidthFull();
-            Div body = new Div();
-            body.setText(getTranslation("confirm-dialog-text.reset-context", UI.getCurrent().getLocale()));
-            verticalLayout.add(body, hold);
-            confirmDialog.setText(verticalLayout);
-
-            confirmDialog.setCancelable(true);
-
-            confirmDialog.open();
-
-            confirmDialog.addConfirmListener(confirmEvent -> {
-                ContextMachine contextMachine = ContextMachineCache.instance()
-                    .getByContextInstanceId(this.contextInstance.getId());
-                if (contextMachine != null) {
-                    try {
-                        contextMachine.setDryRunParameters(null);
-                        this.saveContextInstance(contextMachine.getContext(), InstanceStatus.ENDED);
-                        this.statusDiv.setStatus(InstanceStatus.ENDED);
-                        ContextMachineCache.instance().remove(contextMachine);
-                        contextMachine.resetContextInstance(hold.getValue());
-                        ContextMachineCache.instance().put(contextMachine);
-                        String route = RouteConfiguration.forSessionScope()
-                            .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
-                                .getByContextName(this.contextInstance.getName()).getContext().getId() + "_scheduledContextInstance");
-
-                        getUI().ifPresent(ui -> ui.getPage().open(route));
-
-                        resetButton.setVisible(false);
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                        NotificationHelper.showErrorNotification(getTranslation("error.reset-context", UI.getCurrent().getLocale()));
-                    }
-                }
-            });
-        });
-
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.add(jobLockDashboard, holdContextButton, releaseContextButton, resetButton);
-        buttonLayout.setMargin(false);
-        buttonLayout.setSpacing(true);
-
-        VerticalLayout wrapper = new VerticalLayout(buttonLayout);
-        wrapper.setWidthFull();
-        wrapper.setMargin(false);
-        wrapper.setSpacing(false);
-        wrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
-
-        formLayout.add(wrapper, 2);
-
-        this.formLayout.add(this.contextInstanceId, this.contextNameTf
-            , this.startWindowCronExpressionTf, this.endWindowCronExpressionTf, this.descriptionTa);
 
         this.initialiseEditor();
         this.initialiseTree();
         this.initialiseVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
-        this.initialiseSchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+        this.initialiseSchedulerJobGridWidget(scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService,  moduleControlRestService, metaDataRestService,  systemEventLogger,  schedulerJobService, logStreamingService);
         this.initialiseContextTemplateStatisticsWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService,  moduleControlRestService, metaDataRestService,  systemEventLogger,  schedulerJobService, logStreamingService);
@@ -466,10 +421,13 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(this.tabs);
         this.getStyle().set("padding-top", "0px");
-        this.add(this.formLayout, tabLayout, this.contextInstanceTreeViewWidget, this.aceEditor, this.schedulerVisualisationDiv
+        this.add(statusLayout, headerLayout, collapsableLayout, tabLayout, this.contextInstanceTreeViewWidget, this.aceEditor, this.schedulerVisualisationDiv
             , this.schedulerJobInstanceGridWidget, this.contextTemplateStatisticsWidget, this.contextInstanceAuditWidget);
     }
 
+    /**
+     * Initialise the tabs associated with the widget.
+     */
     private void initialiseTabs() {
         this.visualisationTab = new Tab(getTranslation("tab.visualisation", UI.getCurrent().getLocale()));
         this.treeTab = new Tab(getTranslation("tab.tree", UI.getCurrent().getLocale()));
@@ -555,6 +513,9 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         }
     }
 
+    /**
+     * Initialise the editor associated with the widget.
+     */
     protected void initialiseEditor()
     {
         aceEditor = new AceEditor();
@@ -569,16 +530,33 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         aceEditor.setWrap(false);
         aceEditor.setVisible(false);
 
+        this.updateJson(this.contextInstance);
+    }
+
+    private void updateJson(ContextInstance contextInstance) {
         ContextService contextService = new ContextService();
 
         try {
-            aceEditor.setValue(contextService.getContextInstanceString(this.contextInstance));
+            aceEditor.setValue(contextService.getContextInstanceString(contextInstance));
         }
         catch (JsonProcessingException e) {
-            e.printStackTrace();
+            logger.error("Could not update raw JSON", e);
         }
     }
 
+    /**
+     * Initial the visualisation associated with the widget.
+     *
+     * @param dynamicImagePath
+     * @param moduleMetaDataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param schedulerJobService
+     * @param logStreamingService
+     */
     protected void initialiseVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
@@ -630,24 +608,243 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             this.schedulerVisualisationDiv.setVisible(false);
         }
         catch (IOException e) {
-            // todo raise message
             e.printStackTrace();
+            NotificationHelper.showErrorNotification(getTranslation("notification.error-opening-visualisation"
+                , UI.getCurrent().getLocale()));
         }
     }
 
+    /**
+     * Helper method to create the button layout.
+     *
+     * @return
+     */
+    private VerticalLayout createButtonLayout() {
+        Button jobLockDashboard = new Button(getTranslation("button.jobs-locks", UI.getCurrent().getLocale())
+            , VaadinIcon.LOCK.create());
+        jobLockDashboard.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+        jobLockDashboard.setIconAfterText(true);
+        jobLockDashboard.addClickListener(event -> {
+            JobLockCacheDialog jobLockCacheDialog = new JobLockCacheDialog(this.contextInstance, this.moduleMetaDataService, this.scheduledProcessManagementService,
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobInstanceService,
+                this.logStreamingService, this.jobInitiationService, this.scheduledContextService, this.jobUtilsService);
 
+            jobLockCacheDialog.open();
+        });
+
+        ComponentSecurityVisibility.applySecurity(jobLockDashboard, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+
+        Button holdContextButton = new Button(getTranslation("button.hold-context"
+            , UI.getCurrent().getLocale()), VaadinIcon.HAND.create());
+        holdContextButton.setIconAfterText(true);
+        holdContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+        holdContextButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.hold-jobs-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.hold-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                ContextMachine contextMachine = ContextMachineCache.instance()
+                    .getByContextInstanceId(this.contextInstance.getId());
+
+                if (contextMachine != null) {
+                    boolean error = false;
+                    try {
+                        List<SchedulerJobInstanceRecord> updatedRecords = this.schedulerJobInstanceService
+                            .holdJobsWithinContext(contextMachine.getContext(), contextMachine.getContext().getName());
+
+                        if (updatedRecords.size() > 0) {
+                            updatedRecords.forEach(schedulerJobInstanceRecord -> {
+                                SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
+                                    = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstanceRecord.getSchedulerJobInstance(),
+                                    this.contextInstance, InstanceStatus.WAITING, InstanceStatus.ON_HOLD);
+                                SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
+                            });
+                        }
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        error = true;
+                    }
+                    finally {
+                        if (error) {
+                            NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-hold-error"
+                                , UI.getCurrent().getLocale()));
+                        } else {
+                            NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-held"
+                                , UI.getCurrent().getLocale()));
+                        }
+                    }
+                }
+            });
+        });
+
+        ComponentSecurityVisibility.applySecurity(holdContextButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
+        Button releaseContextButton = new Button(getTranslation("button.release-all-held-jobs"
+            , UI.getCurrent().getLocale()), VaadinIcon.HANDS_UP.create());
+        releaseContextButton.setIconAfterText(true);
+        releaseContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+
+
+        releaseContextButton.addClickListener(event -> {
+            ContextMachine contextMachine = ContextMachineCache.instance()
+                .getByContextInstanceId(this.contextInstance.getId());
+            if (contextMachine != null) {
+                List<SchedulerJobInstanceRecord> jobsToReleaseWithinContext = this.schedulerJobInstanceService
+                    .getJobsToReleaseWithinContext(contextMachine.getContext(), contextMachine.getContext().getName());
+
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog.release-jobs-header", UI.getCurrent().getLocale()));
+                confirmDialog.setText(String.format(getTranslation("confirm-dialog.release-jobs-body", UI.getCurrent().getLocale())
+                    , jobsToReleaseWithinContext.size()));
+                confirmDialog.setCancelable(true);
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent -> {
+                    ProgressIndicatorDialog dialog = new ProgressIndicatorDialog(false);
+                    dialog.setWidth("600px");
+                    dialog.setHeight("250px");
+                    dialog.open(getTranslation("progress-dialog.release-all-jobs-jobs-header", UI.getCurrent().getLocale()),
+                        getTranslation("progress-dialog.release-all-jobs-jobs-body", UI.getCurrent().getLocale()));
+
+                    final UI current = UI.getCurrent();
+                    Executor executor = Executors.newSingleThreadExecutor();
+                    executor.execute(() -> {
+                        boolean error = false;
+                        try {
+                            if (jobsToReleaseWithinContext.size() > 0) {
+                                for (SchedulerJobInstanceRecord schedulerJobInstanceRecord : jobsToReleaseWithinContext) {
+                                    contextMachine.releaseJob(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier(),
+                                        schedulerJobInstanceRecord.getChildContextName());
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            error = true;
+                        } finally {
+                            boolean finalError = error;
+                            current.access(() -> {
+                                dialog.close();
+
+                                if (finalError) {
+                                    NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-released-error"
+                                        , UI.getCurrent().getLocale()));
+                                } else {
+                                    NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-released"
+                                        , UI.getCurrent().getLocale()));
+                                }
+                            });
+                        }
+                    });
+                });
+            }
+        });
+
+        ComponentSecurityVisibility.applySecurity(releaseContextButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
+        Button resetContextButton = new Button(getTranslation("button.reset-context", UI.getCurrent().getLocale()), VaadinIcon.TIME_BACKWARD.create());
+        resetContextButton.setIconAfterText(true);
+        resetContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+        resetContextButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog-header.reset-context", UI.getCurrent().getLocale()));
+
+            Checkbox hold = new Checkbox("Hold All Command Execution Jobs");
+            VerticalLayout verticalLayout = new VerticalLayout();
+            verticalLayout.setWidthFull();
+            Div body = new Div();
+            body.setText(getTranslation("confirm-dialog-text.reset-context", UI.getCurrent().getLocale()));
+            verticalLayout.add(body, hold);
+            confirmDialog.setText(verticalLayout);
+
+            confirmDialog.setCancelable(true);
+
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                ContextMachine contextMachine = ContextMachineCache.instance()
+                    .getByContextInstanceId(this.contextInstance.getId());
+                if (contextMachine != null) {
+                    try {
+                        contextMachine.setDryRunParameters(null);
+                        contextMachine.getContext().setEndTime(System.currentTimeMillis());
+                        this.saveContextInstance(contextMachine.getContext(), InstanceStatus.ENDED);
+                        this.statusDiv.setStatus(InstanceStatus.ENDED);
+                        ContextMachineCache.instance().remove(contextMachine);
+                        contextMachine.resetContextInstance(hold.getValue());
+                        ContextMachineCache.instance().put(contextMachine);
+                        String route = RouteConfiguration.forSessionScope()
+                            .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
+                                .getByContextName(this.contextInstance.getName()).getContext().getId() + "_scheduledContextInstance");
+
+                        getUI().ifPresent(ui -> ui.getPage().open(route));
+
+                        resetContextButton.setVisible(false);
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        NotificationHelper.showErrorNotification(getTranslation("error.reset-context", UI.getCurrent().getLocale()));
+                    }
+                }
+            });
+        });
+
+        ComponentSecurityVisibility.applySecurity(resetContextButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.add(jobLockDashboard, holdContextButton, releaseContextButton, resetContextButton);
+        buttonLayout.setMargin(false);
+        buttonLayout.setPadding(false);
+
+        VerticalLayout wrapper = new VerticalLayout(buttonLayout);
+        wrapper.setWidthFull();
+        wrapper.setMargin(false);
+        wrapper.setPadding(false);
+        wrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
+
+        return wrapper;
+    }
+
+    /**
+     * Create the context view menu bar.
+     *
+     * @return
+     */
     private MenuBar contextViewMenuBar() {
-        MenuBar contextViewsMenuBar = new ContextInstanceViewMenuBar(this.contextInstance, this.contextProfileService, this.schedulerInstanceVisualisation);
+        MenuBar contextViewsMenuBar = new ContextInstanceViewMenuBar(this.contextInstance, this.contextProfileService
+            , this.schedulerInstanceVisualisation);
 
         return contextViewsMenuBar;
     }
 
-
-    private void initialiseSchedulerJobGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    /**
+     * Method to initialise the scheduler job instance grid.
+     *
+     * @param scheduledContextInstanceService
+     * @param moduleMetaDataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param schedulerJobService
+     * @param logStreamingService
+     */
+    private void initialiseSchedulerJobGridWidget(ScheduledContextInstanceService scheduledContextInstanceService, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                                      ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                                      MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                                      LogStreamingService logStreamingService) {
-        this.schedulerJobInstanceGridWidget = new SchedulerJobInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+        this.schedulerJobInstanceGridWidget = new SchedulerJobInstanceGridWidget(scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextInstance, this.schedulerJobInstanceService,
             this.jobInitiationService, this.configurationRestService, metaDataRestService, this.jobUtilsService, this.scheduledContextService, this.jobStatus);
         this.schedulerJobInstanceGridWidget.setWidthFull();
@@ -656,6 +853,9 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
 
     }
 
+    /**
+     * Initialise the job plan instance tree.
+     */
     private void initialiseTree() {
         this.contextInstanceTreeViewWidget = new ContextInstanceTreeViewWidget(this.contextInstance, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
@@ -665,6 +865,20 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         this.contextInstanceTreeViewWidget.setVisible(true);
     }
 
+    /**
+     * Initialise the job plan statistics widget.
+     *
+     * @param scheduledContextInstanceService
+     * @param dynamicImagePath
+     * @param moduleMetaDataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param schedulerJobService
+     * @param logStreamingService
+     */
     private void initialiseContextTemplateStatisticsWidget(ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
@@ -677,6 +891,11 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
 
     }
 
+    /**
+     * Helper method to initialise the job plan instance audit widget.
+     *
+     * @param scheduledContextInstanceService
+     */
     private void initialiseContextInstanceAuditWidget(ScheduledContextInstanceService scheduledContextInstanceService) {
         ScheduledContextInstanceAuditAggregateSearchFilter contextInstanceSearchFilter = new ScheduledContextInstanceAuditAggregateSearchFilter();
         contextInstanceSearchFilter.setContextInstanceId(this.contextInstance.getId());
@@ -688,6 +907,12 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
 
     }
 
+    /**
+     * Helper method to save the job plan instance.
+     *
+     * @param contextInstance
+     * @param instanceStatus
+     */
     protected void saveContextInstance(ContextInstance contextInstance, InstanceStatus instanceStatus) {
         contextInstance.setStatus(instanceStatus);
         ScheduledContextInstanceRecord scheduledContextInstanceRecord = new ScheduledContextInstanceRecordImpl();
@@ -716,9 +941,19 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                             this.contextInstance = record.getContextInstance();
                         }
                     }
+
+                    this.updateJson(this.contextInstance);
                 });
             }
         });
+
+        schedulerJobInstanceStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> ui.access(() ->  {
+            ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId());
+            if(record != null) {
+                this.contextInstance = record.getContextInstance();
+                this.updateJson(this.contextInstance);
+            }
+        }));
     }
 
     @Override
@@ -726,6 +961,11 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         if(this.contextInstanceStateChangeRegistration != null) {
             this.contextInstanceStateChangeRegistration.remove();
             this.contextInstanceStateChangeRegistration = null;
+        }
+
+        if(this.schedulerJobInstanceStateChangeRegistration != null) {
+            this.schedulerJobInstanceStateChangeRegistration.remove();
+            this.schedulerJobInstanceStateChangeRegistration = null;
         }
     }
 

@@ -8,22 +8,26 @@ import org.ikasan.spec.scheduled.context.model.ContextParameter;
 
 public class SolrContextParameterImpl implements ContextParameter {
     private String name;
-    private String type;
+    private String defaultValue;
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
 
-    public String getType() {
-        return type;
+    @Override
+    public String getDefaultValue() {
+        return defaultValue;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    @Override
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
     @Override

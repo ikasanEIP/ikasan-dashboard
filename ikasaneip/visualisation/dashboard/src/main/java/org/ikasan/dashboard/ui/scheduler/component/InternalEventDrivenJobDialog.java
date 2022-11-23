@@ -30,6 +30,8 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.validator.StringToDefaultLongConverter;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
@@ -179,6 +181,10 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             NotificationHelper.showErrorNotification(getTranslation("notification.scheduler-job-saved", UI.getCurrent().getLocale()));
         });
 
+        ComponentSecurityVisibility.applySecurity(saveButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
         cancelButton = new Button(getTranslation("button.close", UI.getCurrent().getLocale()));
         cancelButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.close());
 
@@ -231,6 +237,10 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
         formLayout.add(jobExecutionLabel, this.targetResidingContextOnlyCb);
 
+        ComponentSecurityVisibility.applyEnabledSecurity(this.targetResidingContextOnlyCb, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setId("jobNameTf");
         this.jobNameTf.setRequired(true);
@@ -254,6 +264,10 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             .bind(InternalEventDrivenJob::getAgentName, InternalEventDrivenJob::setAgentName);
         formLayout.add(agentCb);
 
+        ComponentSecurityVisibility.applyEnabledSecurity(this.agentCb, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
         this.jobDescriptionTa = new TextArea(getTranslation("label.job-description", UI.getCurrent().getLocale()));
         this.jobDescriptionTa.setRequired(true);
         this.jobDescriptionTa.setId("jobDescriptionTa");
@@ -263,6 +277,10 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             .bind(InternalEventDrivenJob::getJobDescription, InternalEventDrivenJob::setJobDescription);
         formLayout.add(jobDescriptionTa, 2);
 
+        ComponentSecurityVisibility.applyEnabledSecurity(this.jobDescriptionTa, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
 
         this.minExecutionTimeTf = new TextField(getTranslation("label.minimum-execution-time", UI.getCurrent().getLocale()));
         formBinder.forField(this.minExecutionTimeTf)
@@ -271,12 +289,20 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
                 new StringToDefaultLongConverter(getTranslation("error.please-enter-a-number", UI.getCurrent().getLocale()), -1))
             .bind(InternalEventDrivenJob::getMinExecutionTime, InternalEventDrivenJob::setMinExecutionTime);
 
+        ComponentSecurityVisibility.applyEnabledSecurity(this.minExecutionTimeTf, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
         this.maxExecutionTimeTf = new TextField(getTranslation("label.maximum-execution-time", UI.getCurrent().getLocale()));
         formBinder.forField(this.maxExecutionTimeTf)
             .withNullRepresentation("")
             .withConverter(
                 new StringToDefaultLongConverter(getTranslation("error.please-enter-a-number", UI.getCurrent().getLocale()), -1))
             .bind(InternalEventDrivenJob::getMaxExecutionTime, InternalEventDrivenJob::setMaxExecutionTime);
+
+        ComponentSecurityVisibility.applyEnabledSecurity(this.maxExecutionTimeTf, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
         formLayout.add(minExecutionTimeTf, maxExecutionTimeTf);
 
@@ -285,6 +311,10 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             .withNullRepresentation("")
             .bind(InternalEventDrivenJob::getWorkingDirectory, InternalEventDrivenJob::setWorkingDirectory);
         formLayout.add(workingDirectoryTf, 2);
+
+        ComponentSecurityVisibility.applyEnabledSecurity(workingDirectoryTf, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
         Button executionDaysButton = new Button(getTranslation("button.execution-days", UI.getCurrent().getLocale()), new Icon(VaadinIcon.CALENDAR));
         executionDaysButton.setIconAfterText(true);
@@ -300,6 +330,10 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             });
         });
 
+        ComponentSecurityVisibility.applyEnabledSecurity(executionDaysButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+
         Button parametersButton = new Button(getTranslation("button.parameters", UI.getCurrent().getLocale()), new Icon(VaadinIcon.SLIDERS));
         parametersButton.setIconAfterText(true);
         parametersButton.addClickListener(event -> {
@@ -314,6 +348,10 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             });
         });
 
+        ComponentSecurityVisibility.applyEnabledSecurity(parametersButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+
         Button successfulReturnCodesButton = new Button(getTranslation("button.return-codes", UI.getCurrent().getLocale()), new Icon(VaadinIcon.CHECK));
         successfulReturnCodesButton.setIconAfterText(true);
         successfulReturnCodesButton.addClickListener(event -> {
@@ -327,6 +365,10 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
                 }
             });
         });
+
+        ComponentSecurityVisibility.applyEnabledSecurity(successfulReturnCodesButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
         HorizontalLayout horizontalLayout = new HorizontalLayout();
         horizontalLayout.add(executionDaysButton, parametersButton, successfulReturnCodesButton);
@@ -393,7 +435,11 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.commandLineTa.setEnabled(enabled);
         this.workingDirectoryTf.setEnabled(enabled);
 
-        this.saveButton.setVisible(enabled);
+        this.saveButton.setVisible(enabled &&
+            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+
         this.cancelButton.setVisible(enabled);
     }
 

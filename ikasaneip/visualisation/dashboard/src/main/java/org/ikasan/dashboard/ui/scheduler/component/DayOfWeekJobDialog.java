@@ -14,7 +14,9 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.search.component.IkasanSearchHelpDialog;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.IconDecorator;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -104,7 +106,10 @@ public class DayOfWeekJobDialog extends AbstractCloseableResizableDialog {
                 });
             });
 
-            item.setEnabled(this.editable);
+            item.setEnabled(this.editable &&
+                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         });
 
         Icon helpIcon = new Icon(VaadinIcon.QUESTION_CIRCLE);
@@ -170,6 +175,8 @@ public class DayOfWeekJobDialog extends AbstractCloseableResizableDialog {
         Checkbox dayCheckbox = new Checkbox(getTranslation(dayTranslationKey
             , UI.getCurrent().getLocale()));
         dayCheckbox.setId(id);
+
+
 
         return dayCheckbox;
     }

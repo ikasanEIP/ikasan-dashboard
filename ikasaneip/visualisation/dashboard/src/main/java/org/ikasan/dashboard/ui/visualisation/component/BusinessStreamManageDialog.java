@@ -93,8 +93,8 @@ public class BusinessStreamManageDialog extends AbstractCloseableResizableDialog
 
             });
 
-            ComponentSecurityVisibility.applySecurity(editButton, SecurityConstants.PLATORM_CONFIGURATON_ADMIN,
-                SecurityConstants.PLATORM_CONFIGURATON_WRITE, SecurityConstants.ALL_AUTHORITY);
+            ComponentSecurityVisibility.applySecurity(editButton, SecurityConstants.PLATFORM_CONFIGURATION_ADMIN,
+                SecurityConstants.PLATFORM_CONFIGURATION_WRITE, SecurityConstants.ALL_AUTHORITY);
 
             VerticalLayout layout = new VerticalLayout();
             layout.setSizeFull();
@@ -126,8 +126,8 @@ public class BusinessStreamManageDialog extends AbstractCloseableResizableDialog
                 this.businessStreamGrid.getDataProvider().refreshAll();
             });
 
-            ComponentSecurityVisibility.applySecurity(deleteButton, SecurityConstants.PLATORM_CONFIGURATON_ADMIN,
-                SecurityConstants.PLATORM_CONFIGURATON_WRITE, SecurityConstants.ALL_AUTHORITY);
+            ComponentSecurityVisibility.applySecurity(deleteButton, SecurityConstants.PLATFORM_CONFIGURATION_ADMIN,
+                SecurityConstants.PLATFORM_CONFIGURATION_WRITE, SecurityConstants.ALL_AUTHORITY);
 
             VerticalLayout layout = new VerticalLayout();
             layout.setSizeFull();

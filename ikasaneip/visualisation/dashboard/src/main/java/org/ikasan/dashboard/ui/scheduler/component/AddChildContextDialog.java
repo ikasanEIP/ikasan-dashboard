@@ -12,6 +12,8 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.scheduler.listener.NewContextListener;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.job.orchestration.builder.context.ContextTemplateBuilder;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 
@@ -79,6 +81,10 @@ public class AddChildContextDialog extends AbstractCloseableResizableDialog {
 
             this.close();
         });
+
+        ComponentSecurityVisibility.applySecurity(addButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
         Button cancelButton = new Button(getTranslation("button.cancel", UI.getCurrent().getLocale()));
         cancelButton.addClickListener(buttonClickEvent -> this.close());

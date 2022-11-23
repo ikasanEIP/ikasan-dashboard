@@ -164,9 +164,17 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
             });
         });
 
+        ComponentSecurityVisibility.applySecurity(submitButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
         this.viewProcessEventButton = new Button(getTranslation
             ("button.view-event", UI.getCurrent().getLocale()), VaadinIcon.CALENDAR_CLOCK.create());
-        this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
+        this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null &&
+            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+
         this.viewProcessEventButton.setIconAfterText(true);
         this.viewProcessEventButton.addClickListener(event -> {
             JsonViewerDialog dialog = new JsonViewerDialog(this.scheduledProcessEvent
@@ -188,6 +196,10 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
 
         FileDownloadWrapper exportWrapper = new FileDownloadWrapper(streamResource);
         exportWrapper.wrapComponent(export);
+
+        ComponentSecurityVisibility.applySecurity(exportWrapper, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
         HorizontalLayout actionsLayout = new HorizontalLayout();
         actionsLayout.add(submitButton, this.viewProcessEventButton, exportWrapper);

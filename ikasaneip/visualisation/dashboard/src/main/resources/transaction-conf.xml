@@ -23,10 +23,8 @@
     </bean>
 
     <aop:config>
-        <aop:pointcut id="securityServiceMethods"
+        <aop:pointcut id="securityServiceManagementMethods"
                 expression="execution(* org.ikasan.security.service.SecurityService*.*(..))"/>
-        <aop:pointcut id="saveOrUpdateAuthenticationMethod"
-                expression="execution(* org.ikasan.security.service.SecurityService*.saveOrUpdateAuthenticationMethod(..))"/>
         <aop:pointcut id="userServiceMethods"
                 expression="execution(* org.ikasan.security.service.UserService*.*(..))"/>
         <aop:pointcut id="authenticationServiceMethods"
@@ -41,8 +39,7 @@
                       expression="execution(* org.ikasan.spec.configuration.PlatformConfigurationService.*(..))"/>
 
 
-        <aop:advisor advice-ref="txAdvice" pointcut-ref="securityServiceMethods"/>
-        <aop:advisor advice-ref="txAdvice" pointcut-ref="saveOrUpdateAuthenticationMethod"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="securityServiceManagementMethods"/>
         <aop:advisor advice-ref="txAdvice" pointcut-ref="userServiceMethods"/>
         <aop:advisor advice-ref="txAdvice" pointcut-ref="ldapServiceMethods"/>
         <aop:advisor advice-ref="txAdvice" pointcut-ref="customAuthenticationProviderPointcut" />

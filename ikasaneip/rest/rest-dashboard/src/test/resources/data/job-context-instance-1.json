@@ -13,12 +13,12 @@
     "contextParameters": [
       {
         "name": "BusinessDate",
-        "type": "java.lang.String",
+        "defaultValue" : "value",
         "value": "20220530"
       },
       {
         "name": "localFilePath",
-        "type": "path",
+        "defaultValue" : "value",
         "value": "/opt/data/files"
       }
     ],

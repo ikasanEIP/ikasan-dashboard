@@ -146,19 +146,19 @@
   } ],
   "contextParameters" : [ {
     "name" : "param1",
-    "type" : "java.lang.String"
+    "defaultValue" : "value"
   }, {
     "name" : "param2",
-    "type" : "java.lang.String"
+    "defaultValue" : "value"
   }, {
     "name" : "param3",
-    "type" : "java.lang.String"
+    "defaultValue" : "value"
   }, {
     "name" : "param4",
-    "type" : "java.lang.String"
+    "defaultValue" : "value"
   }, {
     "name" : "param5",
-    "type" : "java.lang.String"
+    "defaultValue" : "value"
   } ],
   "scheduledJobs" : [ {
     "agentName" : "scheduler-agent",

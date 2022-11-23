@@ -132,6 +132,7 @@ public class ContextInstanceAuditFilteringGrid extends Grid<ScheduledContextInst
             results = this.contextInstanceService.findAllAuditRecordsByFilter(this.searchFilter, limit, offset, sortField, sortOrder);
         }
         catch (Exception e) {
+            e.printStackTrace();
             final UI current = UI.getCurrent();
             final I18NProvider i18NProvider = VaadinService.getCurrent().getInstantiator().getI18NProvider();
             NotificationHelper.showErrorNotification(i18NProvider.getTranslation("error.solr-unavailable"
