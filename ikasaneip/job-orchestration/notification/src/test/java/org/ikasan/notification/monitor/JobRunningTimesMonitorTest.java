@@ -29,12 +29,10 @@ import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
 import org.joda.time.DateTimeUtils;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.test.annotation.DirtiesContext;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,7 +46,6 @@ import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
-@DirtiesContext
 public class JobRunningTimesMonitorTest {
 
     /** default executor service is a single thread executor */
