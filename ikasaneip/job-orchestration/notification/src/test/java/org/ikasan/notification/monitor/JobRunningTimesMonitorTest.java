@@ -76,7 +76,6 @@ public class JobRunningTimesMonitorTest {
     @After
     public void tearDown() throws IOException {
         DateTimeUtils.setCurrentMillisSystem();
-        contextMachine1.teardown();
         monitorManagement.unRegisterMonitor(jobRunningTimesMonitor);
         ContextMachineCache.instance().remove(contextMachine1);
     }

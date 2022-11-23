@@ -74,7 +74,6 @@ public class OverdueFileMonitorTest {
     @After
     public void tearDown() throws IOException {
         DateTimeUtils.setCurrentMillisSystem();
-        contextMachine1.teardown();
         monitorManagement.unRegisterMonitor(overdueFileMonitor);
         ContextMachineCache.instance().remove(contextMachine1);
     }
