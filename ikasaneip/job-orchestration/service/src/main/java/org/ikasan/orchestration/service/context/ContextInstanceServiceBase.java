@@ -191,6 +191,7 @@ public abstract class ContextInstanceServiceBase {
         propagateContextInstanceToAgents(instance, agents);
 
         if (isInitialContextInstantiation) {
+            instance.setStartTime(System.currentTimeMillis());
             this.saveContextInstance(instance, InstanceStatus.WAITING);
         }
 

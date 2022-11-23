@@ -361,7 +361,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
     }
 
     private ContextParameterInstance replaceParamIfSet(String contextName, ContextParameterInstance instance) {
-        Object replacementForContextParamName = contextParametersInstanceService.getContextParameterValue(contextName, instance.getName());
+        String replacementForContextParamName = contextParametersInstanceService.getContextParameterValue(contextName, instance.getName());
         if (replacementForContextParamName != null) {
             instance.setValue(replacementForContextParamName);
         }
@@ -371,7 +371,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
     /**
      * This method assesses the logic defined in a LogicalGrouping to determine if an event should be raised. The LogicalGrouping
      * data structure allows for nested logical groupings that are analogous to brackets used when defining complex nested logic.
-     * Therefore this method employs recursion in order to assess the nested nature of logical statements.
+     * Therefore, this method employs recursion in order to assess the nested nature of logical statements.
      *
      * @param logicalGrouping
      * @param schedulerJobInstancesMap

@@ -19,6 +19,7 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.shared.Registration;
+import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceMonitoringView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.util.IkasanColours;
@@ -26,6 +27,7 @@ import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
@@ -41,9 +43,11 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -52,7 +56,6 @@ import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoI
 public class ContextInstanceDashboardWidget extends Div {
     private Registration schedulerJobStateChangeRegistration;
     private Grid<ContextInstanceAggregateJobStatus> contextInstanceAggregateJobStatusGrid;
-    private ModuleMetaDataService moduleMetadataService;
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
     private ModuleControlService moduleControlRestService;
@@ -71,13 +74,12 @@ public class ContextInstanceDashboardWidget extends Div {
     private ScheduledContextService scheduledContextService;
     private TextField contextNameTf = new TextField();
     private TextField contextInstanceIdTf = new TextField();
-
     private StatusFilter statusFilter = new StatusFilter();
+    private IkasanAuthentication ikasanAuthentication;
 
     /**
      * Constructor
      *
-     * @param moduleMetadataService
      * @param scheduledProcessManagementService
      * @param configurationRestService
      * @param moduleControlRestService
@@ -85,7 +87,7 @@ public class ContextInstanceDashboardWidget extends Div {
      * @param systemEventLogger
      * @param schedulerService
      */
-    public ContextInstanceDashboardWidget(ModuleMetaDataService moduleMetadataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    public ContextInstanceDashboardWidget(ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                                           SystemEventLogger systemEventLogger, SchedulerService schedulerService, SchedulerJobService schedulerJobService,
                                           SchedulerJobInstanceService schedulerJobInstanceService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath,
@@ -93,10 +95,6 @@ public class ContextInstanceDashboardWidget extends Div {
                                           JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
                                           JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, boolean fullscreen) {
 
-        this.moduleMetadataService = moduleMetadataService;
-        if(this.moduleMetadataService ==  null) {
-            throw new IllegalArgumentException("moduleMetadataService cannot be null!");
-        }
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         if(this.scheduledProcessManagementService ==  null) {
             throw new IllegalArgumentException("scheduledProcessManagementService cannot be null!");
@@ -162,6 +160,8 @@ public class ContextInstanceDashboardWidget extends Div {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
         }
 
+        this.ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+
         this.createGrid();
 
         Div div = new Div();
@@ -219,6 +219,7 @@ public class ContextInstanceDashboardWidget extends Div {
     private void createGrid() {
         // Create a modulesGrid bound to the list
         contextInstanceAggregateJobStatusGrid = new Grid<>();
+        contextInstanceAggregateJobStatusGrid.setId("contextInstanceAggregateJobStatusGrid");
         contextInstanceAggregateJobStatusGrid.removeAllColumns();
         contextInstanceAggregateJobStatusGrid.setVisible(true);
         contextInstanceAggregateJobStatusGrid.setWidthFull();
@@ -423,6 +424,7 @@ public class ContextInstanceDashboardWidget extends Div {
 
         dataProvider.withConfigurableFilter().setFilter(this.statusFilter);
         this.contextInstanceAggregateJobStatusGrid.setDataProvider(dataProvider);
+        this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
     }
 
     private Button buildStatusCountButton(String label, String backgroundColour, String fontColour, int count) {
@@ -494,19 +496,28 @@ public class ContextInstanceDashboardWidget extends Div {
     private List<ContextInstanceAggregateJobStatus> filter(StatusFilter statusFilter) {
         List<String> contextInstanceIdentifiers = new ArrayList<>(ContextMachineCache.instance().contextInstanceIdentifiers());
 
-        List<ContextInstanceAggregateJobStatus> jobStatuses =  this.schedulerJobInstanceService
+        List<ContextInstanceAggregateJobStatus> jobStatuses = this.schedulerJobInstanceService
             .getJobStatusCountForContextInstances(contextInstanceIdentifiers);
 
+        boolean canAccessAllJobPlans = SecurityUtils.canAccessAllJobPlans(ikasanAuthentication);
+        Set<String> accessibleJobPlans = SecurityUtils.getAccessibleJobPlans(ikasanAuthentication);
+
         return jobStatuses.stream().filter(item -> {
+                boolean filter = true;
+
+                if(!canAccessAllJobPlans) {
+                    filter = accessibleJobPlans.contains(item.getContextInstanceName());
+                }
+
                 if(statusFilter.contextName != null && !statusFilter.contextName.isEmpty()) {
-                    return item.getContextInstanceName().toLowerCase().contains(statusFilter.contextName.toLowerCase());
+                    filter = item.getContextInstanceName().toLowerCase().contains(statusFilter.contextName.toLowerCase());
                 }
 
                 if(statusFilter.contextInstanceId != null && !statusFilter.contextInstanceId.isEmpty()) {
-                    return item.getContextInstanceId().toLowerCase().contains(statusFilter.contextInstanceId.toLowerCase());
+                    filter = item.getContextInstanceId().toLowerCase().contains(statusFilter.contextInstanceId.toLowerCase());
                 }
 
-                return true;
+                return filter;
             })
             .collect(Collectors.toList());
     }

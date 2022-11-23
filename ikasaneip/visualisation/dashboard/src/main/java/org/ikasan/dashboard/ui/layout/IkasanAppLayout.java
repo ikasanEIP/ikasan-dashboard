@@ -193,8 +193,9 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
         this.searchMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.SEARCH_ADMIN, SecurityConstants.SEARCH_READ, SecurityConstants.SEARCH_WRITE,
             SecurityConstants.ALL_AUTHORITY));
 
-        this.schedulerMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
-            SecurityConstants.SCHEDULER_WRITE));
+        this.schedulerMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY
+            , SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ, SecurityConstants.SCHEDULER_WRITE
+            , SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_ADMIN));
 
         this.visualisationMenuItem.setVisible(ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY));
 

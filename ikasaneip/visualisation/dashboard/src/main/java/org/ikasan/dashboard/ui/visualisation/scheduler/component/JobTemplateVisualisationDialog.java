@@ -15,6 +15,8 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.*;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
@@ -30,8 +32,6 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
@@ -188,7 +188,8 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             ContextTemplate parentContextInstance = contextService.getParent(this.rootContextTemplate, this.contextTemplate);
 
             if(parentContextInstance != null) {
-                Button gotoParentButton = new Button("Go to Parent - " + parentContextInstance.getName(), VaadinIcon.ARROW_UP.create());
+                Button gotoParentButton = new Button(getTranslation("button.go-to-parent", UI.getCurrent().getLocale())
+                    + " " + parentContextInstance.getName(), VaadinIcon.ARROW_UP.create());
                 gotoParentButton.setIconAfterText(true);
                 gotoParentButton.addClickListener(buttonClickEvent -> {
                     if (this.contextTemplate != null && this.rootContextTemplate != null) {
@@ -214,11 +215,15 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                     }
                 });
 
+                ComponentSecurityVisibility.applySecurity(gotoParentButton, SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+
                 buttonLayout.add(gotoParentButton);
                 buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.BASELINE, gotoParentButton);
             }
 
-            Button addContextViewButton = new Button("Add As Context View", VaadinIcon.PLUS.create());
+            Button addContextViewButton = new Button(getTranslation("button.add-as-context-view", UI.getCurrent().getLocale()), VaadinIcon.PLUS.create());
             addContextViewButton.setIconAfterText(true);
 
             addContextViewButton.addClickListener(event -> {
@@ -227,30 +232,56 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
                 contextViewManagementDialog.open();
             });
 
-            MenuBar createNewJobMenuBar = this.createNewJobMenuBar();
+            ComponentSecurityVisibility.applySecurity(addContextViewButton, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
-            Button addAnd = new Button("Add AND Grouping &&");
+            MenuBar addJobMenuBar = this.addJobMenuBar();
+
+            ComponentSecurityVisibility.applySecurity(addJobMenuBar, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
+            Button addAnd = new Button(getTranslation("button.add-and-to-visualisation", UI.getCurrent().getLocale()));
             addAnd.addClickListener(buttonClickEvent -> {
                 this.schedulerVisualisation.addAndGrouping();
             });
-            Button addOr = new Button("Add OR Grouping ||");
+
+            ComponentSecurityVisibility.applySecurity(addAnd, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
+            Button addOr = new Button(getTranslation("button.add-or-to-visualisation", UI.getCurrent().getLocale()));
             addOr.addClickListener(buttonClickEvent -> {
                this.schedulerVisualisation.addOrGrouping();
             });
-            Button jsonButton = new Button("JSON", VaadinIcon.CODE.create());
+
+            ComponentSecurityVisibility.applySecurity(addOr, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
+            Button jsonButton = new Button(getTranslation("button.view-raw-json", UI.getCurrent().getLocale()), VaadinIcon.CODE.create());
             jsonButton.setIconAfterText(true);
             jsonButton.addClickListener(buttonClickEvent -> {
                 JsonViewerDialog jsonViewerDialog = new JsonViewerDialog(this.schedulerVisualisation.getContextTemplate());
                 jsonViewerDialog.open();
             });
-            Button saveButton = new Button("Save");
+
+            ComponentSecurityVisibility.applySecurity(jsonButton, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
+
+            Button saveButton = new Button(getTranslation("button.save", UI.getCurrent().getLocale()));
             saveButton.addClickListener(buttonClickEvent -> {
                 this.schedulerVisualisation.save();
             });
 
+            ComponentSecurityVisibility.applySecurity(saveButton, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
-            buttonLayout.add(createNewJobMenuBar, addAnd, addOr, jsonButton, addContextViewButton, saveButton);
-            buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.BASELINE, createNewJobMenuBar, addAnd, addOr, jsonButton, addContextViewButton, saveButton);
+            buttonLayout.add(addJobMenuBar, addAnd, addOr, jsonButton, addContextViewButton, saveButton);
+            buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.BASELINE, addJobMenuBar, addAnd, addOr, jsonButton, addContextViewButton, saveButton);
 
             this.layout.add(buttonLayout);
             layout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
@@ -259,7 +290,7 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         }
     }
 
-    private MenuBar createNewJobMenuBar() {
+    private MenuBar addJobMenuBar() {
         MenuBar newJobMenuBar = new MenuBar();
         newJobMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
 

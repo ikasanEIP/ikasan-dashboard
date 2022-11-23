@@ -61,8 +61,6 @@ public class JsonViewerDialog extends AbstractCloseableResizableDialog  {
         aceEditor.setMode(AceMode.text);
         aceEditor.setFontSize(11);
         aceEditor.setTabSize(4);
-//        aceEditor.setWidth("100%");
-//        aceEditor.setHeight("80vh");
         aceEditor.setSizeFull();
         aceEditor.setReadOnly(true);
         aceEditor.setWrap(false);

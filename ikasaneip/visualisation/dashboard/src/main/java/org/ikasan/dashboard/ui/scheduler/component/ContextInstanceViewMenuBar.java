@@ -46,7 +46,7 @@ public class ContextInstanceViewMenuBar extends MenuBar {
     private void init() {
         super.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
 
-        MenuItem contextViews = createQuickAccessButton(this, VaadinIcon.SITEMAP.create(), getTranslation("label.context-views", UI.getCurrent().getLocale()));
+        MenuItem contextViews = creatContextViewsButton(this, VaadinIcon.SITEMAP.create(), getTranslation("label.context-views", UI.getCurrent().getLocale()));
 
         SubMenu systemViewsSubMenu = contextViews.getSubMenu();
         SubMenu myViewsSubMenu = contextViews.getSubMenu();
@@ -144,7 +144,7 @@ public class ContextInstanceViewMenuBar extends MenuBar {
         });
     }
 
-    private MenuItem createQuickAccessButton(MenuBar menu, Icon icon, String label) {
+    private MenuItem creatContextViewsButton(MenuBar menu, Icon icon, String label) {
         Button quickAccessButton = new Button(label, icon);
         quickAccessButton.setIconAfterText(true);
 

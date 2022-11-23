@@ -127,10 +127,10 @@ public class AbstractTest
     }
 
 
-    protected ContextParameter getContextParameter(String name, String type) {
+    protected ContextParameter getContextParameter(String name, String value) {
         ContextParameterImpl contextParameter = new ContextParameterImpl();
         contextParameter.setName(name);
-        contextParameter.setType(type);
+        contextParameter.setDefaultValue(value  );
 
         return contextParameter;
     }
@@ -146,11 +146,6 @@ public class AbstractTest
             = jobLockCacheData.getJobLocksByLockName();
 
         assertNotNull(jobLocksByIdentifier);
-//        Collection<JobLockHolder> jobLockHolders = jobLocksByIdentifier.values();
-//        assertTrue(jobLockHolders.size() > 0);
-//        for (JobLockHolder jlh : jobLockHolders) {
-//            assertEquals(0, jlh.getLockHolders().size());
-//        }
 
         assertNotNull(jobLocksByLockName);
         assertTrue(jobLocksByLockName.values().size() > 0);

@@ -40,6 +40,12 @@ public class SolrScheduledContextInstanceRecordImpl implements ScheduledContextI
     @Field(SolrDaoBase.MODIFIED_BY)
     private String modifiedBy;
 
+    @Field(SolrDaoBase.START_TIME)
+    private long startTime;
+
+    @Field(SolrDaoBase.END_TIME)
+    private long endTime;
+
     @Override
     public String getId() {
         return this.id;
@@ -124,5 +130,25 @@ public class SolrScheduledContextInstanceRecordImpl implements ScheduledContextI
     @Override
     public void setModifiedBy(String modifiedBy) {
         this.modifiedBy = modifiedBy;
+    }
+
+    @Override
+    public long getStartTime() {
+        return startTime;
+    }
+
+    @Override
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    @Override
+    public long getEndTime() {
+        return endTime;
+    }
+
+    @Override
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
     }
 }

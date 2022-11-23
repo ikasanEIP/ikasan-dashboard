@@ -229,7 +229,7 @@ public class JobProvisionRestServiceImplTest extends AbstractTest{
         IntStream.range(0, 10).forEach(i -> {
             ContextParameterBuilder contextParameterBuilder = new ContextParameterBuilder();
             contextParameterBuilder.withName("param-name-"+i);
-            contextParameterBuilder.withType("java.lang.String");
+            contextParameterBuilder.withDefaultValue("defaultValue");
 
             contextParameters.add(contextParameterBuilder.build());
         });

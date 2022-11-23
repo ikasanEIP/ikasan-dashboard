@@ -101,9 +101,9 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
             verticalLayout.add(componentConfigurationButton);
 
             ComponentSecurityVisibility.applySecurity(componentConfigurationButton, SecurityConstants.ALL_AUTHORITY
-                , SecurityConstants.PLATORM_CONFIGURATON_ADMIN
-                , SecurityConstants.PLATORM_CONFIGURATON_READ
-                , SecurityConstants.PLATORM_CONFIGURATON_WRITE);
+                , SecurityConstants.PLATFORM_CONFIGURATION_ADMIN
+                , SecurityConstants.PLATFORM_CONFIGURATION_READ
+                , SecurityConstants.PLATFORM_CONFIGURATION_WRITE);
         }
 
         Button invokerConfigurationButton = new Button(
@@ -115,9 +115,9 @@ public class ComponentOptionsDialog extends AbstractCloseableResizableDialog {
         verticalLayout.add(invokerConfigurationButton);
 
         ComponentSecurityVisibility.applySecurity(invokerConfigurationButton, SecurityConstants.ALL_AUTHORITY
-            , SecurityConstants.PLATORM_CONFIGURATON_ADMIN
-            , SecurityConstants.PLATORM_CONFIGURATON_READ
-            , SecurityConstants.PLATORM_CONFIGURATON_WRITE);
+            , SecurityConstants.PLATFORM_CONFIGURATION_ADMIN
+            , SecurityConstants.PLATFORM_CONFIGURATION_READ
+            , SecurityConstants.PLATFORM_CONFIGURATION_WRITE);
 
         Button createWiretapBeforeComponentWithTTLOneDayButton = new Button(
             getTranslation("button.wiretap-before-component-oneday", UI.getCurrent().getLocale()));

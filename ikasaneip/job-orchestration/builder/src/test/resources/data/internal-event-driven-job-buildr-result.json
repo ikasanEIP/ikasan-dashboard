@@ -13,10 +13,10 @@
   "maxExecutionTime" : 100000,
   "contextParameters" : [ {
     "name" : "name1",
-    "type" : "java.lang.String"
+    "defaultValue" : "value"
   }, {
     "name" : "name2",
-    "type" : "java.lang.String"
+    "defaultValue" : "value"
   } ],
   "daysOfWeekToRun" : [ 2, 3 ],
   "targetResidingContextOnly" : true,

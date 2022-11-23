@@ -21,10 +21,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
-import org.ikasan.dashboard.ui.util.DateTimeUtil;
-import org.ikasan.dashboard.ui.util.IconDecorator;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobRecordImpl;
@@ -154,6 +151,10 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
             NotificationHelper.showErrorNotification(getTranslation("notification.scheduler-job-saved", UI.getCurrent().getLocale()));
         });
 
+        ComponentSecurityVisibility.applySecurity(saveButton, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
         cancelButton = new Button(getTranslation("button.close", UI.getCurrent().getLocale()));
         cancelButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent -> this.close());
 
@@ -186,7 +187,10 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setId("jobNameTf");
         this.jobNameTf.setRequired(true);
-        this.jobNameTf.setEnabled(this.editMode == EditMode.NEW);
+        this.jobNameTf.setEnabled(this.editMode == EditMode.NEW &&
+            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         formBinder.forField(this.jobNameTf)
             .withValidator(jobName -> !jobName.isEmpty(), getTranslation("error.missing-job-name", UI.getCurrent().getLocale()))
             .bind(QuartzScheduleDrivenJob::getJobName, QuartzScheduleDrivenJob::setJobName);
@@ -218,7 +222,8 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         formLayout.add(jobDescriptionTa, 2);
 
 
-        Icon builderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), "Build cron expression", "14pt", "rgba(241, 90, 35, 1.0)");
+        Icon builderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create()
+            , getTranslation("tooltip.build-cron-expression", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
         builderIcon.addClickListener(event -> {
             CronBuilderDialog dialog = new CronBuilderDialog();
             dialog.init(this.cronExpressionTf.getValue());
@@ -231,6 +236,10 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
             });
         });
 
+        ComponentSecurityVisibility.applySecurity(builderIcon, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
         this.cronExpressionTf = new TextField(getTranslation("label.cron-expression", UI.getCurrent().getLocale()));
         this.cronExpressionTf.setRequired(true);
         this.cronExpressionTf.setId("cronExpressionTf");
@@ -240,6 +249,8 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
             .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
             .bind(QuartzScheduleDrivenJob::getCronExpression, QuartzScheduleDrivenJob::setCronExpression);
         formLayout.add(cronExpressionTf);
+
+
 
 
         this.timezoneCb = new ComboBox<>(getTranslation("label.timezone", UI.getCurrent().getLocale()));
@@ -320,14 +331,32 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
 
-        this.timezoneCb.setEnabled(enabled);
+        this.timezoneCb.setEnabled(enabled &&
+            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
-        this.jobNameTf.setEnabled(this.editMode == EditMode.NEW);
-        this.jobDescriptionTa.setEnabled(enabled);
-        this.cronExpressionTf.setEnabled(enabled);
-        this.timezoneCb.setEnabled(enabled);
+        this.jobNameTf.setEnabled(this.editMode == EditMode.NEW &&
+            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+        this.jobDescriptionTa.setEnabled(enabled &&
+            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+        this.cronExpressionTf.setEnabled(enabled &&
+            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+        this.timezoneCb.setEnabled(enabled &&
+            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
-        this.saveButton.setVisible(enabled);
+        this.saveButton.setVisible(enabled &&
+            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         this.cancelButton.setVisible(enabled);
     }
 
