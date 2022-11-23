@@ -141,7 +141,7 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
                             }
                         }
                     }
-                    LOG.info("OVERDUE HAS CREATED {} EVENTS!", count);
+                    LOG.debug("OVERDUE HAS CREATED {} EVENTS for the context {} !", count, contextInstance.getName());
                 }
 
             } catch (Exception e) {
@@ -161,7 +161,7 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
         Date firstFireTime = fireTimes.iterator().next();
 
         Date firstFireTimeWithTolerance = DateUtils.addMinutes(firstFireTime, fileArrivalToleranceInMinutes);
-        LOG.info("Start Time = {}, FireTime = {}, cronExpression = {}, firstFireTime = {}, firstFireTimeWithTolerance = {}, Return is = {}",
+        LOG.debug("Start Time = {}, FireTime = {}, cronExpression = {}, firstFireTime = {}, firstFireTimeWithTolerance = {}, Return is = {}",
             startTime, new DateTime(fireTime).toDate(), cronExpression, firstFireTime, firstFireTimeWithTolerance, firstFireTimeWithTolerance.before(new DateTime(fireTime).toDate()));
         return firstFireTimeWithTolerance.before(new DateTime(fireTime).toDate());
     }
