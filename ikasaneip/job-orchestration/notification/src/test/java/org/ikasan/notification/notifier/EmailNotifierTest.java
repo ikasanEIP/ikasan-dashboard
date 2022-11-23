@@ -4,11 +4,10 @@ import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
-import org.ikasan.job.orchestration.model.notification.EmailNotificationDetailsImpl;
-import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
-import org.ikasan.job.orchestration.model.notification.MonitorType;
+import org.ikasan.job.orchestration.model.notification.*;
 import org.ikasan.monitor.notifier.EmailNotifierConfiguration;
 import org.ikasan.notification.configuration.EmailNotificationParamsConfiguration;
+import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetailsRecord;
 import org.ikasan.scheduled.notification.model.SolrNotificationSendAudit;
@@ -20,6 +19,7 @@ import org.ikasan.spec.scheduled.notification.model.*;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.notification.service.NotificationSendAuditService;
+import org.ikasan.spec.search.SearchResults;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
@@ -508,6 +508,146 @@ public class EmailNotifierTest {
         Assert.assertEquals("Body with Value1 to replace and also Value1 and Value21 with replace1@abc.com,replace2@abc.com,replace3@abc.com", details.getEmailBody());
         Assert.assertEquals("/opt/config/some_path/body.txt", details.getEmailBodyTemplate());
 
+    }
+
+    @Test
+    public void test_with_no_record_from_config_with_context_notification() throws MessagingException, IOException {
+
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1", "context-instance-id-1", MonitorType.ERROR, InstanceStatus.ERROR);
+
+        NotificationSendAudit notificationSendAudit = new SolrNotificationSendAudit();
+        notificationSendAudit.setContextInstanceId("context-instance-id-1");
+        notificationSendAudit.setJobName("job-1");
+        notificationSendAudit.setMonitorType("ERROR");
+        notificationSendAudit.setNotifierType("EMAIL");
+        notificationSendAudit.setNotificationSend(false);
+
+        NotificationSendAuditRecord notificationSendAuditRecord = new SolrNotificationSendAuditRecord();
+        notificationSendAuditRecord.setNotificationSendAudit(notificationSendAudit);
+        notificationSendAuditRecord.setTimestamp(new Date().getTime());
+
+        mockery.checking(new Expectations(){{
+            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1","context-id-1","ERROR");
+            will(returnValue(null));
+            oneOf(emailNotificationContextService).findByContextName("ContextParent1", 50, 0);
+            will(returnValue(emailNotificationContext("ContextParent1")));
+            oneOf(notificationSendAuditService).find("context-instance-id-1", "context-id-1","job-1", "ERROR", "EMAIL");
+            will(returnValue(notificationSendAuditRecord));
+            oneOf(notificationSendAuditService).save(with(any(NotificationSendAuditRecord.class)));
+        }});
+
+        emailNotifier.invoke(notificationDetails);
+
+        List<WiserMessage> messages = wiser.getMessages();
+
+        Assert.assertTrue("Should be only one message", messages.size() == 1);
+
+        WiserMessage message = wiser.getMessages().get(0);
+
+        Assert.assertEquals("sender-1" , message.getEnvelopeSender());
+        Assert.assertEquals("replace0@abc.com", message.getEnvelopeReceiver());
+
+        MimeMessage mimeMessage = message.getMimeMessage();
+        MimeMultipart mimeMultipart = (MimeMultipart)mimeMessage.getContent();
+        Assert.assertTrue("should be only 1 bodypart", mimeMultipart.getCount() == 1);
+        BodyPart bodyPart = mimeMultipart.getBodyPart(0);
+        String content = (String)bodyPart.getContent();
+        Assert.assertTrue(content.contains("Log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:::context-id-1:::job-1:::false"));
+        Assert.assertTrue(content.contains("Error log file : http://localhost:9090/schedulerJobLogFile/context-instance-id-1:::context-id-1:::job-1:::true"));
+        Assert.assertEquals("[DEVELOPMENT] *** ERROR *** ContextParent1 for job context-id-1/job-1 has error!!!", mimeMessage.getSubject());
+
+    }
+
+    @Test
+    public void test_with_no_record_from_config_with_context_notification_overdue() throws MessagingException, IOException {
+
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1", "context-instance-id-1", MonitorType.OVERDUE, InstanceStatus.ERROR);
+
+        NotificationSendAudit notificationSendAudit = new SolrNotificationSendAudit();
+        notificationSendAudit.setContextInstanceId("context-instance-id-1");
+        notificationSendAudit.setJobName("job-1");
+        notificationSendAudit.setMonitorType("OVERDUE");
+        notificationSendAudit.setNotifierType("EMAIL");
+        notificationSendAudit.setNotificationSend(false);
+
+        NotificationSendAuditRecord notificationSendAuditRecord = new SolrNotificationSendAuditRecord();
+        notificationSendAuditRecord.setNotificationSendAudit(notificationSendAudit);
+        notificationSendAuditRecord.setTimestamp(new Date().getTime());
+
+        mockery.checking(new Expectations(){{
+            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1","context-id-1","OVERDUE");
+            will(returnValue(null));
+            oneOf(emailNotificationContextService).findByContextName("ContextParent1", 50, 0);
+            will(returnValue(emailNotificationContext("ContextParent1")));
+            oneOf(notificationSendAuditService).find("context-instance-id-1", "context-id-1","job-1", "OVERDUE", "EMAIL");
+            will(returnValue(notificationSendAuditRecord));
+            oneOf(notificationSendAuditService).save(with(any(NotificationSendAuditRecord.class)));
+        }});
+
+        emailNotifier.invoke(notificationDetails);
+
+        List<WiserMessage> messages = wiser.getMessages();
+
+        Assert.assertTrue("Should be only one message", messages.size() == 3);
+
+        for(WiserMessage message:wiser.getMessages()) {
+
+            Assert.assertEquals("sender-1", message.getEnvelopeSender());
+            Assert.assertTrue(message.getEnvelopeReceiver().equals("replace1@abc.com") ||
+                message.getEnvelopeReceiver().equals("replace2@abc.com") ||
+                message.getEnvelopeReceiver().equals("replace3@abc.com"));
+
+            MimeMessage mimeMessage = message.getMimeMessage();
+            MimeMultipart mimeMultipart = (MimeMultipart) mimeMessage.getContent();
+            Assert.assertTrue("should be only 1 bodypart", mimeMultipart.getCount() == 1);
+            BodyPart bodyPart = mimeMultipart.getBodyPart(0);
+            String content = (String) bodyPart.getContent();
+
+            Assert.assertTrue(content.contains("File Path Location:"));
+            Assert.assertTrue(content.contains("Files that may not have arrived:"));
+            Assert.assertEquals("[DEVELOPMENT] *** OVERDUE FILE *** ContextParent1 for job context-id-1/job-1 file has not arrived!", mimeMessage.getSubject());
+        }
+
+    }
+
+    @Test
+    public void test_with_no_record_from_config_with_context_notification_complete_no_email() throws MessagingException, IOException {
+
+        GenericNotificationDetails notificationDetails = new GenericNotificationDetails("agent-1", "ContextParent1", "context-id-1", "job-1", "context-instance-id-1", MonitorType.COMPLETE, InstanceStatus.COMPLETE);
+
+        mockery.checking(new Expectations(){{
+            oneOf(emailNotificationDetailsService).findByJobNameAndMonitorType("job-1","context-id-1","COMPLETE");
+            will(returnValue(null));
+            oneOf(emailNotificationContextService).findByContextName("ContextParent1", 50, 0);
+            will(returnValue(emailNotificationContext("ContextParent1")));
+        }});
+
+        emailNotifier.invoke(notificationDetails);
+
+        List<WiserMessage> messages = wiser.getMessages();
+
+        Assert.assertTrue("Should be no message as no notification setup", messages.size() == 0);
+
+    }
+
+    private SearchResults<EmailNotificationContextRecord> emailNotificationContext(String contextName) {
+
+        EmailNotificationContext notificationContext = new EmailNotificationContextImpl();
+        notificationContext.setContextName(contextName);
+        notificationContext.setMonitorTypes(List.of("ERROR", "OVERDUE"));
+        notificationContext.setEmailSendTo(List.of("${EMAIL}"));
+        notificationContext.setEmailSendToByMonitorType(Map.of("OVERDUE", List.of("${EMAIL2}")));
+        notificationContext.setEmailSubjectNotificationTemplate(Map.of("ERROR", "src/main/resources/templates/notification-error-email-subject-template.txt",
+            "OVERDUE", "src/main/resources/templates/notification-overdue-email-subject-template.txt"));
+        notificationContext.setEmailBodyNotificationTemplate(Map.of("ERROR", "src/main/resources/templates/notification-error-email-body-template.txt",
+            "OVERDUE", "src/main/resources/templates/notification-overdue-email-body-template.txt"));
+
+        EmailNotificationContextRecord record = new EmailNotificationContextRecordImpl();
+        record.setContextName(contextName);
+        record.setId(contextName);
+        record.setEmailNotificationContext(notificationContext);
+
+        return new SearchResultsImpl<>(List.of(record), 1, 0);
     }
 
     private EmailNotificationParamsConfiguration emailNotificationParamsConfiguration() {
