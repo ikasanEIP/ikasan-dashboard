@@ -59,6 +59,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
     private TextField filenameTf;
     private TextField archiveDirectoryTf;
     private TextField cronExpressionTf;
+    private TextField slaCronExpressionTf;
     private TextField timezoneTf;
     private TextField minFileAgeSecondsTf;
 
@@ -285,6 +286,20 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
             .bind(FileEventDrivenJobInstance::getCronExpression, FileEventDrivenJobInstance::setCronExpression);
         formLayout.add(cronExpressionTf);
 
+        this.slaCronExpressionTf = new TextField(getTranslation("label.sla-interval-cron-expression", UI.getCurrent().getLocale()));
+        this.slaCronExpressionTf.setRequired(false);
+        this.slaCronExpressionTf.setId("slaCronExpressionTf");
+        formBinder.forField(this.slaCronExpressionTf)
+            .bind(FileEventDrivenJobInstance::getSlaCronExpression, FileEventDrivenJobInstance::setSlaCronExpression);
+        formLayout.add(slaCronExpressionTf);
+
+        this.minFileAgeSecondsTf = new TextField(getTranslation("label.min-file-age-seconds", UI.getCurrent().getLocale()));
+        this.minFileAgeSecondsTf.setRequired(true);
+        this.minFileAgeSecondsTf.setId("minFileAgeSecondsTf");
+        formBinder.forField(this.minFileAgeSecondsTf)
+            .withConverter(new StringToIntegerConverter(getTranslation("error.min-file-age-must-be-a-number", UI.getCurrent().getLocale())))
+            .bind(FileEventDrivenJobInstance::getMinFileAgeSeconds, FileEventDrivenJobInstance::setMinFileAgeSeconds);
+        formLayout.add(minFileAgeSecondsTf);
 
         this.timezoneTf = new TextField(getTranslation("label.timezone", UI.getCurrent().getLocale()));
         this.timezoneTf.setId("timezoneCb");
@@ -294,14 +309,6 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         this.timezoneTf.setPlaceholder(getTranslation("label.choose-a-timezone", UI.getCurrent().getLocale()));
         this.timezoneTf.setErrorMessage(getTranslation("error.timezone-required", UI.getCurrent().getLocale()));
         formLayout.add(timezoneTf);
-
-        this.minFileAgeSecondsTf = new TextField(getTranslation("label.min-file-age-seconds", UI.getCurrent().getLocale()));
-        this.minFileAgeSecondsTf.setRequired(true);
-        this.minFileAgeSecondsTf.setId("minFileAgeSecondsTf");
-        formBinder.forField(this.minFileAgeSecondsTf)
-            .withConverter(new StringToIntegerConverter(getTranslation("error.min-file-age-must-be-a-number", UI.getCurrent().getLocale())))
-            .bind(FileEventDrivenJobInstance::getMinFileAgeSeconds, FileEventDrivenJobInstance::setMinFileAgeSeconds);
-        formLayout.add(minFileAgeSecondsTf);
 
         return formLayout;
     }
@@ -316,6 +323,7 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
         this.jobNameTf.setEnabled(false);
         this.jobDescriptionTa.setEnabled(false);
         this.cronExpressionTf.setEnabled(false);
+        this.slaCronExpressionTf.setEnabled(false);
         this.timezoneTf.setEnabled(false);
         this.minFileAgeSecondsTf.setEnabled(false);
         this.agentTf.setEnabled(false);
