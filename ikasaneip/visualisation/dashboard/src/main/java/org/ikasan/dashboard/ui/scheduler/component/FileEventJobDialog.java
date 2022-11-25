@@ -56,6 +56,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     private TextField filenameTf;
     private TextField archiveDirectoryTf;
     private TextField cronExpressionTf;
+    private TextField slaCronExpressionTf;
     private ComboBox<DateTimeUtil.TimezonePair> timezoneCb;
     private TextField minFileAgeSecondsTf;
 
@@ -228,8 +229,8 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             .bind(FileEventDrivenJob::getMoveDirectory, FileEventDrivenJob::setMoveDirectory);
         formLayout.add(this.archiveDirectoryTf, 2);
 
-        Icon builderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), getTranslation("tooltip.build-cron-expression", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
-        builderIcon.addClickListener(event -> {
+        Icon builderIconCronExpression = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), getTranslation("tooltip.build-cron-expression", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
+        builderIconCronExpression.addClickListener(event -> {
             CronBuilderDialog dialog = new CronBuilderDialog();
             dialog.init(this.cronExpressionTf.getValue());
             dialog.open();
@@ -243,7 +244,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
 
         this.cronExpressionTf = new TextField(getTranslation("label.cron-expression", UI.getCurrent().getLocale()));
         this.cronExpressionTf.setRequired(true);
-        this.cronExpressionTf.setSuffixComponent(builderIcon);
+        this.cronExpressionTf.setSuffixComponent(builderIconCronExpression);
         this.cronExpressionTf.setId("cronExpressionTf");
         formBinder.forField(this.cronExpressionTf)
             .withValidator(value -> !value.isEmpty(), getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
@@ -251,6 +252,35 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             .bind(FileEventDrivenJob::getCronExpression, FileEventDrivenJob::setCronExpression);
         formLayout.add(cronExpressionTf);
 
+        Icon builderIconSlaCronExpression = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), getTranslation("tooltip.build-cron-expression", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
+        builderIconSlaCronExpression.addClickListener(event -> {
+            CronBuilderDialog dialog = new CronBuilderDialog();
+            dialog.init(this.slaCronExpressionTf.getValue());
+            dialog.open();
+
+            dialog.addOpenedChangeListener(openedChangeEvent -> {
+                if(!openedChangeEvent.isOpened() && dialog.isSaveClose()) {
+                    this.slaCronExpressionTf.setValue(dialog.getCronExpression());
+                }
+            });
+        });
+
+        this.slaCronExpressionTf = new TextField(getTranslation("label.sla-interval-cron-expression", UI.getCurrent().getLocale()));
+        this.slaCronExpressionTf.setRequired(false);
+        this.slaCronExpressionTf.setSuffixComponent(builderIconSlaCronExpression);
+        this.slaCronExpressionTf.setId("slaCronExpressionTf");
+        formBinder.forField(this.slaCronExpressionTf)
+            .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
+            .bind(FileEventDrivenJob::getSlaCronExpression, FileEventDrivenJob::setSlaCronExpression);
+        formLayout.add(slaCronExpressionTf);
+
+        this.minFileAgeSecondsTf = new TextField(getTranslation("label.min-file-age-seconds", UI.getCurrent().getLocale()));
+        this.minFileAgeSecondsTf.setRequired(true);
+        this.minFileAgeSecondsTf.setId("minFileAgeSecondsTf");
+        formBinder.forField(this.minFileAgeSecondsTf)
+            .withConverter(new StringToIntegerConverter(getTranslation("error.min-file-age-must-be-a-number", UI.getCurrent().getLocale())))
+            .bind(FileEventDrivenJob::getMinFileAgeSeconds, FileEventDrivenJob::setMinFileAgeSeconds);
+        formLayout.add(minFileAgeSecondsTf);
 
         this.timezoneCb = new ComboBox<>(getTranslation("label.timezone", UI.getCurrent().getLocale()));
         ComboBox.ItemFilter<DateTimeUtil.TimezonePair> filter = (element, filterString) ->
@@ -262,14 +292,6 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
         this.timezoneCb.setPlaceholder(getTranslation("label.choose-a-timezone", UI.getCurrent().getLocale()));
         this.timezoneCb.setErrorMessage(getTranslation("error.timezone-required", UI.getCurrent().getLocale()));
         formLayout.add(timezoneCb);
-
-        this.minFileAgeSecondsTf = new TextField(getTranslation("label.min-file-age-seconds", UI.getCurrent().getLocale()));
-        this.minFileAgeSecondsTf.setRequired(true);
-        this.minFileAgeSecondsTf.setId("minFileAgeSecondsTf");
-        formBinder.forField(this.minFileAgeSecondsTf)
-            .withConverter(new StringToIntegerConverter(getTranslation("error.min-file-age-must-be-a-number", UI.getCurrent().getLocale())))
-            .bind(FileEventDrivenJob::getMinFileAgeSeconds, FileEventDrivenJob::setMinFileAgeSeconds);
-        formLayout.add(minFileAgeSecondsTf);
 
         return formLayout;
     }
