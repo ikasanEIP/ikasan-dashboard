@@ -10,9 +10,9 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JsonViewerDialog extends AbstractCloseableResizableDialog  {
+public class TextViewerDialog extends AbstractCloseableResizableDialog  {
 
-    private Logger logger = LoggerFactory.getLogger(JsonViewerDialog.class);
+    private Logger logger = LoggerFactory.getLogger(TextViewerDialog.class);
 
     private VerticalLayout layout;
 
@@ -22,13 +22,13 @@ public class JsonViewerDialog extends AbstractCloseableResizableDialog  {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    public JsonViewerDialog(Object contents, String header) {
+    public TextViewerDialog(String contents, String header) {
         this(contents);
 
         super.title.setText(header);
     }
 
-    public JsonViewerDialog(Object contents) {
+    public TextViewerDialog(String contents) {
         this.setHeight("90%");
         this.setWidth("90%");
 
@@ -38,18 +38,12 @@ public class JsonViewerDialog extends AbstractCloseableResizableDialog  {
         init(contents);
     }
 
-    private void init(Object contents) {
+    private void init(String contents) {
         if(!initialised) {
             this.initialiseEditor();
             this.layout.add(aceEditor);
             this.layout.expand(aceEditor);
-
-            try {
-                this.aceEditor.setValue(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contents));
-            }
-            catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
+            this.aceEditor.setValue(contents);
         }
     }
 
@@ -58,7 +52,7 @@ public class JsonViewerDialog extends AbstractCloseableResizableDialog  {
         aceEditor = new AceEditor();
 
         aceEditor.setTheme(AceTheme.dracula);
-        aceEditor.setMode(AceMode.json);
+        aceEditor.setMode(AceMode.text);
         aceEditor.setFontSize(11);
         aceEditor.setTabSize(4);
         aceEditor.setSizeFull();

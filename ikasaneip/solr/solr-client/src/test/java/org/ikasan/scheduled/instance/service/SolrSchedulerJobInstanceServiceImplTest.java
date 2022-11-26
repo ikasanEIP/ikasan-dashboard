@@ -142,6 +142,8 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         Assert.assertEquals("RUNNING", found.getStatus());
         Assert.assertEquals(1000000L, found.getTimestamp());
         Assert.assertEquals("manualUser", found.getManuallySubmittedBy());
+        Assert.assertEquals(1669397423771L, found.getStartTime());
+        Assert.assertEquals(1669397429771L, found.getEndTime());
 
         Assert.assertNull(service.findById("bad_id"));
     }
@@ -608,9 +610,9 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         event.setResultError("resultError " + RandomStringUtils.randomAlphabetic(5));
         event.setPid(78321);
         event.setUser("User " + RandomStringUtils.randomAlphabetic(5));
-        event.setFireTime(System.currentTimeMillis());
+        event.setFireTime(1669397423771L);
         event.setNextFireTime(System.currentTimeMillis() + 1000);
-        event.setCompletionTime(System.currentTimeMillis() + 2000);
+        event.setCompletionTime(1669397429771L);
         event.setDryRun(true);
         event.setContextName("contextId " + RandomStringUtils.randomAlphabetic(5));
         event.setChildContextNames(List.of("childContextId1", "childContextId2"));

@@ -286,42 +286,42 @@ public class StatusWidget extends Div {
             this.runningDiv.removeAll();
             this.runningDiv.setText(stateMap.get(State.RUNNING_STATE).size()
                 + " " + getTranslation("status-label.running", UI.getCurrent().getLocale()));
-            if(stateMap.get(State.RUNNING_STATE).size() > 0){
+            if(stateMap.containsKey(State.RUNNING_STATE) && stateMap.get(State.RUNNING_STATE).size() > 0){
                 this.runningDiv.add(this.runningIcon);
             }
 
             this.stoppedDiv.removeAll();
             this.stoppedDiv.setText(stateMap.get(State.STOPPED_STATE).size()
                 + " " + getTranslation("status-label.stopped", UI.getCurrent().getLocale()));
-            if(stateMap.get(State.STOPPED_STATE).size() > 0){
+            if(stateMap.containsKey(State.STOPPED_STATE) && stateMap.get(State.STOPPED_STATE).size() > 0){
                 this.stoppedDiv.add(this.stoppedIcon);
             }
 
             this.errorDiv.removeAll();
             this.errorDiv.setText(stateMap.get(State.STOPPED_IN_ERROR_STATE).size()
                 + " " + getTranslation("status-label.stopped-in-error", UI.getCurrent().getLocale()));
-            if(stateMap.get(State.STOPPED_IN_ERROR_STATE).size() > 0){
+            if(stateMap.containsKey(State.STOPPED_IN_ERROR_STATE) && stateMap.get(State.STOPPED_IN_ERROR_STATE).size() > 0){
                 this.errorDiv.add(this.errorIcon);
             }
 
             this.recoveringDiv.removeAll();
             this.recoveringDiv.setText(stateMap.get(State.RECOVERING_STATE).size()
                 + " " + getTranslation("status-label.recovering", UI.getCurrent().getLocale()));
-            if(stateMap.get(State.RECOVERING_STATE).size() > 0){
+            if(stateMap.containsKey(State.RECOVERING_STATE) && stateMap.get(State.RECOVERING_STATE).size() > 0){
                 this.recoveringDiv.add(this.recoveringIcon);
             }
 
             this.pausedDiv.removeAll();
             this.pausedDiv.setText(stateMap.get(State.PAUSED_STATE).size()
                 + " " + getTranslation("status-label.paused", UI.getCurrent().getLocale()));
-            if(stateMap.get(State.PAUSED_STATE).size() > 0){
+            if(stateMap.containsKey(State.PAUSED_STATE) && stateMap.get(State.PAUSED_STATE).size() > 0){
                 this.pausedDiv.add(this.pausedDivIcon);
             }
 
             this.unknownDiv.removeAll();
             this.unknownDiv.setText(stateMap.get(State.UNKNOWN_STATE).size()
                 + " " + getTranslation("status-label.unknown", UI.getCurrent().getLocale()));
-            if(stateMap.get(State.UNKNOWN_STATE).size() > 0){
+            if(stateMap.containsKey(State.UNKNOWN_STATE) && stateMap.get(State.UNKNOWN_STATE).size() > 0){
                 this.unknownDiv.add(this.unknownDivIcon);
             }
         });
