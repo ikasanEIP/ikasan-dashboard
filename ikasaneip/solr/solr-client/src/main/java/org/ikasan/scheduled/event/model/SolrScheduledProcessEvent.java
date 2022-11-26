@@ -26,6 +26,7 @@ public class SolrScheduledProcessEvent implements ScheduledProcessEvent<Outcome,
     private int returnCode;
     private Outcome outcome;
     private SolrDryRunParameters dryRunParameters;
+    private String executionDetails;
 
     @Override
     public int getReturnCode() {
@@ -217,7 +218,15 @@ public class SolrScheduledProcessEvent implements ScheduledProcessEvent<Outcome,
         return this.dryRunParameters;
     }
 
+    @Override
+    public String getExecutionDetails() {
+        return executionDetails;
+    }
 
+    @Override
+    public void setExecutionDetails(String executionDetails) {
+        this.executionDetails = executionDetails;
+    }
 
     @Override
     public String toString() {

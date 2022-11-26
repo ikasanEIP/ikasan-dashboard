@@ -208,5 +208,25 @@ public class InternalEventDrivenJobTestSearchResults implements SearchResults<Sc
         public void setManuallySubmittedBy(String manuallySubmittedBy) {
 
         }
+
+        @Override
+        public long getStartTime() {
+            return 0;
+        }
+
+        @Override
+        public void setStartTime(long endTime) {
+
+        }
+
+        @Override
+        public long getEndTime() {
+            return 0;
+        }
+
+        @Override
+        public void setEndTime(long endTime) {
+
+        }
     }
 }
