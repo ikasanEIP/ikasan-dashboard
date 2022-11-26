@@ -42,25 +42,27 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
 
     protected SolrInputDocument convertEntityToSolrInputDocument(Long expiry, SchedulerJobInstanceRecord schedulerJobInstanceRecord) {
         SolrInputDocument document = new SolrInputDocument();
-        if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof FileEventDrivenJobInstance) {
+        SchedulerJobInstance schedulerJobInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
+
+        if(schedulerJobInstance instanceof FileEventDrivenJobInstance) {
             document.addField(ID, schedulerJobInstanceRecord.getJobName()
                 + "_" + schedulerJobInstanceRecord.getContextInstanceId()
                 + "_" + schedulerJobInstanceRecord.getChildContextName()
                 + "_" + JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE);
             document.addField(TYPE, JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE);
         }
-        else if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
+        else if(schedulerJobInstance instanceof InternalEventDrivenJobInstance) {
             document.addField(ID, schedulerJobInstanceRecord.getJobName()
                 + "_" + schedulerJobInstanceRecord.getContextInstanceId()
                 + "_" + schedulerJobInstanceRecord.getChildContextName()
                 + "_" + JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
             document.addField(TYPE, JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
             document.addField(TARGET_RESIDING_CONTEXT_ONLY,
-                ((InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()).isTargetResidingContextOnly());
+                ((InternalEventDrivenJobInstance)schedulerJobInstance).isTargetResidingContextOnly());
             document.addField(PARTICIPATES_IN_LOCK,
-                ((InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()).isParticipatesInLock());
+                ((InternalEventDrivenJobInstance)schedulerJobInstance).isParticipatesInLock());
         }
-        else if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof QuartzScheduleDrivenJobInstance) {
+        else if(schedulerJobInstance instanceof QuartzScheduleDrivenJobInstance) {
             document.addField(ID, schedulerJobInstanceRecord.getJobName()
                 + "_" + schedulerJobInstanceRecord.getContextInstanceId()
                 + "_" + schedulerJobInstanceRecord.getChildContextName()
@@ -69,11 +71,17 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         }
 
         try {
-            document.addField(PAYLOAD_CONTENT, this.getPayloadContents(schedulerJobInstanceRecord.getSchedulerJobInstance()));
+            document.addField(PAYLOAD_CONTENT, this.getPayloadContents(schedulerJobInstance));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(String.format("Cannot convert FileEventDrivenJob to string! [%s]"
                 , schedulerJobInstanceRecord.getSchedulerJobInstance()));
         }
+
+        if(schedulerJobInstance.getScheduledProcessEvent() != null) {
+            document.addField(START_TIME, schedulerJobInstance.getScheduledProcessEvent().getFireTime());
+            document.addField(END_TIME, schedulerJobInstance.getScheduledProcessEvent().getCompletionTime());
+        }
+
         document.addField(STATUS, schedulerJobInstanceRecord.getStatus());
         document.addField(MODULE_NAME, schedulerJobInstanceRecord.getJobName());
         document.addField(FLOW_NAME, schedulerJobInstanceRecord.getContextName());
@@ -209,6 +217,18 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
             else {
                 queryString.append(AND).append(STATUS).append(COLON).append(filter.getStatus());
             }
+        }
+
+        if(filter.getStartTimeWindowStart() > 0 && filter.getStartTimeWindowEnd() > 0) {
+            queryString.append(AND).append(START_TIME).append(COLON).append(" [")
+                .append(filter.getStartTimeWindowStart()).append(TO)
+                .append(filter.getStartTimeWindowEnd()).append("] ");
+        }
+
+        if(filter.getEndTimeWindowStart() > 0 && filter.getEndTimeWindowEnd() > 0) {
+            queryString.append(AND).append(START_TIME).append(COLON).append(" [")
+                .append(filter.getEndTimeWindowStart()).append(TO)
+                .append(filter.getEndTimeWindowEnd()).append("] ");
         }
 
         SolrQuery solrQuery = new SolrQuery();
