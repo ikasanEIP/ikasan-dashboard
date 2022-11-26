@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.icon.Icon;
@@ -10,6 +11,7 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.i18n.I18NProvider;
@@ -20,12 +22,15 @@ import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -83,6 +88,96 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
         });
 
         hr.getCell(getColumnByKey(columnKey)).setComponent(textField);
+    }
+
+    /**
+     * Add filtering to a column.
+     *
+     * @param hr
+     * @param setStartTime
+     * @param columnKey
+     */
+    public void addDateTimeGridFiltering(HeaderRow hr, Consumer<Long> setStartTime, Consumer<Long> setEndTime, String columnKey) {
+        DatePicker datePicker = new DatePicker();
+        datePicker.setLocale(Locale.UK);
+        datePicker.setWidth("110px");
+
+        TimePicker startTimePicker = new TimePicker();
+        startTimePicker.setStep(Duration.ofMinutes(15));
+        startTimePicker.setLocale(Locale.UK);
+        startTimePicker.setWidth("90px");
+
+        TimePicker endTimePicker = new TimePicker();
+        endTimePicker.setStep(Duration.ofMinutes(15));
+        endTimePicker.setLocale(Locale.UK);
+        endTimePicker.setWidth("90px");
+
+        datePicker.addValueChangeListener(event -> {
+            if(datePicker.getValue() != null && startTimePicker.getValue() != null
+                && endTimePicker.getValue() != null) {
+                long startOfDayMilli = datePicker.getValue().atStartOfDay(ZoneId.systemDefault())
+                    .toInstant().toEpochMilli();
+
+                long startMilli = startTimePicker.getValue().toSecondOfDay() * 1000;
+                long endMilli = endTimePicker.getValue().toSecondOfDay() * 1000;
+
+                setStartTime.accept(startOfDayMilli + startMilli);
+                setEndTime.accept(startOfDayMilli + endMilli);
+
+                filteredDataProvider.refreshAll();
+            }
+            else {
+                setStartTime.accept(-1L);
+                setEndTime.accept(-1L);
+            }
+        });
+
+        startTimePicker.addValueChangeListener(event->{
+            if(datePicker.getValue() != null && startTimePicker.getValue() != null
+                && endTimePicker.getValue() != null) {
+                long startOfDayMilli = datePicker.getValue().atStartOfDay(ZoneId.systemDefault())
+                    .toInstant().toEpochMilli();
+
+                long startMilli = startTimePicker.getValue().toSecondOfDay() * 1000;
+                long endMilli = endTimePicker.getValue().toSecondOfDay() * 1000;
+
+                setStartTime.accept(startOfDayMilli + startMilli);
+                setEndTime.accept(startOfDayMilli + endMilli);
+
+                filteredDataProvider.refreshAll();
+            }
+            else {
+                setStartTime.accept(-1L);
+                setEndTime.accept(-1L);
+            }
+        });
+
+        endTimePicker.addValueChangeListener(event->{
+            if(datePicker.getValue() != null && startTimePicker.getValue() != null
+                && endTimePicker.getValue() != null) {
+                long startOfDayMilli = datePicker.getValue().atStartOfDay(ZoneId.systemDefault())
+                    .toInstant().toEpochMilli();
+
+                long startMilli = startTimePicker.getValue().toSecondOfDay() * 1000;
+                long endMilli = endTimePicker.getValue().toSecondOfDay() * 1000;
+
+                setStartTime.accept(startOfDayMilli + startMilli);
+                setEndTime.accept(startOfDayMilli + endMilli);
+
+                filteredDataProvider.refreshAll();
+            }
+            else {
+                setStartTime.accept(-1L);
+                setEndTime.accept(-1L);
+            }
+        });
+
+        Icon filterIcon = VaadinIcon.FILTER.create();
+        filterIcon.setSize("12pt");
+
+        HorizontalLayout layout = new HorizontalLayout(datePicker, startTimePicker, endTimePicker);
+        layout.setWidthFull();
+        hr.getCell(getColumnByKey(columnKey)).setComponent(layout);
     }
 
     /**

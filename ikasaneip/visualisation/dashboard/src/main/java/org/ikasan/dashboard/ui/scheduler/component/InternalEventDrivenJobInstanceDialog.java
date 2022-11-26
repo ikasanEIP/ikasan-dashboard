@@ -25,6 +25,7 @@ import com.vaadin.flow.shared.Registration;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
@@ -133,6 +134,8 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     private Button viewErrorLogButton;
     private Button viewOutputLogButton;
     private Button viewProcessEventButton;
+
+    private Button viewExecutionDetailsButton;
 
     private ScheduledProcessEvent scheduledProcessEvent;
 
@@ -609,6 +612,19 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             dialog.open();
         });
 
+        this.viewExecutionDetailsButton = new Button(getTranslation("button.process-execution-details", UI.getCurrent().getLocale()), VaadinIcon.COG.create());
+        this.viewExecutionDetailsButton.setVisible(this.scheduledProcessEvent != null && this.scheduledProcessEvent.getExecutionDetails() != null &&
+            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+        this.viewExecutionDetailsButton.setIconAfterText(true);
+        this.viewExecutionDetailsButton.addClickListener(event -> {
+            TextViewerDialog dialog = new TextViewerDialog(this.scheduledProcessEvent.getExecutionDetails()
+                .substring(1,this.scheduledProcessEvent.getExecutionDetails().length()-1)
+                , getTranslation("header.process-execution-details", UI.getCurrent().getLocale()));
+            dialog.open();
+        });
+
         Button downloadButton = new Button(getTranslation("button.download", UI.getCurrent().getLocale()), new Icon(VaadinIcon.DOWNLOAD_ALT));
         downloadButton.setIconAfterText(true);
         StreamResource streamResource = new StreamResource(this.internalEventDrivenJobInstance.getJobName()+".json"
@@ -631,7 +647,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
         HorizontalLayout jobActionsButtonLayout = new HorizontalLayout();
         jobActionsButtonLayout.add(executionDaysButton, parametersButton, successfulReturnCodesButton
-            , this.viewOutputLogButton, this.viewErrorLogButton, this.viewProcessEventButton);
+            , this.viewOutputLogButton, this.viewErrorLogButton, this.viewProcessEventButton, viewExecutionDetailsButton);
         jobActionsButtonLayout.setMargin(false);
         VerticalLayout wrapperLayout = new VerticalLayout();
         wrapperLayout.setWidth("100%");
@@ -917,18 +933,33 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.internalEventDrivenJobInstance.getContextInstanceId())
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName().equals(this.internalEventDrivenJobInstance.getChildContextName())
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.internalEventDrivenJobInstance.getJobName())) {
-                ui.access(() -> {
-                    this.internalEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-                    this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                if(ui.isAttached()) {
+                    ui.access(() -> {
+                        this.internalEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                        this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
 
-                    this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
+                        this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
 
-                    this.viewOutputLogButton.setVisible(this.scheduledProcessEvent != null);
-                    this.viewErrorLogButton.setVisible(this.scheduledProcessEvent != null);
-                    this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
+                        this.viewOutputLogButton.setVisible(this.scheduledProcessEvent != null &&
+                            ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+                        this.viewErrorLogButton.setVisible(this.scheduledProcessEvent != null &&
+                            ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+                        this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null &&
+                            ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+                        this.viewExecutionDetailsButton.setVisible(this.scheduledProcessEvent != null &&
+                            ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
 
-                    this.setButtonVisibility();
-                });
+                        this.setButtonVisibility();
+                    });
+                }
             }
         });
     }

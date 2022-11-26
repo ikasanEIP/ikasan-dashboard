@@ -10,6 +10,11 @@ public class SchedulerJobInstanceSearchFilterImpl implements SchedulerJobInstanc
     private String childContextName;
     private String status;
 
+    private long startTimeWindowStart;
+    private long startTimeWindowEnd;
+    private long endTimeWindowStart;
+    private long endTimeWindowEnd;
+
     private Boolean targetResidingContextOnly = null;
     private Boolean participatesInLock = null;
 
@@ -91,5 +96,45 @@ public class SchedulerJobInstanceSearchFilterImpl implements SchedulerJobInstanc
     @Override
     public void setParticipatesInLock(Boolean participatesInLock) {
         this.participatesInLock = participatesInLock;
+    }
+
+    @Override
+    public long getStartTimeWindowStart() {
+        return startTimeWindowStart;
+    }
+
+    @Override
+    public void setStartTimeWindowStart(long startTimeWindowStart) {
+        this.startTimeWindowStart = startTimeWindowStart;
+    }
+
+    @Override
+    public long getStartTimeWindowEnd() {
+        return startTimeWindowEnd;
+    }
+
+    @Override
+    public void setStartTimeWindowEnd(long startTimeWindowEnd) {
+        this.startTimeWindowEnd = startTimeWindowEnd;
+    }
+
+    @Override
+    public long getEndTimeWindowStart() {
+        return endTimeWindowStart;
+    }
+
+    @Override
+    public void setEndTimeWindowStart(long endTimeWindowStart) {
+        this.endTimeWindowStart = endTimeWindowStart;
+    }
+
+    @Override
+    public long getEndTimeWindowEnd() {
+        return endTimeWindowEnd;
+    }
+
+    @Override
+    public void setEndTimeWindowEnd(long endTimeWindowEnd) {
+        this.endTimeWindowEnd = endTimeWindowEnd;
     }
 }

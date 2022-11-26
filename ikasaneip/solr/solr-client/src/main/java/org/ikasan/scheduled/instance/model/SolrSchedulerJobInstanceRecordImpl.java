@@ -51,6 +51,12 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Field(SolrDaoBase.PARTICIPATES_IN_LOCK)
     boolean participatesInLock;
 
+    @Field(SolrDaoBase.START_TIME)
+    private long startTime;
+
+    @Field(SolrDaoBase.END_TIME)
+    private long endTime;
+
     @Field(SolrDaoBase.CREATED_DATE_TIME)
     private long timestamp;
 
@@ -182,6 +188,26 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
     @Override
     public void setParticipatesInLock(boolean participatesInLock) {
         this.participatesInLock = participatesInLock;
+    }
+
+    @Override
+    public long getStartTime() {
+        return startTime;
+    }
+
+    @Override
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    @Override
+    public long getEndTime() {
+        return endTime;
+    }
+
+    @Override
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
     }
 
     @Override

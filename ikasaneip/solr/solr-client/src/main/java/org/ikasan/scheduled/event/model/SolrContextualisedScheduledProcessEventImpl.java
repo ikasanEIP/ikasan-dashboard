@@ -37,6 +37,7 @@ public class SolrContextualisedScheduledProcessEventImpl implements Contextualis
     private boolean skipped;
     private InternalEventDrivenJobInstance internalEventDrivenJob;
     private boolean raisedDueToFailureResubmission;
+    private String executionDetails;
 
     public Long getId() {
         return id;
@@ -304,6 +305,16 @@ public class SolrContextualisedScheduledProcessEventImpl implements Contextualis
     @Override
     public void setRaisedDueToFailureResubmission(boolean raisedDueToFailureResubmission) {
         this.raisedDueToFailureResubmission = raisedDueToFailureResubmission;
+    }
+
+    @Override
+    public String getExecutionDetails() {
+        return executionDetails;
+    }
+
+    @Override
+    public void setExecutionDetails(String executionDetails) {
+        this.executionDetails = executionDetails;
     }
 
     @Override
