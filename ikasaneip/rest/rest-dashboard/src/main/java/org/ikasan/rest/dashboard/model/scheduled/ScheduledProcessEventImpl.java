@@ -24,6 +24,7 @@ public class ScheduledProcessEventImpl implements ScheduledProcessEvent<Outcome,
     private long completionTime;
     private int returnCode;
     private Outcome outcome;
+    private String executionDetails;
     private DryRunParametersImpl dryRunParameters;
 
     @Override
@@ -214,6 +215,16 @@ public class ScheduledProcessEventImpl implements ScheduledProcessEvent<Outcome,
     @Override
     public DryRunParametersImpl getDryRunParameters() {
         return this.dryRunParameters;
+    }
+
+    @Override
+    public String getExecutionDetails() {
+        return executionDetails;
+    }
+
+    @Override
+    public void setExecutionDetails(String executionDetails) {
+        this.executionDetails = executionDetails;
     }
 
     @Override

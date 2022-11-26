@@ -242,7 +242,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
             .setResizable(true)
             .setSortable(true)
             .setKey("type")
-            .setFlexGrow(8);
+            .setFlexGrow(6);
 
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -255,7 +255,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
             .setResizable(true)
             .setSortable(true)
             .setKey("childContextName")
-            .setFlexGrow(12);
+            .setFlexGrow(8);
 
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
                 VerticalLayout verticalLayout = new VerticalLayout();
@@ -275,7 +275,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
             .setResizable(true)
             .setSortable(false)
             .setKey("isInLock")
-            .setFlexGrow(1);
+            .setWidth("70px");
 
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
                 VerticalLayout verticalLayout = new VerticalLayout();
@@ -295,7 +295,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
             .setResizable(true)
             .setSortable(false)
             .setKey("targeted")
-            .setFlexGrow(1);
+            .setWidth("70px");
 
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
             HorizontalLayout layout = new HorizontalLayout();
@@ -324,7 +324,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.RUNNING) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.LOCK_QUEUED)) &&
-                    ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                    ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
                         SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                         SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE)) {
                 skip.setVisible(true);
@@ -337,7 +337,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
 
             Icon enable = IconDecorator.decorate(new Icon(VaadinIcon.PLAY), getTranslation("tooltip.enable-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             enable.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             enable.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -363,7 +363,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
 
             Icon hold = IconDecorator.decorate(new Icon(VaadinIcon.HAND), getTranslation("tooltip.hold-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             hold.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             hold.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -395,7 +395,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
 
             Icon release = IconDecorator.decorate(new Icon(VaadinIcon.HANDS_UP), getTranslation("tooltip.release-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             release.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             release.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
@@ -494,7 +494,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
             submit.setVisible((schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.WAITING) ||
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.COMPLETE) ||
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR)) &&
-                        ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                        ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
                             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
@@ -527,7 +527,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
             exportWrapper.wrapComponent(export);
             layout.add(exportWrapper);
 
-            ComponentSecurityVisibility.applySecurity(exportWrapper, SecurityConstants.ALL_AUTHORITY,
+            ComponentSecurityVisibility.applySecurity(authentication, exportWrapper, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
@@ -556,7 +556,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
 
             layout.add(visualisation);
 
-            ComponentSecurityVisibility.applySecurity(visualisation, SecurityConstants.ALL_AUTHORITY,
+            ComponentSecurityVisibility.applySecurity(authentication, visualisation, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
@@ -571,7 +571,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
                 (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.RUNNING) ||
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.COMPLETE) ||
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR)) &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
 
@@ -586,35 +586,66 @@ public class SchedulerJobInstanceGridWidget extends Div {
                 (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.RUNNING) ||
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.COMPLETE) ||
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR)) &&
-                    ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                    ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
                         SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
                         SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+
+            Icon event = IconDecorator.decorate(new Icon(VaadinIcon.CALENDAR_CLOCK), getTranslation("tooltip.view-scheduled-process-event"
+                , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            event.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                JsonViewerDialog dialog = new JsonViewerDialog(schedulerJobInstanceRecord.getSchedulerJobInstance().getScheduledProcessEvent()
+                    , getTranslation("header.scheduled-process-event", UI.getCurrent().getLocale()));
+                dialog.open();
+            });
+
+            layout.add(event);
+            event.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getScheduledProcessEvent() != null &&
+                ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+
+            Icon executionDetails = IconDecorator.decorate(new Icon(VaadinIcon.COG), getTranslation("tooltip.view-process-execution-details"
+                , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            executionDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                TextViewerDialog dialog = new TextViewerDialog(schedulerJobInstanceRecord.getSchedulerJobInstance().getScheduledProcessEvent().getExecutionDetails()
+                    , getTranslation("header.process-execution-details", UI.getCurrent().getLocale()));
+                dialog.open();
+            });
+
+            layout.add(executionDetails);
+            executionDetails.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getScheduledProcessEvent() != null &&
+                schedulerJobInstanceRecord.getSchedulerJobInstance().getScheduledProcessEvent().getExecutionDetails() != null &&
+                ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
+                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
 
             return layout;
         }))
             .setResizable(true)
             .setHeader(getTranslation("table-header.actions", UI.getCurrent().getLocale()))
-            .setFlexGrow(10);
+            .setWidth("230px");
 
         this.schedulerJobInstanceFilteringGrid.addColumn(TemplateRenderer.<SchedulerJobInstanceRecord>of(
             "<div style=\"word-wrap:normal; white-space:normal\">[[item.date]]</div>")
             .withProperty("date",
-                ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getTimestamp())))
-            .setHeader(getTranslation("table-header.created-date-time", UI.getCurrent().getLocale()))
-            .setKey("timestamp")
+                jobInstanceRecord -> DateFormatter.instance().getFormattedDate(jobInstanceRecord.getStartTime())))
+            .setHeader(getTranslation("label.start-time", UI.getCurrent().getLocale()))
+            .setKey("startTime")
             .setResizable(true)
             .setSortable(true)
-            .setFlexGrow(4);
+            .setWidth("320px");
 
         this.schedulerJobInstanceFilteringGrid.addColumn(TemplateRenderer.<SchedulerJobInstanceRecord>of(
             "<div style=\"word-wrap:normal; white-space:normal\">[[item.modified]]</div>")
             .withProperty("modified",
-                ikasanSolrDocument -> DateFormatter.instance().getFormattedDate(ikasanSolrDocument.getModifiedTimestamp())))
-            .setHeader(getTranslation("table-header.modified-date-time", UI.getCurrent().getLocale()))
-            .setKey("modifiedTimestamp")
+                jobInstanceRecord -> DateFormatter.instance().getFormattedDate(jobInstanceRecord.getEndTime())))
+            .setHeader(getTranslation("label.end-time", UI.getCurrent().getLocale()))
+            .setKey("endTime")
             .setResizable(true)
             .setSortable(true)
-            .setFlexGrow(4);
+            .setWidth("320px");
 
         this.schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
@@ -672,6 +703,10 @@ public class SchedulerJobInstanceGridWidget extends Div {
                     .collect(Collectors.toList()), "status");
         this.schedulerJobInstanceFilteringGrid.addCheckboxGridFiltering(hr, schedulerJobSearchFilter::setTargetResidingContextOnly, "targeted");
         this.schedulerJobInstanceFilteringGrid.addCheckboxGridFiltering(hr, schedulerJobSearchFilter::setParticipatesInLock, "isInLock");
+        this.schedulerJobInstanceFilteringGrid.addDateTimeGridFiltering(hr, schedulerJobSearchFilter::setStartTimeWindowStart
+            , schedulerJobSearchFilter::setStartTimeWindowEnd, "startTime");
+        this.schedulerJobInstanceFilteringGrid.addDateTimeGridFiltering(hr, schedulerJobSearchFilter::setStartTimeWindowStart
+            , schedulerJobSearchFilter::setStartTimeWindowEnd, "endTime");
 
         this.schedulerJobInstanceFilteringGrid.addItemDoubleClickListener(event -> {
             if(event.getItem().getType().equals(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE)) {
@@ -911,6 +946,12 @@ public class SchedulerJobInstanceGridWidget extends Div {
                     record.setStatus(jobInstanceStateChangeEvent.getNewStatus().name());
                     SchedulerJobInstance instance = record.getSchedulerJobInstance();
                     instance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+
+                    if(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null) {
+                        record.setStartTime(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime());
+                        record.setEndTime(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime());
+                    }
+
                     record.setSchedulerJobInstance(instance);
                     ui.access(() -> this.schedulerJobInstanceFilteringGrid.refreshItem(record));
                 }
