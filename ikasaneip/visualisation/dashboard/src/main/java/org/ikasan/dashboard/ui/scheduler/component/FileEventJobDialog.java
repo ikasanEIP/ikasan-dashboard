@@ -246,7 +246,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             });
         });
 
-        ComponentSecurityVisibility.applySecurity(builderIcon, SecurityConstants.ALL_AUTHORITY,
+        ComponentSecurityVisibility.applySecurity(builderIconCronExpression, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
@@ -272,6 +272,10 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
                 }
             });
         });
+
+        ComponentSecurityVisibility.applySecurity(builderIconSlaCronExpression, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
         this.slaCronExpressionTf = new TextField(getTranslation("label.sla-interval-cron-expression", UI.getCurrent().getLocale()));
         this.slaCronExpressionTf.setRequired(false);
