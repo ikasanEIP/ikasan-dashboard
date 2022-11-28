@@ -226,7 +226,7 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         }
 
         if(filter.getEndTimeWindowStart() > 0 && filter.getEndTimeWindowEnd() > 0) {
-            queryString.append(AND).append(START_TIME).append(COLON).append(" [")
+            queryString.append(AND).append(END_TIME).append(COLON).append(" [")
                 .append(filter.getEndTimeWindowStart()).append(TO)
                 .append(filter.getEndTimeWindowEnd()).append("] ");
         }
