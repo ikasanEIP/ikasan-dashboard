@@ -65,7 +65,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public abstract class SchedulerVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener, CanvasInitialisedListener
-    , CanvasItemDoubleClickEventListener, ConnectorEventListener, CanvasUpdatedListener, SaveFunction, NewContextListener, FigureDeleteEventListener, FigureUndoDeleteEventListener {
+    , CanvasItemDoubleClickEventListener, ConnectorEventListener, CanvasUpdatedListener, SaveFunction, NewContextListener, FigureDeleteEventListener
+    , FigureUndoDeleteEventListener, CanvasItemSingleClickEventListener {
     private Logger logger = LoggerFactory.getLogger(SchedulerVisualisation.class);
 
     protected DesignerCanvas designerCanvas;
@@ -278,6 +279,13 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             else {
                 this.openJobDialog(canvasItemDoubleClickEvent.getFigure().getIdentifier());
             }
+        }
+    }
+
+    @Override
+    public void singleClickEvent(CanvasItemSingleClickEvent canvasItemDoubleClickEvent) {
+        if(canvasItemDoubleClickEvent.getFigure() != null && canvasItemDoubleClickEvent.getFigure().getIdentifier() != null) {
+            logger.info("Click event - " + canvasItemDoubleClickEvent.getFigure().getIdentifier());
         }
     }
 
