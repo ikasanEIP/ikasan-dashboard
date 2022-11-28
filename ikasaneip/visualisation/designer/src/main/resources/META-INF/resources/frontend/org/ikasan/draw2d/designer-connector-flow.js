@@ -92,7 +92,6 @@ window.Vaadin.Flow.designerConnector = {
             console.log(_this.getLines());
             let figures = new Array();
 
-
             _this.getSelection().each((i, figure)=>{
                 figures.push(new FigureLite(figure.getId(), figure.x, figure.y, figure.getWidth()
                     , figure.getHeight(), figure.NAME, figure.getPersistentAttributes(), figure.getUserData()));
@@ -344,6 +343,16 @@ window.Vaadin.Flow.designerConnector = {
                 , figure.getHeight(), figure.NAME, figure.getPersistentAttributes(), figure.getUserData());
             let element = document.getElementById(canvasName);
             element.$server.doubleClickEvent(JSON.stringify(figureLite));
+        });
+
+        designer.$connector.designer.on("click", function(emitter, event){
+            debugger;
+            let figure = event.figure;
+            let figureLite = new FigureLite(figure.id, $(':hover').last().offset().left, $(':hover').last().offset().top, figure.getWidth()
+                , figure.getHeight(), figure.NAME, figure.getPersistentAttributes(), figure.getUserData());
+            let element = document.getElementById(canvasName);
+            element.$server.clickEvent(JSON.stringify(figureLite));
+            console.log("Click on element - " + figureLite);
         });
 
         designer.$connector.designer.on("contextmenu", function(emitter, event){
@@ -924,7 +933,6 @@ window.Vaadin.Flow.designerConnector = {
         }
 
         $(document).addEventListener("DOMContentLoaded",function () {
-
 
             setTimeout(function() {
                 _this.exportPng();
