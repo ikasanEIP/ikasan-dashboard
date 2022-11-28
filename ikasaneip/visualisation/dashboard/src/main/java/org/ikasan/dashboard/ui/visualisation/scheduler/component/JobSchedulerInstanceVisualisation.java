@@ -61,6 +61,7 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
 
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
+            this.designerCanvas.addCanvasItemSingleClickEventListener(this);
             this.designerCanvas.addCanvasInitialisedListener(this);
 
             this.designerCanvas.manageClickableItems();

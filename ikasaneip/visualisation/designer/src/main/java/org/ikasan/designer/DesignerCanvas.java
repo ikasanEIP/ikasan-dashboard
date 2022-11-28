@@ -38,11 +38,11 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     Logger logger = LoggerFactory.getLogger(DesignerCanvas.class);
 
     private String canvasJson;
-
     private final ObjectMapper mapper = new ObjectMapper();
     private Map<String, DesignerPalletImageItem> designerPalletItemMap = new HashMap<>();
     private List<CanvasItemRightClickEventListener> canvasItemRightClickEventListeners = new ArrayList<>();
     private List<CanvasItemDoubleClickEventListener> canvasItemDoubleClickEventListeners = new ArrayList<>();
+    private List<CanvasItemSingleClickEventListener> canvasItemSingleClickEventListeners = new ArrayList<>();
     private List<ConnectorEventListener> connectorEventListeners = new ArrayList<>();
     private List<CanvasInitialisedListener> canvasInitialisedListeners = new ArrayList<>();
     private List<CanvasUpdatedListener> canvasUpdatedListeners = new ArrayList<>();
@@ -408,6 +408,10 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.canvasItemDoubleClickEventListeners.add(listener);
     }
 
+    public void addCanvasItemSingleClickEventListener(CanvasItemSingleClickEventListener listener) {
+        this.canvasItemSingleClickEventListeners.add(listener);
+    }
+
     public void addConnectorEventListener(ConnectorEventListener listener) {
         this.connectorEventListeners.add(listener);
     }
@@ -460,6 +464,20 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
             this.canvasItemDoubleClickEventListeners.forEach(listener
                 -> listener.doubleClickEvent(new CanvasItemDoubleClickEvent(this.designerPalletItemMap.get(figureObj.getIdentifier())
                     , figureObj.getX(), figureObj.getY(), figureObj)));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @ClientCallable
+    private void clickEvent(String figure){
+        try {
+            Figure figureObj = mapper.readValue(figure, Figure.class);
+
+            this.canvasItemSingleClickEventListeners.forEach(listener
+                -> listener.singleClickEvent(new CanvasItemSingleClickEvent(this.designerPalletItemMap.get(figureObj.getIdentifier())
+                , figureObj.getX(), figureObj.getY(), figureObj)));
         }
         catch (Exception e) {
             e.printStackTrace();
