@@ -55,7 +55,6 @@ public class Designer extends VerticalLayout implements BeforeEnterObserver, Bef
     private SaveFunction saveFunction;
     private SaveAsFunction saveAsFunction;
     private ManageFunction manageFunction;
-
     private String diagramId;
     private String diagramName;
     private String diagramDescription;
