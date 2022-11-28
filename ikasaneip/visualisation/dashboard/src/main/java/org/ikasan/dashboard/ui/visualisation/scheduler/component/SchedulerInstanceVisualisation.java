@@ -8,6 +8,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.shared.Registration;
+import liquibase.pro.packaged.C;
 import org.ikasan.dashboard.ui.scheduler.component.FileEventJobInstanceDialog;
 import org.ikasan.dashboard.ui.scheduler.component.InternalEventDrivenJobInstanceDialog;
 import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobInstanceDialog;
@@ -20,10 +21,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateCha
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.designer.CanvasInitialisedListener;
 import org.ikasan.designer.DesignerCanvas;
-import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
-import org.ikasan.designer.event.CanvasItemDoubleClickEventListener;
-import org.ikasan.designer.event.CanvasItemRightClickEvent;
-import org.ikasan.designer.event.CanvasItemRightClickEventListener;
+import org.ikasan.designer.event.*;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -47,18 +45,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class SchedulerInstanceVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener
-    , CanvasItemDoubleClickEventListener, CanvasInitialisedListener {
+    , CanvasItemDoubleClickEventListener, CanvasInitialisedListener, CanvasItemSingleClickEventListener {
     private Logger logger = LoggerFactory.getLogger(SchedulerInstanceVisualisation.class);
 
     protected Registration contextInstanceStateChangeRegistration;
     protected Registration schedulerJobStateChangeRegistration;
-
     protected DesignerCanvas designerCanvas;
 
     protected String dynamicImagePath;
@@ -284,6 +283,22 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
                     quartzDrivenScheduledJobDialog.open();
                 }
             }
+        }
+    }
+
+    @Override
+    public void singleClickEvent(CanvasItemSingleClickEvent canvasItemDoubleClickEvent) {
+        if(canvasItemDoubleClickEvent.getFigure() != null && canvasItemDoubleClickEvent.getFigure().getIdentifier() != null) {
+            logger.info("Click event - " + canvasItemDoubleClickEvent.getFigure().getIdentifier());
+            SchedulerJobInstance job = this.contextInstance.getScheduledJobsMap()
+                .get(canvasItemDoubleClickEvent.getFigure().getIdentifier());
+            LinkedList<List<SchedulerJobInstance>> jobs
+                = ContextHelper.traceJobThroughContextInstance(this.parentContextInstance, job.getJobName()
+                    , this.contextInstance.getName());
+
+            jobs.forEach(downstream -> {
+                downstream.forEach(downstreamJob -> logger.info(downstreamJob.getJobName()));
+            });
         }
     }
 
