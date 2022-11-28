@@ -11,6 +11,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
@@ -124,7 +125,7 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
         clearFilter.setVisible(false);
 
         Dialog dateTimeDialog = new Dialog();
-        dateTimeDialog.setWidth("660px");
+        dateTimeDialog.setWidth("700px");
 
         datePicker.addValueChangeListener(event -> {
             if(datePicker.getValue() != null && startTimePicker.getValue() != null
@@ -215,9 +216,13 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
 
         HorizontalLayout layout = new HorizontalLayout(datePicker, startTimePicker, endTimePicker);
         layout.setMargin(true);
-        layout.setWidthFull();
 
-        dateTimeDialog.add(layout);
+        VerticalLayout wrapper = new VerticalLayout();
+        wrapper.setWidthFull();
+        wrapper.add(layout);
+        wrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, layout);
+
+        dateTimeDialog.add(wrapper);
 
         Icon icon = IconDecorator.decorate(VaadinIcon.CALENDAR_CLOCK.create(), getTranslation("tooltip.add-time-filter", UI.getCurrent().getLocale()), "16pt", "");
         icon.addClickListener(event -> {
