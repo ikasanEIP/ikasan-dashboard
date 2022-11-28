@@ -3,8 +3,10 @@ package org.ikasan.dashboard.ui.scheduler.component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -17,6 +19,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinService;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.scheduled.general.SearchResultsImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
@@ -31,7 +34,10 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstanceRecord> {
@@ -98,19 +104,27 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
      * @param columnKey
      */
     public void addDateTimeGridFiltering(HeaderRow hr, Consumer<Long> setStartTime, Consumer<Long> setEndTime, String columnKey) {
-        DatePicker datePicker = new DatePicker();
+        DatePicker datePicker = new DatePicker(getTranslation("label.date", UI.getCurrent().getLocale()));
         datePicker.setLocale(Locale.UK);
-        datePicker.setWidth("110px");
+        datePicker.getElement().getThemeList().add("always-float-label");
 
-        TimePicker startTimePicker = new TimePicker();
+        TimePicker startTimePicker = new TimePicker(getTranslation("label.start-time", UI.getCurrent().getLocale()));
         startTimePicker.setStep(Duration.ofMinutes(15));
         startTimePicker.setLocale(Locale.UK);
-        startTimePicker.setWidth("90px");
+        startTimePicker.getElement().getThemeList().add("always-float-label");
 
-        TimePicker endTimePicker = new TimePicker();
+        TimePicker endTimePicker = new TimePicker(getTranslation("label.end-time", UI.getCurrent().getLocale()));
         endTimePicker.setStep(Duration.ofMinutes(15));
         endTimePicker.setLocale(Locale.UK);
-        endTimePicker.setWidth("90px");
+        endTimePicker.getElement().getThemeList().add("always-float-label");
+
+        Label timeLabel = new Label();
+        Icon clearFilter = IconDecorator.decorate(VaadinIcon.CLOSE_SMALL.create(), getTranslation("tooltip.clear-filter", UI.getCurrent().getLocale()), "14px", "");
+        clearFilter.setSize("14px");
+        clearFilter.setVisible(false);
+
+        Dialog dateTimeDialog = new Dialog();
+        dateTimeDialog.setWidth("660px");
 
         datePicker.addValueChangeListener(event -> {
             if(datePicker.getValue() != null && startTimePicker.getValue() != null
@@ -123,13 +137,22 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
 
                 setStartTime.accept(startOfDayMilli + startMilli);
                 setEndTime.accept(startOfDayMilli + endMilli);
-
-                filteredDataProvider.refreshAll();
+                dateTimeDialog.close();
             }
             else {
                 setStartTime.accept(-1L);
                 setEndTime.accept(-1L);
             }
+
+            if(datePicker.getValue() != null && startTimePicker.getValue() != null
+                && endTimePicker.getValue() != null) {
+                timeLabel.setText(datePicker.getValue().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) + " "
+                    + startTimePicker.getValue() + " " + getTranslation("label.to-lower-case", UI.getCurrent().getLocale())
+                    + " " + endTimePicker.getValue());
+                clearFilter.setVisible(true);
+            }
+
+            filteredDataProvider.refreshAll();
         });
 
         startTimePicker.addValueChangeListener(event->{
@@ -143,13 +166,22 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
 
                 setStartTime.accept(startOfDayMilli + startMilli);
                 setEndTime.accept(startOfDayMilli + endMilli);
-
-                filteredDataProvider.refreshAll();
+                dateTimeDialog.close();
             }
             else {
                 setStartTime.accept(-1L);
                 setEndTime.accept(-1L);
             }
+
+            if(datePicker.getValue() != null && startTimePicker.getValue() != null
+                && endTimePicker.getValue() != null) {
+                timeLabel.setText(datePicker.getValue().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) + " "
+                    + startTimePicker.getValue() + " " + getTranslation("label.to-lower-case", UI.getCurrent().getLocale())
+                    + " " + endTimePicker.getValue());
+                clearFilter.setVisible(true);
+            }
+
+            filteredDataProvider.refreshAll();
         });
 
         endTimePicker.addValueChangeListener(event->{
@@ -163,21 +195,60 @@ public class SchedulerJobInstanceFilteringGrid extends Grid<SchedulerJobInstance
 
                 setStartTime.accept(startOfDayMilli + startMilli);
                 setEndTime.accept(startOfDayMilli + endMilli);
-
-                filteredDataProvider.refreshAll();
+                dateTimeDialog.close();
             }
             else {
                 setStartTime.accept(-1L);
                 setEndTime.accept(-1L);
             }
+
+            if(datePicker.getValue() != null && startTimePicker.getValue() != null
+                && endTimePicker.getValue() != null) {
+                timeLabel.setText(datePicker.getValue().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) + " "
+                    + startTimePicker.getValue() + " " + getTranslation("label.to-lower-case", UI.getCurrent().getLocale())
+                    + " " + endTimePicker.getValue());
+                clearFilter.setVisible(true);
+            }
+
+            filteredDataProvider.refreshAll();
         });
 
-        Icon filterIcon = VaadinIcon.FILTER.create();
-        filterIcon.setSize("12pt");
-
         HorizontalLayout layout = new HorizontalLayout(datePicker, startTimePicker, endTimePicker);
+        layout.setMargin(true);
         layout.setWidthFull();
-        hr.getCell(getColumnByKey(columnKey)).setComponent(layout);
+
+        dateTimeDialog.add(layout);
+
+        Icon icon = IconDecorator.decorate(VaadinIcon.CALENDAR_CLOCK.create(), getTranslation("tooltip.add-time-filter", UI.getCurrent().getLocale()), "16pt", "");
+        icon.addClickListener(event -> {
+            dateTimeDialog.open();
+        });
+
+        dateTimeDialog.addOpenedChangeListener(event -> {
+           if(!event.isOpened()) {
+               if(datePicker.getValue() != null && startTimePicker.getValue() != null
+                    && endTimePicker.getValue() != null) {
+                   timeLabel.setText(datePicker.getValue().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) + " "
+                       + startTimePicker.getValue() + " " + getTranslation("label.to-lower-case", UI.getCurrent().getLocale())
+                       + " " + endTimePicker.getValue());
+                   clearFilter.setVisible(true);
+               }
+           }
+        });
+
+        clearFilter.addClickListener(event -> {
+            clearFilter.setVisible(false);
+            datePicker.setValue(null);
+            startTimePicker.setValue(null);
+            endTimePicker.setValue(null);
+            timeLabel.setText("");
+        });
+
+        HorizontalLayout filterLayout = new HorizontalLayout(icon, timeLabel, clearFilter);
+        filterLayout.setWidth("300px");
+        filterLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, clearFilter);
+
+        hr.getCell(getColumnByKey(columnKey)).setComponent(filterLayout);
     }
 
     /**
