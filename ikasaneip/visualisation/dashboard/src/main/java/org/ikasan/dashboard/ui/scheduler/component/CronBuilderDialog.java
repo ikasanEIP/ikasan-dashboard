@@ -23,6 +23,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import org.apache.commons.lang.StringUtils;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,8 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
     private Tab minutesTab;
     private Tab hoursTab;
     private Tab daysTab;
+    private Tab monthsTab;
+    private Tab yearsTab;
     private Tabs tabs;
 
     private TextField cronExpressionTf;
@@ -78,7 +81,11 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         this.hoursTab.setId("hoursTab");
         this.daysTab = new Tab(getTranslation("tab.days", UI.getCurrent().getLocale()));
         this.daysTab.setId("daysTab");
-        this.tabs = new Tabs(this.secondsTab, this.minutesTab, this.hoursTab, this.daysTab);
+        this.monthsTab = new Tab(getTranslation("tab.months", UI.getCurrent().getLocale()));
+        this.monthsTab.setId("monthsTab");
+        this.yearsTab = new Tab(getTranslation("tab.years", UI.getCurrent().getLocale()));
+        this.yearsTab.setId("yearsTab");
+        this.tabs = new Tabs(this.secondsTab, this.minutesTab, this.hoursTab, this.daysTab, this.monthsTab, this.yearsTab);
     }
 
     /**
@@ -106,12 +113,18 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         hoursLayout.setVisible(false);
         Component daysLayout = getDaysLayout();
         daysLayout.setVisible(false);
+        Component monthsLayout = this.getMonthLayout();
+        monthsLayout.setVisible(false);
+        Component yearsLayout = this.getYearLayout();
+        yearsLayout.setVisible(false);
 
         Map<Tab, Component> tabsToPages = new HashMap<>();
         tabsToPages.put(this.secondsTab, secondsLayout);
         tabsToPages.put(this.minutesTab, minutesLayout);
         tabsToPages.put(this.hoursTab, hoursLayout);
         tabsToPages.put(this.daysTab, daysLayout);
+        tabsToPages.put(this.monthsTab, monthsLayout);
+        tabsToPages.put(this.yearsTab, yearsLayout);
 
         tabs.addSelectedChangeListener(event -> {
             tabsToPages.values().forEach(page -> page.setVisible(false));
@@ -136,7 +149,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         buttonLayout.add(buttons);
         buttonLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttons);
 
-        super.content.add(this.cronExpressionTf, this.naturalLanguageTf, tabs, secondsLayout, minutesLayout, hoursLayout, daysLayout, buttonLayout);
+        super.content.add(this.cronExpressionTf, this.naturalLanguageTf, tabs, secondsLayout, minutesLayout, hoursLayout, daysLayout, buttonLayout, monthsLayout, yearsLayout);
 
 
         this.setWidth("1000px");
@@ -1150,6 +1163,441 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         daySelect.addValueChangeListener(event -> {
             this.dayOfMonthPart = "?";
             this.dayOfWeekPart = this.dayOfWeek(event.getValue()) + "L";
+            this.cronExpressionTf.setValue(this.getCronExpression());
+        });
+
+        return timeComponent;
+    }
+
+    /**
+     * Helper to build the months layout.
+     *
+     * @return
+     */
+    private Component getMonthLayout() {
+        RadioButtonGroup<TimeComponent> radioGroup = new RadioButtonGroup<>();
+
+        TimeComponent everyMonth = this.getEveryMonth();
+        TimeComponent everyMonthStartingFrom = this.getEveryMonthStartingFrom();
+        TimeComponent specificMonths = this.getSpecificMonth();
+        TimeComponent everyMonthBetween = this.getEveryMonthBetween();
+
+        radioGroup.setItems(List.of(everyMonth
+            , everyMonthStartingFrom
+            , specificMonths
+            , everyMonthBetween));
+        radioGroup.setValue(everyMonth);
+
+        radioGroup.setRenderer(new ComponentRenderer<>(timeComponent -> new Span(timeComponent.getName())));
+
+        VerticalLayout layout = new VerticalLayout();
+        layout.setSizeFull();
+        layout.add(radioGroup);
+
+        if(this.monthPart.equals("*")) {
+            radioGroup.setValue(everyMonth);
+            layout.add(radioGroup, everyMonth.getComponent());
+        }
+        else if(this.monthPart.contains("/")) {
+            radioGroup.setValue(everyMonthStartingFrom);
+            layout.add(radioGroup, everyMonthStartingFrom.getComponent());
+        }
+        else if(this.monthPart.contains(",") || StringUtils.isNumeric(this.monthPart)) {
+            radioGroup.setValue(specificMonths);
+            layout.add(radioGroup, specificMonths.getComponent());
+        }
+        else {
+            radioGroup.setValue(everyMonthBetween);
+            layout.add(radioGroup, everyMonthBetween.getComponent());
+        }
+
+        radioGroup.addValueChangeListener(event -> {
+            this.monthPart = event.getValue().getValue();
+            this.cronExpressionTf.setValue(this.getCronExpression());
+            layout.removeAll();
+            layout.add(radioGroup, event.getValue().getComponent());
+        });
+
+        return layout;
+    }
+
+    /**
+     * Get the TimeComponent that defines that the schedule will fire every month.
+     *
+     * @return
+     */
+    private TimeComponent getEveryMonth() {
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.every-month"
+            , UI.getCurrent().getLocale()), new Div());
+        timeComponent.setValue("*");
+
+        return timeComponent;
+    }
+
+    /**
+     * The TimeComponent that represents the hourly interval to fire with an offset.
+     *
+     * @return
+     */
+    private TimeComponent getEveryMonthStartingFrom() {
+        Label label = new Label(getTranslation("time-component.every"
+            , UI.getCurrent().getLocale()));
+        List<String> monthsNum = new ArrayList<>();
+        IntStream.range(1, 13).forEach(i -> monthsNum.add(Integer.toString(i)));
+        Select<String> monthsNumSelect = new Select<>();
+        monthsNumSelect.setEnabled(true);
+        monthsNumSelect.setItems(monthsNum);
+        monthsNumSelect.setValue("1");
+
+        List<String> monthStart = List.of("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC");
+        Select<String> monthStartSelect = new Select<>();
+        monthStartSelect.setEnabled(true);
+        monthStartSelect.setItems(monthStart);
+        monthStartSelect.setValue("JAN");
+
+        Label label2 = new Label(getTranslation("time-component.month-starting-from"
+            , UI.getCurrent().getLocale()));
+
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.add(label, monthsNumSelect, label2, monthStartSelect);
+        layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, label, label2);
+
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.every-n-months-starting-from"
+            , UI.getCurrent().getLocale()), layout);
+        timeComponent.setValue("JAN/1");
+
+        if(this.monthPart.contains("/")) {
+            StringTokenizer st = new StringTokenizer(this.monthPart, "/");
+            monthStartSelect.setValue(st.nextToken());
+            monthsNumSelect.setValue(st.nextToken());
+            timeComponent.setValue(this.monthPart);
+        }
+
+        monthsNumSelect.addValueChangeListener(event -> {
+            this.monthPart = monthStartSelect.getValue() + "/" + event.getValue();
+            this.cronExpressionTf.setValue(this.getCronExpression());
+        });
+
+        monthStartSelect.addValueChangeListener(event -> {
+            this.monthPart = event.getValue() + "/" + monthsNumSelect.getValue();
+            this.cronExpressionTf.setValue(this.getCronExpression());
+        });
+
+
+        return timeComponent;
+    }
+
+    private TimeComponent getSpecificMonth() {
+
+        List<Checkbox> months = new ArrayList<>();
+        List.of("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC").forEach(i -> months.add(new Checkbox(i)));
+
+        GridLayout layout = new GridLayout(12, 1);
+
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.specific-month"
+            , UI.getCurrent().getLocale()), layout);
+        if(this.monthPart.contains(",")) {
+            timeComponent.setValue(this.monthPart);
+        }
+        else {
+            timeComponent.setValue("JAN");
+        }
+
+        List<String> selectedMonths = Arrays.asList(this.monthPart.split("\\s*,\\s*"));
+
+        months.forEach(item -> {
+            layout.addComponent(item);
+            if(selectedMonths.contains(item.getLabel())) {
+                item.setValue(true);
+            }
+
+            item.addValueChangeListener(event -> {
+                StringBuffer value = new StringBuffer();
+                months.forEach(checkbox -> {
+                    if(checkbox.getValue()) {
+                        value.append(checkbox.getLabel()).append(",");
+                    }
+                });
+                this.monthPart = value.substring(0, value.length()-1);
+                timeComponent.setValue(this.monthPart);
+                this.cronExpressionTf.setValue(this.getCronExpression());
+            });
+        });
+        layout.setSizeFull();
+
+        return timeComponent;
+    }
+
+    /**
+     * Get the TimeComponent that represents the interval within which the schedule
+     * will run between months.
+     *
+     * @return
+     */
+    private TimeComponent getEveryMonthBetween() {
+        Label label = new Label(getTranslation("time-component.every-month-between"
+            , UI.getCurrent().getLocale()));
+        List<String> months = List.of("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC");
+        Select<String> monthStartSelect = new Select<>();
+        monthStartSelect.setEnabled(true);
+        monthStartSelect.setItems(months);
+        monthStartSelect.setValue("JAN");
+
+
+        Select<String> monthEndSelect = new Select<>();
+        monthEndSelect.setEnabled(true);
+        monthEndSelect.setItems(months);
+        monthEndSelect.setValue("JAN");
+
+        Label label2 = new Label(getTranslation("time-component.and-month"
+            , UI.getCurrent().getLocale()));
+
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.add(label, monthStartSelect, label2, monthEndSelect);
+        layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, label, label2);
+
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.every-month-between"
+            , UI.getCurrent().getLocale()), layout);
+        timeComponent.setValue("JAN-JAN");
+
+        if(this.monthPart.contains("-")) {
+            StringTokenizer st = new StringTokenizer(this.monthPart, "-");
+            monthStartSelect.setValue(st.nextToken());
+            monthEndSelect.setValue(st.nextToken());
+            timeComponent.setValue(this.monthPart);
+        }
+
+        monthStartSelect.addValueChangeListener(event -> {
+            this.monthPart = event.getValue() + "-" + monthEndSelect.getValue();
+            this.cronExpressionTf.setValue(this.getCronExpression());
+        });
+
+        monthEndSelect.addValueChangeListener(event -> {
+            this.monthPart = monthStartSelect.getValue() + "-" + event.getValue();
+            this.cronExpressionTf.setValue(this.getCronExpression());
+        });
+
+        return timeComponent;
+    }
+
+    /**
+     * Helper to build the months layout.
+     *
+     * @return
+     */
+    private Component getYearLayout() {
+        RadioButtonGroup<TimeComponent> radioGroup = new RadioButtonGroup<>();
+
+        TimeComponent everyYear = this.getEveryYear();
+        TimeComponent everyYearStartingFrom = this.getEveryYearStartingFrom();
+        TimeComponent specificYears = this.getSpecificYear();
+        TimeComponent everyYearBetween = this.getEveryYearBetween();
+
+        radioGroup.setItems(List.of(everyYear
+            , everyYearStartingFrom
+            , specificYears
+            , everyYearBetween));
+        radioGroup.setValue(everyYear);
+
+        radioGroup.setRenderer(new ComponentRenderer<>(timeComponent -> new Span(timeComponent.getName())));
+
+        VerticalLayout layout = new VerticalLayout();
+        layout.setSizeFull();
+        layout.add(radioGroup);
+
+        if(this.yearPart.equals("*")) {
+            radioGroup.setValue(everyYear);
+            layout.add(radioGroup, everyYear.getComponent());
+        }
+        else if(this.yearPart.contains("/")) {
+            radioGroup.setValue(everyYearStartingFrom);
+            layout.add(radioGroup, everyYearStartingFrom.getComponent());
+        }
+        else if(this.yearPart.contains(",") || StringUtils.isNumeric(this.yearPart)) {
+            radioGroup.setValue(specificYears);
+            layout.add(radioGroup, specificYears.getComponent());
+        }
+        else {
+            radioGroup.setValue(everyYearBetween);
+            layout.add(radioGroup, everyYearBetween.getComponent());
+        }
+
+        radioGroup.addValueChangeListener(event -> {
+            this.yearPart = event.getValue().getValue();
+            this.cronExpressionTf.setValue(this.getCronExpression());
+            layout.removeAll();
+            layout.add(radioGroup, event.getValue().getComponent());
+        });
+
+        return layout;
+    }
+
+    /**
+     * Get the TimeComponent that defines that the schedule will fire every month.
+     *
+     * @return
+     */
+    private TimeComponent getEveryYear() {
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.every-year"
+            , UI.getCurrent().getLocale()), new Div());
+        timeComponent.setValue("*");
+
+        return timeComponent;
+    }
+
+    /**
+     * The TimeComponent that represents the hourly interval to fire with an offset.
+     *
+     * @return
+     */
+    private TimeComponent getEveryYearStartingFrom() {
+
+        // Get the current year
+        int currentYear = new DateTime().getYear();
+
+        Label label = new Label(getTranslation("time-component.every"
+            , UI.getCurrent().getLocale()));
+        List<String> yearNum = new ArrayList<>();
+        IntStream.range(1, 11).forEach(i -> yearNum.add(Integer.toString(i)));
+        Select<String> yearsNumSelect = new Select<>();
+        yearsNumSelect.setEnabled(true);
+        yearsNumSelect.setItems(yearNum);
+        yearsNumSelect.setValue("1");
+
+        List<String> yearStart = new ArrayList<>();
+        IntStream.range(currentYear, currentYear + 100).forEach(i -> yearStart.add(Integer.toString(i)));
+        Select<String> yearStartSelect = new Select<>();
+        yearStartSelect.setEnabled(true);
+        yearStartSelect.setItems(yearStart);
+        yearStartSelect.setValue(currentYear + "");
+
+        Label label2 = new Label(getTranslation("time-component.year-starting-from"
+            , UI.getCurrent().getLocale()));
+
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.add(label, yearsNumSelect, label2, yearStartSelect);
+        layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, label, label2);
+
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.every-n-years-starting-from"
+            , UI.getCurrent().getLocale()), layout);
+        timeComponent.setValue(currentYear + "/1");
+
+        if(this.yearPart.contains("/")) {
+            StringTokenizer st = new StringTokenizer(this.yearPart, "/");
+            yearStartSelect.setValue(st.nextToken());
+            yearsNumSelect.setValue(st.nextToken());
+            timeComponent.setValue(this.yearPart);
+        }
+
+        yearsNumSelect.addValueChangeListener(event -> {
+            this.yearPart = yearStartSelect.getValue() + "/" + event.getValue();
+            this.cronExpressionTf.setValue(this.getCronExpression());
+        });
+
+        yearStartSelect.addValueChangeListener(event -> {
+            this.yearPart = event.getValue() + "/" + yearsNumSelect.getValue();
+            this.cronExpressionTf.setValue(this.getCronExpression());
+        });
+
+
+        return timeComponent;
+    }
+
+    private TimeComponent getSpecificYear() {
+
+        // Get the current year
+        int currentYear = new DateTime().getYear();
+
+        List<Checkbox> year = new ArrayList<>();
+        IntStream.range(currentYear, currentYear + 100).forEach(i -> year.add(new Checkbox(Integer.toString(i))));
+
+        GridLayout layout = new GridLayout(10, 10);
+
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.specific-year"
+            , UI.getCurrent().getLocale()), layout);
+        if(this.yearPart.contains(",")) {
+            timeComponent.setValue(this.yearPart);
+        }
+        else {
+            timeComponent.setValue(currentYear + "");
+        }
+
+        List<String> selectedYear = Arrays.asList(this.yearPart.split("\\s*,\\s*"));
+
+        year.forEach(item -> {
+            layout.addComponent(item);
+            if(selectedYear.contains(item.getLabel())) {
+                item.setValue(true);
+            }
+
+            item.addValueChangeListener(event -> {
+                StringBuffer value = new StringBuffer();
+                year.forEach(checkbox -> {
+                    if(checkbox.getValue()) {
+                        value.append(checkbox.getLabel()).append(",");
+                    }
+                });
+                this.yearPart = value.substring(0, value.length()-1);
+                timeComponent.setValue(this.yearPart);
+                this.cronExpressionTf.setValue(this.getCronExpression());
+            });
+        });
+        layout.setSizeFull();
+
+        return timeComponent;
+    }
+
+    /**
+     * Get the TimeComponent that represents the interval within which the schedule
+     * will run between years.
+     *
+     * @return
+     */
+    private TimeComponent getEveryYearBetween() {
+
+        // Get the current year
+        int currentYear = new DateTime().getYear();
+
+        Label label = new Label(getTranslation("time-component.every-year-between"
+            , UI.getCurrent().getLocale()));
+        List<String> year = new ArrayList<>();
+        IntStream.range(currentYear, currentYear + 100).forEach(i -> year.add(Integer.toString(i)));
+        Select<String> yearStartSelect = new Select<>();
+        yearStartSelect.setEnabled(true);
+        yearStartSelect.setItems(year);
+        yearStartSelect.setValue(currentYear + "");
+
+
+        Select<String> yearEndSelect = new Select<>();
+        yearEndSelect.setEnabled(true);
+        yearEndSelect.setItems(year);
+        yearEndSelect.setValue(currentYear + "");
+
+        Label label2 = new Label(getTranslation("time-component.and-year"
+            , UI.getCurrent().getLocale()));
+
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.add(label, yearStartSelect, label2, yearEndSelect);
+        layout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, label, label2);
+
+        TimeComponent timeComponent = new TimeComponent(getTranslation("time-component.every-year-between"
+            , UI.getCurrent().getLocale()), layout);
+        timeComponent.setValue(currentYear + "-" + currentYear);
+
+        if(this.yearPart.contains("-")) {
+            StringTokenizer st = new StringTokenizer(this.yearPart, "-");
+            yearStartSelect.setValue(st.nextToken());
+            yearEndSelect.setValue(st.nextToken());
+            timeComponent.setValue(this.yearPart);
+        }
+
+        yearStartSelect.addValueChangeListener(event -> {
+            this.yearPart = event.getValue() + "-" + yearEndSelect.getValue();
+            this.cronExpressionTf.setValue(this.getCronExpression());
+        });
+
+        yearEndSelect.addValueChangeListener(event -> {
+            this.yearPart = yearStartSelect.getValue() + "-" + event.getValue();
             this.cronExpressionTf.setValue(this.getCronExpression());
         });
 
