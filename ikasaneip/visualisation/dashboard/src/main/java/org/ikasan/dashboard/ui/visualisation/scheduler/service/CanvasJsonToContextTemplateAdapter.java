@@ -72,7 +72,7 @@ public class CanvasJsonToContextTemplateAdapter {
         }
     }
 
-    public boolean withinArea(PositionedItem left, PositionedItem right) {
+    private boolean withinArea(PositionedItem left, PositionedItem right) {
         if(left.getX() < right.getX() &&
             (left.getX() + left.getWidth()) > (right.getX() + right.getWidth()) &&
             left.getY() < right.getY() &&
@@ -183,7 +183,6 @@ public class CanvasJsonToContextTemplateAdapter {
             });
 
             Set<String> intersect = this.intersect(all);
-
 
             if(intersect.size() == 1) {
                 contextTemplateBuilder.addJobDependency(contextTemplateBuilder.getJobDependencyBuilder()

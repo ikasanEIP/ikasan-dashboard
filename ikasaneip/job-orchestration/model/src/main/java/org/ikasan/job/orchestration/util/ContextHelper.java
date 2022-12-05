@@ -256,6 +256,42 @@ public class ContextHelper {
         }
     }
 
+    public static LinkedList<List<SchedulerJob>> traceJobThroughContextTemplate(ContextTemplate context, String jobName, String childContextName) {
+        LinkedList<List<SchedulerJob>> results = new LinkedList<>();
+        _traceJobThroughContextTemplate(results, context, jobName, childContextName);
+
+        return results;
+    }
+
+    public static void _traceJobThroughContextTemplate(LinkedList<List<SchedulerJob>> results, ContextTemplate context, String jobName, String childContextName) {
+        ContextTemplate child = ContextHelper.getChildContextTemplate(childContextName, context);
+
+        Optional<SchedulerJob> schedulerJobInstance = child.getScheduledJobs().stream()
+            .filter(job -> job.getJobName().equals(jobName))
+            .findFirst();
+
+        List<SchedulerJob> jobs = new ArrayList<>();
+
+        if(schedulerJobInstance.isPresent()) {
+            schedulerJobInstance.ifPresent(job -> {
+                child.getJobDependencies().forEach(jobDependency -> {
+                    getNextJob(child, jobDependency.getJobIdentifier()
+                        , jobDependency.getLogicalGrouping(), schedulerJobInstance.get(), jobs);
+                });
+            });
+        }
+
+        if(!jobs.isEmpty()) {
+            results.add(jobs);
+            jobs.forEach(job -> {
+                getContextsWhereJobResides(context, job.getJobName())
+                    .forEach(filtered -> {
+                        _traceJobThroughContextTemplate(results, context, job.getJobName(), filtered);
+                    });
+            });
+        }
+    }
+
     private static void getNextJob(ContextInstance child, String jobIdentifier, LogicalGrouping logicalGrouping, SchedulerJobInstance schedulerJobInstance, List<SchedulerJobInstance> jobIdentifiers) {
         if(logicalGrouping.getLogicalGrouping() != null) {
             getNextJob(child, jobIdentifier, logicalGrouping.getLogicalGrouping(), schedulerJobInstance, jobIdentifiers);
@@ -289,6 +325,45 @@ public class ContextHelper {
                     getNextJob(child, jobIdentifier, not.getLogicalGrouping(), schedulerJobInstance, jobIdentifiers);
                 }
                 else if(schedulerJobInstance.getIdentifier().equals(not.getIdentifier())) {
+                    jobIdentifiers.add(child.getScheduledJobsMap().get(jobIdentifier));
+                }
+            });
+        }
+    }
+
+    private static void getNextJob(ContextTemplate child, String jobIdentifier, LogicalGrouping logicalGrouping, SchedulerJob schedulerJob, List<SchedulerJob> jobIdentifiers) {
+        if(logicalGrouping.getLogicalGrouping() != null) {
+            getNextJob(child, jobIdentifier, logicalGrouping.getLogicalGrouping(), schedulerJob, jobIdentifiers);
+        }
+
+        if(logicalGrouping.getAnd() != null) {
+            logicalGrouping.getAnd().forEach(and -> {
+                if(and.getLogicalGrouping() != null) {
+                    getNextJob(child, jobIdentifier, and.getLogicalGrouping(), schedulerJob, jobIdentifiers);
+                }
+                else if(schedulerJob.getIdentifier().equals(and.getIdentifier())) {
+                    jobIdentifiers.add(child.getScheduledJobsMap().get(jobIdentifier));
+                }
+            });
+        }
+
+        if(logicalGrouping.getOr() != null) {
+            logicalGrouping.getOr().forEach(or -> {
+                if(or.getLogicalGrouping() != null) {
+                    getNextJob(child, jobIdentifier, or.getLogicalGrouping(), schedulerJob, jobIdentifiers);
+                }
+                else if(schedulerJob.getIdentifier().equals(or.getIdentifier())) {
+                    jobIdentifiers.add(child.getScheduledJobsMap().get(jobIdentifier));
+                }
+            });
+        }
+
+        if(logicalGrouping.getNot() != null) {
+            logicalGrouping.getNot().forEach(not -> {
+                if(not.getLogicalGrouping() != null) {
+                    getNextJob(child, jobIdentifier, not.getLogicalGrouping(), schedulerJob, jobIdentifiers);
+                }
+                else if(schedulerJob.getIdentifier().equals(not.getIdentifier())) {
                     jobIdentifiers.add(child.getScheduledJobsMap().get(jobIdentifier));
                 }
             });
