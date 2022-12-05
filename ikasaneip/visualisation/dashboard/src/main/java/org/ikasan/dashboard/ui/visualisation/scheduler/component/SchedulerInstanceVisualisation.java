@@ -296,9 +296,9 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
                 = ContextHelper.traceJobThroughContextInstance(this.parentContextInstance, job.getJobName()
                     , this.contextInstance.getName());
 
-            jobs.forEach(downstream -> {
-                downstream.forEach(downstreamJob -> logger.info(downstreamJob.getJobName()));
-            });
+            if(!jobs.isEmpty()) {
+                jobs.get(0).forEach(downstreamJob -> logger.info(downstreamJob.getJobName()));
+            }
         }
     }
 
