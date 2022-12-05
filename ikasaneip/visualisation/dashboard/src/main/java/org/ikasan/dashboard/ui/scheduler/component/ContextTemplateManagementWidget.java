@@ -415,7 +415,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
             , this.contextInstancesTab, this.jobTemplatesTab, this.statisticsTab);
 
         tabs.addSelectedChangeListener(event -> {
-            try {
+//            try {
                 if(tabs.getSelectedTab().equals(this.contextInstancesTab)) {
                     this.aceEditor.setVisible(false);
                     this.schedulerVisualisationDiv.setVisible(false);
@@ -451,10 +451,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
                     this.schedulerJobGridWidget.setVisible(true);
                     this.contextTemplateStatisticsWidget.setVisible(false);
                 }
-            }
-            catch (Exception e){
-                e.printStackTrace();
-            }
+//            }
+//            catch (Exception e){
+//                e.printStackTrace();
+//            }
         });
     }
 
@@ -475,6 +475,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
         aceEditor.setVisible(false);
         aceEditor.getElement().getStyle().set("margin-bottom", "30px");
 
+        this.updateRawContextTemplate();
+    }
+
+    private void updateRawContextTemplate() {
         ContextService contextService = new ContextService();
 
         try {
@@ -986,6 +990,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
             this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(contextTemplate.getTimezone()));
             this.blackoutWindowDateTimePairs.clear();
             this.populateBlackoutWindowPairs(contextTemplate);
+            this.updateRawContextTemplate();
         });
     }
 

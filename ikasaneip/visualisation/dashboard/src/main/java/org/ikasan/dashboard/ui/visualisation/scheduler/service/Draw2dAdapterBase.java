@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.layout.mxCompactTreeLayout;
 import com.mxgraph.model.mxCell;
+import liquibase.pro.packaged.A;
 import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.designer.builder.*;
@@ -26,6 +27,7 @@ import org.jgrapht.graph.DefaultEdge;
 
 import javax.swing.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class Draw2dAdapterBase {
@@ -41,11 +43,30 @@ public abstract class Draw2dAdapterBase {
     }
 
     protected ArrayList<Object> _adaptJobs(Context context, Map<String, SchedulerJob> schedulerJobs) {
-        DefaultDirectedGraph<Object, DefaultEdge> graph
-            = new DefaultDirectedGraph<>(NoEdgeLabel.class);
-
         if(context.getScheduledJobs() != null && !context.getScheduledJobs().isEmpty()) {
+            DefaultDirectedGraph<Object, DefaultEdge> graph
+                = new DefaultDirectedGraph<>(NoEdgeLabel.class);
+
+            Grouping grouping = new Grouping();
+
+            if(context.getJobDependencies() != null) {
+                context.getJobDependencies().forEach(jobDependency -> {
+                    if (((JobDependency) jobDependency).getLogicalGrouping() != null) {
+                        this.getAllJobsInGrouping(((JobDependency) jobDependency).getLogicalGrouping(),
+                            grouping);
+                    }
+                });
+            }
+
+            List<SchedulerJob> jobs = this.getSchedulerJobsFromGrouping(context, grouping);
+
             context.getScheduledJobs().forEach(job -> {
+                if(!jobs.contains(job)) {
+                    jobs.add((SchedulerJob) job);
+                }
+            });
+
+            jobs.forEach(job -> {
                 graph.addVertex(((SchedulerJob)job).getIdentifier());
 
                 SchedulerJob schedulerJob = schedulerJobs.get(((SchedulerJob)job).getJobName());
@@ -86,8 +107,6 @@ public abstract class Draw2dAdapterBase {
 
             });
 
-            Grouping grouping = new Grouping();
-
             if(context.getJobDependencies() != null) {
                 context.getJobDependencies().forEach(jobDependency -> {
                     if (((JobDependency) jobDependency).getLogicalGrouping() != null) {
@@ -98,9 +117,6 @@ public abstract class Draw2dAdapterBase {
                             });
                         this.manageLogicalGroupings(context, ((JobDependency) jobDependency).getJobIdentifier(),
                             ((JobDependency) jobDependency).getLogicalGrouping(), diagramBuilder, graph);
-
-                        this.getAllJobsInGrouping(((JobDependency) jobDependency).getLogicalGrouping(),
-                            grouping);
                     }
                 });
             }
@@ -121,7 +137,8 @@ public abstract class Draw2dAdapterBase {
 
             mxHierarchicalLayout compactTreeLayout = new mxHierarchicalLayout(jGraphXAdapter);
             compactTreeLayout.setOrientation(SwingConstants.WEST);
-            compactTreeLayout.setIntraCellSpacing(120);
+            int depth = this.getGroupingDepth(grouping);
+            compactTreeLayout.setIntraCellSpacing(120+(depth*20));
             compactTreeLayout.setInterHierarchySpacing(1000);
             compactTreeLayout.setInterRankCellSpacing(1000);
 
@@ -492,7 +509,7 @@ public abstract class Draw2dAdapterBase {
         grouping.getNestedGrouping().forEach(nestedGrouping -> {
             this.addLogicGroupings(nestedGrouping, imageOverlay, cellMap, diagramBuilder);
 
-            if(nestedGrouping.getJobIdentifiers().size() > 1 || (nestedGrouping.getJobIdentifiers().size() > 0 && !nestedGrouping.getNestedGrouping().isEmpty())) {
+            if(nestedGrouping.getJobIdentifiers().size() > 1 || (!nestedGrouping.getNestedGrouping().isEmpty())) {
                 AtomicReference<Double> xMinExtent = new AtomicReference<>();
                 xMinExtent.set(-1.0);
                 AtomicReference<Double> xMaxExtent = new AtomicReference<>();
@@ -612,5 +629,47 @@ public abstract class Draw2dAdapterBase {
         }
 
         return image;
+    }
+
+    protected List<SchedulerJob> getSchedulerJobsFromGrouping(Context context, Grouping grouping) {
+        ArrayList<SchedulerJob> schedulerJobs = new ArrayList<>();
+
+        _getSchedulerJobsFromGrouping(context, grouping, schedulerJobs);
+
+        return schedulerJobs;
+    }
+
+    private void _getSchedulerJobsFromGrouping(Context context, Grouping grouping, List<SchedulerJob> schedulerJobs) {
+
+        grouping.getJobIdentifiers().forEach(id -> {
+            if(!schedulerJobs.contains(context.getScheduledJobsMap().get(id))) {
+                schedulerJobs.add((SchedulerJob) context.getScheduledJobsMap().get(id));
+            }
+        });
+
+        if(grouping.getNestedGrouping() != null) {
+            grouping.getNestedGrouping().forEach(nested -> {
+                _getSchedulerJobsFromGrouping(context, nested, schedulerJobs);
+            });
+        }
+    }
+
+    protected int getGroupingDepth(Grouping grouping) {
+        AtomicInteger depth = new AtomicInteger(0);
+        _getGroupingDepth(grouping, depth);
+
+        return depth.get();
+    }
+
+    private void _getGroupingDepth(Grouping grouping, AtomicInteger depth) {
+        boolean depthIncrement = false;
+
+        for (Grouping nested : grouping.getNestedGrouping()) {
+            if(!depthIncrement) {
+                depth.getAndIncrement();
+                depthIncrement = true;
+            }
+            _getGroupingDepth(nested, depth);
+        }
     }
 }

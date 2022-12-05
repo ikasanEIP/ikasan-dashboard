@@ -17,6 +17,7 @@ import org.ikasan.dashboard.ui.scheduler.component.FileEventJobDialog;
 import org.ikasan.dashboard.ui.scheduler.component.InternalEventDrivenJobDialog;
 import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobDialog;
 import org.ikasan.dashboard.ui.scheduler.listener.NewContextListener;
+import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
@@ -29,7 +30,6 @@ import org.ikasan.designer.event.*;
 import org.ikasan.designer.function.SaveFunction;
 import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.scheduled.context.model.SolrScheduledContextViewRecordImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -43,8 +43,6 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextViewRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
-import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -58,10 +56,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class SchedulerVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener, CanvasInitialisedListener
@@ -93,7 +88,6 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     protected ContextProfileService contextProfileService;
     protected UserService userService;
     protected SecurityService securityService;
-    //protected ScheduledContextInstanceService scheduledContextInstanceService;
     protected JobProvisionService jobProvisionService;
     protected ScheduledContextService scheduledContextService;
 
@@ -290,6 +284,15 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     public void singleClickEvent(CanvasItemSingleClickEvent canvasItemDoubleClickEvent) {
         if(canvasItemDoubleClickEvent.getFigure() != null && canvasItemDoubleClickEvent.getFigure().getIdentifier() != null) {
             logger.info("Click event - " + canvasItemDoubleClickEvent.getFigure().getIdentifier());
+            SchedulerJob job = this.contextTemplate.getScheduledJobsMap()
+                .get(canvasItemDoubleClickEvent.getFigure().getIdentifier());
+            LinkedList<List<SchedulerJob>> jobs
+                = ContextHelper.traceJobThroughContextTemplate(this.parentContextTemplate, job.getJobName()
+                , this.contextTemplate.getName());
+
+            if(!jobs.isEmpty()) {
+                jobs.get(0).forEach(downstreamJob -> logger.info(downstreamJob.getJobName()));
+            }
         }
     }
 
@@ -526,22 +529,23 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             ContextHelper.replaceChildContextTemplate(this.parentContextTemplate, updatedContext);
             this.contextTemplate = updatedContext;
 
-            if(this.scheduledContextViewRecord == null) {
-                this.scheduledContextViewRecord = new SolrScheduledContextViewRecordImpl();
-                this.scheduledContextViewRecord.setParentContextName(this.parentContextTemplate.getName());
-                this.scheduledContextViewRecord.setContextName(this.contextTemplate.getName());
-                this.scheduledContextViewRecord.setTimestamp(System.currentTimeMillis());
-            }
-
-            this.scheduledContextViewRecord.setContextView(payload);
-            this.scheduledContextViewRecord.setModifiedBy(authentication.getName());
-
-            this.scheduledContextService.saveContextView(scheduledContextViewRecord);
+//            if(this.scheduledContextViewRecord == null) {
+//                this.scheduledContextViewRecord = new SolrScheduledContextViewRecordImpl();
+//                this.scheduledContextViewRecord.setParentContextName(this.parentContextTemplate.getName());
+//                this.scheduledContextViewRecord.setContextName(this.contextTemplate.getName());
+//                this.scheduledContextViewRecord.setTimestamp(System.currentTimeMillis());
+//            }
+//
+//            this.scheduledContextViewRecord.setContextView(payload);
+//            this.scheduledContextViewRecord.setModifiedBy(authentication.getName());
+//
+//            this.scheduledContextService.saveContextView(scheduledContextViewRecord);
 
             ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findByName(this.parentContextTemplate.getName());
             scheduledContextRecord.setContext(this.parentContextTemplate);
             this.scheduledContextService.save(scheduledContextRecord);
 
+            ContextTemplateSavedEventBroadcaster.broadcast(this.parentContextTemplate);
             NotificationHelper.showUserNotification("Context Saved!");
         }
         catch (CanvasJsonValidationException e) {
