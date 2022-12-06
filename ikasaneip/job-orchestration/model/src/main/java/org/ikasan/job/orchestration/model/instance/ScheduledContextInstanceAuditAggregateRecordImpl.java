@@ -2,6 +2,8 @@ package org.ikasan.job.orchestration.model.instance;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.job.orchestration.exception.EntityConversionException;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregate;
@@ -80,5 +82,10 @@ public class ScheduledContextInstanceAuditAggregateRecordImpl implements Schedul
     @Override
     public String getRaisedEvents() {
         return this.raisedEvents;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

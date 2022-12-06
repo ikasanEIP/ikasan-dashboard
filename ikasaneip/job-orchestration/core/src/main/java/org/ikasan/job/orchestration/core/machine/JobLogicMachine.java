@@ -60,13 +60,13 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                 , scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName());
         }
 
-        if(scheduledProcessEvent.getChildContextNames() != null) {
-            StringBuffer childIds = new StringBuffer("[ ");
-            scheduledProcessEvent.getChildContextNames().forEach(id -> childIds.append("{").append(id).append("}"));
-            childIds.append("]");
+        if(scheduledProcessEvent.getChildContextNames() != null && scheduledProcessEvent.getChildContextNames().contains(contextInstance.getName())) {
+            StringBuffer childContextNames = new StringBuffer("[ ");
+            scheduledProcessEvent.getChildContextNames().forEach(id -> childContextNames.append("{").append(id).append("}"));
+            childContextNames.append("]");
 
             logger.info("Processing Schedule Process Event [{}], for Context Instance [{}], with Child Ids {}", scheduledProcessEvent.getJobName()
-                , contextInstance.getName(), childIds.toString());
+                , contextInstance.getName(), childContextNames);
         }
 
         // Firstly the status of the job is set on the instance.
@@ -200,8 +200,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         if(!lockRaised.booleanValue() && scheduledProcessEvent.getInternalEventDrivenJob() != null && !scheduledProcessEvent.isJobStarting() &&
             this.jobLockCache.hasLock(jobIdentifier, contextInstance.getName())) {
             lockRaised.setTrue();
-            logger.info("Locked {}", scheduledProcessEvent.getInternalEventDrivenJob());
 
+            logger.info("Release {}", scheduledProcessEvent.getInternalEventDrivenJob());
             // Once we have determined that the job is holding the lock, release it.
             this.jobLockCache.release(jobIdentifier, contextInstance.getName());
 

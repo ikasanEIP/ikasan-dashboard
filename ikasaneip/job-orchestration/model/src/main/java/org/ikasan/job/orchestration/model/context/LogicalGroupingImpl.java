@@ -1,5 +1,7 @@
 package org.ikasan.job.orchestration.model.context;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.context.model.And;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 import org.ikasan.spec.scheduled.context.model.Not;
@@ -47,12 +49,6 @@ public class LogicalGroupingImpl implements LogicalGrouping {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("LogicalGrouping{");
-        sb.append("logicalGrouping=").append(logicalGrouping);
-        sb.append(", and=").append(and);
-        sb.append(", or=").append(or);
-        sb.append(", not=").append(not);
-        sb.append('}');
-        return sb.toString();
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

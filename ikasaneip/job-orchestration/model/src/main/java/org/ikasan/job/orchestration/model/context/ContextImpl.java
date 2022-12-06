@@ -1,5 +1,7 @@
 package org.ikasan.job.orchestration.model.context;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
@@ -124,5 +126,10 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     @Override
     public void setTimeWindowEnd(String timeWindowEnd) {
         this.timeWindowEnd = timeWindowEnd;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

@@ -2,6 +2,8 @@ package org.ikasan.job.orchestration.model.context;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.context.model.ContextBundle;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -68,5 +70,10 @@ public class ContextBundleImpl implements ContextBundle {
     @Override
     public EmailNotificationContext getEmailNotificationContext() {
         return this.emailNotificationContexts;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

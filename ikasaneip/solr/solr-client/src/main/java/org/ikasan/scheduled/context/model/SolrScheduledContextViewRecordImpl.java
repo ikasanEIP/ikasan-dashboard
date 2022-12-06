@@ -1,5 +1,7 @@
 package org.ikasan.scheduled.context.model;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.solr.client.solrj.beans.Field;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextViewRecord;
 import org.ikasan.spec.solr.SolrDaoBase;
@@ -93,5 +95,10 @@ public class SolrScheduledContextViewRecordImpl implements ScheduledContextViewR
     @Override
     public void setModifiedBy(String modifiedBy) {
         this.modifiedBy = modifiedBy;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }
