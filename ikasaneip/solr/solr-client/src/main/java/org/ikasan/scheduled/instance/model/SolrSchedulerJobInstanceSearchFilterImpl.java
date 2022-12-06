@@ -1,5 +1,7 @@
 package org.ikasan.scheduled.instance.model;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
 
 import java.util.HashMap;
@@ -153,5 +155,10 @@ public class SolrSchedulerJobInstanceSearchFilterImpl implements SchedulerJobIns
     @Override
     public void setEndTimeWindowEnd(long endTimeWindowEnd) {
         this.endTimeWindowEnd = endTimeWindowEnd;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

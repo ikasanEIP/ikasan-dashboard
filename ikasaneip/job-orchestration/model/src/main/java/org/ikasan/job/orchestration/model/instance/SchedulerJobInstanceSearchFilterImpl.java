@@ -1,5 +1,7 @@
 package org.ikasan.job.orchestration.model.instance;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
 
 public class SchedulerJobInstanceSearchFilterImpl implements SchedulerJobInstanceSearchFilter {
@@ -136,5 +138,10 @@ public class SchedulerJobInstanceSearchFilterImpl implements SchedulerJobInstanc
     @Override
     public void setEndTimeWindowEnd(long endTimeWindowEnd) {
         this.endTimeWindowEnd = endTimeWindowEnd;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

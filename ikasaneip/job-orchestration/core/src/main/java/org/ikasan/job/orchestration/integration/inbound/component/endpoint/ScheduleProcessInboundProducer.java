@@ -13,6 +13,7 @@ import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.component.endpoint.EndpointException;
 import org.ikasan.spec.component.endpoint.Producer;
+import org.ikasan.spec.configuration.ConfigurationException;
 import org.ikasan.spec.configuration.ConfiguredResource;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.slf4j.Logger;
@@ -64,7 +65,7 @@ public class ScheduleProcessInboundProducer implements Producer<String>, Configu
 
             this.scheduledProcessProducerConnectionCallback = new ScheduledProcessProducerConnectionCallbackImpl(payload, contextMachine);
         }
-        catch (InvalidContextInstanceIdException e) {
+        catch (InvalidContextInstanceIdException | ConfigurationException e) {
             e.printStackTrace();
             if(this.configuration.isIgnoreErrors()) {
                 logger.info("Ignoring error [{}] for payload [{}]", e.getMessage(), payload);

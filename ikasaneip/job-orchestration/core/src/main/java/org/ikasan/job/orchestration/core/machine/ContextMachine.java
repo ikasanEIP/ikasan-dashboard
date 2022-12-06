@@ -708,8 +708,7 @@ public class ContextMachine {
         , MutableBoolean lockRaised, boolean markAsRaised) {
         List<SchedulerJobInitiationEvent> results = new ArrayList<>();
 
-        if(//!contextInstance.getStatus().equals(InstanceStatus.COMPLETE) &&
-            contextInstance.getScheduledJobsMap().containsKey(scheduledProcessEvent.getAgentName()
+        if(contextInstance.getScheduledJobsMap().containsKey(scheduledProcessEvent.getAgentName()
                 + "-" + scheduledProcessEvent.getJobName())) {
 
              // Delegate to the JobLogicMachine to determine if any SchedulerJobInitiationEvents are
@@ -906,6 +905,7 @@ public class ContextMachine {
 
         @Override
         public void run() {
+            BigQueueMessage<ContextualisedScheduledProcessEvent> bigQueueMessage = null;
             try {
                 if (!this.running.get()) {
                     return;
@@ -917,8 +917,7 @@ public class ContextMachine {
                     return;
                 }
 
-                BigQueueMessage<ContextualisedScheduledProcessEvent> bigQueueMessage
-                     = objectMapper.readValue(event, BigQueueMessageImpl.class);
+                bigQueueMessage = objectMapper.readValue(event, BigQueueMessageImpl.class);
 
                 ContextualisedScheduledProcessEvent scheduledProcessEvent
                     = objectMapper.readValue(String.valueOf(bigQueueMessage.getMessage()), ContextualisedScheduledProcessEventImpl.class);
@@ -945,9 +944,25 @@ public class ContextMachine {
                 inboundQueue.dequeue();
                 inboundQueue.gc();
             }
+            catch (ContextMachineException e) {
+                logger.error(String.format("An error has occurred attempting process scheduled process event [%s]"
+                    , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), e);
+
+                // We dequeue context machine exceptions.
+                // TODO perhaps we need to park these somewhere similar to excluded events.
+                try {
+                    inboundQueue.dequeue();
+                    inboundQueue.gc();
+                    addInboundListener();
+                }
+                catch (IOException ex) {
+                    logger.error(String.format("An error has occurred attempting to dequeue inbound message [%s]"
+                        , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), ex);
+                }
+            }
             catch (Exception e) {
-                // do something
-                e.printStackTrace();
+                logger.error(String.format("An error has occurred attempting process scheduled process event [%s]"
+                    , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), e);
             }
             finally {
                 addInboundListener();
@@ -980,7 +995,6 @@ public class ContextMachine {
                     return;
                 }
 
-                String stringEvent = new String(event);
                 bigQueueMessage = objectMapper.readValue(event, BigQueueMessageImpl.class);
                 String messageAsString = new String(objectMapper.writeValueAsBytes(bigQueueMessage.getMessage()));
                 SchedulerJobInitiationEvent schedulerJobInitiationEvent
@@ -994,7 +1008,8 @@ public class ContextMachine {
                 attempts = 0;
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error(String.format("An error has occurred attempting to raise job initiation event [%s]"
+                    , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), e);
                 exception = true;
                 try {
                     // If an exception occurs trying to raise the event, then put the message onto the back of the queue.
@@ -1011,6 +1026,8 @@ public class ContextMachine {
                     attempts++;
                 }
                 catch (Exception ex) {
+                    logger.error(String.format("An error has occurred attempting to enqueue outbound message that is in error [%s]"
+                        , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), e);
                     ex.printStackTrace();
                 }
             }
@@ -1024,6 +1041,8 @@ public class ContextMachine {
                         logger.debug("Outbound queue size: " + outboundQueue.size());
                     }
                     catch (IOException e) {
+                        logger.error(String.format("An error has occurred attempting to dequeue outbound message [%s]"
+                            , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), e);
                         e.printStackTrace();
                     }
                 }
