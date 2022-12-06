@@ -1,5 +1,7 @@
 package org.ikasan.job.orchestration.model.context;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 
 import java.util.Objects;
@@ -39,5 +41,10 @@ public class ContextParameterImpl implements ContextParameter {
     @Override
     public int hashCode() {
         return Objects.hash(name);
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

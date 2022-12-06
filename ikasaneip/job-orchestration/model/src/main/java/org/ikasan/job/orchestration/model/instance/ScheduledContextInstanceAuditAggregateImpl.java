@@ -1,5 +1,7 @@
 package org.ikasan.job.orchestration.model.instance;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceAuditAggregate;
@@ -51,5 +53,10 @@ public class ScheduledContextInstanceAuditAggregateImpl implements ScheduledCont
     @Override
     public void setUpdatedContextInstanceAuditId(String updatedContextInstanceAuditId) {
         this.updatedContextInstanceAuditId = updatedContextInstanceAuditId;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

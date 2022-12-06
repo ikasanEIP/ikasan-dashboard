@@ -1,5 +1,7 @@
 package org.ikasan.job.orchestration.model.instance;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 
@@ -105,5 +107,10 @@ public class InternalEventDrivenJobInstanceImpl extends SchedulerJobInstanceImpl
     @Override
     public void setParticipatesInLock(boolean participatesInLock) {
         this.participatesInLock = participatesInLock;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

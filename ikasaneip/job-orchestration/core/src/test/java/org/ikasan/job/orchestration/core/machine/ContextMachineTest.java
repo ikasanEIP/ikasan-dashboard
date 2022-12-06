@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.ikasan.bigqueue.IBigQueue;
 import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.job.orchestration.JobLockCacheServiceTestImpl;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
@@ -37,6 +38,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -1688,6 +1690,45 @@ public class ContextMachineTest extends AbstractTest {
 
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName)));
         assertTrue(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName)));
+
+        contextMachine.teardown();
+
+        assertFalse(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName)));
+        assertFalse(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName)));
+    }
+
+    @Test
+    public void test_context_machine_exception_missing_jobs() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context-missing-jobs.json"));
+        ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context-missing-jobs.json"));
+
+        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+
+        this.contextTemplateValidator.validate(context);
+
+        ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
+        contextMachine.init();
+
+        ContextualisedScheduledProcessEventImpl eventInstance = scheduledProcessEventInstance("jobName3",
+            "agentName3", true);
+        BigQueueMessage bigQueueMessage = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(eventInstance)).build();
+        contextMachine.eventReceived(objectMapper.writeValueAsString(bigQueueMessage));
+
+        Thread.sleep(1000);
+
+        String outboundQueueName = "outbound-" + contextInstance.getId() + "-queue";
+        String inboundQueueName = "inbound-" + contextInstance.getId() + "-queue";
+
+        assertTrue(Files.exists(Path.of(this.queueDir + File.separator + outboundQueueName)));
+        assertTrue(Files.exists(Path.of(this.queueDir + File.separator + inboundQueueName)));
+
+        IBigQueue bigQueue = (IBigQueue) ReflectionTestUtils.getField(contextMachine, "inboundQueue");
+
+        // Assert that the big message causing the ContextMachineException has been dequeued.
+        Assert.assertEquals(0, bigQueue.size());
 
         contextMachine.teardown();
 

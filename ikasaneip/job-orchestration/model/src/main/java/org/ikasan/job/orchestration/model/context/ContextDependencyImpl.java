@@ -1,5 +1,7 @@
 package org.ikasan.job.orchestration.model.context;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.context.model.ContextDependency;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
 
@@ -7,7 +9,6 @@ public class ContextDependencyImpl implements ContextDependency {
     private String contextIdentifier;
     private String contextDependencyName;
     private LogicalGrouping logicalGrouping;
-//    private List<ContextDependency> contextDependencies;
 
     public String getContextIdentifier() {
         return contextIdentifier;
@@ -33,11 +34,8 @@ public class ContextDependencyImpl implements ContextDependency {
         this.logicalGrouping = logicalGrouping;
     }
 
-//    public List<ContextDependency> getContextDependencies() {
-//        return contextDependencies;
-//    }
-//
-//    public void setContextDependencies(List<ContextDependency> contextDependencies) {
-//        this.contextDependencies = contextDependencies;
-//    }
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
 }

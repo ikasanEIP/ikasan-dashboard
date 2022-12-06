@@ -2,6 +2,8 @@ package org.ikasan.job.orchestration.model.instance;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.job.orchestration.model.context.ContextImpl;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
@@ -107,5 +109,10 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
     @Override
     public void setHeldJobs(Map<String, SchedulerJobInitiationEvent> heldJobs) {
         this.heldJobs = heldJobs;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }
