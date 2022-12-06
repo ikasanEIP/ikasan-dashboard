@@ -27,7 +27,6 @@ public class ContextHelperTest {
         List<SchedulerJobInstance> precedingJobsFromOutsideContext = ContextHelper.getPrecedingJobsFromOutsideContext
             (contextInstance, "-505061472", "CONTEXT--2036736597", new HashMap<>());
 
-        System.out.println(precedingJobsFromOutsideContext);
     }
 
     @Test
@@ -37,7 +36,6 @@ public class ContextHelperTest {
 
         ContextHelper.holdAllJobs(contextInstance, new HashMap<>());
 
-        System.out.println(contextInstance);
     }
 
     @Test
@@ -50,7 +48,6 @@ public class ContextHelperTest {
         LinkedList<List<SchedulerJobInstance>> identifiers = ContextHelper.traceJobThroughContextInstance
             (contextInstance, "1779796515", "CONTEXT-1967431808");
 
-        System.out.println(identifiers);
     }
 
     @Test
@@ -67,8 +64,6 @@ public class ContextHelperTest {
 
         identifiers = ContextHelper.traceJobThroughContextInstance
             (contextInstance, "1010295672", "CONTEXT-1892741766");
-
-        System.out.println(identifiers);
     }
 
     protected String loadDataFile(String fileName) throws IOException {
