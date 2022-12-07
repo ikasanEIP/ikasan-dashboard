@@ -149,7 +149,7 @@ public class CronBuilderDialog extends AbstractCloseableResizableDialog {
         buttonLayout.add(buttons);
         buttonLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttons);
 
-        super.content.add(this.cronExpressionTf, this.naturalLanguageTf, tabs, secondsLayout, minutesLayout, hoursLayout, daysLayout, buttonLayout, monthsLayout, yearsLayout);
+        super.content.add(this.cronExpressionTf, this.naturalLanguageTf, tabs, secondsLayout, minutesLayout, hoursLayout, daysLayout, monthsLayout, yearsLayout, buttonLayout);
 
 
         this.setWidth("1000px");
