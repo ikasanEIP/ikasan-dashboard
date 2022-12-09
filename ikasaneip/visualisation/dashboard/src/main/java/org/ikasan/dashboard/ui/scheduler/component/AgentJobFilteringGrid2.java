@@ -73,6 +73,8 @@ public class AgentJobFilteringGrid2 extends FilteringGrid<SchedulerJobRecord, Ag
 
     private SchedulerJobService<SchedulerJobRecord> schedulerJobService;
 
+    private Map<String, String> schedulerJobExecutionEnvironmentLabel;
+
     /**
      * Constructor
      *
@@ -90,7 +92,8 @@ public class AgentJobFilteringGrid2 extends FilteringGrid<SchedulerJobRecord, Ag
     public AgentJobFilteringGrid2(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService, AgentJobFilter searchFilter,
                                   DateFormatter dateFormatter, ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                   MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService, SystemEventLogger systemEventLogger,
-                                  SchedulerService schedulerService, SchedulerJobService<SchedulerJobRecord> schedulerJobService) {
+                                  SchedulerService schedulerService, SchedulerJobService<SchedulerJobRecord> schedulerJobService, Map<String, String> schedulerJobExecutionEnvironmentLabel
+                                  ) {
         super(searchFilter);
         this.agent = agent;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
@@ -102,6 +105,7 @@ public class AgentJobFilteringGrid2 extends FilteringGrid<SchedulerJobRecord, Ag
         this.systemEventLogger = systemEventLogger;
         this.schedulerService = schedulerService;
         this.schedulerJobService = schedulerJobService;
+        this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
 
         this.ui = UI.getCurrent();
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -165,7 +169,7 @@ public class AgentJobFilteringGrid2 extends FilteringGrid<SchedulerJobRecord, Ag
                 if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
                     InternalEventDrivenJobDialog scheduledJobDialog = new InternalEventDrivenJobDialog(agent,
                         this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                        this.metaDataRestService, this.systemEventLogger, schedulerJobService);
+                        this.metaDataRestService, this.systemEventLogger, schedulerJobService, schedulerJobExecutionEnvironmentLabel);
 
                     scheduledJobDialog.setJob((InternalEventDrivenJob) schedulerJobRecord.getJob(), EditMode.EDIT);
                     scheduledJobDialog.open();

@@ -34,10 +34,12 @@ public class ContextSchedulerVisualisation extends SchedulerVisualisation {
         , ModuleControlService moduleControlRestService, MetaDataService metaDataRestService, SystemEventLogger systemEventLogger
         , SchedulerJobService schedulerJobService, LogStreamingService logStreamingService, JobInitiationService jobInitiationService
         , ContextProfileService contextProfileService, UserService userService, SecurityService securityService
-        ,  JobProvisionService jobProvisionService, ScheduledContextService scheduledContextService) {
+        , JobProvisionService jobProvisionService, ScheduledContextService scheduledContextService
+        , Map<String, String> schedulerJobExecutionEnvironmentLabel) {
         super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService, configurationRestService
             , moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
-            , jobInitiationService, contextProfileService, userService, securityService, jobProvisionService, scheduledContextService);
+            , jobInitiationService, contextProfileService, userService, securityService, jobProvisionService, scheduledContextService
+            , schedulerJobExecutionEnvironmentLabel);
     }
 
     protected void init() throws IOException {

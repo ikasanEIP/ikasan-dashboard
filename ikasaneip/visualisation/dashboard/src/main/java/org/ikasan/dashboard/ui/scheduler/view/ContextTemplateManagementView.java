@@ -36,6 +36,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Map;
 import java.util.Set;
 
 @Route(value = "contextTemplateManagement", layout = IkasanAppLayout.class)
@@ -85,6 +86,9 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
 
     @Value("${ikasan.dashboard.zip.working.directory:.}")
     private String zipWorkingDirectory;
+
+    @Value("#{${scheduler.job.execution.environment.label}}")
+    private Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
     @Resource
     private LogStreamingService logStreamingService;
@@ -146,7 +150,7 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
                 , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                 , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
                 , this.jobProvisionService, this.userService, this.securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
-                , this.emailNotificationContextService);
+                , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel);
 
             this.getElement().getStyle().set("padding-top", "0px");
             this.add(this.contextTemplateManagementWidget);

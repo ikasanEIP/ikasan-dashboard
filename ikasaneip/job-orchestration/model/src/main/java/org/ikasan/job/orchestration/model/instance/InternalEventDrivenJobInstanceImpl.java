@@ -18,6 +18,7 @@ public class InternalEventDrivenJobInstanceImpl extends SchedulerJobInstanceImpl
     private List<Integer> daysOfWeekToRun;
     private boolean targetResidingContextOnly;
     private boolean participatesInLock;
+    private String executionEnvironmentProperties;
 
     @Override
     public List<String> getSuccessfulReturnCodes() {
@@ -107,6 +108,16 @@ public class InternalEventDrivenJobInstanceImpl extends SchedulerJobInstanceImpl
     @Override
     public void setParticipatesInLock(boolean participatesInLock) {
         this.participatesInLock = participatesInLock;
+    }
+
+    @Override
+    public String getExecutionEnvironmentProperties() {
+        return executionEnvironmentProperties;
+    }
+
+    @Override
+    public void setExecutionEnvironmentProperties(String executionEnvironmentProperties) {
+        this.executionEnvironmentProperties = executionEnvironmentProperties;
     }
 
     @Override

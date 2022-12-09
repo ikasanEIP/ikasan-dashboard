@@ -61,6 +61,7 @@ import org.vaadin.olli.FileDownloadWrapper;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -80,7 +81,7 @@ public class ContextTemplateWidget extends Div {
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
     private EmailNotificationDetailsService emailNotificationDetailsService;
     private EmailNotificationContextService emailNotificationContextService;
-
+    private Map<String, String> schedulerJobExecutionEnvironmentLabel;
     private SubMenu activeContextSubMenu;
 
     /**
@@ -116,7 +117,8 @@ public class ContextTemplateWidget extends Div {
                                  JobInitiationService jobInitiationService, String zipWorkingDirectory, ContextProvisionService contextProvisionService,
                                  ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
                                  SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs, ContextInstanceRegistrationService contextInstanceRegistrationService,
-                                 EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService) {
+                                 EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
+                                 Map<String, String> schedulerJobExecutionEnvironmentLabel) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -154,6 +156,8 @@ public class ContextTemplateWidget extends Div {
         if (this.emailNotificationContextService == null) {
             throw new IllegalArgumentException("emailNotificationContextService cannot be null!");
         }
+
+        this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
         this.createGrid(dynamicImagePath, moduleMetaDataService
@@ -296,7 +300,7 @@ public class ContextTemplateWidget extends Div {
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService
                     , this.jobProvisionService, userService, securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
-                    , this.emailNotificationContextService
+                    , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel
                 );
                 contextTemplateManagementDialog.open();
             });
