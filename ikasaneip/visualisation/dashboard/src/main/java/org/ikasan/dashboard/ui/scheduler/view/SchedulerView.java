@@ -136,6 +136,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Value("${ikasan.dashboard.zip.working.directory:.}")
     private String zipWorkingDirectory;
 
+    @Value("#{${scheduler.job.execution.environment.label}}")
+    private Map<String, String> schedulerJobExecutionEnvironmentLabel;
+
     @Resource
     private ContextProvisionService contextProvisionService;
 
@@ -207,7 +210,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
             this.contextProfileService, this.jobProvisionService, userService, securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService,
-            this.emailNotificationDetailsService, this.emailNotificationContextService);
+            this.emailNotificationDetailsService, this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel);
         this.contextTemplateWidget.setVisible(false);
 
 

@@ -50,12 +50,10 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDialog {
@@ -76,6 +74,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     private TextField workingDirectoryTf;
     private TextField minExecutionTimeTf;
     private TextField maxExecutionTimeTf;
+    private ComboBox<String> executionEnvironmentPropertiesCb;
     private Checkbox targetResidingContextOnlyCb;
     private Button saveButton;
     private Button cancelButton;
@@ -104,6 +103,8 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
     private ContextTemplate contextTemplate;
 
+    private Map<String, String> schedulerJobExecutionEnvironmentLabel;
+
 
     /**
      * Constructor
@@ -117,7 +118,8 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
      */
     public InternalEventDrivenJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                         ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                        MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService) {
+                                        MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
+                                        Map<String, String> schedulerJobExecutionEnvironmentLabel) {
         super.showResize(false);
         super.title.setText(getTranslation("label.command-execution-job", UI.getCurrent().getLocale()));
 
@@ -128,16 +130,16 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         this.metaDataRestService = metaDataRestService;
         this.systemEventLogger = systemEventLogger;
         this.schedulerJobService = schedulerJobService;
-
+        this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
         this.internalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
     }
 
     public InternalEventDrivenJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                         ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                         MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                        ContextTemplate contextTemplate) {
+                                        ContextTemplate contextTemplate, Map<String, String> schedulerJobExecutionEnvironmentLabel) {
         this(agent, scheduledProcessManagementService, configurationRestService, moduleControlRestService,
-            metaDataRestService, systemEventLogger, schedulerJobService);
+            metaDataRestService, systemEventLogger, schedulerJobService, schedulerJobExecutionEnvironmentLabel);
         this.contextTemplate = contextTemplate;
     }
 
@@ -310,11 +312,35 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         formBinder.forField(this.workingDirectoryTf)
             .withNullRepresentation("")
             .bind(InternalEventDrivenJob::getWorkingDirectory, InternalEventDrivenJob::setWorkingDirectory);
-        formLayout.add(workingDirectoryTf, 2);
 
         ComponentSecurityVisibility.applyEnabledSecurity(workingDirectoryTf, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
+        Set<String> executionEnvironmentLabelSet = new HashSet<>();
+        if (schedulerJobExecutionEnvironmentLabel != null) {
+            executionEnvironmentLabelSet = schedulerJobExecutionEnvironmentLabel.keySet();
+        }
+
+        this.executionEnvironmentPropertiesCb = new ComboBox<>(getTranslation("label.execution-environment-properties", UI.getCurrent().getLocale()));
+        this.executionEnvironmentPropertiesCb.setId("executionEnvCb");
+        this.executionEnvironmentPropertiesCb.setRequired(false);
+        this.executionEnvironmentPropertiesCb.setItems(executionEnvironmentLabelSet);
+        this.executionEnvironmentPropertiesCb.setEnabled(true);
+        this.executionEnvironmentPropertiesCb.setAllowCustomValue(true);
+        this.executionEnvironmentPropertiesCb.addCustomValueSetListener(listener -> {
+            this.executionEnvironmentPropertiesCb.setValue(listener.getDetail());
+        });
+
+        formBinder.forField(this.executionEnvironmentPropertiesCb)
+            .withNullRepresentation("")
+            .bind(InternalEventDrivenJob::getExecutionEnvironmentProperties, InternalEventDrivenJob::setExecutionEnvironmentProperties);
+
+        ComponentSecurityVisibility.applyEnabledSecurity(executionEnvironmentPropertiesCb, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
+        formLayout.add(workingDirectoryTf, executionEnvironmentPropertiesCb);
 
         Button executionDaysButton = new Button(getTranslation("button.execution-days", UI.getCurrent().getLocale()), new Icon(VaadinIcon.CALENDAR));
         executionDaysButton.setIconAfterText(true);

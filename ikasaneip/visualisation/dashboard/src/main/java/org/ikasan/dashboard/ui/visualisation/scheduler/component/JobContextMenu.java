@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 
 import java.util.List;
+import java.util.Map;
 
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.EditMode;
@@ -51,11 +52,14 @@ public class JobContextMenu extends Dialog {
     // note this a local variable so we can test it
     private SchedulerJobLogFileViewerDialog schedulerJobLogFileViewerDialog;
 
+    private Map<String, String> schedulerJobExecutionEnvironmentLabel;
+
     public JobContextMenu(SchedulerJob schedulerJob, SystemEventLogger systemEventLogger,
                           ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                           SchedulerJobService schedulerJobService, ContextInstance rootContextInstance, ContextInstance currentInstance,
-                          LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService) {
+                          LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
+                          Map<String, String> schedulerJobExecutionEnvironmentLabel) {
 
         this.setWidth("200px");
 
@@ -65,6 +69,7 @@ public class JobContextMenu extends Dialog {
         this.currentInstance = currentInstance;
         this.logStreamingService = logStreamingService;
         this.schedulerJobInstanceService = schedulerJobInstanceService;
+        this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
 
         layout.setWidthFull();
 
@@ -80,7 +85,7 @@ public class JobContextMenu extends Dialog {
             else if(job instanceof InternalEventDrivenJob) {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog
                     = new InternalEventDrivenJobDialog(null, scheduledProcessManagementService, configurationRestService,
-                    moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService);
+                    moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, schedulerJobExecutionEnvironmentLabel);
                 internalEventDrivenJobDialog.setJob((InternalEventDrivenJob)job, EditMode.READONLY);
                 internalEventDrivenJobDialog.open();
             }
