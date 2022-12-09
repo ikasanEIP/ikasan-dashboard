@@ -106,12 +106,14 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
     protected Map<String, ContextDeletedHolder> contextDeletedHolderMap = new HashMap<>();
 
+    protected Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
     public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                   LogStreamingService logStreamingService, JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
-                                  UserService userService, SecurityService securityService, JobProvisionService jobProvisionService, ScheduledContextService scheduledContextService) {
+                                  UserService userService, SecurityService securityService, JobProvisionService jobProvisionService, ScheduledContextService scheduledContextService,
+                                  Map<String, String> schedulerJobExecutionEnvironmentLabel) {
 
         this.dynamicImagePath = dynamicImagePath;
         if (this.dynamicImagePath == null) {
@@ -187,6 +189,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         if(this.scheduledContextService == null) {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
         }
+
+        this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
 
         this.setMargin(false);
         this.setSpacing(false);
@@ -303,7 +307,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                 this.schedulerJobService, this.logStreamingService, this.jobInitiationService,
-                this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService);
+                this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService, this.schedulerJobExecutionEnvironmentLabel);
             jobTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
             jobTemplateVisualisationDialog.open();
 
@@ -323,7 +327,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                 this.schedulerJobService, this.logStreamingService, this.jobInitiationService,
                 this.contextProfileService, this.userService, this.securityService, this.jobProvisionService,
-                this.scheduledContextService);
+                this.scheduledContextService, this.schedulerJobExecutionEnvironmentLabel);
             contextTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
             contextTemplateVisualisationDialog.open();
 
@@ -345,7 +349,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
             InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
                 , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
-                , this.contextTemplate);
+                , this.contextTemplate, schedulerJobExecutionEnvironmentLabel);
 
             internalEventDrivenJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
             internalEventDrivenJobDialog.open();

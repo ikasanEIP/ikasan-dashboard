@@ -2,6 +2,7 @@ package org.ikasan.scheduled.instance.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
@@ -37,10 +38,11 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
 
     private SolrSchedulerJobInstanceDaoImpl solrSchedulerJobInstanceDao;
     private SolrSchedulerJobDaoImpl solrSchedulerJobDao;
-
+    private Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
     public SolrSchedulerJobInstanceServiceImpl(SolrSchedulerJobInstanceDaoImpl solrSchedulerJobInstanceDao,
-                                               SolrSchedulerJobDaoImpl solrSchedulerJobDao) {
+                                               SolrSchedulerJobDaoImpl solrSchedulerJobDao,
+                                               Map<String, String> schedulerJobExecutionEnvironmentLabel) {
         this.solrSchedulerJobInstanceDao = solrSchedulerJobInstanceDao;
         if (solrSchedulerJobInstanceDao == null) {
             throw new IllegalArgumentException("solrSchedulerJobInstanceDao cannot be null!");
@@ -49,6 +51,7 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
         if (solrSchedulerJobDao == null) {
             throw new IllegalArgumentException("solrSchedulerJobDao cannot be null!");
         }
+        this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
     }
 
     @Override
@@ -161,6 +164,16 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                                 .forEach(name -> heldContexts.put(name, Boolean.TRUE));
 
                             internalEventDrivenJobInstance.setHeldContexts(heldContexts);
+                        }
+                    }
+
+                    // replaces the execution environment attribute with the value from config-repo if it matches, else leave what we already have.
+                    if (StringUtils.isNotBlank(internalEventDrivenJobInstance.getExecutionEnvironmentProperties())) {
+                        if (schedulerJobExecutionEnvironmentLabel != null && schedulerJobExecutionEnvironmentLabel.size() != 0) {
+                            String keyFromJob = internalEventDrivenJobInstance.getExecutionEnvironmentProperties();
+                            if(schedulerJobExecutionEnvironmentLabel.containsKey(keyFromJob)) {
+                                internalEventDrivenJobInstance.setExecutionEnvironmentProperties(schedulerJobExecutionEnvironmentLabel.get(keyFromJob));
+                            }
                         }
                     }
 

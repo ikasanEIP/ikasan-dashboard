@@ -7,12 +7,15 @@ import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
 import org.ikasan.dashboard.ui.UITest;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.visualisation.TestUtils;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobImpl;
@@ -136,7 +139,7 @@ public class JobContextMenuTest extends UITest {
         jobContextMenu = new JobContextMenu(schedulerJob, systemEventLogger, moduleMetadataService,
             scheduledProcessManagementService, configurationRestService, moduleControlRestService,
             metaDataRestService, schedulerJobService, rootContextInstance, currentInstance, logStreamingService,
-            this.schedulerJobInstanceService);
+            this.schedulerJobInstanceService, TestUtils.getSchedulerJobExecutionEnvironmentLabel());
 
         Button viewOutputLogButton = (Button) ReflectionTestUtils.getField(jobContextMenu, "viewOutputLogButton");
         assertNotNull(viewOutputLogButton);
@@ -174,7 +177,7 @@ public class JobContextMenuTest extends UITest {
         jobContextMenu = new JobContextMenu(schedulerJob, systemEventLogger, moduleMetadataService,
             scheduledProcessManagementService, configurationRestService, moduleControlRestService,
             metaDataRestService, schedulerJobService, rootContextInstance, currentInstance, logStreamingService,
-            this.schedulerJobInstanceService);
+            this.schedulerJobInstanceService, TestUtils.getSchedulerJobExecutionEnvironmentLabel());
 
         Button button = (Button) ReflectionTestUtils.getField(jobContextMenu, "viewErrorLogButton");
         assertNotNull(button);
@@ -209,7 +212,7 @@ public class JobContextMenuTest extends UITest {
         jobContextMenu = new JobContextMenu(schedulerJob, systemEventLogger, moduleMetadataService,
             scheduledProcessManagementService, configurationRestService, moduleControlRestService,
             metaDataRestService, schedulerJobService, rootContextInstance, currentInstance, logStreamingService
-            , this.schedulerJobInstanceService);
+            , this.schedulerJobInstanceService, TestUtils.getSchedulerJobExecutionEnvironmentLabel());
 
         Button viewOutputLogButton = (Button) ReflectionTestUtils.getField(jobContextMenu, "viewOutputLogButton");
         assertNotNull(viewOutputLogButton);
@@ -246,7 +249,7 @@ public class JobContextMenuTest extends UITest {
         jobContextMenu = new JobContextMenu(schedulerJob, systemEventLogger, moduleMetadataService,
             scheduledProcessManagementService, configurationRestService, moduleControlRestService,
             metaDataRestService, schedulerJobService, rootContextInstance, currentInstance, logStreamingService,
-            this.schedulerJobInstanceService);
+            this.schedulerJobInstanceService, TestUtils.getSchedulerJobExecutionEnvironmentLabel());
 
         Button viewOutputLogButton = (Button) ReflectionTestUtils.getField(jobContextMenu, "viewOutputLogButton");
         assertNotNull(viewOutputLogButton);
@@ -283,7 +286,7 @@ public class JobContextMenuTest extends UITest {
         jobContextMenu = new JobContextMenu(schedulerJob, systemEventLogger, moduleMetadataService,
             scheduledProcessManagementService, configurationRestService, moduleControlRestService,
             metaDataRestService, schedulerJobService, rootContextInstance, currentInstance, logStreamingService
-            , this.schedulerJobInstanceService);
+            , this.schedulerJobInstanceService, TestUtils.getSchedulerJobExecutionEnvironmentLabel());
 
         Button button = (Button) ReflectionTestUtils.getField(jobContextMenu, "viewErrorLogButton");
         assertNotNull(button);
@@ -320,7 +323,7 @@ public class JobContextMenuTest extends UITest {
         jobContextMenu = new JobContextMenu(schedulerJob, systemEventLogger, moduleMetadataService,
             scheduledProcessManagementService, configurationRestService, moduleControlRestService,
             metaDataRestService, schedulerJobService, rootContextInstance, currentInstance, logStreamingService
-            , this.schedulerJobInstanceService);
+            , this.schedulerJobInstanceService, TestUtils.getSchedulerJobExecutionEnvironmentLabel());
 
         Button button;
 
@@ -366,7 +369,7 @@ public class JobContextMenuTest extends UITest {
         jobContextMenu = new JobContextMenu(schedulerJob, systemEventLogger, moduleMetadataService,
             scheduledProcessManagementService, configurationRestService, moduleControlRestService,
             metaDataRestService, schedulerJobService, rootContextInstance, currentInstance, logStreamingService,
-            this.schedulerJobInstanceService);
+            this.schedulerJobInstanceService, TestUtils.getSchedulerJobExecutionEnvironmentLabel());
 
         Button button;
 

@@ -51,6 +51,7 @@ import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class SchedulerJobGridWidget extends Div {
@@ -81,6 +82,8 @@ public class SchedulerJobGridWidget extends Div {
 
     private LogStreamingService logStreamingService;
 
+    private Map<String, String> schedulerJobExecutionEnvironmentLabel;
+
     /**
      * Constructor
      *
@@ -108,7 +111,8 @@ public class SchedulerJobGridWidget extends Div {
                                   MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                   LogStreamingService logStreamingService, ContextTemplate contextTemplate, JobInitiationService jobInitiationService,
                                   JobProvisionService jobProvisionService, ContextProfileService contextProfileService, UserService userService,
-                                  SecurityService securityService, ScheduledContextService scheduledContextService) {
+                                  SecurityService securityService, ScheduledContextService scheduledContextService, Map<String, String> schedulerJobExecutionEnvironmentLabel
+    ) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if (this.scheduledContextInstanceService == null) {
@@ -174,6 +178,8 @@ public class SchedulerJobGridWidget extends Div {
         if (this.logStreamingService == null) {
             throw new IllegalArgumentException("logStreamingService cannot be null!");
         }
+
+        this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -266,7 +272,7 @@ public class SchedulerJobGridWidget extends Div {
                                 JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
                                     configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService,
                                     jobInitiationService, contextProfileService, userService, securityService,
-                                    jobProvisionService, scheduledContextService);
+                                    jobProvisionService, scheduledContextService, schedulerJobExecutionEnvironmentLabel);
                                 jobTemplateVisualisationDialog.createSchedulerVisualisation(contextTemplate, ContextHelper.getChildContextTemplate(context, contextTemplate));
                                 jobTemplateVisualisationDialog.open();
                             } catch (Exception e) {
@@ -334,7 +340,7 @@ public class SchedulerJobGridWidget extends Div {
                             lock.addClickListener(event -> {
                                 JobLockManagementDialog jobLockManagementDialog = new JobLockManagementDialog(this.contextTemplate, this.moduleMetaDataService, this.scheduledProcessManagementService,
                                     this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
-                                    this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService);
+                                    this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService, this.schedulerJobExecutionEnvironmentLabel);
                                 jobLockManagementDialog.setJobLock(lockName.get());
                                 jobLockManagementDialog.open();
                                 jobLockManagementDialog.addOpenedChangeListener(dialogOpenedChangeEvent -> {
@@ -670,7 +676,8 @@ public class SchedulerJobGridWidget extends Div {
             }
             else if(event.getItem().getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)) {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(moduleMetaDataService.findById(event.getItem().getAgentName())
-                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService);
+                    , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
+                    , schedulerJobExecutionEnvironmentLabel);
                 internalEventDrivenJobDialog.setJob(event.getItem(), EditMode.EDIT);
 
                 internalEventDrivenJobDialog.open();

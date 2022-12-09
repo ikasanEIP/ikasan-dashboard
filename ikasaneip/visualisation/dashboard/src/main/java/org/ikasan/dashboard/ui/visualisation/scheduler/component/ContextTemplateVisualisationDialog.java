@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Map;
 
 public class ContextTemplateVisualisationDialog extends AbstractCloseableResizableDialog {
 
@@ -59,13 +60,15 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
 
     private SchedulerVisualisation schedulerVisualisation;
 
+    private Map<String, String> schedulerJobExecutionEnvironmentLabel;
+
     public ContextTemplateVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                               LogStreamingService logStreamingService,
                                               JobInitiationService jobInitiationService, ContextProfileService contextProfileService, UserService userService,
                                               SecurityService securityService, JobProvisionService jobProvisionService,
-                                              ScheduledContextService scheduledContextService) {
+                                              ScheduledContextService scheduledContextService, Map<String, String> schedulerJobExecutionEnvironmentLabel) {
         this.setHeight("98vh");
         this.setWidth("98vw");
 
@@ -139,6 +142,8 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
         }
 
+        this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
+
         layout = new VerticalLayout();
         layout.setSizeFull();
         super.content.add(layout);
@@ -152,7 +157,7 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
         this.schedulerVisualisation = new ContextSchedulerVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.jobInitiationService, this.contextProfileService, this.userService, this.securityService,
-            this.jobProvisionService, this.scheduledContextService);
+            this.jobProvisionService, this.scheduledContextService, this.schedulerJobExecutionEnvironmentLabel);
 
         schedulerVisualisation.createSchedulerVisualisation(rootContextTemplate, contextTemplate, this, true);
 
@@ -184,7 +189,7 @@ public class ContextTemplateVisualisationDialog extends AbstractCloseableResizab
                                     = new ContextTemplateVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
                                     , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService
                                     , this.jobInitiationService, this.contextProfileService, this.userService, this.securityService,
-                                    this.jobProvisionService, this.scheduledContextService);
+                                    this.jobProvisionService, this.scheduledContextService, this.schedulerJobExecutionEnvironmentLabel);
 
                                 contextTemplateVisualisationDialog.createSchedulerVisualisation(this.rootContextTemplate, this.contextTemplate);
                                 contextTemplateVisualisationDialog.open();

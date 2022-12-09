@@ -3,6 +3,7 @@ package org.ikasan.scheduled.instance.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
@@ -35,7 +36,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -80,7 +83,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         this.solrInternalEventDrivenJobRecordDao = new SolrInternalEventDrivenJobDaoImpl();
         this.solrInternalEventDrivenJobRecordDao.setSolrClient(server);
 
-        this.service = new SolrSchedulerJobInstanceServiceImpl(this.solrSchedulerJobInstanceDao, this.solrSchedulerJobDao);
+        this.service = new SolrSchedulerJobInstanceServiceImpl(this.solrSchedulerJobInstanceDao, this.solrSchedulerJobDao, SolrSchedulerJobInstanceServiceImplTest.getSchedulerJobExecutionEnvironmentLabel());
     }
 
     @After
@@ -91,12 +94,12 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfSchedulerJobInstanceDaoIsNull() {
-        service = new SolrSchedulerJobInstanceServiceImpl(null, this.solrSchedulerJobDao);
+        service = new SolrSchedulerJobInstanceServiceImpl(null, this.solrSchedulerJobDao, SolrSchedulerJobInstanceServiceImplTest.getSchedulerJobExecutionEnvironmentLabel());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfSchedulerJobDaoIsNull() {
-        service = new SolrSchedulerJobInstanceServiceImpl(this.solrSchedulerJobInstanceDao, null);
+        service = new SolrSchedulerJobInstanceServiceImpl(this.solrSchedulerJobInstanceDao, null, SolrSchedulerJobInstanceServiceImplTest.getSchedulerJobExecutionEnvironmentLabel());
     }
 
     @Test
@@ -413,7 +416,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     public void test_initialise_scheduler_job_instances() throws SchedulerJobInstanceInitialisationException {
         this.insertFileEventRecords("file", 135, "context");
         this.insertQuartzScheduleEventRecords("quartz", 75, "context");
-        this.insertInternalEventDrivenRecords("internal", 400, "context");
+        this.insertInternalEventDrivenRecords("internal", 400, "context", null);
 
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -457,7 +460,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     public void test_initialise_scheduler_job_instances_with_jobs_on_hold() throws SchedulerJobInstanceInitialisationException {
         this.insertFileEventRecords("file", 135, "context");
         this.insertQuartzScheduleEventRecords("quartz", 75, "context");
-        this.insertInternalEventDrivenRecords("internal", 400, "context");
+        this.insertInternalEventDrivenRecords("internal", 400, "context", null);
 
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -512,7 +515,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     public void test_put_jobs_on_hold_for_context_instance_the_query_for_jobs_to_release() throws SchedulerJobInstanceInitialisationException {
         this.insertFileEventRecords("file", 135, "context");
         this.insertQuartzScheduleEventRecords("quartz", 75, "context");
-        this.insertInternalEventDrivenRecords("internal", 400, "context");
+        this.insertInternalEventDrivenRecords("internal", 400, "context",null);
 
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -575,6 +578,66 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
             = this.service.getJobsToReleaseWithinContext(contextInstance, contextInstance.getName());
 
         Assert.assertEquals(400, jobsToRelease.size());
+    }
+
+    @Test
+    public void test_initialise_scheduler_job_instances_with_custom_execution_environments() throws SchedulerJobInstanceInitialisationException {
+        this.insertFileEventRecords("file", 1, "context");
+        this.insertQuartzScheduleEventRecords("quartz", 1, "context");
+        this.insertInternalEventDrivenRecords("internal", 1, "context", "POWERSHELL"); //expect to be change
+        this.insertInternalEventDrivenRecords("internalB", 1, "context", "some-non-replace-value"); // should not change
+
+        ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
+
+        ContextInstanceImpl contextInstance = new ContextInstanceImpl();
+        contextInstance.setName("context");
+        contextInstance.setId("contextInstanceId");
+        contextInstance.setScheduledJobs(this.solrSchedulerJobDao.findByContext("context", 1000, 0).getResultList()
+            .stream()
+            .map(schedulerJobRecord -> {
+                try {
+                    if (schedulerJobRecord.getJob() instanceof SolrFileEventDrivenJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrFileEventDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrInternalEventDrivenJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrInternalEventDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrQuartzScheduleDrivenJobInstanceImpl.class);
+                    }
+                }
+                catch (Exception e) {
+                    return null;
+                }
+                return null;
+            })
+            .collect(Collectors.toList())
+        );
+
+        SchedulerJobInstancesInitialisationParameters parameters = new SolrSchedulerJobInstancesInitialisationParametersImpl(false);
+
+        List<SchedulerJobInstance> schedulerJobInstances = this.service.initialiseSchedulerJobInstancesForContext
+            (contextInstance, parameters);
+
+        Assert.assertEquals(4, schedulerJobInstances.size());
+
+        SearchResults<SchedulerJobInstanceRecord> searchResults = this.service.getSchedulerJobInstancesByContextInstanceId
+            ("contextInstanceId", 4, 0, null, null);
+
+        Assert.assertEquals(4, searchResults.getResultList().size());
+
+        searchResults.getResultList()
+            .forEach(job -> {
+                if(job.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
+                    if (job.getJobName().equals("internaljobName0")) {
+                        // Should change based on the "getSchedulerJobExecutionEnvironmentLabel" config in this test class
+                        Assert.assertEquals("powershell.exe|-Command", ((InternalEventDrivenJobInstance) job.getSchedulerJobInstance()).getExecutionEnvironmentProperties());
+                    } else if (job.getJobName().equals("internalBjobName0")) {
+                        // Leave the value from the job setup
+                        Assert.assertEquals("some-non-replace-value", ((InternalEventDrivenJobInstance) job.getSchedulerJobInstance()).getExecutionEnvironmentProperties());
+                    } else {
+                        Assert.fail("Something went wrong in the test, so failing the test");
+                    }
+                }
+            });
     }
 
     private SchedulerJobInstanceRecord createSchedulerJobInstanceRecord(String contextInstanceId, String contextName, String jobName) {
@@ -684,7 +747,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         });
     }
 
-    private void insertInternalEventDrivenRecords(String idPrefix, int num, String contextId) {
+    private void insertInternalEventDrivenRecords(String idPrefix, int num, String contextId, String executionEnvironmentProperty) {
         IntStream.range(0, num).forEach(i -> {
             SolrInternalEventDrivenJobImpl solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
             solrInternalEventDrivenJob.setAgentName(idPrefix+"agentName"+i);
@@ -692,6 +755,9 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
             solrInternalEventDrivenJob.setIdentifier(solrInternalEventDrivenJob.getAgentName()+"_"+solrInternalEventDrivenJob.getJobName());
             solrInternalEventDrivenJob.setContextName(contextId);
             solrInternalEventDrivenJob.setCommandLine("ls -la");
+            if (StringUtils.isNotBlank(executionEnvironmentProperty)) {
+                solrInternalEventDrivenJob.setExecutionEnvironmentProperties(executionEnvironmentProperty);
+            }
 
             SolrInternalEventDrivenJobRecordImpl solrInternalEventDrivenJobRecord = new SolrInternalEventDrivenJobRecordImpl();
             solrInternalEventDrivenJobRecord.setAgentName(idPrefix+"agentName"+i);
@@ -715,5 +781,13 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     protected InputStream loadDataFileStream(String fileName) throws IOException
     {
         return getClass().getResourceAsStream(fileName);
+    }
+
+    private static Map<String, String> getSchedulerJobExecutionEnvironmentLabel() {
+        Map<String, String> values = new HashMap<>();
+        values.put("CMD", "cmd.exe|/c");
+        values.put("BASH", "/bin/bash|-c");
+        values.put("POWERSHELL", "powershell.exe|-Command");
+        return values;
     }
 }
