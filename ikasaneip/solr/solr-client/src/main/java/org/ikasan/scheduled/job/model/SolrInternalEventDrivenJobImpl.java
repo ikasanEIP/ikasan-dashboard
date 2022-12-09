@@ -20,6 +20,7 @@ public class SolrInternalEventDrivenJobImpl extends SolrSchedulerJobImpl impleme
     private List<Integer> daysOfWeekToRun;
     private boolean targetResidingContextOnly;
     boolean participatesInLock;
+    private String executionEnvironmentProperties;
 
     @Override
     public List<String> getSuccessfulReturnCodes() {
@@ -109,6 +110,16 @@ public class SolrInternalEventDrivenJobImpl extends SolrSchedulerJobImpl impleme
     @Override
     public void setParticipatesInLock(boolean participatesInLock) {
         this.participatesInLock = participatesInLock;
+    }
+
+    @Override
+    public String getExecutionEnvironmentProperties() {
+        return executionEnvironmentProperties;
+    }
+
+    @Override
+    public void setExecutionEnvironmentProperties(String executionEnvironmentProperties) {
+        this.executionEnvironmentProperties = executionEnvironmentProperties;
     }
 
     @Override

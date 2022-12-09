@@ -22,6 +22,8 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 
+import java.util.Map;
+
 public class AgentWidget extends Div {
 
     private ScheduledAgentsFilteringGrid scheduledAgentsFilteringGrid;
@@ -34,7 +36,7 @@ public class AgentWidget extends Div {
     private SystemEventLogger systemEventLogger;
     private SchedulerService schedulerService;
     private SchedulerJobService schedulerJobService;
-
+    private Map<String, String> schedulerJobExecutionEnvironmentLabel;
     /**
      * Constructor
      *
@@ -109,7 +111,7 @@ public class AgentWidget extends Div {
             SchedulerAgentManagementDialog schedulerAgentManagementDialog
                 = new SchedulerAgentManagementDialog(moduleMetaDataItemDoubleClickEvent.getItem()
                     , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
-                    , this.moduleMetadataService, systemEventLogger, schedulerService, this.schedulerJobService);
+                    , this.moduleMetadataService, systemEventLogger, schedulerService, this.schedulerJobService, this.schedulerJobExecutionEnvironmentLabel);
 
             schedulerAgentManagementDialog.open();
         });

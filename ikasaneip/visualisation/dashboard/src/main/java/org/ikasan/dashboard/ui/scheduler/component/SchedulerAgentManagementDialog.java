@@ -26,6 +26,8 @@ import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 
+import java.util.Map;
+
 public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDialog {
 
     private ModuleMetaData agent;
@@ -42,6 +44,8 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
 
     private SchedulerJobService<SchedulerJobRecord> schedulerJobService;
 
+    private Map<String, String> schedulerJobExecutionEnvironmentLabel;
+
     /**
      * Constructor
      *
@@ -57,7 +61,8 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
     public SchedulerAgentManagementDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, ModuleMetaDataService moduleMetaDataService,
-                                          SystemEventLogger systemEventLogger, SchedulerService schedulerService, SchedulerJobService schedulerJobService) {
+                                          SystemEventLogger systemEventLogger, SchedulerService schedulerService, SchedulerJobService schedulerJobService,
+                                          Map<String, String> schedulerJobExecutionEnvironmentLabel) {
         this.agent = agent;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
@@ -67,6 +72,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         this.systemEventLogger = systemEventLogger;
         this.schedulerService = schedulerService;
         this.schedulerJobService = schedulerJobService;
+        this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
         super.showResize(false);
         super.title.setText(getTranslation("header.scheduler-agent-management", UI.getCurrent().getLocale()));
 
@@ -121,7 +127,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         addInternalEventJobButton.addClickListener(buttonClickEvent -> {
             InternalEventDrivenJobDialog fileEventJobDialog = new InternalEventDrivenJobDialog(this.agent,
                 this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                this.metaDataRestService, this.systemEventLogger, schedulerJobService);
+                this.metaDataRestService, this.systemEventLogger, schedulerJobService, schedulerJobExecutionEnvironmentLabel);
 
             fileEventJobDialog.open();
         });
@@ -155,7 +161,7 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         AgentJobFilter agentJobFiler = new AgentJobFilter();
         AgentJobFilteringGrid2 filteringGrid = new AgentJobFilteringGrid2(this.agent, this.scheduledProcessManagementService
             , agentJobFiler, new DateFormatter(), this.configurationRestService, this.moduleControlRestService,
-            this.metaDataRestService, this.moduleMetaDataService, this.systemEventLogger, this.schedulerService, this.schedulerJobService);
+            this.metaDataRestService, this.moduleMetaDataService, this.systemEventLogger, this.schedulerService, this.schedulerJobService, this.schedulerJobExecutionEnvironmentLabel);
         filteringGrid.setSizeFull();
 
         this.filterTf = new TextField();

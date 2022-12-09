@@ -77,6 +77,7 @@ import java.io.InputStream;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -126,6 +127,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
     private List<BlackoutWindowDateTimePair> blackoutWindowDateTimePairs;
     private Grid<BlackoutWindowDateTimePair> blackoutWindowsGrid;
     private String zipWorkingDirectory;
+    private Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
     /**
      * Constructor
@@ -157,7 +159,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
                                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
                                            JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobProvisionService jobProvisionService,
                                            UserService userService, SecurityService securityService, JobUtilsService jobUtilsService, String zipWorkingDirectory,
-                                           EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService) {
+                                           EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
+                                           Map<String, String> schedulerJobExecutionEnvironmentLabel) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -243,6 +246,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
         if (this.emailNotificationContextService == null) {
             throw new IllegalArgumentException("emailNotificationContextService cannot be null!");
         }
+
+        this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -503,7 +508,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
 
         this.schedulerVisualisation = new ContextSchedulerVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
-            , this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService);
+            , this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService
+            , this.schedulerJobExecutionEnvironmentLabel);
         this.schedulerVisualisation.setWidthFull();
         this.schedulerVisualisation.setHeight("75vh");
 
@@ -609,7 +615,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobGridWidget = new SchedulerJobGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate,
-            this.jobInitiationService, this.jobProvisionService, this.contextProfileService, this.userService, this.securityService, this.scheduledContextService);
+            this.jobInitiationService, this.jobProvisionService, this.contextProfileService, this.userService, this.securityService, this.scheduledContextService,
+            this.schedulerJobExecutionEnvironmentLabel);
         this.schedulerJobGridWidget.setWidthFull();
         this.schedulerJobGridWidget.setHeight("75vh");
         this.schedulerJobGridWidget.setVisible(false);
@@ -695,7 +702,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
             menuItemClickEvent -> {
                 JobLockManagementDialog jobLockManagementDialog = new JobLockManagementDialog(this.contextTemplate, this.moduleMetaDataService, this.scheduledProcessManagementService,
                     this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
-                    this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService);
+                    this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService,
+                    this.schedulerJobExecutionEnvironmentLabel);
                 jobLockManagementDialog.open();
             })
             .getElement()
@@ -825,7 +833,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
 
         jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale()), event -> {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
-                    this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+                    this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.schedulerJobExecutionEnvironmentLabel);
 
                 InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
                 internalEventDrivenJob.setContextName(this.contextTemplate.getName());

@@ -88,6 +88,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     private TextField workingDirectoryTf;
     private TextField minExecutionTimeTf;
     private TextField maxExecutionTimeTf;
+    private TextField executionEnvironmentPropertiesTf;
 
     private Button skipButton;
     private Button enableButton;
@@ -528,7 +529,14 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         formBinder.forField(this.workingDirectoryTf)
             .withNullRepresentation("")
             .bind(InternalEventDrivenJobInstance::getWorkingDirectory, InternalEventDrivenJobInstance::setWorkingDirectory);
-        formLayout.add(workingDirectoryTf, 2);
+
+        this.executionEnvironmentPropertiesTf = new TextField(getTranslation("label.execution-environment-properties", UI.getCurrent().getLocale()));
+        this.executionEnvironmentPropertiesTf.setEnabled(false);
+        formBinder.forField(this.executionEnvironmentPropertiesTf)
+            .withNullRepresentation("")
+            .bind(InternalEventDrivenJobInstance::getExecutionEnvironmentProperties, InternalEventDrivenJobInstance::setExecutionEnvironmentProperties);
+
+        formLayout.add(workingDirectoryTf, executionEnvironmentPropertiesTf);
 
         Button executionDaysButton = new Button(getTranslation("button.execution-days", UI.getCurrent().getLocale()), new Icon(VaadinIcon.CALENDAR));
         executionDaysButton.setIconAfterText(true);

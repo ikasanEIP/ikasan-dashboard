@@ -17,6 +17,7 @@ public class SolrInternalEventDrivenJobInstanceImpl extends SolrSchedulerJobInst
     private List<ContextParameter> contextParameters;
     private List<Integer> daysOfWeekToRun;
     private boolean targetResidingContextOnly;
+    private String executionEnvironmentProperties;
 
     boolean participatesInLock;
 
@@ -108,6 +109,16 @@ public class SolrInternalEventDrivenJobInstanceImpl extends SolrSchedulerJobInst
     @Override
     public void setParticipatesInLock(boolean participatesInLock) {
         this.participatesInLock = participatesInLock;
+    }
+
+    @Override
+    public String getExecutionEnvironmentProperties() {
+        return executionEnvironmentProperties;
+    }
+
+    @Override
+    public void setExecutionEnvironmentProperties(String executionEnvironmentProperties) {
+        this.executionEnvironmentProperties = executionEnvironmentProperties;
     }
 
     @Override

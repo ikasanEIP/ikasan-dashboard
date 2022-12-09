@@ -76,6 +76,8 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
     private JobProvisionService jobProvisionService;
     private ScheduledContextService scheduledContextService;
 
+    private Map<String, String> schedulerJobExecutionEnvironmentLabel;
+
     private ComboBox<JobLock> comboBox;
     private Grid<SchedulerJob> grid;
 
@@ -91,7 +93,8 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                                    JobInitiationService jobInitiationService,
                                    ContextProfileService contextProfileService, UserService userService, SecurityService securityService,
                                    JobProvisionService jobProvisionService,
-                                   ScheduledContextService scheduledContextService) {
+                                   ScheduledContextService scheduledContextService,
+                                   Map<String, String> schedulerJobExecutionEnvironmentLabel) {
         this.contextTemplate = contextTemplate;
         if(this.contextTemplate == null) {
             throw new IllegalArgumentException("contextTemplate cannot be null!");
@@ -167,6 +170,8 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
         }
 
+        this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
+
         this.init();
     }
 
@@ -209,7 +214,7 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
                                     JobTemplateVisualisationDialog jobTemplateVisualisationDialog = new JobTemplateVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
                                         configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService,
                                         jobInitiationService, contextProfileService, userService, securityService,
-                                        jobProvisionService, scheduledContextService);
+                                        jobProvisionService, scheduledContextService, schedulerJobExecutionEnvironmentLabel);
                                     jobTemplateVisualisationDialog.createSchedulerVisualisation(contextTemplate, ContextHelper.getChildContextTemplate(context, contextTemplate));
                                     jobTemplateVisualisationDialog.open();
                                 } catch (Exception e) {
