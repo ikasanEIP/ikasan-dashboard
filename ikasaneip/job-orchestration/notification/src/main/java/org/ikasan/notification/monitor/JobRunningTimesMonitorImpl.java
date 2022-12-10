@@ -32,7 +32,7 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
     private boolean notificationEnabled;
     private int notificationPollingInterval;
 
-    private List<ScheduledFuture<?>> jobRunningTimesNotificationsExecutors = new ArrayList<>();
+    private Map<String, ScheduledFuture<?>> mapOfRunningJobs = new HashMap<>();
 
     /**
      * Constructor
@@ -48,8 +48,6 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
         this.internalEventDrivenJobService = internalEventDrivenJobService;
         this.notificationEnabled = notificationEnabled;
         this.notificationPollingInterval = notificationPollingInterval;
-
-        jobRunningTimesNotificationsExecutors.clear();
     }
 
     @Override
@@ -61,13 +59,32 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
     @Override
     public void register(ContextInstance contextInstance) {
         if(this.notificationEnabled) {
-            jobRunningTimesNotificationsExecutors.add(Executors.newSingleThreadScheduledExecutor()
-                .scheduleAtFixedRate(new JobRunningTimesNotificationsRunner(contextInstance), 1, this.notificationPollingInterval, TimeUnit.MINUTES));
 
-            LOG.info("JobRunningTimesMonitor has started monitoring on " + contextInstance.getName());
-            LOG.info(jobRunningTimesNotificationsExecutors.size() + " number of Contexts are being monitored now!");
+            // Create the scheduler to be executed
+            ScheduledFuture<?> notificationScheduler = Executors.newSingleThreadScheduledExecutor()
+                .scheduleAtFixedRate(new JobRunningTimesNotificationsRunner(contextInstance), 1, this.notificationPollingInterval, TimeUnit.MINUTES);
+
+            mapOfRunningJobs.put(contextInstance.getId(), notificationScheduler);
+
+            LOG.info("JobRunningTimesMonitor has started monitoring for context {}, instance {}", contextInstance.getName(), contextInstance.getId());
+            LOG.info(mapOfRunningJobs.size() + " number of Contexts are being monitored now!");
         }
         else {
+            LOG.info("Notifications are not enabled!");
+        }
+    }
+
+    @Override
+    public void unregister(ContextInstance contextInstance) {
+        if(this.notificationEnabled) {
+            if (mapOfRunningJobs.containsKey(contextInstance.getId())) {
+                mapOfRunningJobs.get(contextInstance.getId()).cancel(true); // Stop the related SingleThreadScheduledExecutor
+                LOG.info("Context {}, Context Instance Id {} notification has been unregistered", contextInstance.getName(), contextInstance.getId());
+                mapOfRunningJobs.remove(contextInstance.getId());
+            }
+            LOG.info("After unregistering Context {}, InstanceId {} - number of Contexts are being monitored now is {}",
+                contextInstance.getName(), contextInstance.getId(), mapOfRunningJobs.size());
+        } else {
             LOG.info("Notifications are not enabled!");
         }
     }
@@ -83,8 +100,11 @@ public class JobRunningTimesMonitorImpl extends AbstractMonitorBase<GenericNotif
         @Override
         public void run() {
             try {
-                if (contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.COMPLETE.toString())) {
-                    throw new StopNotificationRunnerException(contextInstance.getName()+" is already Complete, stopping the JobRunningTimesNotificationsRunner");
+                if (contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.COMPLETE.toString()) ||
+                    contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.ENDED.toString())) {
+                    unregister(contextInstance);
+                    throw new StopNotificationRunnerException("Context:" + contextInstance.getName() + ", InstanceId: " + contextInstance.getId() +
+                        " is " + contextInstance.getStatus().toString() + ", stopping the JobRunningTimesNotificationsRunner");
                 }
 
                 if (contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.RUNNING.toString()) ||
