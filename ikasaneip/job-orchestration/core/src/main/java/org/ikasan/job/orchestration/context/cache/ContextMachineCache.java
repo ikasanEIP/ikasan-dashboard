@@ -93,6 +93,7 @@ public class ContextMachineCache
 
     public void remove(ContextMachine contextMachine)
     {
+        contextMachine.unregisterToNotificationMonitors();
         this.contextInstanceByContextNameCache.remove(contextMachine.getContext().getName(), contextMachine);
         this.contextInstanceByContextInstanceIdCache.remove(contextMachine.getContext().getId(), contextMachine);
     }

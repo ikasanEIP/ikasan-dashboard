@@ -28,4 +28,11 @@ public class MonitorManagement {
             LOG.info(contextMachine.getContext().getName()+" has registered to "+monitor);
         }
     }
+
+    public static void stopMonitoring(ContextMachine contextMachine) {
+        for (Monitor monitor : monitors) {
+            monitor.unregister(contextMachine.getContext());
+            LOG.info(contextMachine.getContext().getName()+" is being unregistered context is ending");
+        }
+    }
 }

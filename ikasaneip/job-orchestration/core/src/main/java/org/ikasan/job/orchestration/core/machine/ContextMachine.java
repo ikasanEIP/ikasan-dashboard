@@ -146,6 +146,11 @@ public class ContextMachine {
         MonitorManagement.startMonitoring(this);
     }
 
+    public void unregisterToNotificationMonitors() {
+        logger.info("Call to stop monitoring for the context {} and instanceId {}", this.contextInstance.getName(), this.contextInstance.getId());
+        MonitorManagement.stopMonitoring(this);
+    }
+
     public String getOutboundQueueName() {
         return "outbound-" + this.contextInstance.getId() + "-queue";
     }

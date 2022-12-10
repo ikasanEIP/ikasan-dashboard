@@ -16,9 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
@@ -30,7 +28,7 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
 
     private SchedulerJobInstanceService schedulerJobInstanceService;
 
-    private List<ScheduledFuture<?>> overdueFileNotificationsExecutors = new ArrayList<>();
+    private Map<String, ScheduledFuture<?>> mapOfRunningJobs = new HashMap<>();
 
     private Integer fileArrivalToleranceInMinutes;
 
@@ -51,8 +49,6 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
         this.schedulerJobInstanceService = schedulerJobInstanceService;
         this.notificationEnabled = notificationEnabled;
         this.notificationPollingInterval = notificationPollingInterval;
-
-        overdueFileNotificationsExecutors.clear();
     }
 
     @Override
@@ -64,12 +60,32 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
     @Override
     public void register(ContextInstance contextInstance) {
         if(this.notificationEnabled) {
-            overdueFileNotificationsExecutors.add(Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new OverdueFileNotificationsRunner(contextInstance)
-                , 1, this.notificationPollingInterval, TimeUnit.MINUTES));
-            LOG.info("OverdueFileMonitor has started monitoring on " + contextInstance.getName());
-            LOG.info(overdueFileNotificationsExecutors.size() + " number of Contexts are being monitored now!");
+
+            // Create the scheduler to be executed
+            ScheduledFuture<?> notificationScheduler = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new OverdueFileNotificationsRunner(contextInstance)
+                , 1, this.notificationPollingInterval, TimeUnit.MINUTES);
+
+            mapOfRunningJobs.put(contextInstance.getId(), notificationScheduler);
+
+            LOG.info("OverdueFileMonitor has started monitoring for context {}, instance {}", contextInstance.getName(), contextInstance.getId());
+            LOG.info(mapOfRunningJobs.size() + " number of Contexts are being monitored now!");
         }
         else {
+            LOG.info("Notifications are not enabled!");
+        }
+    }
+
+    @Override
+    public void unregister(ContextInstance contextInstance) {
+        if(this.notificationEnabled) {
+            if (mapOfRunningJobs.containsKey(contextInstance.getId())) {
+                mapOfRunningJobs.get(contextInstance.getId()).cancel(true); // Stop the related SingleThreadScheduledExecutor
+                LOG.info("Context {}, Context Instance Id {} notification has been unregistered", contextInstance.getName(), contextInstance.getId());
+                mapOfRunningJobs.remove(contextInstance.getId());
+            }
+            LOG.info("After unregistering Context {}, InstanceId {} - number of Contexts are being monitored now is {}",
+                contextInstance.getName(), contextInstance.getId(), mapOfRunningJobs.size());
+        } else {
             LOG.info("Notifications are not enabled!");
         }
     }
@@ -85,8 +101,11 @@ public class OverdueFileMonitorImpl extends AbstractMonitorBase<GenericNotificat
         @Override
         public void run() {
             try {
-                if (contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.COMPLETE.toString())) {
-                    throw new StopNotificationRunnerException(contextInstance.getName()+" is already Complete, stopping the OverdueFileNotificationsRunner");
+                if (contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.COMPLETE.toString()) ||
+                    contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.ENDED.toString())) {
+                    unregister(contextInstance);
+                    throw new StopNotificationRunnerException("Context:" + contextInstance.getName() + ", InstanceId: " + contextInstance.getId() +
+                        " is " + contextInstance.getStatus().toString() + ", stopping the OverdueFileNotificationsRunner");
                 }
 
                 if (contextInstance.getStatus().toString().equalsIgnoreCase(InstanceStatus.RUNNING.toString()) ||
