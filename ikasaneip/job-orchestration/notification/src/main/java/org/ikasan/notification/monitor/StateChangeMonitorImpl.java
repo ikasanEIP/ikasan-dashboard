@@ -13,14 +13,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificationDetails> implements Monitor<GenericNotificationDetails> {
 
     private static final Logger LOG = LoggerFactory.getLogger(StateChangeMonitorImpl.class);
 
-    private List<Future<?>> errorNotificationsExecutors = new ArrayList<>();
+    private Map<String, Future<?>> mapOfRunningJobs = new HashMap<>();
 
     private boolean notificationEnabled;
 
@@ -32,19 +34,37 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
         super(executorService);
         LOG.info("StateChangeMonitorImpl is being created!");
         this.notificationEnabled = notificationEnabled;
-
-        errorNotificationsExecutors.clear();
     }
 
     @Override
     public void register(ContextInstance contextInstance) {
         if(this.notificationEnabled) {
             ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextInstance.getName());
-            errorNotificationsExecutors.add(Executors.newSingleThreadExecutor().submit(new ErrorNotificationsRunner(contextMachine)));
-            LOG.info("StateChangeMonitor has started monitoring on " + contextInstance.getName());
-            LOG.info(errorNotificationsExecutors.size() + " number of Contexts are being monitored now!");
+
+            // Create the scheduler to be executed
+            Future<?> notificationScheduler = Executors.newSingleThreadExecutor().submit(new ErrorNotificationsRunner(contextMachine));
+
+            mapOfRunningJobs.put(contextInstance.getId(), notificationScheduler);
+
+            LOG.info("StateChangeMonitor has started monitoring for context {}, instance {}", contextInstance.getName(), contextInstance.getId());
+            LOG.info(mapOfRunningJobs.size() + " number of Contexts are being monitored now!");
         }
         else {
+            LOG.info("Notifications are not enabled!");
+        }
+    }
+
+    @Override
+    public void unregister(ContextInstance contextInstance) {
+        if(this.notificationEnabled) {
+            if (mapOfRunningJobs.containsKey(contextInstance.getId())) {
+                mapOfRunningJobs.get(contextInstance.getId()).cancel(true); // Stop the related SingleThreadScheduledExecutor
+                LOG.info("Context {}, Context Instance Id {} notification has been unregistered", contextInstance.getName(), contextInstance.getId());
+                mapOfRunningJobs.remove(contextInstance.getId());
+            }
+            LOG.info("After unregistering Context {}, InstanceId {} - number of Contexts are being monitored now is {}",
+                contextInstance.getName(), contextInstance.getId(), mapOfRunningJobs.size());
+        } else {
             LOG.info("Notifications are not enabled!");
         }
     }
@@ -67,6 +87,8 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
         public void run() {
             try {
                 contextMachine.addSchedulerJobStateChangeEventListener(this);
+                LOG.info("ErrorNotificationsRunner is running for Context {} and InstanceId {}",
+                    contextMachine.getContext().getName(), contextMachine.getContext().getId());
 
                 while(true) {
                     TimeUnit.SECONDS.sleep(3);
@@ -74,9 +96,9 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
 
             } catch (Exception e) {
                 // do something
-                e.printStackTrace();
+                LOG.info("ErrorNotificationsRunner has been Interrupted by an exception, most likely Context Instance has been removed. Context {}, InstanceId: {} - Exception {}",
+                    contextMachine.getContext().getName(), contextMachine.getContext().getId(), e.getMessage()+ " - " + e.toString());
             } finally {
-
             }
         }
 
