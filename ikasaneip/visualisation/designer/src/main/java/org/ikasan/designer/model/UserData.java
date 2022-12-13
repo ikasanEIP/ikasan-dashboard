@@ -2,6 +2,8 @@ package org.ikasan.designer.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 public class UserData {
     public static final String INTERNAL_EVENT_DRIVEN_JOB = "INTERNAL_EVENT_DRIVEN_JOB";
     public static final String QUARTZ_EVENT_DRIVEN_JOB = "QUARTZ_EVENT_DRIVEN_JOB";
@@ -13,7 +15,8 @@ public class UserData {
     private String identifier;
     private String contextName;
     private String itemType;
-
+    private List<String> previousJobIdentifiers;
+    private List<String> subsequentJobIdentifiers;
 
     /**
      * Constructor
@@ -25,12 +28,15 @@ public class UserData {
      * @param itemType
      */
     public UserData(@JsonProperty("jobName") String jobName, @JsonProperty("agentName") String agentName, @JsonProperty("identifier") String identifier,
-        @JsonProperty("contextName") String contextName, @JsonProperty("itemType") String itemType) {
+        @JsonProperty("contextName") String contextName, @JsonProperty("itemType") String itemType,
+        @JsonProperty("previousJobIdentifiers") List<String> previousJobIdentifiers, @JsonProperty("subsequentJobIdentifiers") List<String> subsequentJobIdentifiers) {
         this.jobName = jobName;
         this.agentName = agentName;
         this.identifier = identifier;
         this.contextName = contextName;
         this.itemType = itemType;
+        this.previousJobIdentifiers = previousJobIdentifiers;
+        this.subsequentJobIdentifiers = subsequentJobIdentifiers;
     }
 
     public String getJobName() {
@@ -51,5 +57,13 @@ public class UserData {
 
     public String getItemType() {
         return itemType;
+    }
+
+    public List<String> getPreviousJobIdentifiers() {
+        return previousJobIdentifiers;
+    }
+
+    public List<String> getSubsequentJobIdentifiers() {
+        return subsequentJobIdentifiers;
     }
 }

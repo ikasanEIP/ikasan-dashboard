@@ -16,4 +16,6 @@ public class IkasanColours {
     public static final String SCHEDULER_OR ="rgba(241, 90, 35, 1.0)";
     public static final String WHITE ="rgba(255, 255, 255, 1.0)";
     public static final String BLACK ="rgba(0, 0, 0, 1.0)";
+
+    public static final String LIGHT_GREY ="rgba(236, 236, 236, 0.5)";
 }

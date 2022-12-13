@@ -1,10 +1,14 @@
 package org.ikasan.scheduled.job.service;
 
+import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobDaoImpl;
 import org.ikasan.scheduled.job.dao.SolrInternalEventDrivenJobDaoImpl;
 import org.ikasan.scheduled.job.dao.SolrQuartzScheduleDrivenJobDaoImpl;
 import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
 import org.ikasan.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
@@ -13,8 +17,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements SchedulerJobService<SchedulerJobRecord> {
 
@@ -413,5 +421,22 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         this.saveInternalEventDrivenJobs(internalEventDrivenJobs, actor);
         this.saveQuartzScheduledJobs(quartzScheduleDrivenJobs, actor);
         this.saveFileEventDrivenJobs(fileEventDrivenJobs, actor);
+    }
+
+    @Override
+    public Map<String, InternalEventDrivenJob> getCommandExecutionJobsForContext(String contextName) {
+        SchedulerJobSearchFilter filter = new SolrSchedulerJobSearchFilterImpl();
+        filter.setContextSearchFilter(contextName);
+        filter.setJobTypeFilter(JobConstants.INTERNAL_EVENT_DRIVEN_JOB);
+
+        SearchResults<SchedulerJobRecord> schedulerJobRecordDaoByFilter
+            = (SearchResults<SchedulerJobRecord>) this.schedulerJobRecordDao.findByFilter(filter, -1, -1, null, null);
+
+        Map<String, InternalEventDrivenJob> internalEventDrivenJobMap = new HashMap<>();
+
+        schedulerJobRecordDaoByFilter.getResultList().forEach(record
+            -> internalEventDrivenJobMap.put(record.getJob().getIdentifier(), (InternalEventDrivenJob) record.getJob()));
+
+        return internalEventDrivenJobMap;
     }
 }

@@ -7,6 +7,7 @@ import org.ikasan.spec.search.SearchResults;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class SchedulerJobServiceTestImpl implements SchedulerJobService {
 
@@ -171,5 +172,10 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     @Override
     public void renameContextForJobs(String oldName, String newName, String actor) {
 
+    }
+
+    @Override
+    public Map<String, InternalEventDrivenJob> getCommandExecutionJobsForContext(String contextName) {
+        return null;
     }
 }
