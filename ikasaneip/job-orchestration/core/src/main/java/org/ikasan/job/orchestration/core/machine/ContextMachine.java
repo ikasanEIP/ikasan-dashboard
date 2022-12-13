@@ -42,6 +42,7 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.*;
 import org.ikasan.spec.scheduled.instance.service.exception.SchedulerJobInstanceInitialisationException;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -788,14 +789,14 @@ public class ContextMachine {
 
         if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
             // Get all jobs that are not part of a logical construct
-            Map<String, SchedulerJobInstance> jobsOutsideLogicConstructs
+            Map<String, SchedulerJob> jobsOutsideLogicConstructs
                 = ContextHelper.getJobsOutsideLogicalGrouping(contextInstance);
 
             // Confirm that all jobs outside logical constructs are complete.
             jobsOutsideLogicConstructs.entrySet().forEach(entry -> {
-                if (!entry.getValue().getStatus().equals(InstanceStatus.COMPLETE)
-                    && !entry.getValue().getStatus().equals(InstanceStatus.SKIPPED)
-                    && !entry.getValue().getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
+                if (!((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.COMPLETE)
+                    && !((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.SKIPPED)
+                    && !((SchedulerJobInstance)entry.getValue()).getStatus().equals(InstanceStatus.SKIPPED_COMPLETE)) {
                     allJobsComplete.set(false);
                 }
             });

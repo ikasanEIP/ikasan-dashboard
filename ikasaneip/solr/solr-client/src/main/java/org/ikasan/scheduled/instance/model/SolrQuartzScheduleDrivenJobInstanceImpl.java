@@ -5,12 +5,16 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.instance.model.QuartzScheduleDrivenJobInstance;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SolrQuartzScheduleDrivenJobInstanceImpl extends SolrSchedulerJobInstanceImpl implements QuartzScheduleDrivenJobInstance {
     protected String cronExpression;
     protected String jobGroup;
     protected String timeZone;
+    protected List<String> blackoutWindowCronExpressions;
+    protected Map<String,String> blackoutWindowDateTimeRanges;
+    protected boolean isDropEventOnBlackout;
 
     /** whether to ignore a misfire - default true */
     private boolean ignoreMisfire = true;
@@ -118,6 +122,36 @@ public class SolrQuartzScheduleDrivenJobInstanceImpl extends SolrSchedulerJobIns
     @Override
     public void setRecoveryTolerance(long recoveryTolerance) {
         this.recoveryTolerance = recoveryTolerance;
+    }
+
+    @Override
+    public List<String> getBlackoutWindowCronExpressions() {
+        return null;
+    }
+
+    @Override
+    public void setBlackoutWindowCronExpressions(List<String> blackoutWindowCronExpressions) {
+
+    }
+
+    @Override
+    public Map<String, String> getBlackoutWindowDateTimeRanges() {
+        return null;
+    }
+
+    @Override
+    public void setBlackoutWindowDateTimeRanges(Map<String, String> blackoutWindowDateTimeRanges) {
+
+    }
+
+    @Override
+    public boolean isDropEventOnBlackout() {
+        return false;
+    }
+
+    @Override
+    public void setDropEventOnBlackout(boolean isDropEventOnBlackout) {
+
     }
 
     @Override

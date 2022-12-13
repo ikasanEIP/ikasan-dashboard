@@ -46,10 +46,7 @@ import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.JobConstants;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.slf4j.Logger;
@@ -221,7 +218,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private void buildGrid() {
         grid = new ExplorerTreeGrid<>();
 
-        Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstanceMap
+        Map<String, InternalEventDrivenJob> internalEventDrivenJobInstanceMap
             = getCommandExecutionJobsForContextInstance(contextInstance.getId());
 
         grid.addComponentHierarchyColumn(value -> {
@@ -1527,8 +1524,14 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * @return Map<String, InternalEventDrivenJobInstance> containing the command execution jobs
      * keyed on their identifier.
      */
-    private Map<String, InternalEventDrivenJobInstance> getCommandExecutionJobsForContextInstance(String contextInstanceId) {
-        return this.schedulerJobInstanceService.getCommandExecutionJobsForContextInstanceChildContext(contextInstanceId);
+    private Map<String, InternalEventDrivenJob> getCommandExecutionJobsForContextInstance(String contextInstanceId) {
+        Map<String, InternalEventDrivenJob> result = new HashMap<>();
+        this.schedulerJobInstanceService
+            .getCommandExecutionJobsForContextInstanceChildContext(contextInstanceId)
+            .entrySet()
+            .forEach(entry -> result.put(entry.getKey(), entry.getValue()));
+
+        return result;
     }
 
     /**

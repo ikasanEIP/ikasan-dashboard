@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.designer.DesignerCanvas;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -11,6 +12,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
@@ -20,6 +22,7 @@ import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.ikasan.spec.search.SearchResults;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -54,7 +57,8 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
                         .map(record -> record.getJob())
                         .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity()));
 
-                    this.designerCanvas.setCanvasJson(adapter.adaptJobs(contextTemplate, schedulerJobs));
+                    this.designerCanvas.setCanvasJson(adapter.adaptJobs(this.parentContextTemplate, contextTemplate, schedulerJobs,
+                        this.getCommandExecutionJobsForContextInstance(this.parentContextTemplate.getName())));
                 }
                 else {
                     this.designerCanvas.setCanvasJson(this.scheduledContextViewRecord.getContextView());
@@ -73,5 +77,19 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
 
             this.initialised = true;
         }
+    }
+
+    /**
+     * Helper method to get all command execution jobs associated with an context instance.
+     *
+     * @param contextInstanceId the id of the context instance that we want the jobs for.
+     *
+     * @return Map<String, InternalEventDrivenJobInstance> containing the command execution jobs
+     * keyed on their identifier.
+     */
+    private Map<String, InternalEventDrivenJob> getCommandExecutionJobsForContextInstance(String contextInstanceId) {
+        return this.schedulerJobService
+            .getCommandExecutionJobsForContext(contextInstanceId);
+
     }
 }

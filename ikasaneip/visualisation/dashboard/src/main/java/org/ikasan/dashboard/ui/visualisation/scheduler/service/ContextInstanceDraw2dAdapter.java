@@ -32,8 +32,10 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
 
     Logger logger = LoggerFactory.getLogger(ContextInstanceDraw2dAdapter.class);
 
-    public String adaptJobs(Context context, Map<String, SchedulerJob> schedulerJobs) {
-            ArrayList<Object> items = super._adaptJobs(context, schedulerJobs);
+    public String adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs
+        , Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
+
+            ArrayList<Object> items = super._adaptJobs(parentContext, context, schedulerJobs, internalEventDrivenJobMap);
             this.addStatusRectangles(items, context);
 
             items.forEach(item -> {

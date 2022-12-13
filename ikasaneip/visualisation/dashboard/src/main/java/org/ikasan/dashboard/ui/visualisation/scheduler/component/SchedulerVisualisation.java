@@ -43,6 +43,7 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextViewRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -83,7 +84,6 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     protected SystemEventLogger systemEventLogger;
     protected SchedulerJobService schedulerJobService;
     protected LogStreamingService logStreamingService;
-    //protected SchedulerJobInstanceService schedulerJobInstanceService;
     protected JobInitiationService jobInitiationService;
     protected ContextProfileService contextProfileService;
     protected UserService userService;
@@ -100,6 +100,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     protected IkasanAuthentication authentication;
 
     protected Map<String, ContextDeletedHolder> contextDeletedHolderMap = new HashMap<>();
+
+    protected List<String> nodeConnectionIndicators = new ArrayList<>();
 
     protected Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
@@ -261,9 +263,10 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
     @Override
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
-
         if(canvasItemDoubleClickEvent.getFigure().getIdentifier() != null) {
-            ContextTemplate contextTemplate = ContextHelper.getChildContextTemplate(canvasItemDoubleClickEvent.getFigure().getIdentifier(),
+            String identifier = ContextHelper.getIdentifier(canvasItemDoubleClickEvent.getFigure().getIdentifier());
+
+            ContextTemplate contextTemplate = ContextHelper.getChildContextTemplate(identifier,
                 this.parentContextTemplate);
 
             if(contextTemplate != null && contextTemplate.getScheduledJobs() != null) {
@@ -275,7 +278,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                 this.openContextVisualisation(contextTemplate);
             }
             else {
-                this.openJobDialog(canvasItemDoubleClickEvent.getFigure().getIdentifier());
+                this.openJobDialog(identifier);
             }
         }
     }
@@ -283,15 +286,28 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     @Override
     public void singleClickEvent(CanvasItemSingleClickEvent canvasItemDoubleClickEvent) {
         if(canvasItemDoubleClickEvent.getFigure() != null && canvasItemDoubleClickEvent.getFigure().getIdentifier() != null) {
-            logger.info("Click event - " + canvasItemDoubleClickEvent.getFigure().getIdentifier());
+            String identifier = ContextHelper.getIdentifier(canvasItemDoubleClickEvent.getFigure().getIdentifier());
+            logger.info("Click event - " + identifier);
             SchedulerJob job = this.contextTemplate.getScheduledJobsMap()
-                .get(canvasItemDoubleClickEvent.getFigure().getIdentifier());
-            LinkedList<List<SchedulerJob>> jobs
-                = ContextHelper.traceJobThroughContextTemplate(this.parentContextTemplate, job.getJobName()
-                , this.contextTemplate.getName());
+                .get(identifier);
 
-            if(!jobs.isEmpty()) {
-                jobs.get(0).forEach(downstreamJob -> logger.info(downstreamJob.getJobName()));
+            if(job != null) {
+                this.nodeConnectionIndicators.forEach(nodeConnectionIndicator
+                    -> this.designerCanvas.removeFigure(nodeConnectionIndicator));
+
+                this.nodeConnectionIndicators.clear();
+                LinkedList<List<SchedulerJob>> jobs
+                    = ContextHelper.traceJobThroughContext(this.parentContextTemplate, job.getJobName()
+                    , this.contextTemplate.getName());
+
+                if (!jobs.isEmpty()) {
+                    jobs.get(0).forEach(downstreamJob -> {
+                        String nodeConnectorIndicator = UUID.randomUUID().toString();
+                        this.nodeConnectionIndicators.add(nodeConnectorIndicator);
+                        this.designerCanvas.addImageToFigure(downstreamJob.getIdentifier(), nodeConnectorIndicator,
+                            "frontend/images/mr-squid-head.png", 49.6, 37.8);
+                    });
+                }
             }
         }
     }
@@ -354,7 +370,9 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     private void openJobDialog(String identifier) {
         SchedulerJob schedulerJob = this.contextTemplate.getScheduledJobsMap().get(identifier);
 
-            SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName
+        if(schedulerJob == null) return;
+
+        SchedulerJobRecord schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName
             (this.parentContextTemplate.getName(), schedulerJob.getJobName());
 
         if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
