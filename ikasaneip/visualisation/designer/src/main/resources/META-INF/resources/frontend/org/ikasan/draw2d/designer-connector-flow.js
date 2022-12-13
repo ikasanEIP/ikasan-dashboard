@@ -519,6 +519,61 @@ window.Vaadin.Flow.designerConnector = {
             }
         }
 
+        designer.$connector.addImageToFigure = function (figureIdentifier, iconIdentifier, image, h, w) {
+            let _figure = null;
+            debugger;
+            _this.getFigures().each((i, figure)=>{
+                if(figure.id === figureIdentifier) {
+                    _figure = figure;
+                }
+            });
+
+            if(_figure != null) {
+
+                let x = _figure.x + _figure.width + 10;
+                let y = _figure.y - (_figure.getHeight() / 2) - 10 ;
+
+                this.addIcon(iconIdentifier, image, x, y, h, w, false, false);
+            }
+        }
+
+        designer.$connector.addBoundaryToFigure = function (figureIdentifier, itemIdentifier, h, w
+                                                            , lineFormat, backgroundColor) {
+            debugger;
+            let _figure = null;
+            _this.getFigures().each((i, figure)=>{
+                if(figure.id === figureIdentifier) {
+                    _figure = figure;
+                }
+            });
+
+            if(_figure != null) {
+
+                let x = _figure.x - (_figure.width / 2);
+                let y = _figure.y - (_figure.getHeight() / 2) ;
+
+                let boundary =  new draw2d.shape.basic.Rectangle({
+                    bgColor:backgroundColor,
+                    x: x,
+                    y: y,
+                    width: w,
+                    height: h,
+                    radius: 10,
+                    id: itemIdentifier,
+                    dasharray: lineFormat,
+                    stroke: 3,
+                    resizable:true,
+                    selectable:true,
+                    draggable:true
+                });
+
+                let command = new draw2d.command.CommandAdd(_this, boundary, x, y);
+                _this.getCommandStack().execute(command);
+
+                _this.getFigure(itemIdentifier).toBack();
+            }
+        }
+
         designer.$connector.addLabelWithCoordinates = function (labelString, x, y) {
             let label = new draw2d.shape.basic.Label({
                 text: labelString,

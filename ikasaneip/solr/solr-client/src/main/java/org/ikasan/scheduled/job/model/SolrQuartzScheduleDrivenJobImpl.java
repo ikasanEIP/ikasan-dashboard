@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 public class SolrQuartzScheduleDrivenJobImpl extends SolrSchedulerJobImpl implements QuartzScheduleDrivenJob {
-
     protected String cronExpression;
     protected String jobGroup;
     protected String timeZone;

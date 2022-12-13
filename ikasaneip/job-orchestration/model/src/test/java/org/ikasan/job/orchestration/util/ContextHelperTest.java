@@ -4,6 +4,7 @@ import org.apache.commons.io.IOUtils;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -45,9 +46,12 @@ public class ContextHelperTest {
 
         ContextHelper.enrichJobs(contextInstance);
 
-        LinkedList<List<SchedulerJobInstance>> identifiers = ContextHelper.traceJobThroughContextInstance
+        LinkedList<List<SchedulerJob>> identifiers = ContextHelper.traceJobThroughContext
             (contextInstance, "1779796515", "CONTEXT-1967431808");
 
+        identifiers.forEach(level -> {
+            level.forEach(id -> System.out.println(id));
+        });
     }
 
     @Test
@@ -57,12 +61,12 @@ public class ContextHelperTest {
 
         ContextHelper.enrichJobs(contextInstance);
 
-        LinkedList<List<SchedulerJobInstance>> identifiers = ContextHelper.traceJobThroughContextInstance
+        LinkedList<List<SchedulerJob>> identifiers = ContextHelper.traceJobThroughContext
             (contextInstance, "1010295672", "CONTEXT-1892741766");
 
         System.out.println(identifiers);
 
-        identifiers = ContextHelper.traceJobThroughContextInstance
+        identifiers = ContextHelper.traceJobThroughContext
             (contextInstance, "1010295672", "CONTEXT-1892741766");
     }
 

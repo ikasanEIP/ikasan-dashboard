@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
@@ -141,6 +142,19 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         internalEventDrivenJobs.forEach(job -> {
             this.service.findByContextNameAndJobName(contextId1, job.getJobName());
         });
+    }
+
+    @Test
+    public void test_get_internal_event_job_map() {
+        String contextId1 = "Context-Name";
+
+        List<SchedulerJob> listOfRecords1 = createListOfRecords(contextId1, 50);
+
+        service.save(listOfRecords1, "system");
+
+        Map<String, InternalEventDrivenJob> results = this.service.getCommandExecutionJobsForContext(contextId1);
+
+        Assert.assertEquals(50, results.size());
     }
 
     @Test
@@ -589,6 +603,42 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
             solrQuartzScheduleDrivenJob.setContextName(contextId);
             solrQuartzScheduleDrivenJob.setCronExpression("cronExpression" + i);
             solrQuartzScheduleDrivenJob.setChildContextNames(List.of("child"));
+
+            jobs.add(solrFileEventDrivenJob);
+            jobs.add(solrInternalEventDrivenJob);
+            jobs.add(solrQuartzScheduleDrivenJob);
+        }
+
+        return jobs;
+    }
+
+    private List<SchedulerJob> createListOfRecords(String contextId, int count) {
+        List<SchedulerJob> jobs = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            SolrFileEventDrivenJobImpl solrFileEventDrivenJob = new SolrFileEventDrivenJobImpl();
+            solrFileEventDrivenJob.setAgentName(contextId + "agentName" + i);
+            solrFileEventDrivenJob.setJobName(contextId + "jobNameFile" + i);
+            solrFileEventDrivenJob.setIdentifier(solrFileEventDrivenJob.getAgentName() + "_" + solrFileEventDrivenJob.getJobName());
+            solrFileEventDrivenJob.setContextName(contextId);
+            solrFileEventDrivenJob.setCronExpression("cronExpression" + i);
+            solrFileEventDrivenJob.setFilePath("filePath" + i);
+            solrFileEventDrivenJob.setChildContextNames(List.of("child1", "child2", "child3"));
+
+            SolrInternalEventDrivenJobImpl solrInternalEventDrivenJob = new SolrInternalEventDrivenJobImpl();
+            solrInternalEventDrivenJob.setAgentName(contextId + "agentName" + i);
+            solrInternalEventDrivenJob.setJobName(contextId + "jobNameInternal" + i);
+            solrInternalEventDrivenJob.setIdentifier(solrInternalEventDrivenJob.getAgentName() + "_" + solrInternalEventDrivenJob.getJobName());
+            solrInternalEventDrivenJob.setContextName(contextId);
+            solrInternalEventDrivenJob.setCommandLine("ls -al" + i);
+            solrInternalEventDrivenJob.setChildContextNames(List.of("child", "child2", "child3"));
+
+            SolrQuartzScheduleDrivenJobImpl solrQuartzScheduleDrivenJob = new SolrQuartzScheduleDrivenJobImpl();
+            solrQuartzScheduleDrivenJob.setAgentName(contextId + "agentName" + i);
+            solrQuartzScheduleDrivenJob.setJobName(contextId + "jobNameQuartz" + i);
+            solrQuartzScheduleDrivenJob.setIdentifier(solrQuartzScheduleDrivenJob.getAgentName() + "_" + solrQuartzScheduleDrivenJob.getJobName());
+            solrQuartzScheduleDrivenJob.setContextName(contextId);
+            solrQuartzScheduleDrivenJob.setCronExpression("cronExpression" + i);
+            solrQuartzScheduleDrivenJob.setChildContextNames(List.of("child", "child2", "child3"));
 
             jobs.add(solrFileEventDrivenJob);
             jobs.add(solrInternalEventDrivenJob);

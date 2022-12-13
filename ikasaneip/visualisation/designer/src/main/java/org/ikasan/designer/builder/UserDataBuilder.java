@@ -2,12 +2,18 @@ package org.ikasan.designer.builder;
 
 import org.ikasan.designer.model.UserData;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UserDataBuilder {
     private String jobName;
     private String agentName;
     private String identifier;
     private String contextName;
     private String itemType;
+
+    private List<String> previousJobIdentifiers = new ArrayList<>();
+    private List<String> subsequentJobIdentifiers = new ArrayList<>();
 
     public UserDataBuilder withJobName(String jobName) {
         this.jobName = jobName;
@@ -34,7 +40,18 @@ public class UserDataBuilder {
         return this;
     }
 
+    public UserDataBuilder addPreviousJobIdentifiers(String identifier) {
+        this.previousJobIdentifiers.add(identifier);
+        return this;
+    }
+
+    public UserDataBuilder addSubsequentJobIdentifiers(String identifier) {
+        subsequentJobIdentifiers.add(identifier);
+        return this;
+    }
+
     public UserData build() {
-        return new UserData(this.jobName, this.agentName, this.identifier, this.contextName, this.itemType);
+        return new UserData(this.jobName, this.agentName, this.identifier, this.contextName
+            , this.itemType, this.previousJobIdentifiers, this.subsequentJobIdentifiers);
     }
 }
