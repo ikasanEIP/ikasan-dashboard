@@ -45,6 +45,7 @@ import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,6 +79,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
     private SchedulerJobService schedulerJobService;
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
+    private ContextProfileService contextProfileService;
     private String jobStatus;
 
     /**
@@ -104,7 +106,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                           LogStreamingService logStreamingService, ContextInstance contextInstance, SchedulerJobInstanceService schedulerJobInstanceService,
                                           JobInitiationService jobInitiationService, ConfigurationService configurationService,
-                                          MetaDataService metaDataService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, String jobStatus) {
+                                          MetaDataService metaDataService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, String jobStatus, ContextProfileService contextProfileService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if(this.scheduledContextInstanceService ==  null) {
@@ -161,6 +163,10 @@ public class SchedulerJobInstanceGridWidget extends Div {
         this.scheduledContextService = scheduledContextService;
         if(this.scheduledContextService ==  null) {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
+        }
+        this.contextProfileService = contextProfileService;
+        if(this.contextProfileService ==  null) {
+            throw new IllegalArgumentException("contextProfileService cannot be null!");
         }
         this.jobStatus = jobStatus;
 
@@ -536,7 +542,8 @@ public class SchedulerJobInstanceGridWidget extends Div {
             visualisation.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                     this.configurationService, this.moduleControlService, this.metaDataService, this.systemEventLogger, this.logStreamingService,
-                    this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
+                    this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService,
+                    this.contextProfileService);
 
                 if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                     this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();

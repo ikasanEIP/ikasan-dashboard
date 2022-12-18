@@ -45,10 +45,12 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vaadin.olli.FileDownloadWrapper;
@@ -100,6 +102,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private CronParser parser;
     private CronDescriptor descriptor;
     private ArrayList<Object> expandedNodes;
+    private ScheduledContextInstanceService scheduledContextInstanceService;
+    private ContextProfileService contextProfileService;
 
     /**
      * Constructor
@@ -118,10 +122,10 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * @param scheduledContextService
      */
     public ContextInstanceTreeViewWidget(ContextInstance contextInstance, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
-                                         ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                         MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
-                                         LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
-                                         JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService) {
+                                         ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
+                                         SystemEventLogger systemEventLogger, LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
+                                         JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
+                                         ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService) {
         super(moduleMetaDataService, systemEventLogger, logStreamingService, contextInstance,
              schedulerJobInstanceService);
         this.schedulerJobInstanceService = schedulerJobInstanceService;
@@ -171,6 +175,14 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         this.logStreamingService = logStreamingService;
         if (this.logStreamingService == null) {
             throw new IllegalArgumentException("logStreamingService cannot be null!");
+        }
+        this.scheduledContextInstanceService = scheduledContextInstanceService;
+        if (this.scheduledContextInstanceService == null) {
+            throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
+        }
+        this.contextProfileService = contextProfileService;
+        if (this.contextProfileService == null) {
+            throw new IllegalArgumentException("contextProfileService cannot be null!");
         }
 
         this.jobImageMap = new HashMap<>();
@@ -705,7 +717,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         visualisation.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
             JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
-                this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
+                this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService,
+                this.contextProfileService);
 
             if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                 this.contextInstance = ContextMachineCache.instance()
@@ -1529,7 +1542,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         this.schedulerJobInstanceService
             .getCommandExecutionJobsForContextInstanceChildContext(contextInstanceId)
             .entrySet()
-            .forEach(entry -> result.put(entry.getKey(), entry.getValue()));
+            .forEach(entry -> result.put(entry.getKey(), (InternalEventDrivenJob) entry.getValue()));
 
         return result;
     }
@@ -1649,6 +1662,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         }
     }
 
+    /**
+     * Inner class for holding preceding jobs to assist with the tree rendering.
+     */
     private class PrecedingItem {
         public PrecedingItem(SchedulerJobInstance schedulerJobInstance) {
             this.schedulerJobInstance = schedulerJobInstance;
@@ -1657,6 +1673,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         private SchedulerJobInstance schedulerJobInstance;
     }
 
+    /**
+     * Inner class to assist with the tree filtering.
+     */
     private class TreeFilter {
         private String jobName = "";
 

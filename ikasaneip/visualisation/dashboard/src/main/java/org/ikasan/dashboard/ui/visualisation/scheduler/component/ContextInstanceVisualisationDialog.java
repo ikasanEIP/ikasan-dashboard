@@ -12,8 +12,6 @@ import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialo
 import org.ikasan.dashboard.ui.scheduler.component.SchedulerStatusDiv;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.job.orchestration.service.ContextService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -26,7 +24,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
-import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,9 +43,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
     private ContextInstance rootContextInstance;
     private ContextInstance contextInstance;
     private LogStreamingService logStreamingService;
-
     private String dynamicImagePath = ".";
-
     private ModuleMetaDataService moduleMetaDataService;
     private ScheduledProcessManagementService scheduledProcessManagementService;
     private ConfigurationService configurationRestService;
@@ -58,18 +54,33 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
     private JobInitiationService jobInitiationService;
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
-
     private SchedulerInstanceVisualisation schedulerInstanceVisualisation;
-
     private ContextService contextService = new ContextService();
-
     private SchedulerStatusDiv statusDiv;
+    private ContextProfileService contextProfileService;
 
+    /**
+     * Constructor
+     *
+     * @param moduleMetaDataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param logStreamingService
+     * @param schedulerJobInstanceService
+     * @param jobInitiationService
+     * @param jobUtilsService
+     * @param scheduledContextService
+     * @param contextProfileService
+     */
     public ContextInstanceVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                               LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
-                                              JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService) {
+                                              JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
+                                              ContextProfileService contextProfileService) {
         this.setHeight("98vh");
         this.setWidth("98vw");
 
@@ -128,6 +139,11 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
         }
 
+        this.contextProfileService = contextProfileService;
+        if(this.contextProfileService == null) {
+            throw new IllegalArgumentException("contextProfileService cannot be null!");
+        }
+
         this.layout = new VerticalLayout();
         this.layout.getStyle().set("padding-top", "0px");
 
@@ -136,7 +152,11 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
     }
 
     /**
+     * Create the visualisation.
+     *
+     * @param rootContextInstance
      * @param contextInstance
+     * @throws IOException
      */
     public void createSchedulerVisualisation(ContextInstance rootContextInstance, ContextInstance contextInstance) throws IOException {
         this.rootContextInstance = rootContextInstance;
@@ -155,12 +175,15 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
 
         this.schedulerInstanceVisualisation =  new ContextSchedulerInstanceVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
-            this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
+            this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.contextProfileService);
         this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.rootContextInstance, this.contextInstance, this);
 
         this.layout.add(schedulerInstanceVisualisation);
     }
 
+    /**
+     * Initialise the parent navigation.
+     */
     private void initParentNavigation() {
         if(!initialised && this.contextInstance != null) {
 
@@ -179,7 +202,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
                                 ContextInstanceVisualisationDialog contextInstanceVisualisationDialog
                                     = new ContextInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
                                     , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService
-                                    , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
+                                    , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.contextProfileService);
 
                                 contextInstanceVisualisationDialog.createSchedulerVisualisation(this.rootContextInstance, this.contextInstance);
                                 contextInstanceVisualisationDialog.open();

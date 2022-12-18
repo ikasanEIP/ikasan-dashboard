@@ -9,16 +9,11 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -33,16 +28,14 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
-import org.ikasan.dashboard.ui.scheduler.listener.ContextOpenedListener;
-import org.ikasan.dashboard.ui.scheduler.listener.ContextSelectedListener;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.scheduler.component.ContextSchedulerInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobSchedulerInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerInstanceVisualisation;
+import org.ikasan.dashboard.ui.visualisation.scheduler.component.SplitContextInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
@@ -50,16 +43,13 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.service.ContextService;
-import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
@@ -69,20 +59,16 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
-import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
-import org.ikasan.spec.scheduled.profile.model.ContextProfileSearchFilter;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
-import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class ContextInstanceWidget extends VerticalLayout implements BeforeEnterObserver, ContextOpenedListener, ContextSelectedListener {
+public class ContextInstanceWidget extends VerticalLayout implements BeforeEnterObserver {
 
     private static Logger logger = LoggerFactory.getLogger(ContextInstanceWidget.class);
     public static final String TREE_TAB = "treeTab";
@@ -98,12 +84,11 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     private FormLayout formLayout;
     private IkasanAuthentication authentication;
     private AceEditor aceEditor;
-    protected SchedulerInstanceVisualisation schedulerInstanceVisualisation;
-    protected JobSchedulerInstanceVisualisation jobVisualisation;
     private SchedulerJobInstanceGridWidget schedulerJobInstanceGridWidget;
     private ContextTemplateStatisticsWidget contextTemplateStatisticsWidget;
     private ContextInstanceAuditWidget contextInstanceAuditWidget;
     private ContextInstanceTreeViewWidget contextInstanceTreeViewWidget;
+    private SplitContextInstanceVisualisation splitContextInstanceVisualisation;
     private JobInitiationService jobInitiationService;
     private ContextProfileService contextProfileService;
     private ConfigurationService configurationRestService;
@@ -116,11 +101,6 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     private SystemEventLogger systemEventLogger;
     private LogStreamingService logStreamingService;
     private SchedulerJobService schedulerJobService;
-
-    private SplitLayout visualisationSplitLayout;
-
-    private Div schedulerVisualisationDiv;
-
     private TextField contextInstanceId;
     private TextField contextNameTf;
     private TextArea descriptionTa;
@@ -138,17 +118,11 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     private Tab statisticsTab;
     private Tab auditTab;
     private Tabs tabs;
-
     private ContextInstance contextInstance;
-
-    private ContextInstance childContextInstance;
     private ContextTemplate contextTemplate;
     private SchedulerStatusDiv statusDiv;
-    private SchedulerStatusDiv childJobPlansStatusDiv;
     private String selectedTab;
     private String jobStatus;
-
-    private Label childJobPlanName;
 
     /**
      * Constructor
@@ -426,7 +400,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
 
         this.initialiseEditor();
         this.initialiseTree();
-        this.initialiseVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
+        this.initialiseVisualisation(moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
         this.initialiseSchedulerJobGridWidget(scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService,  moduleControlRestService, metaDataRestService,  systemEventLogger,  schedulerJobService, logStreamingService);
@@ -437,8 +411,10 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         HorizontalLayout tabLayout = new HorizontalLayout();
         tabLayout.add(this.tabs);
         this.getStyle().set("padding-top", "0px");
-        this.add(statusLayout, headerLayout, collapsableLayout, tabLayout, this.contextInstanceTreeViewWidget, this.aceEditor, this.schedulerVisualisationDiv
+        this.add(statusLayout, headerLayout, collapsableLayout, tabLayout, this.contextInstanceTreeViewWidget, this.aceEditor, this.splitContextInstanceVisualisation
             , this.schedulerJobInstanceGridWidget, this.contextTemplateStatisticsWidget, this.contextInstanceAuditWidget);
+        this.expand(this.splitContextInstanceVisualisation, this.aceEditor);
+        this.setHeight("100%");
     }
 
     /**
@@ -459,7 +435,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         tabs.addSelectedChangeListener(event -> {
             if(tabs.getSelectedTab().equals(this.statisticsTab)) {
                 this.aceEditor.setVisible(false);
-                this.schedulerVisualisationDiv.setVisible(false);
+                this.splitContextInstanceVisualisation.setVisible(false);
                 this.schedulerJobInstanceGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(true);
                 this.contextInstanceAuditWidget.setVisible(false);
@@ -467,7 +443,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             }
             else if(tabs.getSelectedTab().equals(this.rawContextTab)) {
                 this.aceEditor.setVisible(true);
-                this.schedulerVisualisationDiv.setVisible(false);
+                this.splitContextInstanceVisualisation.setVisible(false);
                 this.schedulerJobInstanceGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(false);
                 this.contextInstanceAuditWidget.setVisible(false);
@@ -475,7 +451,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             }
             else if(tabs.getSelectedTab().equals(this.visualisationTab)) {
                 this.aceEditor.setVisible(false);
-                this.schedulerVisualisationDiv.setVisible(true);
+                this.splitContextInstanceVisualisation.setVisible(true);
                 this.schedulerJobInstanceGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(false);
                 this.contextInstanceAuditWidget.setVisible(false);
@@ -483,7 +459,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             }
             else if(tabs.getSelectedTab().equals(this.jobsTab)) {
                 this.aceEditor.setVisible(false);
-                this.schedulerVisualisationDiv.setVisible(false);
+                this.splitContextInstanceVisualisation.setVisible(false);
                 this.schedulerJobInstanceGridWidget.setVisible(true);
                 this.contextTemplateStatisticsWidget.setVisible(false);
                 this.contextInstanceAuditWidget.setVisible(false);
@@ -491,7 +467,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             }
             else if(tabs.getSelectedTab().equals(this.auditTab)) {
                 this.aceEditor.setVisible(false);
-                this.schedulerVisualisationDiv.setVisible(false);
+                this.splitContextInstanceVisualisation.setVisible(false);
                 this.schedulerJobInstanceGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(false);
                 this.contextInstanceAuditWidget.setVisible(true);
@@ -499,7 +475,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             }
             else if(tabs.getSelectedTab().equals(this.treeTab)) {
                 this.aceEditor.setVisible(false);
-                this.schedulerVisualisationDiv.setVisible(false);
+                this.splitContextInstanceVisualisation.setVisible(false);
                 this.schedulerJobInstanceGridWidget.setVisible(false);
                 this.contextTemplateStatisticsWidget.setVisible(false);
                 this.contextInstanceAuditWidget.setVisible(false);
@@ -541,7 +517,6 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         aceEditor.setFontSize(11);
         aceEditor.setTabSize(4);
         aceEditor.setWidth("100%");
-        aceEditor.setHeight("75vh");
         aceEditor.setReadOnly(true);
         aceEditor.setWrap(false);
         aceEditor.setVisible(false);
@@ -563,7 +538,6 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     /**
      * Initial the visualisation associated with the widget.
      *
-     * @param dynamicImagePath
      * @param moduleMetaDataService
      * @param scheduledProcessManagementService
      * @param configurationRestService
@@ -573,142 +547,16 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
      * @param schedulerJobService
      * @param logStreamingService
      */
-    protected void initialiseVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
+    protected void initialiseVisualisation(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                            ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                            MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                            LogStreamingService logStreamingService) {
-        this.schedulerVisualisationDiv = new Div();
-        this.schedulerVisualisationDiv.setSizeFull();
 
-        this.schedulerInstanceVisualisation = new ContextSchedulerInstanceVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
-            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService
-            , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
-        this.schedulerInstanceVisualisation.addContextOpenListener(this);
-        this.schedulerInstanceVisualisation.setWidthFull();
-        this.schedulerInstanceVisualisation.setHeight("75vh");
-
-        try {
-            ContextProfileSearchFilter searchFilter = new SolrContextProfileSearchFilterImpl();
-            searchFilter.setContextName(this.contextTemplate.getName());
-            searchFilter.setOwner(ContextProfileRecord.SYSTEM_OWNER);
-
-            SearchResults<ContextProfileRecord> results = this.contextProfileService.findByFilter(searchFilter, -1, -1, null, null);
-
-            if(results.getResultList().size() > 0 && results.getResultList().get(0).getContextProfile().getDefaultContext() != null
-                && !results.getResultList().get(0).getContextProfile().getDefaultContext().isEmpty()){
-                ContextInstance childContextInstance = ContextHelper.getChildContextInstance(results.getResultList()
-                    .get(0).getContextProfile().getDefaultContext(), this.contextInstance);
-
-                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, childContextInstance, null);
-            }
-            else {
-                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance, null);
-            }
-
-            VerticalLayout buttonWrapper = new VerticalLayout();
-            buttonWrapper.setMargin(false);
-            buttonWrapper.setPadding(false);
-            buttonWrapper.setWidthFull();
-            HorizontalLayout buttonLayout = new HorizontalLayout();
-            buttonLayout.setMargin(false);
-            buttonLayout.setPadding(false);
-
-            buttonLayout.add(this.contextViewMenuBar());
-
-            buttonWrapper.add(buttonLayout);
-            buttonWrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
-
-            this.schedulerInstanceVisualisation.getElement().getStyle().set("margin-top", "0px");
-
-            this.visualisationSplitLayout = new SplitLayout();
-            this.visualisationSplitLayout.setHeight("75vh");
-            this.visualisationSplitLayout.setWidthFull();
-            this.visualisationSplitLayout.setOrientation(SplitLayout.Orientation.VERTICAL);
-            this.visualisationSplitLayout.getElement().getStyle().set("margin-bottom", "10px");
-
-            this.jobVisualisation = new JobSchedulerInstanceVisualisation(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
-                configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService
-                , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
-            this.jobVisualisation.addContextOpenListener(this);
-            this.jobVisualisation.addContextSelectedListener(this);
-            this.jobVisualisation.setWidthFull();
-            this.jobVisualisation.setHeight("75vh");
-            this.jobVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance, null);
-            this.jobVisualisation.setVisible(false);
-
-            Button upButton = new Button();
-            Button downButton = new Button();
-            Button middleButton = new Button();
-
-            upButton.getElement().appendChild(VaadinIcon.ARROW_UP.create().getElement());
-            upButton.addClickListener(event -> {
-                visualisationSplitLayout.setSplitterPosition(0);
-                this.jobVisualisation.setVisible(true);
-            });
-
-            middleButton.getElement().appendChild(VaadinIcon.LINE_H.create().getElement());
-            middleButton.addClickListener(event -> {
-                visualisationSplitLayout.setSplitterPosition(50);
-                this.jobVisualisation.setVisible(true);
-            });
-
-            downButton.getElement().appendChild(VaadinIcon.ARROW_DOWN.create().getElement());
-            downButton.addClickListener(event -> {
-                visualisationSplitLayout.setSplitterPosition(95);
-                this.jobVisualisation.setVisible(false);
-            });
-
-            HorizontalLayout splitLayoutManagerButtonLayout = new HorizontalLayout();
-            splitLayoutManagerButtonLayout.getStyle().set("position", "absolute");
-            splitLayoutManagerButtonLayout.getStyle().set("right", "10px");
-
-            childJobPlanName = new Label();
-            childJobPlanName.getElement().getStyle().set("margin-top", "10px");
-            childJobPlanName.setVisible(false);
-
-            HorizontalLayout labelLayout = new HorizontalLayout();
-            labelLayout.getStyle().set("position", "absolute");
-            labelLayout.getStyle().set("left", "80px");
-            labelLayout.add(childJobPlanName);
-            labelLayout.setWidthFull();
-
-            this.childJobPlansStatusDiv = new SchedulerStatusDiv();
-            this.childJobPlansStatusDiv.setHeight("20px");
-            this.childJobPlansStatusDiv.setWidth("800px");
-            this.childJobPlansStatusDiv.getElement().getStyle().set("font-size", "12pt");
-            childJobPlansStatusDiv.getStyle().set("position", "absolute");
-            childJobPlansStatusDiv.getStyle().set("left", "50%");
-            childJobPlansStatusDiv.getStyle().set("margin-left", "-500px");
-
-            labelLayout.add(this.childJobPlansStatusDiv);
-
-            HorizontalLayout wrapper = new HorizontalLayout();
-            wrapper.add(labelLayout, splitLayoutManagerButtonLayout);
-
-            splitLayoutManagerButtonLayout.add(upButton, middleButton, downButton);
-            VerticalLayout jobVisLayout = new VerticalLayout();
-            jobVisLayout.setSpacing(false);
-            jobVisLayout.setMargin(false);
-            jobVisLayout.setPadding(false);
-            jobVisLayout.add(wrapper, jobVisualisation);
-
-            this.visualisationSplitLayout.setSplitterPosition(95);
-            this.visualisationSplitLayout.addToPrimary(this.schedulerInstanceVisualisation);
-            this.visualisationSplitLayout.addToSecondary(jobVisLayout);
-
-            this.visualisationSplitLayout.addSplitterDragendListener(event -> {
-                jobVisualisation.setVisible(true);
-            });
-
-
-            this.schedulerVisualisationDiv.add(buttonWrapper, this.visualisationSplitLayout);
-            this.schedulerVisualisationDiv.setVisible(false);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            NotificationHelper.showErrorNotification(getTranslation("notification.error-opening-visualisation"
-                , UI.getCurrent().getLocale()));
-        }
+        this.splitContextInstanceVisualisation = new SplitContextInstanceVisualisation(scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
+                configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService,
+                contextInstance, schedulerJobInstanceService, jobInitiationService, contextProfileService, jobUtilsService, scheduledContextService);
+        this.splitContextInstanceVisualisation.initialiseVisualisation();
+        this.splitContextInstanceVisualisation.setHeight("100%");
     }
 
     /**
@@ -724,7 +572,8 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         jobLockDashboard.addClickListener(event -> {
             JobLockCacheDialog jobLockCacheDialog = new JobLockCacheDialog(this.contextInstance, this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobInstanceService,
-                this.logStreamingService, this.jobInitiationService, this.scheduledContextService, this.jobUtilsService);
+                this.logStreamingService, this.jobInitiationService, this.scheduledContextService, this.jobUtilsService, this.scheduledContextInstanceService,
+                this.contextProfileService);
 
             jobLockCacheDialog.open();
         });
@@ -913,18 +762,6 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     }
 
     /**
-     * Create the context view menu bar.
-     *
-     * @return
-     */
-    private MenuBar contextViewMenuBar() {
-        MenuBar contextViewsMenuBar = new ContextInstanceViewMenuBar(this.contextInstance, this.contextProfileService
-            , this.schedulerInstanceVisualisation);
-
-        return contextViewsMenuBar;
-    }
-
-    /**
      * Method to initialise the scheduler job instance grid.
      *
      * @param scheduledContextInstanceService
@@ -943,7 +780,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobInstanceGridWidget = new SchedulerJobInstanceGridWidget(scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextInstance, this.schedulerJobInstanceService,
-            this.jobInitiationService, this.configurationRestService, metaDataRestService, this.jobUtilsService, this.scheduledContextService, this.jobStatus);
+            this.jobInitiationService, this.configurationRestService, metaDataRestService, this.jobUtilsService, this.scheduledContextService, this.jobStatus, this.contextProfileService);
         this.schedulerJobInstanceGridWidget.setWidthFull();
         this.schedulerJobInstanceGridWidget.setHeight("75vh");
         this.schedulerJobInstanceGridWidget.setVisible(false);
@@ -956,7 +793,8 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     private void initialiseTree() {
         this.contextInstanceTreeViewWidget = new ContextInstanceTreeViewWidget(this.contextInstance, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
-            this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
+            this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService
+            , this.contextProfileService);
         this.contextInstanceTreeViewWidget.setWidthFull();
         this.contextInstanceTreeViewWidget.setHeight("75vh");
         this.contextInstanceTreeViewWidget.setVisible(true);
@@ -1022,30 +860,6 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     }
 
     @Override
-    public void contextOpened(Context context) {
-        try {
-            this.childContextInstance = (ContextInstance) context;
-            this.jobVisualisation.createSchedulerVisualisation(this.contextInstance, this.childContextInstance, null);
-            this.jobVisualisation.setWidthFull();
-            this.jobVisualisation.setHeight("75vh");
-            this.jobVisualisation.setVisible(true);
-            this.visualisationSplitLayout.setSplitterPosition(50);
-            this.childJobPlanName.setVisible(true);
-            this.childJobPlanName.setText(context.getName());
-
-            this.childJobPlansStatusDiv.setStatus(((ContextInstance) context).getStatus());
-        } catch (IOException e) {
-            // todo notification
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void contextSelected(String contextName) {
-        this.schedulerInstanceVisualisation.addBoundaryToItem(contextName);
-    }
-
-    @Override
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
 
@@ -1062,11 +876,6 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                             this.contextInstance = record.getContextInstance();
                         }
                     }
-
-                    if(this.childContextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
-                        this.childJobPlansStatusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
-                    }
-
                     this.updateJson(this.contextInstance);
                 });
             }

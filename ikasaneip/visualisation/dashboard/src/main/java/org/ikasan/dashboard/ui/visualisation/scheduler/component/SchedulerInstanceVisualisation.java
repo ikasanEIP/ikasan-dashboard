@@ -1,19 +1,20 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 import com.flowingcode.vaadin.addons.ironicons.IronIcons;
-import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.shared.Registration;
-import liquibase.pro.packaged.C;
 import org.ikasan.dashboard.ui.scheduler.component.FileEventJobInstanceDialog;
 import org.ikasan.dashboard.ui.scheduler.component.InternalEventDrivenJobInstanceDialog;
 import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobInstanceDialog;
 import org.ikasan.dashboard.ui.scheduler.listener.ContextOpenedListener;
-import org.ikasan.dashboard.ui.scheduler.listener.ContextSelectedListener;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
@@ -39,20 +40,13 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
-import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
-import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static org.ikasan.job.orchestration.util.ContextHelper.getJobsOutsideLogicalGrouping;
 
 public abstract class SchedulerInstanceVisualisation extends VerticalLayout implements BeforeEnterObserver, CanvasItemRightClickEventListener
     , CanvasItemDoubleClickEventListener, CanvasInitialisedListener, CanvasItemSingleClickEventListener {
@@ -87,6 +81,7 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
     protected Dialog parent;
     protected List<String> nodeConnectionIndicators = new ArrayList<>();
     private List<ContextOpenedListener> contextOpenedListeners;
+    private List<CanvasInitialisedListener> canvasInitialisedListeners;
 
     public SchedulerInstanceVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -155,6 +150,7 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
         }
 
         this.contextOpenedListeners = new ArrayList<>();
+        this.canvasInitialisedListeners = new ArrayList<>();
 
         this.setMargin(false);
         this.setSpacing(false);
@@ -189,6 +185,7 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
         HorizontalLayout actions = new HorizontalLayout();
         actions.setHeight("40px");
         actions.setId("canvas-actions");
+        actions.setWidthFull();
 
         // Zoom in
         IronIcons.Icon zoomIn = IconDecorator.decorate(IronIcons.ZOOM_IN.create(), getTranslation("tooltip.zoom-in"
@@ -219,11 +216,14 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
     @Override
     public void doubleClickEvent(CanvasItemDoubleClickEvent canvasItemDoubleClickEvent) {
 
-        if(canvasItemDoubleClickEvent.getFigure().getIdentifier() != null) {
-            String identifier = ContextHelper.getIdentifier(canvasItemDoubleClickEvent.getFigure().getIdentifier());
+        if(canvasItemDoubleClickEvent.getFigure().getIdentifier() != null &&
+            canvasItemDoubleClickEvent.getFigure().getUserData() != null) {
+            String identifier = ContextHelper.getIdentifier(canvasItemDoubleClickEvent.getFigure()
+                .getUserData().getIdentifier());
 
             if(ContextMachineCache.instance().containsInstanceIdentifier(this.parentContextInstance.getId())) {
-                this.parentContextInstance = ContextMachineCache.instance().getByContextInstanceId(this.parentContextInstance.getId()).getContext();
+                this.parentContextInstance = ContextMachineCache.instance()
+                    .getByContextInstanceId(this.parentContextInstance.getId()).getContext();
             }
 
             ContextInstance contextInstance = ContextHelper.getChildContextInstance(identifier,
@@ -231,72 +231,25 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
 
             if(contextInstance != null && contextInstance.getScheduledJobs() != null) {
                 this.contextOpenedListeners.forEach(listener -> listener.contextOpened(contextInstance));
-                this.addBoundaryToItem(identifier);
+            }
+//            else if(contextInstance != null){
 //                try {
-//                    this.contextOpenedListeners.forEach(listener -> listener.contextOpened(contextInstance));
-////                    JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
-////                        this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
-////                        this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
-////                    jobInstanceVisualisationDialog.createSchedulerVisualisation(this.parentContextInstance, contextInstance);
-////                    jobInstanceVisualisationDialog.open();
-////
-////                    if(parent != null) {
-////                        parent.close();
-////                    }
+//                    ContextInstanceVisualisationDialog contextInstanceVisualisationDialog
+//                        = new ContextInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+//                        this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
+//                        this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService,
+//                        this.jobUtilsService, this.scheduledContextService);
+//                    contextInstanceVisualisationDialog.createSchedulerVisualisation(this.parentContextInstance, contextInstance);
+//                    contextInstanceVisualisationDialog.open();
+//
+//                    if(parent != null) {
+//                        parent.close();
+//                    }
 //                }
 //                catch (IOException e) {
 //                    e.printStackTrace();
 //                }
-            }
-            else if(contextInstance != null){
-                try {
-                    ContextInstanceVisualisationDialog contextInstanceVisualisationDialog
-                        = new ContextInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
-                        this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
-                        this.logStreamingService, this.schedulerJobInstanceService, this.jobInitiationService,
-                        this.jobUtilsService, this.scheduledContextService);
-                    contextInstanceVisualisationDialog.createSchedulerVisualisation(this.parentContextInstance, contextInstance);
-                    contextInstanceVisualisationDialog.open();
-
-                    if(parent != null) {
-                        parent.close();
-                    }
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            else {
-                SchedulerJobInstance schedulerJob = this.contextInstance.getScheduledJobsMap().get(identifier);
-
-                if(schedulerJob == null) return;
-
-                SchedulerJobInstanceRecord schedulerJobRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName
-                    (this.parentContextInstance.getId(), schedulerJob.getJobName(), this.contextInstance.getName());
-
-                if(schedulerJobRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
-                    InternalEventDrivenJobInstanceDialog internalEventDrivenJobInstanceDialog = new InternalEventDrivenJobInstanceDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
-                        , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, this.schedulerJobInstanceService, this.parentContextInstance
-                        , this.jobInitiationService, moduleMetaDataService, this.logStreamingService, this.jobUtilsService);
-
-                    internalEventDrivenJobInstanceDialog.setJob(schedulerJobRecord);
-                    internalEventDrivenJobInstanceDialog.open();
-                }
-                else if(schedulerJobRecord.getSchedulerJobInstance() instanceof FileEventDrivenJobInstance) {
-                    FileEventJobInstanceDialog fileEventJobDialog = new FileEventJobInstanceDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
-                        , this.jobInitiationService, this.systemEventLogger, this.schedulerJobInstanceService);
-                    fileEventJobDialog.setJob(schedulerJobRecord);
-
-                    fileEventJobDialog.open();
-                }
-                else {
-                    QuartzDrivenScheduledJobInstanceDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobInstanceDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
-                        , this.jobInitiationService, systemEventLogger, this.schedulerJobInstanceService);
-                    quartzDrivenScheduledJobDialog.setJob(schedulerJobRecord);
-
-                    quartzDrivenScheduledJobDialog.open();
-                }
-            }
+//            }
         }
     }
 
@@ -356,7 +309,7 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
         }
     }
 
-    public void addBoundaryToItem(String itemIdentifier) {
+    public void addBoundaryToItem(String itemIdentifier, boolean scrollTo) {
         this.nodeConnectionIndicators.forEach(nodeConnectionIndicator
             -> this.designerCanvas.removeFigure(nodeConnectionIndicator));
 
@@ -367,7 +320,7 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
         String boundaryIdentifier = UUID.randomUUID().toString();
         this.nodeConnectionIndicators.add(boundaryIdentifier);
         this.designerCanvas.addBoundaryToFigure(itemIdentifier, boundaryIdentifier, 200, 200,
-            "--", IkasanColours.IKASAN_ORANGE_50);
+            "--", IkasanColours.IKASAN_ORANGE_50, scrollTo);
     }
 
     @Override
@@ -379,6 +332,7 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
     @Override
     public void canvasInitialised() {
         this.designerCanvas.manageClickableItems();
+        this.canvasInitialisedListeners.forEach(listener -> listener.canvasInitialised());
         if(contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
             //this.contextInstance.getScheduledJobs().forEach(job -> this.designerCanvas.addLabelToFigure(job.getIdentifier(), job.getJobName()));
 //            this.designerCanvas.stopSpinner();
@@ -397,6 +351,15 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
      */
     public void addContextOpenListener(ContextOpenedListener contextOpenedListener) {
         this.contextOpenedListeners.add(contextOpenedListener);
+    }
+
+    /**
+     * Add a canvas initialised listener.
+     *
+     * @param listener
+     */
+    public void addCanvasInitialisedListener(CanvasInitialisedListener listener) {
+        this.canvasInitialisedListeners.add(listener);
     }
 
     @Override
@@ -450,4 +413,6 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
             this.schedulerJobStateChangeRegistration  = null;
         }
     }
+
+
 }
