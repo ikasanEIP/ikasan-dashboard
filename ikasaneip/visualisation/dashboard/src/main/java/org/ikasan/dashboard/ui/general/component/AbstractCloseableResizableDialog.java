@@ -18,10 +18,8 @@ public abstract class AbstractCloseableResizableDialog extends Dialog
 
     public String DOCK = "dock";
     public String FULLSCREEN = "fullscreen";
-
     private boolean isDocked = false;
     private boolean isFullScreen = true;
-
     private Header header;
     private Button min;
     private Button max;
@@ -29,6 +27,9 @@ public abstract class AbstractCloseableResizableDialog extends Dialog
 
     protected VerticalLayout content;
 
+    /**
+     * Constructor
+     */
     public AbstractCloseableResizableDialog()
     {
         this.setWidth("1px");
@@ -77,6 +78,9 @@ public abstract class AbstractCloseableResizableDialog extends Dialog
         this.setCloseOnOutsideClick(false);
     }
 
+    /**
+     * Minimise the dialog
+     */
     private void minimise() {
         if (isDocked) {
             initialSize();
@@ -106,6 +110,9 @@ public abstract class AbstractCloseableResizableDialog extends Dialog
         setWidth("600px");
     }
 
+    /**
+     * Maximise the dialog.
+     */
     private void maximise() {
         if (isFullScreen) {
             initialSize();
@@ -123,11 +130,20 @@ public abstract class AbstractCloseableResizableDialog extends Dialog
         isDocked = false;
     }
 
+    /**
+     * Show resize icon on the dialog
+     * @param show
+     */
     public void showResize(boolean show) {
         this.max.setVisible(show);
         this.min.setVisible(show);
     }
 
+    /**
+     * Show close icon on the dialog.
+     *
+     * @param show
+     */
     public void showClose(boolean show) {
         this.close.setVisible(show);
     }

@@ -66,6 +66,13 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     private boolean connectorInitialised = false;
 
 
+    /**
+     * Constructor
+     *
+     * @param name
+     * @param dynamicImagePath
+     * @param readonly
+     */
     public DesignerCanvas(String name, String dynamicImagePath, boolean readonly) {
         super();
         this.name = name;
@@ -132,12 +139,25 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         }
     }
 
+    /**
+     * Constructor
+     *
+     * @param saveFunction
+     * @param saveAsFunction
+     * @param name
+     * @param dynamicImagePath
+     * @param readonly
+     */
     public DesignerCanvas(SaveFunction saveFunction, SaveAsFunction saveAsFunction, String name, String dynamicImagePath, boolean readonly) {
         this(name, dynamicImagePath, readonly);
         this.saveFunction = saveFunction;
         this.saveAsFunction = saveAsFunction;
     }
 
+    /**
+     * This method works in combination with designer-connector-flow.js to set up the
+     * interation between the Vaadin framework and draw2d javascript.
+     */
     private void initConnector() {
         getUI()
             .orElseThrow(() -> new IllegalStateException(
@@ -169,18 +189,43 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         super.onDetach(detachEvent);
     }
 
+    /**
+     * Add an image icon to the draw2d canvas.
+     *
+     * @param identifier - the identifier assigned to the icon.
+     * @param image the image to render.
+     * @param h the height of the image to render
+     * @param w the width of the image to render
+     * @param isClickable show hand icon when hovered over
+     */
     public void addIcon(String identifier, String image, double h, double w, boolean isClickable) {
         runBeforeClientResponse(
-            ui -> getElement().callJsFunction("$connector.addIconNoCoordinates", identifier, image, h, w, isClickable));
+            ui -> getElement().callJsFunction("$connector.addIconNoCoordinates"
+                , identifier, image, h, w, isClickable));
         this.saved = false;
     }
 
+    /**
+     * Add an image icon to the draw2d canvas.
+     *
+     * @param identifier - the identifier assigned to the icon.
+     * @param image the image to render.
+     * @param x the x location to render the icon on the canvas
+     * @param y the y location to render the icon on the canvas
+     * @param h the height of the image to render
+     * @param w the width of the image to render
+     * @param showPorts show the connection ports on the icon
+     * @param isClickable show hand icon when hovered over
+     */
     public void addIcon(String identifier, String image, double x, double y, double h, double w, boolean showPorts, boolean isClickable) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addIcon", identifier, image, x, y, h, w, showPorts, isClickable));
         this.saved = false;
     }
 
+    /**
+     * Add things like tooltips and pointer to icons.
+     */
     public void manageClickableItems() {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.manageClickableItems"));
@@ -188,60 +233,129 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
     }
 
 
+    /**
+     * Add a boundary to the most recent x and y location.
+     *
+     * @param h the height of the boundary
+     * @param w the width of the boundary
+     */
     public void addBoundary(double h, double w) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addBoundarySimple", h, w));
         this.saved = false;
     }
 
+    /**
+     * Add a boundary at a x and y location.
+     *
+     * @param identifier the identifier to assign to the boundary.
+     * @param shapeIdentifier the shape identifier to bring to the front
+     * @param x the x location to render the boundary
+     * @param y the y location to render the boundary
+     * @param h the height of the boundary
+     * @param w the width of the boundary
+     * @param colour the colour to render the boundary
+     */
     public void addBoundary(String identifier, String shapeIdentifier, double x, double y, double h, double w, String colour) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addBoundaryToShape", identifier, shapeIdentifier, x, y, h, w, colour));
         this.saved = false;
     }
 
-    public void addBoundaryStyled(String identifier, double x, double y, String dashArray, String colour, int stroke) {
+    /**
+     * Add a styled boundary at the most recent x and y location.
+     *
+     * @param identifier the identifier to assign to the boundary.
+     * @param w the width of the boundary
+     * @param h he height of the boundary
+     * @param dashArray the format of the line of the boundary
+     * @param colour the colour of the boundary to render
+     * @param stroke the line stroke of the boundary
+     */
+    public void addBoundaryStyled(String identifier, double w, double h, String dashArray, String colour, int stroke) {
         runBeforeClientResponse(
-            ui -> getElement().callJsFunction("$connector.addBoundaryStyled", identifier, x, y, dashArray, colour, stroke));
+            ui -> getElement().callJsFunction("$connector.addBoundaryStyled"
+                , identifier, w, h, dashArray, colour, stroke));
         this.saved = false;
     }
 
+    /**
+     * Remove a figure from the canvas based on its identifier.
+     *
+     * @param identifier the identifier of the figure to remove.
+     */
     public void removeFigure(String identifier) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.removeFigure", identifier));
         this.saved = false;
     }
 
+    /**
+     * Add a triangle boundary to the canvas at the most recent x and y location.
+     *
+     * @param h the height of the triangle
+     * @param w the width of the triangle
+     */
     public void addTriangleBoundary(double h, double w) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addTriangle", h, w));
         this.saved = false;
     }
 
+    /**
+     * Add an oval to the canvas at the most recent x and y location.
+     *
+     * @param h the height of the oval
+     * @param w the width of the oval
+     */
     public void addOval(double h, double w) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addOval", h, w));
         this.saved = false;
     }
 
+    /**
+     * Add a circle to the canvas at the most recent x and y location.
+     *
+     * @param diameter the diameter of the circle
+     */
     public void addCircle(double diameter) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addCircle", diameter));
         this.saved = false;
     }
 
+    /**
+     * Add a label to the canvas at the most recent x and y location.
+     *
+     * @param label the string in the label
+     */
     public void addLabel(String label) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addLabel", label));
         this.saved = false;
     }
 
+    /**
+     * Add an image to the canvas at the most recent x and y location.
+     *
+     * @param image the path to the image.
+     */
     public void addImageFigure(String image) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addImageFigure", image));
         this.saved = false;
     }
 
+    /**
+     * Add an image to a figure.
+     *
+     * @param figureIdentifier the identifier of the figure to add the image to.
+     * @param iconIdentifier the identifier of the added image
+     * @param image the path to the image
+     * @param h the height of the image
+     * @param w the width of the image
+     */
     public void addImageToFigure(String figureIdentifier, String iconIdentifier, String image, double h, double w) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addImageToFigure"
@@ -249,20 +363,58 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
         this.saved = false;
     }
 
-    public void addBoundaryToFigure(String figureIdentifier, String itemIdentifier, double h, double w
-        , String lineFormat, String backgroundColor) {
+    /**
+     * Add a triangle to a figure.
+     *
+     * @param figureIdentifier the identifier of the figure to add the image to
+     * @param h the height of the triangle
+     * @param w the width of the triangle
+     * @param backgroundColour the background colour of the image
+     */
+    public void addTriangleToFigure(String figureIdentifier, double h, double w, String backgroundColour) {
         runBeforeClientResponse(
-            ui -> getElement().callJsFunction("$connector.addBoundaryToFigure"
-                , figureIdentifier, itemIdentifier, h, w, lineFormat, backgroundColor));
+            ui -> getElement().callJsFunction("$connector.addTriangleToFigure"
+                , figureIdentifier, h, w, backgroundColour));
         this.saved = false;
     }
 
+    /**
+     * Add a boundary to a figure.
+     *
+     * @param figureIdentifier the identifier of the figure to add the boundary to
+     * @param itemIdentifier the identifier of the added boundary
+     * @param h the height of the boundary
+     * @param w the width of the boundary
+     * @param lineFormat the format of the boundary line
+     * @param backgroundColor the background colour of the boundary fill
+     * @param scrollToFigure the location of the boundary to scroll to
+     */
+    public void addBoundaryToFigure(String figureIdentifier, String itemIdentifier, double h, double w
+        , String lineFormat, String backgroundColor, boolean scrollToFigure) {
+        runBeforeClientResponse(
+            ui -> getElement().callJsFunction("$connector.addBoundaryToFigure"
+                , figureIdentifier, itemIdentifier, h, w, lineFormat, backgroundColor, scrollToFigure));
+        this.saved = false;
+    }
+
+    /**
+     * Add a label to a given figure.
+     *
+     * @param figureIdentifier the figure identifier to add the label to
+     * @param label the string that appears in the label
+     */
     public void addLabelToFigure(String figureIdentifier, String label) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addLabelToFigure", figureIdentifier, label));
         this.saved = false;
     }
 
+    /**
+     * Add a label to a give x y location
+     * @param label the string that appears in the label
+     * @param x the x coordinate of the label
+     * @param y the y coordinate of the label
+     */
     public void addLabel(String label, double x, double y) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.addLabelWithCoordinates", label, x, y));
@@ -296,110 +448,185 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
                 }
             }
             catch (Exception e) {
-                e.printStackTrace();
+                logger.error("An error has occurred populating context menu", e);
             }
         });
     }
 
+    /**
+     * Set the font on the canvas.
+     *
+     * @param font
+     */
     public void setFont(String font) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setFont", font));
         this.saved = false;
     }
 
+    /**
+     * Start the spinner on the canvas.
+     */
     public void startSpinner() {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.startSpinner"));
     }
 
+    /**
+     * Stop the spinner on the canvas.
+     */
     public void stopSpinner() {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.stopSpinner"));
     }
 
+    /**
+     * Deselect all selected figures on the canvas.
+     */
     public void deselectAllFigures() {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.deselectAllFigures"));
     }
 
+    /**
+     * Set the target decorator on a line.
+     *
+     * @param decorator
+     */
     public void setLineTargetDecorator(String decorator) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setTargetDecorator", decorator));
         this.saved = false;
     }
 
+    /**
+     * Set the source decorator on a line.
+     *
+     * @param decorator
+     */
     public void setLineSourceDecorator(String decorator) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setSourceDecorator", decorator));
         this.saved = false;
     }
 
+    /**
+     * Set the font size on the canvas.
+     *
+     * @param fontSize
+     */
     public void setFontSize(String fontSize) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setFontSize", fontSize));
         this.saved = false;
     }
 
+    /**
+     * Bring selected items to front.
+     */
     public void bringToFront() {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.bringToFront"));
         this.saved = false;
     }
 
+    /**
+     * Send selected items to the back.
+     */
     public void sendToBack() {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.sendToBack"));
         this.saved = false;
     }
 
+    /**
+     * Group selected items.
+     */
     public void group() {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.group"));
         this.saved = false;
     }
 
+    /**
+     * Ungroup selected items.
+     */
     public void ungroup() {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.ungroup"));
         this.saved = false;
     }
 
+    /**
+     * Set background colour of selected item.
+     *
+     * @param color
+     */
     public void setBackgroundColor(String color) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setBackgroundColor", color));
         this.saved = false;
     }
 
+    /**
+     * Set background colour of figure.
+     *
+     * @param identifier the identifier of the figure
+     * @param color the colour to set
+     */
     public void setBackgroundColor(String identifier, String color) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setBackgroundColorOnFigure", identifier, color));
         this.saved = false;
     }
 
+    /**
+     * Set the line type of the selected items.
+     * @param pattern
+     */
     public void setLineType(String pattern) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setLineType", pattern));
         this.saved = false;
     }
 
+    /**
+     * Set the radius of the selected items.
+     *
+     * @param radius
+     */
     public void setRadius(double radius) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setRadius", radius));
         this.saved = false;
     }
 
+    /**
+     * Set the line stroke of the selected items.
+     *
+     * @param width
+     */
     public void setStroke(int width) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setStroke", width));
         this.saved = false;
     }
 
+    /**
+     * Set the canvas to read only.
+     * @param readonly
+     */
     public void setReadonly(boolean readonly) {
         this.readonly = readonly;
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.setReadOnly", readonly));
     }
 
+    /**
+     * Rotate the selected items.
+     *
+     * @param angle
+     */
     public void rotateSelected(int angle) {
         runBeforeClientResponse(
             ui -> getElement().callJsFunction("$connector.rotate", angle));
@@ -453,7 +680,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
                 -> listener.connectorEvent(connectorEvent));
         }
         catch (Exception e) {
-            e.printStackTrace();
+           logger.error(e.getMessage(), e);
         }
     }
 
@@ -467,7 +694,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
                 -> listener.canvasUpdated(canvasUpdatedEvent));
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -481,7 +708,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
                     , figureObj.getX(), figureObj.getY(), figureObj)));
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -495,7 +722,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
                 , figureObj.getX(), figureObj.getY(), figureObj)));
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -511,7 +738,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
 
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -524,7 +751,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
             this.figureDeleteEventListeners.forEach(listener -> listener.figureDeleted(figureDeleteEvent));
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -538,7 +765,7 @@ public class DesignerCanvas extends VerticalLayout implements HasSize, BeforeEnt
 
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
     }
 

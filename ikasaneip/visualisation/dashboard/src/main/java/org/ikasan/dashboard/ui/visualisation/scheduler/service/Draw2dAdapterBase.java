@@ -47,46 +47,49 @@ public abstract class Draw2dAdapterBase {
             .setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
+    /**
+     * Base method to adapt a context that contains jobs to a draw2d model. This method will cater for a mix of
+     * contexts and jobs to indicate when boundaries between contexts are crossed.
+     *
+     * @param parentContext
+     * @param context
+     * @param schedulerJobs
+     * @param internalEventDrivenJobMap
+     * @return
+     */
     protected ArrayList<Object> _adaptJobs(Context parentContext, Context context, Map<String, SchedulerJob> schedulerJobs, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
-        if(!context.getContexts().isEmpty()) {
-            logger.info("Got some child contexts");
-            getLinkedContexts(context, parentContext, internalEventDrivenJobMap);
-        }
         if(context.getScheduledJobs() != null && !context.getScheduledJobs().isEmpty()) {
 
-//            HashSet<ContextTransition> previousContexts = new HashSet<>();
-//
-//            context.getScheduledJobs().forEach(job -> {
-//                List<ContextTransition>  jobsInto = ContextHelper.determineIfJobsTransitionFromOtherContexts(parentContext, ((SchedulerJob)job).getJobName(),
-//                    context.getName(), internalEventDrivenJobMap);
-//
-//                jobsInto.forEach(jobsOtherContexts -> previousContexts.add(jobsOtherContexts));
-//            });
-//
-//            previousContexts.forEach(previousContext -> logger.info("Previous context -> " + previousContext));
-
+            // Determine if any jobs are initiated from a previous or are responsible for initiating a job in a
+            // subsequent flow.
             List<ContextTransition> previousContexts = this.getPreviousContextTransitions(parentContext, context, internalEventDrivenJobMap);
-
             List<ContextTransition> subsequentTransitions = ContextHelper.determineIfJobsTransitionToOtherContexts
                 (parentContext, context.getScheduledJobsMap(), context, internalEventDrivenJobMap);
 
-//            subsequentTransitions.forEach(ct -> logger.info("Context transition - " + ct));
-
+            // We create the draw2d items in parallel to creating
+            // an instance of a DefaultDirectedGraph. The DefaultDirectedGraph
+            // is used to provide us with the layout of the visualisation
+            // that is constructed.
             DefaultDirectedGraph<Object, DefaultEdge> graph
                 = new DefaultDirectedGraph<>(NoEdgeLabel.class);
 
-            Grouping grouping = new Grouping();
+            // We now inspect all job dependencies and create an instance
+            // of a convenience class VisualisationLogicalGrouping which is used to
+            // render the boundaries to represent the logic in the
+            // job plan.
+            VisualisationLogicalGrouping visualisationLogicalGrouping = new VisualisationLogicalGrouping();
 
             if(context.getJobDependencies() != null) {
                 context.getJobDependencies().forEach(jobDependency -> {
                     if (((JobDependency) jobDependency).getLogicalGrouping() != null) {
                         this.getAllJobsInGrouping(((JobDependency) jobDependency).getLogicalGrouping(),
-                            grouping);
+                            visualisationLogicalGrouping);
                     }
                 });
             }
 
-            List<SchedulerJob> jobs = this.getSchedulerJobsFromGrouping(context, grouping);
+            // Get a handle to all the jobs
+            List<SchedulerJob> jobs = this.getSchedulerJobsFromGrouping(context, visualisationLogicalGrouping);
 
             context.getScheduledJobs().forEach(job -> {
                 if(!jobs.contains(job)) {
@@ -94,12 +97,20 @@ public abstract class Draw2dAdapterBase {
                 }
             });
 
+            // Create an item for each jobs as well as adding each job to the
+            // DefaultDirectedGraph. We delegate to some builder classes that
+            // create all the relevant items to be rendered in draw2d.
             jobs.forEach(job -> {
                 graph.addVertex(job.getIdentifier());
 
                 SchedulerJob schedulerJob = schedulerJobs.get(job.getJobName());
                 String image = getJobImage(schedulerJob);
 
+                // User data is an important concept as it allows us
+                // to attach any data that we like to an item in a draw2d
+                // model. When an item is selected from the draw2d palette
+                // we receive the user data and can use that for contextual
+                // purposes.
                 UserDataBuilder userDataBuilder = new UserDataBuilder()
                     .withAgentName(job.getAgentName())
                     .withJobName(job.getJobName())
@@ -135,6 +146,8 @@ public abstract class Draw2dAdapterBase {
 
             });
 
+            // Work out way through the job dependencies and add connections between jobs.
+            // This is managed recursively as
             if(context.getJobDependencies() != null) {
                 context.getJobDependencies().forEach(jobDependency -> {
                     if (((JobDependency) jobDependency).getLogicalGrouping() != null) {
@@ -149,10 +162,19 @@ public abstract class Draw2dAdapterBase {
                 });
             }
 
-            List<String> linkingConnections = this.manageLinkingContextTransitions(previousContexts, subsequentTransitions, diagramBuilder, graph);
-            this.manageOutboundContextTransitions(subsequentTransitions, diagramBuilder, graph, linkingConnections);
-            this.manageInboundContextTransitions(previousContexts, diagramBuilder, graph, linkingConnections);
+            // Now delegate to a helper method to deal with the case that jobs within a job plan
+            // may be linked by sub contexts.
+            List<String> linkingConnections = this.manageLinkingContextTransitions(context, parentContext
+                , internalEventDrivenJobMap, diagramBuilder, graph);
 
+            // Manage the case that there are other contexts that the job plan links to.
+            this.manageOutboundContextTransitions(subsequentTransitions, diagramBuilder, graph, linkingConnections);
+
+            // Manage the case that there are other contexts that precede this one and link to it.
+            List<String> inboundConnections =  this.manageInboundContextTransitions(previousContexts, diagramBuilder, graph, linkingConnections);
+
+            // Now delegate to the JGraphXAdapter to create the layout
+            // of the visualisation.
             JGraphXAdapter<Object, DefaultEdge> jGraphXAdapter
                 = new JGraphXAdapter<>(graph);
 
@@ -168,19 +190,27 @@ public abstract class Draw2dAdapterBase {
 
             mxHierarchicalLayout compactTreeLayout = new mxHierarchicalLayout(jGraphXAdapter);
             compactTreeLayout.setOrientation(SwingConstants.WEST);
-            int depth = this.getGroupingDepth(grouping);
+            int depth = this.getGroupingDepth(visualisationLogicalGrouping);
             compactTreeLayout.setIntraCellSpacing(120+(depth*20));
             compactTreeLayout.setInterHierarchySpacing(1000);
             compactTreeLayout.setInterRankCellSpacing(1000);
 
             compactTreeLayout.execute(jGraphXAdapter.getDefaultParent());
 
+            // We get a handle to the cell map from JGraphXAdapter. Each
+            // cell is keyed on the relevant item identifier and contains
+            // the relevant layout coordinates.
             Map<String, mxCell> cellMap = this.getCellMap(jGraphXAdapter);
 
+            // Get all items from the underlying diagram builder.
             ArrayList<Object> items = diagramBuilder.build();
-            ArrayList<Object> imageOverlay = new ArrayList<>();
+
+
+            // Now go ahead and group items and add labels to the diagram.
             ArrayList<Object> labels = new ArrayList<>();
             ArrayList<Object> groups = new ArrayList<>();
+
+            ArrayList<Object> imageOverlay = new ArrayList<>();
 
             items.forEach(item -> {
                 if (item instanceof Image) {
@@ -210,7 +240,23 @@ public abstract class Draw2dAdapterBase {
                                 .withComposite(group.getId())
                                 .build();
 
+                            group.setUserData(((Image) item).getUserData());
+                            label.setUserData(((Image) item).getUserData());
+
                             labels.add(label);
+
+                            if(inboundConnections.contains(((PositionedItem) item).getId())){
+                                Circle eventCircle = new CircleBuilder()
+                                    .withColor(IkasanColours.BLACK)
+                                    .withBgColor(IkasanColours.SCHEDULER_EVENT_YELLOW)
+                                    .withWidth(200)
+                                    .withHeight(200)
+                                    .withX(((PositionedItem) item).getX() - 50)
+                                    .withY(((PositionedItem) item).getY() - 50)
+                                    .build();
+
+                                imageOverlay.add(eventCircle);
+                            }
                         }
                         else if(((Image) item).getUserData().getItemType().equals(UserData.CONTEXT)) {
                             double labelLength = ((Image) item).getUserData().getContextName().length() * 8;
@@ -222,6 +268,9 @@ public abstract class Draw2dAdapterBase {
                                 .withComposite(group.getId())
                                 .build();
 
+                            group.setUserData(((Image) item).getUserData());
+                            label.setUserData(((Image) item).getUserData());
+
                             labels.add(label);
                         }
 
@@ -230,8 +279,10 @@ public abstract class Draw2dAdapterBase {
                 }
             });
 
-            this.addLogicGroupings(grouping, imageOverlay, cellMap, diagramBuilder);
+            // Now draw the logic groupings abd context boundaries onto the diagram.
+            this.addLogicGroupings(visualisationLogicalGrouping, imageOverlay, cellMap, diagramBuilder);
             this.addContextBoundaries(items, imageOverlay, cellMap, diagramBuilder);
+
             items.addAll(imageOverlay);
             items.addAll(labels);
             items.addAll(groups);
@@ -242,6 +293,12 @@ public abstract class Draw2dAdapterBase {
         return null;
     }
 
+    /**
+     * Base method to adapt a context to a draw2d model.
+     *
+     * @param context
+     * @return
+     */
     protected ArrayList<Object> _adaptContext(Context context) {
         DefaultDirectedGraph<Object, DefaultEdge> graph
             = new DefaultDirectedGraph<>(NoEdgeLabel.class);
@@ -267,9 +324,10 @@ public abstract class Draw2dAdapterBase {
         diagramBuilder.addItem(root);
 
         Map<String, Context> contextMap = new HashMap<>();
-
         contextMap.put(context.getName(), context);
 
+        // We simply recursively work our way through the context
+        // and all nested contexts and render them into the diagram.
         if(context.getContexts() != null) {
             context.getContexts().forEach(c -> {
                 graph.addVertex(((Context) c).getName());
@@ -293,28 +351,15 @@ public abstract class Draw2dAdapterBase {
 
                 diagramBuilder.addItem(branch);
 
-                ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
-                connectionBuilder.withSource(
-                    diagramBuilder.getConnectionDetailsBuilder()
-                        .withNode(root.getId())
-                        .withPort("bottomHybridSource")
-                        .build()
-                );
-
-                connectionBuilder.withTarget(
-                    diagramBuilder.getConnectionDetailsBuilder()
-                        .withNode(branch.getId())
-                        .withPort("topHybridTarget")
-                        .withDecoration("draw2d.decoration.connection.ArrowDecorator")
-                        .build()
-                );
-
-                diagramBuilder.addItem(connectionBuilder.build());
+                this.addConnection(root.getId(), "bottomHybridSource", branch.getId()
+                    , "topHybridTarget", diagramBuilder);
 
                 this.manageContext((Context) c, graph, diagramBuilder, contextMap);
             });
         }
 
+        // Now delegate to the JGraphXAdapter to create the layout
+        // of the visualisation.
         JGraphXAdapter<Object, DefaultEdge> jGraphXAdapter
             = new JGraphXAdapter<>(graph);
 
@@ -337,9 +382,15 @@ public abstract class Draw2dAdapterBase {
 
         compactTreeLayout.execute(jGraphXAdapter.getDefaultParent());
 
+        // We get a handle to the cell map from JGraphXAdapter. Each
+        // cell is keyed on the relevant item identifier and contains
+        // the relevant layout coordinates.
         Map<String, mxCell> cellMap = this.getCellMap(jGraphXAdapter);
 
+        // Get all items from the underlying diagram builder.
         ArrayList<Object> items = diagramBuilder.build();
+
+        // Now go ahead and group items and add labels to the diagram.
         ArrayList<Label> labels = new ArrayList<>();
         ArrayList<Object> groups = new ArrayList<>();
 
@@ -376,19 +427,26 @@ public abstract class Draw2dAdapterBase {
         items.addAll(groups);
         items.addAll(labels);
 
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
         return items;
     }
 
-    protected void manageContext(Context contextInstance, DefaultDirectedGraph<Object, DefaultEdge> graph,
-                               DiagramBuilder diagramBuilder, Map<String, Context> contextInstanceMap) {
+    /**
+     * Recursive method to work our way though a context and all of its child contexts
+     * and add them to the diagram.
+     *
+     * @param context
+     * @param graph
+     * @param diagramBuilder
+     * @param contextInstanceMap
+     */
+    protected void manageContext(Context context, DefaultDirectedGraph<Object, DefaultEdge> graph,
+                                 DiagramBuilder diagramBuilder, Map<String, Context> contextInstanceMap) {
 
-        if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
-            contextInstance.getContexts().forEach(c -> {
+        if(context.getContexts() != null && !context.getContexts().isEmpty()) {
+            context.getContexts().forEach(c -> {
                 contextInstanceMap.put(((Context)c).getName(), (Context)c);
                 graph.addVertex(((Context)c).getName());
-                graph.addEdge(contextInstance.getName(), ((Context)c).getName());
+                graph.addEdge(context.getName(), ((Context)c).getName());
 
                 Image branch = diagramBuilder.getImageBuilder()
                     .withId(((Context)c).getName())
@@ -406,29 +464,22 @@ public abstract class Draw2dAdapterBase {
 
                 diagramBuilder.addItem(branch);
 
-                ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
-                connectionBuilder.withSource(
-                    diagramBuilder.getConnectionDetailsBuilder()
-                        .withNode(contextInstance.getName())
-                        .withPort("bottomHybridSource")
-                        .build()
-                );
-
-                connectionBuilder.withTarget(
-                    diagramBuilder.getConnectionDetailsBuilder()
-                        .withNode(branch.getId())
-                        .withPort("topHybridTarget")
-                        .withDecoration("draw2d.decoration.connection.ArrowDecorator")
-                        .build()
-                );
-
-                diagramBuilder.addItem(connectionBuilder.build());
+                this.addConnection(context.getName(), "bottomHybridSource", branch.getId()
+                    , "topHybridTarget", diagramBuilder);
 
                 this.manageContext((Context)c, graph, diagramBuilder, contextInstanceMap);
             });
         }
     }
 
+    /**
+     * Helper method to get the cell map from the JGraphXAdapter which is used to create the
+     * layout of the diagram. The cell map is keyed based on the item identifier and contains
+     * all coordinate information relating to the layout of the diagram.
+     *
+     * @param jGraphXAdapter
+     * @return
+     */
     protected Map<String, mxCell> getCellMap(JGraphXAdapter<Object, DefaultEdge> jGraphXAdapter) {
         Map<String, mxCell> cellMap = new HashMap<>();
 
@@ -447,7 +498,18 @@ public abstract class Draw2dAdapterBase {
         return cellMap;
     }
 
-    protected void manageLogicalGroupings(Context context, String jobIdentifier, LogicalGrouping logicalGrouping, DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object, DefaultEdge> graph) {
+    /**
+     * This method is responsible for recursively creating connections between jobs that reside within
+     * any LogicalGroupings.
+     *
+     * @param context
+     * @param jobIdentifier
+     * @param logicalGrouping
+     * @param diagramBuilder
+     * @param graph
+     */
+    protected void manageLogicalGroupings(Context context, String jobIdentifier, LogicalGrouping logicalGrouping
+        , DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object, DefaultEdge> graph) {
         if(logicalGrouping.getLogicalGrouping() != null) {
             manageLogicalGroupings(context, jobIdentifier, logicalGrouping.getLogicalGrouping(), diagramBuilder, graph);
         }
@@ -464,23 +526,8 @@ public abstract class Draw2dAdapterBase {
                     });
                     graph.addEdge(and.getIdentifier(), jobIdentifier);
 
-                    ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
-                    connectionBuilder.withSource(
-                        diagramBuilder.getConnectionDetailsBuilder()
-                            .withNode(and.getIdentifier())
-                            .withPort("rightHybridSource")
-                            .build()
-                    );
-
-                    connectionBuilder.withTarget(
-                        diagramBuilder.getConnectionDetailsBuilder()
-                            .withNode(jobIdentifier)
-                            .withPort("leftHybridTarget")
-                            .withDecoration("draw2d.decoration.connection.ArrowDecorator")
-                            .build()
-                    );
-
-                    diagramBuilder.addItem(connectionBuilder.build());
+                    this.addConnection(and.getIdentifier(), "rightHybridSource"
+                        , jobIdentifier, "leftHybridTarget", diagramBuilder);
                 }
             });
         }
@@ -493,104 +540,97 @@ public abstract class Draw2dAdapterBase {
                 else {
                     graph.addEdge(or.getIdentifier(), jobIdentifier);
 
-                    ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
-                    connectionBuilder.withSource(
-                        diagramBuilder.getConnectionDetailsBuilder()
-                            .withNode(or.getIdentifier())
-                            .withPort("rightHybridSource")
-                            .build()
-                    );
-
-                    connectionBuilder.withTarget(
-                        diagramBuilder.getConnectionDetailsBuilder()
-                            .withNode(jobIdentifier)
-                            .withPort("leftHybridTarget")
-                            .withDecoration("draw2d.decoration.connection.ArrowDecorator")
-                            .build()
-                    );
-
-                    diagramBuilder.addItem(connectionBuilder.build());
+                    this.addConnection(or.getIdentifier(), "rightHybridSource"
+                        , jobIdentifier, "leftHybridTarget", diagramBuilder);
                 }
             });
         }
     }
 
-    protected List<String> manageLinkingContextTransitions(List<ContextTransition> inboundContextTransitions, List<ContextTransition> outboundContextTransitions,
+    /**
+     * This method is responsible for managing any linking contexts within a job plan. Ultimately it delegates to
+     * the method getLinkedContexts, which builds a org.ikasan.dashboard.ui.visualisation.scheduler.model.Tree
+     * which contains nodes of identifiers of in a tree structure with the root being the start of the linking
+     * and nested branches containing the linkage path.
+     *
+     * Once the tree has been constructed, this method then delegates to addLinkingsToDiagram which recursively
+     * adds all linking context transitions to the diagram.
+     *
+     * @param context
+     * @param parentContext
+     * @param internalEventDrivenJobMap
+     * @param diagramBuilder
+     * @param graph
+     * @return
+     */
+    protected List<String> manageLinkingContextTransitions(Context context, Context parentContext, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap,
                                                            DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object, DefaultEdge> graph) {
         List<String> linkingConnections = new ArrayList<>();
-        inboundContextTransitions.forEach(in -> {
-            in.getContexts().forEach(inContext -> {
-                outboundContextTransitions.forEach(out -> {
-                    out.getContexts().forEach(outContext -> {
-                        if(inContext.equals(outContext)) {
-                            logger.info("Got linking connection!");
-//                            linkingConnections.add(outContext);
-//                            graph.addVertex(outContext);
-//
-//                            UserDataBuilder userDataBuilder = new UserDataBuilder()
-//                                .withIdentifier(outContext)
-//                                .withItemType(UserData.CONTEXT)
-//                                .withContextName(outContext);
-//
-//                            //subsequentJobIdentifiers.forEach(id -> userDataBuilder.addSubsequentJobIdentifiers(id));
-//
-//                            ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
-//                                .withId(outContext)
-//                                .withHeight(100)
-//                                .withWidth(100)
-//                                .withPath("frontend/images/external-context.png")
-//                                .withUserData(userDataBuilder.build())
-//                                .withLeftPort()
-//                                .withRightPort();
-//
-//                            diagramBuilder.addItem(jobBuilder.build());
-//
-//                            ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
-//                            connectionBuilder.withSource(
-//                                diagramBuilder.getConnectionDetailsBuilder()
-//                                    .withNode(outContext)
-//                                    .withPort("rightHybridSource")
-//                                    .build()
-//                            );
-//                            connectionBuilder.withTarget(
-//                                diagramBuilder.getConnectionDetailsBuilder()
-//                                    .withNode(in.getPrecedingJob().getIdentifier())
-//                                    .withPort("leftHybridTarget")
-//                                    .withDecoration("draw2d.decoration.connection.ArrowDecorator")
-//                                    .build()
-//                            );
-//
-//                            diagramBuilder.addItem(connectionBuilder.build());
-//
-//                            graph.addEdge(outContext, in.getPrecedingJob().getIdentifier());
-//
-//                            connectionBuilder = diagramBuilder.getConnectionBuilder();
-//                            connectionBuilder.withSource(
-//                                diagramBuilder.getConnectionDetailsBuilder()
-//                                    .withNode(out.getPrecedingJob().getIdentifier())
-//                                    .withPort("rightHybridSource")
-//                                    .build()
-//                            );
-//                            connectionBuilder.withTarget(
-//                                diagramBuilder.getConnectionDetailsBuilder()
-//                                    .withNode(outContext)
-//                                    .withPort("leftHybridTarget")
-//                                    .withDecoration("draw2d.decoration.connection.ArrowDecorator")
-//                                    .build()
-//                            );
-//
-//                            diagramBuilder.addItem(connectionBuilder.build());
-//
-//                            graph.addEdge(out.getPrecedingJob().getIdentifier(), outContext);
-                        }
-                    });
-                });
-            });
-        });
+
+        if(!context.getContexts().isEmpty()) {
+            Tree<String> tree = getLinkedContexts(context, parentContext, internalEventDrivenJobMap);
+
+            tree.getRoot().getBranches().forEach(branch
+                -> this.addLinksToDiagram(branch, linkingConnections, diagramBuilder, graph));
+        }
 
         return linkingConnections;
     }
 
+    /**
+     * Helper method to recursively add all context links to the diagram.
+     *
+     * @param treeNode
+     * @param linkingConnections
+     * @param diagramBuilder
+     * @param graph
+     */
+    protected void addLinksToDiagram(TreeNode<String> treeNode, List<String> linkingConnections, DiagramBuilder diagramBuilder
+        , DefaultDirectedGraph<Object, DefaultEdge> graph) {
+        treeNode.getBranches().forEach(branch -> {
+            linkingConnections.add(branch.getData());
+            if(!graph.containsVertex(branch.getParent().getData())) {
+                // Add the parent to the diagram if it does not exist.
+                graph.addVertex(branch.getParent().getData());
+                linkingConnections.add(branch.getParent().getData());
+
+                UserDataBuilder userDataBuilder = new UserDataBuilder()
+                    .withIdentifier(branch.getParent().getData())
+                    .withItemType(UserData.CONTEXT)
+                    .withContextName(branch.getParent().getData());
+
+                this.addExternalContext(branch.getParent().getData(), diagramBuilder, userDataBuilder.build());
+            }
+            graph.addVertex(branch.getData());
+
+            // Add the branch to the diagram.
+            UserDataBuilder userDataBuilder = new UserDataBuilder()
+                .withIdentifier(branch.getData())
+                .withItemType(UserData.CONTEXT)
+                .withContextName(branch.getData());
+
+            this.addExternalContext(branch.getData(), diagramBuilder, userDataBuilder.build());
+
+            // Now connect the parent to the branch.
+            this.addConnection(branch.getParent().getData(), "rightHybridSource",
+                branch.getData(), "leftHybridTarget", diagramBuilder);
+
+            graph.addEdge(branch.getParent().getData(), branch.getData());
+
+            // Recursively work our way through the tree.
+            this.addLinksToDiagram(branch, linkingConnections, diagramBuilder, graph);
+        });
+    }
+
+    /**
+     * Manage the case where a subsequent context has a job dependency that the current context is
+     * responsible for starting a job in the subsequent context.
+     *
+     * @param contextTransitions
+     * @param diagramBuilder
+     * @param graph
+     * @param linkingConnections
+     */
     protected void manageOutboundContextTransitions(List<ContextTransition> contextTransitions, DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object, DefaultEdge> graph,
                                                     List<String> linkingConnections) {
         List<String> addedContexts = new ArrayList<>();
@@ -601,55 +641,42 @@ public abstract class Draw2dAdapterBase {
 
         contextTransitions.forEach(contextTransition -> {
             contextTransition.getContexts().forEach(context -> {
+                String contextName = context;
                 if(!linkingConnections.contains(context)) {
-                    graph.addVertex(context + "_out");
-
-                    if (!addedContexts.contains(context + "_out")) {
-                        UserDataBuilder userDataBuilder = new UserDataBuilder()
-                            .withIdentifier(context + "_out")
-                            .withItemType(UserData.CONTEXT)
-                            .withContextName(context);
-
-                        precedingJobIdentifiers.forEach(id -> userDataBuilder.addPreviousJobIdentifiers(id));
-
-                        ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
-                            .withId(context + "_out")
-                            .withHeight(100)
-                            .withWidth(100)
-                            .withPath("frontend/images/external-context.png")
-                            .withUserData(userDataBuilder.build())
-                            .withLeftPort()
-                            .withRightPort();
-
-                        diagramBuilder.addItem(jobBuilder.build());
-                        addedContexts.add(context + "_out");
-                    }
-
-                    ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
-                    connectionBuilder.withSource(
-                        diagramBuilder.getConnectionDetailsBuilder()
-                            .withNode(contextTransition.getPrecedingJob().getIdentifier())
-                            .withPort("rightHybridSource")
-                            .build()
-                    );
-
-                    connectionBuilder.withTarget(
-                        diagramBuilder.getConnectionDetailsBuilder()
-                            .withNode(context + "_out")
-                            .withPort("leftHybridTarget")
-                            .withDecoration("draw2d.decoration.connection.ArrowDecorator")
-                            .build()
-                    );
-
-                    diagramBuilder.addItem(connectionBuilder.build());
-
-                    graph.addEdge(contextTransition.getPrecedingJob().getIdentifier(), context + "_out");
+                    context = context + "_out";
                 }
+                graph.addVertex(context);
+
+                if (!addedContexts.contains(context)) {
+                    UserDataBuilder userDataBuilder = new UserDataBuilder()
+                        .withIdentifier(context)
+                        .withItemType(UserData.CONTEXT)
+                        .withContextName(contextName);
+
+                    precedingJobIdentifiers.forEach(id -> userDataBuilder.addPreviousJobIdentifiers(id));
+
+                    this.addExternalContext(context, diagramBuilder, userDataBuilder.build());
+                    addedContexts.add(context);
+                }
+
+                this.addConnection(contextTransition.getPrecedingJob().getIdentifier(), "rightHybridSource"
+                    , context, "leftHybridTarget", diagramBuilder);
+
+                graph.addEdge(contextTransition.getPrecedingJob().getIdentifier(), context);
             });
         });
     }
 
-    protected void manageInboundContextTransitions(List<ContextTransition> contextTransitions, DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object
+    /**
+     * Manage the case where a previous context has a job dependency that is the catalyst for a job
+     * starting in the context that the diagram is being rendered for.
+     *
+     * @param contextTransitions
+     * @param diagramBuilder
+     * @param graph
+     * @param linkingConnections
+     */
+    protected List<String> manageInboundContextTransitions(List<ContextTransition> contextTransitions, DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object
         , DefaultEdge> graph, List<String> linkingConnections) {
         List<String> addedContexts = new ArrayList<>();
         List<String> subsequentJobIdentifiers = new ArrayList<>();
@@ -658,94 +685,117 @@ public abstract class Draw2dAdapterBase {
 
         contextTransitions.forEach(contextTransition -> {
             contextTransition.getContexts().forEach(context -> {
+                String contextName = context;
                 if(!linkingConnections.contains(context)) {
-                    if (!addedContexts.contains(context + "_in")) {
-                        graph.addVertex(context + "_in");
-
-                        UserDataBuilder userDataBuilder = new UserDataBuilder()
-                            .withIdentifier(context + "_in")
-                            .withItemType(UserData.CONTEXT)
-                            .withContextName(context);
-
-                        subsequentJobIdentifiers.forEach(id -> userDataBuilder.addSubsequentJobIdentifiers(id));
-
-                        ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
-                            .withId(context + "_in")
-                            .withHeight(100)
-                            .withWidth(100)
-                            .withPath("frontend/images/external-context.png")
-                            .withUserData(userDataBuilder.build())
-                            .withLeftPort()
-                            .withRightPort();
-
-                        diagramBuilder.addItem(jobBuilder.build());
-                    }
-
-                    ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
-                    connectionBuilder.withSource(
-                        diagramBuilder.getConnectionDetailsBuilder()
-                            .withNode(context + "_in")
-                            .withPort("rightHybridSource")
-                            .build()
-                    );
-                    connectionBuilder.withTarget(
-                        diagramBuilder.getConnectionDetailsBuilder()
-                            .withNode(contextTransition.getPrecedingJob().getIdentifier())
-                            .withPort("leftHybridTarget")
-                            .withDecoration("draw2d.decoration.connection.ArrowDecorator")
-                            .build()
-                    );
-
-                    diagramBuilder.addItem(connectionBuilder.build());
-
-                    graph.addEdge(context + "_in", contextTransition.getPrecedingJob().getIdentifier());
-
-                    addedContexts.add(context);
+                    context = context + "_in";
                 }
+                if (!addedContexts.contains(context)) {
+                    graph.addVertex(context);
+
+                    UserDataBuilder userDataBuilder = new UserDataBuilder()
+                        .withIdentifier(context)
+                        .withItemType(UserData.CONTEXT)
+                        .withContextName(contextName);
+
+                    subsequentJobIdentifiers.forEach(id -> userDataBuilder.addSubsequentJobIdentifiers(id));
+
+                    this.addExternalContext(context, diagramBuilder, userDataBuilder.build());
+                }
+
+                this.addConnection(context, "rightHybridSource"
+                    , contextTransition.getPrecedingJob().getIdentifier(), "leftHybridTarget", diagramBuilder);
+
+                graph.addEdge(context, contextTransition.getPrecedingJob().getIdentifier());
+
+                addedContexts.add(context);
             });
         });
+
+        return subsequentJobIdentifiers;
     }
 
+    /**
+     * Method to get a tree of linked contexts for contexts that have child contexts where job dependencies
+     * occur between the parent and any of its children.
+     *
+     * @param context
+     * @param parentContext
+     * @param internalEventDrivenJobMap
+     * @return
+     */
     private Tree<String> getLinkedContexts(Context context, Context parentContext, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
-        LinkedList<String> path = new LinkedList<>();
+        Tree<String> tree = new Tree<>(new TreeNode<>(context.getName()));
+
         if(!context.getContexts().isEmpty()) {
-            logger.info("Got some child contexts");
-            logger.info("******************* " + context.getName() + " ********************\n");
-            List<String> previousContexts
-                = this.getPreviousContextTransitions(parentContext, context, internalEventDrivenJobMap)
-                    .stream()
-                    .flatMap(contextTransition -> contextTransition.getContexts().stream())
-                    .collect(Collectors.toList());
+            Map<String, List<String>> contextSubsequentTransitionMap = new HashMap<>();
 
-            previousContexts.forEach(ct -> logger.info("Previous Context transition - " + ct));
-
-            List<String> subsequentTransitions = ContextHelper.determineIfJobsTransitionToOtherContexts
+            List<String> subsequentTransitions = (List<String>) ContextHelper.determineIfJobsTransitionToOtherContexts
                 (parentContext, context.getScheduledJobsMap(), context, internalEventDrivenJobMap)
                 .stream()
-                .flatMap(contextTransition -> contextTransition.getContexts().stream())
+                .flatMap(contextTransition -> ((ContextTransition)contextTransition).getContexts().stream())
+                .filter(contextName -> !contextName.equals(context.getName()))
+                .distinct()
                 .collect(Collectors.toList());
 
-            subsequentTransitions.forEach(ct -> logger.info("Subsequent Context transition - " + ct));
             context.getContexts().forEach(child -> {
-                logger.info("######################## " + ((Context)child).getName() + " ########################\n");
-                List<ContextTransition> previousContexts2 = this.getPreviousContextTransitions(parentContext, (Context)child, internalEventDrivenJobMap);
+                List<String> childSubsequentTransitions = (List<String>) ContextHelper.determineIfJobsTransitionToOtherContexts
+                    (parentContext, ((Context)child).getScheduledJobsMap(), (Context)child, internalEventDrivenJobMap)
+                    .stream()
+                    .flatMap(contextTransition -> ((ContextTransition)contextTransition).getContexts().stream())
+                    .filter(contextName -> !contextName.equals(context.getName()))
+                    .distinct()
+                    .collect(Collectors.toList());;
 
-                previousContexts2.forEach(ct -> logger.info("Previous Context transition - " + ct));
-
-                List<ContextTransition> subsequentTransitions2 = ContextHelper.determineIfJobsTransitionToOtherContexts
-                    (parentContext, ((Context)child).getScheduledJobsMap(), (Context)child, internalEventDrivenJobMap);
-
-                subsequentTransitions2.forEach(ct -> logger.info("Subsequent Context transition - " + ct));
-
-                logger.info("######################## END " + ((Context)child).getName() + " ########################\n");
+                contextSubsequentTransitionMap.put(((Context<?, ?, ?, ?>) child).getName(), childSubsequentTransitions);
             });
 
-            logger.info("******************* END" + context.getName() + " ********************\n");
+            AtomicReference<TreeNode<String>> node = new AtomicReference<>();
+            subsequentTransitions.forEach(s -> {
+                TreeNode<String> n = new TreeNode<>(s);
+                if(node.get() == null) {
+                    tree.getRoot().addBranch(n);
+                }
+                else {
+                    node.get().addBranch(n);
+                }
+
+                followContextTransitionPath(s, n, contextSubsequentTransitionMap);
+            });
         }
 
-        return new Tree<>(new TreeNode<>(""));
+        return tree;
     }
 
+    /**
+     * Method to recursively follow transitions between contexts.
+     *
+     *
+     * @param contextName
+     * @param node
+     * @param contextSubsequentTransitionMap
+     */
+    protected void followContextTransitionPath(String contextName, TreeNode<String> node,
+        Map<String, List<String>> contextSubsequentTransitionMap) {
+
+        if(contextSubsequentTransitionMap.containsKey(contextName)) {
+            contextSubsequentTransitionMap.get(contextName).forEach(s -> {
+                TreeNode<String> treeNode = new TreeNode<>(s);
+                node.addBranch(treeNode);
+
+                followContextTransitionPath(s, treeNode, contextSubsequentTransitionMap);
+            });
+        }
+
+    }
+
+    /**
+     * Method to determine if a previous context transitions to the one being rendered in the diagram.
+     *
+     * @param parentContext
+     * @param context
+     * @param internalEventDrivenJobMap
+     * @return
+     */
     protected List<ContextTransition> getPreviousContextTransitions(Context parentContext, Context context, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
         HashSet<ContextTransition> previousContexts = new HashSet<>();
 
@@ -759,49 +809,63 @@ public abstract class Draw2dAdapterBase {
         return previousContexts.stream().filter(contextTransition -> !contextTransition.getContexts().isEmpty()).collect(Collectors.toList());
     }
 
-    protected void getAllJobsInGrouping(LogicalGrouping logicalGrouping, Grouping grouping) {
-        Grouping nestedGrouping = null;
+    /**
+     * Helper method to get all jobs in a logical grouping.
+     *
+     * @param logicalGrouping
+     * @param grouping
+     */
+    protected void getAllJobsInGrouping(LogicalGrouping logicalGrouping, VisualisationLogicalGrouping grouping) {
+        VisualisationLogicalGrouping nestedVisualisationLogicalGrouping = null;
         if(logicalGrouping.getAnd() != null && !logicalGrouping.getAnd().isEmpty()) {
-            nestedGrouping = new Grouping();
-            nestedGrouping.setType("AND");
-            grouping.getNestedGrouping().add(nestedGrouping);
+            nestedVisualisationLogicalGrouping = new VisualisationLogicalGrouping();
+            nestedVisualisationLogicalGrouping.setType("AND");
+            grouping.getNestedGrouping().add(nestedVisualisationLogicalGrouping);
             for (And and : logicalGrouping.getAnd()) {
 
                 if (and.getIdentifier() != null) {
-                    nestedGrouping.getJobIdentifiers().add(and.getIdentifier());
+                    nestedVisualisationLogicalGrouping.getJobIdentifiers().add(and.getIdentifier());
                 }
 
                 if (and.getLogicalGrouping() != null) {
-                    getAllJobsInGrouping(and.getLogicalGrouping(), nestedGrouping);
+                    getAllJobsInGrouping(and.getLogicalGrouping(), nestedVisualisationLogicalGrouping);
                 }
             }
         }
 
         if(logicalGrouping.getOr() != null && !logicalGrouping.getOr().isEmpty()) {
-            nestedGrouping = new Grouping();
-            nestedGrouping.setType("OR");
-            grouping.getNestedGrouping().add(nestedGrouping);
+            nestedVisualisationLogicalGrouping = new VisualisationLogicalGrouping();
+            nestedVisualisationLogicalGrouping.setType("OR");
+            grouping.getNestedGrouping().add(nestedVisualisationLogicalGrouping);
             for (Or or : logicalGrouping.getOr()) {
                 if(or.getIdentifier() != null) {
-                    nestedGrouping.getJobIdentifiers().add(or.getIdentifier());
+                    nestedVisualisationLogicalGrouping.getJobIdentifiers().add(or.getIdentifier());
                 }
 
                 if (or.getLogicalGrouping() != null) {
-                    getAllJobsInGrouping(or.getLogicalGrouping(), nestedGrouping);
+                    getAllJobsInGrouping(or.getLogicalGrouping(), nestedVisualisationLogicalGrouping);
                 }
             }
         }
 
         if(logicalGrouping.getLogicalGrouping() != null) {
-            getAllJobsInGrouping(logicalGrouping.getLogicalGrouping(), nestedGrouping != null ? nestedGrouping : grouping);
+            getAllJobsInGrouping(logicalGrouping.getLogicalGrouping(), nestedVisualisationLogicalGrouping != null ? nestedVisualisationLogicalGrouping : grouping);
         }
     }
 
-    protected void addLogicGroupings(Grouping grouping, ArrayList<Object> imageOverlay, Map<String, mxCell> cellMap, DiagramBuilder diagramBuilder) {
-        grouping.getNestedGrouping().forEach(nestedGrouping -> {
-            this.addLogicGroupings(nestedGrouping, imageOverlay, cellMap, diagramBuilder);
+    /**
+     * Add all logical groupings to the diagram.
+     *
+     * @param visualisationLogicalGrouping
+     * @param imageOverlay
+     * @param cellMap
+     * @param diagramBuilder
+     */
+    protected void addLogicGroupings(VisualisationLogicalGrouping visualisationLogicalGrouping, ArrayList<Object> imageOverlay, Map<String, mxCell> cellMap, DiagramBuilder diagramBuilder) {
+        visualisationLogicalGrouping.getNestedGrouping().forEach(nestedVisualisationLogicalGrouping -> {
+            this.addLogicGroupings(nestedVisualisationLogicalGrouping, imageOverlay, cellMap, diagramBuilder);
 
-            if(nestedGrouping.getJobIdentifiers().size() > 1 || (!nestedGrouping.getNestedGrouping().isEmpty())) {
+            if(nestedVisualisationLogicalGrouping.getJobIdentifiers().size() > 1 || (!nestedVisualisationLogicalGrouping.getNestedGrouping().isEmpty())) {
                 AtomicReference<Double> xMinExtent = new AtomicReference<>();
                 xMinExtent.set(-1.0);
                 AtomicReference<Double> xMaxExtent = new AtomicReference<>();
@@ -811,7 +875,7 @@ public abstract class Draw2dAdapterBase {
                 AtomicReference<Double> yMaxExtent = new AtomicReference<>();
                 yMaxExtent.set(-1.0);
 
-                this.calculateExtents(nestedGrouping, xMinExtent, xMaxExtent, yMinExtent, yMaxExtent, cellMap);
+                this.calculateExtents(nestedVisualisationLogicalGrouping, xMinExtent, xMaxExtent, yMinExtent, yMaxExtent, cellMap);
 
                 RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
                     .withWidth(xMaxExtent.get() - xMinExtent.get() + 360)
@@ -825,12 +889,12 @@ public abstract class Draw2dAdapterBase {
                     .withResizable(true)
                     .withBgColor("rgba(27,27,27,0.0)");
 
-                if (nestedGrouping.getType().equals("AND")) {
-                    rb.withId("AND-" + UUID.randomUUID().toString())
+                if (nestedVisualisationLogicalGrouping.getType().equals("AND")) {
+                    rb.withId("AND-" + UUID.randomUUID())
                         .withColor(IkasanColours.SCHEDULER_AND)
                         .withDasharray("--");
                 } else {
-                    rb.withId("OR-" + UUID.randomUUID().toString())
+                    rb.withId("OR-" + UUID.randomUUID())
                         .withColor(IkasanColours.SCHEDULER_OR)
                         .withDasharray("--..");
                 }
@@ -840,9 +904,17 @@ public abstract class Draw2dAdapterBase {
         });
     }
 
-    protected void addContextBoundaries(ArrayList<Object> items, ArrayList<Object> imageOverlay, Map<String, mxCell> cellMap, DiagramBuilder diagramBuilder) {
+    /**
+     * Helper method to draw all transition context boundaries for a given diagram.
+     *
+     * @param items
+     * @param imageOverlay
+     * @param cellMap
+     * @param diagramBuilder
+     */
+    protected void addContextBoundaries(ArrayList<Object> items, ArrayList<Object> imageOverlay
+        , Map<String, mxCell> cellMap, DiagramBuilder diagramBuilder) {
         items.forEach(item -> {
-
             if(item instanceof Image) {
                 Image image = (Image) item;
 
@@ -851,32 +923,57 @@ public abstract class Draw2dAdapterBase {
                     && image.getUserData().getItemType().equals(UserData.CONTEXT)) {
                     mxCell cell = cellMap.get(image.getUserData().getIdentifier());
 
-                    RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
-                        .withWidth(200)
-                        .withHeight(200)
-                        .withStroke(3)
-                        .withRadius(10)
-                        .withX(cell.getGeometry().getX() + 550)
-                        .withY(cell.getGeometry().getY() + 550)
-                        .withSelectable(false)
-                        .withDraggable(false)
-                        .withResizable(false)
-                        .withDasharray("--")
-                        .withBgColor(IkasanColours.LIGHT_GREY)
-                        .withColor(IkasanColours.BLACK);
-
-                    imageOverlay.add(rb.build());
+                    this.drawContextBoundary(cell, imageOverlay, image.getUserData(), diagramBuilder);
                 }
             }
         });
     }
 
-    protected void calculateExtents(Grouping grouping, AtomicReference<Double> xMinExtent, AtomicReference<Double> xMaxExtent,
-                                  AtomicReference<Double> yMinExtent, AtomicReference<Double> yMaxExtent, Map<String, mxCell> cellMap) {
-        grouping.getNestedGrouping().forEach(nestedGrouping -> {
-            this.calculateExtents(nestedGrouping, xMinExtent, xMaxExtent, yMinExtent, yMaxExtent, cellMap);
+    /**
+     * Draw a boundary around a transition context icon.
+     *
+     * @param cell
+     * @param imageOverlay
+     * @param userData
+     */
+    protected void drawContextBoundary(mxCell cell, ArrayList<Object> imageOverlay, UserData userData
+        , DiagramBuilder diagramBuilder) {
+        RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
+            .withWidth(200)
+            .withHeight(200)
+            .withStroke(3)
+            .withRadius(10)
+            .withX(cell.getGeometry().getX() + 550)
+            .withY(cell.getGeometry().getY() + 550)
+            .withSelectable(false)
+            .withDraggable(false)
+            .withResizable(false)
+            .withDasharray("--")
+            .withBgColor(IkasanColours.LIGHT_GREY)
+            .withColor(IkasanColours.BLACK);
 
-            nestedGrouping.getJobIdentifiers().forEach(id -> {
+        Rectangle rectangle = rb.build();
+        rectangle.setUserData(userData);
+
+        imageOverlay.add(rectangle);
+    }
+
+    /**
+     * Method to calculate the x and y coordinate extents of all job within a VisualisationLogicalGrouping.
+     *
+     * @param visualisationLogicalGrouping
+     * @param xMinExtent
+     * @param xMaxExtent
+     * @param yMinExtent
+     * @param yMaxExtent
+     * @param cellMap
+     */
+    protected void calculateExtents(VisualisationLogicalGrouping visualisationLogicalGrouping, AtomicReference<Double> xMinExtent, AtomicReference<Double> xMaxExtent,
+                                    AtomicReference<Double> yMinExtent, AtomicReference<Double> yMaxExtent, Map<String, mxCell> cellMap) {
+        visualisationLogicalGrouping.getNestedGrouping().forEach(nestedVisualisationLogicalGrouping -> {
+            this.calculateExtents(nestedVisualisationLogicalGrouping, xMinExtent, xMaxExtent, yMinExtent, yMaxExtent, cellMap);
+
+            nestedVisualisationLogicalGrouping.getJobIdentifiers().forEach(id -> {
                 mxCell cell = cellMap.get(id);
 
                 if (xMinExtent.get() == -1) xMinExtent.set(cell.getGeometry().getX() + 600);
@@ -906,7 +1003,7 @@ public abstract class Draw2dAdapterBase {
             });
         });
 
-        grouping.getJobIdentifiers().forEach(id -> {
+        visualisationLogicalGrouping.getJobIdentifiers().forEach(id -> {
             mxCell cell = cellMap.get(id);
 
             if (xMinExtent.get() == -1) xMinExtent.set(cell.getGeometry().getX() + 600);
@@ -941,6 +1038,12 @@ public abstract class Draw2dAdapterBase {
         yMaxExtent.set(yMaxExtent.get() + 15);
     }
 
+    /**
+     * Helper method to get the relevant image for a job.
+     *
+     * @param schedulerJob
+     * @return
+     */
     protected String getJobImage(SchedulerJob schedulerJob) {
         String image = "frontend/images/command_black.png";
 
@@ -954,45 +1057,117 @@ public abstract class Draw2dAdapterBase {
         return image;
     }
 
-    protected List<SchedulerJob> getSchedulerJobsFromGrouping(Context context, Grouping grouping) {
+    /**
+     * Recursively get all jobs from a VisualisationLogicalGrouping.
+     *
+     * @param context
+     * @param visualisationLogicalGrouping
+     * @return
+     */
+    protected List<SchedulerJob> getSchedulerJobsFromGrouping(Context context, VisualisationLogicalGrouping visualisationLogicalGrouping) {
         ArrayList<SchedulerJob> schedulerJobs = new ArrayList<>();
 
-        _getSchedulerJobsFromGrouping(context, grouping, schedulerJobs);
+        _getSchedulerJobsFromGrouping(context, visualisationLogicalGrouping, schedulerJobs);
 
         return schedulerJobs;
     }
 
-    private void _getSchedulerJobsFromGrouping(Context context, Grouping grouping, List<SchedulerJob> schedulerJobs) {
+    /**
+     * Recursively get all jobs from a VisualisationLogicalGrouping.
+     *
+     * @param context
+     * @param visualisationLogicalGrouping
+     * @param schedulerJobs
+     */
+    private void _getSchedulerJobsFromGrouping(Context context, VisualisationLogicalGrouping visualisationLogicalGrouping, List<SchedulerJob> schedulerJobs) {
 
-        grouping.getJobIdentifiers().forEach(id -> {
+        visualisationLogicalGrouping.getJobIdentifiers().forEach(id -> {
             if(!schedulerJobs.contains(context.getScheduledJobsMap().get(id))) {
                 schedulerJobs.add((SchedulerJob) context.getScheduledJobsMap().get(id));
             }
         });
 
-        if(grouping.getNestedGrouping() != null) {
-            grouping.getNestedGrouping().forEach(nested -> {
+        if(visualisationLogicalGrouping.getNestedGrouping() != null) {
+            visualisationLogicalGrouping.getNestedGrouping().forEach(nested -> {
                 _getSchedulerJobsFromGrouping(context, nested, schedulerJobs);
             });
         }
     }
 
-    protected int getGroupingDepth(Grouping grouping) {
+    /**
+     * Helper method to recursively calculate the depth of a VisualisationLogicalGrouping.
+     *
+     * @param visualisationLogicalGrouping
+     * @return
+     */
+    protected int getGroupingDepth(VisualisationLogicalGrouping visualisationLogicalGrouping) {
         AtomicInteger depth = new AtomicInteger(0);
-        _getGroupingDepth(grouping, depth);
+        _getGroupingDepth(visualisationLogicalGrouping, depth);
 
         return depth.get();
     }
 
-    private void _getGroupingDepth(Grouping grouping, AtomicInteger depth) {
+    /**
+     * Helper method to recursively calculate the depth of a VisualisationLogicalGrouping.
+     *
+     * @param visualisationLogicalGrouping
+     * @param depth
+     */
+    private void _getGroupingDepth(VisualisationLogicalGrouping visualisationLogicalGrouping, AtomicInteger depth) {
         boolean depthIncrement = false;
 
-        for (Grouping nested : grouping.getNestedGrouping()) {
+        for (VisualisationLogicalGrouping nested : visualisationLogicalGrouping.getNestedGrouping()) {
             if(!depthIncrement) {
                 depth.getAndIncrement();
                 depthIncrement = true;
             }
             _getGroupingDepth(nested, depth);
         }
+    }
+
+    /**
+     * Helper method to add an external context to the diagram.
+     *
+     * @param identifier
+     * @param diagramBuilder
+     */
+    protected void addExternalContext(String identifier, DiagramBuilder diagramBuilder, UserData userData) {
+        ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
+            .withId(identifier)
+            .withHeight(100)
+            .withWidth(100)
+            .withPath("frontend/images/external-context.png")
+            .withUserData(userData)
+            .withLeftPort()
+            .withRightPort();
+
+        diagramBuilder.addItem(jobBuilder.build());
+    }
+
+    /**
+     * Helper method to add a connection between 2 items.
+     * @param sourceIdentifier
+     * @param sourcePort
+     * @param targetIdentifier
+     * @param targetPort
+     * @param diagramBuilder
+     */
+    protected void addConnection(String sourceIdentifier, String sourcePort, String targetIdentifier, String targetPort, DiagramBuilder diagramBuilder) {
+        ConnectionBuilder connectionBuilder = diagramBuilder.getConnectionBuilder();
+        connectionBuilder.withSource(
+            diagramBuilder.getConnectionDetailsBuilder()
+                .withNode(sourceIdentifier)
+                .withPort(sourcePort)
+                .build()
+        );
+        connectionBuilder.withTarget(
+            diagramBuilder.getConnectionDetailsBuilder()
+                .withNode(targetIdentifier)
+                .withPort(targetPort)
+                .withDecoration("draw2d.decoration.connection.ArrowDecorator")
+                .build()
+        );
+
+        diagramBuilder.addItem(connectionBuilder.build());
     }
 }
