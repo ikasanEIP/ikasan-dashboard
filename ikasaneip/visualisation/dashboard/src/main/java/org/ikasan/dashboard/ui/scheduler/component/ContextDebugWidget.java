@@ -117,7 +117,7 @@ public class ContextDebugWidget extends Div {
 
         this.schedulerInstanceVisualisation = new ContextSchedulerInstanceVisualisation(".", moduleMetaDataService, scheduledProcessManagementService, configurationRestService,
             moduleControlRestService,  metaDataRestService, systemEventLogger, logStreamingService, schedulerJobInstanceService, jobInitiationService, jobUtilsService,
-            this.scheduledContextService);
+            this.scheduledContextService, null);
 
         this.schedulerInstanceVisualisation.setWidthFull();
         this.schedulerInstanceVisualisation.setHeight("1000px");

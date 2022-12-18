@@ -3,9 +3,6 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
@@ -21,10 +18,11 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
-import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,19 +54,17 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
     private JobInitiationService jobInitiationService;
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
-
-    private ContextService contextService = new ContextService();
-
-    private SchedulerInstanceVisualisation schedulerInstanceVisualisation;
+    private ContextProfileService contextProfileService;
+    private ScheduledContextInstanceService scheduledContextInstanceService;
+    private SplitContextInstanceVisualisation splitContextInstanceVisualisation;
 
     private SchedulerStatusDiv statusDiv;
 
     public JobInstanceVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
-                                          ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
-                                          MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
-                                          LogStreamingService logStreamingService,
-                                          SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
-                                          JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService) {
+                                          ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
+                                          SystemEventLogger systemEventLogger, LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
+                                          JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
+                                          ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService) {
         this.setHeight("98vh");
         this.setWidth("98vw");
 
@@ -127,6 +123,16 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
         }
 
+        this.scheduledContextInstanceService = scheduledContextInstanceService;
+        if(this.scheduledContextInstanceService == null) {
+            throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
+        }
+
+        this.contextProfileService = contextProfileService;
+        if(this.contextProfileService == null) {
+            throw new IllegalArgumentException("contextProfileService cannot be null!");
+        }
+
         layout = new VerticalLayout();
         this.layout.getStyle().set("padding-top", "0px");
         layout.setSizeFull();
@@ -134,6 +140,8 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
     }
 
     /**
+     * Create the visualisation.
+     *
      * @param contextInstance
      */
     public void createSchedulerVisualisation(ContextInstance rootContextInstance, ContextInstance contextInstance) throws IOException {
@@ -142,61 +150,23 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
         this.initialised = false;
 
         this.statusDiv = new SchedulerStatusDiv();
-        this.statusDiv.setHeight("45px");
+        this.statusDiv.setHeight("20px");
         this.statusDiv.setWidth("100%");
-        this.statusDiv.setStatus(this.contextInstance.getStatus());
+        this.statusDiv.getElement().getStyle().set("font-size", "12pt");
+        this.statusDiv.setStatus(this.rootContextInstance.getStatus());
 
         this.layout.add(this.statusDiv);
 
-        initParentNavigation();
+        this.splitContextInstanceVisualisation = new SplitContextInstanceVisualisation(scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
+            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService, rootContextInstance, schedulerJobInstanceService,
+            jobInitiationService, contextProfileService, jobUtilsService, scheduledContextService);
+        this.splitContextInstanceVisualisation.initialiseVisualisation();
+        this.splitContextInstanceVisualisation.setVisible(true);
+        this.splitContextInstanceVisualisation.contextOpened(contextInstance);
+        this.splitContextInstanceVisualisation.contextSelected(contextInstance.getName());
 
-        this.schedulerInstanceVisualisation = new JobSchedulerInstanceVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
-            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
-            this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
-
-        this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.rootContextInstance, this.contextInstance, this);
-
-        this.layout.add(this.schedulerInstanceVisualisation);
-    }
-
-    private void initParentNavigation() throws IOException{
-        if(!initialised && this.contextInstance != null) {
-            ContextInstance parentContextInstance = contextService.getParent(this.rootContextInstance, this.contextInstance);
-
-            if(parentContextInstance != null) {
-                Button gotoParentButton = new Button("Go to Parent - " + parentContextInstance.getName(), VaadinIcon.ARROW_UP.create());
-                gotoParentButton.setIconAfterText(true);
-                gotoParentButton.addClickListener(buttonClickEvent -> {
-                    if (this.contextInstance != null && this.rootContextInstance != null) {
-                        this.contextInstance = contextService.getParent(this.rootContextInstance, this.contextInstance);
-
-                        if (this.contextInstance != null) {
-                            try {
-                                this.close();
-                                ContextInstanceVisualisationDialog contextInstanceVisualisationDialog
-                                    = new ContextInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
-                                    , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,  this.logStreamingService
-                                    , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
-
-                                contextInstanceVisualisationDialog.createSchedulerVisualisation(this.rootContextInstance, this.contextInstance);
-                                contextInstanceVisualisationDialog.open();
-
-                                this.close();
-                            }
-                            catch (IOException e) {
-                                // todo notification message
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                });
-
-                layout.add(gotoParentButton);
-                layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, gotoParentButton);
-            }
-
-            this.initialised = true;
-        }
+        this.layout.add(this.splitContextInstanceVisualisation);
+        this.title.setText(rootContextInstance.getName());
     }
 
     @Override
@@ -205,7 +175,7 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
 
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
             if (contextInstanceStateChangeEvent.getContextInstance() != null &&
-                contextInstanceStateChangeEvent.getContextInstance().getName().equals(this.contextInstance.getName())) {
+                contextInstanceStateChangeEvent.getContextInstance().getName().equals(this.rootContextInstance.getName())) {
                 ui.access(() -> {
                     this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
                 });

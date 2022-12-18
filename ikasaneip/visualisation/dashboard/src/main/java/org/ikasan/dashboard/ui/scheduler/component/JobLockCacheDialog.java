@@ -5,7 +5,6 @@ import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.icon.Icon;
@@ -16,36 +15,27 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceVisualisationDialog;
-import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobTemplateVisualisationDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.JobLockCacheEventBroadcaster;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
-import org.ikasan.dashboard.ui.visualisation.scheduler.util.StatusColours;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
-import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
-import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
-import org.ikasan.spec.search.SearchResults;
+import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,15 +58,36 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private ScheduledContextService scheduledContextService;
     private JobUtilsService jobUtilsService;
+
+    private ScheduledContextInstanceService scheduledContextInstanceService;
+    private ContextProfileService contextProfileService;
     private Grid<JobLockHolder> grid;
     TextField filterTf = new TextField();
 
+    /**
+     * Constructor
+     *
+     * @param contextInstance
+     * @param moduleMetaDataService
+     * @param scheduledProcessManagementService
+     * @param configurationRestService
+     * @param moduleControlRestService
+     * @param metaDataRestService
+     * @param systemEventLogger
+     * @param schedulerJobInstanceService
+     * @param logStreamingService
+     * @param jobInitiationService
+     * @param scheduledContextService
+     * @param jobUtilsService
+     * @param scheduledContextInstanceService
+     * @param contextProfileService
+     */
     public JobLockCacheDialog(ContextInstance contextInstance, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                               ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                               SchedulerJobInstanceService schedulerJobInstanceService, LogStreamingService logStreamingService,
                               JobInitiationService jobInitiationService, ScheduledContextService scheduledContextService,
-                              JobUtilsService jobUtilsService) {
+                              JobUtilsService jobUtilsService, ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService) {
         this.contextInstance = contextInstance;
         if(this.contextInstance == null) {
             throw new IllegalArgumentException("contextInstance cannot be null!");
@@ -137,9 +148,22 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
             throw new IllegalArgumentException("jobUtilsService cannot be null!");
         }
 
+        this.scheduledContextInstanceService = scheduledContextInstanceService;
+        if(this.scheduledContextInstanceService == null) {
+            throw new IllegalArgumentException("scheduledContextInstanceService cannot be null!");
+        }
+
+        this.contextProfileService = contextProfileService;
+        if(this.contextProfileService == null) {
+            throw new IllegalArgumentException("contextProfileService cannot be null!");
+        }
+
         this.init();
     }
 
+    /**
+     * Initialise the component.
+     */
     private void init() {
         this.setWidth("90vw");
         this.setHeight("80vh");
@@ -187,9 +211,9 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
 
                             lockHolderButton.addClickListener(event -> {
                                 try {
-                                    JobInstanceVisualisationDialog jobTemplateVisualisationDialog = new JobInstanceVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
-                                        configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService,
-                                        schedulerJobInstanceService, jobInitiationService, jobUtilsService, scheduledContextService);
+                                    JobInstanceVisualisationDialog jobTemplateVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+                                        this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
+                                        this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService, this.contextProfileService);
                                     jobTemplateVisualisationDialog.createSchedulerVisualisation(contextInstance, ContextHelper.getChildContextInstance(contextName, contextInstance));
                                     jobTemplateVisualisationDialog.open();
                                 }
@@ -231,9 +255,9 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
 
                             queuedJobButton.addClickListener(event -> {
                                 try {
-                                    JobInstanceVisualisationDialog jobTemplateVisualisationDialog = new JobInstanceVisualisationDialog(moduleMetaDataService, scheduledProcessManagementService,
-                                        configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService,
-                                        schedulerJobInstanceService, jobInitiationService, jobUtilsService, scheduledContextService);
+                                    JobInstanceVisualisationDialog jobTemplateVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+                                        this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
+                                        this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService, this.contextProfileService);
                                     jobTemplateVisualisationDialog.createSchedulerVisualisation(contextInstance, ContextHelper.getChildContextInstance(lockHolder.getSchedulerJobInitiationEvent()
                                         .getInternalEventDrivenJob().getChildContextName(), contextInstance));
                                     jobTemplateVisualisationDialog.open();
@@ -271,6 +295,12 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
         super.setResizable(false);
     }
 
+    /**
+     * Add filtering to the grid.
+     *
+     * @param hr
+     * @param columnKey
+     */
     public void addGridFiltering(HeaderRow hr, String columnKey) {
         Icon filterIcon = VaadinIcon.FILTER.create();
         filterIcon.setSize("12pt");
@@ -285,6 +315,11 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
     }
 
 
+    /**
+     * Populate the grid.
+     *
+     * @param filter
+     */
     private void populateGrid(String filter) {
         List<JobLockHolder> jobLocks = JobLockCacheImpl.instance().getJobLockCacheData()
             .getJobLocksByLockName().values().stream()
