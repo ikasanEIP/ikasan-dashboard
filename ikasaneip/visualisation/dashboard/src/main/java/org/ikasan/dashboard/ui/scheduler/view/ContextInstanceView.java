@@ -6,7 +6,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.ikasan.dashboard.security.SecurityUtils;
-import org.ikasan.dashboard.ui.dashboard.view.DashboardView;
 import org.ikasan.dashboard.ui.layout.IkasanAppLayout;
 import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceWidget;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
@@ -107,6 +106,7 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
     public ContextInstanceView() {
         this.setSpacing(false);
         this.setMargin(false);
+        this.setHeightFull();
 
         this.ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
     }

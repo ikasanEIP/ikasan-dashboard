@@ -395,6 +395,13 @@ window.Vaadin.Flow.designerConnector = {
             _this.getCommandStack().execute(command);
         }
 
+        designer.$connector.addTriangle = function (x, y, h, w, backgroundColour) {
+            let triangle = new TriangleFigure({x: x, y:y, width:w, height:h, bgColor:backgroundColour});
+
+            let command = new draw2d.command.CommandAdd(_this, triangle, x, y);
+            _this.getCommandStack().execute(command);
+        }
+
 
         designer.$connector.addOval = function (h, w) {
             let oval =  new draw2d.shape.basic.Oval({width:w,height:h, x:x, y:y, bgColor:"rgba(255,255,255,0)"});
@@ -537,8 +544,38 @@ window.Vaadin.Flow.designerConnector = {
             }
         }
 
-        designer.$connector.addBoundaryToFigure = function (figureIdentifier, itemIdentifier, h, w
-                                                            , lineFormat, backgroundColor) {
+        designer.$connector.addTriangleToFigure = function (figureIdentifier, h, w, backgroundColour) {
+            let _figure = null;
+            debugger;
+            _this.getFigures().each((i, figure)=>{
+                if(figure.id === figureIdentifier) {
+                    _figure = figure;
+                }
+            });
+
+            if(_figure != null) {
+
+                let x = _figure.x - 10;
+                let y = _figure.y - (_figure.getHeight() / 2) - 10 ;
+
+                this.addTriangle(iconIdentifier, x, y, h, w, backgroundColour);
+            }
+        }
+
+        /**
+         * Add a boundary to an existing figure and optionally
+         * scroll to and zoom onto the figure.
+         *
+         * @param figureIdentifier
+         * @param itemIdentifier
+         * @param h
+         * @param w
+         * @param lineFormat
+         * @param backgroundColor
+         * @param scrollToFigure
+         */
+        designer.$connector.addBoundaryToFigure = function (figureIdentifier, itemIdentifier, h, w,
+                                                            lineFormat, backgroundColor, scrollToFigure) {
             debugger;
             let _figure = null;
             _this.getFigures().each((i, figure)=>{
@@ -548,7 +585,6 @@ window.Vaadin.Flow.designerConnector = {
             });
 
             if(_figure != null) {
-
                 let x = _figure.x - (_figure.width / 2);
                 let y = _figure.y - (_figure.getHeight() / 2) ;
 
@@ -571,6 +607,24 @@ window.Vaadin.Flow.designerConnector = {
                 _this.getCommandStack().execute(command);
 
                 _this.getFigure(itemIdentifier).toBack();
+
+                if(scrollToFigure === true) {
+                    let figures = _this.getFigures();
+                    let yCoords = [];
+                    figures.each(function (i, f) {
+                        let b = f.getBoundingBox();
+                        yCoords.push(b.y, b.y + b.h);
+                    });
+
+                    let minY = Math.min.apply(Math, yCoords);
+                    let height = Math.max.apply(Math, yCoords) - minY;
+
+                    let left = (x / 5) - ((800 - (height / 3)) / 4) - (1500 / 2);
+                    let top = ((y - 100) / 5) - (1500 / 2);
+
+                    designer.$connector.designer.setZoom(5);
+                    designer.$connector.designer.scrollTo(top, left);
+                }
             }
         }
 
@@ -774,7 +828,7 @@ window.Vaadin.Flow.designerConnector = {
 
             debugger;
 
-            figures .each((i, figure) => {
+            figures.each((i, figure) => {
                 debugger;
                 if (figure.NAME === 'draw2d.shape.basic.Image' || figure.NAME === 'draw2d.shape.composite.Group') {
                     console.log("to front " + figure.NAME + " " + figure.id);
@@ -816,9 +870,20 @@ window.Vaadin.Flow.designerConnector = {
                 zoomFactor = 1;
             }
 
+            console.log("minX = " + minX);
+            console.log("minY = " + minY);
+            console.log("width = " + width);
+            console.log("height = " + height);
+            console.log("zoomfactor = " + zoomFactor);
+
+            let top = (minY / zoomFactor) - ((800 - (height / zoomFactor)) / 4);
+            let left = (minX - 100) / zoomFactor;
+
+            console.log("top = " + top);
+            console.log("left = " + left);
 
             designer.$connector.designer.setZoom(zoomFactor);
-            designer.$connector.designer.scrollTo((minY / zoomFactor) - ((800 - (height / zoomFactor)) / 4), (minX - 100) / zoomFactor);
+            designer.$connector.designer.scrollTo(top, left);
 
             spinner.stop();
 

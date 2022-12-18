@@ -3,10 +3,10 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.service;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Grouping {
+public class VisualisationLogicalGrouping {
     private String type;
     private List<String> jobIdentifiers = new ArrayList<>();
-    private List<Grouping> nestedGrouping = new ArrayList<>();
+    private List<VisualisationLogicalGrouping> nestedVisualisationLogicalGrouping = new ArrayList<>();
 
     public String getType() {
         return type;
@@ -24,11 +24,11 @@ public class Grouping {
         this.jobIdentifiers = jobIdentifiers;
     }
 
-    public List<Grouping> getNestedGrouping() {
-        return nestedGrouping;
+    public List<VisualisationLogicalGrouping> getNestedGrouping() {
+        return nestedVisualisationLogicalGrouping;
     }
 
-    public void setNestedGrouping(List<Grouping> nestedGrouping) {
-        this.nestedGrouping = nestedGrouping;
+    public void setNestedGrouping(List<VisualisationLogicalGrouping> nestedVisualisationLogicalGrouping) {
+        this.nestedVisualisationLogicalGrouping = nestedVisualisationLogicalGrouping;
     }
 }
