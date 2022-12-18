@@ -321,7 +321,7 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
                         }
                     }
 
-                    if(this.childContextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
+                    if(this.childContextInstance != null && this.childContextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
                         this.childJobPlansStatusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
                     }
                 });

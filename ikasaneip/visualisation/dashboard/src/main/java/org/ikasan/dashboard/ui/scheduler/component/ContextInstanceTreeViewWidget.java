@@ -41,6 +41,7 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
@@ -94,6 +95,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private Map<ComponentKey, Image> jobImageMap;
     private Map<ComponentKey, Map<String, Icon>> schedulerJobIconMap;
     private Map<ComponentKey, SchedulerStatusDiv> statusDivMap;
+    private Map<ComponentKey, InstanceStatus> instanceStatusMap;
     private Map<ComponentKey, SchedulerStatusFreeTextDiv> schedulerStatusFreeTextDivMap;
     private Map<ComponentKey, Div> startTimes;
     private Map<ComponentKey, Div> endTimes;
@@ -188,6 +190,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         this.jobImageMap = new HashMap<>();
         this.schedulerJobIconMap = new HashMap<>();
         this.statusDivMap = new HashMap<>();
+        this.instanceStatusMap = new HashMap<>();
         this.schedulerStatusFreeTextDivMap = new HashMap<>();
         this.startTimes = new HashMap<>();
         this.endTimes = new HashMap<>();
@@ -247,14 +250,20 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 schedulerStatusFreeTextDiv.getElement().getStyle().set("margin-bottom", "1px");
                 schedulerStatusFreeTextDiv.getElement().getStyle().set("padding-right", "50px");
 
-                schedulerStatusFreeTextDiv.setStatus(((ContextInstance)value).getStatus()
-                    , ((ContextInstance)value).getName());
+                ComponentKey componentKey = new ComponentKey(contextInstance.getName()
+                    , ((ContextInstance)value).getId(), ((ContextInstance)value).getName());
+                if(this.instanceStatusMap.containsKey(componentKey)) {
+                    schedulerStatusFreeTextDiv.setStatus(this.instanceStatusMap.get(componentKey)
+                        , ((ContextInstance) value).getName());
+                }
+                else {
+                    schedulerStatusFreeTextDiv.setStatus(((ContextInstance) value).getStatus()
+                        , ((ContextInstance) value).getName());
+                }
                 horizontalLayout.add(schedulerStatusFreeTextDiv);
                 horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, schedulerStatusFreeTextDiv);
                 horizontalLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
 
-                ComponentKey componentKey = new ComponentKey(contextInstance.getName()
-                    , ((ContextInstance)value).getId(), ((ContextInstance)value).getName());
                 this.schedulerStatusFreeTextDivMap.put(componentKey, schedulerStatusFreeTextDiv);
             }
             else if(value instanceof SchedulerJobInstance) {
@@ -1658,6 +1667,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             if(this.schedulerStatusFreeTextDivMap.containsKey(key)) {
                 ui.access(() -> this.schedulerStatusFreeTextDivMap.get(key)
                     .setStatus(contextInstanceStateChangeEvent.getNewStatus()));
+            }
+            else {
+                this.instanceStatusMap.put(key, contextInstanceStateChangeEvent.getNewStatus());
             }
         }
     }
