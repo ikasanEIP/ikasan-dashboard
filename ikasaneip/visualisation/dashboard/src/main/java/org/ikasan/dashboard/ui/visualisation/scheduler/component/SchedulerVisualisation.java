@@ -100,7 +100,6 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     protected IkasanAuthentication authentication;
 
     protected Map<String, ContextDeletedHolder> contextDeletedHolderMap = new HashMap<>();
-
     protected List<String> nodeConnectionIndicators = new ArrayList<>();
 
     protected Map<String, String> schedulerJobExecutionEnvironmentLabel;
@@ -207,7 +206,6 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         this.edit = edit;
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        this.scheduledContextViewRecord = this.scheduledContextService.getContextView(parentContext.getName(), contextTemplate.getName());
 
         init();
     }
@@ -546,18 +544,6 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
             ContextHelper.replaceChildContextTemplate(this.parentContextTemplate, updatedContext);
             this.contextTemplate = updatedContext;
-
-//            if(this.scheduledContextViewRecord == null) {
-//                this.scheduledContextViewRecord = new SolrScheduledContextViewRecordImpl();
-//                this.scheduledContextViewRecord.setParentContextName(this.parentContextTemplate.getName());
-//                this.scheduledContextViewRecord.setContextName(this.contextTemplate.getName());
-//                this.scheduledContextViewRecord.setTimestamp(System.currentTimeMillis());
-//            }
-//
-//            this.scheduledContextViewRecord.setContextView(payload);
-//            this.scheduledContextViewRecord.setModifiedBy(authentication.getName());
-//
-//            this.scheduledContextService.saveContextView(scheduledContextViewRecord);
 
             ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findByName(this.parentContextTemplate.getName());
             scheduledContextRecord.setContext(this.parentContextTemplate);
