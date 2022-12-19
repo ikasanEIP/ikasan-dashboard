@@ -283,31 +283,6 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
     @Override
     public void singleClickEvent(CanvasItemSingleClickEvent canvasItemDoubleClickEvent) {
-        if(canvasItemDoubleClickEvent.getFigure() != null && canvasItemDoubleClickEvent.getFigure().getIdentifier() != null) {
-            String identifier = ContextHelper.getIdentifier(canvasItemDoubleClickEvent.getFigure().getIdentifier());
-            logger.info("Click event - " + identifier);
-            SchedulerJob job = this.contextTemplate.getScheduledJobsMap()
-                .get(identifier);
-
-            if(job != null) {
-                this.nodeConnectionIndicators.forEach(nodeConnectionIndicator
-                    -> this.designerCanvas.removeFigure(nodeConnectionIndicator));
-
-                this.nodeConnectionIndicators.clear();
-                LinkedList<List<SchedulerJob>> jobs
-                    = ContextHelper.traceJobThroughContext(this.parentContextTemplate, job.getJobName()
-                    , this.contextTemplate.getName());
-
-                if (!jobs.isEmpty()) {
-                    jobs.get(0).forEach(downstreamJob -> {
-                        String nodeConnectorIndicator = UUID.randomUUID().toString();
-                        this.nodeConnectionIndicators.add(nodeConnectorIndicator);
-                        this.designerCanvas.addImageToFigure(downstreamJob.getIdentifier(), nodeConnectorIndicator,
-                            "frontend/images/mr-squid-head.png", 49.6, 37.8);
-                    });
-                }
-            }
-        }
     }
 
     @Override
