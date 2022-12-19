@@ -536,11 +536,19 @@ window.Vaadin.Flow.designerConnector = {
             });
 
             if(_figure != null) {
+                if(_figure.getUserData() != null
+                    && _figure.getUserData().itemType == "CONTEXT") {
+                    let x = _figure.x + _figure.width + 60;
+                    let y = _figure.y - (_figure.getHeight() / 2) - 60;
 
-                let x = _figure.x + _figure.width + 10;
-                let y = _figure.y - (_figure.getHeight() / 2) - 10 ;
+                    this.addIcon(iconIdentifier, image, x, y, h, w, false, false);
+                }
+                else {
+                    let x = _figure.x + _figure.width + 10;
+                    let y = _figure.y - (_figure.getHeight() / 2) - 10;
 
-                this.addIcon(iconIdentifier, image, x, y, h, w, false, false);
+                    this.addIcon(iconIdentifier, image, x, y, h, w, false, false);
+                }
             }
         }
 

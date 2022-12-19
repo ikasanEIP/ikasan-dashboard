@@ -171,7 +171,8 @@ public abstract class Draw2dAdapterBase {
             this.manageOutboundContextTransitions(subsequentTransitions, diagramBuilder, graph, linkingConnections);
 
             // Manage the case that there are other contexts that precede this one and link to it.
-            List<String> inboundConnections =  this.manageInboundContextTransitions(previousContexts, diagramBuilder, graph, linkingConnections);
+            List<String> inboundConnections =  this.manageInboundContextTransitions(previousContexts, diagramBuilder, graph
+                , linkingConnections, internalEventDrivenJobMap);
 
             // Now delegate to the JGraphXAdapter to create the layout
             // of the visualisation.
@@ -286,6 +287,31 @@ public abstract class Draw2dAdapterBase {
             items.addAll(imageOverlay);
             items.addAll(labels);
             items.addAll(groups);
+
+            List<Object> finalItems = new ArrayList<>();
+            Map<String, Image> contextMap = new HashMap<>();
+            items.forEach(item -> {
+                if(item instanceof Image) {
+                    if(((Image)item).getUserData() != null &&
+                        ((Image)item).getUserData().getItemType()!= null &&
+                        ((Image)item).getUserData().getItemType().equals(UserData.CONTEXT)) {
+                        if(!contextMap.containsKey(((Image)item).getUserData().getContextName())) {
+                            contextMap.put(((Image)item).getUserData().getContextName(), ((Image)item));
+                        }
+                        else {
+                            contextMap.get(((Image)item).getUserData().getContextName()).getUserData().getPreviousJobIdentifiers()
+                                .addAll(((Image)item).getUserData().getPreviousJobIdentifiers());
+                            contextMap.get(((Image)item).getUserData().getContextName()).getUserData().getSubsequentJobIdentifiers()
+                                .addAll(((Image)item).getUserData().getSubsequentJobIdentifiers());
+                        }
+                    }
+                }
+                else {
+                    finalItems.add(item);
+                }
+            });
+
+            finalItems.addAll(contextMap.values());
 
             return items;
         }
@@ -676,8 +702,9 @@ public abstract class Draw2dAdapterBase {
      * @param graph
      * @param linkingConnections
      */
-    protected List<String> manageInboundContextTransitions(List<ContextTransition> contextTransitions, DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object
-        , DefaultEdge> graph, List<String> linkingConnections) {
+    protected List<String> manageInboundContextTransitions(List<ContextTransition> contextTransitions
+        , DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object
+        , DefaultEdge> graph, List<String> linkingConnections, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
         List<String> addedContexts = new ArrayList<>();
         List<String> subsequentJobIdentifiers = new ArrayList<>();
         contextTransitions.forEach(contextTransition
@@ -697,7 +724,14 @@ public abstract class Draw2dAdapterBase {
                         .withItemType(UserData.CONTEXT)
                         .withContextName(contextName);
 
-                    subsequentJobIdentifiers.forEach(id -> userDataBuilder.addSubsequentJobIdentifiers(id));
+                    subsequentJobIdentifiers.forEach(id ->
+                    {
+                        InternalEventDrivenJob internalEventDrivenJob = internalEventDrivenJobMap.get(id);
+                        if(internalEventDrivenJob != null && internalEventDrivenJob
+                            .getChildContextNames().contains(contextName)) {
+                            userDataBuilder.addSubsequentJobIdentifiers(id);
+                        }
+                    });
 
                     this.addExternalContext(context, diagramBuilder, userDataBuilder.build());
                 }
@@ -949,7 +983,7 @@ public abstract class Draw2dAdapterBase {
             .withDraggable(false)
             .withResizable(false)
             .withDasharray("--")
-            .withBgColor(IkasanColours.LIGHT_GREY)
+            .withBgColor(IkasanColours.TRANSPARENT)
             .withColor(IkasanColours.BLACK);
 
         Rectangle rectangle = rb.build();

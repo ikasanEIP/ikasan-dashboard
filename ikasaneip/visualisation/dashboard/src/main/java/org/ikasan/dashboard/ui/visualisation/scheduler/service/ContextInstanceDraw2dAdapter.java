@@ -36,7 +36,7 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
         , Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
 
             ArrayList<Object> items = super._adaptJobs(parentContext, context, schedulerJobs, internalEventDrivenJobMap);
-            this.addStatusRectangles(items, context);
+            this.addStatusRectangles(items, context, parentContext);
 
             items.forEach(item -> {
                 if(!(item instanceof Image)) {
@@ -54,74 +54,45 @@ public class ContextInstanceDraw2dAdapter extends Draw2dAdapterBase {
             }
     }
 
-    public String adaptContextView(Context context, String canvasJson) {
-        try {
-            List<LinkedHashMap> values = mapper.readValue(canvasJson, List.class);
-            List<Object> positionedItems = new ArrayList<>();
-
-            for (LinkedHashMap value : values) {
-                if (value.get("type").equals("draw2d.shape.basic.Image")) {
-                    Image image = mapper.readValue(mapper.writeValueAsBytes(value), Image.class);
-                    positionedItems.add(image);
-                } else if (value.get("type").equals("draw2d.shape.basic.Rectangle") && value.get("id").toString().startsWith("AND")) {
-                    Rectangle rectangle = mapper.readValue(mapper.writeValueAsBytes(value), Rectangle.class);
-                    rectangle.setSelectable(false);
-                    positionedItems.add(rectangle);
-                } else if (value.get("type").equals("draw2d.shape.basic.Rectangle") && value.get("id").toString().startsWith("OR")) {
-                    Rectangle rectangle = mapper.readValue(mapper.writeValueAsBytes(value), Rectangle.class);
-                    rectangle.setSelectable(false);
-                    positionedItems.add(rectangle);
-                }
-                else if (value.get("type").equals("draw2d.Connection")) {
-                    Connection connection = mapper.readValue(mapper.writeValueAsBytes(value), Connection.class);
-                    connection.setSelectable(false);
-                    connection.setDraggable(false);
-                    positionedItems.add(connection);
-                }
-                else if (value.get("type").equals("draw2d.shape.basic.Label")) {
-                    Label label = mapper.readValue(mapper.writeValueAsBytes(value), Label.class);
-                    label.setSelectable(false);
-                    positionedItems.add(label);
-                }
-                else if (value.get("type").equals("draw2d.shape.composite.Group")) {
-                    Group group = mapper.readValue(mapper.writeValueAsBytes(value), Group.class);
-                    group.setSelectable(false);
-                    positionedItems.add(group);
-                }
-            }
-
-            this.addStatusRectangles(positionedItems, context);
-
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(positionedItems);
-        }
-        catch (IOException e) {
-            throw new Draw2dAdapterException(String.format("An exception has occurred attempting enrich jobs with status for" +
-                " context instance [%s] to the draw 2d data format", context.getName()), e);
-        }
-    }
-
-    private void addStatusRectangles(List<Object> items, Context context) {
+    private void addStatusRectangles(List<Object> items, Context context, Context parentContext) {
         ArrayList<Object> statusRectangles = new ArrayList<>();
 
         items.forEach(item -> {
             if (item instanceof Image) {
-                RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
-                    .withId(((PositionedItem) item).getId() + "_status")
-                    .withWidth(100)
-                    .withHeight(100)
-                    .withStroke(0)
-                    .withRadius(20)
-                    .withX(((PositionedItem) item).getX())
-                    .withY(((PositionedItem) item).getY());
 
                 if(context.getScheduledJobsMap().get(((PositionedItem) item).getId()) instanceof SchedulerJobInstance) {
+                    RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
+                        .withId(((PositionedItem) item).getId() + "_status")
+                        .withWidth(100)
+                        .withHeight(100)
+                        .withStroke(0)
+                        .withRadius(20)
+                        .withX(((PositionedItem) item).getX())
+                        .withY(((PositionedItem) item).getY());
+
                     rb.withBgColor(StatusColours.getInstanceStatusColour(((SchedulerJobInstance)context.getScheduledJobsMap()
                         .get(((PositionedItem) item).getId())).getStatus()));
                     rb.withColor(StatusColours.getInstanceStatusColour(((SchedulerJobInstance)context.getScheduledJobsMap()
                         .get(((PositionedItem) item).getId())).getStatus()));
-                }
 
-                statusRectangles.add(rb.build());
+                    statusRectangles.add(rb.build());
+                }
+                else if(((Image) item).getUserData().getItemType().equals(UserData.CONTEXT)){
+                    RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
+                        .withId(((PositionedItem) item).getUserData().getContextName() + "_status")
+                        .withWidth(200)
+                        .withHeight(200)
+                        .withStroke(0)
+                        .withRadius(10)
+                        .withX(((PositionedItem) item).getX()-50)
+                        .withY(((PositionedItem) item).getY()-50);
+
+                    ContextInstance contextInstance = ContextHelper.getChildContextInstance(((Image) item).getUserData().getContextName(), (ContextInstance) parentContext);
+                    rb.withBgColor(StatusColours.getInstanceStatusColour(contextInstance.getStatus()));
+                    rb.withColor(StatusColours.getInstanceStatusColour(contextInstance.getStatus()));
+
+                    statusRectangles.add(rb.build());
+                }
             }
         });
 

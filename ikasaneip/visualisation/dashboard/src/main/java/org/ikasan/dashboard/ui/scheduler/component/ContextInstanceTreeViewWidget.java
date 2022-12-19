@@ -216,8 +216,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         div.setSizeFull();
 
         HorizontalLayout layout = new HorizontalLayout();
-
-
         layout.add(collapse);
         layout.setVerticalComponentAlignment(FlexComponent.Alignment.END, collapse);
 
@@ -225,6 +223,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         div.add(this.grid);
 
         super.add(div);
+        super.setSizeFull();
     }
 
     /**

@@ -10,7 +10,9 @@ import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextInstanceDraw2dAdapter;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.designer.event.CanvasItemDoubleClickEvent;
+import org.ikasan.designer.event.CanvasItemSingleClickEvent;
 import org.ikasan.designer.model.UserData;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
@@ -83,21 +85,16 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
             this.designerCanvas.clear();
 
             if (contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {
-                if(this.scheduledContextViewRecord == null) {
-                    SearchResults<SchedulerJobInstanceRecord> jobs = this.schedulerJobInstanceService.getSchedulerJobInstancesByContextInstanceId(this.parentContextInstance.getId()
-                        , -1, -1, null, null);
+                SearchResults<SchedulerJobInstanceRecord> jobs = this.schedulerJobInstanceService.getSchedulerJobInstancesByContextInstanceId(this.parentContextInstance.getId()
+                    , -1, -1, null, null);
 
-                    Map<String, SchedulerJob> schedulerJobs = jobs.getResultList().stream()
-                        .map(record -> record.getSchedulerJobInstance())
-                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (a1, a2) -> a1));
+                Map<String, SchedulerJob> schedulerJobs = jobs.getResultList().stream()
+                    .map(record -> record.getSchedulerJobInstance())
+                    .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (a1, a2) -> a1));
 
-                    ContextInstanceDraw2dAdapter adapter = new ContextInstanceDraw2dAdapter();
-                    this.designerCanvas.setCanvasJson(adapter.adaptJobs(this.parentContextInstance, this.contextInstance, schedulerJobs
-                        , this.getCommandExecutionJobsForContextInstance(this.parentContextInstance.getId())));
-                }
-                else {
-                    this.designerCanvas.setCanvasJson(adapter.adaptContextView(this.contextInstance, this.scheduledContextViewRecord.getContextView()));
-                }
+                ContextInstanceDraw2dAdapter adapter = new ContextInstanceDraw2dAdapter();
+                this.designerCanvas.setCanvasJson(adapter.adaptJobs(this.parentContextInstance, this.contextInstance, schedulerJobs
+                    , this.getCommandExecutionJobsForContextInstance(this.parentContextInstance.getId())));
             }
 
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
@@ -151,6 +148,65 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
         }
 
         super.doubleClickEvent(canvasItemDoubleClickEvent);
+    }
+
+    @Override
+    public void singleClickEvent(CanvasItemSingleClickEvent canvasItemDoubleClickEvent) {
+        if(canvasItemDoubleClickEvent.getFigure() != null && canvasItemDoubleClickEvent.getFigure().getIdentifier() != null) {
+            String identifier = ContextHelper.getIdentifier(canvasItemDoubleClickEvent.getFigure().getIdentifier());
+            logger.debug("Click event - " + identifier);
+
+            this.nodeConnectionIndicators.forEach(nodeConnectionIndicator
+                -> this.designerCanvas.removeFigure(nodeConnectionIndicator));
+
+            this.nodeConnectionIndicators.clear();
+
+            if(canvasItemDoubleClickEvent.getFigure().getUserData() != null &&
+                canvasItemDoubleClickEvent.getFigure().getUserData().getItemType().equals(UserData.CONTEXT)) {
+                canvasItemDoubleClickEvent.getFigure().getUserData().getSubsequentJobIdentifiers().forEach(id -> {
+                    String nodeConnectorIndicator = UUID.randomUUID().toString();
+                    this.nodeConnectionIndicators.add(nodeConnectorIndicator);
+                    this.designerCanvas.addImageToFigure(id, nodeConnectorIndicator,
+                        "frontend/images/mr-squid-head.png", 49.6, 37.8);
+                });
+            }
+
+            SchedulerJobInstance job = this.contextInstance.getScheduledJobsMap()
+                .get(identifier);
+
+            if(job != null) {
+
+                List<String> residingContexts = ContextHelper.getContextsWhereJobFilterMatchResides
+                    (this.parentContextInstance, job.getJobName());
+
+                residingContexts.forEach(context -> {
+                    Map<String, SchedulerJob> lastJobs = ContextHelper.getJobsOutsideLogicalGrouping(this.contextInstance);
+
+                    if(lastJobs.containsKey(job.getIdentifier())) {
+                        String nodeConnectorIndicator = UUID.randomUUID().toString();
+                        this.nodeConnectionIndicators.add(nodeConnectorIndicator);
+                        this.designerCanvas.addImageToFigure(context + "_out", nodeConnectorIndicator,
+                            "frontend/images/mr-squid-head.png", 49.6, 37.8);
+                        this.designerCanvas.addImageToFigure(context, nodeConnectorIndicator,
+                            "frontend/images/mr-squid-head.png", 49.6, 37.8);
+                    }
+                });
+
+                LinkedList<List<SchedulerJob>> jobs
+                    = ContextHelper.traceJobThroughContext(this.parentContextInstance, job.getJobName()
+                    , this.contextInstance.getName());
+
+                if (!jobs.isEmpty()) {
+                    jobs.get(0).forEach(downstreamJob -> {
+                        String nodeConnectorIndicator = UUID.randomUUID().toString();
+                        this.nodeConnectionIndicators.add(nodeConnectorIndicator);
+                        this.designerCanvas.addImageToFigure(downstreamJob.getIdentifier(), nodeConnectorIndicator,
+                            "frontend/images/mr-squid-head.png", 49.6, 37.8);
+                    });
+                }
+            }
+        }
+        super.singleClickEvent(canvasItemDoubleClickEvent);
     }
 
     /**
