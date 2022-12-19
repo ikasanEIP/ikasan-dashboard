@@ -415,6 +415,9 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             , this.schedulerJobInstanceGridWidget, this.contextTemplateStatisticsWidget, this.contextInstanceAuditWidget);
         this.expand(this.splitContextInstanceVisualisation, this.aceEditor);
         this.setHeight("100%");
+
+        this.tabs.setSelectedTab(this.visualisationTab);
+        this.tabs.setSelectedTab(this.treeTab);
     }
 
     /**
@@ -450,6 +453,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                 this.contextInstanceTreeViewWidget.setVisible(false);
             }
             else if(tabs.getSelectedTab().equals(this.visualisationTab)) {
+                this.splitContextInstanceVisualisation.initialiseVisualisation();
                 this.aceEditor.setVisible(false);
                 this.splitContextInstanceVisualisation.setVisible(true);
                 this.schedulerJobInstanceGridWidget.setVisible(false);
@@ -555,7 +559,6 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         this.splitContextInstanceVisualisation = new SplitContextInstanceVisualisation(scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
                 configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService,
                 contextInstance, schedulerJobInstanceService, jobInitiationService, contextProfileService, jobUtilsService, scheduledContextService);
-        this.splitContextInstanceVisualisation.initialiseVisualisation();
         this.splitContextInstanceVisualisation.setHeight("100%");
     }
 
@@ -782,7 +785,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextInstance, this.schedulerJobInstanceService,
             this.jobInitiationService, this.configurationRestService, metaDataRestService, this.jobUtilsService, this.scheduledContextService, this.jobStatus, this.contextProfileService);
         this.schedulerJobInstanceGridWidget.setWidthFull();
-        this.schedulerJobInstanceGridWidget.setHeight("75vh");
+        this.schedulerJobInstanceGridWidget.setHeight("100%");
         this.schedulerJobInstanceGridWidget.setVisible(false);
 
     }
@@ -795,9 +798,8 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
             this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService
             , this.contextProfileService);
-        this.contextInstanceTreeViewWidget.setWidthFull();
-        this.contextInstanceTreeViewWidget.setHeight("75vh");
-        this.contextInstanceTreeViewWidget.setVisible(true);
+        this.contextInstanceTreeViewWidget.setSizeFull();
+        this.contextInstanceTreeViewWidget.setVisible(false);
     }
 
     /**
