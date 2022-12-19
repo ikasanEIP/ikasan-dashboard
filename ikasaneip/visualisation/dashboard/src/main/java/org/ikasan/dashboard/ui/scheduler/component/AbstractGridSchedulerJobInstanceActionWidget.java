@@ -77,6 +77,8 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
             throw new IllegalArgumentException("logStreamingService cannot be null!");
         }
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+
+        this.setSizeFull();
     }
 
     /**

@@ -19,6 +19,7 @@ import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.designer.CanvasInitialisedListener;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.profile.model.SolrContextProfileSearchFilterImpl;
@@ -71,6 +72,8 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
     private SchedulerStatusDiv childJobPlansStatusDiv;
     private Label childJobPlanName;
     private IkasanAuthentication authentication;
+
+    private boolean initialised = false;
 
     /**
      * Constructor
@@ -159,124 +162,129 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
      * Initial the visualisation associated with the widget.
      */
     public void initialiseVisualisation() {
-        this.setSizeFull();
+        if(!initialised) {
+            this.setSizeFull();
 
-        this.schedulerInstanceVisualisation = new ContextSchedulerInstanceVisualisation("", this.moduleMetaDataService, this.scheduledProcessManagementService,
-            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService
-            , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.contextProfileService);
-        this.schedulerInstanceVisualisation.addContextOpenListener(this);
-        this.schedulerInstanceVisualisation.setWidthFull();
-        this.schedulerInstanceVisualisation.setHeight("100%");
-
-        try {
-            ContextProfileSearchFilter searchFilter = new SolrContextProfileSearchFilterImpl();
-            searchFilter.setContextName(this.contextInstance.getName());
-            searchFilter.setOwner(ContextProfileRecord.SYSTEM_OWNER);
-
-            SearchResults<ContextProfileRecord> results = this.contextProfileService.findByFilter(searchFilter, -1, -1, null, null);
-
-            if(results.getResultList().size() > 0 && results.getResultList().get(0).getContextProfile().getDefaultContext() != null
-                && !results.getResultList().get(0).getContextProfile().getDefaultContext().isEmpty()){
-                ContextInstance childContextInstance = ContextHelper.getChildContextInstance(results.getResultList()
-                    .get(0).getContextProfile().getDefaultContext(), this.contextInstance);
-
-                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, childContextInstance, null);
-            }
-            else {
-                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance, null);
+            if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
             }
 
-            this.schedulerInstanceVisualisation.addCanvasInitialisedListener(this);
+            this.schedulerInstanceVisualisation = new ContextSchedulerInstanceVisualisation("", this.moduleMetaDataService, this.scheduledProcessManagementService,
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService
+                , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.contextProfileService);
+            this.schedulerInstanceVisualisation.addContextOpenListener(this);
+            this.schedulerInstanceVisualisation.setWidthFull();
+            this.schedulerInstanceVisualisation.setHeight("100%");
 
-            this.visualisationSplitLayout = new SplitLayout();
-            this.visualisationSplitLayout.setHeight("100%");
-            this.visualisationSplitLayout.setWidthFull();
-            this.visualisationSplitLayout.setOrientation(SplitLayout.Orientation.VERTICAL);
-            this.visualisationSplitLayout.getElement().getStyle().set("margin-bottom", "5px");
+            try {
+                ContextProfileSearchFilter searchFilter = new SolrContextProfileSearchFilterImpl();
+                searchFilter.setContextName(this.contextInstance.getName());
+                searchFilter.setOwner(ContextProfileRecord.SYSTEM_OWNER);
 
-            this.jobVisualisation = new JobSchedulerInstanceVisualisation("", moduleMetaDataService, scheduledProcessManagementService,
-                configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService
-                , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
-            this.jobVisualisation.addContextOpenListener(this);
-            this.jobVisualisation.addContextSelectedListener(this);
-            this.jobVisualisation.setWidthFull();
-            this.jobVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance, null);
-            this.jobVisualisation.setHeight("100%");
-            this.jobVisualisation.setVisible(false);
+                SearchResults<ContextProfileRecord> results = this.contextProfileService.findByFilter(searchFilter, -1, -1, null, null);
 
-            Button upButton = new Button();
-            Button downButton = new Button();
-            Button middleButton = new Button();
+                if (results.getResultList().size() > 0 && results.getResultList().get(0).getContextProfile().getDefaultContext() != null
+                    && !results.getResultList().get(0).getContextProfile().getDefaultContext().isEmpty()) {
+                    ContextInstance childContextInstance = ContextHelper.getChildContextInstance(results.getResultList()
+                        .get(0).getContextProfile().getDefaultContext(), this.contextInstance);
 
-            upButton.getElement().appendChild(VaadinIcon.ARROW_UP.create().getElement());
-            upButton.addClickListener(event -> {
-                visualisationSplitLayout.setSplitterPosition(0);
-                this.jobVisualisation.setVisible(true);
-            });
+                    this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, childContextInstance, null);
+                } else {
+                    this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance, null);
+                }
 
-            middleButton.getElement().appendChild(VaadinIcon.LINE_H.create().getElement());
-            middleButton.addClickListener(event -> {
-                visualisationSplitLayout.setSplitterPosition(50);
-                this.jobVisualisation.setVisible(true);
-            });
+                this.schedulerInstanceVisualisation.addCanvasInitialisedListener(this);
 
-            downButton.getElement().appendChild(VaadinIcon.ARROW_DOWN.create().getElement());
-            downButton.addClickListener(event -> {
-                visualisationSplitLayout.setSplitterPosition(97);
+                this.visualisationSplitLayout = new SplitLayout();
+                this.visualisationSplitLayout.setHeight("100%");
+                this.visualisationSplitLayout.setWidthFull();
+                this.visualisationSplitLayout.setOrientation(SplitLayout.Orientation.VERTICAL);
+                this.visualisationSplitLayout.getElement().getStyle().set("margin-bottom", "5px");
+
+                this.jobVisualisation = new JobSchedulerInstanceVisualisation("", moduleMetaDataService, scheduledProcessManagementService,
+                    configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService
+                    , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
+                this.jobVisualisation.addContextOpenListener(this);
+                this.jobVisualisation.addContextSelectedListener(this);
+                this.jobVisualisation.setWidthFull();
+                this.jobVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance, null);
+                this.jobVisualisation.setHeight("100%");
                 this.jobVisualisation.setVisible(false);
-            });
 
-            HorizontalLayout splitLayoutManagerButtonLayout = new HorizontalLayout();
-            splitLayoutManagerButtonLayout.getStyle().set("position", "absolute");
-            splitLayoutManagerButtonLayout.getStyle().set("right", "10px");
+                Button upButton = new Button();
+                Button downButton = new Button();
+                Button middleButton = new Button();
 
-            childJobPlanName = new Label();
-            childJobPlanName.getElement().getStyle().set("margin-top", "10px");
-            childJobPlanName.setVisible(false);
+                upButton.getElement().appendChild(VaadinIcon.ARROW_UP.create().getElement());
+                upButton.addClickListener(event -> {
+                    visualisationSplitLayout.setSplitterPosition(0);
+                    this.jobVisualisation.setVisible(true);
+                });
 
-            HorizontalLayout labelLayout = new HorizontalLayout();
-            labelLayout.getStyle().set("position", "absolute");
-            labelLayout.getStyle().set("left", "80px");
-            labelLayout.add(childJobPlanName);
-            labelLayout.setWidthFull();
+                middleButton.getElement().appendChild(VaadinIcon.LINE_H.create().getElement());
+                middleButton.addClickListener(event -> {
+                    visualisationSplitLayout.setSplitterPosition(50);
+                    this.jobVisualisation.setVisible(true);
+                });
 
-            this.childJobPlansStatusDiv = new SchedulerStatusDiv();
-            this.childJobPlansStatusDiv.setHeight("20px");
-            this.childJobPlansStatusDiv.setWidth("800px");
-            this.childJobPlansStatusDiv.getElement().getStyle().set("font-size", "12pt");
-            childJobPlansStatusDiv.getStyle().set("position", "absolute");
-            childJobPlansStatusDiv.getStyle().set("left", "50%");
-            childJobPlansStatusDiv.getStyle().set("margin-left", "-500px");
+                downButton.getElement().appendChild(VaadinIcon.ARROW_DOWN.create().getElement());
+                downButton.addClickListener(event -> {
+                    visualisationSplitLayout.setSplitterPosition(97);
+                    this.jobVisualisation.setVisible(false);
+                });
 
-            labelLayout.add(this.childJobPlansStatusDiv);
+                HorizontalLayout splitLayoutManagerButtonLayout = new HorizontalLayout();
+                splitLayoutManagerButtonLayout.getStyle().set("position", "absolute");
+                splitLayoutManagerButtonLayout.getStyle().set("right", "10px");
 
-            HorizontalLayout wrapper = new HorizontalLayout();
-            wrapper.add(labelLayout, splitLayoutManagerButtonLayout);
+                childJobPlanName = new Label();
+                childJobPlanName.getElement().getStyle().set("margin-top", "10px");
+                childJobPlanName.setVisible(false);
 
-            splitLayoutManagerButtonLayout.add(upButton, middleButton, downButton);
-            VerticalLayout jobVisLayout = new VerticalLayout();
-            jobVisLayout.setSpacing(false);
-            jobVisLayout.setMargin(false);
-            jobVisLayout.setPadding(false);
-            jobVisLayout.add(wrapper, jobVisualisation);
+                HorizontalLayout labelLayout = new HorizontalLayout();
+                labelLayout.getStyle().set("position", "absolute");
+                labelLayout.getStyle().set("left", "80px");
+                labelLayout.add(childJobPlanName);
+                labelLayout.setWidthFull();
 
-            this.visualisationSplitLayout.setSplitterPosition(95);
-            this.visualisationSplitLayout.addToPrimary(this.schedulerInstanceVisualisation);
-            this.visualisationSplitLayout.addToSecondary(jobVisLayout);
+                this.childJobPlansStatusDiv = new SchedulerStatusDiv();
+                this.childJobPlansStatusDiv.setHeight("20px");
+                this.childJobPlansStatusDiv.setWidth("800px");
+                this.childJobPlansStatusDiv.getElement().getStyle().set("font-size", "12pt");
+                childJobPlansStatusDiv.getStyle().set("position", "absolute");
+                childJobPlansStatusDiv.getStyle().set("left", "50%");
+                childJobPlansStatusDiv.getStyle().set("margin-left", "-500px");
 
-            this.visualisationSplitLayout.addSplitterDragendListener(event -> {
-                jobVisualisation.setVisible(true);
-            });
+                labelLayout.add(this.childJobPlansStatusDiv);
 
-            this.add(this.visualisationSplitLayout);
+                HorizontalLayout wrapper = new HorizontalLayout();
+                wrapper.add(labelLayout, splitLayoutManagerButtonLayout);
 
-            this.setVisible(false);
+                splitLayoutManagerButtonLayout.add(upButton, middleButton, downButton);
+                VerticalLayout jobVisLayout = new VerticalLayout();
+                jobVisLayout.setSpacing(false);
+                jobVisLayout.setMargin(false);
+                jobVisLayout.setPadding(false);
+                jobVisLayout.add(wrapper, jobVisualisation);
+
+                this.visualisationSplitLayout.setSplitterPosition(95);
+                this.visualisationSplitLayout.addToPrimary(this.schedulerInstanceVisualisation);
+                this.visualisationSplitLayout.addToSecondary(jobVisLayout);
+
+                this.visualisationSplitLayout.addSplitterDragendListener(event -> {
+                    jobVisualisation.setVisible(true);
+                });
+
+                this.add(this.visualisationSplitLayout);
+
+                this.setVisible(false);
+            } catch (IOException e) {
+                e.printStackTrace();
+                NotificationHelper.showErrorNotification(getTranslation("notification.error-opening-visualisation"
+                    , UI.getCurrent().getLocale()));
+            }
         }
-        catch (IOException e) {
-            e.printStackTrace();
-            NotificationHelper.showErrorNotification(getTranslation("notification.error-opening-visualisation"
-                , UI.getCurrent().getLocale()));
-        }
+        initialised = true;
     }
 
     @Override
@@ -311,14 +319,8 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
             if (contextInstanceStateChangeEvent.getContextInstance() != null) {
                 ui.access(() ->  {
-                    if(this.contextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
-                        this.contextInstance = contextInstanceStateChangeEvent.getContextInstance();
-                    }
-                    else {
-                        ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId());
-                        if(record != null) {
-                            this.contextInstance = record.getContextInstance();
-                        }
+                    if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                        this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
                     }
 
                     if(this.childContextInstance != null && this.childContextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
@@ -329,9 +331,8 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
         });
 
         schedulerJobInstanceStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> ui.access(() ->  {
-            ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId());
-            if(record != null) {
-                this.contextInstance = record.getContextInstance();
+            if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
             }
         }));
     }
