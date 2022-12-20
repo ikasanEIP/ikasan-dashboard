@@ -283,12 +283,14 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
                     contextInstanceStateChangeEvent.getContextInstance().getName(), contextInstanceStateChangeEvent.getContextInstance().getStatus().toString(),
                     StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
 
-                ui.access(() -> {
-                    if(this.designerCanvas != null) {
-                    this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName() + "_status"
-                        , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
-                    }
-                });
+                if(ui.isAttached()) {
+                    ui.access(() -> {
+                        if (this.designerCanvas != null) {
+                            this.designerCanvas.setBackgroundColor(contextInstanceStateChangeEvent.getContextInstance().getName() + "_status"
+                                , StatusColours.getInstanceStatusColour(contextInstanceStateChangeEvent.getContextInstance().getStatus()));
+                        }
+                    });
+                }
             }
         });
 
@@ -302,12 +304,14 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
                     schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier(), schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus().toString(),
                     StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
 
-                ui.access(() -> {
-                    if(this.designerCanvas != null) {
-                        this.designerCanvas.setBackgroundColor(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier() + "_status"
-                            , StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
-                    }
-                });
+                if(ui.isAttached()) {
+                    ui.access(() -> {
+                        if (this.designerCanvas != null) {
+                            this.designerCanvas.setBackgroundColor(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getIdentifier() + "_status"
+                                , StatusColours.getInstanceStatusColour(schedulerJobInstanceStateChangeEvent.getSchedulerJobInstance().getStatus()));
+                        }
+                    });
+                }
             }
         });
     }

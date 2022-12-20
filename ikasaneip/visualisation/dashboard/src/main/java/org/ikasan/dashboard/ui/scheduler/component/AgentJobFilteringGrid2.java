@@ -604,17 +604,21 @@ public class AgentJobFilteringGrid2 extends FilteringGrid<SchedulerJobRecord, Ag
     protected void onAttach(AttachEvent attachEvent) {
 
         this.flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState -> {
-            ui.access(() -> {
-                this.dataProvider.refreshAll();
-                this.filteredDataProvider.refreshAll();
-            });
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    this.dataProvider.refreshAll();
+                    this.filteredDataProvider.refreshAll();
+                });
+            }
         });
 
         this.cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState -> {
-            ui.access(() -> {
-                this.dataProvider.refreshAll();
-                this.filteredDataProvider.refreshAll();
-            });
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    this.dataProvider.refreshAll();
+                    this.filteredDataProvider.refreshAll();
+                });
+            }
         });
     }
 

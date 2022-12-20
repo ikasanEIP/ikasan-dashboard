@@ -289,13 +289,15 @@ public class ContextDebugWidget extends Div {
                         ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
                         contextMachine.addSchedulerJobStateChangeEventListener(stateChange
                             -> {
-                            ui.access(() -> {
-                            try {
-                                 this.aceEditor.setValue(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContext()));
+                            if(ui.isAttached()) {
+                                ui.access(() -> {
+                                    try {
+                                        this.aceEditor.setValue(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContext()));
+                                    } catch (JsonProcessingException e) {
+                                        e.printStackTrace();
+                                    }
+                                });
                             }
-                            catch (JsonProcessingException e) {
-                                e.printStackTrace();
-                            }});
                         });
                         this.aceEditor.setValue(this.objectMapper.writerWithDefaultPrettyPrinter()
                             .writeValueAsString(contextMachine.getContext()));
@@ -312,13 +314,15 @@ public class ContextDebugWidget extends Div {
                         ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
                         contextMachine.addSchedulerJobStateChangeEventListener(stateChange
                             -> {
-                            ui.access(() -> {
-                            try {
-                                 this.aceEditor.setValue(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()));
+                            if(ui.isAttached()) {
+                                ui.access(() -> {
+                                    try {
+                                        this.aceEditor.setValue(this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contextMachine.getContextInstanceStatus()));
+                                    } catch (JsonProcessingException e) {
+                                        e.printStackTrace();
+                                    }
+                                });
                             }
-                            catch (JsonProcessingException e) {
-                                e.printStackTrace();
-                            }});
                         });
                         this.aceEditor.setValue(this.objectMapper.writerWithDefaultPrettyPrinter()
                             .writeValueAsString(contextMachine.getContextInstanceStatus()));

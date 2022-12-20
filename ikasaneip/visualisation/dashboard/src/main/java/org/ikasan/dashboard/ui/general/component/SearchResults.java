@@ -229,10 +229,14 @@ public class SearchResults extends Div {
                     }
 
                     if(csvConverter.getCvsContents().getBytes().length > this.maxDownloadBytes) {
-                        optionalUI.ifPresent(ui -> ui.access(() ->
-                            NotificationHelper.showUserNotification(String.format(getTranslation("notification.download-size-exceeded"
-                                , UI.getCurrent().getLocale()), this.maxDownloadBytes))
-                        ));
+                        optionalUI.ifPresent(ui -> {
+                            if(ui.isAttached()) {
+                                ui.access(() ->
+                                    NotificationHelper.showUserNotification(String.format(getTranslation("notification.download-size-exceeded"
+                                        , UI.getCurrent().getLocale()), this.maxDownloadBytes))
+                                );
+                            }
+                        });
 
                         break;
                     }
@@ -296,10 +300,14 @@ public class SearchResults extends Div {
                             zos.closeEntry();
                         }
                         if(baos.toByteArray().length > this.maxDownloadBytes) {
-                            optionalUI.ifPresent(ui -> ui.access(() ->
-                                NotificationHelper.showUserNotification(String.format(getTranslation("notification.download-size-exceeded"
-                                    , UI.getCurrent().getLocale()), this.maxDownloadBytes))
-                            ));
+                            optionalUI.ifPresent(ui -> {
+                                if(ui.isAttached()) {
+                                    ui.access(() ->
+                                        NotificationHelper.showUserNotification(String.format(getTranslation("notification.download-size-exceeded"
+                                            , UI.getCurrent().getLocale()), this.maxDownloadBytes))
+                                    );
+                                }
+                            });
 
                             break;
                         }
@@ -310,10 +318,14 @@ public class SearchResults extends Div {
                     return new ByteArrayInputStream(baos.toByteArray());
                 } catch (Exception e) {
                     e.printStackTrace();
-                    optionalUI.ifPresent(ui -> ui.access(() ->
-                        NotificationHelper.showUserNotification(getTranslation("error.download"
-                            , UI.getCurrent().getLocale()))
-                    ));
+                    optionalUI.ifPresent(ui -> {
+                        if(ui.isAttached()) {
+                            ui.access(() ->
+                                NotificationHelper.showUserNotification(getTranslation("error.download"
+                                    , UI.getCurrent().getLocale()))
+                            );
+                        }
+                    });
                     return new ByteArrayInputStream(new byte[0]);
                 }
             }

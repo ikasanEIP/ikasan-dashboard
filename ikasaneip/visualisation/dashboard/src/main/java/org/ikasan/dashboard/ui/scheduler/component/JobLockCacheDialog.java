@@ -344,9 +344,11 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
         this.registration = JobLockCacheEventBroadcaster.register(jobLockCacheEvent -> {
-            ui.access(() -> {
-                populateGrid(this.filterTf.getValue());
-            });
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    populateGrid(this.filterTf.getValue());
+                });
+            }
         });
     }
 

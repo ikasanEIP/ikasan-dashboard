@@ -153,9 +153,11 @@ public abstract class FilteringGrid<DATA, FILTER, RESULTS extends SearchResults>
      * Refresh the data presented to the grid.
      */
     public void refresh() {
-        ui.access(() -> {
-            this.dataProvider.refreshAll();
-        });
+        if(ui.isAttached()) {
+            ui.access(() -> {
+                this.dataProvider.refreshAll();
+            });
+        }
     }
 
     protected abstract RESULTS getResults(FILTER filter, int offset, int limit, String sortField, String sortOrder);

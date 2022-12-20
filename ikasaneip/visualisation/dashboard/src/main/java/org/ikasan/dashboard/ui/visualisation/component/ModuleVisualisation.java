@@ -421,14 +421,15 @@ public class ModuleVisualisation extends VerticalLayout implements BeforeEnterOb
 
     protected void drawFlowStatus(UI ui, FlowState flowState)
     {
-        ui.access(() ->
-        {
-            if(currentFlow != null && flowState.getFlowName().equals(currentFlow.getName())
-                && module != null && flowState.getModuleName().equals(module.getName()))
+        if(ui.isAttached()) {
+            ui.access(() ->
             {
-                this.drawFlowStatus(flowState.getState());
-            }
-        });
+                if (currentFlow != null && flowState.getFlowName().equals(currentFlow.getName())
+                    && module != null && flowState.getModuleName().equals(module.getName())) {
+                    this.drawFlowStatus(flowState.getState());
+                }
+            });
+        }
     }
 
     public Module getModule() {
