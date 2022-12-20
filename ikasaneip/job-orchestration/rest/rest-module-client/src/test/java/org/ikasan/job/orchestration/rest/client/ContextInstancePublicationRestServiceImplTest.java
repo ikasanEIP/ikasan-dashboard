@@ -84,8 +84,8 @@ public class ContextInstancePublicationRestServiceImplTest {
 
     @Test
     public void remove_returns_200() {
-        ContextInstance instanceWithParams = createInstanceWithParams("CONTEXT-NAME");
-        stubFor(delete(urlEqualTo("/rest/contextInstance/remove?contextName=CONTEXT-NAME"))
+        ContextInstance instanceWithParams = createInstanceWithParams("CONTEXT-ID");
+        stubFor(delete(urlEqualTo("/rest/contextInstance/remove?correlationId=CONTEXT-ID"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(
@@ -95,15 +95,15 @@ public class ContextInstancePublicationRestServiceImplTest {
 
         uut.remove(contextBaseUrl, instanceWithParams);
 
-        verify(deleteRequestedFor(urlEqualTo("/rest/contextInstance/remove?contextName=CONTEXT-NAME"))
+        verify(deleteRequestedFor(urlEqualTo("/rest/contextInstance/remove?correlationId=CONTEXT-ID"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
     }
 
     @Test
     public void remove_returns_error() {
-        ContextInstance instanceWithParams = createInstanceWithParams("CONTEXT-NAME");
-        stubFor(delete(urlEqualTo("/rest/contextInstance/remove?contextName=CONTEXT-NAME"))
+        ContextInstance instanceWithParams = createInstanceWithParams("CONTEXT-ID");
+        stubFor(delete(urlEqualTo("/rest/contextInstance/remove?correlationId=CONTEXT-ID"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(
@@ -113,14 +113,14 @@ public class ContextInstancePublicationRestServiceImplTest {
 
         uut.remove(contextBaseUrl, instanceWithParams);
 
-        verify(deleteRequestedFor(urlEqualTo("/rest/contextInstance/remove?contextName=CONTEXT-NAME"))
+        verify(deleteRequestedFor(urlEqualTo("/rest/contextInstance/remove?correlationId=CONTEXT-ID"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
     }
 
-    private ContextInstance createInstanceWithParams(String contextName) {
+    private ContextInstance createInstanceWithParams(String contextId) {
         ContextInstance instance = new ContextInstanceImpl();
-        instance.setName(contextName);
+        instance.setId(contextId);
         instance.setContextParameters(createParams());
         return instance;
     }
