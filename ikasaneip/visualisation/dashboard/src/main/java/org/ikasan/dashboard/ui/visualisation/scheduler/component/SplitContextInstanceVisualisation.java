@@ -318,23 +318,29 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
 
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
             if (contextInstanceStateChangeEvent.getContextInstance() != null) {
-                ui.access(() ->  {
-                    if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                        this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
-                    }
+                if(ui.isAttached()) {
+                    ui.access(() -> {
+                        if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                            this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+                        }
 
-                    if(this.childContextInstance != null && this.childContextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
-                        this.childJobPlansStatusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
+                        if (this.childContextInstance != null && this.childContextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
+                            this.childJobPlansStatusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
+                        }
+                    });
+                }
+            }
+        });
+
+        schedulerJobInstanceStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    if (ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                        this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
                     }
                 });
             }
         });
-
-        schedulerJobInstanceStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> ui.access(() ->  {
-            if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
-                this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
-            }
-        }));
     }
 
     @Override

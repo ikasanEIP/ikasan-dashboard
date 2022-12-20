@@ -468,12 +468,14 @@ public class BusinessStreamVisualisation extends VerticalLayout implements Befor
     }
 
     protected void drawFlowStatus(UI ui, FlowState flowState) {
-        ui.access(() ->
-        {
-            if (this.flowMap != null && this.flowMap.containsKey(flowState.getModuleName() + "." + flowState.getFlowName())) {
-                this.drawFlowStatus(flowState);
-            }
-        });
+        if(ui.isAttached()) {
+            ui.access(() ->
+            {
+                if (this.flowMap != null && this.flowMap.containsKey(flowState.getModuleName() + "." + flowState.getFlowName())) {
+                    this.drawFlowStatus(flowState);
+                }
+            });
+        }
     }
 
     private void populateFlowMap(BusinessStreamMetaData businessStreamMetaData) {

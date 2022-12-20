@@ -401,11 +401,13 @@ public class FileEventJobInstanceDialog extends AbstractCloseableResizableDialog
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextInstanceId().equals(this.fileEventDrivenJobInstance.getContextInstanceId())
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.fileEventDrivenJobInstance.getJobName())) {
                 this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
-                ui.access(() -> {
-                    this.fileEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-                    this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-                    this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
-                });
+                if(ui.isAttached()) {
+                    ui.access(() -> {
+                        this.fileEventDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                        this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                        this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
+                    });
+                }
             }
         });
     }

@@ -657,8 +657,11 @@ public class ContextTemplateWidget extends Div {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
-        this.contextEnableBroadcasterRegistration = ContextTemplateEnableDisableEventBroadcaster.register(flowState ->
-            ui.access(() -> this.contextTemplateFilteringGrid.getDataProvider().refreshAll()));
+        this.contextEnableBroadcasterRegistration = ContextTemplateEnableDisableEventBroadcaster.register(flowState -> {
+            if(ui.isAttached()) {
+                ui.access(() -> this.contextTemplateFilteringGrid.getDataProvider().refreshAll());
+            }
+        });
     }
 
     @Override

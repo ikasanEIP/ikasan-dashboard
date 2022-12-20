@@ -1575,23 +1575,27 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         Image statusImage = this.jobImageMap.get(key);
 
         if(statusImage != null) {
-            ui.access(() -> {
-                logger.debug(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
-                    , jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
-                    jobInstanceStateChangeEvent.getNewStatus()));
-                this.setImageBackgroundColour(statusImage, jobInstanceStateChangeEvent.getNewStatus());
-            });
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    logger.debug(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
+                        , jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
+                        jobInstanceStateChangeEvent.getNewStatus()));
+                    this.setImageBackgroundColour(statusImage, jobInstanceStateChangeEvent.getNewStatus());
+                });
+            }
         }
 
         Image preccedingJobStatusImage = this.jobImageMap.get(precedingJobKey);
 
         if(preccedingJobStatusImage != null) {
-            ui.access(() -> {
-                logger.debug(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
-                    , jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
-                    jobInstanceStateChangeEvent.getNewStatus()));
-                this.setImageBackgroundColour(preccedingJobStatusImage, jobInstanceStateChangeEvent.getNewStatus());
-            });
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    logger.debug(String.format("refreshing status image JobName[%s], ContextName[%s], ChildContextName[%s], Status[%s]", jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName()
+                        , jobInstanceStateChangeEvent.getSchedulerJobInstance().getContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(),
+                        jobInstanceStateChangeEvent.getNewStatus()));
+                    this.setImageBackgroundColour(preccedingJobStatusImage, jobInstanceStateChangeEvent.getNewStatus());
+                });
+            }
         }
 
         if(this.schedulerJobIconMap.containsKey(key)) {
@@ -1599,7 +1603,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             SchedulerJobInstance schedulerJobInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
             schedulerJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
             schedulerJobInstanceRecord.setSchedulerJobInstance(schedulerJobInstance);
-            ui.access(() -> this.setIconVisibility(schedulerJobInstanceRecord, key));
+            if(ui.isAttached()) {
+                ui.access(() -> this.setIconVisibility(schedulerJobInstanceRecord, key));
+            }
         }
 
         if(this.schedulerJobIconMap.containsKey(precedingJobKey)) {
@@ -1607,47 +1613,65 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             SchedulerJobInstance schedulerJobInstance = schedulerJobInstanceRecord.getSchedulerJobInstance();
             schedulerJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
             schedulerJobInstanceRecord.setSchedulerJobInstance(schedulerJobInstance);
-            ui.access(() -> this.setIconVisibility(schedulerJobInstanceRecord, precedingJobKey));
+            if(ui.isAttached()) {
+                ui.access(() -> this.setIconVisibility(schedulerJobInstanceRecord, precedingJobKey));
+            }
         }
 
         if(this.statusDivMap.containsKey(key)) {
-            ui.access(() -> this.statusDivMap.get(key).setStatus(jobInstanceStateChangeEvent.getNewStatus()));
+            if(ui.isAttached()) {
+                ui.access(() -> this.statusDivMap.get(key).setStatus(jobInstanceStateChangeEvent.getNewStatus()));
+            }
         }
 
         if(this.statusDivMap.containsKey(precedingJobKey)) {
-            ui.access(() -> this.statusDivMap.get(precedingJobKey).setStatus(jobInstanceStateChangeEvent.getNewStatus()));
+            if(ui.isAttached()) {
+                ui.access(() -> this.statusDivMap.get(precedingJobKey).setStatus(jobInstanceStateChangeEvent.getNewStatus()));
+            }
         }
 
         if(this.startTimes.containsKey(key) && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null
             && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime() > 0) {
-            ui.access(() -> this.startTimes.get(key).setText(DateFormatter.instance()
-                .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime())));
+            if(ui.isAttached()) {
+                ui.access(() -> this.startTimes.get(key).setText(DateFormatter.instance()
+                    .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime())));
+            }
         }
 
         if(this.startTimes.containsKey(precedingJobKey) && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null
             && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime() > 0) {
-            ui.access(() -> this.startTimes.get(precedingJobKey).setText(DateFormatter.instance()
-                .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime())));
+            if(ui.isAttached()) {
+                ui.access(() -> this.startTimes.get(precedingJobKey).setText(DateFormatter.instance()
+                    .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getFireTime())));
+            }
         }
 
         if(this.endTimes.containsKey(key) && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null
             && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime() > 0) {
-            ui.access(() -> this.endTimes.get(key).setText(DateFormatter.instance()
-                .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime())));
+            if(ui.isAttached()) {
+                ui.access(() -> this.endTimes.get(key).setText(DateFormatter.instance()
+                    .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime())));
+            }
         }
 
         if(this.endTimes.containsKey(precedingJobKey) && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent() != null
             && jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime() > 0) {
-            ui.access(() -> this.endTimes.get(precedingJobKey).setText(DateFormatter.instance()
-                .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime())));
+            if(ui.isAttached()) {
+                ui.access(() -> this.endTimes.get(precedingJobKey).setText(DateFormatter.instance()
+                    .getFormattedDate(jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent().getCompletionTime())));
+            }
         }
 
         if(this.manuallySubmittedBy.containsKey(key) && schedulerJobInstanceRecord.getManuallySubmittedBy() != null) {
-            ui.access(() -> this.manuallySubmittedBy.get(key).setText(schedulerJobInstanceRecord.getManuallySubmittedBy()));
+            if(ui.isAttached()) {
+                ui.access(() -> this.manuallySubmittedBy.get(key).setText(schedulerJobInstanceRecord.getManuallySubmittedBy()));
+            }
         }
 
         if(this.manuallySubmittedBy.containsKey(precedingJobKey) && schedulerJobInstanceRecord.getManuallySubmittedBy() != null) {
-            ui.access(() -> this.manuallySubmittedBy.get(precedingJobKey).setText(schedulerJobInstanceRecord.getManuallySubmittedBy()));
+            if(ui.isAttached()) {
+                ui.access(() -> this.manuallySubmittedBy.get(precedingJobKey).setText(schedulerJobInstanceRecord.getManuallySubmittedBy()));
+            }
         }
     }
 
@@ -1664,8 +1688,10 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 , contextInstanceStateChangeEvent.getContextInstance().getId(), contextInstanceStateChangeEvent.getContextInstance().getName());
 
             if(this.schedulerStatusFreeTextDivMap.containsKey(key)) {
-                ui.access(() -> this.schedulerStatusFreeTextDivMap.get(key)
-                    .setStatus(contextInstanceStateChangeEvent.getNewStatus()));
+                if(ui.isAttached()) {
+                    ui.access(() -> this.schedulerStatusFreeTextDivMap.get(key)
+                        .setStatus(contextInstanceStateChangeEvent.getNewStatus()));
+                }
             }
             else {
                 this.instanceStatusMap.put(key, contextInstanceStateChangeEvent.getNewStatus());

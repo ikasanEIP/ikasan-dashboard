@@ -244,7 +244,11 @@ public class ModuleStatusDialog extends AbstractCloseableResizableDialog {
             this.currentModule.getFlows()
                 .stream()
                 .filter(flow -> flowState.getFlowName().equals(flow.getName()))
-                .findFirst().ifPresent(flow -> ui.access(() -> this.flowGrid.getDataProvider().refreshItem(flow)));
+                .findFirst().ifPresent(flow -> {
+                    if(ui.isAttached()) {
+                        ui.access(() -> this.flowGrid.getDataProvider().refreshItem(flow));
+                    }
+                });
         });
     }
 

@@ -372,17 +372,21 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
     protected void onAttach(AttachEvent attachEvent) {
 
         this.flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState -> {
-            ui.access(() -> {
-                this.dataProvider.refreshAll();
-                this.filteredDataProvider.refreshAll();
-            });
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    this.dataProvider.refreshAll();
+                    this.filteredDataProvider.refreshAll();
+                });
+            }
         });
 
         this.cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState -> {
-            ui.access(() -> {
-                this.dataProvider.refreshAll();
-                this.filteredDataProvider.refreshAll();
-            });
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    this.dataProvider.refreshAll();
+                    this.filteredDataProvider.refreshAll();
+                });
+            }
         });
 
         this.scheduledProcessManagementService.addBatchInsertListener(this);
@@ -404,6 +408,8 @@ public class UpcomingJobExecutionFilteringGrid extends FilteringGrid<UpcomingSch
 
     @Override
     public void onBatchInsert(BatchInsertEvent<ScheduledProcessEvent> batchInsertEvent) {
-        ui.access(() -> super.refresh());
+        if(ui.isAttached()) {
+            ui.access(() -> super.refresh());
+        }
     }
 }
