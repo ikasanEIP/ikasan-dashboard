@@ -867,7 +867,11 @@ public class SchedulerJobGridWidget extends Div {
         UI ui = attachEvent.getUI();
 
         newSchedulerJobEventBroadcasterRegistration = NewSchedulerJobEventBroadcaster.register
-            (event -> ui.access(() -> this.schedulerJobFilteringGrid.getDataProvider().refreshAll()));
+            (event -> {
+                if(ui.isAttached()) {
+                    ui.access(() -> this.schedulerJobFilteringGrid.getDataProvider().refreshAll());
+                }
+            });
 
     }
 

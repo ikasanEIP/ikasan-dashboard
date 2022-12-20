@@ -115,12 +115,16 @@ public class LazyDownloadButton extends Button {
                     try {
                         InputStream inputStream = inputStreamCallback.createInputStream();
 
-                        optionalUI.ifPresent(ui -> ui.access(() -> {
-                            StreamResource href = new StreamResource(fileNameCallback.get(), () -> inputStream);
-                            href.setCacheTime(0);
-                            anchor.setHref(href);
-                            anchor.getElement().callJsFunction("click");
-                        }));
+                        optionalUI.ifPresent(ui -> {
+                            if(ui.isAttached()) {
+                                ui.access(() -> {
+                                    StreamResource href = new StreamResource(fileNameCallback.get(), () -> inputStream);
+                                    href.setCacheTime(0);
+                                    anchor.setHref(href);
+                                    anchor.getElement().callJsFunction("click");
+                                });
+                            }
+                        });
 
                     } catch (Exception e) {
                         throw new RuntimeException(e);

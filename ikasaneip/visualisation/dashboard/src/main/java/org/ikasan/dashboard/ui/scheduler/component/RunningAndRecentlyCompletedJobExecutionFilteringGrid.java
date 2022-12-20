@@ -331,6 +331,8 @@ public class RunningAndRecentlyCompletedJobExecutionFilteringGrid extends Filter
 
     @Override
     public void onBatchInsert(BatchInsertEvent<ScheduledProcessEvent> batchInsertEvent) {
-        ui.access(() -> super.refresh());
+        if(ui.isAttached()) {
+            ui.access(() -> super.refresh());
+        }
     }
 }

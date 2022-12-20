@@ -354,14 +354,15 @@ public class ControlPanel extends HorizontalLayout implements GraphViewChangeLis
 
     protected void setFlowState(UI ui, FlowState flowState)
     {
-        ui.access(() ->
-        {
-            if(currentFlow != null && flowState.getFlowName().equals(currentFlow.getName())
-                && module != null && flowState.getModuleName().equals(module.getName()))
+        if(ui.isAttached()) {
+            ui.access(() ->
             {
-                this.setFlowStatus(flowState.getState());
-            }
-        });
+                if (currentFlow != null && flowState.getFlowName().equals(currentFlow.getName())
+                    && module != null && flowState.getModuleName().equals(module.getName())) {
+                    this.setFlowStatus(flowState.getState());
+                }
+            });
+        }
     }
 
     @Override

@@ -113,10 +113,14 @@ public class ContextTemplateViewMenuBar extends MenuBar {
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
 
-        contextTemplateViewUpdateRegistration = ContextViewUpdateEventBroadcaster.register(event -> ui.access(() -> {
-            this.removeAll();
-            this.init();
-        }));
+        contextTemplateViewUpdateRegistration = ContextViewUpdateEventBroadcaster.register(event -> {
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    this.removeAll();
+                    this.init();
+                });
+            }
+        });
     }
 
     @Override

@@ -31,36 +31,38 @@ public class FlowComboBox extends ComboBox<Flow>
         UI ui = attachEvent.getUI();
         this.flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState ->
         {
-            ui.access(() ->
-            {
-                // do something interesting here.
-                logger.debug("Received flow state: " + flowState);
-
-                if(this.currentModule != null)
+            if(ui.isAttached()) {
+                ui.access(() ->
                 {
-                    Flow flow = this.getValue();
-                    removeAll();
-                    setItems(currentModule.getFlows());
-                    this.setValue(flow);
-                }
-            });
+                    // do something interesting here.
+                    logger.debug("Received flow state: " + flowState);
+
+                    if (this.currentModule != null) {
+                        Flow flow = this.getValue();
+                        removeAll();
+                        setItems(currentModule.getFlows());
+                        this.setValue(flow);
+                    }
+                });
+            }
         });
 
         this.cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState ->
         {
-            ui.access(() ->
-            {
-                // do something interesting here.
-                logger.debug("Received flow state: " + flowState);
-
-                if(this.currentModule != null)
+            if(ui.isAttached()) {
+                ui.access(() ->
                 {
-                    Flow flow = this.getValue();
-                    removeAll();
-                    setItems(currentModule.getFlows());
-                    this.setValue(flow);
-                }
-            });
+                    // do something interesting here.
+                    logger.debug("Received flow state: " + flowState);
+
+                    if (this.currentModule != null) {
+                        Flow flow = this.getValue();
+                        removeAll();
+                        setItems(currentModule.getFlows());
+                        this.setValue(flow);
+                    }
+                });
+            }
         });
     }
 

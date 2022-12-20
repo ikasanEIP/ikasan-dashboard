@@ -986,7 +986,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
         UI ui = attachEvent.getUI();
         this.contextSaveBroadcasterRegistration = ContextTemplateSavedEventBroadcaster.register(contextTemplate -> {
             this.contextTemplate = contextTemplate;
-            ui.access(() -> binder.readBean(contextTemplate));
+            if(ui.isAttached()) {
+                ui.access(() -> binder.readBean(contextTemplate));
+            }
             this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(contextTemplate.getTimezone()));
             this.blackoutWindowDateTimePairs.clear();
             this.populateBlackoutWindowPairs(contextTemplate);

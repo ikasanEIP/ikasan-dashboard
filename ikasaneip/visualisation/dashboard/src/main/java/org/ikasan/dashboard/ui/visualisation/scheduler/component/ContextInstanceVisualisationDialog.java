@@ -232,9 +232,11 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
             if (contextInstanceStateChangeEvent.getContextInstance() != null &&
                 contextInstanceStateChangeEvent.getContextInstance().getName().equals(this.contextInstance.getName())) {
-                ui.access(() -> {
-                    this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
-                });
+                if(ui.isAttached()) {
+                    ui.access(() -> {
+                        this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
+                    });
+                }
             }
         });
     }

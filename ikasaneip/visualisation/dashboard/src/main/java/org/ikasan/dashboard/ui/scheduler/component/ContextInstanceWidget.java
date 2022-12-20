@@ -33,8 +33,6 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
-import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobSchedulerInstanceVisualisation;
-import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SplitContextInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
@@ -416,7 +414,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         this.expand(this.splitContextInstanceVisualisation, this.aceEditor);
         this.setHeight("100%");
 
-        this.tabs.setSelectedTab(this.visualisationTab);
+//        this.tabs.setSelectedTab(this.visualisationTab);
         this.tabs.setSelectedTab(this.treeTab);
     }
 
@@ -799,7 +797,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService
             , this.contextProfileService);
         this.contextInstanceTreeViewWidget.setSizeFull();
-        this.contextInstanceTreeViewWidget.setVisible(false);
+        this.contextInstanceTreeViewWidget.setVisible(true);
     }
 
     /**
@@ -867,29 +865,34 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
 
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
             if (contextInstanceStateChangeEvent.getContextInstance() != null) {
-                ui.access(() ->  {
-                    if(this.contextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
-                        this.contextInstance = contextInstanceStateChangeEvent.getContextInstance();
-                        this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
-                    }
-                    else {
-                        ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId());
-                        if(record != null) {
-                            this.contextInstance = record.getContextInstance();
+                if(ui.isAttached()) {
+                    ui.access(() -> {
+                        if (this.contextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
+                            this.contextInstance = contextInstanceStateChangeEvent.getContextInstance();
+                            this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
+                        } else {
+                            ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId());
+                            if (record != null) {
+                                this.contextInstance = record.getContextInstance();
+                            }
                         }
-                    }
-                    this.updateJson(this.contextInstance);
-                });
+                        this.updateJson(this.contextInstance);
+                    });
+                }
             }
         });
 
-        schedulerJobInstanceStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> ui.access(() ->  {
-            ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId());
-            if(record != null) {
-                this.contextInstance = record.getContextInstance();
-                this.updateJson(this.contextInstance);
+        schedulerJobInstanceStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId());
+                    if (record != null) {
+                        this.contextInstance = record.getContextInstance();
+                        this.updateJson(this.contextInstance);
+                    }
+                });
             }
-        }));
+        });
     }
 
     @Override
