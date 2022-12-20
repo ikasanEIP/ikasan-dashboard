@@ -55,11 +55,11 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
         String url = contextUrl + REST_URL_REMOVE;
         try {
             String urlTemplate = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("contextName", "{contextName}")
+                .queryParam("correlationId", "{correlationId}")
                 .encode()
                 .toUriString();
             Map<String, String> parameters = new HashMap<>() {{
-                put("contextName", contextInstance.getName());
+                put("correlationId", contextInstance.getId());
             }};
 
             restTemplate.exchange(urlTemplate, HttpMethod.DELETE, entity, String.class, parameters);
