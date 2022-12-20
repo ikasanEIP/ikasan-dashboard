@@ -381,7 +381,11 @@ public class ContextHelper {
         if(!jobs.isEmpty()) {
             results.add(jobs);
             jobs.forEach(job -> getContextsWhereJobResides(context, job.getJobName()).forEach(filtered
-                -> _traceJobThroughContext(results, context, job.getJobName(), filtered)));
+                -> {
+                if(!filtered.equals(childContextName)) {
+                    _traceJobThroughContext(results, context, job.getJobName(), filtered);
+                }
+            }));
         }
     }
 
