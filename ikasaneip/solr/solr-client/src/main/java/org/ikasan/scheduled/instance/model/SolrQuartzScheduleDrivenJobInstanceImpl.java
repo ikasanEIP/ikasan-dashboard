@@ -126,32 +126,32 @@ public class SolrQuartzScheduleDrivenJobInstanceImpl extends SolrSchedulerJobIns
 
     @Override
     public List<String> getBlackoutWindowCronExpressions() {
-        return null;
+        return blackoutWindowCronExpressions;
     }
 
     @Override
     public void setBlackoutWindowCronExpressions(List<String> blackoutWindowCronExpressions) {
-
+        this.blackoutWindowCronExpressions = blackoutWindowCronExpressions;
     }
 
     @Override
     public Map<String, String> getBlackoutWindowDateTimeRanges() {
-        return null;
+        return blackoutWindowDateTimeRanges;
     }
 
     @Override
     public void setBlackoutWindowDateTimeRanges(Map<String, String> blackoutWindowDateTimeRanges) {
-
+        this.blackoutWindowDateTimeRanges = blackoutWindowDateTimeRanges;
     }
 
     @Override
     public boolean isDropEventOnBlackout() {
-        return false;
+        return isDropEventOnBlackout;
     }
 
     @Override
-    public void setDropEventOnBlackout(boolean isDropEventOnBlackout) {
-
+    public void setDropEventOnBlackout(boolean dropEventOnBlackout) {
+        isDropEventOnBlackout = dropEventOnBlackout;
     }
 
     @Override
