@@ -157,10 +157,14 @@ public class ContextInstanceViewMenuBar extends MenuBar {
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
 
-        contextInstanceViewUpdateRegistration = ContextViewUpdateEventBroadcaster.register(event -> ui.access(() -> {
-            this.removeAll();
-            this.init();
-        }));
+        contextInstanceViewUpdateRegistration = ContextViewUpdateEventBroadcaster.register(event -> {
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    this.removeAll();
+                    this.init();
+                });
+            }
+        });
 
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
             if (contextInstanceStateChangeEvent.getContextInstance() != null) {

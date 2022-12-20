@@ -960,7 +960,9 @@ public class SchedulerJobInstanceGridWidget extends Div {
                     }
 
                     record.setSchedulerJobInstance(instance);
-                    ui.access(() -> this.schedulerJobInstanceFilteringGrid.refreshItem(record));
+                    if(ui.isAttached()) {
+                        ui.access(() -> this.schedulerJobInstanceFilteringGrid.refreshItem(record));
+                    }
                 }
             }
         });

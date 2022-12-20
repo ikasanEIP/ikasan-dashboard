@@ -140,11 +140,13 @@ public class GraphView extends VerticalLayout implements BeforeEnterObserver
 
         broadcasterRegistration = FlowStateBroadcaster.register(flowState ->
         {
-            ui.access(() ->
-            {
-                // do something interesting here.
-                logger.debug("Received flow state: " + flowState);
-            });
+            if(ui.isAttached()) {
+                ui.access(() ->
+                {
+                    // do something interesting here.
+                    logger.debug("Received flow state: " + flowState);
+                });
+            }
         });
 
     }

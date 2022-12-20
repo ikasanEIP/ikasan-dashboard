@@ -176,9 +176,11 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
             if (contextInstanceStateChangeEvent.getContextInstance() != null &&
                 contextInstanceStateChangeEvent.getContextInstance().getName().equals(this.rootContextInstance.getName())) {
-                ui.access(() -> {
-                    this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
-                });
+                if(ui.isAttached()) {
+                    ui.access(() -> {
+                        this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
+                    });
+                }
             }
         });
     }

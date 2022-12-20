@@ -319,11 +319,13 @@ public class QuartzDrivenScheduledJobInstanceDialog extends AbstractCloseableRes
                 && jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName().equals(this.quartzScheduleDrivenJobInstance.getJobName())) {
                 this.scheduledProcessEvent = jobInstanceStateChangeEvent.getSchedulerJobInstance().getScheduledProcessEvent();
 
-                ui.access(() -> {
-                    this.quartzScheduleDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-                    this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
-                    this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
-                });
+                if(ui.isAttached()) {
+                    ui.access(() -> {
+                        this.quartzScheduleDrivenJobInstance.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                        this.statusDiv.setStatus(jobInstanceStateChangeEvent.getNewStatus());
+                        this.viewProcessEventButton.setVisible(this.scheduledProcessEvent != null);
+                    });
+                }
             }
         });
     }

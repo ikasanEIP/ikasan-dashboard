@@ -179,13 +179,15 @@ public class BusinessStreamStatusPanel extends HorizontalLayout implements Graph
         UI ui = attachEvent.getUI();
         broadcasterRegistration = CacheStateBroadcaster.register(flowState ->
         {
-            ui.access(() ->
-            {
-                // do something interesting here.
-                logger.info("Received flow state: " + flowState);
+            if(ui.isAttached()) {
+                ui.access(() ->
+                {
+                    // do something interesting here.
+                    logger.info("Received flow state: " + flowState);
 
-                calculateStatus();
-            });
+                    calculateStatus();
+                });
+            }
         });
 
         this.stoppedButtonTooltip.attachToComponent(stoppedButton);

@@ -571,17 +571,21 @@ public class AgentJobFilteringGrid extends FilteringGrid<ScheduledProcessAggrega
     protected void onAttach(AttachEvent attachEvent) {
 
         this.flowStateBroadcasterRegistration = FlowStateBroadcaster.register(flowState -> {
-            ui.access(() -> {
-                this.dataProvider.refreshAll();
-                this.filteredDataProvider.refreshAll();
-            });
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    this.dataProvider.refreshAll();
+                    this.filteredDataProvider.refreshAll();
+                });
+            }
         });
 
         this.cacheStateBroadcasterRegistration = CacheStateBroadcaster.register(flowState -> {
-            ui.access(() -> {
-                this.dataProvider.refreshAll();
-                this.filteredDataProvider.refreshAll();
-            });
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    this.dataProvider.refreshAll();
+                    this.filteredDataProvider.refreshAll();
+                });
+            }
         });
     }
 

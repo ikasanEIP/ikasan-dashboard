@@ -85,10 +85,14 @@ public class AceEditorLogConsumer {
 
     public void errorConsumer(Throwable error) {
         aceEditor.setCursorPosition(streamCounter.get(), 0);
-        ui.access(() -> aceEditor.addTextAtPosition(streamCounter.get(), 0, "Streaming error..." + System.getProperty("line.separator")));
+        if(ui.isAttached()) {
+            ui.access(() -> aceEditor.addTextAtPosition(streamCounter.get(), 0, "Streaming error..." + System.getProperty("line.separator")));
+        }
         sleepToGivEditorChanceToRender(RENDER_SLEEP_100);
         aceEditor.setCursorPosition(streamCounter.incrementAndGet(), 0);
-        ui.access(() -> aceEditor.addTextAtPosition(streamCounter.get(), 0, error.getLocalizedMessage()));
+        if(ui.isAttached()) {
+            ui.access(() -> aceEditor.addTextAtPosition(streamCounter.get(), 0, error.getLocalizedMessage()));
+        }
         sleepToGivEditorChanceToRender(RENDER_SLEEP_100);
         aceEditor.setCursorPosition(streamCounter.incrementAndGet(), 0);
         LOG.error("Got error streaming: " + error.getMessage());
@@ -99,7 +103,9 @@ public class AceEditorLogConsumer {
     public void completedConsumer() {
         aceEditor.setCursorPosition(streamCounter.get(), 0);
         try {
-            ui.access(() -> aceEditor.addTextAtPosition(streamCounter.get(), 0, "Log stream terminated." + System.getProperty("line.separator")));
+            if(ui.isAttached()) {
+                ui.access(() -> aceEditor.addTextAtPosition(streamCounter.get(), 0, "Log stream terminated." + System.getProperty("line.separator")));
+            }
             sleepToGivEditorChanceToRender(RENDER_SLEEP_100);
             aceEditor.setCursorPosition(streamCounter.incrementAndGet(), 0);
         } catch (UIDetachedException e) {
@@ -115,7 +121,9 @@ public class AceEditorLogConsumer {
 
     private void setCursorAndDisplay() {
         aceEditor.setCursorPosition(streamCounter.get(), 0);
-        ui.access(() -> aceEditor.addTextAtPosition(streamCounter.get(), 0, buffer.toString()));
+        if(ui.isAttached()) {
+            ui.access(() -> aceEditor.addTextAtPosition(streamCounter.get(), 0, buffer.toString()));
+        }
     }
 
     private void addDataStringToBuffer(ServerSentEvent<String> event) {

@@ -216,11 +216,13 @@ public class GraphViewBusinessStreamVisualisation extends VerticalLayout impleme
 
         broadcasterRegistration = FlowStateBroadcaster.register(flowState ->
         {
-            ui.access(() ->
-            {
-                // do something interesting here.
-               logger.info("Received flow state: " + flowState);
-            });
+            if(ui.isAttached()) {
+                ui.access(() ->
+                {
+                    // do something interesting here.
+                    logger.info("Received flow state: " + flowState);
+                });
+            }
         });
 
     }

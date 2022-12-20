@@ -467,9 +467,11 @@ public class ContextInstanceDashboardWidget extends Div {
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
-            ui.access(() -> {
-                this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
-            });
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    this.contextInstanceAggregateJobStatusGrid.getDataProvider().refreshAll();
+                });
+            }
         });
     }
 
