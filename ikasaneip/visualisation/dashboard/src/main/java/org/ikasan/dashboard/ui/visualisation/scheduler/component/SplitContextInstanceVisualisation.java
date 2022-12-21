@@ -181,17 +181,19 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
                 searchFilter.setContextName(this.contextInstance.getName());
                 searchFilter.setOwner(ContextProfileRecord.SYSTEM_OWNER);
 
-                SearchResults<ContextProfileRecord> results = this.contextProfileService.findByFilter(searchFilter, -1, -1, null, null);
+//                SearchResults<ContextProfileRecord> results = this.contextProfileService.findByFilter(searchFilter, -1, -1, null, null);
+//
+//                if (results.getResultList().size() > 0 && results.getResultList().get(0).getContextProfile().getDefaultContext() != null
+//                    && !results.getResultList().get(0).getContextProfile().getDefaultContext().isEmpty()) {
+//                    ContextInstance childContextInstance = ContextHelper.getChildContextInstance(results.getResultList()
+//                        .get(0).getContextProfile().getDefaultContext(), this.contextInstance);
+//
+//                    this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, childContextInstance, null);
+//                } else {
+//                    this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance, null);
+//                }
 
-                if (results.getResultList().size() > 0 && results.getResultList().get(0).getContextProfile().getDefaultContext() != null
-                    && !results.getResultList().get(0).getContextProfile().getDefaultContext().isEmpty()) {
-                    ContextInstance childContextInstance = ContextHelper.getChildContextInstance(results.getResultList()
-                        .get(0).getContextProfile().getDefaultContext(), this.contextInstance);
-
-                    this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, childContextInstance, null);
-                } else {
-                    this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance, null);
-                }
+                this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.contextInstance, this.contextInstance, null);
 
                 this.schedulerInstanceVisualisation.addCanvasInitialisedListener(this);
 
