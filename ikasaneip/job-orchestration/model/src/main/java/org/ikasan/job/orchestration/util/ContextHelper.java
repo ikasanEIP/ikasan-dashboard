@@ -361,6 +361,8 @@ public class ContextHelper {
     }
 
     private static void _traceJobThroughContext(LinkedList<List<SchedulerJob>> results, Context context, String jobName, String childContextName) {
+        logger.info(String.format("_traceJobThroughContext - contextName[%s], jobName[%s], childContextName[%s], context[%s]", context.getName(),
+            jobName, childContextName, context));
         Context child = ContextHelper.getChildContext(childContextName, context);
 
         Optional<SchedulerJob> schedulerJobInstance = ((List<SchedulerJob>)child.getScheduledJobs()).stream()
@@ -382,7 +384,7 @@ public class ContextHelper {
             results.add(jobs);
             jobs.forEach(job -> getContextsWhereJobResides(context, job.getJobName()).forEach(filtered
                 -> {
-                if(!filtered.equals(childContextName)) {
+                if(!filtered.equals(childContextName) && !filtered.isEmpty()) {
                     _traceJobThroughContext(results, context, job.getJobName(), filtered);
                 }
             }));
