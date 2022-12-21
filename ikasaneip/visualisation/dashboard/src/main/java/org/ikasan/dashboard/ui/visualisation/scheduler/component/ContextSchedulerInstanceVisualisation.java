@@ -116,8 +116,9 @@ public class ContextSchedulerInstanceVisualisation extends SchedulerInstanceVisu
         wrapper.setMargin(false);
         wrapper.setSpacing(false);
         wrapper.setPadding(false);
-        wrapper.add(contextViewsMenuBar);
-        wrapper.setHorizontalComponentAlignment(Alignment.END, contextViewsMenuBar);
+        // todo expose views menubar when visualisations bedded in
+//        wrapper.add(contextViewsMenuBar);
+//        wrapper.setHorizontalComponentAlignment(Alignment.END, contextViewsMenuBar);
 
         actions.add(wrapper);
 
