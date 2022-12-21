@@ -414,6 +414,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         this.expand(this.splitContextInstanceVisualisation, this.aceEditor);
         this.setHeight("100%");
 
+        // Hack to make the tree widget full height.
         this.tabs.setSelectedTab(this.auditTab);
         this.tabs.setSelectedTab(this.treeTab);
     }
