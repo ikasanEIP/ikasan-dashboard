@@ -1139,7 +1139,6 @@ public abstract class Draw2dAdapterBase {
      * @param schedulerJobs
      */
     private void _getSchedulerJobsFromGrouping(Context context, VisualisationLogicalGrouping visualisationLogicalGrouping, List<SchedulerJob> schedulerJobs) {
-
         visualisationLogicalGrouping.getJobIdentifiers().forEach(id -> {
             if(!schedulerJobs.contains(context.getScheduledJobsMap().get(id))) {
                 schedulerJobs.add((SchedulerJob) context.getScheduledJobsMap().get(id));
