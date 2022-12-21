@@ -362,7 +362,7 @@ public class ContextHelper {
     }
 
     private static void _traceJobThroughContext(LinkedList<List<SchedulerJob>> results, Context context, String jobName, String childContextName, List<String> processedContexts) {
-        logger.info(String.format("_traceJobThroughContext - contextName[%s], jobName[%s], childContextName[%s]", context.getName(),
+        logger.debug(String.format("_traceJobThroughContext - contextName[%s], jobName[%s], childContextName[%s]", context.getName(),
             jobName, childContextName));
         Context child = ContextHelper.getChildContext(childContextName, context);
 
