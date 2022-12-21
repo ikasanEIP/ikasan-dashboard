@@ -414,7 +414,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         this.expand(this.splitContextInstanceVisualisation, this.aceEditor);
         this.setHeight("100%");
 
-//        this.tabs.setSelectedTab(this.visualisationTab);
+        this.tabs.setSelectedTab(this.auditTab);
         this.tabs.setSelectedTab(this.treeTab);
     }
 
@@ -797,6 +797,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService
             , this.contextProfileService);
         this.contextInstanceTreeViewWidget.setSizeFull();
+        this.contextInstanceTreeViewWidget.setVisible(false);
         this.contextInstanceTreeViewWidget.setVisible(true);
     }
 
@@ -838,7 +839,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             , contextInstanceSearchFilter, false);
         this.contextInstanceAuditWidget.setWidthFull();
         this.contextInstanceAuditWidget.setHeight("75vh");
-        this.contextInstanceAuditWidget.setVisible(false);
+        this.contextInstanceAuditWidget.setVisible(true);
 
     }
 
