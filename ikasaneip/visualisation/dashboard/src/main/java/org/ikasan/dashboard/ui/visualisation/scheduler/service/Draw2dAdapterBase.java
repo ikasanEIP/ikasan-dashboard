@@ -811,12 +811,37 @@ public abstract class Draw2dAdapterBase {
     protected void followContextTransitionPath(String contextName, TreeNode<String> node,
         Map<String, List<String>> contextSubsequentTransitionMap) {
 
+        ArrayList<String> processedContexts = new ArrayList<>();
+
+        this._followContextTransitionPath(contextName, node, contextSubsequentTransitionMap
+            , processedContexts);
+    }
+
+    /**
+     * Method to recursively follow transitions between contexts.
+     *
+     *
+     * @param contextName
+     * @param node
+     * @param contextSubsequentTransitionMap
+     */
+    protected void _followContextTransitionPath(String contextName, TreeNode<String> node,
+                                               Map<String, List<String>> contextSubsequentTransitionMap, ArrayList<String> processedContexts) {
+
+        if(processedContexts.contains(contextName)) {
+            return;
+        }
+        else {
+            processedContexts.add(contextName);
+        }
+
         if(contextSubsequentTransitionMap.containsKey(contextName)) {
-            contextSubsequentTransitionMap.get(contextName).forEach(s -> {
-                TreeNode<String> treeNode = new TreeNode<>(s);
+            contextSubsequentTransitionMap.get(contextName).forEach(childContextName -> {
+                TreeNode<String> treeNode = new TreeNode<>(childContextName);
                 node.addBranch(treeNode);
 
-                followContextTransitionPath(s, treeNode, contextSubsequentTransitionMap);
+                _followContextTransitionPath(childContextName, treeNode
+                    , contextSubsequentTransitionMap, processedContexts);
             });
         }
 
