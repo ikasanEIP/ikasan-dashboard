@@ -355,15 +355,24 @@ public class ContextHelper {
     }
     public static LinkedList<List<SchedulerJob>> traceJobThroughContext(Context context, String jobName, String childContextName) {
         LinkedList<List<SchedulerJob>> results = new LinkedList<>();
-        _traceJobThroughContext(results, context, jobName, childContextName);
+        List<String> processedContexts = new ArrayList<>();
+        _traceJobThroughContext(results, context, jobName, childContextName, processedContexts);
 
         return results;
     }
 
-    private static void _traceJobThroughContext(LinkedList<List<SchedulerJob>> results, Context context, String jobName, String childContextName) {
+    private static void _traceJobThroughContext(LinkedList<List<SchedulerJob>> results, Context context, String jobName, String childContextName, List<String> processedContexts) {
         logger.info(String.format("_traceJobThroughContext - contextName[%s], jobName[%s], childContextName[%s]", context.getName(),
             jobName, childContextName));
         Context child = ContextHelper.getChildContext(childContextName, context);
+
+        // protect against circular dependencies that cause stack overflows
+        if(processedContexts.contains(child.getName())) {
+            return;
+        }
+        else {
+            processedContexts.add(child.getName());
+        }
 
         Optional<SchedulerJob> schedulerJobInstance = ((List<SchedulerJob>)child.getScheduledJobs()).stream()
             .filter(job -> job.getJobName().equals(jobName))
@@ -385,7 +394,7 @@ public class ContextHelper {
             jobs.forEach(job -> getContextsWhereJobResides(context, job.getJobName()).forEach(filtered
                 -> {
                 if(!filtered.equals(childContextName) && !filtered.isEmpty()) {
-                    _traceJobThroughContext(results, context, job.getJobName(), filtered);
+                    _traceJobThroughContext(results, context, job.getJobName(), filtered, processedContexts);
                 }
             }));
         }
