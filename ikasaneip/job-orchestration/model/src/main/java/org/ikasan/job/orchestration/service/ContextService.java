@@ -84,6 +84,14 @@ public class ContextService {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schedulerJob);
     }
 
+    public GlobalEventJob getGlobalEventJob(String schedulerJob) throws JsonProcessingException {
+        return objectMapper.readValue(schedulerJob, GlobalEventJobImpl.class);
+    }
+
+    public String getGlobalEventJobString(GlobalEventJob schedulerJob) throws JsonProcessingException {
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schedulerJob);
+    }
+
     public ContextProfileRecord getContextProfileRecord(String contextProfileRecord) throws JsonProcessingException {
         return objectMapper.readValue(contextProfileRecord, ContextProfileRecordImpl.class);
     }

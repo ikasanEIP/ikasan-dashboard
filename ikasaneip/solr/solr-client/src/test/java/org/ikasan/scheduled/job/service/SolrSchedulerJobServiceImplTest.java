@@ -6,14 +6,8 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
-import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrInternalEventDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrQuartzScheduleDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
-import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobImpl;
-import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
-import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
-import org.ikasan.scheduled.job.model.SolrSchedulerJobRecordImpl;
+import org.ikasan.scheduled.job.dao.*;
+import org.ikasan.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.search.SearchResults;
@@ -36,6 +30,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
     private SolrFileEventDrivenJobDaoImpl fileEventDrivenJobRecordDao;
     private SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao;
     private SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobRecordDao;
+    private SolrGlobalEventJobDaoImpl globalEventJobRecordDao;
     private SolrSchedulerJobDaoImpl schedulerJobRecordDao;
     private Path tmpPath;
     private EmbeddedSolrServer server;
@@ -65,13 +60,16 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         this.quartzScheduleDrivenJobRecordDao = new SolrQuartzScheduleDrivenJobDaoImpl();
         this.quartzScheduleDrivenJobRecordDao.setSolrClient(server);
 
+        this.globalEventJobRecordDao = new SolrGlobalEventJobDaoImpl();
+        this.globalEventJobRecordDao.setSolrClient(server);
+
         this.schedulerJobRecordDao = new SolrSchedulerJobDaoImpl();
         this.schedulerJobRecordDao.setSolrClient(server);
 
 
         this.service = new SolrSchedulerJobServiceImpl(
             this.fileEventDrivenJobRecordDao, this.internalEventDrivenJobRecordDao,
-            this.quartzScheduleDrivenJobRecordDao, this.schedulerJobRecordDao
+            this.quartzScheduleDrivenJobRecordDao, this.globalEventJobRecordDao, this.schedulerJobRecordDao
         );
     }
 
@@ -103,16 +101,16 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         service.save(listOfRecords2, "system");
 
         results = service.findByContext(contextId1, 100, 0);
-        validateResults(results, 9, contextId1);
+        validateResults(results, 12, contextId1);
         results = service.findByContext(contextId2, 100, 0);
-        validateResults(results, 9, contextId2);
+        validateResults(results, 12, contextId2);
 
         service.deleteByContextName(contextId1);
 
         results = service.findByContext(contextId1, 100, 0);
         validateResults(results, 0, contextId1);
         results = service.findByContext(contextId2, 100, 0);
-        validateResults(results, 9, contextId2);
+        validateResults(results, 12, contextId2);
 
         service.deleteByContextName(contextId2);
 
@@ -397,7 +395,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
 
         SearchResults<SchedulerJobRecord> results = this.service.findByContext(contextName, -1, -1);
 
-        Assert.assertEquals(9, results.getResultList().size());
+        Assert.assertEquals(12, results.getResultList().size());
 
         this.service.renameContextForJobs(contextName, "newContextName", "actor");
 
@@ -407,7 +405,7 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
 
         results = this.service.findByContext("newContextName", -1, -1);
 
-        Assert.assertEquals(9, results.getResultList().size());
+        Assert.assertEquals(12, results.getResultList().size());
 
         results.getResultList().forEach(schedulerJobRecord -> {
             Assert.assertEquals("newContextName", schedulerJobRecord.getContextName());
@@ -541,6 +539,48 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
         Assert.assertEquals("updatedCronExpression", found.getCronExpression());
     }
 
+    @Test
+    public void test_save_global_event_job() {
+        String contextName = "contextName";
+        GlobalEventJob globalEventJob = new SolrGlobalEventJobImpl();
+        globalEventJob.setAgentName(contextName + "agentName");
+        globalEventJob.setJobName(contextName + "jobName");
+        globalEventJob.setIdentifier(globalEventJob.getAgentName() + "_" + globalEventJob.getJobName());
+        globalEventJob.setContextName(contextName);
+        globalEventJob.setChildContextNames(List.of("child"));
+
+        this.service.saveGlobalEventJob(globalEventJob, "tester");
+
+        SchedulerJobRecord schedulerJobRecord = this.service
+            .findByContextNameAndJobName("contextName", contextName + "jobName");
+        GlobalEventJob found = (GlobalEventJob) schedulerJobRecord.getJob();
+
+        Assert.assertNotNull(found);
+        long modifiedTimestamp = schedulerJobRecord.getModifiedTimestamp();
+        long timestamp = schedulerJobRecord.getTimestamp();
+        Assert.assertTrue(schedulerJobRecord.getTimestamp() > 0);
+        Assert.assertTrue(modifiedTimestamp > 0);
+        Assert.assertEquals("tester", schedulerJobRecord.getModifiedBy());
+        Assert.assertTrue(found.getChildContextNames().contains("child"));
+
+        found.setChildContextNames(List.of("child2"));
+
+        this.service.saveGlobalEventJob(found, "tester2");
+
+        schedulerJobRecord = this.service
+            .findByContextNameAndJobName("contextName", contextName + "jobName");
+        found = (GlobalEventJob) schedulerJobRecord.getJob();
+
+        Assert.assertNotNull(found);
+        Assert.assertTrue(schedulerJobRecord.getTimestamp() > 0);
+        Assert.assertTrue(schedulerJobRecord.getModifiedTimestamp() > 0);
+        Assert.assertTrue(schedulerJobRecord.getModifiedTimestamp() > modifiedTimestamp);
+        Assert.assertTrue(schedulerJobRecord.getTimestamp() == timestamp);
+        Assert.assertEquals("tester2", schedulerJobRecord.getModifiedBy());
+        Assert.assertTrue(found.getChildContextNames().contains("child2"));
+        Assert.assertFalse(found.getChildContextNames().contains("child"));
+    }
+
     private void validateResults(SearchResults results, int expectedCount, String contextId) {
         assertEquals(expectedCount, results.getResultList().size());
         if (expectedCount > 0) {
@@ -567,6 +607,11 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
                     assertEquals(contextId + "jobNameQuartz" + resetCount, job.getJobName());
                     assertEquals(job.getAgentName() + "_" + job.getJobName(), quartzScheduleDrivenJob.getIdentifier());
                     assertEquals("cronExpression" + resetCount, quartzScheduleDrivenJob.getCronExpression());
+                }
+                else if (job.getJob() instanceof SolrGlobalEventJobImpl) {
+                    GlobalEventJob globalEventJob = (GlobalEventJob) job.getJob();
+                    assertEquals(contextId + "jobNameGlobal" + resetCount, job.getJobName());
+                    assertEquals(job.getAgentName() + "_" + job.getJobName(), globalEventJob.getIdentifier());
                 }
                 resetCount++;
                 if (resetCount == 3) {
@@ -604,9 +649,17 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
             solrQuartzScheduleDrivenJob.setCronExpression("cronExpression" + i);
             solrQuartzScheduleDrivenJob.setChildContextNames(List.of("child"));
 
+            SolrGlobalEventJobImpl solrGlobalEventJob = new SolrGlobalEventJobImpl();
+            solrGlobalEventJob.setAgentName(contextId + "agentName" + i);
+            solrGlobalEventJob.setJobName(contextId + "jobNameGlobal" + i);
+            solrGlobalEventJob.setIdentifier(solrGlobalEventJob.getAgentName() + "_" + solrGlobalEventJob.getJobName());
+            solrGlobalEventJob.setContextName(contextId);
+            solrGlobalEventJob.setChildContextNames(List.of("child"));
+
             jobs.add(solrFileEventDrivenJob);
             jobs.add(solrInternalEventDrivenJob);
             jobs.add(solrQuartzScheduleDrivenJob);
+            jobs.add(solrGlobalEventJob);
         }
 
         return jobs;
