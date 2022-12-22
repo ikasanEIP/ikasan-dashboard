@@ -71,6 +71,7 @@ public final class ContextExportZipUtils {
             Path jobsFileDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + FILE_DIR);
             Path jobsInternalDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + INTERNAL_DIR);
             Path jobsQuartzDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + QUARTZ_DIR);
+            Path jobsGlobalDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + JOBS_DIR + File.separator + GLOBAL_JOB_DIR);
             Path notificationDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + NOTIFICATION_DIR);
             Path notificationDetailDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + NOTIFICATION_DETAILS_DIR);
             Path profilesDir = Paths.get(getWorkingDirectory(workingDirectory) + contextFileName + File.separator + PROFILE_DIR);
@@ -80,6 +81,7 @@ public final class ContextExportZipUtils {
             Files.createDirectories(jobsFileDir);
             Files.createDirectories(jobsInternalDir);
             Files.createDirectories(jobsQuartzDir);
+            Files.createDirectories(jobsGlobalDir);
             Files.createDirectories(notificationDir);
             Files.createDirectories(notificationDetailDir);
             Files.createDirectories(profilesDir);
@@ -217,6 +219,9 @@ public final class ContextExportZipUtils {
                     jobPath = Paths.get(p4 + File.separator + jobName + ".json");
                     break;
                 case JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB:
+                    jobPath = Paths.get(p5 + File.separator + jobName + ".json");
+                    break;
+                case JobConstants.GLOBAL_EVENT_JOB:_JOB:
                     jobPath = Paths.get(p5 + File.separator + jobName + ".json");
                     break;
                 default:

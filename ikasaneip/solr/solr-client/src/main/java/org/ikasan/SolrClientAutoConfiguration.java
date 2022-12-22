@@ -9,10 +9,7 @@ import org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl;
 import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
 import org.ikasan.scheduled.instance.service.SolrScheduledContextInstanceServiceImpl;
 import org.ikasan.scheduled.instance.service.SolrSchedulerJobInstanceServiceImpl;
-import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrInternalEventDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrQuartzScheduleDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
+import org.ikasan.scheduled.job.dao.*;
 import org.ikasan.scheduled.job.service.SolrInternalEventDrivenJobRecordServiceImpl;
 import org.ikasan.scheduled.job.service.SolrSchedulerJobServiceImpl;
 import org.ikasan.scheduled.joblock.dao.SolrJobLockCacheAuditDaoImpl;
@@ -163,10 +160,10 @@ public class SolrClientAutoConfiguration {
     @Bean
     public SchedulerJobService solrSchedulerJobService(SolrFileEventDrivenJobDaoImpl fileEventDrivenJobDao
         , SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobDao, SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobDao
-        , SolrSchedulerJobDaoImpl schedulerJobDao) {
+        , SolrGlobalEventJobDaoImpl globalEventJobRecordDao, SolrSchedulerJobDaoImpl schedulerJobDao) {
         return new SolrSchedulerJobServiceImpl(fileEventDrivenJobDao
             ,internalEventDrivenJobDao, quartzScheduleDrivenJobDao
-            , schedulerJobDao);
+            ,globalEventJobRecordDao, schedulerJobDao);
     }
 
     @Bean
@@ -217,6 +214,16 @@ public class SolrClientAutoConfiguration {
     @Bean
     public SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobRecordDao() {
         SolrQuartzScheduleDrivenJobDaoImpl dao = new SolrQuartzScheduleDrivenJobDaoImpl();
+        dao.initStandalone(solrUrl, solrRetentionDays);
+        dao.setSolrUsername(solrUsername);
+        dao.setSolrPassword(solrPassword);
+
+        return dao;
+    }
+
+    @Bean
+    public SolrGlobalEventJobDaoImpl globalEventJobRecordDao() {
+        SolrGlobalEventJobDaoImpl dao = new SolrGlobalEventJobDaoImpl();
         dao.initStandalone(solrUrl, solrRetentionDays);
         dao.setSolrUsername(solrUsername);
         dao.setSolrPassword(solrPassword);

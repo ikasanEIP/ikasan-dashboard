@@ -7,6 +7,7 @@ import org.ikasan.configuration.metadata.model.SolrConfigurationParameterMetaDat
 import org.ikasan.job.orchestration.AbstractTest;
 import org.ikasan.job.orchestration.builder.context.ContextParameterBuilder;
 import org.ikasan.job.orchestration.builder.job.FileEventDrivenJobBuilder;
+import org.ikasan.job.orchestration.builder.job.GlobalEventJobBuilder;
 import org.ikasan.job.orchestration.builder.job.InternalEventDrivenJobBuilder;
 import org.ikasan.job.orchestration.builder.job.QuartzScheduleDrivenJobBuilder;
 import org.ikasan.module.metadata.model.SolrModuleMetaDataImpl;
@@ -73,6 +74,7 @@ public class JobProvisionServiceTest extends AbstractTest {
         verify(schedulerJobService, times(3)).saveQuartzScheduledJobs(anyList(), anyString());
         verify(schedulerJobService, times(3)).saveInternalEventDrivenJobs(anyList(), anyString());
         verify(schedulerJobService, times(3)).saveFileEventDrivenJobs(anyList(), anyString());
+        verify(schedulerJobService, times(3)).saveGlobalEventJobs(anyList(), anyString());
         verify(jobProvisionModuleRestService, times(3)).provisionJobs(anyString(), any());
         verify(moduleMetaDataService, times(1)).find(anyList(), any(), anyInt(), anyInt());
 
@@ -185,6 +187,27 @@ public class JobProvisionServiceTest extends AbstractTest {
         schedulerJobs.add(this.createFileEventDrivenJob("agent3", "contextId", "description"
             , "file-jobName3", "jobGroup", "cronExpression", "timezone"));
 
+        schedulerJobs.add(this.createGlobalEventJob("agent1", "contextId", "description"
+            , "global-jobName1"));
+        schedulerJobs.add(this.createGlobalEventJob("agent1", "contextId", "description"
+            , "global-jobName2"));
+        schedulerJobs.add(this.createGlobalEventJob("agent1", "contextId", "description"
+            , "global-jobName3"));
+
+        schedulerJobs.add(this.createGlobalEventJob("agent2", "contextId", "description"
+            , "global-jobName1"));
+        schedulerJobs.add(this.createGlobalEventJob("agent2", "contextId", "description"
+            , "global-jobName2"));
+        schedulerJobs.add(this.createGlobalEventJob("agent2", "contextId", "description"
+            , "global-jobName3"));
+
+        schedulerJobs.add(this.createGlobalEventJob("agent3", "contextId", "description"
+            , "global-jobName1"));
+        schedulerJobs.add(this.createGlobalEventJob("agent3", "contextId", "description"
+            , "global-jobName2"));
+        schedulerJobs.add(this.createGlobalEventJob("agent3", "contextId", "description"
+            , "global-jobName3"));
+
         return schedulerJobs;
     }
 
@@ -241,6 +264,18 @@ public class JobProvisionServiceTest extends AbstractTest {
             .withAgentName(agentName);
 
         return fileEventDrivenJobBuilder.build();
+    }
+
+    private GlobalEventJob createGlobalEventJob(String agentName, String contextId, String description, String jobName) {
+        GlobalEventJobBuilder globalEventJobBuilder = new GlobalEventJobBuilder();
+
+        globalEventJobBuilder
+            .withDescription(description)
+            .withJobName(jobName)
+            .withContextName(contextId)
+            .withAgentName(agentName);
+
+        return globalEventJobBuilder.build();
     }
 
     private List<ContextParameter> getContextParameters() {
