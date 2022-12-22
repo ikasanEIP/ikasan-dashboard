@@ -45,6 +45,7 @@ public final class ContextImportZipUtils {
                     String fileJobsDirectory = parentDirectory + JOBS_DIR + "/" + FILE_DIR + "/";
                     String internalJobsDirectory = parentDirectory + JOBS_DIR + "/" + INTERNAL_DIR + "/";
                     String quartzJobsDirectory = parentDirectory + JOBS_DIR + "/" + QUARTZ_DIR + "/";
+                    String globalJobsDirectory = parentDirectory + JOBS_DIR + "/" + GLOBAL_JOB_DIR + "/"; //TODO WE have to build a test once we know what the Global Job looks like
                     String contextProfileDirectory = parentDirectory + PROFILE_DIR + "/";
                     String emailNotificationDirectory = parentDirectory + NOTIFICATION_DIR + "/";
                     String emailNotificationDetailDirectory = parentDirectory + NOTIFICATION_DETAILS_DIR + "/";
@@ -61,6 +62,9 @@ public final class ContextImportZipUtils {
                     } else if (!entry.isDirectory() && entry.getName().startsWith(quartzJobsDirectory)
                         && entry.getName().endsWith(".json")) {
                         contextJobs.add((SchedulerJob) getContextArtifact(QUARTZ_DIR, outputStream.toString(), contextService));
+                    } else if (!entry.isDirectory() && entry.getName().startsWith(globalJobsDirectory)
+                        && entry.getName().endsWith(".json")) {
+                        contextJobs.add((SchedulerJob) getContextArtifact(GLOBAL_JOB_DIR, outputStream.toString(), contextService));
                     } else if (!entry.isDirectory() && entry.getName().startsWith(contextProfileDirectory)
                         && entry.getName().endsWith(".json")) {
                         contextProfileRecords.add((ContextProfileRecord) getContextArtifact(PROFILE_DIR, outputStream.toString(), contextService));
@@ -110,6 +114,8 @@ public final class ContextImportZipUtils {
                     return service.getInternalEventDrivenJob(json);
                 case QUARTZ_DIR:
                     return service.getQuartzScheduleDrivenJob(json);
+                case GLOBAL_JOB_DIR:
+                    return service.getGlobalEventJob(json);
                 case PROFILE_DIR:
                     return service.getContextProfileRecord(json);
                 case NOTIFICATION_DIR:

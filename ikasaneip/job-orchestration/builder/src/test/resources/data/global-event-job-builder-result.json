@@ -1,0 +1,11 @@
+{
+  "agentName" : "agentName",
+  "jobName" : "jobName",
+  "contextName" : "contextId",
+  "childContextNames" : [ "childContextId" ],
+  "startupControlType" : "MANUAL",
+  "skippedContexts" : { },
+  "heldContexts" : { },
+  "identifier" : "agentName-jobName",
+  "jobDescription" : "description"
+}

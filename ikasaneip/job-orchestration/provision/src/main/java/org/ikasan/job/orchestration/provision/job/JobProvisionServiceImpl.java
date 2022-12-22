@@ -1,10 +1,7 @@
 package org.ikasan.job.orchestration.provision.job;
 
 import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
-import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
+import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.rest.client.JobProvisionModuleRestServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
@@ -230,6 +227,17 @@ public class JobProvisionServiceImpl implements JobProvisionService {
                     fileEventDrivenJob.setJobName(job.getJobName());
 
                     return fileEventDrivenJob;
+                } else if (job instanceof GlobalEventJob) {
+                    GlobalEventJob globalEventJob = new GlobalEventJobImpl();
+                    globalEventJob.setAgentName(job.getAgentName());
+                    globalEventJob.setChildContextNames(job.getChildContextNames());
+                    globalEventJob.setContextName(job.getContextName());
+                    globalEventJob.setIdentifier(job.getIdentifier());
+                    globalEventJob.setJobDescription(job.getJobDescription());
+                    globalEventJob.setJobName(job.getJobName());
+                    globalEventJob.setStartupControlType(job.getStartupControlType());
+
+                    return globalEventJob;
                 } else {
                     QuartzScheduleDrivenJob quartzScheduleDrivenJob = new QuartzScheduleDrivenJobImpl();
                     quartzScheduleDrivenJob.setContextName(job.getContextName());
@@ -264,6 +272,7 @@ public class JobProvisionServiceImpl implements JobProvisionService {
         List<InternalEventDrivenJob> internalEventDrivenJobs = new ArrayList<>();
         List<FileEventDrivenJob> fileEventDrivenJobs = new ArrayList<>();
         List<QuartzScheduleDrivenJob> quartzScheduleDrivenJobs = new ArrayList<>();
+        List<GlobalEventJob> globalEventJobs = new ArrayList<>();
         jobs.forEach(job -> {
             if(job instanceof InternalEventDrivenJob) {
                 internalEventDrivenJobs.add((InternalEventDrivenJob)job);
@@ -273,6 +282,9 @@ public class JobProvisionServiceImpl implements JobProvisionService {
             }
             else if(job instanceof QuartzScheduleDrivenJob) {
                 quartzScheduleDrivenJobs.add((QuartzScheduleDrivenJob)job);
+            }
+            else if(job instanceof GlobalEventJob) {
+                globalEventJobs.add((GlobalEventJob)job);
             }
         });
 
@@ -286,6 +298,10 @@ public class JobProvisionServiceImpl implements JobProvisionService {
 
         if(!quartzScheduleDrivenJobs.isEmpty()) {
             this.schedulerJobService.saveQuartzScheduledJobs(quartzScheduleDrivenJobs, actor);
+        }
+
+        if(!globalEventJobs.isEmpty()) {
+            this.schedulerJobService.saveGlobalEventJobs(globalEventJobs, actor);
         }
     }
 
