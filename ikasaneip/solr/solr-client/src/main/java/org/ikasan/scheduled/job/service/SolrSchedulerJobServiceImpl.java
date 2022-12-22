@@ -1,10 +1,6 @@
 package org.ikasan.scheduled.job.service;
 
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
-import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrInternalEventDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrQuartzScheduleDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
 import org.ikasan.scheduled.job.dao.*;
 import org.ikasan.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
