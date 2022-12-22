@@ -5,6 +5,7 @@ import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobDaoImpl;
 import org.ikasan.scheduled.job.dao.SolrInternalEventDrivenJobDaoImpl;
 import org.ikasan.scheduled.job.dao.SolrQuartzScheduleDrivenJobDaoImpl;
 import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
+import org.ikasan.scheduled.job.dao.*;
 import org.ikasan.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
@@ -31,11 +32,13 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     private SolrFileEventDrivenJobDaoImpl fileEventDrivenJobRecordDao;
     private SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao;
     private SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobRecordDao;
+    private SolrGlobalEventJobDaoImpl globalEventJobRecordDao;
     private SolrSchedulerJobDaoImpl schedulerJobRecordDao;
 
     public SolrSchedulerJobServiceImpl(SolrFileEventDrivenJobDaoImpl fileEventDrivenJobRecordDao
         , SolrInternalEventDrivenJobDaoImpl internalEventDrivenJobRecordDao
         , SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobRecordDao
+        , SolrGlobalEventJobDaoImpl globalEventJobRecordDao
         , SolrSchedulerJobDaoImpl schedulerJobRecordDao) {
         this.fileEventDrivenJobRecordDao = fileEventDrivenJobRecordDao;
         if(this.fileEventDrivenJobRecordDao == null)
@@ -51,6 +54,11 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         if(this.quartzScheduleDrivenJobRecordDao == null)
         {
             throw new IllegalArgumentException("quartzScheduleDrivenJobRecordDao cannot be null!");
+        }
+        this.globalEventJobRecordDao = globalEventJobRecordDao;
+        if(this.globalEventJobRecordDao == null)
+        {
+            throw new IllegalArgumentException("globalEventJobRecordDao cannot be null!");
         }
         this.schedulerJobRecordDao = schedulerJobRecordDao;
         if(this.schedulerJobRecordDao == null)
@@ -105,6 +113,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
             List<FileEventDrivenJob> fileEventDrivenJobs = new ArrayList<>();
             List<InternalEventDrivenJob> internalEventDrivenJobs = new ArrayList<>();
             List<QuartzScheduleDrivenJob> quartzScheduleDrivenJobs = new ArrayList<>();
+            List<GlobalEventJob> globalEventJobs = new ArrayList<>();
             records.forEach(job -> {
                 if (job instanceof InternalEventDrivenJob) {
                     internalEventDrivenJobs.add((InternalEventDrivenJob) job);
@@ -112,6 +121,8 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
                     fileEventDrivenJobs.add((FileEventDrivenJob) job);
                 } else if (job instanceof QuartzScheduleDrivenJob) {
                     quartzScheduleDrivenJobs.add((QuartzScheduleDrivenJob) job);
+                } else if (job instanceof GlobalEventJob) {
+                    globalEventJobs.add((GlobalEventJob) job);
                 }
             });
 
@@ -125,6 +136,10 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
 
             if (!quartzScheduleDrivenJobs.isEmpty()) {
                 this.saveQuartzScheduledJobs(quartzScheduleDrivenJobs, actor);
+            }
+
+            if (!globalEventJobs.isEmpty()) {
+                this.saveGlobalEventJobs(globalEventJobs, actor);
             }
         }
     }
@@ -145,6 +160,11 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     }
 
     @Override
+    public void saveGlobalEventJobRecord(GlobalEventJobRecord globalEventJobRecord) {
+        this.globalEventJobRecordDao.save(globalEventJobRecord);
+    }
+
+    @Override
     public void saveFileEventDrivenJobRecords(List<FileEventDrivenJobRecord> fileEventDrivenJobRecords) {
         this.fileEventDrivenJobRecordDao.save(fileEventDrivenJobRecords);
     }
@@ -157,6 +177,11 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     @Override
     public void saveQuartzScheduledJobRecords(List<QuartzScheduleDrivenJobRecord> quartzScheduleDrivenJobRecord) {
         this.quartzScheduleDrivenJobRecordDao.save(quartzScheduleDrivenJobRecord);
+    }
+
+    @Override
+    public void saveGlobalEventJobRecords(List<GlobalEventJobRecord> globalEventJobRecords) {
+        this.globalEventJobRecordDao.save(globalEventJobRecords);
     }
 
     @Override
@@ -285,6 +310,40 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
     }
 
     @Override
+    public void saveGlobalEventJob(GlobalEventJob globalEventJob, String modifiedBy) {
+        GlobalEventJobRecord globalEventJobRecord = this.globalEventJobRecordDao
+            .findById(JobConstants.GLOBAL_EVENT_JOB + "_" + globalEventJob.getAgentName() + "_"
+                + globalEventJob.getJobName() + "_" + globalEventJob.getContextName());
+        this.saveGlobalEventJobRecord(globalEventJobRecord(globalEventJob, modifiedBy));
+
+        if (globalEventJobRecord == null) {
+            globalEventJobRecord = globalEventJobRecord(globalEventJob, modifiedBy);
+        }
+
+        globalEventJobRecord.setGlobalEventJob(globalEventJob);
+        globalEventJobRecord.setModifiedBy(modifiedBy);
+        this.saveGlobalEventJobRecord(globalEventJobRecord);
+    }
+
+    @Override
+    public void saveGlobalEventJobs(List<GlobalEventJob> globalEventJobs, String actor) {
+        List<GlobalEventJobRecord> records = new ArrayList<>();
+        globalEventJobs.forEach(job -> records.add(globalEventJobRecord(job, actor)));
+        this.saveGlobalEventJobRecords(records);
+    }
+
+    private SolrGlobalEventJobRecordImpl globalEventJobRecord(GlobalEventJob globalEventJob, String actor) {
+        SolrGlobalEventJobRecordImpl solrGlobalEventJobRecord = new SolrGlobalEventJobRecordImpl();
+        solrGlobalEventJobRecord.setAgentName(globalEventJob.getAgentName());
+        solrGlobalEventJobRecord.setJobName(globalEventJob.getJobName());
+        solrGlobalEventJobRecord.setContextName(globalEventJob.getContextName());
+        solrGlobalEventJobRecord.setTimestamp(System.currentTimeMillis());
+        solrGlobalEventJobRecord.setGlobalEventJob(globalEventJob);
+        solrGlobalEventJobRecord.setModifiedBy(actor);
+        return solrGlobalEventJobRecord;
+    }
+
+    @Override
     public void skip(SchedulerJobRecord jobRecord, List<String> childContextNames, String actor) {
         if(jobRecord.getJob() instanceof InternalEventDrivenJob) {
             InternalEventDrivenJobRecord internalEventDrivenJobRecord = this.internalEventDrivenJobRecord
@@ -399,6 +458,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         List<InternalEventDrivenJob> internalEventDrivenJobs = new ArrayList<>();
         List<QuartzScheduleDrivenJob> quartzScheduleDrivenJobs = new ArrayList<>();
         List<FileEventDrivenJob> fileEventDrivenJobs = new ArrayList<>();
+        List<GlobalEventJob> globalEventJobs = new ArrayList<>();
 
         schedulerJobRecords.getResultList().forEach(schedulerJobRecord -> {
             SchedulerJob job = schedulerJobRecord.getJob();
@@ -414,6 +474,9 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
             else if(job instanceof QuartzScheduleDrivenJob) {
                 quartzScheduleDrivenJobs.add((QuartzScheduleDrivenJob) job);
             }
+            else if(job instanceof GlobalEventJob) {
+                globalEventJobs.add((GlobalEventJob) job);
+            }
 
         });
 
@@ -421,6 +484,7 @@ public class SolrSchedulerJobServiceImpl extends SolrServiceBase implements Sche
         this.saveInternalEventDrivenJobs(internalEventDrivenJobs, actor);
         this.saveQuartzScheduledJobs(quartzScheduleDrivenJobs, actor);
         this.saveFileEventDrivenJobs(fileEventDrivenJobs, actor);
+        this.saveGlobalEventJobs(globalEventJobs, actor);
     }
 
     @Override

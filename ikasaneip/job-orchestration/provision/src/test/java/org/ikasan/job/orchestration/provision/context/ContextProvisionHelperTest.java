@@ -14,10 +14,7 @@ import org.ikasan.job.orchestration.rest.client.JobProvisionModuleRestServiceImp
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.module.metadata.dao.SolrModuleMetadataDao;
 import org.ikasan.module.metadata.service.SolrModuleMetadataServiceImpl;
-import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrInternalEventDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrQuartzScheduleDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
+import org.ikasan.scheduled.job.dao.*;
 import org.ikasan.scheduled.job.service.SolrSchedulerJobServiceImpl;
 import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
@@ -58,6 +55,8 @@ public class ContextProvisionHelperTest extends AbstractTest {
 
     private SolrQuartzScheduleDrivenJobDaoImpl quartzScheduleDrivenJobRecordDao = new SolrQuartzScheduleDrivenJobDaoImpl();
 
+    private SolrGlobalEventJobDaoImpl globalEventJobRecordDao = new SolrGlobalEventJobDaoImpl();
+
     private SolrSchedulerJobDaoImpl schedulerJobRecordDao = new SolrSchedulerJobDaoImpl();
 
     private SchedulerJobService schedulerJobService;
@@ -87,12 +86,16 @@ public class ContextProvisionHelperTest extends AbstractTest {
         quartzScheduleDrivenJobRecordDao.setSolrUsername("ikasan");
         quartzScheduleDrivenJobRecordDao.setSolrPassword("1ka5an");
 
+        globalEventJobRecordDao.initStandalone("http://localhost:8983/solr", 30);
+        globalEventJobRecordDao.setSolrUsername("ikasan");
+        globalEventJobRecordDao.setSolrPassword("1ka5an");
+
         schedulerJobRecordDao.initStandalone("http://localhost:8983/solr", 30);
         schedulerJobRecordDao.setSolrUsername("ikasan");
         schedulerJobRecordDao.setSolrPassword("1ka5an");
 
         schedulerJobService = new SolrSchedulerJobServiceImpl(fileEventDrivenJobRecordDao, internalEventDrivenJobRecordDao,
-            quartzScheduleDrivenJobRecordDao, schedulerJobRecordDao);
+            quartzScheduleDrivenJobRecordDao, globalEventJobRecordDao, schedulerJobRecordDao);
 
     }
 
