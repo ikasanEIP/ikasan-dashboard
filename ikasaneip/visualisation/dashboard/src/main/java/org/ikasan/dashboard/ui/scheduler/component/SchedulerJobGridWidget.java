@@ -9,6 +9,8 @@ import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
@@ -19,6 +21,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
+import liquibase.pro.packaged.L;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.util.NewSchedulerJobEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
@@ -38,6 +41,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
+import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
@@ -230,9 +234,20 @@ public class SchedulerJobGridWidget extends Div {
         schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Text text = new Text(schedulerJobRecord.getJobName());
+            Label jobNameLabel = new Label(schedulerJobRecord.getJobName());
 
-            horizontalLayout.add(text);
+            horizontalLayout.add(jobNameLabel);
+
+            if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob &&
+                ((InternalEventDrivenJob)schedulerJobRecord.getJob()).isJobRepeatable()) {
+                Image repeatable = new Image("frontend/images/repeating.png", "");
+                repeatable.getElement().setAttribute("title"
+                    , getTranslation("tooltip.repeating-job", UI.getCurrent().getLocale()));
+                horizontalLayout.add(repeatable);
+                repeatable.setHeight("20px");
+                horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, repeatable);
+            }
+
             return horizontalLayout;
         })).setHeader(getTranslation("table-header.job-name", UI.getCurrent().getLocale()))
             .setResizable(true)

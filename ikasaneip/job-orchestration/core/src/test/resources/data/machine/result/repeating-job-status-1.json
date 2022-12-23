@@ -1,0 +1,19 @@
+{
+  "contextName" : "REPEATING_JOB",
+  "instanceStatus" : "RUNNING",
+  "contextInstanceStatuses" : [ {
+    "contextName" : "SIMPLE_ME",
+    "instanceStatus" : "RUNNING",
+    "contextInstanceStatuses" : [ ],
+    "schedulerJobInstanceStatuses" : [ {
+      "jobName" : "BE_MHI_EMIR_PFO",
+      "agentName" : "scheduler-agent",
+      "instanceStatus" : "WAITING"
+    }, {
+      "jobName" : "SIMPLE_ME_ScheduledJob_06:01:00",
+      "agentName" : "scheduler-agent",
+      "instanceStatus" : "COMPLETE"
+    } ]
+  } ],
+  "schedulerJobInstanceStatuses" : [ ]
+}

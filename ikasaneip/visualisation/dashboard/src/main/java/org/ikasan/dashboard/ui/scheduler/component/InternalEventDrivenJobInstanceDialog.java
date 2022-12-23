@@ -6,6 +6,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -56,6 +57,7 @@ import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.slf4j.Logger;
@@ -89,6 +91,9 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     private TextField minExecutionTimeTf;
     private TextField maxExecutionTimeTf;
     private TextField executionEnvironmentPropertiesTf;
+
+    private Checkbox targetResidingContextOnlyCb;
+    private Checkbox isRepeatingJobCb;
 
     private Button skipButton;
     private Button enableButton;
@@ -250,6 +255,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.commandLineTa.setTheme(AceTheme.dracula);
         this.commandLineTa.setId("commandLineTa");
         this.commandLineTa.setEnabled(false);
+        this.commandLineTa.setReadOnly(true);
 
         editorLayout.add(commandLineTa);
         editorLayout.expand(this.commandLineTa);
@@ -469,8 +475,24 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         actionsButtonLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.END, actionsLayout);
         actionsButtonLayout.setMargin(false);
 
+        formLayout.add(actionsButtonLayout, 2);
+
         H3 jobExecutionLabel = new H3(getTranslation("label.command-execution-job-instance", UI.getCurrent().getLocale()));
-        formLayout.add(jobExecutionLabel, actionsButtonLayout);
+
+        this.targetResidingContextOnlyCb = new Checkbox(getTranslation("label.target-residing-context-only", UI.getCurrent().getLocale()));
+        formBinder.forField(this.targetResidingContextOnlyCb)
+            .bind(InternalEventDrivenJob::isTargetResidingContextOnly, InternalEventDrivenJob::setTargetResidingContextOnly);
+        this.targetResidingContextOnlyCb.setEnabled(false);
+
+        this.isRepeatingJobCb = new Checkbox(getTranslation("label.is-repeating-job", UI.getCurrent().getLocale()));
+        formBinder.forField(this.isRepeatingJobCb)
+            .bind(InternalEventDrivenJob::isJobRepeatable, InternalEventDrivenJob::setJobRepeatable);
+        this.isRepeatingJobCb.setEnabled(false);
+
+
+        HorizontalLayout checkboxLayout = new HorizontalLayout(this.targetResidingContextOnlyCb, this.isRepeatingJobCb);
+
+        formLayout.add(jobExecutionLabel, checkboxLayout);
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setId("jobNameTf");
@@ -1057,7 +1079,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
             this.skipButton.setVisible(false);
             this.enableButton.setVisible(false);
             this.resetButton.setVisible(true &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             this.submitDownstreamJobsButton.setVisible(false);

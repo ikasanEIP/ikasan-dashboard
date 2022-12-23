@@ -19,6 +19,7 @@ public class InternalEventDrivenJobInstanceImpl extends SchedulerJobInstanceImpl
     private boolean targetResidingContextOnly;
     private boolean participatesInLock;
     private String executionEnvironmentProperties;
+    private boolean jobRepeatable;
 
     @Override
     public List<String> getSuccessfulReturnCodes() {
@@ -118,6 +119,16 @@ public class InternalEventDrivenJobInstanceImpl extends SchedulerJobInstanceImpl
     @Override
     public void setExecutionEnvironmentProperties(String executionEnvironmentProperties) {
         this.executionEnvironmentProperties = executionEnvironmentProperties;
+    }
+
+    @Override
+    public boolean isJobRepeatable() {
+        return jobRepeatable;
+    }
+
+    @Override
+    public void setJobRepeatable(boolean jobRepeatable) {
+        this.jobRepeatable = jobRepeatable;
     }
 
     @Override
