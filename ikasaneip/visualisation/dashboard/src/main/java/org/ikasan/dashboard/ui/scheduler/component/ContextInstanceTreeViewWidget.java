@@ -75,6 +75,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private static final String SUBMIT_ICON = "SUBMIT_ICON";
     private static final String LOG_ICON = "LOG_ICON";
     private static final String ERROR_LOG_ICON = "ERROR_LOG_ICON";
+    private static final String EVENT_ICON = "EVENT_ICON";
+    private static final String EXECUTION_ENVIRONMENT_ICON = "EXECUTION_ENVIRONMENT_ICON";
     private static final String RESET_JOB_ICON = "RESET_JOB_ICON";
     private static final String SUBMIT_DOWNSTREAM_JOBS_ICON = "SUBMIT_DOWNSTREAM_JOBS_ICON";
     private Logger logger = LoggerFactory.getLogger(ContextInstanceTreeViewWidget.class);
@@ -295,6 +297,14 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 Label jobNameLabel =  new Label(((SchedulerJobInstance)value).getJobName());
                 horizontalLayout.add(jobNameLabel);
                 horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, jobNameLabel);
+
+                if(internalEventDrivenJobInstanceMap.containsKey(schedulerJobInstance.getIdentifier()+"-"+schedulerJobInstance.getChildContextName()) &&
+                    internalEventDrivenJobInstanceMap.get(schedulerJobInstance.getIdentifier()+"-"+schedulerJobInstance.getChildContextName()).isJobRepeatable()) {
+                    Image repeatable = new Image("frontend/images/repeating.png", "");
+                    horizontalLayout.add(repeatable);
+                    repeatable.setHeight("20px");
+                    horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, repeatable);
+                }
 
             }
             else if(value instanceof PrecedingItem) {
@@ -1182,6 +1192,44 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         layout.add(errorLogFile);
 
+        Icon event;
+
+        if(!iconMap.containsKey(EVENT_ICON)) {
+            event = IconDecorator.decorate(new Icon(VaadinIcon.CALENDAR_CLOCK), getTranslation("tooltip.view-scheduled-process-event"
+                , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            event.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                JsonViewerDialog dialog = new JsonViewerDialog(schedulerJobInstanceRecord.getSchedulerJobInstance().getScheduledProcessEvent()
+                    , getTranslation("header.scheduled-process-event", UI.getCurrent().getLocale()));
+                dialog.open();
+            });
+
+            iconMap.put(EVENT_ICON, event);
+        }
+        else {
+            event = iconMap.get(EVENT_ICON);
+        }
+
+        layout.add(event);
+
+        Icon executionDetails;
+
+        if(!iconMap.containsKey(EXECUTION_ENVIRONMENT_ICON)) {
+            executionDetails = IconDecorator.decorate(new Icon(VaadinIcon.COG), getTranslation("tooltip.view-process-execution-details"
+                , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
+            executionDetails.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                TextViewerDialog dialog = new TextViewerDialog(schedulerJobInstanceRecord.getSchedulerJobInstance().getScheduledProcessEvent().getExecutionDetails()
+                    , getTranslation("header.process-execution-details", UI.getCurrent().getLocale()));
+                dialog.open();
+            });
+
+            iconMap.put(EXECUTION_ENVIRONMENT_ICON, event);
+        }
+        else {
+            executionDetails = iconMap.get(EXECUTION_ENVIRONMENT_ICON);
+        }
+
+        layout.add(executionDetails);
+
         Icon reset;
 
         if(!iconMap.containsKey(RESET_JOB_ICON)) {
@@ -1249,7 +1297,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.RUNNING) ||
                     schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.LOCK_QUEUED))) {
                 skip.setVisible(true &&
-                    ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                    ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             } else {
@@ -1267,7 +1315,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 enable.setVisible(false);
             } else if (schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)) {
                 enable.setVisible(true &&
-                    ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                    ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                         SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                         SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
             }
@@ -1288,7 +1336,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         }
         else if(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)) {
            hold.setVisible(true &&
-               ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+               ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                    SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                    SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         }
@@ -1301,7 +1349,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         }
         else if(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)) {
             release.setVisible(true &&
-                ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
         }
@@ -1311,7 +1359,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.RUNNING) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.COMPLETE) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR)) &&
-            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+            ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                     SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
                     SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
 
@@ -1320,7 +1368,22 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.RUNNING) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.COMPLETE) ||
                 schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR)) &&
-            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+            ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+
+        Icon eventIcon = iconMap.get(EVENT_ICON);
+        eventIcon.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
+            schedulerJobInstanceRecord.getSchedulerJobInstance().getScheduledProcessEvent() != null &&
+            ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
+
+        Icon executionDetails = iconMap.get(EXECUTION_ENVIRONMENT_ICON);
+        executionDetails.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
+            schedulerJobInstanceRecord.getSchedulerJobInstance().getScheduledProcessEvent() != null &&
+            schedulerJobInstanceRecord.getSchedulerJobInstance().getScheduledProcessEvent().getExecutionDetails() != null &&
+            ComponentSecurityVisibility.hasAuthorisation(authentication, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
 
@@ -1329,20 +1392,20 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             schedulerJobInstanceRecord.getType().equals(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE)) &&
             (schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.COMPLETE)
                 || schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR)) &&
-            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+            ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
         Icon submitDownstreamJobs = iconMap.get(SUBMIT_DOWNSTREAM_JOBS_ICON);
         submitDownstreamJobs.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE) &&
             schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.ERROR) &&
-            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+            ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
 
         Icon submit = iconMap.get(SUBMIT_ICON);
         submit.setVisible(schedulerJobInstanceRecord.getSchedulerJobInstance().getStatus().equals(InstanceStatus.WAITING) &&
-            ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+            ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
     }

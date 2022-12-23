@@ -46,7 +46,12 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      *
      * @param scheduledProcessEvent
      * @param contextInstance
-     *
+     * @param dryRunParameters
+     * @param internalEventDrivenJobs
+     * @param contextParameters
+     * @param parentContextInstance
+     * @param lockRaised
+     * @param markAsRaised
      * @return
      */
     protected List<SchedulerJobInitiationEvent> getJobInitiationEvents(ContextualisedScheduledProcessEvent scheduledProcessEvent
@@ -145,6 +150,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      * @param contextParameters
      * @param parentContextInstance
      * @param schedulerJobInitiationEvents
+     * @param markAsRaised
      */
     private void getScheduledJobInitiationEventsThatCanBeRaised(ContextualisedScheduledProcessEvent scheduledProcessEvent,
                                                                 ContextInstance contextInstance,
@@ -163,7 +169,10 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
                     InternalEventDrivenJobInstance internalEventDrivenJob = internalEventDrivenJobs.get(jobDependency.getJobIdentifier() + "-" + contextInstance.getName());
 
-                    if (!jobInstance.isInitiationEventRaised()) {
+                    if (!jobInstance.isInitiationEventRaised() ||
+                        (internalEventDrivenJob != null
+                            && internalEventDrivenJob.isJobRepeatable()
+                            && !internalEventDrivenJob.getJobName().equals(scheduledProcessEvent.getJobName()))) {
                         if(markAsRaised) jobInstance.setInitiationEventRaised(true);
 
                         SchedulerJobInitiationEvent event = createSchedulerJobInitiationEvent(jobInstance, internalEventDrivenJob, dryRunParameters
@@ -339,10 +348,9 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         }
         schedulerJobInitiationEvent.setInternalEventDrivenJob(internalEventDrivenJob);
 
-        if(internalEventDrivenJob.isTargetResidingContextOnly()) {
+        if(internalEventDrivenJob.isTargetResidingContextOnly() && !internalEventDrivenJob.isJobRepeatable()) {
             if(this.isAlreadyComplete(parentContextInstance, schedulerJobInstance.getAgentName()
                 , schedulerJobInstance.getJobName(), scheduledProcessEvent.getChildContextNames())) {
-
                 schedulerJobInitiationEvent.setChildContextNames(List.of(contextInstance.getName()));
             }
             else {

@@ -76,6 +76,7 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     private TextField maxExecutionTimeTf;
     private ComboBox<String> executionEnvironmentPropertiesCb;
     private Checkbox targetResidingContextOnlyCb;
+    private Checkbox isRepeatingJobCb;
     private Button saveButton;
     private Button cancelButton;
     private ScheduledProcessManagementService scheduledProcessManagementService;
@@ -237,11 +238,21 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         formBinder.forField(this.targetResidingContextOnlyCb)
             .bind(InternalEventDrivenJob::isTargetResidingContextOnly, InternalEventDrivenJob::setTargetResidingContextOnly);
 
-        formLayout.add(jobExecutionLabel, this.targetResidingContextOnlyCb);
-
         ComponentSecurityVisibility.applyEnabledSecurity(this.targetResidingContextOnlyCb, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
+        this.isRepeatingJobCb = new Checkbox(getTranslation("label.is-repeating-job", UI.getCurrent().getLocale()));
+        formBinder.forField(this.isRepeatingJobCb)
+            .bind(InternalEventDrivenJob::isJobRepeatable, InternalEventDrivenJob::setJobRepeatable);
+
+        ComponentSecurityVisibility.applyEnabledSecurity(this.isRepeatingJobCb, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
+        HorizontalLayout checkboxLayout = new HorizontalLayout(this.targetResidingContextOnlyCb, this.isRepeatingJobCb);
+
+        formLayout.add(jobExecutionLabel, checkboxLayout);
 
         this.jobNameTf = new TextField(getTranslation("label.job-name", UI.getCurrent().getLocale()));
         this.jobNameTf.setId("jobNameTf");

@@ -231,7 +231,7 @@ public abstract class Draw2dAdapterBase {
                             .containsKey(((PositionedItem) item).getId())) {
                             // assuming each letter is 8 units long
                             double labelLength = ((SchedulerJob) context.getScheduledJobsMap()
-                                .get(((PositionedItem) item).getId())).getJobName().length() * 8;
+                                .get(((PositionedItem) item).getId())).getJobName().length() * 7.5;
 
                             Label label = new LabelBuilder().withText(((SchedulerJob) context.getScheduledJobsMap()
                                     .get(((PositionedItem) item).getId())).getJobName())
@@ -254,13 +254,33 @@ public abstract class Draw2dAdapterBase {
                                     .withHeight(200)
                                     .withX(((PositionedItem) item).getX() - 50)
                                     .withY(((PositionedItem) item).getY() - 50)
+                                    .withComposite(group.getId())
                                     .build();
 
                                 imageOverlay.add(eventCircle);
                             }
+
+                            if(internalEventDrivenJobMap.containsKey(((PositionedItem) item).getId())) {
+                                InternalEventDrivenJob internalEventDrivenJob = internalEventDrivenJobMap.get(((PositionedItem) item).getId());
+
+                                if(internalEventDrivenJob.isJobRepeatable()) {
+                                    ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
+                                        .withId(UUID.randomUUID().toString())
+                                        .withWidth(30)
+                                        .withHeight(30)
+                                        .withX(((PositionedItem) item).getX() + 35)
+                                        .withY(((PositionedItem) item).getY() - 50)
+                                        .withPath("frontend/images/repeating.png")
+                                        .withUserData(new UserDataBuilder().withItemType(UserData.REPEATABLE).build())
+                                        .withComposite(group.getId());
+
+                                    imageOverlay.add(jobBuilder.build());
+                                }
+                            }
+
                         }
                         else if(((Image) item).getUserData().getItemType().equals(UserData.CONTEXT)) {
-                            double labelLength = ((Image) item).getUserData().getContextName().length() * 8;
+                            double labelLength = ((Image) item).getUserData().getContextName().length() * 7.5;
 
                             Label label = new LabelBuilder().withText(((Image) item).getUserData().getContextName())
                                 .withX(positionedItemCentre - (labelLength / 2))
