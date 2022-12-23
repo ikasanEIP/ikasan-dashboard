@@ -19,6 +19,7 @@ public class InternalEventDrivenJobBuilder extends SchedulerJobBuilder {
     private List<Integer> daysOfWeekToRun;
     private boolean targetResidingContextOnly = false;
     boolean participatesInLock;
+    boolean repeatable;
 
     public InternalEventDrivenJobBuilder addSuccessfulReturnCode(String returnCode) {
         if(successfulReturnCodes == null) {
@@ -62,6 +63,12 @@ public class InternalEventDrivenJobBuilder extends SchedulerJobBuilder {
 
     public InternalEventDrivenJobBuilder withParticipatesInLock(boolean participatesInLock) {
         this.participatesInLock = participatesInLock;
+
+        return this;
+    }
+
+    public InternalEventDrivenJobBuilder withJobRepeatable(boolean repeatable) {
+        this.repeatable = repeatable;
 
         return this;
     }
@@ -110,6 +117,7 @@ public class InternalEventDrivenJobBuilder extends SchedulerJobBuilder {
         internalEventDrivenJob.setDaysOfWeekToRun(this.daysOfWeekToRun);
         internalEventDrivenJob.setTargetResidingContextOnly(this.targetResidingContextOnly);
         internalEventDrivenJob.setParticipatesInLock(this.participatesInLock);
+        internalEventDrivenJob.setJobRepeatable(repeatable);
 
         return internalEventDrivenJob;
     }

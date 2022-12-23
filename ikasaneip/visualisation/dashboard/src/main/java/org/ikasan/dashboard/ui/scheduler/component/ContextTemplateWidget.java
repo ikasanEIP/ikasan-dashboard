@@ -482,6 +482,8 @@ public class ContextTemplateWidget extends Div {
                     disabled.setEnabled(false);
                 }
 
+                UI ui = UI.getCurrent();
+
                 enabled.addClickListener(event -> {
                     ProgressIndicatorDialog progressIndicatorDialog = new ProgressIndicatorDialog(false);
                     progressIndicatorDialog.setWidth("550px");
@@ -497,17 +499,22 @@ public class ContextTemplateWidget extends Div {
                             contextTemplate.setDisabled(false);
                             refreshedScheduledContextRecord.setContext(contextTemplate);
                             scheduledContextRecord.setModifiedBy(authentication.getName());
-                            this.scheduledContextService.save(refreshedScheduledContextRecord);
-                            this.jobProvisionService.provisionJobs(this.getSchedulerJobForContext(contextTemplate.getName()), this.authentication.getName());
+                            this.jobProvisionService.provisionJobs(this.getSchedulerJobForContext(contextTemplate.getName())
+                                , this.authentication.getName());
                             this.contextInstanceRegistrationService.register(contextTemplate.getName());
+                            this.scheduledContextService.save(refreshedScheduledContextRecord);
                             contextTemplateFilteringGrid.getDataProvider().refreshAll();
                             this.updateActiveContextMenu();
                             ContextTemplateEnableDisableEventBroadcaster.broadcast(scheduledContextRecord.getContext());
                             progressIndicatorDialog.close();
                         } catch (Exception e) {
                             e.printStackTrace();
-                            progressIndicatorDialog.close();
-                            NotificationHelper.showErrorNotification(getTranslation("error.enabling-context", UI.getCurrent().getLocale()));
+                            if(ui != null && ui.isAttached()) {
+                                ui.access(() -> {
+                                    progressIndicatorDialog.close();
+                                    NotificationHelper.showErrorNotification(getTranslation("error.enabling-context", UI.getCurrent().getLocale()));
+                                });
+                            }
                         }
                     });
                 });
@@ -551,8 +558,12 @@ public class ContextTemplateWidget extends Div {
                                 progressIndicatorDialog.close();
                             } catch (Exception e) {
                                 e.printStackTrace();
-                                progressIndicatorDialog.close();
-                                NotificationHelper.showErrorNotification(getTranslation("error.disabling-context", UI.getCurrent().getLocale()));
+                                if(ui != null && ui.isAttached()) {
+                                    ui.access(() -> {
+                                        progressIndicatorDialog.close();
+                                        NotificationHelper.showErrorNotification(getTranslation("error.disabling-context", UI.getCurrent().getLocale()));
+                                    });
+                                }
                             }
                         });
                     });

@@ -18,8 +18,8 @@ public class SolrInternalEventDrivenJobInstanceImpl extends SolrSchedulerJobInst
     private List<Integer> daysOfWeekToRun;
     private boolean targetResidingContextOnly;
     private String executionEnvironmentProperties;
-
     boolean participatesInLock;
+    private boolean jobRepeatable;
 
     @Override
     public List<String> getSuccessfulReturnCodes() {
@@ -119,6 +119,16 @@ public class SolrInternalEventDrivenJobInstanceImpl extends SolrSchedulerJobInst
     @Override
     public void setExecutionEnvironmentProperties(String executionEnvironmentProperties) {
         this.executionEnvironmentProperties = executionEnvironmentProperties;
+    }
+
+    @Override
+    public boolean isJobRepeatable() {
+        return jobRepeatable;
+    }
+
+    @Override
+    public void setJobRepeatable(boolean jobRepeatable) {
+        this.jobRepeatable = jobRepeatable;
     }
 
     @Override

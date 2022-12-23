@@ -24,6 +24,7 @@ public class ImageBuilder {
     private List<Port> ports = new ArrayList<>();
     private String path = "frontend/images/flow.png";
     private UserData userData;
+    private String composite;
 
     protected ImageBuilder() {
 
@@ -85,6 +86,11 @@ public class ImageBuilder {
 
     public ImageBuilder withPath(String path) {
         this.path = path;
+        return this;
+    }
+
+    public ImageBuilder withComposite(String composite) {
+        this.composite = composite;
         return this;
     }
 
@@ -161,6 +167,7 @@ public class ImageBuilder {
         image.setPorts(this.ports);
         image.setPath(this.path);
         image.setUserData(this.userData);
+        image.setComposite(this.composite);
 
         return image;
     }
