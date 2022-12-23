@@ -21,6 +21,7 @@
   "daysOfWeekToRun" : [ 2, 3 ],
   "targetResidingContextOnly" : true,
   "participatesInLock" : true,
+  "jobRepeatable" : false,
   "identifier" : "agentName-jobName",
   "jobDescription" : "description"
 }

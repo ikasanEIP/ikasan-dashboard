@@ -7,6 +7,8 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -227,9 +229,19 @@ public class SchedulerJobInstanceGridWidget extends Div {
         schedulerJobInstanceFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobInstanceRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
-            Text text = new Text(schedulerJobInstanceRecord.getJobName());
+            Label jobNameLabel = new Label(schedulerJobInstanceRecord.getJobName());
+            horizontalLayout.add(jobNameLabel);
 
-            horizontalLayout.add(text);
+            if(schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance &&
+                ((InternalEventDrivenJobInstance)schedulerJobInstanceRecord.getSchedulerJobInstance()).isJobRepeatable()) {
+                Image repeatable = new Image("frontend/images/repeating.png", "");
+                horizontalLayout.add(repeatable);
+                repeatable.getElement().setAttribute("title"
+                    , getTranslation("tooltip.repeating-job", UI.getCurrent().getLocale()));
+                repeatable.setHeight("20px");
+                horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, repeatable);
+            }
+
             return horizontalLayout;
         })).setHeader(getTranslation("table-header.job-name", UI.getCurrent().getLocale()))
             .setResizable(true)

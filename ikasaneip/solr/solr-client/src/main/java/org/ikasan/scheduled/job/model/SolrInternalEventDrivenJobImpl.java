@@ -21,6 +21,7 @@ public class SolrInternalEventDrivenJobImpl extends SolrSchedulerJobImpl impleme
     private boolean targetResidingContextOnly;
     boolean participatesInLock;
     private String executionEnvironmentProperties;
+    private boolean jobRepeatable;
 
     @Override
     public List<String> getSuccessfulReturnCodes() {
@@ -120,6 +121,16 @@ public class SolrInternalEventDrivenJobImpl extends SolrSchedulerJobImpl impleme
     @Override
     public void setExecutionEnvironmentProperties(String executionEnvironmentProperties) {
         this.executionEnvironmentProperties = executionEnvironmentProperties;
+    }
+
+    @Override
+    public boolean isJobRepeatable() {
+        return jobRepeatable;
+    }
+
+    @Override
+    public void setJobRepeatable(boolean jobRepeatable) {
+        this.jobRepeatable = jobRepeatable;
     }
 
     @Override

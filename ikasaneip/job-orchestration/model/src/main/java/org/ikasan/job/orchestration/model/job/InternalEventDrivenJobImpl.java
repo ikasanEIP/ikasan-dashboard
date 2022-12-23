@@ -1,5 +1,7 @@
 package org.ikasan.job.orchestration.model.job;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 
@@ -18,7 +20,7 @@ public class InternalEventDrivenJobImpl extends SchedulerJobImpl implements Inte
     private boolean targetResidingContextOnly;
     boolean participatesInLock;
     private String executionEnvironmentProperties;
-
+    private boolean jobRepeatable;
 
     @Override
     public List<String> getSuccessfulReturnCodes() {
@@ -121,31 +123,17 @@ public class InternalEventDrivenJobImpl extends SchedulerJobImpl implements Inte
     }
 
     @Override
+    public boolean isJobRepeatable() {
+        return jobRepeatable;
+    }
+
+    @Override
+    public void setJobRepeatable(boolean jobRepeatable) {
+        this.jobRepeatable = jobRepeatable;
+    }
+
+    @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("InternalEventDrivenJobImpl{");
-        sb.append("successfulReturnCodes=").append(successfulReturnCodes);
-        sb.append(", workingDirectory='").append(workingDirectory).append('\'');
-        sb.append(", commandLine='").append(commandLine).append('\'');
-        sb.append(", minExecutionTime=").append(minExecutionTime);
-        sb.append(", maxExecutionTime=").append(maxExecutionTime);
-        sb.append(", contextParameters=").append(contextParameters);
-        sb.append(", jobIdentifier='").append(jobIdentifier).append('\'');
-        sb.append(", agentName='").append(agentName).append('\'');
-        sb.append(", jobName='").append(jobName).append('\'');
-        sb.append(", contextId='").append(contextName).append('\'');
-        if(childContextNames != null) {
-            sb.append(", childContextIds=[ ");
-            childContextNames.forEach(id -> sb.append("[").append(id).append("] "));
-        }
-        else {
-            sb.append(", childContextIds='").append(this.childContextNames).append('\'');
-        }
-        sb.append("], description='").append(description).append('\'');
-        sb.append(", startupControlType='").append(startupControlType).append('\'');
-        sb.append(", targetResidingContextOnly='").append(targetResidingContextOnly).append('\'');
-        sb.append(", participatesInLock='").append(participatesInLock).append('\'');
-        sb.append(", executionEnvironmentProperties='").append(executionEnvironmentProperties).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

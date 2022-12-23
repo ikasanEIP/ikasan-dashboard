@@ -2015,6 +2015,75 @@ public class JobLogicMachineTest extends AbstractTest {
         Assert.assertEquals(0, events.size());
     }
 
+    @Test
+    public void test_job_repeatable_success() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        InternalEventDrivenJobInstanceImpl internalEventDrivenJobInstance
+            = new InternalEventDrivenJobInstanceImpl();
+        internalEventDrivenJobInstance.setJobRepeatable(true);
+        internalEventDrivenJobInstance.setJobName("jobName2");
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", internalEventDrivenJobInstance);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs
+                , context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName2", events.get(0).getAgentName());
+        Assert.assertEquals("jobName2", events.get(0).getJobName());
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs
+                , context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName2", events.get(0).getAgentName());
+        Assert.assertEquals("jobName2", events.get(0).getJobName());
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs
+                , context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName2", events.get(0).getAgentName());
+        Assert.assertEquals("jobName2", events.get(0).getJobName());
+    }
+
+    @Test
+    public void test_job_repeatable_not_repeatable() throws IOException {
+        ContextInstance context = context("/data/logic/simple-context-and-single-dependency.json");
+
+        ContextualisedScheduledProcessEventImpl eventInstance
+            = scheduledProcessEventInstance("jobName1", "agentName1", true);
+
+        InternalEventDrivenJobInstanceImpl internalEventDrivenJobInstance
+            = new InternalEventDrivenJobInstanceImpl();
+        internalEventDrivenJobInstance.setJobRepeatable(false);
+
+        HashMap<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = new HashMap<>();
+        internalEventDrivenJobs.put("agentName2-jobName2-Context1", internalEventDrivenJobInstance);
+
+        List<SchedulerJobInitiationEvent> events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs
+                , context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals("agentName2", events.get(0).getAgentName());
+        Assert.assertEquals("jobName2", events.get(0).getJobName());
+
+        events =  jobLogicMachine
+            .getJobInitiationEvents(eventInstance, context, null, internalEventDrivenJobs
+                , context.getContextParameters(), context, new MutableBoolean(false), true);
+
+        Assert.assertEquals(0, events.size());
+    }
+
     private ContextInstance context(String filename) throws IOException {
         return this.contextService.getContextInstance(loadDataFile(filename));
     }

@@ -17,7 +17,7 @@ public final class ContextMachineTestHelper {
 
         if(contextTemplate.getScheduledJobs() != null) {
             contextTemplate.getScheduledJobs().forEach(job -> internalEventDrivenJobs.put(job.getIdentifier() + "-" + contextTemplate.getName(),
-                newInternalEventDrivenJob(job.getIdentifier(), contextTemplate.getName())));
+                newInternalEventDrivenJob(job.getIdentifier(), contextTemplate.getName(), job.getJobName())));
         }
 
         if (contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
@@ -30,7 +30,7 @@ public final class ContextMachineTestHelper {
     private static void addInternalJobs(ContextTemplate contextTemplate, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs) {
         if (contextTemplate.getScheduledJobs() != null && !contextTemplate.getScheduledJobs().isEmpty()) {
             contextTemplate.getScheduledJobs().forEach(job -> internalEventDrivenJobs.put(job.getIdentifier() + "-" + contextTemplate.getName(),
-                newInternalEventDrivenJob(job.getIdentifier(), contextTemplate.getName())));
+                newInternalEventDrivenJob(job.getIdentifier(), contextTemplate.getName(), job.getJobName())));
         }
 
         if (contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
@@ -38,10 +38,12 @@ public final class ContextMachineTestHelper {
         }
     }
 
-    private static InternalEventDrivenJobInstance newInternalEventDrivenJob(String jobIdentifier, String childContextName) {
+    private static InternalEventDrivenJobInstance newInternalEventDrivenJob(String jobIdentifier, String childContextName, String jobName) {
         InternalEventDrivenJobInstance job = new InternalEventDrivenJobInstanceImpl();
+        job.setJobName(jobName);
         job.setIdentifier(jobIdentifier);
         job.setChildContextName(childContextName);
+        job.setChildContextNames(List.of(childContextName));
         job.setTargetResidingContextOnly(true);
 
         return job;
