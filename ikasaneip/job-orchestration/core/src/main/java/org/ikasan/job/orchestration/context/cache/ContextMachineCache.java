@@ -1,10 +1,13 @@
 package org.ikasan.job.orchestration.context.cache;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -60,6 +63,27 @@ public class ContextMachineCache
         if(contextInstanceId == null) return null;
 
         return this.contextInstanceByContextInstanceIdCache.get(contextInstanceId);
+    }
+
+    /**
+     * Gets a list of ContextInstances based on which environmentGroup they belong to.
+     * @param environmentGroup To check the cache
+     * @return list of contextInstanceId in the cache that belongs to the environmentGroup
+     */
+    public List<String> getListOfContextInstanceIdByEnvironmentGroup(String environmentGroup) {
+
+        List<String> contextInstanceIdList = new ArrayList<>();
+
+        if (environmentGroup == null) return contextInstanceIdList;
+
+        contextInstanceByContextInstanceIdCache.forEach((contextInstance, contextMachine) -> {
+                if (StringUtils.equalsIgnoreCase(contextMachine.getContext().getEnvironmentGroup(), environmentGroup)) {
+                    contextInstanceIdList.add(contextInstance);
+                }
+            });
+        logger.debug("Found {} context instances that belongs to the environment group [{}].",
+            contextInstanceIdList.size(), environmentGroup);
+        return contextInstanceIdList;
     }
 
     public boolean containsContextName(String contextName)
