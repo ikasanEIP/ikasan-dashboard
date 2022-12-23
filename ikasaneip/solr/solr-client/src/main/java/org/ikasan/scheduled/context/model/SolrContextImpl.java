@@ -20,6 +20,7 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     protected List<CONTEXT_PARAM> contextParameters = new ArrayList<>() ;
     protected String timeWindowStart;
     protected String timeWindowEnd;
+    protected String environmentGroup;
 
     @Override
     public String getName() {
@@ -124,5 +125,15 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     @Override
     public void setTimeWindowEnd(String timeWindowEnd) {
         this.timeWindowEnd = timeWindowEnd;
+    }
+
+    @Override
+    public String getEnvironmentGroup() {
+        return environmentGroup;
+    }
+
+    @Override
+    public void setEnvironmentGroup(String environmentGroup) {
+        this.environmentGroup = environmentGroup;
     }
 }
