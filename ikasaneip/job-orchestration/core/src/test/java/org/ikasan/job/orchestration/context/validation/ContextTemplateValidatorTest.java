@@ -6,11 +6,15 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 @Ignore
 public class ContextTemplateValidatorTest extends AbstractTest {
+
+    Logger logger = LoggerFactory.getLogger(ContextTemplateValidatorTest.class);
 
     @Test
     public void test_simple_context_validation_success() throws IOException, InvalidContextTemplateException {
@@ -23,16 +27,67 @@ public class ContextTemplateValidatorTest extends AbstractTest {
     }
 
     @Test
+    public void test_simple_context_validation_success_2() throws IOException, InvalidContextTemplateException {
+        ContextService contextService = new ContextService();
+
+        ContextTemplate contextTemplate = contextService
+            .getContextTemplate(loadDataFile("/data/context.json"));
+        ContextTemplateValidator validator = new ContextTemplateValidator();
+        validator.validate(contextTemplate);
+    }
+
+    @Test(expected = InvalidContextTemplateException.class)
+    public void test_job_missing_from_scheduler_jobs_collection() throws IOException, InvalidContextTemplateException {
+        ContextService contextService = new ContextService();
+
+        ContextTemplate contextTemplate = contextService
+            .getContextTemplate(loadDataFile("/data/context-job-missing-scheduler-job-collection.json"));
+        ContextTemplateValidator validator = new ContextTemplateValidator();
+        try {
+            validator.validate(contextTemplate);
+        }
+        catch (InvalidContextTemplateException e) {
+            Assert.assertEquals("The context template is invalid!\nContext[Context4] The following job [agentName11-jobName11] appears in a job dependency, but is not defined in the scheduler job collection.\n" +
+                    "Context[Context5] The following job [agentName15-jobName15] appears in a job dependency, but is not defined in the scheduler job collection.\n"
+                , e.getMessage());
+            logger.info(e.getMessage());
+            throw e;
+        }
+    }
+
+    @Test(expected = InvalidContextTemplateException.class)
+    public void test_job_missing_from_job_dependency() throws IOException, InvalidContextTemplateException {
+        ContextService contextService = new ContextService();
+
+        ContextTemplate contextTemplate = contextService
+            .getContextTemplate(loadDataFile("/data/context-job-missing-from-job-dependency.json"));
+        ContextTemplateValidator validator = new ContextTemplateValidator();
+        try {
+            validator.validate(contextTemplate);
+        }
+        catch (InvalidContextTemplateException e) {
+            Assert.assertEquals("The context template is invalid!\nContext[Context3] The following job [agentName4-jobName4] appears in the scheduler jobs collection, but is not defined in any job dependencies.\n" +
+                    "Context[Context3] The following job [agentName6-jobName6] appears in the scheduler jobs collection, but is not defined in any job dependencies.\n"
+                , e.getMessage());
+            logger.info(e.getMessage());
+            throw e;
+        }
+    }
+
+    @Test
+    @Ignore
     public void test_nested_context_validation_success() throws IOException, InvalidContextTemplateException {
         ContextService contextService = new ContextService();
 
         ContextTemplate contextTemplate = contextService
             .getContextTemplate(loadDataFile("/data/context-builder-nested-context-result.json"));
         ContextTemplateValidator validator = new ContextTemplateValidator();
+
         validator.validate(contextTemplate);
     }
 
     @Test
+    @Ignore
     public void test_context_with_job_locks_validation_success() throws IOException, InvalidContextTemplateException {
         ContextService contextService = new ContextService();
 
@@ -43,6 +98,7 @@ public class ContextTemplateValidatorTest extends AbstractTest {
     }
 
     @Test(expected = InvalidContextTemplateException.class)
+    @Ignore
     public void test_context_with_job_locks_validation_fail_bad_job_identifier() throws IOException, InvalidContextTemplateException {
         ContextService contextService = new ContextService();
 
@@ -62,6 +118,7 @@ public class ContextTemplateValidatorTest extends AbstractTest {
     }
 
     @Test(expected = InvalidContextTemplateException.class)
+    @Ignore
     public void test_context_with_job_locks_validation_fail_contexts_at_same_level() throws IOException, InvalidContextTemplateException {
         ContextService contextService = new ContextService();
 
@@ -82,6 +139,7 @@ public class ContextTemplateValidatorTest extends AbstractTest {
     }
 
     @Test(expected = InvalidContextTemplateException.class)
+    @Ignore
     public void test_exception_scheduler_jobs_and_contexts_at_parent_level() throws IOException, InvalidContextTemplateException {
         ContextService contextService = new ContextService();
 
@@ -101,6 +159,7 @@ public class ContextTemplateValidatorTest extends AbstractTest {
     }
 
     @Test(expected = InvalidContextTemplateException.class)
+    @Ignore
     public void test_exception_scheduler_jobs_and_contexts_at_nested_level() throws IOException, InvalidContextTemplateException {
         ContextService contextService = new ContextService();
 
@@ -120,6 +179,7 @@ public class ContextTemplateValidatorTest extends AbstractTest {
     }
 
     @Test(expected = InvalidContextTemplateException.class)
+    @Ignore
     public void test_exception_context_parameters_at_nested_level() throws IOException, InvalidContextTemplateException {
         ContextService contextService = new ContextService();
 
