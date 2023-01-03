@@ -4806,9 +4806,11 @@ public class ContextMachineTest extends AbstractTest {
     }
 
     @Test(expected = ContextMachineException.class)
-    public void test_context_machine_reset_job_exception_due_to_job_not_complete_or_error() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
+    public void test_context_machine_reset_job_exception_due_to_job_not_complete_or_error_or_waiting() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3").getScheduledJobs()
+            .forEach(schedulerJobInstance -> schedulerJobInstance.setStatus(InstanceStatus.RUNNING));
         ContextHelper.enrichJobs(contextInstance);
 
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
