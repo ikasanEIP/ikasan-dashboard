@@ -3,6 +3,9 @@ package org.ikasan.job.orchestration.core.machine;
 import static org.ikasan.job.orchestration.core.machine.ContextMachineTestHelper.createInternalJobsMap;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -17,6 +20,7 @@ import org.ikasan.job.orchestration.core.ScheduledContextInstanceServiceTestImpl
 import org.ikasan.job.orchestration.model.event.ContextualisedScheduledProcessEventImpl;
 import org.ikasan.job.orchestration.model.instance.InternalEventDrivenJobInstanceImpl;
 import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -25,6 +29,7 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
@@ -69,6 +74,9 @@ public class ContextMachineTest extends AbstractTest {
 
     @Mock
     private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
+
+    @Mock
+    private SchedulerJobInstanceRecord schedulerJobInstanceRecord;
 
     @After
     public void tearDown() {
@@ -397,6 +405,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.COMPLETE);
+        ContextHelper.enrichJobs(contextInstance);
 
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
@@ -414,6 +423,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RUNNING);
+        ContextHelper.enrichJobs(contextInstance);
 
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
@@ -431,6 +441,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.RELEASED);
+        ContextHelper.enrichJobs(contextInstance);
 
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
@@ -448,6 +459,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.ERROR);
+        ContextHelper.enrichJobs(contextInstance);
 
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
@@ -465,6 +477,7 @@ public class ContextMachineTest extends AbstractTest {
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
         contextInstance.getContextsMap().get("Context2").getContextsMap().get("Context3")
             .getScheduledJobsMap().get("agentName1-jobName1").setStatus(InstanceStatus.SKIPPED);
+        ContextHelper.enrichJobs(contextInstance);
 
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
@@ -498,8 +511,15 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test(expected = ContextMachineException.class)
     public void test_context_machine_release_bad_job_when_others_on_hold_exception() throws IOException, JSONException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        ContextHelper.enrichJobs(contextInstance);
 
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
@@ -535,8 +555,15 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_context_machine_full_nested_context_job_held_success() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+
+        ContextHelper.enrichJobs(contextInstance);
 
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 
@@ -763,15 +790,26 @@ public class ContextMachineTest extends AbstractTest {
 
     @Test
     public void test_context_machine_full_nested_context_job_held_success_same_job_multiple_contexts() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
+
+        when(this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(any(), any(), any()))
+            .thenReturn(this.schedulerJobInstanceRecord);
+        when(this.schedulerJobInstanceRecord.getSchedulerJobInstance())
+            .thenReturn(new InternalEventDrivenJobInstanceImpl());
+
+
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context-same-job-multiple-contexts.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context-same-job-multiple-contexts.json"));
 
+        ContextHelper.enrichJobs(contextInstance);
+
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
+        internalEventDrivenJobs.values().forEach(job -> job.setTargetResidingContextOnly(true));
 
         this.contextTemplateValidator.validate(context);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
-            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
+            , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService
+            , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
         contextMachine.init();
         contextMachine.holdJob("agentName5-jobName5", "Context3");
         contextMachine.holdJob("agentName16-jobName16", "Context5");
@@ -4771,6 +4809,7 @@ public class ContextMachineTest extends AbstractTest {
     public void test_context_machine_reset_job_exception_due_to_job_not_complete_or_error() throws IOException, JSONException, InterruptedException, InvalidContextTemplateException {
         ContextTemplate context = this.contextService.getContextTemplate(loadDataFile("/data/context.json"));
         ContextInstance contextInstance = this.contextService.getContextInstance(loadDataFile("/data/context.json"));
+        ContextHelper.enrichJobs(contextInstance);
 
         Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs = createInternalJobsMap(context);
 

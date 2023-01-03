@@ -501,8 +501,8 @@ public class ContextTemplateWidget extends Div {
                             scheduledContextRecord.setModifiedBy(authentication.getName());
                             this.jobProvisionService.provisionJobs(this.getSchedulerJobForContext(contextTemplate.getName())
                                 , this.authentication.getName());
-                            this.contextInstanceRegistrationService.register(contextTemplate.getName());
                             this.scheduledContextService.save(refreshedScheduledContextRecord);
+                            this.contextInstanceRegistrationService.register(contextTemplate.getName());
                             contextTemplateFilteringGrid.getDataProvider().refreshAll();
                             this.updateActiveContextMenu();
                             ContextTemplateEnableDisableEventBroadcaster.broadcast(scheduledContextRecord.getContext());
