@@ -86,6 +86,7 @@ public class StateChangeMonitorTest {
 
         ContextInstance contextInstance1 = new ContextInstanceImpl();
         contextInstance1.setName("context-instance-1");
+        contextInstance1.setId("context-instance-id-1");
 
         ContextTemplate contextTemplate1 = new ContextTemplateImpl();
         contextTemplate1.setName("context-template-1");
@@ -110,6 +111,7 @@ public class StateChangeMonitorTest {
 
         ContextInstance contextInstance2 = new ContextInstanceImpl();
         contextInstance2.setName("context-instance-2");
+        contextInstance2.setId("context-instance-id-2");
 
         ContextTemplate contextTemplate2 = new ContextTemplateImpl();
         contextTemplate2.setName("context-template-2");

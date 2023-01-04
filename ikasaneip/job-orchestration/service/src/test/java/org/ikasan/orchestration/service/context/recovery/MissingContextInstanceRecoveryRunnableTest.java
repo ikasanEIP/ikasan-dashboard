@@ -94,7 +94,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
 
     @Before
     public void setUp() {
-        TestUtils.resetContextMachineCache();
+        ContextMachineCache.instance().resetAllCache();
 
         // Stub this Implementation due to two difference SchedulerJobInstance can be returned
         schedulerJobInstanceService = new StubSchedulerJobInstanceServiceTestImpl();
@@ -123,12 +123,12 @@ public class MissingContextInstanceRecoveryRunnableTest {
             contextInstanceSchedulerService
         );
 
-        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
     }
 
     @After
     public void tearDown() {
-        TestUtils.resetContextMachineCache();
+        ContextMachineCache.instance().resetAllCache();
     }
 
     @Test

@@ -99,7 +99,7 @@ public class ContextInstanceRecoveryServiceImplTest {
 
     @Before
     public void setUp() {
-        TestUtils.resetContextMachineCache();
+        ContextMachineCache.instance().resetAllCache();
         JobLockCacheImpl.instance().reset();
 
         // Stub this Implementation due to two difference SchedulerJobInstance can be returned
@@ -128,13 +128,13 @@ public class ContextInstanceRecoveryServiceImplTest {
     @After
     public void tearDown() {
         JobLockCacheImpl.instance().reset();
-        TestUtils.resetContextMachineCache();
+        ContextMachineCache.instance().resetAllCache();
     }
 
     @Test
     public void should_do_nothing_if_outside_of_operating_window_no_contexts() {
         // ensure no contexts
-        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
 
         // set up
         ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(1, true);
@@ -164,13 +164,13 @@ public class ContextInstanceRecoveryServiceImplTest {
             );
 
         // ensure no contexts
-        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
     }
 
     @Test
     public void should_call_executor_to_create_context_inside_operating_window_no_instance() {
         // ensure no contexts
-        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
 
         // set up
         ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(0, true);
@@ -206,13 +206,13 @@ public class ContextInstanceRecoveryServiceImplTest {
             );
 
         // ensure no contexts
-        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
     }
 
     @Test
     public void should_not_call_executor_to_create_context_inside_operating_window_no_instance_but_context_disabled() {
         // ensure no contexts
-        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
 
         // set up
         ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(0, true);
@@ -247,13 +247,13 @@ public class ContextInstanceRecoveryServiceImplTest {
         );
 
         // ensure no contexts
-        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
     }
 
     @Test
     public void should_do_nothing_context_machine_outside_of_operating_window() {
         // ensure no contexts
-        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
 
         // set up
         ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(1, false);
@@ -283,13 +283,13 @@ public class ContextInstanceRecoveryServiceImplTest {
             );
 
         // ensure no contexts
-        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
     }
 
     @Test
     public void should_do_nothing_context_machine_outside_of_operating_window_no_instance() {
         // ensure no contexts
-        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
 
         // set up
         ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(0, false);
@@ -319,14 +319,13 @@ public class ContextInstanceRecoveryServiceImplTest {
             );
 
         // ensure no contexts
-        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
     }
 
     @Test
     public void should_create_context_machine_with_agents_all_inside_operating_window() throws Exception {
         // ensure no contexts
-        assertEquals(0, ContextMachineCache.instance().contextNames().size());
-
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
         // set up
         ScheduledContextRecordImpl record = new ScheduledContextRecordImpl();
         String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
@@ -396,7 +395,7 @@ public class ContextInstanceRecoveryServiceImplTest {
     @Test
     public void should_create_context_machine_no_agents() throws Exception {
         // ensure no contexts
-        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
 
         // set up
         ContextInstanceTestSearchResults results = new ContextInstanceTestSearchResults(1, true);
@@ -477,7 +476,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             );
 
         // ensure no contexts
-        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
     }
 
     private void verifyContextMachine(String contextName) {

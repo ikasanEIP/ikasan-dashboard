@@ -15,8 +15,9 @@ import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 public abstract class AbstractDashboardSchedulerService {
-    protected static final String CONTEXT = "context";
-    protected static final String CONTEXT_INSTANCE_ID = "contextInstanceId";
+    public static final String CONTEXT_GROUP = "context";
+    public static final String NOTIFY_GROUP = "notify";
+    public static final String CONTEXT_INSTANCE_ID = "contextInstanceId";
     /** Logger for this class */
     private static final Logger LOG = LoggerFactory.getLogger (AbstractDashboardSchedulerService.class);
 
@@ -58,21 +59,31 @@ public abstract class AbstractDashboardSchedulerService {
      * The standard trigger has 1 trigger per job
      * @param jobDetail for the job
      */
-    protected void scheduleTrigger(final JobDetail jobDetail)
+    public void addJob(final JobDetail jobDetail)
     {
         final JobKey jobkey = jobDetail.getKey();
-        final Trigger trigger = getCronTrigger(
-            jobkey,
-            this.dashboardJobsMap.get(jobkey.toString()).getCronExpression(),
-            this.dashboardJobsMap.get(jobkey.toString()).getTimezone());
+        String jobName = jobDetail.getKey().getName();
+        String jobGroup = jobDetail.getKey().getGroup();
+
+        // for non-context jobs, unschedule the job so that we can reschedule it if the cron expression has changed.
+        if (!jobGroup.equals(CONTEXT_GROUP)) {
+            this.unscheduleJob(jobName);
+        }
         try
         {
-            final Date scheduledDate = scheduler.scheduleJob(jobDetail, trigger);
-            LOG.info("Scheduled job ["
-                + jobkey
-                + "] starting at [" + scheduledDate + "] using cron expression ["
-                + this.dashboardJobsMap.get(jobkey.toString()).getCronExpression() + "]"
-                + "Total triggers for jobkey now [" + scheduler.getTriggersOfJob(jobkey) + "]");
+            if(jobGroup.equals(CONTEXT_GROUP) || !this.scheduler.checkExists(jobkey))
+            {
+                final Trigger trigger = getCronTrigger(
+                    jobkey,
+                    this.dashboardJobsMap.get(jobkey.toString()).getCronExpression(),
+                    this.dashboardJobsMap.get(jobkey.toString()).getTimezone());
+
+                final Date scheduledDate = scheduler.scheduleJob(jobDetail, trigger);
+
+                LOG.info("Scheduled job [" + jobkey + "] starting at [" + scheduledDate
+                    + "] using cron expression [" + this.dashboardJobsMap.get(jobkey.toString()).getCronExpression()
+                    + "] Total triggers for jobkey now [" + scheduler.getTriggersOfJob(jobkey) + "]");
+            }
         }
         catch (Exception e)
         {
@@ -144,25 +155,40 @@ public abstract class AbstractDashboardSchedulerService {
      */
     public void removeJob(final String jobName)
     {
-        if (this.dashboardJobDetailsMap.get(jobName) != null) {
+        unscheduleJob(jobName);
+        dashboardJobDetailsMap.remove(jobName);
+        dashboardJobsMap.remove(jobName);
+        LOG.info("After remove job" + showAllTriggers(scheduler));
+    }
+
+    /**
+     * This could be part of complete job delete or refresh of existing job
+     * @param jobName to be unscheduled
+     */
+    public void unscheduleJob(final String jobName)
+    {
+        JobDetail jobDetail = dashboardJobDetailsMap.get(jobName);
+        if (jobDetail != null) {
             try
             {
-                if(this.scheduler.checkExists(this.dashboardJobDetailsMap.get(jobName).getKey()))
+                if(this.scheduler.checkExists(jobDetail.getKey()))
                 {
-                    final JobKey endJobKey = new JobKey(this.dashboardJobDetailsMap.get(jobName).getKey().getName() + "-EndJob", this.dashboardJobDetailsMap.get(jobName).getKey().getGroup());
-                    LOG.info("Try to delete for job" + jobName + " job key " + this.dashboardJobDetailsMap.get(jobName).getKey() + " end job key " + endJobKey);
+                    LOG.info("Try to delete for job key " + jobDetail.getKey());
                     this.scheduler.deleteJob(this.dashboardJobDetailsMap.get(jobName).getKey());
+                }
+                final JobKey endJobKey = new JobKey(jobDetail.getKey().getName() + "-EndJob", jobDetail.getKey().getGroup());
+                if(this.scheduler.checkExists(endJobKey))
+                {
+                    LOG.info("Try to delete for end jobkey " + endJobKey);
                     this.scheduler.deleteJob(endJobKey);
                 }
-                dashboardJobDetailsMap.remove(jobName);
-                LOG.info("After remove job" + showAllTriggers(scheduler));
             }
             catch (SchedulerException e)
             {
                 throw new RuntimeException(e);
             }
         } else {
-            LOG.info("The jobPlan [" + jobName + "] is new, no need to tidy previous instances");
+            LOG.info("The jobPlan [" + jobName + "] is new, no need to unschedule the previous instances");
         }
     }
 
@@ -203,7 +229,9 @@ public abstract class AbstractDashboardSchedulerService {
                     List<Trigger> triggers = (List<Trigger>) scheduler.getTriggersOfJob(jobKey);
                     StringBuilder jobTriggers = new StringBuilder();
                     for (Trigger trigger : triggers) {
-                        jobTriggers.append("Trigger key [").append(trigger.getKey()).append("] Job key").append(trigger.getJobKey()).append("] map [").append(trigger.getJobDataMap().get(CONTEXT_INSTANCE_ID))
+                        jobTriggers.append("Trigger key [").append(trigger.getKey())
+                            .append("] Job key").append(trigger.getJobKey())
+                            .append("] map [").append(trigger.getJobDataMap().get(CONTEXT_INSTANCE_ID))
                             .append("] nextFire [").append(trigger.getNextFireTime()).append("]");
                     }
                     results

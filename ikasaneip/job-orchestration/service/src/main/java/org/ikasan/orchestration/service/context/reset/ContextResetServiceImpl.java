@@ -4,15 +4,17 @@ import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.spec.scheduled.reset.ContextResetService;
 
+import java.util.List;
+
 public class ContextResetServiceImpl implements ContextResetService {
 
     @Override
     public void resetContext(String contextName, boolean holdCommandExecutionJob) {
-
-        for(ContextMachine contextMachine : ContextMachineCache.instance().getAllByContextName(contextName)) {
-            if (contextMachine == null) {
-                throw new ContextResetException(String.format("Could not find context for context name %s to reset", contextName));
-            }
+        List<ContextMachine> contextMachines = ContextMachineCache.instance().getAllByContextName(contextName);
+        if (contextMachines == null || contextMachines.isEmpty()) {
+            throw new ContextResetException(String.format("Could not find context for context name [%s] to reset", contextName));
+        }
+        for(ContextMachine contextMachine : contextMachines) {
             try {
                 contextMachine.resetContextInstance(holdCommandExecutionJob);
             } catch (Exception e) {
