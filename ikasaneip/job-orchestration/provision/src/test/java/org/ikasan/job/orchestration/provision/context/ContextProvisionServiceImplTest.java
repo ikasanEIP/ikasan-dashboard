@@ -5,11 +5,9 @@ import org.ikasan.job.orchestration.model.context.ContextBundleImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
 import org.ikasan.job.orchestration.model.job.*;
-import org.ikasan.job.orchestration.model.notification.EmailNotificationContextImpl;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationContextImpl;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
 import org.ikasan.scheduled.profile.model.SolrContextProfileRecordImpl;
-import org.ikasan.scheduler.ScheduledJobFactory;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
@@ -28,37 +26,24 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextSe
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
-import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.topology.metadata.model.ModuleMetaDataImpl;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.quartz.JobDetail;
-import org.quartz.Scheduler;
-import org.quartz.Trigger;
-import org.quartz.impl.JobDetailImpl;
-import org.quartz.impl.triggers.CronTriggerImpl;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.ZoneId;
 import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContextProvisionServiceImplTest {
-//    @Mock
-//    private Scheduler scheduler;
-//    @Mock
-//    private ScheduledJobFactory scheduledJobFactory;
     @Mock
     private ScheduledContextService scheduledContextService;
     @Mock
@@ -83,7 +68,6 @@ public class ContextProvisionServiceImplTest {
     @Before
     public void setUp() {
         service = new ContextProvisionServiceImpl(
-//            scheduler, scheduledJobFactory,
             scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService,
             emailNotificationContextService, true, contextInstanceSchedulerService);
@@ -102,7 +86,7 @@ public class ContextProvisionServiceImplTest {
     }
 
     @Test
-    public void should_upload_provision_jobs_and_not_create_context_outside_of_window() throws Exception {
+    public void should_upload_provision_jobs_and_not_create_context_outside_of_window() {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
@@ -123,14 +107,6 @@ public class ContextProvisionServiceImplTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-//        JobDetailImpl detail = new JobDetailImpl();
-//        detail.setName("ContextName");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName), eq("context"))).thenReturn(detail);
-//
-//        JobDetailImpl endDetail = new JobDetailImpl();
-//        endDetail.setName("ContextName-EndJob");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
-
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
         service.provisionContext(contextBundle);
 
@@ -138,6 +114,8 @@ public class ContextProvisionServiceImplTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
+
         verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
@@ -151,27 +129,13 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName"), eq("context"));
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName-EndJob"), eq("context"));
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-
-//        ArgumentCaptor<Trigger> triggerCaptor = ArgumentCaptor.forClass(Trigger.class);
-//        verify(scheduler, times(1)).scheduleJob(eq(detail), triggerCaptor.capture());
-//        Assert.assertEquals(ZoneId.systemDefault().getId(), ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
-//        verify(scheduler, times(1)).scheduleJob(eq(endDetail), triggerCaptor.capture());
-//        Assert.assertEquals(ZoneId.systemDefault().getId(), ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
-
         verifyNoMoreInteractions(
-//            scheduler, scheduledJobFactory,
             scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
     }
 
     @Test
-    public void should_upload_provision_jobs_and_not_create_context_outside_of_window_with_timezone() throws Exception {
+    public void should_upload_provision_jobs_and_not_create_context_outside_of_window_with_timezone() {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
@@ -193,14 +157,6 @@ public class ContextProvisionServiceImplTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-//        JobDetailImpl detail = new JobDetailImpl();
-//        detail.setName("ContextName");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName), eq("context"))).thenReturn(detail);
-//
-//        JobDetailImpl endDetail = new JobDetailImpl();
-//        endDetail.setName("ContextName-EndJob");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
-
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
         service.provisionContext(contextBundle);
 
@@ -208,6 +164,7 @@ public class ContextProvisionServiceImplTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
         verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
@@ -223,27 +180,13 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName"), eq("context"));
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName-EndJob"), eq("context"));
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-
-//        ArgumentCaptor<Trigger> triggerCaptor = ArgumentCaptor.forClass(Trigger.class);
-//        verify(scheduler, times(1)).scheduleJob(eq(detail), triggerCaptor.capture());
-//        Assert.assertEquals("Asia/Singapore", ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
-//        verify(scheduler, times(1)).scheduleJob(eq(endDetail), triggerCaptor.capture());
-//        Assert.assertEquals("Asia/Singapore", ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
-
         verifyNoMoreInteractions(
-//            scheduler, scheduledJobFactory,
             scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
     }
 
     @Test
-    public void should_upload_provision_jobs_and_create_context() throws Exception {
+    public void should_upload_provision_jobs_and_create_context() {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
@@ -268,14 +211,6 @@ public class ContextProvisionServiceImplTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-//        JobDetailImpl detail = new JobDetailImpl();
-//        detail.setName("ContextName");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName), eq("context"))).thenReturn(detail);
-//
-//        JobDetailImpl endDetail = new JobDetailImpl();
-//        endDetail.setName("ContextName-EndJob");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
-
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
         service.provisionContext(contextBundle);
 
@@ -283,6 +218,7 @@ public class ContextProvisionServiceImplTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
         verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
@@ -296,29 +232,15 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName"), eq("context"));
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName-EndJob"), eq("context"));
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//
-//        ArgumentCaptor<Trigger> triggerCaptor = ArgumentCaptor.forClass(Trigger.class);
-//        verify(scheduler, times(1)).scheduleJob(eq(detail), triggerCaptor.capture());
-//        Assert.assertEquals(ZoneId.systemDefault().getId(), ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
-//        verify(scheduler, times(1)).scheduleJob(eq(endDetail), triggerCaptor.capture());
-//        Assert.assertEquals(ZoneId.systemDefault().getId(), ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
-
         verify(contextInstanceRegistrationService).register(contextName);
 
         verifyNoMoreInteractions(
-//            scheduler, scheduledJobFactory,
             scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
     }
 
     @Test
-    public void should_upload_provision_jobs_and_create_context_with_timezone() throws Exception {
+    public void should_upload_provision_jobs_and_create_context_with_timezone() {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
@@ -340,14 +262,6 @@ public class ContextProvisionServiceImplTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-//        JobDetailImpl detail = new JobDetailImpl();
-//        detail.setName("ContextName");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName), eq("context"))).thenReturn(detail);
-//
-//        JobDetailImpl endDetail = new JobDetailImpl();
-//        endDetail.setName("ContextName-EndJob");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
-
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
         service.provisionContext(contextBundle);
 
@@ -355,6 +269,7 @@ public class ContextProvisionServiceImplTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
         verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
@@ -368,29 +283,15 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName"), eq("context"));
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName-EndJob"), eq("context"));
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//
-//        ArgumentCaptor<Trigger> triggerCaptor = ArgumentCaptor.forClass(Trigger.class);
-//        verify(scheduler, times(1)).scheduleJob(eq(detail), triggerCaptor.capture());
-//        Assert.assertEquals("Asia/Singapore", ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
-//        verify(scheduler, times(1)).scheduleJob(eq(endDetail), triggerCaptor.capture());
-//        Assert.assertEquals("Asia/Singapore", ((CronTriggerImpl)triggerCaptor.getValue()).getTimeZone().toZoneId().getId());
-
         verify(contextInstanceRegistrationService).register(contextName);
 
         verifyNoMoreInteractions(
-//            scheduler, scheduledJobFactory,
             scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
     }
 
     @Test
-    public void should_upload_provision_jobs_and_create_context_with_job_lock() throws Exception {
+    public void should_upload_provision_jobs_and_create_context_with_job_lock() {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
@@ -429,15 +330,6 @@ public class ContextProvisionServiceImplTest {
         moduleMetaData.setName("agentName1");
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
-
-//        JobDetailImpl detail = new JobDetailImpl();
-//        detail.setName("ContextName");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName), eq("context"))).thenReturn(detail);
-//
-//        JobDetailImpl endDetail = new JobDetailImpl();
-//        endDetail.setName("ContextName-EndJob");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
-
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
         service.provisionContext(contextBundle);
 
@@ -445,6 +337,7 @@ public class ContextProvisionServiceImplTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
         verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
@@ -457,10 +350,10 @@ public class ContextProvisionServiceImplTest {
         contextJobs.forEach(job -> {
             if(job instanceof InternalEventDrivenJob) {
                 if(job.getJobName().equals("jobName1")) {
-                    Assert.assertEquals(true, ((InternalEventDrivenJob) job).isParticipatesInLock());
+                    assertTrue(((InternalEventDrivenJob) job).isParticipatesInLock());
                 }
                 else if(job.getJobName().equals("jobName2")) {
-                    Assert.assertEquals(false, ((InternalEventDrivenJob) job).isParticipatesInLock());
+                    assertFalse(((InternalEventDrivenJob) job).isParticipatesInLock());
                 }
             }
         });
@@ -468,25 +361,15 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName"), eq("context"));
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName-EndJob"), eq("context"));
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler).scheduleJob(eq(detail), any(Trigger.class));
-//        verify(scheduler).scheduleJob(eq(endDetail), any(Trigger.class));
-
         verify(contextInstanceRegistrationService).register(contextName);
 
         verifyNoMoreInteractions(
-//            scheduler, scheduledJobFactory,
             scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
     }
 
     @Test
-    public void should_upload_provision_jobs_and_create_context_with_context_profiles() throws Exception {
+    public void should_upload_provision_jobs_and_create_context_with_context_profiles() {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
@@ -512,14 +395,6 @@ public class ContextProvisionServiceImplTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-//        JobDetailImpl detail = new JobDetailImpl();
-//        detail.setName("ContextName");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName), eq("context"))).thenReturn(detail);
-//
-//        JobDetailImpl endDetail = new JobDetailImpl();
-//        endDetail.setName("ContextName-EndJob");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
-
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, contextProfileRecords, Collections.EMPTY_LIST, null);
         service.provisionContext(contextBundle);
 
@@ -527,6 +402,7 @@ public class ContextProvisionServiceImplTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
         verify(schedulerJobService).save(contextJobs, "system");
         verify(contextProfileService).save(contextProfileRecords);
 
@@ -541,25 +417,15 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName"), eq("context"));
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName-EndJob"), eq("context"));
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler).scheduleJob(eq(detail), any(Trigger.class));
-//        verify(scheduler).scheduleJob(eq(endDetail), any(Trigger.class));
-
         verify(contextInstanceRegistrationService).register(contextName);
 
         verifyNoMoreInteractions(
-//            scheduler, scheduledJobFactory,
             scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
     }
 
     @Test
-    public void should_upload_not_provision_jobs_and_create_context() throws Exception {
+    public void should_upload_not_provision_jobs_and_create_context() {
         ReflectionTestUtils.setField(service, "uploadProvisionJobs", false);
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
@@ -575,14 +441,6 @@ public class ContextProvisionServiceImplTest {
         contextJobs.add(fileJobRecord);
         contextJobs.add(quartzDrivenJob);
 
-//        JobDetailImpl detail = new JobDetailImpl();
-//        detail.setName("ContextName");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName), eq("context"))).thenReturn(detail);
-//
-//        JobDetailImpl endDetail = new JobDetailImpl();
-//        endDetail.setName("ContextName-EndJob");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
-
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
         service.provisionContext(contextBundle);
 
@@ -590,6 +448,7 @@ public class ContextProvisionServiceImplTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
         verify(schedulerJobService).save(contextJobs, "system");
 
         ArgumentCaptor<ScheduledContextRecord> contextCaptor = ArgumentCaptor.forClass(ScheduledContextRecord.class);
@@ -600,25 +459,15 @@ public class ContextProvisionServiceImplTest {
         assertNotNull(actualContextRecord.getContext());
         assertTrue(actualContextRecord.getTimestamp() >= System.currentTimeMillis() - 2000 && actualContextRecord.getTimestamp() <= System.currentTimeMillis());
 
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName"), eq("context"));
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName-EndJob"), eq("context"));
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler).scheduleJob(eq(detail), any(Trigger.class));
-//        verify(scheduler).scheduleJob(eq(endDetail), any(Trigger.class));
-
         verify(contextInstanceRegistrationService).register(contextName);
 
         verifyNoMoreInteractions(
-//            scheduler, scheduledJobFactory,
             scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
     }
 
     @Test
-    public void should_upload_provision_jobs_and_create_context_with_context_profiles_and_notification_details() throws Exception {
+    public void should_upload_provision_jobs_and_create_context_with_context_profiles_and_notification_details() {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
@@ -650,14 +499,6 @@ public class ContextProvisionServiceImplTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-//        JobDetailImpl detail = new JobDetailImpl();
-//        detail.setName("ContextName");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName), eq("context"))).thenReturn(detail);
-//
-//        JobDetailImpl endDetail = new JobDetailImpl();
-//        endDetail.setName("ContextName-EndJob");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
-
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, contextProfileRecords, emailNotificationDetails, null);
         service.provisionContext(contextBundle);
 
@@ -665,6 +506,7 @@ public class ContextProvisionServiceImplTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
         verify(schedulerJobService).save(contextJobs, "system");
         verify(contextProfileService).save(contextProfileRecords);
         verify(emailNotificationDetailsService).saveEmailNotificationDetails(emailNotificationDetails);
@@ -680,25 +522,15 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName"), eq("context"));
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName-EndJob"), eq("context"));
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler).scheduleJob(eq(detail), any(Trigger.class));
-//        verify(scheduler).scheduleJob(eq(endDetail), any(Trigger.class));
-
         verify(contextInstanceRegistrationService).register(contextName);
 
         verifyNoMoreInteractions(
-//            scheduler, scheduledJobFactory,
             scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
     }
 
     @Test
-    public void should_upload_provision_jobs_and_create_context_with_context_profiles_and_notification_details_and_context() throws Exception {
+    public void should_upload_provision_jobs_and_create_context_with_context_profiles_and_notification_details_and_context() {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
@@ -732,14 +564,6 @@ public class ContextProvisionServiceImplTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-//        JobDetailImpl detail = new JobDetailImpl();
-//        detail.setName("ContextName");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName), eq("context"))).thenReturn(detail);
-//
-//        JobDetailImpl endDetail = new JobDetailImpl();
-//        endDetail.setName("ContextName-EndJob");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
-
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, contextProfileRecords, emailNotificationDetails, emailNotificationContext);
         service.provisionContext(contextBundle);
 
@@ -747,6 +571,7 @@ public class ContextProvisionServiceImplTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
         verify(schedulerJobService).save(contextJobs, "system");
         verify(contextProfileService).save(contextProfileRecords);
         verify(emailNotificationDetailsService).saveEmailNotificationDetails(emailNotificationDetails);
@@ -763,25 +588,15 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName"), eq("context"));
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName-EndJob"), eq("context"));
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler).scheduleJob(eq(detail), any(Trigger.class));
-//        verify(scheduler).scheduleJob(eq(endDetail), any(Trigger.class));
-
         verify(contextInstanceRegistrationService).register(contextName);
 
         verifyNoMoreInteractions(
-//            scheduler, scheduledJobFactory,
             scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
     }
 
     @Test
-    public void should_upload_provision_jobs_and_create_context_with_context_profiles_and_notification_context() throws Exception {
+    public void should_upload_provision_jobs_and_create_context_with_context_profiles_and_notification_context()  {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
@@ -810,14 +625,6 @@ public class ContextProvisionServiceImplTest {
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
-//        JobDetailImpl detail = new JobDetailImpl();
-//        detail.setName("ContextName");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName), eq("context"))).thenReturn(detail);
-//
-//        JobDetailImpl endDetail = new JobDetailImpl();
-//        endDetail.setName("ContextName-EndJob");
-//        when(scheduledJobFactory.createJobDetail(any(), any(), eq(contextName + "-EndJob"), eq("context"))).thenReturn(endDetail);
-
         ContextBundle contextBundle = new ContextBundleImpl(contextTemplate, contextJobs, contextProfileRecords, Collections.EMPTY_LIST, emailNotificationContext);
         service.provisionContext(contextBundle);
 
@@ -825,6 +632,7 @@ public class ContextProvisionServiceImplTest {
         verify(contextProfileService).deleteByContextName(contextName);
         verify(emailNotificationDetailsService).deleteByContextName(contextName);
         verify(emailNotificationContextService).deleteByContextName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
         verify(schedulerJobService).save(contextJobs, "system");
         verify(contextProfileService).save(contextProfileRecords);
         verify(emailNotificationContextService).saveEmailNotificationContext(emailNotificationContext);
@@ -840,29 +648,10 @@ public class ContextProvisionServiceImplTest {
         verify(moduleMetadataService).find(anyList(), any(ModuleType.class), anyInt(), anyInt());
         verify(jobProvisionModuleRestService).provisionJobs(anyString(), any(SchedulerJobWrapperImpl.class));
 
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName"), eq("context"));
-//        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName-EndJob"), eq("context"));
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler, times(2)).checkExists(detail.getKey());
-//        verify(scheduler, times(2)).checkExists(endDetail.getKey());
-//        verify(scheduler).scheduleJob(eq(detail), any(Trigger.class));
-//        verify(scheduler).scheduleJob(eq(endDetail), any(Trigger.class));
-
         verify(contextInstanceRegistrationService).register(contextName);
 
         verifyNoMoreInteractions(
-//            scheduler, scheduledJobFactory,
             scheduledContextService, moduleMetadataService, schedulerJobService,
             jobProvisionModuleRestService, contextInstanceRegistrationService, contextProfileService, emailNotificationDetailsService, emailNotificationContextService);
     }
-
-//    @Test
-//    public void register_jobs_does_nothing() {
-//        service.registerJobs();
-//
-//        verifyNoMoreInteractions(scheduler, scheduledJobFactory, scheduledContextService, moduleMetadataService, schedulerJobService,
-//            jobProvisionModuleRestService, contextInstanceRegistrationService, emailNotificationDetailsService, emailNotificationContextService);
-//    }
-
 }

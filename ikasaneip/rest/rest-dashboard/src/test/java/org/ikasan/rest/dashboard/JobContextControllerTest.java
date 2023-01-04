@@ -55,25 +55,18 @@ import static org.junit.Assert.assertEquals;
 public class JobContextControllerTest extends  AbstractRestMvcTest {
 
     protected MockMvc mvc;
-
     @Autowired
     WebApplicationContext webApplicationContext;
-
     @Resource
     TestContextParametersInstanceService contextParametersInstanceService;
-
     @MockBean
     private ScheduledContextService scheduledContextService;
-
     @Mock
     private SchedulerJobInstanceService schedulerJobInstanceService;
-
     @Mock
     private JobLockCacheInitialisationService jobLockCacheInitialisationService;
-
     @Mock
     private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
-
     private ObjectMapper objectMapper;
 
     private static final String AGENT = "scheduler-agent";
@@ -130,6 +123,7 @@ public class JobContextControllerTest extends  AbstractRestMvcTest {
         ContextMachineCache.instance().put(contextMachine2);
     }
 
+    @Test
     public void test_get_by_agentName() throws Exception {
 
         String uri = "/rest/jobContext/getByAgentName?agentName=scheduler-agent";

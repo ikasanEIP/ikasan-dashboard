@@ -65,7 +65,7 @@ public class ContextResetServiceImplTest {
             contextResetService.resetContext("UNKNOWN_CONTEXT", false);
             fail("should not get here");
         } catch (ContextResetException e) {
-            assertEquals("Could not find context for UNKNOWN_CONTEXT to reset", e.getMessage());
+            assertEquals("Could not find context for context name [UNKNOWN_CONTEXT] to reset", e.getMessage());
         }
     }
 

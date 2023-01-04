@@ -57,6 +57,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.ikasan.quartz.AbstractDashboardSchedulerService.CONTEXT_INSTANCE_ID;
+
 public class ContextMachine {
     private Logger logger = LoggerFactory.getLogger(ContextMachine.class);
     private ContextInstance contextInstance;
@@ -671,7 +673,7 @@ public class ContextMachine {
                     = new BigQueueMessageBuilder<>()
                     .withMessage(event)
                     .withMessageProperties(Map.of("contextName", this.context.getName(),
-                        "contextInstanceId", this.contextInstance.getId()))
+                        CONTEXT_INSTANCE_ID, this.contextInstance.getId()))
                     .build();
 
                 try {
@@ -1122,7 +1124,7 @@ public class ContextMachine {
                             = new BigQueueMessageBuilder<SchedulerJobInitiationEvent>().withMessage(schedulerJobInitiationEvent)
                             .withMessageProperties(
                                 Map.of("contextName", schedulerJobInitiationEvent.getContextName(),
-                                    "contextInstanceId", schedulerJobInitiationEvent.getContextInstanceId()))
+                                    CONTEXT_INSTANCE_ID, schedulerJobInitiationEvent.getContextInstanceId()))
                             .build();
 
                         String serialised = objectMapper.writeValueAsString(outgoingBigQueueMessage);
@@ -1203,7 +1205,7 @@ public class ContextMachine {
                                     = new BigQueueMessageBuilder<String>().withMessage(globalContextualisedScheduledProcessEventJson)
                                     .withMessageProperties(
                                         Map.of("contextName", contextMachineFromCache.getContext().getName(),
-                                            "contextInstanceId", contextMachineFromCache.getContext().getId()))
+                                            CONTEXT_INSTANCE_ID, contextMachineFromCache.getContext().getId()))
                                     .build();
 
                                 // BigQueue message to JSON

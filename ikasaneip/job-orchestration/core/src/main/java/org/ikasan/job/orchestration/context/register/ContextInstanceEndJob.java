@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import java.time.ZoneId;
 
+import static org.ikasan.quartz.AbstractDashboardSchedulerService.CONTEXT_INSTANCE_ID;
+
 public class ContextInstanceEndJob implements DashboardJob {
 
     public static final String END_JOB_EXTENSION = "-EndJob";
@@ -62,7 +64,7 @@ public class ContextInstanceEndJob implements DashboardJob {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         try {
-            final String contextInstanceId = (String)context.getTrigger().getJobDataMap().get("contextInstanceId");
+            final String contextInstanceId = (String)context.getTrigger().getJobDataMap().get(CONTEXT_INSTANCE_ID);
             LOG.info("Executing jobExecutionContext end context " + jobName + " context Instance ID [" + contextInstanceId + "]");
             contextInstanceRegistrationService.deRegisterById(contextInstanceId, context);
         } catch (Exception e) {

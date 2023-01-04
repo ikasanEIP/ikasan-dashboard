@@ -1,14 +1,5 @@
 package org.ikasan.job.orchestration.context.register;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
@@ -16,7 +7,6 @@ import org.ikasan.scheduler.ScheduledJobFactory;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduler.DashboardJob;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.Before;
@@ -29,6 +19,15 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.JobDetailImpl;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import static org.ikasan.quartz.AbstractDashboardSchedulerService.CONTEXT_GROUP;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -52,13 +51,12 @@ public class ContextInstanceSchedulerServiceTest {
     public void setUp() {
         contextInstanceSchedulerService = new ContextInstanceSchedulerService(scheduler, scheduledJobFactory,
             scheduledContextService, contextInstanceRegistrationService, true);
-        ContextMachineCache.instance().contextInstanceIdentifiers().forEach(id
-            -> ContextMachineCache.instance().remove(ContextMachineCache.instance().getByContextInstanceId(id)));
+        ContextMachineCache.instance().resetAllCache();
     }
 
     @Test
     public void should_do_nothing_if_featured_flagged_off() {
-        assertEquals(0, ContextMachineCache.instance().contextNames().size());
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
 
         ReflectionTestUtils.setField(contextInstanceSchedulerService, "isContextLifeCycleActive", false);
 
@@ -89,81 +87,24 @@ public class ContextInstanceSchedulerServiceTest {
     }
 
     @Test
-    public void registerJobs() throws SchedulerException {
+    public void registerScheduledContextJobsCreatesStartJobsButNotEndJobs() throws SchedulerException {
         ScheduledContextRecordTestSearchResults results = new ScheduledContextRecordTestSearchResults(3, true);
         when(scheduledContextService.findAll()).thenReturn(results);
 
-        JobDetailImpl detail1 = new JobDetailImpl();
-        detail1.setName("ContextName1");
-        when(scheduledJobFactory.createJobDetail(any(), any(), eq("ContextName1"), eq("context"))).thenReturn(detail1);
-
-        JobDetailImpl endDetail1 = new JobDetailImpl();
-        endDetail1.setName("ContextName1-EndJob");
-        when(scheduledJobFactory.createJobDetail(any(), any(), eq("ContextName1-EndJob"), eq("context"))).thenReturn(endDetail1);
-
-        JobDetailImpl detail2 = new JobDetailImpl();
-        detail2.setName("ContextName2");
-        when(scheduledJobFactory.createJobDetail(any(), any(), eq("ContextName2"), eq("context"))).thenReturn(detail2);
-
-        JobDetailImpl endDetail2 = new JobDetailImpl();
-        endDetail2.setName("ContextName2-EndJob");
-        when(scheduledJobFactory.createJobDetail(any(), any(), eq("ContextName2-EndJob"), eq("context"))).thenReturn(endDetail2);
-
-        JobDetailImpl detail3 = new JobDetailImpl();
-        detail3.setName("ContextName3");
-        when(scheduledJobFactory.createJobDetail(any(), any(), eq("ContextName3"), eq("context"))).thenReturn(detail3);
-
-        JobDetailImpl endDetail3 = new JobDetailImpl();
-        endDetail3.setName("ContextName3-EndJob");
-        when(scheduledJobFactory.createJobDetail(any(), any(), eq("ContextName3-EndJob"), eq("context"))).thenReturn(endDetail3);
-
-
-        when(scheduler.checkExists(detail1.getKey())).thenReturn(true).thenReturn(false);
-        when(scheduler.checkExists(detail2.getKey())).thenReturn(true).thenReturn(false);
-        when(scheduler.checkExists(detail3.getKey())).thenReturn(true).thenReturn(false);
-
-        when(scheduler.checkExists(endDetail1.getKey())).thenReturn(true).thenReturn(false);
-        when(scheduler.checkExists(endDetail2.getKey())).thenReturn(true).thenReturn(false);
-        when(scheduler.checkExists(endDetail3.getKey())).thenReturn(true).thenReturn(false);
-
-        when(scheduler.deleteJob(detail1.getKey())).thenReturn(true);
-        when(scheduler.deleteJob(detail2.getKey())).thenReturn(true);
-        when(scheduler.deleteJob(detail3.getKey())).thenReturn(true);
-
-        when(scheduler.deleteJob(endDetail1.getKey())).thenReturn(true);
-        when(scheduler.deleteJob(endDetail2.getKey())).thenReturn(true);
-        when(scheduler.deleteJob(endDetail3.getKey())).thenReturn(true);
-
+        createJobDetailAndSetStub("ContextName1", CONTEXT_GROUP);
+        createJobDetailAndSetStub("ContextName2", CONTEXT_GROUP);
+        createJobDetailAndSetStub("ContextName3", CONTEXT_GROUP);
         when(scheduler.scheduleJob(any(), any())).thenReturn(new Date());
 
         contextInstanceSchedulerService.registerJobs();
 
         verify(scheduledContextService).findAll();
-        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName1"), eq("context"));
-        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName2"), eq("context"));
-        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName3"), eq("context"));
+        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName1"), eq(CONTEXT_GROUP));
+        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName2"), eq(CONTEXT_GROUP));
+        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName3"), eq(CONTEXT_GROUP));
 
-        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName1-EndJob"), eq("context"));
-        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName2-EndJob"), eq("context"));
-        verify(scheduledJobFactory).createJobDetail(any(), any(), eq("ContextName3-EndJob"), eq("context"));
-
-        verify(scheduler, times(2)).checkExists(detail1.getKey());
-        verify(scheduler, times(2)).checkExists(detail2.getKey());
-        verify(scheduler, times(2)).checkExists(detail3.getKey());
-
-        verify(scheduler, times(2)).checkExists(endDetail1.getKey());
-        verify(scheduler, times(2)).checkExists(endDetail2.getKey());
-        verify(scheduler, times(2)).checkExists(endDetail3.getKey());
-
-        verify(scheduler).deleteJob(detail1.getKey());
-        verify(scheduler).deleteJob(detail2.getKey());
-        verify(scheduler).deleteJob(detail3.getKey());
-
-        verify(scheduler).deleteJob(endDetail1.getKey());
-        verify(scheduler).deleteJob(endDetail2.getKey());
-        verify(scheduler).deleteJob(endDetail3.getKey());
-
-        verify(scheduler, times(6)).scheduleJob(any(), any());
+        verify(scheduler, times(3)).scheduleJob(any(), any());
+        verify(scheduler, times(3)).getTriggersOfJob(any());
 
         verifyNoMoreInteractions(scheduler, scheduledJobFactory, scheduledContextService);
 
@@ -171,12 +112,20 @@ public class ContextInstanceSchedulerServiceTest {
         Map<String, JobDetail> dashboardJobDetailsMap = (Map<String, JobDetail>) ReflectionTestUtils.getField(contextInstanceSchedulerService, "dashboardJobDetailsMap");
 
         assertNotNull(dashboardJobsMap);
-        assertEquals(6, dashboardJobsMap.size());
+        assertEquals(3, dashboardJobsMap.size());
 
         assertNotNull(dashboardJobDetailsMap);
-        assertEquals(6, dashboardJobDetailsMap.size());
+        assertEquals(3, dashboardJobDetailsMap.size());
     }
 
+    private void createJobDetailAndSetStub(String name, String group) {
+        JobDetailImpl detail = new JobDetailImpl();
+        detail.setName(name);
+        detail.setGroup(group);
+        when(scheduledJobFactory.createJobDetail(any(), any(), eq(name), eq(group))).thenReturn(detail);
+    }
+
+    
     private class ScheduledContextRecordTestSearchResults<ANY> implements SearchResults<ScheduledContextRecord> {
 
         public static final String CONTEXT_NAME = "ContextName";
@@ -187,6 +136,7 @@ public class ContextInstanceSchedulerServiceTest {
         public ScheduledContextRecordTestSearchResults(int number, boolean outsideOfOperatingWindow) {
             this.number = number;
             this.outsideOfOperatingWindow = outsideOfOperatingWindow;
+
         }
 
         @Override
