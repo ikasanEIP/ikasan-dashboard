@@ -26,13 +26,15 @@ import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEv
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.*;
-import org.ikasan.spec.scheduled.instance.service.*;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
+import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
-import org.joda.time.Minutes;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -84,9 +86,6 @@ public class ContextInstanceRegistrationServiceImplTest {
     private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
 
     @Mock
-    private SchedulerJobInstanceService schedulerJobInstanceService;
-
-    @Mock
     ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster;
 
     @Mock
@@ -95,8 +94,8 @@ public class ContextInstanceRegistrationServiceImplTest {
     @Mock
     private JobLockCacheInitialisationService jobLockCacheInitialisationService;
 
-
-
+    @Mock
+    private ContextInstanceSchedulerService contextInstanceSchedulerService;
     private ContextInstanceRegistrationServiceImpl contextInstanceRegistrationService;
 
     private SchedulerJobInstanceService schedulerJobInstanceService;
@@ -112,7 +111,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         // Stub this Implementation due to two difference SchedulerJobInstance can be returned
         schedulerJobInstanceService = new StubSchedulerJobInstanceServiceTestImpl();
 
-        contextInstanceRegistrationService = new ContextInstanceRegistrationServiceImpl(
+        contextInstanceRegistrationService = new ContextInstanceRegistrationServiceImpl (
             "bigQueue/dir",
             scheduledContextInstanceService,
             jobInitiationService,
@@ -126,16 +125,14 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
-            contextInstanceSchedulerService
-        );
-
-        TestUtils.resetContextMachineCache();
-        assertNull(ContextMachineCache.instance().getFirstByContextName(contextName));
+            contextInstanceSchedulerService);
+        ContextMachineCache.instance().resetAllCache();
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
     }
 
     @After
     public void tearDown() {
-        TestUtils.resetContextMachineCache();
+        ContextMachineCache.instance().resetAllCache();
     }
 
     @Test(expected = RuntimeException.class)
@@ -162,7 +159,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        assertNull(ContextMachineCache.instance().getFirstByContextName(contextName));
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
     }
 
     @Test
@@ -186,7 +183,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -215,7 +212,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
@@ -265,9 +262,8 @@ public class ContextInstanceRegistrationServiceImplTest {
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
-
         // execute
-        contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -299,7 +295,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
@@ -351,7 +347,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
 
         // execute
-        contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -383,7 +379,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
@@ -434,7 +430,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -466,7 +462,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
@@ -528,7 +524,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -556,12 +552,13 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextParametersInstanceService,
             contextInstancePublicationService,
             scheduledContextService,
+            //schedulerJobInstanceService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
@@ -605,7 +602,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -622,7 +619,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
         assertNull(contextMachine);
     }
 
@@ -652,7 +649,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -669,7 +666,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
         assertNull(contextMachine);
     }
 
@@ -710,7 +707,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -727,7 +724,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
         assertNull(contextMachine);
     }
 
@@ -746,7 +743,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         when(scheduledContextService.findById(contextName)).thenReturn(record);
 
         // execute
-        contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -764,7 +761,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
         assertNull(contextMachine);
     }
 
@@ -798,7 +795,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -829,7 +826,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
@@ -852,7 +849,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         SchedulerJobInstance schedulerJobInstance = child.getScheduledJobsMap().get("scheduler-agent-1799613995");
         assertNotNull(schedulerJobInstance);
 
-        assertEquals(true, schedulerJobInstance.isSkip());
+        assertTrue(schedulerJobInstance.isSkip());
         assertEquals(InstanceStatus.SKIPPED, schedulerJobInstance.getStatus());
     }
 
@@ -877,7 +874,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
 
         // execute
-        contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -905,7 +902,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
@@ -945,7 +942,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        assertNull(ContextMachineCache.instance().getFirstByContextName(contextName));
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
     }
 
     @Test
@@ -992,7 +989,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        assertNull(ContextMachineCache.instance().getFirstByContextName(contextName));
+        assertTrue(ContextMachineCache.instance().cacheIsEmpty());
     }
 
     @Test
@@ -1031,7 +1028,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
 
         // execute
-        contextInstanceRegistrationService.register(contextName);
+        String contextInstanceId = contextInstanceRegistrationService.register(contextName);
 
         // verify
         verify(scheduledContextService).findById(contextName);
@@ -1063,7 +1060,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
         assertNotNull(contextMachine);
 
         HashMap<String, GlobalEventJobInstanceImpl> globalMap =

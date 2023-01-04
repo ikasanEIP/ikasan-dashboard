@@ -142,6 +142,22 @@ public class ContextMachineCache
     {
         contextMachine.unregisterToNotificationMonitors();
         this.contextInstanceByContextInstanceIdCache.remove(contextMachine.getContext().getId(), contextMachine);
+        contextNames.remove(contextMachine.getContext().getName());
+    }
+
+    /**
+     * This is intended to support testability and remove the need for reflective access
+     */
+    public void resetAllCache() {
+        contextInstanceByContextInstanceIdCache.clear();
+        contextNames.clear();
+    }
+
+    /**
+     * This is intended to support testability and remove the need for reflective access
+     */
+    public boolean cacheIsEmpty() {
+        return contextInstanceByContextInstanceIdCache.isEmpty() && contextNames.isEmpty() ;
     }
 
     @Override

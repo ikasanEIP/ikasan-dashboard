@@ -5,7 +5,6 @@ import org.ikasan.scheduler.ScheduledJobFactory;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.search.SearchResults;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
@@ -57,12 +56,13 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
         }
 
         try {
-            SearchResults<ScheduledContextRecord> scheduledContextRecords
-                = (SearchResults<ScheduledContextRecord>) this.scheduledContextService.findAll();
+            SearchResults<ScheduledContextRecord> scheduledContextRecords =
+                (SearchResults<ScheduledContextRecord>) this.scheduledContextService.findAll();
 
             for (ScheduledContextRecord scheduledContextRecord : scheduledContextRecords.getResultList()) {
-                registerStartJobAndTrigger(scheduledContextRecord.getContextName(), scheduledContextRecord.getContext().getTimeWindowStart(),
-                    scheduledContextRecord.getContext().getTimezone());
+                registerStartJobAndTrigger( scheduledContextRecord.getContextName(),
+                                            scheduledContextRecord.getContext().getTimeWindowStart(),
+                                            scheduledContextRecord.getContext().getTimezone());
             }
 
         } catch (Exception ex) {
@@ -80,13 +80,15 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
      * @param timezone for the tme window
      */
     public void registerStartJobAndTrigger(String contextName, String cronExpressionToTriggerJob, String timezone) {
-        final ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(contextName, cronExpressionToTriggerJob, timezone,
-            this.contextInstanceRegistrationService);
-        final JobDetail jobDetail = this.scheduledJobFactory.createJobDetail(job, ContextInstanceRegisterJob.class, job.getJobName(), CONTEXT);
+        final ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(
+            contextName, cronExpressionToTriggerJob, timezone, contextInstanceRegistrationService);
+        final JobDetail jobDetail = scheduledJobFactory.createJobDetail(job, ContextInstanceRegisterJob.class, job.getJobName(), CONTEXT_GROUP);
+
+        // Overwrite if already in map
         super.dashboardJobDetailsMap.put(job.getJobName(), jobDetail);
         super.dashboardJobsMap.put(jobDetail.getKey().toString(), job);
         LOG.info(String.format("Registering context instance job [%s]", jobDetail.getKey().getName()));
-        this.scheduleTrigger(jobDetail);
+        this.addJob(jobDetail);
     }
 
     /**
@@ -99,8 +101,9 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
      */
     public void registerEndJobAndTrigger(String contextName, String cronExpressionToTriggerJob, String timezone, String contextInstanceId) {
         ContextInstanceEndJob endJob = new ContextInstanceEndJob(contextName + END_JOB_EXTENSION, cronExpressionToTriggerJob, timezone, this.contextInstanceRegistrationService);
-        JobDetail endJobDetail = this.scheduledJobFactory.createJobDetail(endJob, ContextInstanceEndJob.class, endJob.getJobName(), CONTEXT);
+        JobDetail endJobDetail = this.scheduledJobFactory.createJobDetail(endJob, ContextInstanceEndJob.class, endJob.getJobName(), CONTEXT_GROUP);
 
+        // Overwrite if already in map
         super.dashboardJobDetailsMap.put(endJob.getJobName(), endJobDetail);
         super.dashboardJobsMap.put(endJobDetail.getKey().toString(), endJob);
         LOG.info(String.format("Registering context instance job [%s] and instance [%s]", endJobDetail.getKey().getName(), contextInstanceId));
