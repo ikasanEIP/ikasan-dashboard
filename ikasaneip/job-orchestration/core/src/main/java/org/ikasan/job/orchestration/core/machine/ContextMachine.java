@@ -781,6 +781,15 @@ public class ContextMachine {
     }
 
     /**
+     * Indicates if this machine is supports a given agent
+     * @param agentName to be checked
+     * @return true if the contextMachine is used to service the given agent.
+     */
+    public boolean servesAgent(String agentName) {
+        return agents.keySet().contains(agentName);
+    }
+
+    /**
      *
      * @param scheduledProcessEvent
      * @return
