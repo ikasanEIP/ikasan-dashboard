@@ -7,7 +7,9 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.ContextParameterInstanceImpl;
+import org.ikasan.rest.dashboard.model.metadata.module.ModuleMetaDataImpl;
 import org.ikasan.rest.dashboard.util.TestContextParametersInstanceService;
+import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -74,6 +76,9 @@ public class JobContextControllerTest extends  AbstractRestMvcTest {
 
     private ObjectMapper objectMapper;
 
+    private static final String AGENT = "scheduler-agent";
+    private static final Map<String, ModuleMetaData> AGENTS_MAP = Map.of(AGENT, new ModuleMetaDataImpl());
+
     @BeforeEach
     @Before
     public void setUp() throws Exception {
@@ -113,11 +118,12 @@ public class JobContextControllerTest extends  AbstractRestMvcTest {
         ContextTemplate contextTemplate2 = new ContextTemplateImpl();
         contextTemplate2.setName("context-template-2");
 
+
         ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, null, null, null
-            ,null,null,null, null, this.scheduledContextService, this.schedulerJobInstanceService
+            ,null,AGENTS_MAP,null, null, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
         ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, null, null, null
-            ,null,null,null, null, this.scheduledContextService, this.schedulerJobInstanceService
+            ,null,AGENTS_MAP,null, null, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
 
         ContextMachineCache.instance().put(contextMachine1);
@@ -125,34 +131,51 @@ public class JobContextControllerTest extends  AbstractRestMvcTest {
     }
 
     @Test
-    public void test_get_all() throws Exception {
+    public void test_get_by_agentName() throws Exception {
 
-        String uri = "/rest/jobContext/getAll";
-
-        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
-
-        int status = mvcResult.getResponse().getStatus();
-        assertEquals(HttpStatus.OK.value(), status);
-
-        String expected = objectMapper.writeValueAsString(objectMapper.readValue(loadDataFile("/data/job-context-instances-all.json"), Map.class));
-        String actual = mvcResult.getResponse().getContentAsString();
-
-        JSONAssert.assertEquals(expected, actual, true);
-    }
-
-    @Test
-    public void test_get_by_context_name() throws Exception {
-
-        String uri = "/rest/jobContext/getByContextName?contextName=context-instance-1";
+        String uri = "/rest/jobContext/getByAgentName?agentName=scheduler-agent";
 
         MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(HttpStatus.OK.value(), status);
 
-        String expected = objectMapper.writeValueAsString(objectMapper.readValue(loadDataFile("/data/job-context-instance-1.json"), Map.class));
+        String expected = objectMapper.writeValueAsString(objectMapper.readValue(loadDataFile("/data/job-context-instances-by-agentName.json"), Map.class));
         String actual = mvcResult.getResponse().getContentAsString();
 
         JSONAssert.assertEquals(expected, actual, true);
     }
+
+    // @Mick I think these maybe no longer needed ?
+//    @Test
+//    public void test_get_all() throws Exception {
+//
+//        String uri = "/rest/jobContext/getAll";
+//
+//        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+//
+//        int status = mvcResult.getResponse().getStatus();
+//        assertEquals(HttpStatus.OK.value(), status);
+//
+//        String expected = objectMapper.writeValueAsString(objectMapper.readValue(loadDataFile("/data/job-context-instances-all.json"), Map.class));
+//        String actual = mvcResult.getResponse().getContentAsString();
+//
+//        JSONAssert.assertEquals(expected, actual, true);
+//    }
+//
+//    @Test
+//    public void test_get_by_context_name() throws Exception {
+//
+//        String uri = "/rest/jobContext/getByContextName?contextName=context-instance-1";
+//
+//        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
+//
+//        int status = mvcResult.getResponse().getStatus();
+//        assertEquals(HttpStatus.OK.value(), status);
+//
+//        String expected = objectMapper.writeValueAsString(objectMapper.readValue(loadDataFile("/data/job-context-instance-1.json"), Map.class));
+//        String actual = mvcResult.getResponse().getContentAsString();
+//
+//        JSONAssert.assertEquals(expected, actual, true);
+//    }
 }
