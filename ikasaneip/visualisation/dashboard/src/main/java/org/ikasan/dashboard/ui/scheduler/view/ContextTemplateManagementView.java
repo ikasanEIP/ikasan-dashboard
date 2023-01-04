@@ -19,6 +19,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -117,6 +118,9 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     @Resource
     private EmailNotificationContextService emailNotificationContextService;
 
+    @Resource
+    private ContextInstanceRegistrationService contextInstanceRegistrationService;
+
     private ContextTemplateManagementWidget contextTemplateManagementWidget;
 
     private ContextTemplate contextTemplate;
@@ -150,7 +154,7 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
                 , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                 , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
                 , this.jobProvisionService, this.userService, this.securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
-                , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel);
+                , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.contextInstanceRegistrationService);
 
             this.getElement().getStyle().set("padding-top", "0px");
             this.add(this.contextTemplateManagementWidget);

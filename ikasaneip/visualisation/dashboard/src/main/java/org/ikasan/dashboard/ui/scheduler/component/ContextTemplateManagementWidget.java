@@ -54,6 +54,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -100,6 +101,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
     private SystemEventLogger systemEventLogger;
     private EmailNotificationDetailsService emailNotificationDetailsService;
     private EmailNotificationContextService emailNotificationContextService;
+    private ContextInstanceRegistrationService contextInstanceRegistrationService;
     private FormLayout formLayout;
     private IkasanAuthentication authentication;
     private AceEditor aceEditor;
@@ -160,7 +162,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
                                            JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobProvisionService jobProvisionService,
                                            UserService userService, SecurityService securityService, JobUtilsService jobUtilsService, String zipWorkingDirectory,
                                            EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
-                                           Map<String, String> schedulerJobExecutionEnvironmentLabel) {
+                                           Map<String, String> schedulerJobExecutionEnvironmentLabel,
+                                           ContextInstanceRegistrationService contextInstanceRegistrationService) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -245,6 +248,11 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
         this.emailNotificationContextService = emailNotificationContextService;
         if (this.emailNotificationContextService == null) {
             throw new IllegalArgumentException("emailNotificationContextService cannot be null!");
+        }
+
+        this.contextInstanceRegistrationService = contextInstanceRegistrationService;
+        if (this.contextInstanceRegistrationService == null) {
+            throw new IllegalArgumentException("contextInstanceRegistrationService cannot be null!");
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
@@ -770,8 +778,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
                         List<SchedulerJob> schedulerJobs = jobRecords.getResultList().stream()
                             .map(record -> record.getJob())
                             .collect(Collectors.toList());
-
+// this is where we need to init context if we are sync job like org.ikasan.dashboard.ui.scheduler.component.ContextTemplateWidget.createGrid (Y)
                         this.jobProvisionService.provisionJobs(schedulerJobs, this.authentication.getName());
+                        this.contextInstanceRegistrationService.register(this.contextTemplate.getName());
                     }
                     catch (Exception e) {
                         e.printStackTrace();

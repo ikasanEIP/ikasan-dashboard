@@ -786,7 +786,11 @@ public class ContextMachine {
      * @return true if the contextMachine is used to service the given agent.
      */
     public boolean servesAgent(String agentName) {
-        return agents.keySet().contains(agentName);
+        if (agents != null) {
+            return agents.keySet().contains(agentName);
+        } else {
+            return false;
+        }
     }
 
     /**
