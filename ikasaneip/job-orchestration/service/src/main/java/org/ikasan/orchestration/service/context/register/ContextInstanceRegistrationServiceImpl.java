@@ -153,9 +153,10 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
      * This will be invoked when a plan start trigger fires.
      * It will fire even if the plan is disabled, but will not create a new context.
      * @param contextName i.e. plan to create instance for
+     * @return the context instance ID if a new context instance was created, null otherwise.
      */
     @Override
-    public void register(String contextName) {
+    public String register(String contextName) {
         ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(contextName);
         if (scheduledContextRecord == null) {
             final String message = String.format("Could not find scheduledContextRecord for context name [%s]", contextName);
@@ -165,7 +166,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
 
         if (scheduledContextRecord.isDisabled()) {
             LOG.info(String.format("Context name [%s] is disabled and will not be registered!", contextName));
-            return;
+            return null;
         }
 
         LOG.info(String.format("Registering context [%s]", contextName));
@@ -178,6 +179,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                 initialiseContextMachine(context, contextInstance, true);
                 contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), contextInstance.getTimeWindowEnd(), contextInstance.getTimezone(), contextInstance.getId());
                 LOG.info(String.format("Registering context instance [%s] for context [%s]", contextInstance.getId(), contextName));
+                return contextInstance.getId();
             }
             else {
                 LOG.info(String.format("Context name [%s] falls withing a blackout time window and will not be registered!", contextName));
@@ -187,5 +189,6 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             LOG.error(String.format("An error has occurred executing registering job [%s]", e.getMessage()), e);
             throw new RuntimeException(e);
         }
+        return null;
     }
 }

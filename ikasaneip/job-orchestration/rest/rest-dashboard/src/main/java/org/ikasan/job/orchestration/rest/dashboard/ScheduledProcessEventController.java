@@ -66,6 +66,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.ikasan.quartz.AbstractDashboardSchedulerService.CONTEXT_INSTANCE_ID;
+
 /**
  * Module application implementing the REST contract
  */
@@ -155,7 +157,7 @@ public class ScheduledProcessEventController
                 map.put("contextName", scheduledProcessEvent.getContextName());
             }
             if (scheduledProcessEvent.getContextInstanceId() != null) {
-                map.put("contextInstanceId", scheduledProcessEvent.getContextInstanceId());
+                map.put(CONTEXT_INSTANCE_ID, scheduledProcessEvent.getContextInstanceId());
             }
         } catch (Exception e) {
             logger.warn("Could not deserialise payload " + scheduledProcessEventPayload);

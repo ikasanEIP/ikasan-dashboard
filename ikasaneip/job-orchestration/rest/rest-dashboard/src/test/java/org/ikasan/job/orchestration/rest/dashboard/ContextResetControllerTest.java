@@ -1,12 +1,5 @@
 package org.ikasan.job.orchestration.rest.dashboard;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-
-import org.ikasan.job.orchestration.rest.dashboard.ContextResetController;
 import org.ikasan.spec.scheduled.reset.ContextResetService;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
@@ -16,7 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,6 +17,12 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = ContextResetController.class)
@@ -65,7 +63,7 @@ public class ContextResetControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus());
 
         String content = mvcResult.getResponse().getContentAsString();
-        assertThat(content, containsString("An error has occurred attempting to reset context for ContextName! Error message [expected exception]"));
+        assertThat(content, containsString("An error has occurred attempting to reset context for context name ContextName! Error message [expected exception]"));
 
         verify(contextResetService).resetContext("ContextName", false);
     }

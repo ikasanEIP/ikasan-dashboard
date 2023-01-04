@@ -1,9 +1,5 @@
 package org.ikasan.job.orchestration.context.register;
 
-import static org.ikasan.job.orchestration.context.register.ContextInstanceEndJob.END_JOB_EXTENSION;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.verify;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.serialiser.model.JobExecutionContextDefaultImpl;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
@@ -12,6 +8,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.quartz.JobDataMap;
+
+import static org.ikasan.job.orchestration.context.register.ContextInstanceEndJob.END_JOB_EXTENSION;
+import static org.ikasan.quartz.AbstractDashboardSchedulerService.CONTEXT_INSTANCE_ID;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.verify;
+import static org.quartz.TriggerBuilder.newTrigger;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContextInstanceEndJobTest {
@@ -50,8 +53,12 @@ public class ContextInstanceEndJobTest {
 
     @Test
     public void execute() throws Exception {
-        contextInstanceEndJob.execute(new JobExecutionContextDefaultImpl());
+        final JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put(CONTEXT_INSTANCE_ID, "xx");
+        JobExecutionContextDefaultImpl jobExecutionContext = new JobExecutionContextDefaultImpl();
+        jobExecutionContext.setTrigger(newTrigger().usingJobData(jobDataMap).build());
+        contextInstanceEndJob.execute(jobExecutionContext);
 
-        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
+        verify(contextInstanceRegistrationService).deRegisterById("xx", jobExecutionContext);
     }
 }

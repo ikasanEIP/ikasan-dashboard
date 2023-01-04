@@ -39,7 +39,7 @@ public class BusinessStreamNotificationSchedulerService extends AbstractDashboar
         for(BusinessStreamNotificationJob job: businessStreamNotificationJobs)
         {
             JobDetail jobDetail = this.scheduledJobFactory.createJobDetail
-                (job, BusinessStreamNotificationJob.class, job.getJobName(), "notify");
+                (job, BusinessStreamNotificationJob.class, job.getJobName(), NOTIFY_GROUP);
 
             super.dashboardJobDetailsMap.put(job.getJobName(), jobDetail);
             super.dashboardJobsMap.put(jobDetail.getKey().toString(), job);
@@ -48,7 +48,7 @@ public class BusinessStreamNotificationSchedulerService extends AbstractDashboar
         for(JobDetail jobDetail: super.dashboardJobDetailsMap.values())
         {
             logger.info(String.format("Registering business stream notification job[%s]", jobDetail.getKey().getName()));
-            this.scheduleTrigger(jobDetail);
+            this.addJob(jobDetail);
         }
     }
 

@@ -95,6 +95,8 @@ import static org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker.
             throw new IllegalArgumentException("emailNotificationContextService cannot be null!");
         }
 
+        this.uploadProvisionJobs = uploadProvisionJobs;
+
         this.contextInstanceSchedulerService = contextInstanceSchedulerService;
         if (this.contextInstanceSchedulerService == null) {
             throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
