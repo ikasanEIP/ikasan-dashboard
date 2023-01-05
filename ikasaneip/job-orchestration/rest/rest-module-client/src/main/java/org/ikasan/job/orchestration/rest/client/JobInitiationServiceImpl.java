@@ -41,7 +41,7 @@ public class JobInitiationServiceImpl extends ModuleRestService implements JobIn
         HttpEntity entity = new HttpEntity(event, headers);
         String url = contextUrl + SCHEDULER_JOB_INITIATION_URL;
 
-        logger.info("Context URL[{}] Payload[{}] ", url, event);
+        logger.debug("Context URL[{}] Payload[{}] ", url, event);
         restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
     }
 
@@ -76,7 +76,7 @@ public class JobInitiationServiceImpl extends ModuleRestService implements JobIn
         HttpEntity entity = new HttpEntity(event, headers);
         String url = contextUrl + JOB_DRY_RUN_MODE_URL;
 
-        logger.info("Context URL[{}] Payload[{}] ", url, event);
+        logger.debug("Context URL[{}] Payload[{}] ", url, event);
         restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
     }
 
@@ -86,7 +86,7 @@ public class JobInitiationServiceImpl extends ModuleRestService implements JobIn
         Map<String, String> parameters = new HashMap<>()
         {{put("moduleName",agentName);{put("flowName",jobName);}}};
         String url = contextUrl+FLOW_SCHEDULE_FIRE_NOW_URL;
-        logger.info("Context URL[{}] Payload[{}] ", url, parameters);
+        logger.debug("Context URL[{}] Payload[{}] ", url, parameters);
         try
         {
             restTemplate.exchange(url, HttpMethod.GET, entity, String.class, parameters);

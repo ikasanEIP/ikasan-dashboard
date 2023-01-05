@@ -91,6 +91,13 @@ public class ContextHelper {
             -> !contextTransition.getContexts().isEmpty()).distinct().collect(Collectors.toList());
     }
 
+    /**
+     * This helper method returns a map of jobs within a context that are not
+     * present within any logical constructs within the context.
+     *
+     * @param context
+     * @return
+     */
     public static Map<String, SchedulerJob> getJobsOutsideLogicalGrouping(Context context) {
         Map<String, SchedulerJob> jobsOutsideLogicConstructs
             = new HashMap<>(context.getScheduledJobsMap());
@@ -120,6 +127,12 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Recursively remove jobs within in constructs.
+     *
+     * @param logicalGrouping
+     * @param schedulerJobMap
+     */
     private static void removeJobsInAndConstructs(LogicalGrouping logicalGrouping,
                                      Map<String, SchedulerJob> schedulerJobMap) {
         if(logicalGrouping.getAnd() != null && !logicalGrouping.getAnd().isEmpty()) {
@@ -135,6 +148,12 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Recursively remove jobs within not constructs.
+     *
+     * @param logicalGrouping
+     * @param schedulerJobMap
+     */
     private static void removeJobsInNotConstructs(LogicalGrouping logicalGrouping,
                                      Map<String, SchedulerJob> schedulerJobMap) {
         if(logicalGrouping.getNot() != null && !logicalGrouping.getNot().isEmpty()) {
@@ -150,6 +169,12 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Recursively remove jobs within or constructs.
+     *
+     * @param logicalGrouping
+     * @param schedulerJobInstanceMap
+     */
     private static void removeJobsInOrConstructs(LogicalGrouping logicalGrouping,
                                     Map<String, SchedulerJob> schedulerJobInstanceMap) {
         if(logicalGrouping.getOr() != null && !logicalGrouping.getOr().isEmpty()) {
@@ -165,6 +190,16 @@ public class ContextHelper {
         }
     }
 
+    /**
+     * Helper method to return a list of jobs that act as a catalyst for the provided job within
+     * the provided context.
+     *
+     * @param context
+     * @param jobName
+     * @param childContextName
+     * @param internalEventDrivenJobMap
+     * @return
+     */
     public static List<SchedulerJobInstance> getPrecedingJobsFromOutsideContext(Context context
         , String jobName, String childContextName, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
         Context theChildContext = getChildContext(childContextName, context);
@@ -219,6 +254,17 @@ public class ContextHelper {
         return finalResults.stream().map(job -> (SchedulerJobInstance)job).collect(Collectors.toList());
     }
 
+    /**
+     * Similar to the method above, a helper method to determine if any jobs transition from outside
+     * the given context for the given job. A list of ContextTransition objects are returned which
+     * contains information about all contexts that transition here.
+     *
+     * @param context
+     * @param jobName
+     * @param childContextName
+     * @param internalEventDrivenJobMap
+     * @return
+     */
     public static List<ContextTransition> determineIfJobsTransitionFromOtherContexts(Context context
         , String jobName, String childContextName, Map<String, InternalEventDrivenJob> internalEventDrivenJobMap) {
         List<String> residingContexts = getContextsWhereJobResides(context, jobName);
@@ -536,11 +582,18 @@ public class ContextHelper {
     }
 
     public static ContextTemplate replaceChildContextTemplate(ContextTemplate contextTemplate, ContextTemplate updated) {
+        if(contextTemplate.getName().equals(updated.getName())) {
+            contextTemplate.setJobDependencies(updated.getJobDependencies());
+            contextTemplate.setScheduledJobs(updated.getScheduledJobs());
+            return contextTemplate;
+        }
+
         if(contextTemplate.getContexts() != null) {
             for (int i=0; i<contextTemplate.getContexts().size(); i++) {
 
                 if(contextTemplate.getContexts().get(i).getName().equals(updated.getName())) {
-                    contextTemplate.getContexts().set(i, updated);
+                    contextTemplate.getContexts().get(i).setJobDependencies(updated.getJobDependencies());
+                    contextTemplate.getContexts().get(i).setScheduledJobs(updated.getScheduledJobs());
                 }
                 else {
                     replaceChildContextTemplate(contextTemplate.getContexts().get(i), updated);
@@ -642,7 +695,7 @@ public class ContextHelper {
     public static List<String> getContextsWhereJobFilterMatchResides(Context context, String jobNameFilter) {
         List<String> results = new ArrayList<>();
         getContextsWhereJobFilterMatchResides(results, context, jobNameFilter);
-        return results;
+        return results.stream().distinct().collect(Collectors.toList());
     }
 
     private static void getContextsWhereJobFilterMatchResides(List<String> results, Context context, String jobNameFilter) {
