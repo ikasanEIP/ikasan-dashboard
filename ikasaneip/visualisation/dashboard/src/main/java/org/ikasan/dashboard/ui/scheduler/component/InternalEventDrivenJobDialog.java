@@ -26,14 +26,12 @@ import com.vaadin.flow.data.converter.StringToLongConverter;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
+import de.f0rce.ace.util.AceMarker;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.validator.StringToDefaultLongConverter;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.util.SystemEventConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
@@ -59,6 +57,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDialog {
 
     Logger logger = LoggerFactory.getLogger(InternalEventDrivenJobDialog.class);
+
 
     private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -106,6 +105,8 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
+    private String jobContextErrorMessage;
+
 
     /**
      * Constructor
@@ -147,6 +148,9 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     private void init() {
         this.formBinder
             = new Binder<>(InternalEventDrivenJob.class);
+
+        this.jobContextErrorMessage = this.getTranslation("error.job-contents-must-be-provided"
+            , UI.getCurrent().getLocale());
 
         this.setHeight("95vh");
         this.setWidth("95vw");
@@ -432,6 +436,13 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
             formBinder.writeBean(internalEventDrivenJob);
 
+            // Get the module configuration from the module.
+            if(this.commandLineTa.getValue() == null || this.commandLineTa.getValue().isEmpty()
+                || this.commandLineTa.getValue().equals(this.jobContextErrorMessage)) {
+                this.commandLineTa.setValue(this.jobContextErrorMessage);
+                return false;
+            }
+
             if(!isValid.get()){
                 return false;
             }
@@ -450,7 +461,6 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
      * @param internalEventDrivenJob
      */
     public void createOrUpdateScheduledJob(InternalEventDrivenJob internalEventDrivenJob, IkasanAuthentication authentication) throws JsonProcessingException {
-        // Get the module configuration from the module.
         internalEventDrivenJob.setCommandLine(this.commandLineTa.getValue());
         internalEventDrivenJob.setIdentifier(internalEventDrivenJob.getAgentName()+"-"+internalEventDrivenJob.getJobName());
 

@@ -72,12 +72,10 @@ public class ContextSchedulerInstanceVisualisation extends SchedulerInstanceVisu
                 this.removeAll();
             }
 
-            this.designerCanvas = new DesignerCanvas("canvas-viewport-"+ UUID.randomUUID().toString(),
+            this.designerCanvas = new DesignerCanvas("canvas-viewport-"+ UUID.randomUUID(),
                 this.dynamicImagePath, true);
 
-            if(contextInstance.getContexts() != null && !contextInstance.getContexts().isEmpty()) {
-                this.designerCanvas.setCanvasJson(adapter.adaptContext(contextInstance));
-            }
+            this.designerCanvas.setCanvasJson(adapter.adaptContext(contextInstance));
 
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
