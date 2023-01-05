@@ -393,7 +393,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
     @Override
     public void connectorEvent(ConnectorEvent connectorEvent) {
-        logger.info(connectorEvent.getEventType());
+        logger.debug("Connector event - " + connectorEvent.getEventType());
         if(connectorEvent.getEventType().equals("CONNECTOR_ADDED")) {
             if(connectorEvent.getSourceUserData() != null && connectorEvent.getSourceUserData().getItemType().equals(UserData.CONTEXT)
                 && connectorEvent.getTargetUserData() != null && connectorEvent.getTargetUserData().getItemType().equals(UserData.CONTEXT)) {
@@ -414,7 +414,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     @Override
     public void figureDeleted(FigureDeleteEvent figureDeleteEvent) {
         if(figureDeleteEvent.getFigure().getUserData().getItemType().equals(UserData.CONTEXT)) {
-            logger.info("Context deleted! " + figureDeleteEvent.getFigure());
+            logger.debug("Context deleted! " + figureDeleteEvent.getFigure());
             ContextTemplate parent = ContextHelper.getParentContextTemplate(figureDeleteEvent.getFigure().getUserData().getContextName(), this.parentContextTemplate);
             ContextTemplate removed = ContextHelper.getChildContextTemplate(figureDeleteEvent.getFigure().getUserData().getContextName(), this.parentContextTemplate);
             ContextHelper.removeChildContextTemplate(figureDeleteEvent.getFigure().getUserData().getContextName(), this.parentContextTemplate);
@@ -429,7 +429,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     @Override
     public void undoFigureDeleted(FigureUndoDeleteEvent figureUndoDeleteEvent) {
         if(figureUndoDeleteEvent.getFigure().getUserData().getItemType().equals(UserData.CONTEXT)) {
-            logger.info("Context undo delete! " + figureUndoDeleteEvent.getFigure());
+            logger.debug("Context undo delete! " + figureUndoDeleteEvent.getFigure());
             ContextDeletedHolder contextDeletedHolder = this.contextDeletedHolderMap.get(figureUndoDeleteEvent.getFigure().getUserData().getContextName());
             if(contextDeletedHolder != null) {
                 ContextTemplate parent = ContextHelper.getChildContextTemplate(contextDeletedHolder.parent.getName(), this.parentContextTemplate);
@@ -443,7 +443,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
     @Override
     public void canvasUpdated(CanvasUpdatedEvent canvasUpdatedEvent) {
-        logger.info(canvasUpdatedEvent.getCanvasJson());
+        logger.debug("Canvas updated! " + canvasUpdatedEvent.getCanvasJson());
     }
 
     @Override

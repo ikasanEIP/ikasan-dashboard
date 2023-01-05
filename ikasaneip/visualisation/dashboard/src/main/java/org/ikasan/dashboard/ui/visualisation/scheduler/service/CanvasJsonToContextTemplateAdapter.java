@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.dashboard.ui.visualisation.scheduler.model.Tree;
 import org.ikasan.dashboard.ui.visualisation.scheduler.model.TreeNode;
-import org.ikasan.designer.model.Connection;
-import org.ikasan.designer.model.Image;
-import org.ikasan.designer.model.PositionedItem;
-import org.ikasan.designer.model.Rectangle;
+import org.ikasan.designer.model.*;
 import org.ikasan.job.orchestration.builder.context.ContextTemplateBuilder;
 import org.ikasan.job.orchestration.builder.context.JobDependencyBuilder;
 import org.ikasan.job.orchestration.builder.context.LogicalGroupingBuilder;
@@ -201,24 +198,30 @@ public class CanvasJsonToContextTemplateAdapter {
 
         connections.entrySet().forEach(entry -> {
             entry.getValue().forEach(connection -> {
-                contextTemplateBuilder.addJobDependency(contextTemplateBuilder.getJobDependencyBuilder()
-                    .withJobName(schedulerJobs.get(connection.getTarget().getNode()).getUserData().getJobName())
-                    .withAgentName(schedulerJobs.get(connection.getTarget().getNode()).getUserData().getAgentName())
-                    .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
-                        .addAnd(contextTemplateBuilder.getJobAndBuilder()
-                            .withAgentName(schedulerJobs.get(entry.getKey()).getUserData().getAgentName())
-                            .withJobName(schedulerJobs.get(entry.getKey()).getUserData().getJobName())
+                if(schedulerJobs.get(connection.getTarget().getNode()).getUserData().getJobName() != null &&
+                    schedulerJobs.get(connection.getTarget().getNode()).getUserData().getAgentName() != null) {
+                    contextTemplateBuilder.addJobDependency(contextTemplateBuilder.getJobDependencyBuilder()
+                        .withJobName(schedulerJobs.get(connection.getTarget().getNode()).getUserData().getJobName())
+                        .withAgentName(schedulerJobs.get(connection.getTarget().getNode()).getUserData().getAgentName())
+                        .withLogicalGrouping(contextTemplateBuilder.getLogicalGroupingBuilder()
+                            .addAnd(contextTemplateBuilder.getJobAndBuilder()
+                                .withAgentName(schedulerJobs.get(entry.getKey()).getUserData().getAgentName())
+                                .withJobName(schedulerJobs.get(entry.getKey()).getUserData().getJobName())
+                                .build())
                             .build())
-                        .build())
-                    .build());
+                        .build());
+                }
             });
         });
 
         schedulerJobs.entrySet().forEach(entry -> {
-            contextTemplateBuilder.addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
-                .withJobName(entry.getValue().getUserData().getJobName())
-                .withAgentName(entry.getValue().getUserData().getAgentName())
-                .build());
+            if(entry.getValue().getUserData().getJobName() != null &&
+                entry.getValue().getUserData().getAgentName() != null) {
+                contextTemplateBuilder.addSchedulerJob(contextTemplateBuilder.getSchedulerJobBuilder()
+                    .withJobName(entry.getValue().getUserData().getJobName())
+                    .withAgentName(entry.getValue().getUserData().getAgentName())
+                    .build());
+            }
         });
 
         return contextTemplateBuilder.build();
