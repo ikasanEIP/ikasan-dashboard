@@ -3,6 +3,7 @@ package org.ikasan.orchestration.service.context.recovery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.core.machine.JobLogicMachine;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
@@ -87,6 +88,9 @@ public class ContextInstanceRecoveryServiceImplTest {
     @Mock
     private ExecutorService executor;
 
+    @Mock
+    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+
     private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     private ContextInstanceRecoveryServiceImpl contextInstanceRecoveryServiceImpl;
@@ -114,7 +118,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
-            jobLockCacheInitialisationService
+            jobLockCacheInitialisationService,
+            contextInstanceSchedulerService
         );
 
         ReflectionTestUtils.setField(contextInstanceRecoveryServiceImpl, "executor", executor);
@@ -377,9 +382,9 @@ public class ContextInstanceRecoveryServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
             );
 
-        assertNotNull(ContextMachineCache.instance().getByContextName("ContextName1"));
-        assertNotNull(ContextMachineCache.instance().getByContextName("ContextName2"));
-        assertNotNull(ContextMachineCache.instance().getByContextName("ContextName3"));
+        assertNotNull(ContextMachineCache.instance().getFirstByContextName("ContextName1"));
+        assertNotNull(ContextMachineCache.instance().getFirstByContextName("ContextName2"));
+        assertNotNull(ContextMachineCache.instance().getFirstByContextName("ContextName3"));
 
         assertEquals(3, ContextMachineCache.instance().contextNames().size());
 
@@ -437,7 +442,7 @@ public class ContextInstanceRecoveryServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
             );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName("ContextName1");
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName("ContextName1");
         assertNotNull(contextMachine);
         assertEquals(1, ContextMachineCache.instance().contextNames().size());
         verifyContextMachine("ContextName1");
@@ -476,7 +481,7 @@ public class ContextInstanceRecoveryServiceImplTest {
     }
 
     private void verifyContextMachine(String contextName) {
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener

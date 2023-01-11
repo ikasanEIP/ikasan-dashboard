@@ -55,7 +55,7 @@ public class ContextStatusServiceImpl implements ContextStatusService {
 
     @Override
     public String getContextStatus(String instanceName, String contextName) {
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(instanceName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(instanceName);
         validateContextMachine(contextMachine, instanceName);
 
         InstanceStatus instanceStatus = contextMachine.getContextStatus(contextName);
@@ -66,7 +66,7 @@ public class ContextStatusServiceImpl implements ContextStatusService {
 
     @Override
     public String getContextStatusForJob(String instanceName, String contextName, String jobIdentifier) {
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(instanceName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(instanceName);
         validateContextMachine(contextMachine, instanceName);
 
         InstanceStatus instanceStatus = contextMachine.getJobStatus(contextName, jobIdentifier);
@@ -85,7 +85,7 @@ public class ContextStatusServiceImpl implements ContextStatusService {
     @Override
     public String getJsonContextStatus(String instanceName, String contextName) throws JsonProcessingException {
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(instanceName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(instanceName);
         validateContextMachine(contextMachine, instanceName);
 
         ContextService contextService = new ContextService();
@@ -111,7 +111,7 @@ public class ContextStatusServiceImpl implements ContextStatusService {
     @Override
     public String getJsonContextStatusForJob(String instanceName, String contextName, String jobName) throws JsonProcessingException {
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(instanceName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(instanceName);
         validateContextMachine(contextMachine, instanceName);
 
         ContextService contextService = new ContextService();

@@ -12,19 +12,20 @@ import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificationDetails> implements Monitor<GenericNotificationDetails> {
 
     private static final Logger LOG = LoggerFactory.getLogger(StateChangeMonitorImpl.class);
 
-    private Map<String, Future<?>> mapOfRunningJobs = new HashMap<>();
+    private final Map<String, Future<?>> mapOfRunningJobs = new HashMap<>();
 
-    private boolean notificationEnabled;
+    private final boolean notificationEnabled;
 
     /**
      * Constructor
@@ -39,7 +40,7 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
     @Override
     public void register(ContextInstance contextInstance) {
         if(this.notificationEnabled) {
-            ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextInstance.getName());
+            ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstance.getId());
 
             // Create the scheduler to be executed
             Future<?> notificationScheduler = Executors.newSingleThreadExecutor().submit(new ErrorNotificationsRunner(contextMachine));
@@ -77,7 +78,7 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
 
     protected class ErrorNotificationsRunner implements Runnable, SchedulerJobInstanceStateChangeEventListener {
 
-        private ContextMachine contextMachine;
+        private final ContextMachine contextMachine;
 
         public ErrorNotificationsRunner(ContextMachine contextMachine) {
             this.contextMachine = contextMachine;
@@ -97,8 +98,7 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
             } catch (Exception e) {
                 // do something
                 LOG.info("ErrorNotificationsRunner has been Interrupted by an exception, most likely Context Instance has been removed. Context {}, InstanceId: {} - Exception {}",
-                    contextMachine.getContext().getName(), contextMachine.getContext().getId(), e.getMessage()+ " - " + e.toString());
-            } finally {
+                    contextMachine.getContext().getName(), contextMachine.getContext().getId(), e.getMessage()+ " - " + e);
             }
         }
 
@@ -132,6 +132,4 @@ public class StateChangeMonitorImpl extends AbstractMonitorBase<GenericNotificat
             }
         }
     }
-
-
 }

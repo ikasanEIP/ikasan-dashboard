@@ -49,7 +49,7 @@ import static org.junit.Assert.assertEquals;
 public class JobRunningTimesMonitorTest {
 
     /** default executor service is a single thread executor */
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private String result="test";
 
@@ -74,7 +74,7 @@ public class JobRunningTimesMonitorTest {
     private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
 
     @After
-    public void tearDown() throws IOException {
+    public void tearDown()  {
         DateTimeUtils.setCurrentMillisSystem();
         monitorManagement.unRegisterMonitor(jobRunningTimesMonitor);
         ContextMachineCache.instance().remove(contextMachine1);
@@ -128,7 +128,7 @@ public class JobRunningTimesMonitorTest {
         scheduledProcessEvent1.setSuccessful(false);
 
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
-        ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
+        ContextMachineCache.instance().getFirstByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
 
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(60, TimeUnit.SECONDS).await()
@@ -148,7 +148,7 @@ public class JobRunningTimesMonitorTest {
         scheduledProcessEvent1.setSuccessful(false);
 
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
-        ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
+        ContextMachineCache.instance().getFirstByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(60, TimeUnit.SECONDS).await()
             .during(29, TimeUnit.SECONDS)
@@ -168,7 +168,7 @@ public class JobRunningTimesMonitorTest {
         scheduledProcessEvent1.setSuccessful(false);
 
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
-        ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
+        ContextMachineCache.instance().getFirstByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(60, TimeUnit.SECONDS).await()
             .during(29, TimeUnit.SECONDS)

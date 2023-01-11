@@ -1,14 +1,9 @@
 package org.ikasan.job.orchestration.provision.context;
 
 import com.esotericsoftware.minlog.Log;
-import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
-import org.ikasan.job.orchestration.context.register.ContextInstanceEndJob;
-import org.ikasan.job.orchestration.context.register.ContextInstanceRegisterJob;
-import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
-import org.ikasan.quartz.AbstractDashboardSchedulerService;
-import org.ikasan.scheduler.ScheduledJobFactory;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.module.ModuleType;
@@ -31,18 +26,15 @@ import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsSe
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
-import org.quartz.JobDetail;
-import org.quartz.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.ikasan.job.orchestration.context.register.ContextInstanceEndJob.END_JOB_EXTENSION;
 import static org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker.withinOperatingWindow;
 
-public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerService implements ContextProvisionService {
+    public class ContextProvisionServiceImpl implements ContextProvisionService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ContextProvisionServiceImpl.class);
 
@@ -55,9 +47,9 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
     private EmailNotificationDetailsService emailNotificationDetailsService;
     private EmailNotificationContextService emailNotificationContextService;
     private boolean uploadProvisionJobs;
+    private ContextInstanceSchedulerService contextInstanceSchedulerService;
 
-    public ContextProvisionServiceImpl(Scheduler scheduler,
-                                       ScheduledJobFactory scheduledJobFactory,
+    public ContextProvisionServiceImpl(
                                        ScheduledContextService scheduledContextService,
                                        ModuleMetaDataService moduleMetadataService,
                                        SchedulerJobService schedulerJobService,
@@ -66,9 +58,8 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
                                        ContextProfileService contextProfileService,
                                        EmailNotificationDetailsService emailNotificationDetailsService,
                                        EmailNotificationContextService emailNotificationContextService,
-                                       boolean uploadProvisionJobs) {
-
-        super(scheduler, scheduledJobFactory);
+                                       boolean uploadProvisionJobs,
+                                       ContextInstanceSchedulerService contextInstanceSchedulerService) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -104,25 +95,31 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
             throw new IllegalArgumentException("emailNotificationContextService cannot be null!");
         }
 
-        this.uploadProvisionJobs = uploadProvisionJobs;
+        this.contextInstanceSchedulerService = contextInstanceSchedulerService;
+        if (this.contextInstanceSchedulerService == null) {
+            throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
+        }
     }
 
-    @Override
-    public void registerJobs() {
-        // does nothing here as we just want to add jobs
-    }
-
+    /**
+     * Called when a plan is imported and requested to be provisioned on the agents.
+     * @param contextBundle
+     */
     public void provisionContext(ContextBundle contextBundle) {
         try {
             // TODO need to expand validate
+            final String jobName = contextBundle.getContextTemplate().getName();
             this.validate(contextBundle.getContextTemplate(), contextBundle.getSchedulerJobs());
             // delete all the jobs if they exist
-            this.deleteAllJobs(contextBundle.getContextTemplate().getName());
+            this.deleteAllJobs(jobName);
             // delete the context profiles
-            this.deleteContextProfiles(contextBundle.getContextTemplate().getName());
+            this.deleteContextProfiles(jobName);
             // delete the email notification associated to the context
-            this.deleteEmailNotificationDetailsByContext(contextBundle.getContextTemplate().getName());
-            this.deleteEmailNotificationContextByContext(contextBundle.getContextTemplate().getName());
+            this.deleteEmailNotificationDetailsByContext(jobName);
+            this.deleteEmailNotificationContextByContext(jobName);
+            // delete any running context instances since this may be a re-import over an existing context.
+            contextInstanceRegistrationService.deRegisterByName(jobName);
+
             // set job participates in lock flag on relevant jobs
             this.setJobsParticipateInJobLock(contextBundle.getContextTemplate(), contextBundle.getSchedulerJobs());
             // save the jobs
@@ -145,16 +142,13 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
             if (this.uploadProvisionJobs) {
                 provisionJobs(contextBundle.getSchedulerJobs());
             }
-            // register the jobs
-            this.registerContext(contextBundle.getContextTemplate());
+            // Even though the next start job may be tomorrow, the trigger must be setup
+            contextInstanceSchedulerService.registerStartJobAndTrigger(jobName, contextBundle.getContextTemplate().getTimeWindowStart(),
+                contextBundle.getContextTemplate().getTimezone());
 
             if (withinOperatingWindow(contextBundle.getContextTemplate().getTimeWindowStart(), contextBundle.getContextTemplate().getTimeWindowEnd(), new Date())) {
-                ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextBundle.getContextTemplate().getName());
-                if (contextMachine != null) {
-                    contextInstanceRegistrationService.deRegister(contextBundle.getContextTemplate().getName());
-                }
                 // NOTE: this will create a new context machine and instance and initialise it so overwriting existing context machine
-                contextInstanceRegistrationService.register(contextBundle.getContextTemplate().getName());
+                contextInstanceRegistrationService.register(jobName);
             }
         } catch (Exception e) {
             String message = String.format("Could not upload context and jobs. Error [%s]", e.getMessage());
@@ -175,26 +169,6 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
         }
     }
 
-    private void registerContext(ContextTemplate contextTemplate) {
-        // overwrites any existing details of registered jobs
-        ContextInstanceRegisterJob job = new ContextInstanceRegisterJob(contextTemplate.getName(),
-            contextTemplate.getTimeWindowStart(), contextTemplate.getTimezone(), this.contextInstanceRegistrationService);
-
-        ContextInstanceEndJob endJob = new ContextInstanceEndJob(contextTemplate.getName() + END_JOB_EXTENSION,
-            contextTemplate.getTimeWindowEnd(), contextTemplate.getTimezone(), this.contextInstanceRegistrationService);
-
-        JobDetail jobDetail = this.scheduledJobFactory.createJobDetail(job, ContextInstanceRegisterJob.class, job.getJobName(), "context");
-
-        JobDetail endJobDetail = this.scheduledJobFactory.createJobDetail(endJob, ContextInstanceEndJob.class, endJob.getJobName(), "context");
-
-        super.dashboardJobDetailsMap.put(job.getJobName(), jobDetail);
-        super.dashboardJobDetailsMap.put(endJob.getJobName(), endJobDetail);
-
-        super.dashboardJobsMap.put(jobDetail.getKey().toString(), job);
-        super.dashboardJobsMap.put(endJobDetail.getKey().toString(), endJob);
-        this.addJob(jobDetail.getKey().getName());
-        this.addJob(endJobDetail.getKey().getName());
-    }
 
     private void provisionJobs(List<SchedulerJob> contextJobs) {
         long now = System.currentTimeMillis();

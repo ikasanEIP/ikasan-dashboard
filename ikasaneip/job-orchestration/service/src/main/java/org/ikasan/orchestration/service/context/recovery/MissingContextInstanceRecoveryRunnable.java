@@ -1,8 +1,8 @@
 package org.ikasan.orchestration.service.context.recovery;
 
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
-import org.ikasan.orchestration.service.context.JobLockCacheInitialisationServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -37,7 +37,8 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
                                                   SchedulerJobInstanceService schedulerJobInstanceService,
                                                   ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
                                                   SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
-                                                  JobLockCacheInitialisationService jobLockCacheInitialisationService) {
+                                                  JobLockCacheInitialisationService jobLockCacheInitialisationService,
+                                                  ContextInstanceSchedulerService contextInstanceSchedulerService) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService, moduleMetadataService,
@@ -49,7 +50,8 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
-            jobLockCacheInitialisationService);
+            jobLockCacheInitialisationService,
+            contextInstanceSchedulerService);
 
         this.scheduledContextRecord = scheduledContextRecord;
     }
@@ -65,6 +67,7 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
             if(!this.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone())
                 && !this.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), contextInstance.getTimezone())) {
                 initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true);
+                contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), contextInstance.getTimeWindowEnd(), contextInstance.getTimezone(), contextInstance.getId());
             }
             else {
                 LOG.info(String.format("ContextTemplate [%s] falls withing a blackout time window and will not be registered!"

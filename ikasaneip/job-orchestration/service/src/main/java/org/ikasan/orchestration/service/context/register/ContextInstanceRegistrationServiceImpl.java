@@ -43,11 +43,11 @@ package org.ikasan.orchestration.service.context.register;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
-import org.ikasan.orchestration.service.context.JobLockCacheInitialisationServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -65,12 +65,7 @@ import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
-import org.quartz.CronExpression;
-
-import java.text.ParseException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import org.quartz.JobExecutionContext;
 
 public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRegistrationService {
     private static final Log LOG = LogFactory.getLog(ContextInstanceRegistrationServiceImpl.class);
@@ -87,7 +82,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                                                   SchedulerJobInstanceService schedulerJobInstanceService,
                                                   ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
                                                   SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
-                                                  JobLockCacheInitialisationService jobLockCacheInitialisationService) {
+                                                  JobLockCacheInitialisationService jobLockCacheInitialisationService,
+                                                  ContextInstanceSchedulerService contextInstanceSchedulerService) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService,
@@ -100,30 +96,51 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
-            jobLockCacheInitialisationService);
+            jobLockCacheInitialisationService,
+            contextInstanceSchedulerService);
+    }
+    /**
+     * Remove the all contextInstance associated with this context name, all jobsDetails & triggers.
+     * This will be invoked, for example, by the UI
+     * @param contextName / plan for which we need to deregister.
+     */
+    @Override
+    public void deRegisterByName(String contextName) {
+        for(ContextMachine contextMachine : ContextMachineCache.instance().getAllByContextName(contextName)) {
+            deRegisterById(contextMachine.getContext().getId(), null);
+        }
+        contextInstanceSchedulerService.removeJob(contextName);
     }
 
-
+    /**
+     * Remove the contextInstance associated with the context instance ID
+     * This will be invoked from a plan end cron trigger
+     * @param contextInstanceId / plan for which we need to deregister.
+     */
     @Override
-    public void deRegister(String contextName) {
+    public void deRegisterById(String contextInstanceId, JobExecutionContext context) {
+        if (context != null) {
+            contextInstanceSchedulerService.removeEndJobTrigger(context.getTrigger());
+        }
+        final ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
+        if (contextMachine == null) {
+            LOG.info(String.format("Could not find context machine for context Instance ID [%s], so therefore nothing to de-register.", contextInstanceId));
+            return;
+        }
+        LOG.info(String.format("De registering context Instance ID [%s], plan name [%s]", contextInstanceId, contextMachine.getContext().getName()));
+
+        final ContextInstance instance = contextMachine.getContext();
+        if (instance == null) {
+            String messages = String.format("Could not find instance in ContextMachine for context Instance ID [%s]", contextInstanceId);
+            LOG.error(messages);
+            throw new RuntimeException(messages);
+        }
+
+        removeAgentInstances(instance);
+        saveContextInstance(instance, InstanceStatus.ENDED);
+        super.jobLockCacheInitialisationService.removeJobLocksFromCache(instance);
+        ContextMachineCache.instance().remove(contextMachine);
         try {
-            LOG.info(String.format("De registering context [%s]", contextName));
-            ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
-            if (contextMachine == null) {
-                LOG.info(String.format("Could not find context machine for [%s], so therefor nothing to de-register.", contextName));
-                return;
-            }
-
-            ContextInstance instance = contextMachine.getContext();
-            if (instance == null) {
-                LOG.error(String.format("Could not find instance in ContextMachine for [%s]", contextName));
-                throw new RuntimeException(String.format("Could not find instance in ContextMachine for [%s]", contextName));
-            }
-
-            removeAgentInstances(instance);
-            saveContextInstance(instance, InstanceStatus.ENDED);
-            super.jobLockCacheInitialisationService.removeJobLocksFromCache(instance);
-            ContextMachineCache.instance().remove(contextMachine);
             contextMachine.teardown();
         } catch (Exception e) {
             LOG.error(String.format("An error has occurred executing de registering job[%s]", e.getMessage()), e);
@@ -131,32 +148,39 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         }
     }
 
+    /**
+     * Create a new instance of the plan and register it.
+     * This will be invoked when a plan start trigger fires.
+     * It will fire even if the plan is disabled, but will not create a new context.
+     * @param contextName i.e. plan to create instance for
+     */
     @Override
     public void register(String contextName) {
+        ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(contextName);
+        if (scheduledContextRecord == null) {
+            final String message = String.format("Could not find scheduledContextRecord for context name [%s]", contextName);
+            LOG.error(message);
+            throw new RuntimeException(message);
+        }
+
+        if (scheduledContextRecord.isDisabled()) {
+            LOG.info(String.format("Context name [%s] is disabled and will not be registered!", contextName));
+            return;
+        }
+
+        LOG.info(String.format("Registering context [%s]", contextName));
         try {
-            LOG.info(String.format("Registering context [%s]", contextName));
-            ScheduledContextRecord scheduledContextRecord = this.scheduledContextService.findById(contextName);
-            if (scheduledContextRecord == null) {
-                LOG.error(String.format("Could not find scheduledContextRecord for [%s]", contextName));
-                throw new RuntimeException(String.format("Could not find scheduledContextRecord for [%s]", contextName));
-            }
-
-            if (scheduledContextRecord.isDisabled()) {
-                LOG.info(String.format("ContextTemplate [%s] is disabled and will not be registered!", contextName));
-                return;
-            }
-
-            ContextTemplate context = objectMapper.readValue(objectMapper
-                .writeValueAsBytes(scheduledContextRecord.getContext()), ContextTemplateImpl.class);
-            ContextInstanceImpl contextInstance = objectMapper.readValue(objectMapper
-                .writeValueAsBytes(scheduledContextRecord.getContext()), ContextInstanceImpl.class);
-
+            byte[] scheduledContextRecordContext = objectMapper.writeValueAsBytes(scheduledContextRecord.getContext());
+            ContextTemplate context = objectMapper.readValue(scheduledContextRecordContext, ContextTemplateImpl.class);
+            ContextInstanceImpl contextInstance = objectMapper.readValue(scheduledContextRecordContext, ContextInstanceImpl.class);
             if(!this.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone())
                 && !this.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), contextInstance.getTimezone())) {
                 initialiseContextMachine(context, contextInstance, true);
+                contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), contextInstance.getTimeWindowEnd(), contextInstance.getTimezone(), contextInstance.getId());
+                LOG.info(String.format("Registering context instance [%s] for context [%s]", contextInstance.getId(), contextName));
             }
             else {
-                LOG.info(String.format("ContextTemplate [%s] falls withing a blackout time window and will not be registered!", contextName));
+                LOG.info(String.format("Context name [%s] falls withing a blackout time window and will not be registered!", contextName));
             }
 
         } catch (Exception e) {

@@ -357,7 +357,7 @@ public class ContextTemplateWidget extends Div {
                             this.jobProvisionService.removeJobs(scheduledContextRecord.getContextName());
                             this.schedulerJobService.deleteByContextName(scheduledContextRecord.getContextName());
                             this.scheduledContextService.deleteContext(scheduledContextRecord.getContextName());
-                            this.contextInstanceRegistrationService.deRegister(scheduledContextRecord.getContextName());
+                            this.contextInstanceRegistrationService.deRegisterByName(scheduledContextRecord.getContextName());
                             this.emailNotificationDetailsService.deleteByContextName(scheduledContextRecord.getContextName());
                             this.emailNotificationContextService.deleteByContextName(scheduledContextRecord.getContextName());
 
@@ -570,7 +570,7 @@ public class ContextTemplateWidget extends Div {
                                 scheduledContextRecord.setModifiedBy(authentication.getName());
                                 this.jobProvisionService.removeJobs(contextTemplate.getName());
                                 ContextMachine contextMachine = ContextMachineCache.instance()
-                                    .getByContextName(contextTemplate.getName());
+                                    .getFirstByContextName(contextTemplate.getName());
                                 if (contextMachine != null) {
                                     ContextMachineCache.instance().remove(contextMachine);
                                     contextMachine.teardown();
@@ -663,7 +663,7 @@ public class ContextTemplateWidget extends Div {
                 this.activeContextSubMenu.addItem(name, itemClickEvent -> {
                     String route = RouteConfiguration.forSessionScope()
                         .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
-                            .getByContextName(name).getContext().getId() + "_scheduledContextInstance");
+                            .getFirstByContextName(name).getContext().getId() + "_scheduledContextInstance");
 
                     getUI().ifPresent(ui -> ui.getPage().open(route));
                 });

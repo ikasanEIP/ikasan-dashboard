@@ -12,7 +12,7 @@ public class MonitorManagement {
 
     private static final Logger LOG = LoggerFactory.getLogger(MonitorManagement.class);
 
-    private static List<Monitor> monitors = new ArrayList<>();
+    private static final List<Monitor> monitors = new ArrayList<>();
 
     public void registerMonitor(Monitor monitor) {
         monitors.add(monitor);
@@ -32,7 +32,8 @@ public class MonitorManagement {
     public static void stopMonitoring(ContextMachine contextMachine) {
         for (Monitor monitor : monitors) {
             monitor.unregister(contextMachine.getContext());
-            LOG.info(contextMachine.getContext().getName()+" is being unregistered context is ending");
+            LOG.info(contextMachine.getContext().getName()+" context instance ID [" + contextMachine.getContext().getId() +
+                "] monitor [" + monitor.getClass().getName() + "] is being unregistered context is ending");
         }
     }
 }
