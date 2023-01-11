@@ -78,10 +78,10 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         jobLockCache.addLocks(context1.getAllNestedJobLocks());
         jobLockCache.addLocks(context2.getAllNestedJobLocks());
 
-        ContextMachine contextMachine1 = new ContextMachine(context1, instance1, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine1 = new ContextMachine(context1, instance1, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>()
             , internalEventDrivenJobs1, queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
 
-        ContextMachine contextMachine2 = new ContextMachine(context2, instance2, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine2 = new ContextMachine(context2, instance2, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>()
             , internalEventDrivenJobs2, queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
 
         InstanceStatus instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
@@ -332,9 +332,9 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         jobLockCache.addLocks(context1.getAllNestedJobLocks());
         jobLockCache.addLocks(context2.getAllNestedJobLocks());
 
-        ContextMachine contextMachine1 = new ContextMachine(context1, instance1, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine1 = new ContextMachine(context1, instance1, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>()
             , internalEventDrivenJobs1, queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
-        ContextMachine contextMachine2 = new ContextMachine(context2, instance2, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine2 = new ContextMachine(context2, instance2, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>()
             , internalEventDrivenJobs2, queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
 
         InstanceStatus instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
@@ -495,9 +495,9 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         jobLockCache.addLocks(context1.getAllNestedJobLocks());
         jobLockCache.addLocks(context2.getAllNestedJobLocks());
 
-        ContextMachine contextMachine1 = new ContextMachine(context1, instance1, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine1 = new ContextMachine(context1, instance1, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>()
             , internalEventDrivenJobs1, queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
-        ContextMachine contextMachine2 = new ContextMachine(context2, instance2, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine2 = new ContextMachine(context2, instance2, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>()
             , internalEventDrivenJobs2, queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
 
         InstanceStatus instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
@@ -650,9 +650,9 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         jobLockCache.addLocks(context1.getAllNestedJobLocks());
         jobLockCache.addLocks(context2.getAllNestedJobLocks());
 
-        ContextMachine contextMachine1 = new ContextMachine(context1, instance1, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine1 = new ContextMachine(context1, instance1, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>()
             , internalEventDrivenJobs1, queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
-        ContextMachine contextMachine2 = new ContextMachine(context2, instance2, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine2 = new ContextMachine(context2, instance2, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>()
             , internalEventDrivenJobs2, queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
 
         InstanceStatus instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
@@ -798,9 +798,9 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         jobLockCache.addLocks(context1.getAllNestedJobLocks());
         jobLockCache.addLocks(context2.getAllNestedJobLocks());
 
-        ContextMachine contextMachine1 = new ContextMachine(context1, instance1, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine1 = new ContextMachine(context1, instance1, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>()
             , internalEventDrivenJobs1, queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
-        ContextMachine contextMachine2 = new ContextMachine(context2, instance2, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine2 = new ContextMachine(context2, instance2, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>()
             , internalEventDrivenJobs2, queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
 
         InstanceStatus instanceStatus = contextMachine1.getContextStatus("Context-Locks-1");
@@ -942,7 +942,7 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
         jobLockCache.addLocks(context.getAllNestedJobLocks());
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
 
         assertContextStatuses(contextMachine, workingStatuses);
@@ -2276,7 +2276,7 @@ public class ContextMachineJobLocksTest extends AbstractTest {
         jobLockCache.setJobLockCacheService(new JobLockCacheServiceTestImpl());
         jobLockCache.addLocks(context.getAllNestedJobLocks());
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), jobLockCache, contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
 
         assertContextStatuses(contextMachine, workingStatuses);

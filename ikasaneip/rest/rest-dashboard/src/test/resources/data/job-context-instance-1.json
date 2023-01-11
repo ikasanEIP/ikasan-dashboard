@@ -24,6 +24,7 @@
     ],
     "timeWindowStart": null,
     "timeWindowEnd": null,
+    "environmentGroup": null,
     "id": "UUID1",
     "createdDateTime": 11,
     "updatedDateTime": 111,

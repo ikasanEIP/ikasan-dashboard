@@ -94,14 +94,14 @@ public final class ContextExportZipUtils {
             // get all the jobs
             int offset = 0;
             SearchResults<SchedulerJobRecord> results = schedulerJobService.findByContext(contextName, searchLimit, offset);
-            addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, results);
+            addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir, results);
 
             int retrievedNumber = results.getResultList().size();
             long totalNumberOfResults = results.getTotalNumberOfResults();
             while (offset < totalNumberOfResults) {
                 offset += retrievedNumber;
                 results = schedulerJobService.findByContext(contextName, searchLimit, offset);
-                addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, results);
+                addJobFilesToZip(objectMapper, jobsFileDir, jobsInternalDir, jobsQuartzDir, jobsGlobalDir, results);
             }
 
             // get the overall notifications settings for the context
@@ -203,7 +203,7 @@ public final class ContextExportZipUtils {
         fis.close();
     }
 
-    private static void addJobFilesToZip(ObjectMapper objectMapper, Path p3, Path p4, Path p5, SearchResults<SchedulerJobRecord> results) throws IOException {
+    private static void addJobFilesToZip(ObjectMapper objectMapper, Path p3, Path p4, Path p5, Path p6, SearchResults<SchedulerJobRecord> results) throws IOException {
         for (SchedulerJobRecord schedulerJobRecord : results.getResultList()) {
             String jobAsString = objectMapper.writeValueAsString(schedulerJobRecord.getJob());
             Path jobPath = null;
@@ -222,7 +222,7 @@ public final class ContextExportZipUtils {
                     jobPath = Paths.get(p5 + File.separator + jobName + ".json");
                     break;
                 case JobConstants.GLOBAL_EVENT_JOB:_JOB:
-                    jobPath = Paths.get(p5 + File.separator + jobName + ".json");
+                    jobPath = Paths.get(p6 + File.separator + jobName + ".json");
                     break;
                 default:
                     LOG.warn("Unknown job type: " + schedulerJobRecord.getType());

@@ -30,11 +30,9 @@ import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
-import org.ikasan.spec.scheduled.instance.model.ContextInstance;
-import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
-import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceSearchFilter;
+import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.*;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
@@ -160,12 +158,19 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
                     }
                 });
 
+                Map<String, GlobalEventJobInstance> globalEventJobMap = this.getGlobalEventJobs(contextInstance.getId());
+                globalEventJobMap.values().forEach(job -> {
+                    if(!agents.containsKey(job.getAgentName())) {
+                        agents.put(job.getAgentName(), moduleMetaDataService.findById(job.getAgentName()));
+                    }
+                });
+
                 // if we are uploading a new context we add the all the locks
                 JobLockCache jobLockCache = JobLockCacheImpl.instance();
                 jobLockCache.setJobLockCacheService(jobLockCacheService);
                 jobLockCache.addLocks(contextTemplate.getAllNestedJobLocks());
 
-                ContextMachine contextMachine = new ContextMachine(contextTemplate, contextInstance, scheduledContextInstanceService
+                ContextMachine contextMachine = new ContextMachine(contextTemplate, contextInstance, scheduledContextInstanceService, globalEventJobMap
                     , internalEventDrivenJobMap, this.queueDir, agents, jobLockCache, this.contextParametersInstanceService, this.scheduledContextService
                     , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
                 contextMachine.init();
@@ -215,7 +220,7 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
     private Map<String, InternalEventDrivenJobInstance> getInternalJobs(String contextInstanceId) {
         SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setContextInstanceId(contextInstanceId);
-        filter.setJobType("internalEventDrivenJobInstance");
+        filter.setJobType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
         SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults
             = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
 
@@ -223,5 +228,18 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
             .map(internalEventDrivenJobRecord -> (InternalEventDrivenJobInstance)internalEventDrivenJobRecord.getSchedulerJobInstance())
             .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity()));
         return internalEventDrivenJobMap;
+    }
+
+    private Map<String, GlobalEventJobInstance> getGlobalEventJobs(String contextInstanceId) {
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        filter.setJobType(JobConstants.GLOBAL_EVENT_JOB_INSTANCE);
+        SearchResults<SchedulerJobInstanceRecord> globalEventJobRecordSearchResults
+            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+        Map<String, GlobalEventJobInstance> globalEventJobMap = globalEventJobRecordSearchResults.getResultList().stream()
+            .map(globalEventJobRecord -> (GlobalEventJobInstance) globalEventJobRecord.getSchedulerJobInstance())
+            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity()));
+        return globalEventJobMap;
     }
 }

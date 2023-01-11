@@ -73,7 +73,7 @@ public class ContextInstanceStateChangeEventListenerTest extends AbstractTest {
             , getContextParameter("test7", "String")));
         internalEventDrivenJobs.put("agentName8-jobName8", job8);
 
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl()
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), new HashMap<>()
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService
             , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
         contextMachine.init();

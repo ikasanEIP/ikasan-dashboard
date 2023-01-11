@@ -90,6 +90,11 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     }
 
     @Override
+    public void saveGlobalEventJobRecord(GlobalEventJobRecord globalEventJobRecord) {
+
+    }
+
+    @Override
     public void saveFileEventDrivenJob(FileEventDrivenJob fileEventDrivenJob, String modifiedBy) {
 
     }
@@ -101,6 +106,11 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
 
     @Override
     public void saveQuartzScheduledJob(QuartzScheduleDrivenJob quartzScheduleDrivenJob, String modifiedBy) {
+
+    }
+
+    @Override
+    public void saveGlobalEventJob(GlobalEventJob globalEventJob, String modifiedBy) {
 
     }
 
@@ -120,6 +130,11 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
     }
 
     @Override
+    public void saveGlobalEventJobs(List list, String actor) {
+
+    }
+
+    @Override
     public void saveQuartzScheduledJobRecords(List quartzScheduleDrivenJobRecord) {
 
     }
@@ -131,6 +146,11 @@ public class SchedulerJobServiceTestImpl implements SchedulerJobService {
 
     @Override
     public void saveFileEventDrivenJobRecords(List list) {
+
+    }
+
+    @Override
+    public void saveGlobalEventJobRecords(List list) {
 
     }
 

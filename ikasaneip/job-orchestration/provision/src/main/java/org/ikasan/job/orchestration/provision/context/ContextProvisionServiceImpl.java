@@ -18,6 +18,7 @@ import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobWrapper;
@@ -207,12 +208,15 @@ public class ContextProvisionServiceImpl extends AbstractDashboardSchedulerServi
             try {
                 SchedulerJobWrapper schedulerJobWrapper = new SchedulerJobWrapperImpl();
                 schedulerJobWrapper.setJobs(contextJobs.stream()
-                    .filter(schedulerJob -> schedulerJob.getAgentName().equals(agent.getName()))
+                    .filter(schedulerJob -> schedulerJob.getAgentName().equals(agent.getName()) &&
+                        !(schedulerJob instanceof GlobalEventJob)) // Do not provision Global Events as this is not managed by the agent, but through the ContextMachine
                     .collect(Collectors.toList()));
 
-                LOG.info(String.format("Attempting to provision %s jobs on agent[%s]", jobsSize, agent.getUrl()));
+                LOG.info(String.format("Attempting to provision %s jobs on agent[%s]", schedulerJobWrapper.getJobs().size(), agent.getUrl()));
+                LOG.info(String.format("Skipping %s global event jobs for the agent[%s] as global event jobs are not required for the agent.",
+                    jobsSize - schedulerJobWrapper.getJobs().size(), agent.getUrl()));
                 this.jobProvisionModuleRestService.provisionJobs(agent.getUrl(), schedulerJobWrapper);
-                LOG.info(String.format("Successfully provisioned %s jobs on agent[%s]", jobsSize, agent.getUrl()));
+                LOG.info(String.format("Successfully provisioned %s jobs on agent[%s]", schedulerJobWrapper.getJobs().size(), agent.getUrl()));
             } catch (Exception e) {
                 e.printStackTrace();
                 exceptions.add(new RuntimeException(String.format("Agent[%s] Error[%s]", agent.getName(), e.getMessage()), e));

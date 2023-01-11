@@ -21,6 +21,7 @@ import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBr
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.*;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
@@ -164,7 +165,9 @@ public abstract class ContextInstanceServiceBase {
             }
         });
 
-        ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, internalJobs, queueDirectory, agents,
+        Map<String, GlobalEventJobInstance> globalEventJobMap = getGlobalEventJobs(instance.getId());
+
+        ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, internalJobs, queueDirectory, agents,
             initialiseJobLockCache(context, isInitialContextInstantiation), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
             this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
         contextMachine.init();
@@ -267,7 +270,7 @@ public abstract class ContextInstanceServiceBase {
     private Map<String, InternalEventDrivenJobInstance> getInternalJobs(String contextInstanceId) {
         SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setContextInstanceId(contextInstanceId);
-        filter.setJobType("internalEventDrivenJobInstance");
+        filter.setJobType(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE);
         SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults
             = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
 
@@ -275,6 +278,19 @@ public abstract class ContextInstanceServiceBase {
             .map(internalEventDrivenJobRecord -> (InternalEventDrivenJobInstance)internalEventDrivenJobRecord.getSchedulerJobInstance())
             .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity()));
         return internalEventDrivenJobMap;
+    }
+
+    private Map<String, GlobalEventJobInstance> getGlobalEventJobs(String contextInstanceId) {
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        filter.setJobType(JobConstants.GLOBAL_EVENT_JOB_INSTANCE);
+        SearchResults<SchedulerJobInstanceRecord> globalEventJobRecordSearchResults
+            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+        Map<String, GlobalEventJobInstance> globalEventJobMap = globalEventJobRecordSearchResults.getResultList().stream()
+            .map(globalEventJobRecord -> (GlobalEventJobInstance) globalEventJobRecord.getSchedulerJobInstance())
+            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity()));
+        return globalEventJobMap;
     }
 
     private void propagateContextInstanceToAgents(ContextInstance contextInstance, HashMap<String, ModuleMetaData> agents) {
