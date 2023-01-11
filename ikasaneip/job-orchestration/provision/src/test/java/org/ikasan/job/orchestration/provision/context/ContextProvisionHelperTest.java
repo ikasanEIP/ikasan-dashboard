@@ -139,6 +139,7 @@ public class ContextProvisionHelperTest extends AbstractTest {
             .allowIfSubType("org.ikasan.job.orchestration.model.job")
             .allowIfSubType("org.ikasan.job.orchestration.model.context")
             .allowIfSubType("java.util.ArrayList")
+            .allowIfSubType("java.util.HashMap")
             .build();
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);

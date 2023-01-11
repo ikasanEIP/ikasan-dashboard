@@ -131,6 +131,9 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
             else if(this.type != null && this.type.equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE)) {
                 return objectMapper.readValue(this.schedulerJobInstance, SolrInternalEventDrivenJobInstanceImpl.class);
             }
+            else if(this.type != null && this.type.equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE)) {
+                return objectMapper.readValue(this.schedulerJobInstance, SolrGlobalEventJobInstanceImpl.class);
+            }
             else {
                 return objectMapper.readValue(this.schedulerJobInstance, SolrSchedulerJobInstanceImpl.class);
             }
@@ -151,6 +154,9 @@ public class SolrSchedulerJobInstanceRecordImpl implements SchedulerJobInstanceR
             }
             else if(schedulerJobInstance instanceof InternalEventDrivenJobInstance) {
                 this.type = JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE;
+            }
+            else if(schedulerJobInstance instanceof GlobalEventJobInstance) {
+                this.type = JobConstants.GLOBAL_EVENT_JOB_INSTANCE;
             }
 
             this.schedulerJobInstance = objectMapper.writeValueAsString(schedulerJobInstance);

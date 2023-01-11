@@ -94,7 +94,7 @@ public class EmailNotifierTest {
         contextTemplate1.setName("context-template-1");
         ContextInstance contextInstance1 = new ContextInstanceImpl();
         contextInstance1.setName("context-instance-1");
-        ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, null
+        ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, null, null
             , null,"./target",null,null, null, null,
             null, null, null);
         if (ContextMachineCache.instance().getByContextName("context-instance-1") == null) {

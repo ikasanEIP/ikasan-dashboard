@@ -16,10 +16,7 @@ import org.ikasan.scheduled.event.model.SolrContextualisedScheduledProcessEventI
 import org.ikasan.scheduled.event.model.SolrDryRunParameters;
 import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
 import org.ikasan.scheduled.instance.model.*;
-import org.ikasan.scheduled.job.dao.SolrFileEventDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrInternalEventDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrQuartzScheduleDrivenJobDaoImpl;
-import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
+import org.ikasan.scheduled.job.dao.*;
 import org.ikasan.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.DryRunParameters;
@@ -50,6 +47,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
     private SolrFileEventDrivenJobDaoImpl solrFileEventDrivenJobRecordDao;
     private SolrQuartzScheduleDrivenJobDaoImpl solrQuartzScheduleDrivenJobRecordDao;
     private SolrInternalEventDrivenJobDaoImpl solrInternalEventDrivenJobRecordDao;
+    private SolrGlobalEventJobDaoImpl solrGlobalEventJobRecordDao;
     private Path tmpPath;
     private EmbeddedSolrServer server;
 
@@ -82,6 +80,9 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
 
         this.solrInternalEventDrivenJobRecordDao = new SolrInternalEventDrivenJobDaoImpl();
         this.solrInternalEventDrivenJobRecordDao.setSolrClient(server);
+        
+        this.solrGlobalEventJobRecordDao = new SolrGlobalEventJobDaoImpl();
+        this.solrGlobalEventJobRecordDao.setSolrClient(server);
 
         this.service = new SolrSchedulerJobInstanceServiceImpl(this.solrSchedulerJobInstanceDao, this.solrSchedulerJobDao, SolrSchedulerJobInstanceServiceImplTest.getSchedulerJobExecutionEnvironmentLabel());
     }
@@ -417,6 +418,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         this.insertFileEventRecords("file", 135, "context");
         this.insertQuartzScheduleEventRecords("quartz", 75, "context");
         this.insertInternalEventDrivenRecords("internal", 400, "context", null);
+        this.insertGlobalEventRecords("global", 10, "context");
 
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -433,6 +435,8 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
                         return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrInternalEventDrivenJobInstanceImpl.class);
                     } else if (schedulerJobRecord.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
                         return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrQuartzScheduleDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrGlobalEventJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrGlobalEventJobInstanceImpl.class);
                     }
                 }
                 catch (Exception e) {
@@ -448,12 +452,12 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         List<SchedulerJobInstance> schedulerJobInstances = this.service.initialiseSchedulerJobInstancesForContext
             (contextInstance, parameters);
 
-        Assert.assertEquals(610, schedulerJobInstances.size());
+        Assert.assertEquals(620, schedulerJobInstances.size());
 
         SearchResults<SchedulerJobInstanceRecord> searchResults = this.service.getSchedulerJobInstancesByContextInstanceId
-            ("contextInstanceId", 610, 0, null, null);
+            ("contextInstanceId", 620, 0, null, null);
 
-        Assert.assertEquals(610, searchResults.getResultList().size());
+        Assert.assertEquals(620, searchResults.getResultList().size());
     }
 
     @Test
@@ -461,6 +465,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         this.insertFileEventRecords("file", 135, "context");
         this.insertQuartzScheduleEventRecords("quartz", 75, "context");
         this.insertInternalEventDrivenRecords("internal", 400, "context", null);
+        this.insertGlobalEventRecords("global", 10, "context");
 
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -477,6 +482,8 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
                         return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrInternalEventDrivenJobInstanceImpl.class);
                     } else if (schedulerJobRecord.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
                         return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrQuartzScheduleDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrGlobalEventJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrGlobalEventJobInstanceImpl.class);
                     }
                 }
                 catch (Exception e) {
@@ -492,12 +499,12 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         List<SchedulerJobInstance> schedulerJobInstances = this.service.initialiseSchedulerJobInstancesForContext
             (contextInstance, parameters);
 
-        Assert.assertEquals(610, schedulerJobInstances.size());
+        Assert.assertEquals(620, schedulerJobInstances.size());
 
         SearchResults<SchedulerJobInstanceRecord> searchResults = this.service.getSchedulerJobInstancesByContextInstanceId
-            ("contextInstanceId", 610, 0, null, null);
+            ("contextInstanceId", 620, 0, null, null);
 
-        Assert.assertEquals(610, searchResults.getResultList().size());
+        Assert.assertEquals(620, searchResults.getResultList().size());
 
         searchResults.getResultList().forEach(job -> {
             if(job.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
@@ -516,6 +523,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         this.insertFileEventRecords("file", 135, "context");
         this.insertQuartzScheduleEventRecords("quartz", 75, "context");
         this.insertInternalEventDrivenRecords("internal", 400, "context",null);
+        this.insertGlobalEventRecords("global", 10, "context");
 
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -533,6 +541,8 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
                         schedulerJobInstance = objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrInternalEventDrivenJobInstanceImpl.class);
                     } else if (schedulerJobRecord.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
                         schedulerJobInstance = objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrQuartzScheduleDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrGlobalEventJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrGlobalEventJobInstanceImpl.class);
                     }
                     schedulerJobInstance.setChildContextName("context");
                     return schedulerJobInstance;
@@ -586,6 +596,7 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         this.insertQuartzScheduleEventRecords("quartz", 1, "context");
         this.insertInternalEventDrivenRecords("internal", 1, "context", "POWERSHELL"); //expect to be change
         this.insertInternalEventDrivenRecords("internalB", 1, "context", "some-non-replace-value"); // should not change
+        this.insertGlobalEventRecords("global", 1, "context");
 
         ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
@@ -602,6 +613,8 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
                         return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrInternalEventDrivenJobInstanceImpl.class);
                     } else if (schedulerJobRecord.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
                         return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrQuartzScheduleDrivenJobInstanceImpl.class);
+                    } else if (schedulerJobRecord.getJob() instanceof SolrGlobalEventJobImpl) {
+                        return (SchedulerJobInstance)objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob()), SolrGlobalEventJobInstanceImpl.class);
                     }
                 }
                 catch (Exception e) {
@@ -617,12 +630,12 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
         List<SchedulerJobInstance> schedulerJobInstances = this.service.initialiseSchedulerJobInstancesForContext
             (contextInstance, parameters);
 
-        Assert.assertEquals(4, schedulerJobInstances.size());
+        Assert.assertEquals(5, schedulerJobInstances.size());
 
         SearchResults<SchedulerJobInstanceRecord> searchResults = this.service.getSchedulerJobInstancesByContextInstanceId
-            ("contextInstanceId", 4, 0, null, null);
+            ("contextInstanceId", 5, 0, null, null);
 
-        Assert.assertEquals(4, searchResults.getResultList().size());
+        Assert.assertEquals(5, searchResults.getResultList().size());
 
         searchResults.getResultList()
             .forEach(job -> {
@@ -768,6 +781,25 @@ public class SolrSchedulerJobInstanceServiceImplTest extends SolrTestCaseJ4 {
 
 
             this.solrInternalEventDrivenJobRecordDao.save(solrInternalEventDrivenJobRecord);
+        });
+    }
+
+    private void insertGlobalEventRecords(String idPrefix, int num, String contextId) {
+        IntStream.range(0, num).forEach(i -> {
+            SolrGlobalEventJobImpl solrGlobalEventJob = new SolrGlobalEventJobImpl();
+            solrGlobalEventJob.setAgentName(idPrefix+"agentName"+i);
+            solrGlobalEventJob.setJobName(idPrefix+"jobName"+i);
+            solrGlobalEventJob.setIdentifier(solrGlobalEventJob.getAgentName()+"_"+solrGlobalEventJob.getJobName());
+            solrGlobalEventJob.setContextName(contextId);
+
+            SolrGlobalEventJobRecordImpl solrGlobalEventJobRecord = new SolrGlobalEventJobRecordImpl();
+            solrGlobalEventJobRecord.setAgentName(idPrefix+"agentName"+i);
+            solrGlobalEventJobRecord.setJobName("jobName"+i);
+            solrGlobalEventJobRecord.setContextName(contextId);
+            solrGlobalEventJobRecord.setTimestamp(1000000L);
+            solrGlobalEventJobRecord.setGlobalEventJob(solrGlobalEventJob);
+            
+            this.solrGlobalEventJobRecordDao.save(solrGlobalEventJobRecord);
         });
     }
 

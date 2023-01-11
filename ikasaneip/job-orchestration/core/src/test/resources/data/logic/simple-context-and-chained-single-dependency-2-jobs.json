@@ -1,0 +1,51 @@
+{
+  "name" : "Context1-Two-Jobs",
+  "jobDependencies" : [ {
+    "jobIdentifier" : "agentNameTwoJobs-jobName3",
+    "logicalGrouping" : {
+      "logicalGrouping" : null,
+      "and" : [ {
+        "identifier" : "agentNameTwoJobs-jobName2"
+      }],
+      "or" : null,
+      "not" : null
+    }
+  } ],
+  "contexts" : [ ],
+  "contextDependencies" : [],
+  "contextParameters" : [ {
+    "name" : "name",
+    "type" : "type",
+    "value" : null
+  }, {
+    "name" : "name",
+    "type" : "type",
+    "value" : null
+  }, {
+    "name" : "name",
+    "type" : "type",
+    "value" : null
+  } ],
+  "scheduledJobs" : [ {
+    "identifier" : "agentNameTwoJobs-jobName2",
+    "agentName" : "agentNameTwoJobs",
+    "jobName" : "jobName2",
+    "held" : false,
+    "skip" : false,
+    "scheduledProcessEvent" : null
+  }, {
+    "identifier" : "agentNameTwoJobs-jobName3",
+    "agentName" : "agentNameTwoJobs",
+    "jobName" : "jobName3",
+    "held" : false,
+    "skip" : false,
+    "scheduledProcessEvent" : null
+  } ],
+  "createdDateTime" : 0,
+  "updatedDateTime" : 0,
+  "environmentGroup" : null,
+  "startTime" : 0,
+  "endTime" : 0,
+  "timezone" : null,
+  "status" : null
+}
