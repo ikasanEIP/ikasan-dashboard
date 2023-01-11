@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.core.machine.JobLogicMachine;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
@@ -82,6 +83,9 @@ public class ContextInstanceRegistrationServiceImplTest {
     private ContextInstancePublicationService<ContextInstance> contextInstancePublicationService;
 
     @Mock
+    private SchedulerJobInstanceService schedulerJobInstanceService;
+
+    @Mock
     ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster;
 
     @Mock
@@ -89,6 +93,9 @@ public class ContextInstanceRegistrationServiceImplTest {
 
     @Mock
     private JobLockCacheInitialisationService jobLockCacheInitialisationService;
+
+    @Mock
+    private ContextInstanceSchedulerService contextInstanceSchedulerService;
 
     private ContextInstanceRegistrationServiceImpl contextInstanceRegistrationService;
 
@@ -104,7 +111,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         // Stub this Implementation due to two difference SchedulerJobInstance can be returned
         schedulerJobInstanceService = new StubSchedulerJobInstanceServiceTestImpl();
-        
+
         contextInstanceRegistrationService = new ContextInstanceRegistrationServiceImpl(
             "bigQueue/dir",
             scheduledContextInstanceService,
@@ -118,11 +125,12 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
-            jobLockCacheInitialisationService
+            jobLockCacheInitialisationService,
+            contextInstanceSchedulerService
         );
 
         TestUtils.resetContextMachineCache();
-        assertNull(ContextMachineCache.instance().getByContextName(contextName));
+        assertNull(ContextMachineCache.instance().getFirstByContextName(contextName));
     }
 
     @After
@@ -154,7 +162,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        assertNull(ContextMachineCache.instance().getByContextName(contextName));
+        assertNull(ContextMachineCache.instance().getFirstByContextName(contextName));
     }
 
     @Test
@@ -207,7 +215,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
@@ -291,7 +299,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
@@ -375,7 +383,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
@@ -458,7 +466,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
@@ -548,13 +556,12 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextParametersInstanceService,
             contextInstancePublicationService,
             scheduledContextService,
-            //schedulerJobInstanceService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
@@ -615,7 +622,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
         assertNull(contextMachine);
     }
 
@@ -662,7 +669,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
         assertNull(contextMachine);
     }
 
@@ -720,7 +727,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
         assertNull(contextMachine);
     }
 
@@ -757,7 +764,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
         assertNull(contextMachine);
     }
 
@@ -822,7 +829,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
@@ -898,7 +905,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
@@ -921,7 +928,7 @@ public class ContextInstanceRegistrationServiceImplTest {
     @Test
     public void deregsiter_contextmachine_that_not_in_cache() {
         // execute
-        contextInstanceRegistrationService.deRegister(contextName);
+        contextInstanceRegistrationService.deRegisterByName(contextName);
 
         // verify
         verifyNoMoreInteractions(scheduledContextInstanceService);
@@ -938,7 +945,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        assertNull(ContextMachineCache.instance().getByContextName(contextName));
+        assertNull(ContextMachineCache.instance().getFirstByContextName(contextName));
     }
 
     @Test
@@ -958,7 +965,7 @@ public class ContextInstanceRegistrationServiceImplTest {
         when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1))).thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1")), 0, 0));
 
         // execute
-        contextInstanceRegistrationService.deRegister(contextName);
+        contextInstanceRegistrationService.deRegisterByName(contextName);
 
         // verify
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
@@ -985,7 +992,7 @@ public class ContextInstanceRegistrationServiceImplTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        assertNull(ContextMachineCache.instance().getByContextName(contextName));
+        assertNull(ContextMachineCache.instance().getFirstByContextName(contextName));
     }
 
     @Test
@@ -1005,7 +1012,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         SearchResults<SchedulerJobInstanceRecord> globalEventJobRecordSearchResults = new GlobalEventJobTestSearchResults(1);
         schedulerJobInstanceService.save(globalEventJobRecordSearchResults.getResultList());
-        
+
         when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
             .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
                 , TestUtils.createModuleMetaData("3")), 3, 0));
@@ -1059,14 +1066,14 @@ public class ContextInstanceRegistrationServiceImplTest {
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
         assertNotNull(contextMachine);
 
-        HashMap<String, GlobalEventJobInstanceImpl> globalMap = 
+        HashMap<String, GlobalEventJobInstanceImpl> globalMap =
             (HashMap<String, GlobalEventJobInstanceImpl>) ReflectionTestUtils.getField(contextMachine, "globalEventJobInstanceMap");
         Assert.assertEquals(globalMap.size(), 1);
-        
-        HashMap<String, InternalEventDrivenJobInstanceImpl> internalMap = 
+
+        HashMap<String, InternalEventDrivenJobInstanceImpl> internalMap =
             (HashMap<String, InternalEventDrivenJobInstanceImpl>) ReflectionTestUtils.getField(contextMachine, "internalEventDrivenJobInstances");
         Assert.assertEquals(internalMap.size(), 3);
-        
+
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
             = (SchedulerJobInitiationEventRaisedListener) ReflectionTestUtils.getField(contextMachine, "schedulerJobInitiationEventRaisedListener");
         assertNotNull(schedulerJobInitiationEventRaisedListener);

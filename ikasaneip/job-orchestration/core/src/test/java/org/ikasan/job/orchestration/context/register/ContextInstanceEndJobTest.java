@@ -52,6 +52,6 @@ public class ContextInstanceEndJobTest {
     public void execute() throws Exception {
         contextInstanceEndJob.execute(new JobExecutionContextDefaultImpl());
 
-        verify(contextInstanceRegistrationService).deRegister(contextName);
+        verify(contextInstanceRegistrationService).deRegisterByName(contextName);
     }
 }

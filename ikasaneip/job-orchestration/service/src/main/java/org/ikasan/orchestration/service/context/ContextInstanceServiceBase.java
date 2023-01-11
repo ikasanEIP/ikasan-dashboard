@@ -3,6 +3,7 @@ package org.ikasan.orchestration.service.context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
@@ -41,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 public abstract class ContextInstanceServiceBase {
     private static final Logger LOG = LoggerFactory.getLogger(ContextInstanceServiceBase.class);
 
@@ -58,6 +58,7 @@ public abstract class ContextInstanceServiceBase {
     protected final JobLockCacheInitialisationService jobLockCacheInitialisationService;
     protected final ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster;
     protected final SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
+    protected final ContextInstanceSchedulerService contextInstanceSchedulerService;
 
     protected final ObjectMapper objectMapper;
 
@@ -74,7 +75,8 @@ public abstract class ContextInstanceServiceBase {
                                       SchedulerJobInstanceService schedulerJobInstanceService,
                                       ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
                                       SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
-                                      JobLockCacheInitialisationService jobLockCacheInitialisationService) {
+                                      JobLockCacheInitialisationService jobLockCacheInitialisationService,
+                                      ContextInstanceSchedulerService contextInstanceSchedulerService) {
         this.queueDirectory = queueDirectory;
         if (this.queueDirectory == null) {
             throw new IllegalArgumentException("queueDirectory cannot be null!");
@@ -127,7 +129,10 @@ public abstract class ContextInstanceServiceBase {
         if (this.jobLockCacheInitialisationService == null) {
             throw new IllegalArgumentException("jobLockCacheInitialisationService cannot be null!");
         }
-
+        this.contextInstanceSchedulerService = contextInstanceSchedulerService;
+        if (this.contextInstanceSchedulerService == null) {
+            throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
+        }
         this.objectMapper = ObjectMapperFactory.newInstance();
     }
 

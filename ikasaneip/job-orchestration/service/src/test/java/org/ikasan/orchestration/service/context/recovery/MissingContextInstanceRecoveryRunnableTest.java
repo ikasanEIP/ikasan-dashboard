@@ -3,6 +3,7 @@ package org.ikasan.orchestration.service.context.recovery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.core.machine.JobLogicMachine;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
@@ -78,6 +79,9 @@ public class MissingContextInstanceRecoveryRunnableTest {
     @Mock
     JobLockCacheInitialisationServiceImpl jobLockCacheInitialisationService;
 
+    @Mock
+    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+
     private MissingContextInstanceRecoveryRunnable backFiller;
 
     private String contextName;
@@ -115,7 +119,8 @@ public class MissingContextInstanceRecoveryRunnableTest {
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
-            jobLockCacheInitialisationService
+            jobLockCacheInitialisationService,
+            contextInstanceSchedulerService
         );
 
         assertEquals(0, ContextMachineCache.instance().contextNames().size());
@@ -179,8 +184,8 @@ public class MissingContextInstanceRecoveryRunnableTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        assertNotNull(ContextMachineCache.instance().getByContextName(contextName));
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        assertNotNull(ContextMachineCache.instance().getFirstByContextName(contextName));
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener
@@ -233,9 +238,9 @@ public class MissingContextInstanceRecoveryRunnableTest {
             schedulerJobStateChangeEventBroadcaster
         );
 
-        assertNotNull(ContextMachineCache.instance().getByContextName(contextName));
+        assertNotNull(ContextMachineCache.instance().getFirstByContextName(contextName));
 
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
         assertNotNull(contextMachine);
 
         SchedulerJobInitiationEventRaisedListener schedulerJobInitiationEventRaisedListener

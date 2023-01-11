@@ -5,11 +5,13 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class ContextMachineCache
 {
@@ -29,30 +31,58 @@ public class ContextMachineCache
         return INSTANCE;
     }
 
-    private ConcurrentHashMap<String, ContextMachine> contextInstanceByContextNameCache;
-    private ConcurrentHashMap<String, ContextMachine> contextInstanceByContextInstanceIdCache;
+    private final ConcurrentHashMap<String, ContextMachine> contextInstanceByContextInstanceIdCache;
+    private final Set<String> contextNames;
 
     private ContextMachineCache() {
-        this.contextInstanceByContextNameCache = new ConcurrentHashMap<>();
         this.contextInstanceByContextInstanceIdCache = new ConcurrentHashMap<>();
+        this.contextNames = new HashSet<>();
     }
 
     public void put(ContextMachine contextMachine)
     {
-        this.contextInstanceByContextNameCache.put(contextMachine.getContext().getName(), contextMachine);
+        // Note, we can now have multiple instances per plan, so the ContextNameCache will contain the latest only.
         this.contextInstanceByContextInstanceIdCache.put(contextMachine.getContext().getId(), contextMachine);
+        this.contextNames.add(contextMachine.getContext().getName());
         contextMachine.registerToNotificationMonitors();
     }
 
+    /**
+     * @todo @Mick
+     * Now that we have the potential to have multiple instances per plan, we can't rely on contextName/planName
+     * to return a single ContextMachine ... however the REST status API currently needs this.
+     *
+     * Within the next few dev days I expect we will make a decision on how best to handle this e.g. have the rest
+     * services return lists (since a single call for planName status could return multiple ContextMachines) or
+     * we just return the first and assume multi-instance is sufficiently rare (suspect this will not be the case)
+     *
+     * @param contextName / planName to lookup
+     * @return the first context machine that has the contextName / planName
+     */
+    public ContextMachine getFirstByContextName(final String contextName) {
+        final List<ContextMachine> deleteMeSoon = getAllByContextName(contextName);
+        if (deleteMeSoon != null && ! deleteMeSoon.isEmpty()) {
+            return deleteMeSoon.get(0);
+        } else {
+            return null;
+        }
+    }
 
-    public ContextMachine getByContextName(String contextName)
+    /**
+     * A single plan can have multiple instances
+     * @param contextName / planName to find
+     * @return all the instances that are for the given plan
+     */
+    public List<ContextMachine> getAllByContextName(String contextName)
     {
         logger.debug(String.format("%s attempting to get context using context name[%s]"
             , this, contextName));
 
         if(contextName == null) return null;
 
-        return this.contextInstanceByContextNameCache.get(contextName);
+        return this.contextInstanceByContextInstanceIdCache.values().stream()
+            .filter(contextMachine -> contextMachine.getContext().getName().equals(contextName))
+            .collect(Collectors.toList());
     }
 
     public ContextMachine getByContextInstanceId(String contextInstanceId)
@@ -83,15 +113,6 @@ public class ContextMachineCache
         return contextInstanceIdList;
     }
 
-    public boolean containsContextName(String contextName)
-    {
-        if(contextName == null) return false;
-
-        boolean result = this.contextInstanceByContextNameCache.containsKey(contextName);
-        logger.debug(String.format("Check contains[%s] - result [%s]"
-            , contextName, result));
-        return result;
-    }
 
     public boolean containsInstanceIdentifier(String contextInstanceId)
     {
@@ -104,8 +125,12 @@ public class ContextMachineCache
         return result;
     }
 
+    /**
+     * A copy (so as not to break encapsulation) of the complete set of context names
+     * @return a set of context names currently dealt with by this machine.
+     */
     public Set<String> contextNames() {
-        return this.contextInstanceByContextNameCache.keySet();
+        return Set.copyOf(this.contextNames);
     }
 
     public Set<String> contextInstanceIdentifiers() {
@@ -115,7 +140,6 @@ public class ContextMachineCache
     public void remove(ContextMachine contextMachine)
     {
         contextMachine.unregisterToNotificationMonitors();
-        this.contextInstanceByContextNameCache.remove(contextMachine.getContext().getName(), contextMachine);
         this.contextInstanceByContextInstanceIdCache.remove(contextMachine.getContext().getId(), contextMachine);
     }
 
