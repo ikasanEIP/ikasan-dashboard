@@ -32,6 +32,7 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
+import org.joda.time.Minutes;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -94,8 +95,7 @@ public class ContextInstanceRegistrationServiceImplTest {
     @Mock
     private JobLockCacheInitialisationService jobLockCacheInitialisationService;
 
-    @Mock
-    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+
 
     private ContextInstanceRegistrationServiceImpl contextInstanceRegistrationService;
 
