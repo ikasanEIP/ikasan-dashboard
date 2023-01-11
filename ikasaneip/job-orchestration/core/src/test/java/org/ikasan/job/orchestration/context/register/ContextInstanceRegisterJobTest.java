@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.serialiser.model.JobExecutionContextDefaultImpl;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
+import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,6 +24,9 @@ public class ContextInstanceRegisterJobTest {
     private String contextName;
 
     private String timezone;
+
+    @Mock
+    private ContextProvisionService contextProvisionService;
 
     @Before
     public void setUp() {

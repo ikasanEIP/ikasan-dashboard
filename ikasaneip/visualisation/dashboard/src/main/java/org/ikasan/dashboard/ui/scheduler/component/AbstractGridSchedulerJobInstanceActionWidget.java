@@ -321,7 +321,7 @@ public abstract class AbstractGridSchedulerJobInstanceActionWidget extends Div {
     }
 
     protected void submitDownstreamJobs(InternalEventDrivenJobInstance internalEventDrivenJobInstance) {
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstance.getName());
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
         ContextualisedScheduledProcessEventImpl contextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
         contextualisedScheduledProcessEvent.setJobStarting(false);
         contextualisedScheduledProcessEvent.setJobName(internalEventDrivenJobInstance.getJobName());

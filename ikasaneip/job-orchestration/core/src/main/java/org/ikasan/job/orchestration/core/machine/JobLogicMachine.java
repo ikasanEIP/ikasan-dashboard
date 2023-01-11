@@ -68,7 +68,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         }
 
         if(scheduledProcessEvent.getChildContextNames() != null && scheduledProcessEvent.getChildContextNames().contains(contextInstance.getName())) {
-            StringBuffer childContextNames = new StringBuffer("[ ");
+            StringBuffer childContextNames = new StringBuffer("[");
             scheduledProcessEvent.getChildContextNames().forEach(id -> childContextNames.append("{").append(id).append("}"));
             childContextNames.append("]");
 

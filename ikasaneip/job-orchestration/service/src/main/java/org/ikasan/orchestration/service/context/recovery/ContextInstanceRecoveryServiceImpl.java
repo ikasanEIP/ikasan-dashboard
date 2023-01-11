@@ -40,6 +40,7 @@
  */
 package org.ikasan.orchestration.service.context.recovery;
 
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -87,7 +88,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                               SchedulerJobInstanceService schedulerJobInstanceService,
                                               ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
                                               SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
-                                              JobLockCacheInitialisationService jobLockCacheInitialisationService) {
+                                              JobLockCacheInitialisationService jobLockCacheInitialisationService,
+                                              ContextInstanceSchedulerService contextInstanceSchedulerService) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService,
@@ -100,42 +102,53 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
             schedulerJobInstanceService,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
-            jobLockCacheInitialisationService);
+            jobLockCacheInitialisationService,
+            contextInstanceSchedulerService);
     }
 
+    /**
+     * Re-create an instances that should be running as at now.
+     *
+     * Currently, if the end window for a job has passed, or the start window is future to now
+     * (which is common of 1 * * ... i.e. every minute) then instances are not brought back to life, which means
+     * events gathered on the agents for old instances will cause issues on the scheduler.
+     *
+     * Likewise, if the dashboard has been down until after the plan has ended, all the status information will be lost.
+     */
     public void recoverInstances() {
         SearchResults<ScheduledContextInstanceRecord> contextInstanceRecords = scheduledContextInstanceService
             .getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING, InstanceStatus.ERROR));
 
-        Map<String, List<ScheduledContextInstanceRecord>> records = new HashMap<>();
+        Map<String, List<ScheduledContextInstanceRecord>> contextNameToInstances = new HashMap<>();
         for (ScheduledContextInstanceRecord scheduledContextInstanceRecord : contextInstanceRecords.getResultList()) {
-            List<ScheduledContextInstanceRecord> scheduledContextInstanceRecords = records.get(scheduledContextInstanceRecord.getContextName());
+            List<ScheduledContextInstanceRecord> scheduledContextInstanceRecords = contextNameToInstances.get(scheduledContextInstanceRecord.getContextName());
             if (scheduledContextInstanceRecords == null) {
-                records.put(scheduledContextInstanceRecord.getContextName(), new ArrayList<>(List.of(scheduledContextInstanceRecord)));
+                contextNameToInstances.put(scheduledContextInstanceRecord.getContextName(), new ArrayList<>(List.of(scheduledContextInstanceRecord)));
             } else {
                 scheduledContextInstanceRecords.add(scheduledContextInstanceRecord);
             }
         }
 
-        // TODO this represents an exception case  - there should never be more than one instance WAITING OR RUNNING OR ERROR
-        List<ScheduledContextInstanceRecord> sorted = new ArrayList<>();
-        for (String key : records.keySet()) {
-            List<ScheduledContextInstanceRecord> mapRecords = records.get(key);
+        // outdated statement - TODO this represents an exception case  - there should never be more than one instance WAITING OR RUNNING OR ERROR
+        // @Mick @todo - Now, we CAN have more than one instance running that we need to re-hydrate, what strategy do you feel we should we adopt for this
+        // could try to bring back all that have end time = 0 and/or all that have end trigger less than last update to Solr
+        List<ScheduledContextInstanceRecord> newestInstancePerContextName = new ArrayList<>();
+        for (String contextName : contextNameToInstances.keySet()) {
+            List<ScheduledContextInstanceRecord> contextInstances = contextNameToInstances.get(contextName);
             // get the most recent based on created timestamp
-            ScheduledContextInstanceRecord scheduledContextInstanceRecord = mapRecords.stream()
+            ScheduledContextInstanceRecord scheduledContextInstanceRecord = contextInstances.stream()
                 .sorted(Comparator.comparing(ScheduledContextInstanceRecord::getTimestamp).reversed())
                 .collect(Collectors.toList())
                 .get(0);
-            sorted.add(scheduledContextInstanceRecord);
+            newestInstancePerContextName.add(scheduledContextInstanceRecord);
         }
 
         LOG.info("Recovering instances for: "
-            + sorted.stream().map(ScheduledContextInstanceRecord::getContextName).collect(Collectors.toList()));
+            + newestInstancePerContextName.stream().map(ScheduledContextInstanceRecord::getContextName).collect(Collectors.toList()));
 
+        Map<String, ScheduledContextInstanceRecord> contextNameToInstanceMap
+            = newestInstancePerContextName.stream().collect(Collectors.toMap(ScheduledContextInstanceRecord::getContextName, record -> record));
         SearchResults<ScheduledContextRecord> scheduledContextRecords = (SearchResults<ScheduledContextRecord>) this.scheduledContextService.findAll();
-
-        Map<String, ScheduledContextInstanceRecord> instancesMap
-            = sorted.stream().collect(Collectors.toMap(ScheduledContextInstanceRecord::getContextName, record -> record));
 
         Date now = new Date();
         for (ScheduledContextRecord scheduledContextRecord : scheduledContextRecords.getResultList()) {
@@ -144,7 +157,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
             // We do not recover disabled contexts!
             if(context.isDisabled()) continue;
 
-            ScheduledContextInstanceRecord scheduledContextInstanceRecord = instancesMap.get(scheduledContextRecord.getContextName());
+            ScheduledContextInstanceRecord scheduledContextInstanceRecord = contextNameToInstanceMap.get(scheduledContextRecord.getContextName());
             // if outside the operating window instances will be created when ContextInstanceRegistrationServiceImpl.register runs
             if (withinOperatingWindow(context.getTimeWindowStart(), context.getTimeWindowEnd(), now)) {
                 if (scheduledContextInstanceRecord != null) {
@@ -155,6 +168,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                         if(!this.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone())
                             && !this.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), contextInstance.getTimezone())) {
                             initialiseContextMachine(context, contextInstance, false);
+                            contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), contextInstance.getTimeWindowEnd(), contextInstance.getTimezone(), contextInstance.getId());
                         }
                         else {
                             LOG.info(String.format("ContextTemplate [%s] falls withing a blackout time window and will not be registered!", context.getName()));
@@ -172,7 +186,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                         this.queueDirectory, this.scheduledContextInstanceService, this.jobInitiationService, this.moduleMetadataService, this.internalEventDrivenJobService,
                         this.contextParametersInstanceService, this.contextInstancePublicationService, this.jobLockCacheService, this.scheduledContextService,
                         scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster,
-                        this.jobLockCacheInitialisationService
+                        this.jobLockCacheInitialisationService, this.contextInstanceSchedulerService
                     ));
                 }
             }

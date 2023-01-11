@@ -147,7 +147,7 @@ public class ContextDebugWidget extends Div {
         this.contextInstances.addValueChangeListener(event -> {
             try {
                 if(this.contextInstances.getValue() != null ) {
-                    ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
+                    ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(this.contextInstances.getValue());
 
                     if (contextMachine != null) {
                         this.schedulerInstanceVisualisation.createSchedulerVisualisation(contextMachine.getContext(), contextMachine.getContext(), null);
@@ -157,7 +157,7 @@ public class ContextDebugWidget extends Div {
                         controlsLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, this.dryRunModeCheckBox);
                         this.dryRunModeCheckBox.addValueChangeListener(changeEvent -> {
                             if(this.contextInstances.getValue() != null) {
-                                ContextMachine machine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
+                                ContextMachine machine = ContextMachineCache.instance().getFirstByContextName(this.contextInstances.getValue());
                                 if (machine != null) {
                                     if(changeEvent.getValue()) {
                                         contextMachine.setDryRunParameters(new DryRunParametersImpl());
@@ -216,7 +216,7 @@ public class ContextDebugWidget extends Div {
 
         Button resetContextButton = new Button("Reset Context");
         resetContextButton.addClickListener(buttonClickEvent -> {
-            ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
+            ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(this.contextInstances.getValue());
             try {
                 contextMachine.setDryRunParameters(null);
                 this.saveContextInstance(contextMachine.getContext(), InstanceStatus.ENDED);
@@ -244,7 +244,7 @@ public class ContextDebugWidget extends Div {
                 }
                 else if(tabs.getSelectedTab().equals(this.contextStatus)) {
                     if(this.contextInstances.getValue() != null && !this.contextInstances.getValue().isEmpty()){
-                        contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
+                        contextMachine = ContextMachineCache.instance().getFirstByContextName(this.contextInstances.getValue());
                         this.aceEditor.setValue(this.objectMapper.writerWithDefaultPrettyPrinter()
                             .writeValueAsString(contextMachine.getContextInstanceStatus()));
                     }
@@ -286,7 +286,7 @@ public class ContextDebugWidget extends Div {
             try {
                 if(tabs.getSelectedTab().equals(this.fullContextInstance)) {
                     if(this.contextInstances.getValue() != null && !this.contextInstances.getValue().isEmpty()){
-                        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
+                        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(this.contextInstances.getValue());
                         contextMachine.addSchedulerJobStateChangeEventListener(stateChange
                             -> {
                             if(ui.isAttached()) {
@@ -311,7 +311,7 @@ public class ContextDebugWidget extends Div {
                 }
                 else if(tabs.getSelectedTab().equals(this.contextStatus)) {
                     if(this.contextInstances.getValue() != null && !this.contextInstances.getValue().isEmpty()){
-                        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstances.getValue());
+                        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(this.contextInstances.getValue());
                         contextMachine.addSchedulerJobStateChangeEventListener(stateChange
                             -> {
                             if(ui.isAttached()) {
@@ -396,7 +396,7 @@ public class ContextDebugWidget extends Div {
 
 
     private void setDryRunCheckbox(String contextName) {
-        ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(contextName);
+        ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(contextName);
         if(contextMachine.isDryRun()) {
             this.dryRunModeCheckBox.setValue(true);
         }

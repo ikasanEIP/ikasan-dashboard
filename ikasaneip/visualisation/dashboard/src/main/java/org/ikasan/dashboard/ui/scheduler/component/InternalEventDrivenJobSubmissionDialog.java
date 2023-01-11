@@ -172,7 +172,7 @@ public class InternalEventDrivenJobSubmissionDialog extends AbstractCloseableRes
                 // is already locked.
                 if(JobLockCacheImpl.instance().locked(schedulerJobInstanceRecord.getSchedulerJobInstance().getIdentifier()
                     , schedulerJobInstanceRecord.getSchedulerJobInstance().getChildContextName())) {
-                    ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstance.getName());
+                    ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(this.contextInstance.getName());
                     if(contextMachine != null) {
                         contextMachine.addQueuedSchedulerJobInitiationEvent(schedulerJobInitiationEvent);
                         NotificationHelper.showUserNotification("The job has been submitted successfully but has been queued as it participates " +

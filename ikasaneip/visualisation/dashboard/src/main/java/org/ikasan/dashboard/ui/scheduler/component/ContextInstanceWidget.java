@@ -732,7 +732,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                         ContextMachineCache.instance().put(contextMachine);
                         String route = RouteConfiguration.forSessionScope()
                             .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
-                                .getByContextName(this.contextInstance.getName()).getContext().getId() + "_scheduledContextInstance");
+                                .getFirstByContextName(this.contextInstance.getName()).getContext().getId() + "_scheduledContextInstance");
 
                         getUI().ifPresent(ui -> ui.getPage().open(route));
 

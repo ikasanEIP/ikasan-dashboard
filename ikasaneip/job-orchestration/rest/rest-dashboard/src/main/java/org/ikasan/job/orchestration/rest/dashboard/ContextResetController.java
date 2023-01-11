@@ -56,7 +56,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ContextResetController {
 
-    private static Logger LOG = LoggerFactory.getLogger(ContextResetController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ContextResetController.class);
     private final ContextResetService resetService;
 
     public ContextResetController(ContextResetService resetService) {
@@ -66,20 +66,47 @@ public class ContextResetController {
         this.resetService = resetService;
     }
 
-    @RequestMapping(method = RequestMethod.PUT, path = {"/{contextName}"})
+    /**
+     * @deprecated - Since we can have multiple instances per context, use resetContextInstance
+     * @param contextName to reset
+     * @return http OK on success
+     */
+    @RequestMapping(method = RequestMethod.PUT, path = {"/rest/context/reset/{contextName}"})
     @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
-    public ResponseEntity getContextStatusForJob(@PathVariable String contextName) {
+    public ResponseEntity resetContextByName(@PathVariable String contextName) {
         try {
             resetService.resetContext(contextName, false);
         } catch (Exception e) {
             LOG.error(e.getMessage());
-            String errorMessage = String.format("An error has occurred attempting to reset context for %s!", contextName);
+            String errorMessage = String.format("An error has occurred attempting to reset context for context name %s!", contextName);
             return new ResponseEntity(
                 new ErrorDto(errorMessage + " Error message ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
         }
 
-        LOG.info(String.format("Successfully reset context for %s", contextName));
+        LOG.info(String.format("Successfully reset context for context name %s", contextName));
         return new ResponseEntity(HttpStatus.OK);
     }
+
+    /**
+     * @param contextInstanceId to reset
+     * @return http OK on success
+     */
+    @RequestMapping(method = RequestMethod.PUT, path = {"/rest/instance/reset/{contextInstanceId}"})
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity resetContextInstance(@PathVariable String contextInstanceId) {
+        try {
+            resetService.resetContext(contextInstanceId, false);
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            String errorMessage = String.format("An error has occurred attempting to reset context for context instance ID %s!", contextInstanceId);
+            return new ResponseEntity(
+                new ErrorDto(errorMessage + " Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
+
+        LOG.info(String.format("Successfully reset context for context Instance ID %s", contextInstanceId));
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
 }

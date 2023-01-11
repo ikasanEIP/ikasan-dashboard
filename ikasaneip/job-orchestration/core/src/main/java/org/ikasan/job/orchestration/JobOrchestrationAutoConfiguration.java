@@ -1,7 +1,5 @@
 package org.ikasan.job.orchestration;
 
-import java.util.Map;
-
 import org.ikasan.job.orchestration.configuration.JobContextParamsSetupConfiguration;
 import org.ikasan.job.orchestration.configuration.JobContextParamsSetupFactory;
 import org.ikasan.job.orchestration.context.parameters.ContextParametersFactory;
@@ -25,16 +23,13 @@ import org.ikasan.spec.scheduled.context.service.ContextInstanceRecoveryService;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
+import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.*;
 import org.springframework.context.event.EventListener;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
@@ -112,16 +107,19 @@ public class JobOrchestrationAutoConfiguration {
 
     @Bean
     @DependsOn({"stateChangeMonitor","overdueFileMonitor","monitorManagement"})
-    public ContextInstanceRecoveryManager contextInstanceRecoveryManager(ContextInstanceRecoveryService contextInstanceRecoveryService) {
+    public ContextInstanceRecoveryManager contextInstanceRecoveryManager(@Lazy ContextInstanceRecoveryService contextInstanceRecoveryService) {
         return new ContextInstanceRecoveryManager(contextInstanceRecoveryService, isContextLifeCycleActive);
     }
 
     @Bean
     @DependsOn("contextInstanceRecoveryManager")
-    public ContextInstanceSchedulerService contextInstanceSchedulerService(ContextInstanceRegistrationService contextInstanceRegistrationService,
+    public ContextInstanceSchedulerService contextInstanceSchedulerService(@Lazy ContextInstanceRegistrationService contextInstanceRegistrationService,
                                                                            ScheduledContextService scheduledContextService) {
-        return new ContextInstanceSchedulerService(SchedulerFactory.getInstance().getScheduler()
-            , CachingScheduledJobFactory.getInstance(), scheduledContextService, contextInstanceRegistrationService, isContextLifeCycleActive);
+        return new ContextInstanceSchedulerService(SchedulerFactory.getInstance().getScheduler(),
+            CachingScheduledJobFactory.getInstance(),
+            scheduledContextService,
+            contextInstanceRegistrationService,
+            isContextLifeCycleActive);
     }
 
     @Bean

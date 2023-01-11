@@ -61,10 +61,10 @@ public class ContextInstanceEndJob implements DashboardJob {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        LOG.info("Executing jobExecutionContext end context " + jobName);
         try {
-            String contextName = jobName.substring(0, jobName.length() - END_JOB_EXTENSION.length());
-            contextInstanceRegistrationService.deRegister(contextName);
+            final String contextInstanceId = (String)context.getTrigger().getJobDataMap().get("contextInstanceId");
+            LOG.info("Executing jobExecutionContext end context " + jobName + " context Instance ID [" + contextInstanceId + "]");
+            contextInstanceRegistrationService.deRegisterById(contextInstanceId, context);
         } catch (Exception e) {
             // TODO hook in notification here
             LOG.error(String.format("An error has occurred executing ContextInstanceEndJob[%s]", e.getMessage()), e);

@@ -1,9 +1,8 @@
 package org.ikasan.job.orchestration.provision;
 
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.provision.context.ContextProvisionServiceImpl;
 import org.ikasan.job.orchestration.provision.job.JobProvisionServiceImpl;
-import org.ikasan.scheduler.CachingScheduledJobFactory;
-import org.ikasan.scheduler.SchedulerFactory;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
@@ -38,11 +37,10 @@ public class JobOrchestrationProvisionAutoConfiguration {
         ContextInstanceRegistrationService contextInstanceRegistrationService,
         ContextProfileService contextProfileService,
         EmailNotificationDetailsService emailNotificationDetailsService,
-        EmailNotificationContextService emailNotificationContextService) {
+        EmailNotificationContextService emailNotificationContextService,
+        ContextInstanceSchedulerService contextInstanceSchedulerService) {
 
         return new ContextProvisionServiceImpl(
-            SchedulerFactory.getInstance().getScheduler(),
-            CachingScheduledJobFactory.getInstance(),
             scheduledContextService,
             moduleMetadataService,
             schedulerJobService,
@@ -51,7 +49,8 @@ public class JobOrchestrationProvisionAutoConfiguration {
             contextProfileService,
             emailNotificationDetailsService,
             emailNotificationContextService,
-            uploadProvisionJobs
+            uploadProvisionJobs,
+            contextInstanceSchedulerService
         );
     }
 }
