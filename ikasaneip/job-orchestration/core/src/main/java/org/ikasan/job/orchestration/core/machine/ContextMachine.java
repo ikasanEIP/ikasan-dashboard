@@ -4,12 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ListenableFuture;
+import org.apache.commons.lang3.StringUtils;
 import org.ikasan.bigqueue.BigQueueImpl;
 import org.ikasan.bigqueue.IBigQueue;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.ikasan.component.endpoint.bigqueue.builder.BigQueueMessageBuilder;
 import org.ikasan.component.endpoint.bigqueue.message.BigQueueMessageImpl;
 import org.ikasan.component.endpoint.bigqueue.service.BigQueueDirectoryManagementServiceImpl;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.component.converter.ContextInstanceToContextInstanceStatusConverter;
 import org.ikasan.job.orchestration.core.notification.MonitorManagement;
 import org.ikasan.job.orchestration.model.event.ContextInstanceStateChangeEventImpl;
@@ -48,7 +50,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +86,7 @@ public class ContextMachine {
     private long maxWait;
     private DryRunParameters dryRunParameters;
     private Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstances;
+    private Map<String, GlobalEventJobInstance> globalEventJobInstanceMap;
     private Map<String, ModuleMetaData> agents;
     private String queueDir;
     private JobLockCache jobLockCache;
@@ -95,6 +97,7 @@ public class ContextMachine {
     private ContextStateHelper contextStateHelper;
 
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
+                          Map<String, GlobalEventJobInstance> globalEventJobInstanceMap,
                           Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstances, String queueDir,
                           Map<String, ModuleMetaData> agents, JobLockCache jobLockCache,
                           ContextParametersInstanceService contextParametersInstanceService,
@@ -104,6 +107,7 @@ public class ContextMachine {
         this.context = context;
         this.contextInstance = contextInstance;
         this.internalEventDrivenJobInstances = internalEventDrivenJobInstances;
+        this.globalEventJobInstanceMap = globalEventJobInstanceMap;
         this.agents = agents;
         this.queueDir = queueDir;
         this.statusConverter = new ContextInstanceToContextInstanceStatusConverter();
@@ -267,6 +271,7 @@ public class ContextMachine {
             this.context = null;
             this.dryRunParameters = null;
             this.internalEventDrivenJobInstances = null;
+            this.globalEventJobInstanceMap = null;
             this.agents = null;
             this.jobLockCache = null;
             this.contextExecutor = null;
@@ -751,8 +756,24 @@ public class ContextMachine {
                 }
             }
             else {
-                logger.warn(String.format("Could not load internal event driven job for initiation event JobName[%s], SchedulerJobInitiationEvent[%s]"
-                    , event.getJobName(), event.toString()));
+                // Check if this event is a global event when the internalEventDriveJob is not defined
+                GlobalEventJobInstance globalEventJobInstance = null;
+
+                // globalEventJobInstanceMap has a key of (JobIdentifier-ContextName) - this may not be available on the event, therefore
+                // check the jobName in the values within the globalEventJobInstanceMap and if found, it is safe to add the Event to the finalEvents. 
+                for (Map.Entry<String, GlobalEventJobInstance> globalEvents : globalEventJobInstanceMap.entrySet()) {
+                    if (StringUtils.equals(globalEvents.getValue().getJobName(), event.getJobName())) {
+                        globalEventJobInstance = globalEvents.getValue();
+                        break;
+                    }
+                }
+
+                if (globalEventJobInstance != null) {
+                    finalEvents.add(event);
+                } else {
+                    logger.warn(String.format("Could not load internal event driven job for initiation event JobName[%s], SchedulerJobInitiationEvent[%s]"
+                        , event.getJobName(), event.toString()));
+                }
             }
         });
 
@@ -787,8 +808,24 @@ public class ContextMachine {
                 }
             }
             else {
-                logger.warn(String.format("Could not load internal event driven job for initiation event JobName[%s], SchedulerJobInitiationEvent[%s]"
-                    , event.getJobName(), event.toString()));
+                // Check if this event is a global event when the internalEventDriveJob is not defined
+                GlobalEventJobInstance globalEventJobInstance = null;
+
+                // globalEventJobInstanceMap has a key of (JobIdentifier-ContextName) - this may not be available on the event, therefore
+                // check the jobName in the values within the globalEventJobInstanceMap and if found, it is safe to add the Event to the finalEvents. 
+                for (Map.Entry<String, GlobalEventJobInstance> globalEvents : globalEventJobInstanceMap.entrySet()) {
+                    if (StringUtils.equals(globalEvents.getValue().getJobName(), event.getJobName())) {
+                        globalEventJobInstance = globalEvents.getValue();
+                        break;
+                    }
+                }
+
+                if (globalEventJobInstance != null) {
+                    finalEvents.add(event); 
+                } else {
+                    logger.warn(String.format("Could not load internal event driven job for initiation event JobName[%s], SchedulerJobInitiationEvent[%s]"
+                        , event.getJobName(), event.toString()));
+                }
             }
         });
 
@@ -832,7 +869,7 @@ public class ContextMachine {
              // Delegate to the JobLogicMachine to determine if any SchedulerJobInitiationEvents are
              // required to be raised.
              List<SchedulerJobInitiationEvent> events = jobLogicMachine.getJobInitiationEvents(scheduledProcessEvent
-                 , contextInstance, this.dryRunParameters, this.internalEventDrivenJobInstances, this.contextInstance.getContextParameters()
+                 , contextInstance, this.dryRunParameters, this.globalEventJobInstanceMap, this.internalEventDrivenJobInstances, this.contextInstance.getContextParameters()
                  , this.contextInstance, lockRaised, markAsRaised);
 
              // Update the context status after event received and attached
@@ -1066,18 +1103,106 @@ public class ContextMachine {
                 saveContext();
 
                 for(SchedulerJobInitiationEvent schedulerJobInitiationEvent: schedulerJobInitiationEvents) {
+                    
+                    if (schedulerJobInitiationEvent.getInternalEventDrivenJob() != null) {
+                        BigQueueMessage<SchedulerJobInitiationEvent> outgoingBigQueueMessage
+                            = new BigQueueMessageBuilder<SchedulerJobInitiationEvent>().withMessage(schedulerJobInitiationEvent)
+                            .withMessageProperties(
+                                Map.of("contextName", schedulerJobInitiationEvent.getContextName(),
+                                    "contextInstanceId", schedulerJobInitiationEvent.getContextInstanceId()))
+                            .build();
 
-                    BigQueueMessage<SchedulerJobInitiationEvent> outgoingBigQueueMessage
-                        = new BigQueueMessageBuilder<SchedulerJobInitiationEvent>().withMessage(schedulerJobInitiationEvent)
-                        .withMessageProperties(
-                            Map.of("contextName", schedulerJobInitiationEvent.getContextName(),
-                                "contextInstanceId", schedulerJobInitiationEvent.getContextInstanceId()))
-                        .build();
+                        String serialised = objectMapper.writeValueAsString(outgoingBigQueueMessage);
+                        logger.debug("Enqueue job initiation event: " + serialised);
+                        outboundQueue.enqueue(serialised.getBytes());
+                        logger.debug("Outbound queue size: " + outboundQueue.size());
+                    } else {
+                        /* This block of code will Orchestrate when the event is a Global Event. This will create a 
+                         * ContextualisedScheduledProcessEvent for the global event and send it to all active Contexts available in the 
+                         * ContextMachineCache for a given environment group. This event will be set to Success. */
 
-                    String serialised = objectMapper.writeValueAsString(outgoingBigQueueMessage);
-                    logger.debug("Enqueue job initiation event: " + serialised);
-                    outboundQueue.enqueue(serialised.getBytes());
-                    logger.debug("Outbound queue size: " + outboundQueue.size());
+                        // Check if this event is a global event when the internalEventDriveJob is not defined
+                        GlobalEventJobInstance globalEventJobInstance = null;
+
+                        // globalEventJobInstanceMap has a key of (JobIdentifier-ContextName) - this may not be available on the event, therefore
+                        // check the jobName in the values within the globalEventJobInstanceMap and if found then allow us to create the Events for
+                        // all the available context instance running.
+                        if (globalEventJobInstanceMap != null && globalEventJobInstanceMap.size() != 0) {
+                            for (Map.Entry<String, GlobalEventJobInstance> globalEvents : globalEventJobInstanceMap.entrySet()) {
+                                if (StringUtils.equals(globalEvents.getValue().getJobName(), schedulerJobInitiationEvent.getJobName())) {
+                                    globalEventJobInstance = globalEvents.getValue();
+                                    break;
+                                }
+                            }    
+                        }
+                        
+                        // Only action if this is a global event, else do nothing
+                        if (globalEventJobInstance != null) {
+                            logger.info("Job [{}] is a Global Event Job - Do not send to the agent [{}] and attempt to send to all Active Contexts by Environment Group",
+                                schedulerJobInitiationEvent.getJobName(), schedulerJobInitiationEvent.getAgentUrl());
+                            logger.info("[{}] Context is part of the EnvironmentGroup [{}]. Will send to Contexts with the same Environment Group",
+                                context.getName(), context.getEnvironmentGroup());
+
+                            // Get all active context instances the given environment group.
+                            List<String> contextInstanceInContextMachineCache =
+                                ContextMachineCache.instance().getListOfContextInstanceIdByEnvironmentGroup(context.getEnvironmentGroup());
+
+                            // Search each context instance if the Global Event also exist. If it does, create an event for it.
+                            for(String contextInstanceIdFromCache : contextInstanceInContextMachineCache) {
+                                String agentName = null;
+                                ContextMachine contextMachineFromCache = ContextMachineCache.instance().getByContextInstanceId(contextInstanceIdFromCache);
+                                if(contextMachineFromCache == null) {
+                                    logger.warn("Unable to find the ContextMachine for the instance [{}] in the cache, skipping sending the Global Event [{}] to it",
+                                        contextInstanceIdFromCache, schedulerJobInitiationEvent.getJobName());
+                                    continue;
+                                } else {
+                                    // Check the ContextMachine GlobalEventJobs to see if they have a Job name that matches - We need this to get the agent name
+                                    Map<String, GlobalEventJobInstance> globalEventJobsInContextMachineCache = contextMachineFromCache.getGlobalEventJobInstanceMap();
+                                    for(Map.Entry<String, GlobalEventJobInstance> entryValue : globalEventJobsInContextMachineCache.entrySet()) {
+                                        if (StringUtils.equals(entryValue.getValue().getJobName(), schedulerJobInitiationEvent.getJobName())) {
+                                            agentName = entryValue.getValue().getAgentName();
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (agentName == null) {
+                                    logger.info("[{}] Global Job was not found in the ContextMachine [{}][{}]. Skipping sending the Global Event to it.",
+                                        schedulerJobInitiationEvent.getJobName(), contextMachineFromCache.getContext().getName(), contextInstanceIdFromCache);
+                                    continue;
+                                }
+
+                                // Global Job found for this context instance, build the event.
+                                ContextualisedScheduledProcessEvent globalContextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
+                                globalContextualisedScheduledProcessEvent.setAgentName(agentName);
+                                globalContextualisedScheduledProcessEvent.setJobName(schedulerJobInitiationEvent.getJobName());
+                                globalContextualisedScheduledProcessEvent.setSuccessful(true);
+                                globalContextualisedScheduledProcessEvent.setFireTime(System.currentTimeMillis());
+                                globalContextualisedScheduledProcessEvent.setContextName(schedulerJobInitiationEvent.getContextName());
+                                globalContextualisedScheduledProcessEvent.setContextInstanceId(contextInstanceIdFromCache);
+                                globalContextualisedScheduledProcessEvent.setJobStarting(false);
+                                globalContextualisedScheduledProcessEvent.setSkipped(false);
+                                //No need to set the childContextNames property in ContextualisedScheduledProcessEvent as JobLogicMachine method getJobInitiationEvents should handle it.
+
+                                // Event object to JSON and then build the BigQueue message
+                                String globalContextualisedScheduledProcessEventJson = objectMapper.writeValueAsString(globalContextualisedScheduledProcessEvent);
+                                BigQueueMessage<String> outgoingBigQueueMessage
+                                    = new BigQueueMessageBuilder<String>().withMessage(globalContextualisedScheduledProcessEventJson)
+                                    .withMessageProperties(
+                                        Map.of("contextName", contextMachineFromCache.getContext().getName(),
+                                            "contextInstanceId", contextMachineFromCache.getContext().getId()))
+                                    .build();
+
+                                // BigQueue message to JSON
+                                String jsonString = objectMapper.writeValueAsString(outgoingBigQueueMessage);
+
+                                // Send the Event to the Context Machine
+                                contextMachineFromCache.eventReceived(jsonString);
+                                logger.info("Sending Global Event [{}] to the ContextMachine [{}][{}]", schedulerJobInitiationEvent.getJobName(),
+                                    contextMachineFromCache.getContext().getName(), contextMachineFromCache.getContext().getId());
+                            }
+                        }
+                    }
                 }
 
                 inboundQueue.dequeue();
@@ -1095,12 +1220,12 @@ public class ContextMachine {
                     addInboundListener();
                 }
                 catch (IOException ex) {
-                    logger.error(String.format("An error has occurred attempting to dequeue inbound message [%s]"
+                    logger.error(String.format("IOException - An error has occurred attempting to dequeue inbound message [%s]"
                         , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), ex);
                 }
             }
             catch (Exception e) {
-                logger.error(String.format("An error has occurred attempting process scheduled process event [%s]"
+                logger.error(String.format("Generic Exception - An error has occurred attempting process scheduled process event [%s]"
                     , bigQueueMessage != null ? bigQueueMessage.getMessage() : "NULL message"), e);
             }
             finally {
@@ -1209,5 +1334,9 @@ public class ContextMachine {
         outboundListenableFuture = outboundQueue.peekAsync();
         this.outboundQueueMessageRunner = new OutboundQueueMessageRunner();
         outboundListenableFuture.addListener(outboundQueueMessageRunner, schedulerInitiatorEventRaisedListenerExecutor);
+    }
+
+    protected Map<String, GlobalEventJobInstance> getGlobalEventJobInstanceMap() {
+        return globalEventJobInstanceMap;
     }
 }

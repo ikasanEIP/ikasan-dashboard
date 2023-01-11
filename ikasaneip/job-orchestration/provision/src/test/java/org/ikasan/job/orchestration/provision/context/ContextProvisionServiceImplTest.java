@@ -3,10 +3,7 @@ package org.ikasan.job.orchestration.provision.context;
 import org.ikasan.job.orchestration.model.context.ContextBundleImpl;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.JobLockImpl;
-import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
-import org.ikasan.job.orchestration.model.job.SchedulerJobWrapperImpl;
+import org.ikasan.job.orchestration.model.job.*;
 import org.ikasan.job.orchestration.model.notification.EmailNotificationContextImpl;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationContextImpl;
 import org.ikasan.scheduled.notification.model.SolrEmailNotificationDetails;
@@ -21,10 +18,7 @@ import org.ikasan.spec.scheduled.context.model.JobLock;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.model.EmailNotificationContext;
@@ -121,6 +115,7 @@ public class ContextProvisionServiceImplTest {
 
         ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
         moduleMetaData.setUrl("http://some/url");
+        moduleMetaData.setName("agentName1");
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
@@ -188,6 +183,7 @@ public class ContextProvisionServiceImplTest {
 
         ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
         moduleMetaData.setUrl("http://some/url");
+        moduleMetaData.setName("agentName1");
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
@@ -251,11 +247,16 @@ public class ContextProvisionServiceImplTest {
         fileJobRecord.setAgentName("agentName1");
         QuartzScheduleDrivenJob quartzDrivenJob = new QuartzScheduleDrivenJobImpl();
         quartzDrivenJob.setAgentName("agentName1");
+        GlobalEventJob globalEventJob = new GlobalEventJobImpl();
+        globalEventJob.setAgentName("agentName1");
         contextJobs.add(fileJobRecord);
         contextJobs.add(quartzDrivenJob);
+        // Does not get provision
+        contextJobs.add(globalEventJob);
 
         ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
         moduleMetaData.setUrl("http://some/url");
+        moduleMetaData.setName("agentName1");
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
@@ -325,6 +326,7 @@ public class ContextProvisionServiceImplTest {
 
         ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
         moduleMetaData.setUrl("http://some/url");
+        moduleMetaData.setName("agentName1");
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
@@ -412,6 +414,7 @@ public class ContextProvisionServiceImplTest {
 
         ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
         moduleMetaData.setUrl("http://some/url");
+        moduleMetaData.setName("agentName1");
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
@@ -491,6 +494,7 @@ public class ContextProvisionServiceImplTest {
 
         ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
         moduleMetaData.setUrl("http://some/url");
+        moduleMetaData.setName("agentName1");
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
@@ -624,6 +628,7 @@ public class ContextProvisionServiceImplTest {
 
         ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
         moduleMetaData.setUrl("http://some/url");
+        moduleMetaData.setName("agentName1");
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
@@ -703,6 +708,7 @@ public class ContextProvisionServiceImplTest {
 
         ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
         moduleMetaData.setUrl("http://some/url");
+        moduleMetaData.setName("agentName1");
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 
@@ -778,6 +784,7 @@ public class ContextProvisionServiceImplTest {
 
         ModuleMetaData moduleMetaData = new ModuleMetaDataImpl();
         moduleMetaData.setUrl("http://some/url");
+        moduleMetaData.setName("agentName1");
         when(moduleMetadataService.find(anyList(), any(ModuleType.class), anyInt(), anyInt()))
             .thenReturn(new ModuleMetadataSearchResults(List.of(moduleMetaData), 1, 1));
 

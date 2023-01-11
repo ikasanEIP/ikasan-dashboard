@@ -9,6 +9,7 @@ import org.ikasan.scheduled.instance.dao.SolrSchedulerJobInstanceDaoImpl;
 import org.ikasan.scheduled.instance.model.*;
 import org.ikasan.scheduled.job.dao.SolrSchedulerJobDaoImpl;
 import org.ikasan.scheduled.job.model.SolrFileEventDrivenJobImpl;
+import org.ikasan.scheduled.job.model.SolrGlobalEventJobImpl;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
 import org.ikasan.scheduled.job.model.SolrQuartzScheduleDrivenJobImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
@@ -182,6 +183,10 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
                 else if(schedulerJobRecord.getJob() instanceof SolrQuartzScheduleDrivenJobImpl) {
                     schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
                         , SolrQuartzScheduleDrivenJobInstanceImpl.class));
+                }
+                else if(schedulerJobRecord.getJob() instanceof SolrGlobalEventJobImpl) {
+                    schedulerJobInstances.add(objectMapper.readValue(objectMapper.writeValueAsBytes(schedulerJobRecord.getJob())
+                        , SolrGlobalEventJobInstanceImpl.class));
                 }
             }
 

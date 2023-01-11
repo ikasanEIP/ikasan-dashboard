@@ -47,6 +47,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      * @param scheduledProcessEvent
      * @param contextInstance
      * @param dryRunParameters
+     * @param globalEventJobInstanceMap
      * @param internalEventDrivenJobs
      * @param contextParameters
      * @param parentContextInstance
@@ -55,7 +56,8 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      * @return
      */
     protected List<SchedulerJobInitiationEvent> getJobInitiationEvents(ContextualisedScheduledProcessEvent scheduledProcessEvent
-        , ContextInstance contextInstance, DryRunParameters dryRunParameters, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs
+        , ContextInstance contextInstance, DryRunParameters dryRunParameters
+        , Map<String, GlobalEventJobInstance> globalEventJobInstanceMap, Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs
         , List<ContextParameterInstance> contextParameters, ContextInstance parentContextInstance, MutableBoolean lockRaised, boolean markAsRaised) {
         SchedulerJobInstance schedulerJobInstance = contextInstance.getScheduledJobsMap()
             .get(scheduledProcessEvent.getAgentName() + "-" + scheduledProcessEvent.getJobName());
@@ -123,7 +125,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
         List<SchedulerJobInitiationEvent> schedulerJobInitiationEvents = new ArrayList<>();
 
-        getScheduledJobInitiationEventsThatCanBeRaised(scheduledProcessEvent, contextInstance, dryRunParameters, internalEventDrivenJobs, contextParameters
+        getScheduledJobInitiationEventsThatCanBeRaised(scheduledProcessEvent, contextInstance, dryRunParameters, globalEventJobInstanceMap, internalEventDrivenJobs, contextParameters
             , parentContextInstance, schedulerJobInitiationEvents, markAsRaised);
 
         if(markAsRaised) {
@@ -146,6 +148,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
      * @param scheduledProcessEvent
      * @param contextInstance
      * @param dryRunParameters
+     * @param globalEventJobInstanceMap
      * @param internalEventDrivenJobs
      * @param contextParameters
      * @param parentContextInstance
@@ -155,6 +158,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
     private void getScheduledJobInitiationEventsThatCanBeRaised(ContextualisedScheduledProcessEvent scheduledProcessEvent,
                                                                 ContextInstance contextInstance,
                                                                 DryRunParameters dryRunParameters,
+                                                                Map<String, GlobalEventJobInstance> globalEventJobInstanceMap,
                                                                 Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobs,
                                                                 List<ContextParameterInstance> contextParameters,
                                                                 ContextInstance parentContextInstance,
@@ -169,7 +173,19 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
 
                     InternalEventDrivenJobInstance internalEventDrivenJob = internalEventDrivenJobs.get(jobDependency.getJobIdentifier() + "-" + contextInstance.getName());
 
-                    if (!jobInstance.isInitiationEventRaised() ||
+                    GlobalEventJobInstance globalEventJobInstance = globalEventJobInstanceMap.get(jobDependency.getJobIdentifier() + "-" + contextInstance.getName());
+
+                    // Find events that can be raised on the back of a GlobalEvents 
+                    if (!jobInstance.isInitiationEventRaised() && globalEventJobInstance != null) {
+                        if(markAsRaised) jobInstance.setInitiationEventRaised(true);
+
+                        SchedulerJobInitiationEvent event = createGlobalSchedulerJobInitiationEvent(jobInstance, globalEventJobInstance, dryRunParameters, contextInstance);
+
+                        if (event != null) {
+                            schedulerJobInitiationEvents.add(event);
+                        }
+                    }
+                    else if (!jobInstance.isInitiationEventRaised() ||
                         (internalEventDrivenJob != null
                             && internalEventDrivenJob.isJobRepeatable()
                             && !internalEventDrivenJob.getJobName().equals(scheduledProcessEvent.getJobName()))) {
@@ -230,8 +246,10 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
         }
 
         // Now iterate over the candidate job initiation events and determine which jobs actually participate in a lock.
+        // For jobLock, check if internalEventDrivenJob exist on the event, else just add the event
         schedulerJobInitiationEvents.forEach(event -> {
-            if(this.jobLockCache.doesJobParticipateInLock(event.getInternalEventDrivenJob().getIdentifier(), contextInstance.getName())) {
+            if(event.getInternalEventDrivenJob() != null &&
+                this.jobLockCache.doesJobParticipateInLock(event.getInternalEventDrivenJob().getIdentifier(), contextInstance.getName())) {
                 logger.info("Job participates in lock {}", event.getInternalEventDrivenJob());
 
                 // Now that we have determined that a job participates in a lock, we determine if the lock it participates in
@@ -365,6 +383,44 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             schedulerJobInitiationEvent.setAgentUrl(this.agents.get(schedulerJobInstance.getAgentName()).getUrl());
         }
 
+        return schedulerJobInitiationEvent;
+    }
+
+    /**
+     * Helper method to create the SchedulerJobInitiationEvent for a Global Event that is published when the next job
+     * in a context can be initiated.
+     *      
+     * @param schedulerJobInstance
+     * @param globalEventJobInstance
+     * @param dryRunParameters
+     * @param parentContextInstance
+     * @return
+     */
+    private SchedulerJobInitiationEvent createGlobalSchedulerJobInitiationEvent(SchedulerJobInstance schedulerJobInstance
+        , GlobalEventJobInstance globalEventJobInstance, DryRunParameters dryRunParameters, ContextInstance parentContextInstance) {
+        SchedulerJobInitiationEvent schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
+        schedulerJobInitiationEvent.setAgentName(schedulerJobInstance.getAgentName());
+        schedulerJobInitiationEvent.setJobName(schedulerJobInstance.getJobName());
+        schedulerJobInitiationEvent.setContextName(parentContextInstance.getName());
+        schedulerJobInitiationEvent.setContextInstanceId(parentContextInstance.getId());
+        schedulerJobInitiationEvent.setDryRun(dryRunParameters != null);
+        schedulerJobInitiationEvent.setDryRunParameters(dryRunParameters);
+
+        boolean shouldSkip = contextParametersInstanceService.isSkipped(parentContextInstance.getName(), schedulerJobInstance.getJobName());
+        schedulerJobInitiationEvent.setSkipped(shouldSkip);
+
+        if(schedulerJobInstance.isSkip()) {
+            schedulerJobInitiationEvent.setSkipped(true);
+            globalEventJobInstance.setSkip(true);
+        }
+
+        schedulerJobInitiationEvent.setChildContextNames(globalEventJobInstance.getChildContextNames());
+
+        // Add the URL
+        if(this.agents.containsKey(schedulerJobInstance.getAgentName())) {
+            schedulerJobInitiationEvent.setAgentUrl(this.agents.get(schedulerJobInstance.getAgentName()).getUrl());
+        }
+        
         return schedulerJobInitiationEvent;
     }
 

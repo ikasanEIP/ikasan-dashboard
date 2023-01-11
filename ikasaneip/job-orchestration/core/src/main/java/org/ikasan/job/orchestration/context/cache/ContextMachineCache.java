@@ -73,9 +73,6 @@ public class ContextMachineCache
     public List<String> getListOfContextInstanceIdByEnvironmentGroup(String environmentGroup) {
 
         List<String> contextInstanceIdList = new ArrayList<>();
-
-        if (environmentGroup == null) return contextInstanceIdList;
-
         contextInstanceByContextInstanceIdCache.forEach((contextInstance, contextMachine) -> {
                 if (StringUtils.equalsIgnoreCase(contextMachine.getContext().getEnvironmentGroup(), environmentGroup)) {
                     contextInstanceIdList.add(contextInstance);

@@ -113,10 +113,10 @@ public class JobContextControllerTest extends  AbstractRestMvcTest {
         ContextTemplate contextTemplate2 = new ContextTemplateImpl();
         contextTemplate2.setName("context-template-2");
 
-        ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, null, null
+        ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, null, null, null
             ,null,null,null, null, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
-        ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, null, null
+        ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, null, null, null
             ,null,null,null, null, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
 
