@@ -69,6 +69,13 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
                 + "_" + JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
             document.addField(TYPE, JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
         }
+        else if(schedulerJobInstance instanceof GlobalEventJobInstance) {
+            document.addField(ID, schedulerJobInstanceRecord.getJobName()
+                + "_" + schedulerJobInstanceRecord.getContextInstanceId()
+                + "_" + schedulerJobInstanceRecord.getChildContextName()
+                + "_" + JobConstants.GLOBAL_EVENT_JOB_INSTANCE);
+            document.addField(TYPE, JobConstants.GLOBAL_EVENT_JOB_INSTANCE);
+        }
 
         try {
             document.addField(PAYLOAD_CONTENT, this.getPayloadContents(schedulerJobInstance));
@@ -113,6 +120,9 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         typeBuffer.append(OR).append(" ");
         typeBuffer.append(TYPE + COLON);
         typeBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE).append("\" ");
+        typeBuffer.append(OR).append(" ");
+        typeBuffer.append(TYPE + COLON);
+        typeBuffer.append("\"").append(JobConstants.GLOBAL_EVENT_JOB_INSTANCE).append("\" ");
         typeBuffer.append(CLOSE_BRACKET);
 
         StringBuffer queryString = new StringBuffer();
@@ -164,6 +174,9 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
             typeBuffer.append(OR).append(" ");
             typeBuffer.append(TYPE + COLON);
             typeBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE).append("\" ");
+            typeBuffer.append(OR).append(" ");
+            typeBuffer.append(TYPE + COLON);
+            typeBuffer.append("\"").append(JobConstants.GLOBAL_EVENT_JOB_INSTANCE).append("\" ");
             typeBuffer.append(CLOSE_BRACKET);
 
             queryString.append(typeBuffer);
@@ -257,6 +270,9 @@ public class SolrSchedulerJobInstanceDaoImpl extends SolrDaoBase<SchedulerJobIns
         typeBuffer.append(OR).append(" ");
         typeBuffer.append(TYPE + COLON);
         typeBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE).append("\" ");
+        typeBuffer.append(OR).append(" ");
+        typeBuffer.append(TYPE + COLON);
+        typeBuffer.append("\"").append(JobConstants.GLOBAL_EVENT_JOB_INSTANCE).append("\" ");
         typeBuffer.append(CLOSE_BRACKET);
 
         StringBuffer queryString = new StringBuffer();

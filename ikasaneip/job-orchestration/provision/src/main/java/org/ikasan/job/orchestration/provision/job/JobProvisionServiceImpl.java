@@ -85,13 +85,23 @@ public class JobProvisionServiceImpl implements JobProvisionService {
 
         agents.getResultList().forEach(agent -> {
             try {
-                SchedulerJobWrapper schedulerJobWrapper = new SchedulerJobWrapperImpl();
-                schedulerJobWrapper.setJobs(getJobsForAgent(agent.getName(), jobs));
+                // Do not provision Global Events as this is not managed by the agent, but through the ContextMachine
+                List<SchedulerJob> agentJobs = new ArrayList<>();
+                jobs.forEach(schedulerJob -> {
+                    if (!(schedulerJob instanceof GlobalEventJob)) {
+                        agentJobs.add(schedulerJob);
+                    }
+                });
 
-                logger.info(String.format("Attempting to provision %s jobs on agent[%s]", jobs.size(), agent.getUrl()));
+                SchedulerJobWrapper schedulerJobWrapper = new SchedulerJobWrapperImpl();
+                schedulerJobWrapper.setJobs(getJobsForAgent(agent.getName(), agentJobs));
+
+                logger.info(String.format("Attempting to provision %s jobs on agent[%s]", agentJobs.size(), agent.getUrl()));
+                logger.info(String.format("Skipping %s global event jobs for the agent[%s] as global event jobs are not required for the agent.",
+                    jobs.size() - agentJobs.size(), agent.getUrl()));
                 this.jobProvisionModuleRestService.provisionJobs(agent.getUrl(), schedulerJobWrapper);
-                persistJobs(jobs, actor);
-                logger.info(String.format("Successfully provisioned %s jobs on agent[%s]", jobs.size(), agent.getUrl()));
+                persistJobs(jobs, actor); // Make sure the Global Events are persist
+                logger.info(String.format("Successfully provisioned %s jobs on agent[%s]", agentJobs.size(), agent.getUrl()));
             }
             catch (JobProvisionException e) {
                 e.printStackTrace();
