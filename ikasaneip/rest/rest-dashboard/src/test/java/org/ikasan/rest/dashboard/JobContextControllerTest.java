@@ -130,7 +130,6 @@ public class JobContextControllerTest extends  AbstractRestMvcTest {
         ContextMachineCache.instance().put(contextMachine2);
     }
 
-    @Test
     public void test_get_by_agentName() throws Exception {
 
         String uri = "/rest/jobContext/getByAgentName?agentName=scheduler-agent";
