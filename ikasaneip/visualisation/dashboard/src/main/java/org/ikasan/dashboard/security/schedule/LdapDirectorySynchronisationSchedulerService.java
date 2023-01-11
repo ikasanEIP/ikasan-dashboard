@@ -66,7 +66,8 @@ public class LdapDirectorySynchronisationSchedulerService extends AbstractDashbo
 
         for (JobDetail jobDetail : super.dashboardJobDetailsMap.values()) {
             logger.info(String.format("Registering ldap synchronisation job[%s]", jobDetail.getKey().getName()));
-            this.addJob(jobDetail.getKey().getName());
+            this.scheduleTrigger(jobDetail);
         }
     }
+
 }

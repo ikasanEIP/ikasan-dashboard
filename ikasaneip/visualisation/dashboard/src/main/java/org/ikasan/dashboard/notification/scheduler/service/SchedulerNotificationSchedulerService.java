@@ -52,7 +52,7 @@ public class SchedulerNotificationSchedulerService extends AbstractDashboardSche
         for(JobDetail jobDetail: super.dashboardJobDetailsMap.values())
         {
             logger.info(String.format("Registering scheduler notification job[%s]", jobDetail.getKey().getName()));
-            this.addJob(jobDetail.getKey().getName());
+            this.scheduleTrigger(jobDetail);
         }
     }
 

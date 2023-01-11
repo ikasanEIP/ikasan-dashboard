@@ -97,7 +97,7 @@ public class EmailNotifierTest {
         ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, null, null
             , null,"./target",null,null, null, null,
             null, null, null);
-        if (ContextMachineCache.instance().getByContextName("context-instance-1") == null) {
+        if (ContextMachineCache.instance().getFirstByContextName("context-instance-1") == null) {
             ContextMachineCache.instance().put(contextMachine1);
         }
         logger.info("CONTEXT MACHINE CACHE SETUP : {}",ContextMachineCache.instance().toString());

@@ -26,7 +26,6 @@ import com.vaadin.flow.shared.Registration;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
@@ -379,7 +378,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
         this.submitDownstreamJobsButton.setVisible(this.internalEventDrivenJobInstance.getStatus().equals(InstanceStatus.ERROR));
         this.submitDownstreamJobsButton.addClickListener(event -> {
 
-            ContextMachine contextMachine = ContextMachineCache.instance().getByContextName(this.contextInstance.getName());
+            ContextMachine contextMachine = ContextMachineCache.instance().getFirstByContextName(this.contextInstance.getName());
             ContextualisedScheduledProcessEventImpl contextualisedScheduledProcessEvent = new ContextualisedScheduledProcessEventImpl();
             contextualisedScheduledProcessEvent.setJobStarting(false);
             contextualisedScheduledProcessEvent.setJobName(this.internalEventDrivenJobInstance.getJobName());

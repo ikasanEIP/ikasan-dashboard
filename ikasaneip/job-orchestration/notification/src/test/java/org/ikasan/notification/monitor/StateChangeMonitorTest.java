@@ -25,7 +25,6 @@ import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.notification.model.Monitor;
 import org.ikasan.spec.scheduled.notification.model.Notifier;
-import org.joda.time.DateTimeUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +46,7 @@ import static org.junit.Assert.assertEquals;
 public class StateChangeMonitorTest {
 
     /** default executor service is a single thread executor */
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private  ObjectMapper objectMapper;
 
@@ -143,7 +142,7 @@ public class StateChangeMonitorTest {
         scheduledProcessEvent1.setSuccessful(false);
 
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
-        ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
+        ContextMachineCache.instance().getFirstByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
             .atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -161,7 +160,7 @@ public class StateChangeMonitorTest {
         scheduledProcessEvent1.setSuccessful(true);
 
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
-        ContextMachineCache.instance().getByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
+        ContextMachineCache.instance().getFirstByContextName("context-instance-1").eventReceived( objectMapper.writeValueAsString(message));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
             .atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -179,7 +178,7 @@ public class StateChangeMonitorTest {
         scheduledProcessEvent1.setSuccessful(false);
 
         BigQueueMessage message = new BigQueueMessageBuilder().withMessage(objectMapper.writeValueAsString(scheduledProcessEvent1)).build();
-        ContextMachineCache.instance().getByContextName("context-instance-2").eventReceived( objectMapper.writeValueAsString(message));
+        ContextMachineCache.instance().getFirstByContextName("context-instance-2").eventReceived( objectMapper.writeValueAsString(message));
 
         with().pollInterval(1, TimeUnit.SECONDS).and().with().pollDelay(1, TimeUnit.SECONDS).await()
             .atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {

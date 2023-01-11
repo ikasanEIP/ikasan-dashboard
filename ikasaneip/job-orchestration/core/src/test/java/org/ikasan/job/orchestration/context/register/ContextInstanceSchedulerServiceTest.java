@@ -16,6 +16,7 @@ import org.ikasan.scheduler.ScheduledJobFactory;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduler.DashboardJob;
 import org.ikasan.spec.search.SearchResults;
 import org.junit.Before;
