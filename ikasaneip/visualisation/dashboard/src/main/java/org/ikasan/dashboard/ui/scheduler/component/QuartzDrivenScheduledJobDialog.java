@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.helger.commons.lang.CloneHelper;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ItemLabelGenerator;
@@ -18,8 +19,10 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
+import org.apache.commons.lang3.SerializationUtils;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -82,6 +85,7 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
     private SchedulerJobRecord schedulerJobRecord;
 
     private List<SchedulerJobSelectedListener> schedulerJobSelectedListeners = new ArrayList<>();
+    private List<JobSynchronisationRequiredListener> jobSynchronisationRequiredListeners = new ArrayList<>();
 
 
     /**
@@ -123,6 +127,8 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
 
             IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
+            QuartzScheduleDrivenJob priorToModification = SerializationUtils.clone(this.quartzScheduleDrivenJob);
+
             if(!this.performFormValidation(this.quartzScheduleDrivenJob)) {
                 NotificationHelper.showErrorNotification(getTranslation("error.scheduled-job-configuration", UI.getCurrent().getLocale()));
                 return;
@@ -148,6 +154,11 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
             }
 
             this.schedulerJobSelectedListeners.forEach(listener -> listener.jobSelected(this.quartzScheduleDrivenJob));
+
+            if(this.editMode.equals(EditMode.NEW) || this.isJobSynchronisationRequired(priorToModification, this.quartzScheduleDrivenJob)) {
+                this.jobSynchronisationRequiredListeners.forEach(listener -> listener.jobSynchronisationRequired());
+            }
+
             NotificationHelper.showErrorNotification(getTranslation("notification.scheduler-job-saved", UI.getCurrent().getLocale()));
         });
 
@@ -170,6 +181,23 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
         layout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, buttonLayout);
         layout.getStyle().set("padding-bottom", "20px");
         super.content.add(layout);
+    }
+
+    private boolean isJobSynchronisationRequired(QuartzScheduleDrivenJob priorToModification, QuartzScheduleDrivenJob afterModification) {
+        boolean synchRequired = false;
+
+        if(!priorToModification.getCronExpression().equals(afterModification.getCronExpression())) {
+            synchRequired = true;
+        }
+
+        if((priorToModification.getTimeZone() == null && afterModification.getTimeZone() != null)
+            || (priorToModification.getTimeZone() != null && afterModification.getTimeZone() == null)
+            || (priorToModification.getTimeZone() != null && afterModification.getTimeZone() != null
+                    && !priorToModification.getTimeZone().equals(afterModification.getTimeZone()))) {
+            synchRequired = true;
+        }
+
+        return synchRequired;
     }
 
     /**
@@ -281,6 +309,9 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
             if(this.timezoneCb.getValue() != null) {
                 quartzScheduleDrivenJob.setTimeZone(this.timezoneCb.getValue().zoneId);
             }
+            else {
+                quartzScheduleDrivenJob.setTimeZone(null);
+            }
 
             formBinder.writeBean(quartzScheduleDrivenJob);
 
@@ -384,5 +415,9 @@ public class QuartzDrivenScheduledJobDialog extends AbstractCloseableResizableDi
 
     public void addSchedulerJobSelectedListener(SchedulerJobSelectedListener listener) {
         this.schedulerJobSelectedListeners.add(listener);
+    }
+
+    public void addJobSynchronisationRequiredListener(JobSynchronisationRequiredListener listener) {
+        this.jobSynchronisationRequiredListeners.add(listener);
     }
 }

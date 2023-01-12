@@ -16,6 +16,7 @@ import org.ikasan.dashboard.ui.scheduler.component.EditMode;
 import org.ikasan.dashboard.ui.scheduler.component.FileEventJobDialog;
 import org.ikasan.dashboard.ui.scheduler.component.InternalEventDrivenJobDialog;
 import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobDialog;
+import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.NewContextListener;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.IconDecorator;
@@ -103,6 +104,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     protected List<String> nodeConnectionIndicators = new ArrayList<>();
 
     protected Map<String, String> schedulerJobExecutionEnvironmentLabel;
+    private boolean saveRequired = false;
+    private List<JobSynchronisationRequiredListener> jobSynchronisationRequiredListeners = new ArrayList<>();
 
     public SchedulerVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                   ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
@@ -267,13 +270,20 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             ContextTemplate contextTemplate = ContextHelper.getChildContextTemplate(identifier,
                 this.parentContextTemplate);
 
-            if(contextTemplate != null && contextTemplate.getScheduledJobs() != null) {
-                this.designerCanvas.deselectAllFigures();
-                this.openJobVisualisation(contextTemplate);
+            if(this.isSaveRequired() && contextTemplate != null) {
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("header.save-required", UI.getCurrent().getLocale()));
+                confirmDialog.setText(getTranslation("label.unsaved-diagram", UI.getCurrent().getLocale()));
+                confirmDialog.setCancelable(true);
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(event -> {
+                    this.saveRequired = false;
+                    this.openContextTemplateVisualisation(contextTemplate);
+                });
             }
             else if(contextTemplate != null) {
-                this.designerCanvas.deselectAllFigures();
-                this.openContextVisualisation(contextTemplate);
+                this.openContextTemplateVisualisation(contextTemplate);
             }
             else {
                 this.openJobDialog(identifier);
@@ -292,10 +302,12 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
     public void addAndGrouping() {
         this.designerCanvas.addBoundaryStyled("AND-"+UUID.randomUUID().toString(), 200, 200, "--", IkasanColours.SCHEDULER_AND, 3);
+        this.saveRequired = true;
     }
 
     public void addOrGrouping() {
         this.designerCanvas.addBoundaryStyled("OR-"+UUID.randomUUID().toString(), 200, 200, "--..", IkasanColours.SCHEDULER_OR, 3);
+        this.saveRequired = true;
     }
 
     public void save() {
@@ -308,6 +320,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger,
                 this.schedulerJobService, this.logStreamingService, this.jobInitiationService,
                 this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService, this.schedulerJobExecutionEnvironmentLabel);
+            this.jobSynchronisationRequiredListeners.forEach(listener
+                -> jobTemplateVisualisationDialog.addJobSynchronisationRequiredListener(listener));
             jobTemplateVisualisationDialog.createSchedulerVisualisation(this.parentContextTemplate, contextTemplate);
             jobTemplateVisualisationDialog.open();
 
@@ -340,6 +354,17 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         }
     }
 
+    private void openContextTemplateVisualisation(ContextTemplate contextTemplate) {
+        if(contextTemplate != null && contextTemplate.getScheduledJobs() != null) {
+            this.designerCanvas.deselectAllFigures();
+            this.openJobVisualisation(contextTemplate);
+        }
+        else if(contextTemplate != null) {
+            this.designerCanvas.deselectAllFigures();
+            this.openContextVisualisation(contextTemplate);
+        }
+    }
+
     private void openJobDialog(String identifier) {
         SchedulerJob schedulerJob = this.contextTemplate.getScheduledJobsMap().get(identifier);
 
@@ -351,16 +376,19 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         if(schedulerJobRecord.getJob() instanceof InternalEventDrivenJob) {
             InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
                 , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService
-                , this.contextTemplate, schedulerJobExecutionEnvironmentLabel);
+                , this.parentContextTemplate, this.contextTemplate, schedulerJobExecutionEnvironmentLabel);
 
             internalEventDrivenJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
+            this.jobSynchronisationRequiredListeners.forEach(listener ->
+                internalEventDrivenJobDialog.addJobSynchronisationRequiredListener(listener));
             internalEventDrivenJobDialog.open();
         }
         else if(schedulerJobRecord.getJob() instanceof FileEventDrivenJob) {
             FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName()), this.scheduledProcessManagementService
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
             fileEventJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
-
+            this.jobSynchronisationRequiredListeners.forEach(listener ->
+                fileEventJobDialog.addJobSynchronisationRequiredListener(listener));
             fileEventJobDialog.open();
         }
         else {
@@ -368,7 +396,8 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                 , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
                 , systemEventLogger, this.schedulerJobService);
             quartzDrivenScheduledJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
-
+            this.jobSynchronisationRequiredListeners.forEach(listener ->
+                quartzDrivenScheduledJobDialog.addJobSynchronisationRequiredListener(listener));
             quartzDrivenScheduledJobDialog.open();
         }
     }
@@ -384,6 +413,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         this.designerCanvas.addImageFigure(adapter.adaptJob(schedulerJob));
         this.designerCanvas.addLabelToFigure(schedulerJob.getIdentifier(), schedulerJob.getJobName());
         this.contextTemplate.getScheduledJobsMap().put(schedulerJob.getIdentifier(), schedulerJob);
+        this.saveRequired = true;
     }
 
     @Override
@@ -395,8 +425,10 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     public void connectorEvent(ConnectorEvent connectorEvent) {
         logger.debug("Connector event - " + connectorEvent.getEventType());
         if(connectorEvent.getEventType().equals("CONNECTOR_ADDED")) {
-            if(connectorEvent.getSourceUserData() != null && connectorEvent.getSourceUserData().getItemType().equals(UserData.CONTEXT)
-                && connectorEvent.getTargetUserData() != null && connectorEvent.getTargetUserData().getItemType().equals(UserData.CONTEXT)) {
+            if(connectorEvent.getSourceUserData() != null && connectorEvent.getSourceUserData().getItemType() != null
+                && connectorEvent.getSourceUserData().getItemType().equals(UserData.CONTEXT)
+                && connectorEvent.getTargetUserData() != null && connectorEvent.getTargetUserData().getItemType() != null
+                && connectorEvent.getTargetUserData().getItemType().equals(UserData.CONTEXT)) {
                 ContextTemplate childContextTemplate = ContextHelper.getChildContextTemplate(connectorEvent.getTargetUserData().getContextName()
                     , this.parentContextTemplate);
                 ContextHelper.removeChildContextTemplate(connectorEvent.getTargetUserData().getContextName(), this.parentContextTemplate);
@@ -407,6 +439,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                 contextTemplate.getContextsMap().put(childContextTemplate.getName(),childContextTemplate);
 
                 this._save();
+                this.saveRequired = true;
             }
         }
     }
@@ -525,11 +558,16 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             this.scheduledContextService.save(scheduledContextRecord);
 
             ContextTemplateSavedEventBroadcaster.broadcast(this.parentContextTemplate);
-            NotificationHelper.showUserNotification("Context Saved!");
+
+            NotificationHelper.showUserNotification(getTranslation("notification.context-template-saved-successfully"
+                , UI.getCurrent().getLocale()));
+
+            this.saveRequired = false;
         }
         catch (CanvasJsonValidationException e) {
             ConfirmDialog errorDialog = new ConfirmDialog();
-            errorDialog.setHeader("Cannot save context!");
+            errorDialog.setHeader(getTranslation("error-dialog-header.cannot-save-context"
+                , UI.getCurrent().getLocale()));
             errorDialog.setWidth("600px");
 
 
@@ -575,5 +613,13 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         public ContextTemplate getDeleted() {
             return deleted;
         }
+    }
+
+    public boolean isSaveRequired() {
+        return saveRequired;
+    }
+
+    public void addJobSynchronisationRequiredListener(JobSynchronisationRequiredListener listener) {
+        this.jobSynchronisationRequiredListeners.add(listener);
     }
 }
