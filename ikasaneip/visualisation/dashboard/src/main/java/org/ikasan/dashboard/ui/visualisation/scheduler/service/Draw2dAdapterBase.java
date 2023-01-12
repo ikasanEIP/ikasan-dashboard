@@ -168,7 +168,8 @@ public abstract class Draw2dAdapterBase {
                 , internalEventDrivenJobMap, diagramBuilder, graph);
 
             // Manage the case that there are other contexts that the job plan links to.
-            this.manageOutboundContextTransitions(subsequentTransitions, diagramBuilder, graph, linkingConnections);
+            this.manageOutboundContextTransitions(subsequentTransitions, diagramBuilder, graph
+                , linkingConnections, parentContext);
 
             // Manage the case that there are other contexts that precede this one and link to it.
             List<String> inboundConnections =  this.manageInboundContextTransitions(previousContexts, diagramBuilder, graph
@@ -225,10 +226,10 @@ public abstract class Draw2dAdapterBase {
                         ((PositionedItem) item).setY(cell.getGeometry().getY() + 600);
 
                         double positionedItemCentre = ((PositionedItem) item).getX() + 50;
-                        ((Image) item).setComposite(group.getId());
 
                         if(context.getScheduledJobsMap()
                             .containsKey(((PositionedItem) item).getId())) {
+                            ((Image) item).setComposite(group.getId());
                             // assuming each letter is 8 units long
                             double labelLength = ((SchedulerJob) context.getScheduledJobsMap()
                                 .get(((PositionedItem) item).getId())).getJobName().length() * 7.5;
@@ -281,6 +282,8 @@ public abstract class Draw2dAdapterBase {
                         }
                         else if(((Image) item).getUserData().getItemType().equals(UserData.CONTEXT)) {
                             double labelLength = ((Image) item).getUserData().getContextName().length() * 7.5;
+
+                            ((Image) item).setComposite(group.getId());
 
                             Label label = new LabelBuilder().withText(((Image) item).getUserData().getContextName())
                                 .withX(positionedItemCentre - (labelLength / 2))
@@ -678,7 +681,7 @@ public abstract class Draw2dAdapterBase {
      * @param linkingConnections
      */
     protected void manageOutboundContextTransitions(List<ContextTransition> contextTransitions, DiagramBuilder diagramBuilder, DefaultDirectedGraph<Object, DefaultEdge> graph,
-                                                    List<String> linkingConnections) {
+                                                    List<String> linkingConnections, Context parentContext) {
         List<String> addedContexts = new ArrayList<>();
 
         List<String> precedingJobIdentifiers = new ArrayList<>();
@@ -687,22 +690,35 @@ public abstract class Draw2dAdapterBase {
 
         contextTransitions.forEach(contextTransition -> {
             contextTransition.getContexts().forEach(context -> {
+                Context child = ContextHelper.getChildContext(context, parentContext);
+
+                if(child != null) {
+                    List<String> jobIdentifiers = (List<String>) child.getScheduledJobs().stream()
+                        .map(job -> ((SchedulerJob)job).getIdentifier())
+                        .collect(Collectors.toList());
+
+                    if(!jobIdentifiers.stream().anyMatch(element -> precedingJobIdentifiers.contains(element))) return;
+                }
+
                 String contextName = context;
                 if(!linkingConnections.contains(context)) {
                     context = context + "_out";
                 }
-                graph.addVertex(context);
 
-                if (!addedContexts.contains(context)) {
-                    UserDataBuilder userDataBuilder = new UserDataBuilder()
-                        .withIdentifier(context)
-                        .withItemType(UserData.CONTEXT)
-                        .withContextName(contextName);
+                if(!graph.containsVertex(context)) {
+                    graph.addVertex(context);
 
-                    precedingJobIdentifiers.forEach(id -> userDataBuilder.addPreviousJobIdentifiers(id));
+                    if (!addedContexts.contains(context)) {
+                        UserDataBuilder userDataBuilder = new UserDataBuilder()
+                            .withIdentifier(context)
+                            .withItemType(UserData.CONTEXT)
+                            .withContextName(contextName);
 
-                    this.addExternalContext(context, diagramBuilder, userDataBuilder.build());
-                    addedContexts.add(context);
+                        precedingJobIdentifiers.forEach(id -> userDataBuilder.addPreviousJobIdentifiers(id));
+
+                        this.addExternalContext(context, diagramBuilder, userDataBuilder.build());
+                        addedContexts.add(context);
+                    }
                 }
 
                 this.addConnection(contextTransition.getPrecedingJob().getIdentifier(), "rightHybridSource"
@@ -736,7 +752,7 @@ public abstract class Draw2dAdapterBase {
                 if(!linkingConnections.contains(context)) {
                     context = context + "_in";
                 }
-                if (!addedContexts.contains(context)) {
+                if (!addedContexts.contains(context) && ! graph.containsVertex(context)) {
                     graph.addVertex(context);
 
                     UserDataBuilder userDataBuilder = new UserDataBuilder()
@@ -1002,7 +1018,7 @@ public abstract class Draw2dAdapterBase {
                     && image.getUserData().getItemType().equals(UserData.CONTEXT)) {
                     mxCell cell = cellMap.get(image.getUserData().getIdentifier());
 
-                    this.drawContextBoundary(cell, imageOverlay, image.getUserData(), diagramBuilder);
+                    this.drawContextBoundary(cell, imageOverlay, image.getUserData(), diagramBuilder, image.getComposite());
                 }
             }
         });
@@ -1016,7 +1032,7 @@ public abstract class Draw2dAdapterBase {
      * @param userData
      */
     protected void drawContextBoundary(mxCell cell, ArrayList<Object> imageOverlay, UserData userData
-        , DiagramBuilder diagramBuilder) {
+        , DiagramBuilder diagramBuilder, String groupId) {
         RectangleBuilder rb = diagramBuilder.getRectangleBuilder()
             .withWidth(200)
             .withHeight(200)
@@ -1033,6 +1049,7 @@ public abstract class Draw2dAdapterBase {
 
         Rectangle rectangle = rb.build();
         rectangle.setUserData(userData);
+        rectangle.setComposite(groupId);
 
         imageOverlay.add(rectangle);
     }
