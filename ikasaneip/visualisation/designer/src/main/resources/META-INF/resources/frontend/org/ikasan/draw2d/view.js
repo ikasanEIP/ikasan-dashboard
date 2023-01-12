@@ -195,6 +195,7 @@ View = draw2d.Canvas.extend({
 
         this.clipboardFigure.each(function(i,f) {
             debugger;
+            console.log("Deleting figure - " + f);
             let command = new draw2d.command.CommandDelete(f);
             _this.getCommandStack().execute(command);
         });

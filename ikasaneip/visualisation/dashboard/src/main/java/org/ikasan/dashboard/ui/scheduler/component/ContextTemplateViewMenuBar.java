@@ -43,7 +43,7 @@ public class ContextTemplateViewMenuBar extends MenuBar {
     private void init() {
         super.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
 
-        MenuItem contextViews = createQuickAccessButton(this, VaadinIcon.SITEMAP.create(), getTranslation("label.context-views", UI.getCurrent().getLocale()));
+        MenuItem contextViews = createMenuItem(this, VaadinIcon.SITEMAP.create(), getTranslation("label.context-views", UI.getCurrent().getLocale()));
 
         SubMenu systemViewsSubMenu = contextViews.getSubMenu();
         SubMenu myViewsSubMenu = contextViews.getSubMenu();
@@ -100,7 +100,7 @@ public class ContextTemplateViewMenuBar extends MenuBar {
         });
     }
 
-    private com.vaadin.flow.component.contextmenu.MenuItem createQuickAccessButton(com.vaadin.flow.component.menubar.MenuBar menu, Icon icon, String label) {
+    private com.vaadin.flow.component.contextmenu.MenuItem createMenuItem(com.vaadin.flow.component.menubar.MenuBar menu, Icon icon, String label) {
         com.vaadin.flow.component.button.Button quickAccessButton = new Button(label, icon);
         quickAccessButton.setIconAfterText(true);
 

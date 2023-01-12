@@ -79,60 +79,6 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
         this.setHeight("850px");
         this.setWidth("95%");
 
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.getStyle().set("position", "absolute");
-        buttonLayout.getStyle().set("top", "70px");
-        buttonLayout.getStyle().set("right", "30px");
-
-        Button addButton = new Button("Standalone Scheduled Job");
-        addButton.setId("newScheduledJobButton");
-        addButton.setIcon(IronIcons.ADD.create());
-
-        addButton.addClickListener(buttonClickEvent -> {
-            ScheduledJobDialog scheduledJobDialog = new ScheduledJobDialog(this.agent,
-                this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                this.metaDataRestService, this.systemEventLogger);
-
-            scheduledJobDialog.open();
-        });
-
-        Button addQuartzJobButton = new Button("Scheduled Event");
-        addQuartzJobButton.setId("newScheduledJobButton");
-        addQuartzJobButton.setIcon(IronIcons.ADD.create());
-
-        addQuartzJobButton.addClickListener(buttonClickEvent -> {
-            QuartzDrivenScheduledJobDialog scheduledJobDialog = new QuartzDrivenScheduledJobDialog(this.agent,
-                this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                this.metaDataRestService, this.systemEventLogger, schedulerJobService);
-
-            scheduledJobDialog.open();
-        });
-
-        Button addFileEventJobButton = new Button("File Event");
-        addFileEventJobButton.setId("addFileEventJobButton");
-        addFileEventJobButton.setIcon(IronIcons.ADD.create());
-
-        addFileEventJobButton.addClickListener(buttonClickEvent -> {
-            FileEventJobDialog fileEventJobDialog = new FileEventJobDialog(this.agent,
-                this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                this.metaDataRestService, this.systemEventLogger, schedulerJobService);
-
-            fileEventJobDialog.open();
-        });
-
-        Button addInternalEventJobButton = new Button("Job");
-        addInternalEventJobButton.setId("addInternalEventJobButton");
-        addInternalEventJobButton.setIcon(IronIcons.ADD.create());
-
-        addInternalEventJobButton.addClickListener(buttonClickEvent -> {
-            InternalEventDrivenJobDialog fileEventJobDialog = new InternalEventDrivenJobDialog(this.agent,
-                this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService,
-                this.metaDataRestService, this.systemEventLogger, schedulerJobService, schedulerJobExecutionEnvironmentLabel);
-
-            fileEventJobDialog.open();
-        });
-
-        // todo translation for header.agent-details not in bundle.
         H4 agentDetails = new H4(getTranslation("header.agent-details", UI.getCurrent().getLocale()));
 
 
@@ -183,11 +129,9 @@ public class SchedulerAgentManagementDialog extends AbstractCloseableResizableDi
 
         filteringGrid.addGridFiltering(this.filterTf, agentJobFiler::setFilter);
 
-        buttonLayout.add(addQuartzJobButton, addFileEventJobButton, addInternalEventJobButton, addButton);
-
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
-        layout.add(agentDetails, buttonLayout, formLayout, scheduledJobsLabel, filterLayout, filteringGrid);
+        layout.add(agentDetails, formLayout, scheduledJobsLabel, filterLayout, filteringGrid);
         super.content.add(layout);
     }
 }
