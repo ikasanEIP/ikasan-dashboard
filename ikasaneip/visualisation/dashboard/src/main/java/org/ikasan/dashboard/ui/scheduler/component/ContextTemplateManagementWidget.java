@@ -32,6 +32,7 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
+import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.model.BlackoutWindowDateTimePair;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
@@ -83,7 +84,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class ContextTemplateManagementWidget extends VerticalLayout {
+public class ContextTemplateManagementWidget extends VerticalLayout implements JobSynchronisationRequiredListener {
     private Registration contextSaveBroadcasterRegistration;
     private ScheduledContextService scheduledContextService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
@@ -130,6 +131,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
     private Grid<BlackoutWindowDateTimePair> blackoutWindowsGrid;
     private String zipWorkingDirectory;
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
+
+    private Button synchroniseJobsButton;
 
     /**
      * Constructor
@@ -522,6 +525,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService
             , this.jobInitiationService, this.contextProfileService, this.userService, this.securityService, this.jobProvisionService, this.scheduledContextService
             , this.schedulerJobExecutionEnvironmentLabel);
+        this.schedulerVisualisation.addJobSynchronisationRequiredListener(this);
         this.schedulerVisualisation.setWidthFull();
         this.schedulerVisualisation.setHeight("75vh");
 
@@ -690,7 +694,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setMargin(false);
         buttonLayout.setPadding(false);
-        Button provisionButton = this.createSynchroniseJobsButton();
+        this.synchroniseJobsButton = this.createSynchroniseJobsButton();
 
         MenuBar actionsMenuBar = new MenuBar();
         actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
@@ -725,12 +729,13 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
 
         this.createJobUploadMenuBar(actions);
         this.createNewJobMenuBar(actions);
-        Anchor download = new Anchor(new StreamResource("jobPlanBundle.zip", () -> this.getContextBundleStreamResource()), getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
+        Anchor download = new Anchor(new StreamResource("jobPlanBundle.zip", () -> this.getContextBundleStreamResource())
+            , getTranslation("button.download-context-template", UI.getCurrent().getLocale()));
         download.getElement().setAttribute("download", true);
         actions.addItem(download);
 
-        buttonLayout.add(actionsMenuBar, provisionButton);
-        buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, provisionButton);
+        buttonLayout.add(actionsMenuBar, this.synchroniseJobsButton);
+        buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, this.synchroniseJobsButton);
 
         buttonWrapper.add(buttonLayout);
         buttonWrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
@@ -745,9 +750,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
      */
     private Button createSynchroniseJobsButton() {
         Button synchroniseJobsButton = new Button(getTranslation("button.synchronise-jobs", UI.getCurrent().getLocale()), VaadinIcon.COGS.create());
-        synchroniseJobsButton.getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
-        synchroniseJobsButton.getStyle().set("color","white");
-        synchroniseJobsButton.getElement().setAttribute("title", getTranslation("tooltip.synch-jobs-required", UI.getCurrent().getLocale()));
+//        synchroniseJobsButton.getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
+//        synchroniseJobsButton.getStyle().set("color","white");
+//        synchroniseJobsButton.getElement().setAttribute("title", getTranslation("tooltip.synch-jobs-required", UI.getCurrent().getLocale()));
         synchroniseJobsButton.setIconAfterText(true);
 
         ComponentSecurityVisibility.applySecurity(synchroniseJobsButton, SecurityConstants.ALL_AUTHORITY,
@@ -772,6 +777,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
                 final UI current = UI.getCurrent();
                 Executor executor = Executors.newSingleThreadExecutor();
                 executor.execute(() -> {
+                    boolean success = true;
                     try {
                         SearchResults<SchedulerJobRecord> jobRecords = this.schedulerJobService.findByContext(this.contextTemplate.getName(), -1, -1);
 
@@ -784,12 +790,18 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
                     }
                     catch (Exception e) {
                         e.printStackTrace();
+                        success = false;
+                        dialog.close();
                         current.access(() -> NotificationHelper.showErrorNotification(getTranslation("error.provisioning-jobs", UI.getCurrent().getLocale())));
                     }
-                    finally {
+
+                    if(success) {
                         current.access(() -> {
                             dialog.close();
                             NotificationHelper.showUserNotification(getTranslation("notification.provisioned-jobs", UI.getCurrent().getLocale()));
+                            this.synchroniseJobsButton.getStyle().set("background-color", "white");
+                            this.synchroniseJobsButton.getStyle().set("color", IkasanColours.IKASAN_ORANGE);
+                            this.synchroniseJobsButton.getElement().setAttribute("title", "");
                         });
                     }
                 });
@@ -846,12 +858,13 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
 
         jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale()), event -> {
                 InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
-                    this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.schedulerJobExecutionEnvironmentLabel);
+                    this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.contextTemplate, this.schedulerJobExecutionEnvironmentLabel);
 
                 InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
                 internalEventDrivenJob.setContextName(this.contextTemplate.getName());
 
                 internalEventDrivenJobDialog.setJob(internalEventDrivenJob, EditMode.NEW);
+                internalEventDrivenJobDialog.addJobSynchronisationRequiredListener(this);
                 internalEventDrivenJobDialog.open();
 
                 internalEventDrivenJobDialog.addOpenedChangeListener(openedChangeEvent -> {
@@ -873,6 +886,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
                 fileEventDrivenJob.setContextName(contextTemplate.getName());
 
                 fileEventJobDialog.setJob(fileEventDrivenJob, EditMode.NEW);
+                fileEventJobDialog.addJobSynchronisationRequiredListener(this);
 
                 fileEventJobDialog.open();
 
@@ -895,10 +909,11 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
                 quartzScheduleDrivenJob.setContextName(this.contextTemplate.getName());
 
                 quartzDrivenScheduledJobDialog.setJob(quartzScheduleDrivenJob, EditMode.NEW);
+                quartzDrivenScheduledJobDialog.addJobSynchronisationRequiredListener(this);
 
                 quartzDrivenScheduledJobDialog.open();
 
-                quartzDrivenScheduledJobDialog  .addOpenedChangeListener(openedChangeEvent -> {
+                quartzDrivenScheduledJobDialog.addOpenedChangeListener(openedChangeEvent -> {
                     if(!openedChangeEvent.isOpened()) {
                         this.schedulerJobGridWidget.refresh();
                     }
@@ -1011,5 +1026,13 @@ public class ContextTemplateManagementWidget extends VerticalLayout {
             this.contextSaveBroadcasterRegistration.remove();
             this.contextSaveBroadcasterRegistration = null;
         }
+    }
+
+    @Override
+    public void jobSynchronisationRequired() {
+        this.synchroniseJobsButton.getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
+        this.synchroniseJobsButton.getStyle().set("color","white");
+        this.synchroniseJobsButton.getElement().setAttribute("title"
+            , getTranslation("tooltip.synch-jobs-required", UI.getCurrent().getLocale()));
     }
 }

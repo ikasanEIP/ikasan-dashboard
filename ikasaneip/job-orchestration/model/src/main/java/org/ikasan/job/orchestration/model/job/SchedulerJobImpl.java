@@ -3,10 +3,7 @@ package org.ikasan.job.orchestration.model.job;
 
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class SchedulerJobImpl implements SchedulerJob {
     protected String jobIdentifier;
@@ -31,6 +28,9 @@ public class SchedulerJobImpl implements SchedulerJob {
 
     @Override
     public List<String> getChildContextNames() {
+        if(childContextNames == null) {
+            childContextNames = new ArrayList<>();
+        }
         return childContextNames;
     }
 
