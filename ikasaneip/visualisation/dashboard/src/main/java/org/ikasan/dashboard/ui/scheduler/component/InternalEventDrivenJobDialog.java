@@ -1,7 +1,6 @@
 package org.ikasan.dashboard.ui.scheduler.component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
@@ -18,37 +17,32 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.binder.ValueContext;
-import com.vaadin.flow.data.converter.Converter;
-import com.vaadin.flow.data.converter.StringToLongConverter;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
-import de.f0rce.ace.util.AceMarker;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.validator.StringToDefaultLongConverter;
+import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
-import org.ikasan.dashboard.ui.util.*;
-import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
+import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.dashboard.ui.util.SystemEventConstants;
+import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobImpl;
-import org.ikasan.scheduled.job.model.SolrInternalEventDrivenJobRecordImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
-import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.*;
@@ -57,9 +51,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDialog {
 
     Logger logger = LoggerFactory.getLogger(InternalEventDrivenJobDialog.class);
-
-
-    private ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     private ComboBox<String> agentCb;
 
@@ -100,8 +91,11 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     private SchedulerJobService schedulerJobService;
 
     private List<SchedulerJobSelectedListener> schedulerJobSelectedListeners = new ArrayList<>();
+    private List<JobSynchronisationRequiredListener> jobSynchronisationRequiredListeners = new ArrayList<>();
 
     private ContextTemplate contextTemplate;
+
+    private ContextTemplate parentContextTemplate;
 
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
@@ -139,10 +133,11 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
     public InternalEventDrivenJobDialog(ModuleMetaData agent, ScheduledProcessManagementService scheduledProcessManagementService,
                                         ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                         MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                                        ContextTemplate contextTemplate, Map<String, String> schedulerJobExecutionEnvironmentLabel) {
+                                        ContextTemplate parentContextTemplate, ContextTemplate contextTemplate, Map<String, String> schedulerJobExecutionEnvironmentLabel) {
         this(agent, scheduledProcessManagementService, configurationRestService, moduleControlRestService,
             metaDataRestService, systemEventLogger, schedulerJobService, schedulerJobExecutionEnvironmentLabel);
         this.contextTemplate = contextTemplate;
+        this.parentContextTemplate = parentContextTemplate;
     }
 
     private void init() {
@@ -185,7 +180,9 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
             }
 
             this.schedulerJobSelectedListeners.forEach(listener -> listener.jobSelected(this.internalEventDrivenJob));
-            NotificationHelper.showErrorNotification(getTranslation("notification.scheduler-job-saved", UI.getCurrent().getLocale()));
+            this.jobSynchronisationRequiredListeners.forEach(listener -> listener.jobSynchronisationRequired());
+            this.editMode = EditMode.EDIT;
+            NotificationHelper.showUserNotification(getTranslation("notification.scheduler-job-saved", UI.getCurrent().getLocale()));
         });
 
         ComponentSecurityVisibility.applySecurity(saveButton, SecurityConstants.ALL_AUTHORITY,
@@ -433,14 +430,24 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
         try {
             AtomicBoolean isValid = new AtomicBoolean(true);
-
-            formBinder.writeBean(internalEventDrivenJob);
+            this.jobNameTf.setInvalid(false);
 
             // Get the module configuration from the module.
             if(this.commandLineTa.getValue() == null || this.commandLineTa.getValue().isEmpty()
                 || this.commandLineTa.getValue().equals(this.jobContextErrorMessage)) {
                 this.commandLineTa.setValue(this.jobContextErrorMessage);
-                return false;
+                isValid.set(false);
+            }
+
+            formBinder.writeBean(internalEventDrivenJob);
+
+            if(this.editMode.equals(EditMode.NEW)) {
+                if(this.schedulerJobService.findByContextNameAndJobName
+                    (this.parentContextTemplate.getName(), internalEventDrivenJob.getJobName()) != null) {
+                    isValid.set(false);
+                    this.jobNameTf.setErrorMessage(getTranslation("error.job-name-exists", UI.getCurrent().getLocale()));
+                    this.jobNameTf.setInvalid(true);
+                }
             }
 
             if(!isValid.get()){
@@ -465,6 +472,8 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         internalEventDrivenJob.setIdentifier(internalEventDrivenJob.getAgentName()+"-"+internalEventDrivenJob.getJobName());
 
         this.schedulerJobService.saveInternalEventDrivenJob(internalEventDrivenJob, authentication.getName());
+        this.schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName(this.parentContextTemplate.getName(),
+            internalEventDrivenJob.getJobName());
      }
 
     /**
@@ -517,5 +526,9 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
 
     public void addSchedulerJobSelectedListener(SchedulerJobSelectedListener listener) {
         this.schedulerJobSelectedListeners.add(listener);
+    }
+
+    public void addJobSynchronisationRequiredListener(JobSynchronisationRequiredListener listener) {
+        this.jobSynchronisationRequiredListeners.add(listener);
     }
 }

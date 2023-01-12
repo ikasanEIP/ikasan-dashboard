@@ -20,6 +20,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -83,6 +84,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
     private SchedulerJobService schedulerJobService;
 
     private List<SchedulerJobSelectedListener> schedulerJobSelectedListeners = new ArrayList<>();
+    private List<JobSynchronisationRequiredListener> jobSynchronisationRequiredListeners = new ArrayList<>();
 
 
     /**
@@ -148,6 +150,7 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
             }
 
             this.schedulerJobSelectedListeners.forEach(listener -> listener.jobSelected(this.fileEventDrivenJob));
+            this.jobSynchronisationRequiredListeners.forEach(listener -> listener.jobSynchronisationRequired());
             NotificationHelper.showErrorNotification(getTranslation("notification.scheduler-job-saved"
                 , UI.getCurrent().getLocale()));
         });
@@ -454,5 +457,9 @@ public class FileEventJobDialog extends AbstractCloseableResizableDialog {
 
     public void addSchedulerJobSelectedListener(SchedulerJobSelectedListener listener) {
         this.schedulerJobSelectedListeners.add(listener);
+    }
+
+    public void addJobSynchronisationRequiredListener(JobSynchronisationRequiredListener listener) {
+        this.jobSynchronisationRequiredListeners.add(listener);
     }
 }
