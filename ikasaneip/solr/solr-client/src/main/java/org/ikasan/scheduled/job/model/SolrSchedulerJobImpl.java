@@ -6,6 +6,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,9 @@ public class SolrSchedulerJobImpl implements SchedulerJob {
     }
 
     public List<String> getChildContextNames() {
+        if(childContextNames == null) {
+            childContextNames = new ArrayList<>();
+        }
         return childContextNames;
     }
 

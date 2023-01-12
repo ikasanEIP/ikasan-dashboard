@@ -199,7 +199,9 @@ public class CanvasJsonToContextTemplateAdapter {
         connections.entrySet().forEach(entry -> {
             entry.getValue().forEach(connection -> {
                 if(schedulerJobs.get(connection.getTarget().getNode()).getUserData().getJobName() != null &&
-                    schedulerJobs.get(connection.getTarget().getNode()).getUserData().getAgentName() != null) {
+                    schedulerJobs.get(connection.getTarget().getNode()).getUserData().getAgentName() != null &&
+                    schedulerJobs.get(entry.getKey()).getUserData().getAgentName() != null &&
+                    schedulerJobs.get(entry.getKey()).getUserData().getJobName() != null) {
                     contextTemplateBuilder.addJobDependency(contextTemplateBuilder.getJobDependencyBuilder()
                         .withJobName(schedulerJobs.get(connection.getTarget().getNode()).getUserData().getJobName())
                         .withAgentName(schedulerJobs.get(connection.getTarget().getNode()).getUserData().getAgentName())
