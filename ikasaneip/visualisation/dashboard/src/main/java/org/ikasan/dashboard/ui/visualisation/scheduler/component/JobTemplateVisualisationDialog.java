@@ -2,6 +2,7 @@ package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.icon.Icon;
@@ -14,6 +15,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.*;
+import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.SchedulerJobSelectedListener;
 import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
@@ -44,6 +46,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -76,6 +80,8 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
 
     private SchedulerVisualisation schedulerVisualisation;
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
+
+    private List<JobSynchronisationRequiredListener> jobSynchronisationRequiredListeners = new ArrayList<>();
 
 
     public JobTemplateVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
@@ -180,6 +186,8 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             this.logStreamingService, this.jobInitiationService, this.contextProfileService, this.userService, this.securityService,
             this.jobProvisionService, this.scheduledContextService, this.schedulerJobExecutionEnvironmentLabel);
         this.schedulerVisualisation.createSchedulerVisualisation(this.rootContextTemplate, this.contextTemplate, this, true);
+        this.jobSynchronisationRequiredListeners.forEach(listener ->
+            this.schedulerVisualisation.addJobSynchronisationRequiredListener(listener));
 
         this.layout.add(this.schedulerVisualisation);
         super.title.setText(this.contextTemplate.getName());
@@ -300,9 +308,9 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         MenuBar newJobMenuBar = new MenuBar();
         newJobMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
 
-        MenuItem quickAccess = createIconItem(newJobMenuBar, VaadinIcon.TOOLBOX, getTranslation("menu-item.add-a-job", UI.getCurrent().getLocale()));
+        MenuItem jobMenu = createIconItem(newJobMenuBar, VaadinIcon.TOOLBOX, getTranslation("menu-item.add-a-job", UI.getCurrent().getLocale()));
 
-        SubMenu addJobSubMenu = quickAccess.getSubMenu();
+        SubMenu addJobSubMenu = jobMenu.getSubMenu();
         MenuItem newJobMenuItem = addJobSubMenu.addItem(getTranslation("menu-item.new-job", UI.getCurrent().getLocale()));
         addJobSubMenu.addItem(getTranslation("menu-item.existing-job", UI.getCurrent().getLocale()), menuItemClickEvent -> {
             SchedulerJobSelectDialog schedulerJobSelectDialog = new SchedulerJobSelectDialog(this.schedulerJobService, this.rootContextTemplate,
@@ -325,13 +333,15 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
 
         jobTypesSubMenu.addItem(getTranslation("menu-item.command-execution-job", UI.getCurrent().getLocale()), event -> {
             InternalEventDrivenJobDialog internalEventDrivenJobDialog = new InternalEventDrivenJobDialog(null, this.scheduledProcessManagementService, this.configurationRestService,
-                this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.contextTemplate, this.schedulerJobExecutionEnvironmentLabel);
+                this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.rootContextTemplate, this.contextTemplate, this.schedulerJobExecutionEnvironmentLabel);
             internalEventDrivenJobDialog.addSchedulerJobSelectedListener(this);
 
             InternalEventDrivenJob internalEventDrivenJob = new InternalEventDrivenJobImpl();
             internalEventDrivenJob.setContextName(this.rootContextTemplate.getName());
 
             internalEventDrivenJobDialog.setJob(internalEventDrivenJob, EditMode.NEW);
+            this.jobSynchronisationRequiredListeners.forEach(listener ->
+                internalEventDrivenJobDialog.addJobSynchronisationRequiredListener(listener));
             internalEventDrivenJobDialog.open();
         });
         jobTypesSubMenu.addItem(getTranslation("menu-item.file-watcher-job", UI.getCurrent().getLocale()), event -> {
@@ -343,7 +353,8 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             fileEventDrivenJob.setContextName(this.rootContextTemplate.getName());
 
             fileEventJobDialog.setJob(fileEventDrivenJob, EditMode.NEW);
-
+            this.jobSynchronisationRequiredListeners.forEach(listener ->
+                fileEventJobDialog.addJobSynchronisationRequiredListener(listener));
             fileEventJobDialog.open();
         });
         jobTypesSubMenu.addItem(getTranslation("menu-item.scheduled-job", UI.getCurrent().getLocale()), event -> {
@@ -355,7 +366,8 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             quartzScheduleDrivenJob.setContextName(this.rootContextTemplate.getName());
 
             quartzDrivenScheduledJobDialog.setJob(quartzScheduleDrivenJob, EditMode.NEW);
-
+            this.jobSynchronisationRequiredListeners.forEach(listener ->
+                quartzDrivenScheduledJobDialog.addJobSynchronisationRequiredListener(listener));
             quartzDrivenScheduledJobDialog.open();
         });
 
@@ -369,8 +381,6 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
         menuButton.setIconAfterText(true);
 
         MenuItem item = menu.addItem(menuButton);
-//        item.getElement().getStyle().set("padding", "0px");
-//        item.getElement().getStyle().set("padding-right", "5px");
 
         return item;
     }
@@ -383,12 +393,31 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             .stream()
             .filter(job -> job.getIdentifier().equals(schedulerJob.getIdentifier()))
             .collect(Collectors.toList()).size() > 0) {
-            NotificationHelper.showUserNotification("Cannot add this job as it already exists in this context!");
-            return;
+            NotificationHelper.showUserNotification(getTranslation("error.job-exists-in-context", UI.getCurrent().getLocale()));
         }
         else {
-
             this.schedulerVisualisation.addJob(schedulerJob);
         }
+    }
+
+    public void close() {
+        if(this.schedulerVisualisation.isSaveRequired()) {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("header.save-required", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("label.unsaved-diagram", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(event -> {
+                this.setOpened(false);
+            });
+        }
+        else {
+            this.setOpened(false);
+        }
+    }
+
+    public void addJobSynchronisationRequiredListener(JobSynchronisationRequiredListener listener) {
+        this.jobSynchronisationRequiredListeners.add(listener);
     }
 }
