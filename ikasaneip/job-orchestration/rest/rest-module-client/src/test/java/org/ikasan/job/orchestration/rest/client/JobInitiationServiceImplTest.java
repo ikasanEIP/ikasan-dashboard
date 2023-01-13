@@ -83,7 +83,7 @@ public class JobInitiationServiceImplTest {
     public void test_submit_quartz_job_success() throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
-        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName"))
+        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName/correlationId"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -92,9 +92,9 @@ public class JobInitiationServiceImplTest {
                 .withStatus(200)));
 
 
-        uut.raiseQuartzSchedulerJob(contextBaseUrl, "agentName", "jobName");
+        uut.raiseQuartzSchedulerJob(contextBaseUrl, "agentName", "jobName", "correlationId");
 
-        verify(getRequestedFor(urlEqualTo("/rest/scheduler/agentName/jobName"))
+        verify(getRequestedFor(urlEqualTo("/rest/scheduler/agentName/jobName/correlationId"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
     }
@@ -103,7 +103,7 @@ public class JobInitiationServiceImplTest {
     public void test_exception_raise_quartz_job() throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
-        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName"))
+        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName/correlationId"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -112,7 +112,7 @@ public class JobInitiationServiceImplTest {
                 .withStatus(400)));
 
 
-        uut.raiseQuartzSchedulerJob(contextBaseUrl, "agentName", "jobName");
+        uut.raiseQuartzSchedulerJob(contextBaseUrl, "agentName", "jobName", "correlationId");
     }
 
     @Test
@@ -126,7 +126,7 @@ public class JobInitiationServiceImplTest {
         jobDryRunFalse.setIsDryRun(false);
 
         ObjectMapper mapper = new ObjectMapper();
-        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName"))
+        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName/correlationId"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -154,10 +154,10 @@ public class JobInitiationServiceImplTest {
                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .withStatus(200)));
 
-        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", "jobName");
+        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", "jobName", "correlationId");
 
         Thread.sleep(5000);
-        verify(getRequestedFor(urlEqualTo("/rest/scheduler/agentName/jobName"))
+        verify(getRequestedFor(urlEqualTo("/rest/scheduler/agentName/jobName/correlationId"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
 
@@ -193,7 +193,7 @@ public class JobInitiationServiceImplTest {
                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .withStatus(403)));
 
-        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", "jobName");
+        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", "jobName", "correlationId");
     }
 
     @Test(expected = RestClientException.class)
@@ -218,7 +218,7 @@ public class JobInitiationServiceImplTest {
                     .withStatus(200)));
 
         ObjectMapper mapper = new ObjectMapper();
-        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName"))
+        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName/correlationId"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -226,7 +226,7 @@ public class JobInitiationServiceImplTest {
                 .withBody(mapper.writeValueAsString(List.of(new MockTrigger(), new MockTrigger(), new MockTrigger())))
                 .withStatus(403)));
 
-        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", "jobName");
+        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", "jobName", "correlationId");
     }
 
     @Test
@@ -250,7 +250,7 @@ public class JobInitiationServiceImplTest {
                     .withStatus(200)));
 
         ObjectMapper mapper = new ObjectMapper();
-        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName"))
+        stubFor(get(urlEqualTo("/rest/scheduler/agentName/jobName/correlationId"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
             .willReturn(aResponse()
@@ -268,7 +268,7 @@ public class JobInitiationServiceImplTest {
                     .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
                     .withStatus(403)));
 
-        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", "jobName");
+        uut.raiseFileEventSchedulerJob(contextBaseUrl, "agentName", "jobName", "correlationId");
 
         Thread.sleep(5000);
     }
