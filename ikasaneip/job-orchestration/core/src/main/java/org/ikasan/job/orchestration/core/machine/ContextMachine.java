@@ -50,10 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -108,6 +105,9 @@ public class ContextMachine {
         this.contextInstance = contextInstance;
         this.internalEventDrivenJobInstances = internalEventDrivenJobInstances;
         this.globalEventJobInstanceMap = globalEventJobInstanceMap;
+        if (this.globalEventJobInstanceMap == null) {
+            this.globalEventJobInstanceMap = new HashMap<>(); // Empty Hashmap is the value is null.
+        }
         this.agents = agents;
         this.queueDir = queueDir;
         this.statusConverter = new ContextInstanceToContextInstanceStatusConverter();
