@@ -106,7 +106,7 @@ public class ContextMachine {
         this.internalEventDrivenJobInstances = internalEventDrivenJobInstances;
         this.globalEventJobInstanceMap = globalEventJobInstanceMap;
         if (this.globalEventJobInstanceMap == null) {
-            this.globalEventJobInstanceMap = new HashMap<>(); // Empty Hashmap is the value is null.
+            this.globalEventJobInstanceMap = new HashMap<>(); // Empty Hashmap if the value is null.
         }
         this.agents = agents;
         this.queueDir = queueDir;
