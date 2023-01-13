@@ -1079,7 +1079,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                             schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
                             schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 
-                            this.jobInitiationService.raiseFileEventSchedulerJob(agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getJobName());
+                            this.jobInitiationService.raiseFileEventSchedulerJob(
+                                agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getJobName(), schedulerJobInstanceRecord.getContextInstanceId());
 
                             logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
 
@@ -1105,7 +1106,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     confirmDialog.addConfirmListener(confirmEvent -> {
                         try {
                             ModuleMetaData agent = this.moduleMetaDataService.findById(schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName());
-                            this.jobInitiationService.raiseQuartzSchedulerJob(agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getJobName());
+                            this.jobInitiationService.raiseQuartzSchedulerJob(agent.getUrl(), agent.getName(), schedulerJobInstanceRecord.getJobName(), schedulerJobInstanceRecord.getContextInstanceId());
 
                             logger.info("Submitting job[{}] to [{}]", schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName(), agent.getUrl());
 
