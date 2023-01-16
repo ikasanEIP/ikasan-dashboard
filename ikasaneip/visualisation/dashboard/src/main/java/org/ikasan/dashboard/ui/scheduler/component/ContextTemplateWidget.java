@@ -50,12 +50,14 @@ import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.job.service.SpringCloudConfigRefreshService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.ikasan.spec.scheduled.provision.ContextProvisionService;
 import org.ikasan.spec.scheduled.provision.JobProvisionService;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.client.RestClientException;
 import org.vaadin.olli.FileDownloadWrapper;
 
 import java.io.ByteArrayInputStream;
@@ -83,6 +85,7 @@ public class ContextTemplateWidget extends Div {
     private EmailNotificationContextService emailNotificationContextService;
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
     private SubMenu activeContextSubMenu;
+    private SpringCloudConfigRefreshService springCloudConfigRefreshService;
 
     /**
      * Constructor
@@ -118,7 +121,7 @@ public class ContextTemplateWidget extends Div {
                                  ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
                                  SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs, ContextInstanceRegistrationService contextInstanceRegistrationService,
                                  EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
-                                 Map<String, String> schedulerJobExecutionEnvironmentLabel) {
+                                 Map<String, String> schedulerJobExecutionEnvironmentLabel, SpringCloudConfigRefreshService springCloudConfigRefreshService) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -155,6 +158,10 @@ public class ContextTemplateWidget extends Div {
         this.emailNotificationContextService = emailNotificationContextService;
         if (this.emailNotificationContextService == null) {
             throw new IllegalArgumentException("emailNotificationContextService cannot be null!");
+        }
+        this.springCloudConfigRefreshService = springCloudConfigRefreshService;
+        if (this.springCloudConfigRefreshService == null) {
+            throw new IllegalArgumentException("springCloudConfigRefreshService cannot be null!");
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
@@ -214,7 +221,24 @@ public class ContextTemplateWidget extends Div {
             , SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE
             , SecurityConstants.SCHEDULER_ALL_ADMIN);
 
-        actionButtonLayout.add(newContextButton, uploadJobPlan, quickAccessMenu);
+        Icon refreshIcon = VaadinIcon.REFRESH.create();
+        Button refreshContextParamButton = new Button(getTranslation("button.refresh-job-params", UI.getCurrent().getLocale()), refreshIcon);
+        refreshContextParamButton.setIconAfterText(true);
+        refreshContextParamButton.addClickListener(buttonClickEvent -> {
+            try {
+                springCloudConfigRefreshService.actuatorRefresh();
+                NotificationHelper.showUserNotification(getTranslation("message.refresh-job-params-successful", UI.getCurrent().getLocale()));
+            } catch (RestClientException e) {
+                NotificationHelper.showUserNotification(getTranslation("message.refresh-job-params-unsuccessful", UI.getCurrent().getLocale()));
+            }
+        });
+
+        ComponentSecurityVisibility.applySecurity(authentication, refreshContextParamButton
+            , SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_ADMIN
+            , SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE
+            , SecurityConstants.SCHEDULER_ALL_ADMIN);
+        
+        actionButtonLayout.add(refreshContextParamButton, newContextButton, uploadJobPlan, quickAccessMenu);
         actionButtonLayout.getElement().getStyle().set("position", "absolute");
         actionButtonLayout.getElement().getStyle().set("right", "30px");
 

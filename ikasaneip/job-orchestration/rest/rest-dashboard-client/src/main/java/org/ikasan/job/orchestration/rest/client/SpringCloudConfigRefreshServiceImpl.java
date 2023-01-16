@@ -1,9 +1,11 @@
 package org.ikasan.job.orchestration.rest.client;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.apache.commons.codec.binary.Base64;
 import org.ikasan.spec.scheduled.job.service.SpringCloudConfigRefreshService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -31,14 +33,18 @@ public class SpringCloudConfigRefreshServiceImpl implements SpringCloudConfigRef
        https://docs.spring.io/spring-cloud-config/docs/current/reference/html/#_pattern_matching_and_multiple_repositories 
        Using this API and using the profile [default] to trigger the config-service to update the baseDir */
     public static final String REFRESH_URL = "/{applicationPattern}/default/";
+    
+    public static final String ACTUATOR_REFRESH = "/actuator/refresh";
 
     private RestTemplate restTemplate;
+    private Environment environment;
     
-    public SpringCloudConfigRefreshServiceImpl(HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
+    public SpringCloudConfigRefreshServiceImpl(Environment environment, HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
         restTemplate = new RestTemplate(httpComponentsClientHttpRequestFactory);
         MappingJackson2HttpMessageConverter jsonHttpMessageConverter = new MappingJackson2HttpMessageConverter();
         jsonHttpMessageConverter.getObjectMapper().configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         restTemplate.getMessageConverters().add(jsonHttpMessageConverter);
+        this.environment = environment;
     }
 
     @Override
@@ -63,4 +69,29 @@ public class SpringCloudConfigRefreshServiceImpl implements SpringCloudConfigRef
         }
     }
     
+    @Override
+    public void actuatorRefresh() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+
+        // Get credentials for ikasan dashboard to perform refresh
+        String credentials = environment.getProperty("ikasan.dashboard.extract.username") + ":" + environment.getProperty("ikasan.dashboard.extract.password");
+        String basicToken = new String(Base64.encodeBase64(credentials.getBytes()));
+        headers.set(HttpHeaders.AUTHORIZATION, "Basic " + basicToken);
+        
+        HttpEntity entity = new HttpEntity(headers);
+
+        String dashboardUrl = environment.getProperty("ikasan.dashboard.extract.base.url");
+        String url = dashboardUrl + ACTUATOR_REFRESH;
+
+        try {
+            LOGGER.info("Actuator Refresh will start now. URL called: [{}]", url);
+            restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+        }
+        catch(Exception e) {
+            LOGGER.error("Issue with Actuator Refresh. URL called: [{}] with response [{}]", url, e.getLocalizedMessage(), e);
+            throw new RestClientException("Issue with Actuator Refresh");
+        }
+    }
 }
