@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.context.util;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.Map;
 import org.ikasan.job.orchestration.configuration.JobContextParamsSetupConfiguration;
 import org.ikasan.spec.scheduled.context.model.ContextParameter;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
+import org.ikasan.spec.scheduled.job.service.SpringCloudConfigRefreshService;
 import org.junit.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -16,7 +18,7 @@ public class SchedulerContextParametersPropertiesProviderTest {
 
     @Test
     public void should_Initialise_Empty_Maps_If_Null_Passed_In_Constructor() {
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(true, null, true, jobContextParamsSetupConfiguration, null);
 
         assertTrue((Boolean) ReflectionTestUtils.getField(config, "useSkipJobs"));
@@ -33,14 +35,14 @@ public class SchedulerContextParametersPropertiesProviderTest {
 
     @Test
     public void should_return_null_if_replaceContextParams_is_false_emptyMap() {
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(false, null, false, jobContextParamsSetupConfiguration, null);
         assertNull(config.getContextParameter(null, "ParamName"));
     }
 
     @Test
     public void should_return_null_if_replaceContextParams_is_true_emptyMap() {
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(false, null, true, jobContextParamsSetupConfiguration, null);
         assertNull(config.getContextParameter(null, "ParamName"));
     }
@@ -48,7 +50,7 @@ public class SchedulerContextParametersPropertiesProviderTest {
     @Test
     public void should_return_null_if_replaceContextParams_is_true_not_in_map() {
         Map<String, Map<String, String>> paramsToReplace = Map.of("Context1", Map.of("ParamName1", "ReplacementParam"));
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         jobContextParamsSetupConfiguration.setParamsToReplace(paramsToReplace);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(false, null, true, jobContextParamsSetupConfiguration, null);
         assertNull(config.getContextParameter("Context1", "ParamName"));
@@ -57,7 +59,7 @@ public class SchedulerContextParametersPropertiesProviderTest {
     @Test
     public void testNullValues_ParamContextAndName() {
         Map<String, Map<String, String>> paramsToReplace = Map.of("Context1", Map.of("ParamName", "ReplacementParam"));
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         jobContextParamsSetupConfiguration.setParamsToReplace(paramsToReplace);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(false, null, true, jobContextParamsSetupConfiguration, null);
         assertNull(config.getContextParameter(null, "ParamName"));
@@ -67,7 +69,7 @@ public class SchedulerContextParametersPropertiesProviderTest {
     @Test
     public void should_return_null_if_replaceContextParams_is_false_and_in_map() {
         Map<String, Map<String, String>> paramsToReplace = Map.of("Context1", Map.of("ParamName", "ReplacementParam"));
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         jobContextParamsSetupConfiguration.setParamsToReplace(paramsToReplace);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(false, null, false, jobContextParamsSetupConfiguration, null);
         assertNull(config.getContextParameter("Context1", "ParamName"));
@@ -76,7 +78,7 @@ public class SchedulerContextParametersPropertiesProviderTest {
     @Test
     public void should_return_replacementParam_if_replaceContextParams_is_true_and_in_map() {
         Map<String, Map<String, String>> paramsToReplace = Map.of("Context1", Map.of("ParamName", "ReplacementParam"));
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         jobContextParamsSetupConfiguration.setParamsToReplace(paramsToReplace);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(false, null, true, jobContextParamsSetupConfiguration, null);
         assertEquals("ReplacementParam", config.getContextParameter("Context1", "ParamName"));
@@ -85,7 +87,7 @@ public class SchedulerContextParametersPropertiesProviderTest {
     @Test
     public void should_return_null_if_replaceContextParams_is_true_and_unkown_context_in_map() {
         Map<String, Map<String, String>> paramsToReplace = Map.of("Context1", Map.of("ParamName", "ReplacementParam"));
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         jobContextParamsSetupConfiguration.setParamsToReplace(paramsToReplace);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(false, null, true, jobContextParamsSetupConfiguration, null);
         assertNull(config.getContextParameter("ContextUnkown", "ParamName"));
@@ -93,14 +95,14 @@ public class SchedulerContextParametersPropertiesProviderTest {
 
     @Test
     public void should_return_false_if_skip_jobs_is_false() {
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(false, null, true, jobContextParamsSetupConfiguration, null);
         assertFalse(config.isSkipped(null, "JobName"));
     }
 
     @Test
     public void should_return_false_if_skip_jobs_is_emptyMap() {
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(true, null, true, jobContextParamsSetupConfiguration, null);
         assertFalse(config.isSkipped(null, "JobName"));
     }
@@ -108,7 +110,7 @@ public class SchedulerContextParametersPropertiesProviderTest {
     @Test
     public void should_return_false_if_skip_jobs_is_not_in_map() {
         Map<String, Map<String, Boolean>> jobsToSkip = Map.of("Context1", Map.of("JobName1", true));
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(true, jobsToSkip, true, jobContextParamsSetupConfiguration, null);
         assertFalse(config.isSkipped("Context1", "JobName"));
     }
@@ -116,7 +118,7 @@ public class SchedulerContextParametersPropertiesProviderTest {
     @Test
     public void should_return_false_if_skip_jobs_is_in_map_and_false() {
         Map<String, Map<String, Boolean>> jobsToSkip = Map.of("Context1", Map.of("JobName", false));
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(true, jobsToSkip, true, jobContextParamsSetupConfiguration, null);
         assertFalse(config.isSkipped("Context1", "JobName"));
     }
@@ -124,7 +126,7 @@ public class SchedulerContextParametersPropertiesProviderTest {
     @Test
     public void should_return_true_if_skip_jobs_is_in_map_and_true() {
         Map<String, Map<String, Boolean>> jobsToSkip = Map.of("Context1", Map.of("JobName", true));
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(true, jobsToSkip, true, jobContextParamsSetupConfiguration, null);
         assertTrue(config.isSkipped("Context1", "JobName"));
     }
@@ -132,7 +134,7 @@ public class SchedulerContextParametersPropertiesProviderTest {
     @Test
     public void testNullValues_contextNameJobToSKip() {
         Map<String, Map<String, Boolean>> jobsToSkip = Map.of("Context1", Map.of("JobName", true));
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(true, jobsToSkip, true, jobContextParamsSetupConfiguration, null);
         assertFalse(config.isSkipped(null, "JobName"));
         assertFalse(config.isSkipped("Context1", null));
@@ -141,7 +143,7 @@ public class SchedulerContextParametersPropertiesProviderTest {
     @Test
     public void should_return_false_if_skip_jobs_is_in_map_and_skipJobs_is_false() {
         Map<String, Map<String, Boolean>> jobsToSkip = Map.of("Context1", Map.of("JobName", true));
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(false, jobsToSkip, true, jobContextParamsSetupConfiguration, null);
         assertFalse(config.isSkipped("Context1", "JobName"));
     }
@@ -149,7 +151,7 @@ public class SchedulerContextParametersPropertiesProviderTest {
     @Test
     public void should_return_false_if_skip_jobs_is_in_map_and_contextUnknown_is_false() {
         Map<String, Map<String, Boolean>> jobsToSkip = Map.of("Context1", Map.of("JobName", true));
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(true, jobsToSkip, true, jobContextParamsSetupConfiguration, null);
         assertFalse(config.isSkipped("ContextUnknown", "JobName"));
     }
@@ -161,7 +163,7 @@ public class SchedulerContextParametersPropertiesProviderTest {
             "SomeCalculator", "T(java.time.LocalDate).of(2022, 7, 31).format(T(java.time.format.DateTimeFormatter).BASIC_ISO_DATE)",
             "AnotherCalculator", "T(java.time.LocalDate).of(2022, 7, 31).plusDays(1).format(T(java.time.format.DateTimeFormatter).BASIC_ISO_DATE)"
         );
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         jobContextParamsSetupConfiguration.setParamsToReplace(params);
 
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(false, null, true, jobContextParamsSetupConfiguration, spelExpressionsMap);
@@ -185,7 +187,7 @@ public class SchedulerContextParametersPropertiesProviderTest {
         Map<String, Map<String, String>> params = Map.of("Context1", Map.of("ParamName11", "Param11", "ParamName12", "Param12", "ParamName13", "Param13"),
             "Context2", Map.of("ParamName21", "Param21", "ParamName22", "Param22", "ParamName23", "Param23"));
 
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         jobContextParamsSetupConfiguration.setParamsToReplace(params);
 
         SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(false, null, true, jobContextParamsSetupConfiguration, null);
@@ -212,5 +214,36 @@ public class SchedulerContextParametersPropertiesProviderTest {
         assertEquals("Param22", context2.get(1).getValue());
         assertEquals("ParamName23", context2.get(2).getName());
         assertEquals("Param23", context2.get(2).getValue());
+    }
+
+    @Test
+    public void test_job_context_params_with_config_repo_refresh()  {
+        Map<String, Map<String, String>> params = Map.of("Context1", Map.of("ParamName11", "Param11"),
+            "Context2", Map.of("ParamName21", "Param21", "ParamName22", "Param22"));
+
+        // Setup a dummy JobContextParamsSetupConfiguration with properties to refresh config repo.
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration((contextUrl, applicationPattern) -> {/*DO NOTHING*/}, 
+            Arrays.asList("configRepo1", "configRepo2"), "http://someurl.com");
+        jobContextParamsSetupConfiguration.setLocation(null); // force a config repo to dummy refresh
+        jobContextParamsSetupConfiguration.setParamsToReplace(params);
+
+        SchedulerContextParametersPropertiesProvider config = new SchedulerContextParametersPropertiesProvider(false, null, true, jobContextParamsSetupConfiguration, null);
+
+        assertEquals(0, config.getAllContextParameters(null).size());
+        assertEquals(0, config.getAllContextParameters("UnknownContext").size());
+
+        List<ContextParameterInstance> context1 = config.getAllContextParameters("Context1");
+        assertEquals(1, context1.size());
+        context1.sort(Comparator.comparing(ContextParameter::getName));
+        assertEquals("ParamName11", context1.get(0).getName());
+        assertEquals("Param11", context1.get(0).getValue());
+
+        List<ContextParameterInstance> context2 = config.getAllContextParameters("Context2");
+        assertEquals(2, context2.size());
+        context2.sort(Comparator.comparing(ContextParameter::getName));
+        assertEquals("ParamName21", context2.get(0).getName());
+        assertEquals("Param21", context2.get(0).getValue());
+        assertEquals("ParamName22", context2.get(1).getName());
+        assertEquals("Param22", context2.get(1).getValue());
     }
 }

@@ -1,5 +1,7 @@
 package org.ikasan.job.orchestration.configuration;
 
+import org.apache.commons.lang3.StringUtils;
+import org.ikasan.spec.scheduled.job.service.SpringCloudConfigRefreshService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -19,11 +22,20 @@ public class JobContextParamsSetupConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(JobContextParamsSetupConfiguration.class);
 
     private Map<String, String> location;
-    private Map<String, Map<String, String>> paramsToReplace;;
+    private Map<String, Map<String, String>> paramsToReplace;
+    private SpringCloudConfigRefreshService springCloudConfigRefreshService;
+    private List<String> jobContextConfigRepoEnvironment;
+    private String configServerUrl;
 
-    public JobContextParamsSetupConfiguration() {
+    public JobContextParamsSetupConfiguration(SpringCloudConfigRefreshService springCloudConfigRefreshService,
+                                              List<String> jobContextConfigRepoEnvironment,
+                                              String configServerUrl) {
         // Set empty map on creation
         this.paramsToReplace = new HashMap<>();
+        
+        this.springCloudConfigRefreshService = springCloudConfigRefreshService;
+        this.jobContextConfigRepoEnvironment = jobContextConfigRepoEnvironment;
+        this.configServerUrl = configServerUrl;
     }
 
     /**
@@ -65,6 +77,14 @@ public class JobContextParamsSetupConfiguration {
         logger.info("Location for ikasan scheduler configuration files: {}", location);
         this.location = location;
 
+        // Call springCloudConfigRefreshService to refresh all application properties found in jobContextConfigRepoEnvironment
+        if (springCloudConfigRefreshService != null && jobContextConfigRepoEnvironment != null 
+            && jobContextConfigRepoEnvironment.size() != 0 && StringUtils.isNotBlank(configServerUrl)) {
+            jobContextConfigRepoEnvironment.forEach(applicationPattern -> {
+                springCloudConfigRefreshService.refreshConfigRepo(configServerUrl, applicationPattern);
+            });
+        }
+        
         Map<String, Map<String, String>> contextParamsToReplace = new HashMap<>();
         if(null != this.getLocation()) {
             this.getLocation().forEach((key, value) -> {

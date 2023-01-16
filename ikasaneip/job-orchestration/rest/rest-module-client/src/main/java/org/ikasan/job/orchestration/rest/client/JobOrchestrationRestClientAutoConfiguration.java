@@ -4,6 +4,7 @@ import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationServ
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobProvisionModuleService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
+import org.ikasan.spec.scheduled.job.service.SpringCloudConfigRefreshService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,5 +40,10 @@ public class JobOrchestrationRestClientAutoConfiguration {
     public JobUtilsService jobUtilsService(Environment environment
         , HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
         return new JobUtilsServiceImpl(environment, httpComponentsClientHttpRequestFactory);
+    }
+
+    @Bean
+    public SpringCloudConfigRefreshService springCloudConfigRefreshService(HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
+        return new SpringCloudConfigRefreshServiceImpl(httpComponentsClientHttpRequestFactory);
     }
 }

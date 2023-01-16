@@ -1,8 +1,13 @@
 package org.ikasan.job.orchestration.configuration;
 
+import org.ikasan.spec.scheduled.job.service.SpringCloudConfigRefreshService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * Setup parameters that may be required for the Context.
@@ -21,6 +26,23 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class JobContextParamsSetupFactory {
 
+    @Resource
+    SpringCloudConfigRefreshService springCloudConfigRefreshService;
+
+    /**
+     * Context Parameters can be hosted on different repositories on config server. This is a list of 
+     * application patterns which will be used to run against config service to make sure that we have sync up the 
+     * latest config on the external repositories and downloaded onto the file system.
+     * 
+     * Usage:
+     * job.context.mapping.config.repo.environment=appPattern1,appPattern1
+     */
+    @Value("#{T(java.util.Arrays).asList('${job.context.mapping.config.repo.environment:}')}")
+    private List<String> jobContextMappingConfigRepoEnvironment;
+    
+    @Value("${spring.config.server.url:}")
+    private String configServerUrl;
+    
     /**
      * Reads from the properties file a List of location where the individual context configuration are stored.
      * Expecting to see the below in the property file.
@@ -41,6 +63,6 @@ public class JobContextParamsSetupFactory {
     @Bean
     @ConfigurationProperties(prefix = "job.context.mapping.configuration", ignoreUnknownFields = true)
     public JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration() {
-        return new JobContextParamsSetupConfiguration();
+        return new JobContextParamsSetupConfiguration(springCloudConfigRefreshService, jobContextMappingConfigRepoEnvironment, configServerUrl);
     }
 }
