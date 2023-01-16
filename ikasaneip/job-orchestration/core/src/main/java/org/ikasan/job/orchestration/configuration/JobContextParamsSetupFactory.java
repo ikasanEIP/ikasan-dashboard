@@ -35,7 +35,7 @@ public class JobContextParamsSetupFactory {
      * latest config on the external repositories and downloaded onto the file system.
      * 
      * Usage:
-     * job.context.mapping.config.repo.environment=appPattern1,appPattern1
+     * job.context.mapping.config.repo.environment=appPattern1,appPattern2
      */
     @Value("#{T(java.util.Arrays).asList('${job.context.mapping.config.repo.environment:}')}")
     private List<String> jobContextMappingConfigRepoEnvironment;
