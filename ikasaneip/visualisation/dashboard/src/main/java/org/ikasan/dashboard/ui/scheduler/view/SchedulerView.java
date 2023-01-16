@@ -33,10 +33,7 @@ import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
-import org.ikasan.spec.scheduled.job.service.JobInitiationService;
-import org.ikasan.spec.scheduled.job.service.JobUtilsService;
-import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.job.service.*;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
@@ -159,6 +156,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     @Resource
     private JobLockCacheInitialisationService jobLockCacheInitialisationService;
+    
+    @Resource
+    private SpringCloudConfigRefreshService springCloudConfigRefreshService;
 
     @Value("${ikasan.dashboard.unzip.and.provision.jobs:true}")
     private boolean uploadProvisionJobs;
@@ -210,7 +210,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
             this.contextProfileService, this.jobProvisionService, userService, securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService,
-            this.emailNotificationDetailsService, this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel);
+            this.emailNotificationDetailsService, this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.springCloudConfigRefreshService);
         this.contextTemplateWidget.setVisible(false);
 
 
