@@ -1,18 +1,26 @@
-package org.ikasan.job.orchestration.rest.client;
+package org.ikasan.rest;
 
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import org.ikasan.job.orchestration.rest.client.SpringCloudConfigRefreshServiceImpl;
 import org.ikasan.spec.scheduled.job.service.SpringCloudConfigRefreshService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.client.RestClientException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 
+@RunWith(SpringJUnit4ClassRunner.class)
 public class SpringCloudConfigRefreshServiceImplTest {
 
     @Rule
@@ -21,11 +29,17 @@ public class SpringCloudConfigRefreshServiceImplTest {
     private SpringCloudConfigRefreshService uut;
 
     private String contextBaseUrl;
+
+    @MockBean
+    private Environment environment;
     
     @Before
     public void setup() {
         contextBaseUrl = "http://localhost:" + wireMockRule.port();
-        uut = new SpringCloudConfigRefreshServiceImpl(new HttpComponentsClientHttpRequestFactory());
+        uut = new SpringCloudConfigRefreshServiceImpl(environment, new HttpComponentsClientHttpRequestFactory());
+        Mockito.doReturn("test").when(environment).getProperty("ikasan.dashboard.extract.username");
+        Mockito.doReturn("test").when(environment).getProperty("ikasan.dashboard.extract.password");
+        Mockito.doReturn(contextBaseUrl).when(environment).getProperty("ikasan.dashboard.extract.base.url");
     }
 
     @Test
@@ -108,6 +122,90 @@ public class SpringCloudConfigRefreshServiceImplTest {
         uut.refreshConfigRepo(contextBaseUrl, "scheduler-abc");
 
         verify(getRequestedFor(urlEqualTo("/scheduler-abc/default/"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
+    }
+
+    @Test
+    public void test_actuator_successful() {
+        stubFor(post(urlEqualTo("/actuator/refresh"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse()
+                .withStatus(200)));
+
+        uut.actuatorRefresh();
+
+        verify(postRequestedFor(urlEqualTo("/actuator/refresh"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
+    }
+
+    @Test
+    public void test_actuator_successful_empty_response() {
+        stubFor(post(urlEqualTo("/actuator/refresh"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse()
+                .withStatus(204)));
+
+        uut.actuatorRefresh();
+
+        verify(postRequestedFor(urlEqualTo("/actuator/refresh"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
+    }
+
+    /**
+     * 403 Forbidden 
+     */
+    @Test(expected = RestClientException.class)
+    public void test_actuator_403_do_nothing() {
+        stubFor(post(urlEqualTo("/actuator/refresh"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse()
+                .withStatus(403)));
+
+        uut.actuatorRefresh();
+
+        verify(postRequestedFor(urlEqualTo("/actuator/refresh"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
+    }
+
+    /**
+     * 404 Not Found 
+     */
+    @Test(expected = RestClientException.class)
+    public void test_actuator_404_do_nothing() {
+        stubFor(post(urlEqualTo("/actuator/refresh"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse()
+                .withStatus(404)));
+
+        uut.actuatorRefresh();
+
+        verify(postRequestedFor(urlEqualTo("/actuator/refresh"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
+    }
+
+    /**
+     * 500 internal server error
+     */
+    @Test(expected = RestClientException.class)
+    public void test_actuator_500_do_nothing() {
+        stubFor(post(urlEqualTo("/actuator/refresh"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(aResponse()
+                .withStatus(500)));
+
+        uut.actuatorRefresh();
+
+        verify(postRequestedFor(urlEqualTo("/actuator/refresh"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
     }

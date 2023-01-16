@@ -222,7 +222,16 @@ public class SchedulerContextParametersPropertiesProviderTest {
             "Context2", Map.of("ParamName21", "Param21", "ParamName22", "Param22"));
 
         // Setup a dummy JobContextParamsSetupConfiguration with properties to refresh config repo.
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration((contextUrl, applicationPattern) -> {/*DO NOTHING*/}, 
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(new SpringCloudConfigRefreshService() {
+            @Override
+            public void refreshConfigRepo(String contextUrl, String applicationPattern) {
+                //Do Nothing
+            }
+            @Override
+            public void actuatorRefresh() {
+                //Do Nothing
+            }
+        },
             Arrays.asList("configRepo1", "configRepo2"), "http://someurl.com");
         jobContextParamsSetupConfiguration.setLocation(null); // force a config repo to dummy refresh
         jobContextParamsSetupConfiguration.setParamsToReplace(params);
