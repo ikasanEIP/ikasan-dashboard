@@ -1877,7 +1877,7 @@ public class JobLogicMachineTest extends AbstractTest {
 
         Map<String, Map<String, Boolean>> jobsToSkip = Map.of("Context1", Map.of("AC_SCRIPT_Interface_SOII", true));
         Map<String, Map<String, String>> paramsToReplace = Map.of("Context1", Map.of("BusinessDate", "20220428", "ErrorSearch", "blah", "UseBusinessDate", "1"));
-        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration();
+        JobContextParamsSetupConfiguration jobContextParamsSetupConfiguration = new JobContextParamsSetupConfiguration(null, null, null);
         jobContextParamsSetupConfiguration.setParamsToReplace(paramsToReplace);
 
         SchedulerContextParametersPropertiesProvider schedulerOverrider = new SchedulerContextParametersPropertiesProvider(true, jobsToSkip, true, jobContextParamsSetupConfiguration, null);
