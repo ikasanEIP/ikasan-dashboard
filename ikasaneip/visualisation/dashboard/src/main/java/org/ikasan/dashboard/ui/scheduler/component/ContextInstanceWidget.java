@@ -54,6 +54,7 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEven
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -99,6 +100,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     private SystemEventLogger systemEventLogger;
     private LogStreamingService logStreamingService;
     private SchedulerJobService schedulerJobService;
+    private GlobalEventService globalEventService;
     private TextField contextInstanceId;
     private TextField contextNameTf;
     private TextArea descriptionTa;
@@ -151,11 +153,11 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
                                  ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                                 String selectedTab, String jobStatus) {
+                                 String selectedTab, String jobStatus, GlobalEventService globalEventService) {
         this(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService,
             logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService,
-            contextProfileService, jobUtilsService, scheduledContextService);
+            contextProfileService, jobUtilsService, scheduledContextService, globalEventService);
         this.selectedTab = selectedTab;
         this.jobStatus = jobStatus;
     }
@@ -186,7 +188,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
-                                 ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService) {
+                                 ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, GlobalEventService globalEventService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if (this.scheduledContextInstanceService == null) {
@@ -251,6 +253,10 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         this.schedulerJobService = schedulerJobService;
         if (this.schedulerJobService == null) {
             throw new IllegalArgumentException("schedulerJobService cannot be null!");
+        }
+        this.globalEventService = globalEventService;
+        if (this.globalEventService == null) {
+            throw new IllegalArgumentException("globalEventService cannot be null!");
         }
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -557,7 +563,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
 
         this.splitContextInstanceVisualisation = new SplitContextInstanceVisualisation(scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
                 configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService,
-                contextInstance, schedulerJobInstanceService, jobInitiationService, contextProfileService, jobUtilsService, scheduledContextService);
+                contextInstance, schedulerJobInstanceService, jobInitiationService, contextProfileService, jobUtilsService, scheduledContextService, this.globalEventService);
         this.splitContextInstanceVisualisation.setHeight("100%");
     }
 
@@ -575,7 +581,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             JobLockCacheDialog jobLockCacheDialog = new JobLockCacheDialog(this.contextInstance, this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobInstanceService,
                 this.logStreamingService, this.jobInitiationService, this.scheduledContextService, this.jobUtilsService, this.scheduledContextInstanceService,
-                this.contextProfileService);
+                this.contextProfileService, this.globalEventService);
 
             jobLockCacheDialog.open();
         });
@@ -782,7 +788,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                                                      LogStreamingService logStreamingService) {
         this.schedulerJobInstanceGridWidget = new SchedulerJobInstanceGridWidget(scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextInstance, this.schedulerJobInstanceService,
-            this.jobInitiationService, this.configurationRestService, metaDataRestService, this.jobUtilsService, this.scheduledContextService, this.jobStatus, this.contextProfileService);
+            this.jobInitiationService, this.configurationRestService, metaDataRestService, this.jobUtilsService, this.scheduledContextService, this.jobStatus, this.contextProfileService, this.globalEventService);
         this.schedulerJobInstanceGridWidget.setWidthFull();
         this.schedulerJobInstanceGridWidget.setHeight("100%");
         this.schedulerJobInstanceGridWidget.setVisible(false);
@@ -796,7 +802,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         this.contextInstanceTreeViewWidget = new ContextInstanceTreeViewWidget(this.contextInstance, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
             this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService
-            , this.contextProfileService);
+            , this.contextProfileService, this.globalEventService);
         this.contextInstanceTreeViewWidget.setSizeFull();
         this.contextInstanceTreeViewWidget.setVisible(false);
         this.contextInstanceTreeViewWidget.setVisible(true);

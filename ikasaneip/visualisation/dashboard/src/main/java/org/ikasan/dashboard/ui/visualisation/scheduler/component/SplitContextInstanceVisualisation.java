@@ -35,6 +35,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
@@ -66,6 +67,7 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
     private MetaDataService metaDataRestService;
     private SystemEventLogger systemEventLogger;
     private LogStreamingService logStreamingService;
+    private GlobalEventService globalEventService;
     private SplitLayout visualisationSplitLayout;
     private ContextInstance contextInstance;
     private ContextInstance childContextInstance;
@@ -96,7 +98,7 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
     public SplitContextInstanceVisualisation(ScheduledContextInstanceService scheduledContextInstanceService, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                  ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, LogStreamingService logStreamingService, ContextInstance contextInstance, SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
-                                 ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService) {
+                                 ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, GlobalEventService globalEventService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if (this.scheduledContextInstanceService == null) {
@@ -154,6 +156,10 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
         if (this.logStreamingService == null) {
             throw new IllegalArgumentException("logStreamingService cannot be null!");
         }
+        this.globalEventService = globalEventService;
+        if (this.globalEventService == null) {
+            throw new IllegalArgumentException("globalEventService cannot be null!");
+        }
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
     }
@@ -171,7 +177,7 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
 
             this.schedulerInstanceVisualisation = new ContextSchedulerInstanceVisualisation("", this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService
-                , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.contextProfileService);
+                , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.contextProfileService, globalEventService);
             this.schedulerInstanceVisualisation.addContextOpenListener(this);
             this.schedulerInstanceVisualisation.setWidthFull();
             this.schedulerInstanceVisualisation.setHeight("100%");
@@ -205,7 +211,7 @@ public class SplitContextInstanceVisualisation extends Div implements ContextOpe
 
                 this.jobVisualisation = new JobSchedulerInstanceVisualisation("", moduleMetaDataService, scheduledProcessManagementService,
                     configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService
-                    , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService);
+                    , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.globalEventService);
                 this.jobVisualisation.addContextOpenListener(this);
                 this.jobVisualisation.addContextSelectedListener(this);
                 this.jobVisualisation.setWidthFull();

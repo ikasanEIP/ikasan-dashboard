@@ -2,6 +2,7 @@ package org.ikasan.job.orchestration.builder.job;
 
 import org.ikasan.job.orchestration.AbstractTest;
 import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.json.JSONException;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -18,7 +19,7 @@ public class GlobalEventJobBuilderTest extends AbstractTest {
         GlobalEventJobBuilder globalEventJobBuilder = new GlobalEventJobBuilder();
 
         globalEventJobBuilder
-            .withAgentName("agentName")
+            .withAgentName(JobConstants.GLOBAL_EVENT)
             .withContextName("contextId")
             .addChildContextId("childContextId")
             .withDescription("description")

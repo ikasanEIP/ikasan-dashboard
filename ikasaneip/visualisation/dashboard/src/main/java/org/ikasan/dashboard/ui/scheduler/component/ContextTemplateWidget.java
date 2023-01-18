@@ -47,6 +47,7 @@ import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceServic
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -79,6 +80,7 @@ public class ContextTemplateWidget extends Div {
     private IkasanAuthentication authentication;
     private JobUtilsService jobUtilsService;
     private SchedulerJobService schedulerJobService;
+    private GlobalEventService globalEventService;
     private String zipWorkingDirectory;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
     private EmailNotificationDetailsService emailNotificationDetailsService;
@@ -121,7 +123,7 @@ public class ContextTemplateWidget extends Div {
                                  ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
                                  SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs, ContextInstanceRegistrationService contextInstanceRegistrationService,
                                  EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
-                                 Map<String, String> schedulerJobExecutionEnvironmentLabel, SpringCloudConfigRefreshService springCloudConfigRefreshService) {
+                                 Map<String, String> schedulerJobExecutionEnvironmentLabel, , SpringCloudConfigRefreshService springCloudConfigRefreshService, GlobalEventService globalEventService) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -162,6 +164,10 @@ public class ContextTemplateWidget extends Div {
         this.springCloudConfigRefreshService = springCloudConfigRefreshService;
         if (this.springCloudConfigRefreshService == null) {
             throw new IllegalArgumentException("springCloudConfigRefreshService cannot be null!");
+        }
+        this.globalEventService = globalEventService;
+        if (this.globalEventService == null) {
+            throw new IllegalArgumentException("globalEventService cannot be null!");
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
@@ -237,7 +243,7 @@ public class ContextTemplateWidget extends Div {
             , SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_ADMIN
             , SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ALL_WRITE
             , SecurityConstants.SCHEDULER_ALL_ADMIN);
-        
+
         actionButtonLayout.add(refreshContextParamButton, newContextButton, uploadJobPlan, quickAccessMenu);
         actionButtonLayout.getElement().getStyle().set("position", "absolute");
         actionButtonLayout.getElement().getStyle().set("right", "30px");
@@ -324,7 +330,7 @@ public class ContextTemplateWidget extends Div {
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService
                     , this.jobProvisionService, userService, securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
-                    , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.contextInstanceRegistrationService
+                    , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService
                 );
                 contextTemplateManagementDialog.open();
             });
