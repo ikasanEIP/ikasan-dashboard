@@ -26,6 +26,7 @@ import org.ikasan.dashboard.ui.util.IkasanColours;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -39,6 +40,7 @@ import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -72,6 +74,7 @@ public class ContextInstanceDashboardWidget extends Div {
     private ContextProfileService contextProfileService;
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
+    private GlobalEventService globalEventService;
     private TextField contextNameTf = new TextField();
     private TextField contextInstanceIdTf = new TextField();
     private StatusFilter statusFilter = new StatusFilter();
@@ -93,7 +96,7 @@ public class ContextInstanceDashboardWidget extends Div {
                                           SchedulerJobInstanceService schedulerJobInstanceService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath,
                                           ModuleMetaDataService moduleMetaDataService, LogStreamingService logStreamingService,
                                           JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
-                                          JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, boolean fullscreen) {
+                                          JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, boolean fullscreen, GlobalEventService globalEventService) {
 
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         if(this.scheduledProcessManagementService ==  null) {
@@ -158,6 +161,10 @@ public class ContextInstanceDashboardWidget extends Div {
         this.scheduledContextService = scheduledContextService;
         if(this.scheduledContextService ==  null) {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
+        }
+        this.globalEventService = globalEventService;
+        if (this.globalEventService == null) {
+            throw new IllegalArgumentException("globalEventService cannot be null!");
         }
 
         this.ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -454,11 +461,9 @@ public class ContextInstanceDashboardWidget extends Div {
         ContextInstance contextInstance = this.scheduledContextInstanceService
             .findById(contextInstanceAggregateJobStatus.getContextInstanceId()+ "_" + SCHEDULED_CONTEXT_INSTANCE).getContextInstance();
         ContextTemplate contextTemplate = this.scheduledContextService.findByName(contextInstanceAggregateJobStatus.getContextInstanceName()).getContext();
-        ContextInstanceDialog contextInstanceDialog = new ContextInstanceDialog(this.scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
-            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService,
-            logStreamingService, contextInstance, contextTemplate,
-            schedulerJobInstanceService, jobInitiationService, contextProfileService,
-            jobUtilsService, scheduledContextService, contextInstanceWidgetTab, status.name());
+        ContextInstanceDialog contextInstanceDialog = new ContextInstanceDialog(this.scheduledContextInstanceService, this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
+            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService, contextInstance, contextTemplate,
+            this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, contextInstanceWidgetTab, status.name(), this.globalEventService);
 
         contextInstanceDialog.open();
     }

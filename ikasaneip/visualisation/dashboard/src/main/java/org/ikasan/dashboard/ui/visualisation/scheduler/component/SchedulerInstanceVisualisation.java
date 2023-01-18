@@ -33,6 +33,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.slf4j.Logger;
@@ -69,6 +70,7 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
     protected SchedulerJobInstanceService schedulerJobInstanceService;
     protected JobInitiationService jobInitiationService;
     protected JobUtilsService jobUtilsService;
+    protected GlobalEventService globalEventService;
     protected ContextInstance parentContextInstance;
     protected ScheduledContextService scheduledContextService;
     protected Dialog parent;
@@ -80,7 +82,8 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                           LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
-                                          JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService) {
+                                          JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
+                                          GlobalEventService globalEventService) {
 
         this.dynamicImagePath = dynamicImagePath;
         if (this.dynamicImagePath == null) {
@@ -140,6 +143,11 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
         this.scheduledContextService = scheduledContextService;
         if(this.scheduledContextService == null) {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
+        }
+
+        this.globalEventService = globalEventService;
+        if(this.globalEventService == null) {
+            throw new IllegalArgumentException("globalEventService cannot be null!");
         }
 
         this.contextOpenedListeners = new ArrayList<>();

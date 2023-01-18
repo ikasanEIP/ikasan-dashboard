@@ -2,7 +2,6 @@ package org.ikasan.job.orchestration.provision.job;
 
 import org.ikasan.job.orchestration.model.context.ContextParameterImpl;
 import org.ikasan.job.orchestration.model.job.*;
-import org.ikasan.job.orchestration.rest.client.JobProvisionModuleRestServiceImpl;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
 import org.ikasan.spec.module.ModuleType;
@@ -17,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class JobProvisionServiceImpl implements JobProvisionService {
@@ -59,7 +59,19 @@ public class JobProvisionServiceImpl implements JobProvisionService {
         ModuleMetadataSearchResults agents = this.moduleMetaDataService
             .find(uniqueAgentNames, ModuleType.SCHEDULER_AGENT, -1, -1);
 
-        if(uniqueAgentNames.size() != agents.getResultList().size()) {
+        AtomicBoolean containsGlobalEvents = new AtomicBoolean(false);
+        jobs.forEach(job -> {
+            if(job instanceof GlobalEventJob) {
+                containsGlobalEvents.set(true);
+            }
+        });
+
+        int global = 0;
+        if(containsGlobalEvents.get()) {
+            global++;
+        }
+
+        if(uniqueAgentNames.size() != agents.getResultList().size() + global) {
             StringBuffer missingAgents = new StringBuffer();
 
             uniqueAgentNames.forEach(agentName -> {

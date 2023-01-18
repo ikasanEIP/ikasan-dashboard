@@ -15,12 +15,10 @@ import org.ikasan.job.orchestration.model.context.ContextTransition;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.context.model.*;
 import org.ikasan.spec.scheduled.instance.model.FileEventDrivenJobInstance;
+import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.model.QuartzScheduleDrivenJobInstance;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.jgrapht.ext.JGraphXAdapter;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -125,6 +123,9 @@ public abstract class Draw2dAdapterBase {
                 else if(schedulerJob instanceof QuartzScheduleDrivenJob || schedulerJob instanceof QuartzScheduleDrivenJobInstance) {
                     userDataBuilder.withItemType(UserData.QUARTZ_EVENT_DRIVEN_JOB);
                 }
+                else if(schedulerJob instanceof GlobalEventJob || schedulerJob instanceof GlobalEventJobInstance) {
+                    userDataBuilder.withItemType(UserData.GLOBAL_EVENT_DRIVEN_JOB);
+                }
 
                 ImageBuilder jobBuilder = diagramBuilder.getImageBuilder()
                     .withId(job.getIdentifier())
@@ -133,7 +134,8 @@ public abstract class Draw2dAdapterBase {
                     .withPath(image)
                     .withUserData(userDataBuilder.build());
 
-                if(schedulerJob instanceof InternalEventDrivenJob || schedulerJob instanceof InternalEventDrivenJobInstance) {
+                if(schedulerJob instanceof InternalEventDrivenJob || schedulerJob instanceof InternalEventDrivenJobInstance
+                    || schedulerJob instanceof GlobalEventJob || schedulerJob instanceof GlobalEventJobInstance) {
                     jobBuilder.withLeftPort()
                         .withRightPort();
                 }
@@ -1148,6 +1150,9 @@ public abstract class Draw2dAdapterBase {
         }
         else if(schedulerJob instanceof QuartzScheduleDrivenJob || schedulerJob instanceof QuartzScheduleDrivenJobInstance) {
             image = "frontend/images/time_black.png";
+        }
+        else if(schedulerJob instanceof GlobalEventJob || schedulerJob instanceof GlobalEventJobInstance) {
+            image = "frontend/images/global_job.png";
         }
 
         return image;

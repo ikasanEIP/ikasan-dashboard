@@ -1,11 +1,11 @@
 {
-  "agentName" : "agentName",
+  "agentName" : "GLOBAL_EVENT",
   "jobName" : "jobName",
   "contextName" : "contextId",
   "childContextNames" : [ "childContextId" ],
   "startupControlType" : "MANUAL",
   "skippedContexts" : { },
   "heldContexts" : { },
-  "identifier" : "agentName-jobName",
+  "identifier" : "GLOBAL_EVENT-jobName",
   "jobDescription" : "description"
 }
