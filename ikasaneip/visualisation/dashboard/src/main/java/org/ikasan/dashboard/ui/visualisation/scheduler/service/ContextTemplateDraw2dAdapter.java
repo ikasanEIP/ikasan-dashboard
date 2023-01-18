@@ -9,6 +9,7 @@ import org.ikasan.designer.model.PositionedItem;
 import org.ikasan.designer.model.UserData;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.context.model.Context;
+import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
@@ -110,7 +111,7 @@ public class ContextTemplateDraw2dAdapter extends Draw2dAdapterBase {
                     .build()
                 );
 
-            if(schedulerJob instanceof InternalEventDrivenJob) {
+            if(schedulerJob instanceof InternalEventDrivenJob || schedulerJob instanceof GlobalEventJob) {
                 jobBuilder.withLeftPort()
                     .withRightPort();
             }

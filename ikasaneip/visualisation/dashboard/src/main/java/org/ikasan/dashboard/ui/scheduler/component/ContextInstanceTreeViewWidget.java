@@ -32,8 +32,10 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceState
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
+import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
+import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -44,11 +46,13 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
+import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -108,6 +112,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private ArrayList<Object> expandedNodes;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private ContextProfileService contextProfileService;
+    private GlobalEventService globalEventService;
 
     /**
      * Constructor
@@ -129,7 +134,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                                          ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                                          SystemEventLogger systemEventLogger, LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                                          JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                                         ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService) {
+                                         ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService, GlobalEventService globalEventService) {
         super(moduleMetaDataService, systemEventLogger, logStreamingService, contextInstance,
              schedulerJobInstanceService);
         this.schedulerJobInstanceService = schedulerJobInstanceService;
@@ -187,6 +192,10 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         this.contextProfileService = contextProfileService;
         if (this.contextProfileService == null) {
             throw new IllegalArgumentException("contextProfileService cannot be null!");
+        }
+        this.globalEventService = globalEventService;
+        if (this.globalEventService == null) {
+            throw new IllegalArgumentException("globalEventService cannot be null!");
         }
 
         this.jobImageMap = new HashMap<>();
@@ -736,7 +745,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                 this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
                 this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService,
-                this.contextProfileService);
+                this.contextProfileService, this.globalEventService);
 
             if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                 this.contextInstance = ContextMachineCache.instance()
@@ -774,6 +783,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         }
         else if(schedulerJob instanceof QuartzScheduleDrivenJob || schedulerJob instanceof QuartzScheduleDrivenJobInstance) {
             image = "frontend/images/time_black.png";
+        }
+        else if(schedulerJob instanceof GlobalEventJob || schedulerJob instanceof GlobalEventJobInstance) {
+            image = "frontend/images/global_job.png";
         }
 
         return image;
@@ -951,6 +963,13 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 internalEventDrivenJobDialog.setJob(refreshedRecord);
                 internalEventDrivenJobDialog.open();
             }
+            else if(refreshedRecord.getSchedulerJobInstance() instanceof GlobalEventJobInstance) {
+                GlobalEventJobInstanceDialog globalEventJobInstanceDialog = new GlobalEventJobInstanceDialog(systemEventLogger, schedulerJobInstanceService, this.globalEventService
+                    , this.contextInstance);
+                globalEventJobInstanceDialog.setJob(refreshedRecord);
+
+                globalEventJobInstanceDialog.open();
+            }
         });
 
         layout.add(modal);
@@ -1093,7 +1112,8 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                             NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
                         }
                     });
-                } else if (schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof QuartzScheduleDrivenJobInstance) {
+                }
+                else if (schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof QuartzScheduleDrivenJobInstance) {
                     ConfirmDialog confirmDialog = new ConfirmDialog();
                     confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-quartz-job", UI.getCurrent().getLocale()));
                     confirmDialog.setText(getTranslation("confirm-dialog-text.submit-quartz-job", UI.getCurrent().getLocale()));
@@ -1113,6 +1133,40 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                                     , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
                                 , this.authentication.getName());
 
+                            schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
+                            schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+
+                            NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
+                        }
+                    });
+                }
+                else if (schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof GlobalEventJobInstance) {
+                    ConfirmDialog confirmDialog = new ConfirmDialog();
+                    confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-global-job", UI.getCurrent().getLocale()));
+                    confirmDialog.setText(getTranslation("confirm-dialog-text.submit-global-job", UI.getCurrent().getLocale()));
+
+                    confirmDialog.setCancelable(true);
+
+                    confirmDialog.open();
+
+                    confirmDialog.addConfirmListener(confirmEvent -> {
+                        try {
+                            GlobalEventJobInstance globalEventJobInstance = (GlobalEventJobInstance)schedulerJobInstanceRecord
+                                .getSchedulerJobInstance();
+
+                            this.globalEventService.raiseGlobalEventJob(globalEventJobInstance,
+                                this.contextInstance.getId());
+
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
+                                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
+                                , this.authentication.getName());
+
+                            globalEventJobInstance.setStatus(InstanceStatus.COMPLETE);
+                            schedulerJobInstanceRecord.setSchedulerJobInstance(globalEventJobInstance);
+                            schedulerJobInstanceRecord.setStatus(InstanceStatus.COMPLETE.toString());
                             schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
                             schedulerJobInstanceService.save(schedulerJobInstanceRecord);
 

@@ -18,6 +18,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -2102,7 +2103,7 @@ public class JobLogicMachineTest extends AbstractTest {
         globalEventJobInstance.setJobName("jobName2");
 
         HashMap<String, GlobalEventJobInstance> globalEventJobInstances = new HashMap<>();
-        globalEventJobInstances.put("agentName2-jobName2-Context1", globalEventJobInstance);
+        globalEventJobInstances.put("GLOBAL_EVENT-jobName2-Context1", globalEventJobInstance);
         
         InternalEventDrivenJobInstanceImpl internalEventDrivenJobInstance
             = new InternalEventDrivenJobInstanceImpl();
@@ -2117,12 +2118,12 @@ public class JobLogicMachineTest extends AbstractTest {
                 , context.getContextParameters(), context, new MutableBoolean(false), true);
 
         Assert.assertEquals(1, events.size());
-        Assert.assertEquals("agentName2", events.get(0).getAgentName());
+        Assert.assertEquals(JobConstants.GLOBAL_EVENT, events.get(0).getAgentName());
         Assert.assertEquals("jobName2", events.get(0).getJobName());
 
         // Global Event Successful
         eventInstance
-            = scheduledProcessEventInstance("jobName2", "agentName2", true);
+            = scheduledProcessEventInstance("jobName2", JobConstants.GLOBAL_EVENT, true);
         
         events =  jobLogicMachine
             .getJobInitiationEvents(eventInstance, context, null, globalEventJobInstances, internalEventDrivenJobs

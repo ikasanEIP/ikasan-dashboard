@@ -17,6 +17,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -36,11 +37,11 @@ public class ContextTemplateManagementDialog extends AbstractCloseableResizableD
                                            LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
                                            JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
                                            SecurityService securityService, JobUtilsService jobUtilsService, String zipWorkingDirectory, EmailNotificationDetailsService emailNotificationDetailsService,
-                                           EmailNotificationContextService emailNotificationContextService, Map<String, String> schedulerJobExecutionEnvironmentLabel) {
+                                           EmailNotificationContextService emailNotificationContextService, Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService) {
         this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService, jobProvisionService
-            , userService, securityService, jobUtilsService, zipWorkingDirectory, emailNotificationDetailsService, emailNotificationContextService, schedulerJobExecutionEnvironmentLabel);
+            , userService, securityService, jobUtilsService, zipWorkingDirectory, emailNotificationDetailsService, emailNotificationContextService, schedulerJobExecutionEnvironmentLabel, globalEventService);
 
         this.setHeight("95vh");
         this.setWidth("90vw");

@@ -16,10 +16,12 @@ public class SolrSchedulerJobInstanceSearchFilterImpl implements SchedulerJobIns
         JOB_TYPE_MAPPINGS.put("Scheduled Job", "quartzScheduleDrivenJobInstance");
         JOB_TYPE_MAPPINGS.put("File Watcher Job", "fileEventDrivenJobInstance");
         JOB_TYPE_MAPPINGS.put("Command Execution Job", "internalEventDrivenJobInstance");
+        JOB_TYPE_MAPPINGS.put("Global Event Job", "globalEventJobInstance");
 
         JOB_TYPE_MAPPINGS_INVERTED.put("quartzScheduleDrivenJobInstance", "Scheduled Job");
         JOB_TYPE_MAPPINGS_INVERTED.put("fileEventDrivenJobInstance", "File Watcher Job");
         JOB_TYPE_MAPPINGS_INVERTED.put("internalEventDrivenJobInstance", "Command Execution Job");
+        JOB_TYPE_MAPPINGS_INVERTED.put("globalEventJobInstance", "Global Event Job");
     }
 
     private String jobName;

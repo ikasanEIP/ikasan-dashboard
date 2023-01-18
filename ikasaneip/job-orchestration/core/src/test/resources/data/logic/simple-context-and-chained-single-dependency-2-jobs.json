@@ -5,7 +5,7 @@
     "logicalGrouping" : {
       "logicalGrouping" : null,
       "and" : [ {
-        "identifier" : "agentNameTwoJobs-jobName2"
+        "identifier" : "GLOBAL_EVENT-jobName2"
       }],
       "or" : null,
       "not" : null
@@ -27,8 +27,8 @@
     "value" : null
   } ],
   "scheduledJobs" : [ {
-    "identifier" : "agentNameTwoJobs-jobName2",
-    "agentName" : "agentNameTwoJobs",
+    "identifier" : "GLOBAL_EVENT-jobName2",
+    "agentName" : "GLOBAL_EVENT",
     "jobName" : "jobName2",
     "held" : false,
     "skip" : false,
