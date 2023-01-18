@@ -43,7 +43,9 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEven
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.GlobalEventJob;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -82,6 +84,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
     private ContextProfileService contextProfileService;
+    private GlobalEventService globalEventService;
     private String jobStatus;
 
     /**
@@ -108,7 +111,8 @@ public class SchedulerJobInstanceGridWidget extends Div {
                                           MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                           LogStreamingService logStreamingService, ContextInstance contextInstance, SchedulerJobInstanceService schedulerJobInstanceService,
                                           JobInitiationService jobInitiationService, ConfigurationService configurationService,
-                                          MetaDataService metaDataService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, String jobStatus, ContextProfileService contextProfileService) {
+                                          MetaDataService metaDataService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, String jobStatus,
+                                          ContextProfileService contextProfileService, GlobalEventService globalEventService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if(this.scheduledContextInstanceService ==  null) {
@@ -169,6 +173,10 @@ public class SchedulerJobInstanceGridWidget extends Div {
         this.contextProfileService = contextProfileService;
         if(this.contextProfileService ==  null) {
             throw new IllegalArgumentException("contextProfileService cannot be null!");
+        }
+        this.globalEventService = globalEventService;
+        if(this.globalEventService ==  null) {
+            throw new IllegalArgumentException("globalEventService cannot be null!");
         }
         this.jobStatus = jobStatus;
 
@@ -507,6 +515,40 @@ public class SchedulerJobInstanceGridWidget extends Div {
                         }
                     });
                 }
+                else if (schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof GlobalEventJobInstance) {
+                    ConfirmDialog confirmDialog = new ConfirmDialog();
+                    confirmDialog.setHeader(getTranslation("confirm-dialog-header.submit-global-job", UI.getCurrent().getLocale()));
+                    confirmDialog.setText(getTranslation("confirm-dialog-text.submit-global-job", UI.getCurrent().getLocale()));
+
+                    confirmDialog.setCancelable(true);
+
+                    confirmDialog.open();
+
+                    confirmDialog.addConfirmListener(confirmEvent -> {
+                        try {
+                            GlobalEventJobInstance globalEventJobInstance = (GlobalEventJobInstance)schedulerJobInstanceRecord
+                                .getSchedulerJobInstance();
+
+                            this.globalEventService.raiseGlobalEventJob(globalEventJobInstance,
+                                this.contextInstance.getId());
+
+                            this.systemEventLogger.logEvent(SystemEventConstants.SCHEDULED_JOB_SUBMITTED, String.format("Agent Name[%s], Scheduled Job Name[%s]"
+                                    , schedulerJobInstanceRecord.getSchedulerJobInstance().getAgentName(), schedulerJobInstanceRecord.getSchedulerJobInstance().getJobName())
+                                , this.authentication.getName());
+
+                            globalEventJobInstance.setStatus(InstanceStatus.COMPLETE);
+                            schedulerJobInstanceRecord.setSchedulerJobInstance(globalEventJobInstance);
+                            schedulerJobInstanceRecord.setStatus(InstanceStatus.COMPLETE.toString());
+                            schedulerJobInstanceRecord.setManuallySubmittedBy(this.authentication.getName());
+                            schedulerJobInstanceService.save(schedulerJobInstanceRecord);
+
+                            NotificationHelper.showUserNotification(getTranslation("notification.job-submitted-successfully", UI.getCurrent().getLocale()));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            NotificationHelper.showErrorNotification(getTranslation("error.job-submission-error", UI.getCurrent().getLocale()));
+                        }
+                    });
+                }
             });
 
             layout.add(submit);
@@ -556,7 +598,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
                 JobInstanceVisualisationDialog jobInstanceVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                     this.configurationService, this.moduleControlService, this.metaDataService, this.systemEventLogger, this.logStreamingService,
                     this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService,
-                    this.contextProfileService);
+                    this.contextProfileService, this.globalEventService);
 
                 if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
                     this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
@@ -750,6 +792,13 @@ public class SchedulerJobInstanceGridWidget extends Div {
                 internalEventDrivenJobDialog.setJob(event.getItem());
 
                 internalEventDrivenJobDialog.open();
+            }
+            else if(event.getItem().getType().equals(JobConstants.GLOBAL_EVENT_JOB_INSTANCE)) {
+                GlobalEventJobInstanceDialog globalEventJobInstanceDialog = new GlobalEventJobInstanceDialog(systemEventLogger, schedulerJobInstanceService, this.globalEventService
+                    , this.contextInstance);
+                globalEventJobInstanceDialog.setJob(event.getItem());
+
+                globalEventJobInstanceDialog.open();
             }
         });
     }

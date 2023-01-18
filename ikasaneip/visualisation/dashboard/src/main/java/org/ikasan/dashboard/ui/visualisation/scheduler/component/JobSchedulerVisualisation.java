@@ -56,7 +56,7 @@ public class JobSchedulerVisualisation extends SchedulerVisualisation {
 
                     Map<String, SchedulerJob> schedulerJobs = jobs.getResultList().stream()
                         .map(record -> record.getJob())
-                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity()));
+                        .collect(Collectors.toMap(SchedulerJob::getJobName, Function.identity(), (key1, key2)-> key2));
 
                     this.designerCanvas.setCanvasJson(adapter.adaptJobs(this.parentContextTemplate, contextTemplate, schedulerJobs,
                         this.getCommandExecutionJobsForContextInstance(this.parentContextTemplate.getName())));

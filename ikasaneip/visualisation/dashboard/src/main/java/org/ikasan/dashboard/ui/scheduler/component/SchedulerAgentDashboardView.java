@@ -19,6 +19,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -51,6 +52,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     private ContextProfileService contextProfileService;
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
+    private GlobalEventService globalEventService;
 
     private Board board;
 
@@ -73,7 +75,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                                        SchedulerJobInstanceService schedulerJobInstanceService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath,
                                        ModuleMetaDataService moduleMetaDataService, LogStreamingService logStreamingService,
                                        JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
-                                       JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService) {
+                                       JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, GlobalEventService globalEventService) {
         this.moduleMetadataService = moduleMetadataService;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
@@ -91,6 +93,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
         this.contextProfileService = contextProfileService;
         this.jobUtilsService = jobUtilsService;
         this.scheduledContextService = scheduledContextService;
+        this.globalEventService = globalEventService;
 
         board = new Board();
         board.addClassName("styled");
@@ -110,7 +113,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
                 , this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
                 this.dynamicImagePath, this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService,
-                this.jobUtilsService, this.scheduledContextService, false));
+                this.jobUtilsService, this.scheduledContextService, false, this.globalEventService));
 
             initialised = true;
         }
