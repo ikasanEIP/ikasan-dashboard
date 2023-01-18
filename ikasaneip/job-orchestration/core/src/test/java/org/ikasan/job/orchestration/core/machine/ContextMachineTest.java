@@ -36,6 +36,7 @@ import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.json.JSONException;
 import org.junit.After;
@@ -5065,7 +5066,7 @@ public class ContextMachineTest extends AbstractTest {
         GlobalEventJobInstanceImpl globalJob2 = new GlobalEventJobInstanceImpl();
         globalJob2.setAgentName("agentName2");
         globalJob2.setJobName("jobName2");
-        globalEventJobInstances.put("agentName2-jobName2-Context1", globalJob2);
+        globalEventJobInstances.put("GLOBAL_EVENT-jobName2-Context1", globalJob2);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(),globalEventJobInstances
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
@@ -5076,11 +5077,11 @@ public class ContextMachineTest extends AbstractTest {
         List<SchedulerJobInitiationEvent> events =  contextMachine.eventReceived(eventInstance);
 
         Assert.assertEquals(1, events.size());
-        Assert.assertEquals("agentName2", events.get(0).getAgentName());
+        Assert.assertEquals(JobConstants.GLOBAL_EVENT, events.get(0).getAgentName());
         Assert.assertEquals("jobName2", events.get(0).getJobName());
 
         eventInstance
-            = scheduledProcessEventInstance("jobName2", "agentName2", true);
+            = scheduledProcessEventInstance("jobName2", JobConstants.GLOBAL_EVENT, true);
 
         events =  contextMachine.eventReceived(eventInstance);
 
@@ -5156,7 +5157,7 @@ public class ContextMachineTest extends AbstractTest {
         GlobalEventJobInstanceImpl globalJob2 = new GlobalEventJobInstanceImpl();
         globalJob2.setAgentName("agentName2");
         globalJob2.setJobName("jobName2");
-        globalEventJobInstances.put("agentName2-jobName2-Context1", globalJob2);
+        globalEventJobInstances.put("GLOBAL_EVENT-jobName2-Context1", globalJob2);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), globalEventJobInstances
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
@@ -5181,7 +5182,7 @@ public class ContextMachineTest extends AbstractTest {
         GlobalEventJobInstanceImpl globalJobC2 = new GlobalEventJobInstanceImpl();
         globalJobC2.setAgentName("agentNameTwoJobs");
         globalJobC2.setJobName("jobName2");
-        globalEventJobInstances2.put("agentNameTwoJobs-jobName2-Context1-Two-Jobs", globalJobC2);
+        globalEventJobInstances2.put("GLOBAL_EVENT-jobName2-Context1-Two-Jobs", globalJobC2);
 
         ContextMachine contextMachine2  = new ContextMachine(context2, contextInstance2, new ScheduledContextInstanceServiceTestImpl(), globalEventJobInstances2
             , internalEventDrivenJobs2, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
@@ -5207,7 +5208,7 @@ public class ContextMachineTest extends AbstractTest {
         // quickly after the event for jobName1 is sent, jobName2 event should be sent on the BigQueue and the ContextMachine will process
         // it to success. Wait for 5 seconds for it to change.
         Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> { 
-            Assert.assertEquals(InstanceStatus.COMPLETE, contextInstance.getScheduledJobsMap().get("agentName2-jobName2").getStatus());
+            Assert.assertEquals(InstanceStatus.COMPLETE, contextInstance.getScheduledJobsMap().get("GLOBAL_EVENT-jobName2").getStatus());
         });
 
         // As jobName2 has sent an event onto the outbound big queue. This should be jobName3
@@ -5249,7 +5250,7 @@ public class ContextMachineTest extends AbstractTest {
         /**** START TESTING Context1-Two-Jobs ****/
         // As we were testing Context1, Context1-Two-Jobs was running in the background, therefore jobName2 should be in COMPLETED status
         Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> { 
-            Assert.assertEquals(InstanceStatus.COMPLETE, contextInstance2.getScheduledJobsMap().get("agentNameTwoJobs-jobName2").getStatus());
+            Assert.assertEquals(InstanceStatus.COMPLETE, contextInstance2.getScheduledJobsMap().get("GLOBAL_EVENT-jobName2").getStatus());
         });
 
         // As jobName2 has sent an event onto the outbound big queue. This should be jobName3
@@ -5345,7 +5346,7 @@ public class ContextMachineTest extends AbstractTest {
         GlobalEventJobInstanceImpl globalJob2 = new GlobalEventJobInstanceImpl();
         globalJob2.setAgentName("agentName2");
         globalJob2.setJobName("jobName2");
-        globalEventJobInstances.put("agentName2-jobName2-Context1", globalJob2);
+        globalEventJobInstances.put("GLOBAL_EVENT-jobName2-Context1", globalJob2);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), globalEventJobInstances
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
@@ -5367,8 +5368,8 @@ public class ContextMachineTest extends AbstractTest {
         // jobName2 is a Global Event, this event will not be sent to the agent, the Context machine will orchestrate which is why
         // quickly after the event for jobName1 is sent, jobName2 event should be sent on the BigQueue and the ContextMachine will process
         // it to success. Wait for 5 seconds for it to change.
-        Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> { ;
-            Assert.assertEquals(InstanceStatus.COMPLETE, contextInstance.getScheduledJobsMap().get("agentName2-jobName2").getStatus());
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            Assert.assertEquals(InstanceStatus.COMPLETE, contextInstance.getScheduledJobsMap().get("GLOBAL_EVENT-jobName2").getStatus());
         });
 
         // As jobName2 has sent an event onto the outbound big queue. This should be jobName3
@@ -5498,7 +5499,7 @@ public class ContextMachineTest extends AbstractTest {
         GlobalEventJobInstanceImpl globalJob2 = new GlobalEventJobInstanceImpl();
         globalJob2.setAgentName("agentName2");
         globalJob2.setJobName("jobName2");
-        globalEventJobInstances.put("agentName2-jobName2-Context1", globalJob2);
+        globalEventJobInstances.put("GLOBAL_EVENT-jobName2-Context1", globalJob2);
 
         ContextMachine contextMachine  = new ContextMachine(context, contextInstance, new ScheduledContextInstanceServiceTestImpl(), globalEventJobInstances
             , internalEventDrivenJobs, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
@@ -5523,7 +5524,7 @@ public class ContextMachineTest extends AbstractTest {
         GlobalEventJobInstanceImpl globalJobC2 = new GlobalEventJobInstanceImpl();
         globalJobC2.setAgentName("agentNameTwoJobs");
         globalJobC2.setJobName("jobName2");
-        globalEventJobInstances2.put("agentNameTwoJobs-jobName2-Context1-Two-Jobs", globalJobC2);
+        globalEventJobInstances2.put("GLOBAL_EVENT-jobName2-Context1-Two-Jobs", globalJobC2);
 
         ContextMachine contextMachine2  = new ContextMachine(context2, contextInstance2, new ScheduledContextInstanceServiceTestImpl(), globalEventJobInstances2
             , internalEventDrivenJobs2, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
@@ -5548,7 +5549,7 @@ public class ContextMachineTest extends AbstractTest {
         GlobalEventJobInstanceImpl globalJobC3 = new GlobalEventJobInstanceImpl();
         globalJobC3.setAgentName("agentNameTwoJobsNull");
         globalJobC3.setJobName("jobName2");
-        globalEventJobInstances3.put("agentNameTwoJobsNull-jobName2-Context2-Two-Jobs", globalJobC3);
+        globalEventJobInstances3.put("GLOBAL_EVENT-jobName2-Context2-Two-Jobs", globalJobC3);
 
         ContextMachine contextMachine3  = new ContextMachine(context3, contextInstance3, new ScheduledContextInstanceServiceTestImpl(), globalEventJobInstances3
             , internalEventDrivenJobs3, this.queueDir, new HashMap<>(), JobLockCacheImpl.instance(), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, contextInstancePublicationService);
@@ -5574,7 +5575,7 @@ public class ContextMachineTest extends AbstractTest {
         // quickly after the event for jobName1 is sent, jobName2 event should be sent on the BigQueue and the ContextMachine will process
         // it to success. Wait for 5 seconds for it to change.
         Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-            Assert.assertEquals(InstanceStatus.COMPLETE, contextInstance.getScheduledJobsMap().get("agentName2-jobName2").getStatus());
+            Assert.assertEquals(InstanceStatus.COMPLETE, contextInstance.getScheduledJobsMap().get("GLOBAL_EVENT-jobName2").getStatus());
         });
 
         // As jobName2 has sent an event onto the outbound big queue. This should be jobName3
@@ -5616,7 +5617,7 @@ public class ContextMachineTest extends AbstractTest {
         /**** START TESTING Context1-Two-Jobs ****/
         // As we were testing Context1, Context1-Two-Jobs was running in the background, therefore jobName2 should be in COMPLETED status
         Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
-            Assert.assertEquals(InstanceStatus.COMPLETE, contextInstance2.getScheduledJobsMap().get("agentNameTwoJobs-jobName2").getStatus());
+            Assert.assertEquals(InstanceStatus.COMPLETE, contextInstance2.getScheduledJobsMap().get("GLOBAL_EVENT-jobName2").getStatus());
         });
 
         // As jobName2 has sent an event onto the outbound big queue. This should be jobName3
@@ -5658,7 +5659,7 @@ public class ContextMachineTest extends AbstractTest {
         /**** START TESTING Context2-Two-Jobs ****/
         // As we were testing Context1 and Context1-Two-Jobs, Context2-Two-Jobs was running in the background, therefore jobName2 should still be in 
         // WAITING status as no event should be sent to it because Context2-Two-Jobs is not part of the environmentGroup GRP1.
-        Assert.assertEquals(InstanceStatus.WAITING, contextInstance3.getScheduledJobsMap().get("agentNameTwoJobsNull-jobName2").getStatus());
+        Assert.assertEquals(InstanceStatus.WAITING, contextInstance3.getScheduledJobsMap().get("GLOBAL_EVENT-jobName2").getStatus());
 
         // As jobName2 has not sent an event onto the outbound big queue. make sure it is still 0
         Assert.assertEquals(contextMachine3.getOutboundQueue().size(), 0);

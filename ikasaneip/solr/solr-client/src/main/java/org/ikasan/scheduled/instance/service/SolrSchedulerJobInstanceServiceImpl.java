@@ -191,7 +191,7 @@ public class SolrSchedulerJobInstanceServiceImpl implements SchedulerJobInstance
             }
 
             Map<String, SchedulerJobInstance> schedulerJobInstanceMap = schedulerJobInstances.stream()
-                .collect(Collectors.toMap(SchedulerJobInstance::getIdentifier, Function.identity()));
+                .collect(Collectors.toMap(SchedulerJobInstance::getIdentifier, Function.identity(), (key1, key2)-> key2));
 
             List<SchedulerJobInstance> contextualisedSchedulerJobInstances = new ArrayList<>();
 

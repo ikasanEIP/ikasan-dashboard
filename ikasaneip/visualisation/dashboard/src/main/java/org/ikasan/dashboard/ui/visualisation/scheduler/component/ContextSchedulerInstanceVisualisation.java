@@ -19,6 +19,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -52,11 +53,12 @@ public class ContextSchedulerInstanceVisualisation extends SchedulerInstanceVisu
                                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                                  LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                                                  JobInitiationService jobInitiationService, JobUtilsService jobUtilsService,
-                                                 ScheduledContextService scheduledContextService, ContextProfileService contextProfileService) {
+                                                 ScheduledContextService scheduledContextService, ContextProfileService contextProfileService,
+                                                 GlobalEventService globalEventService) {
         super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService,
             systemEventLogger, logStreamingService, schedulerJobInstanceService,
-            jobInitiationService, jobUtilsService, scheduledContextService);
+            jobInitiationService, jobUtilsService, scheduledContextService, globalEventService);
         this.contextProfileService = contextProfileService;
     }
 

@@ -12,10 +12,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.scheduler.component.EditMode;
-import org.ikasan.dashboard.ui.scheduler.component.FileEventJobDialog;
-import org.ikasan.dashboard.ui.scheduler.component.InternalEventDrivenJobDialog;
-import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobDialog;
+import org.ikasan.dashboard.ui.scheduler.component.*;
 import org.ikasan.dashboard.ui.scheduler.listener.JobSynchronisationRequiredListener;
 import org.ikasan.dashboard.ui.scheduler.listener.NewContextListener;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
@@ -45,10 +42,7 @@ import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextViewRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -391,7 +385,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
                 fileEventJobDialog.addJobSynchronisationRequiredListener(listener));
             fileEventJobDialog.open();
         }
-        else {
+        else if(schedulerJobRecord.getJob() instanceof QuartzScheduleDrivenJob){
             QuartzDrivenScheduledJobDialog quartzDrivenScheduledJobDialog = new QuartzDrivenScheduledJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
                 , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
                 , systemEventLogger, this.schedulerJobService);
@@ -399,6 +393,13 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
             this.jobSynchronisationRequiredListeners.forEach(listener ->
                 quartzDrivenScheduledJobDialog.addJobSynchronisationRequiredListener(listener));
             quartzDrivenScheduledJobDialog.open();
+        }
+        else {
+            GlobalEventJobDialog globalEventJobDialog = new GlobalEventJobDialog(moduleMetaDataService.findById(schedulerJob.getAgentName())
+                , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
+                , systemEventLogger, this.schedulerJobService);
+            globalEventJobDialog.setJob(schedulerJobRecord, EditMode.EDIT);
+            globalEventJobDialog.open();
         }
     }
 

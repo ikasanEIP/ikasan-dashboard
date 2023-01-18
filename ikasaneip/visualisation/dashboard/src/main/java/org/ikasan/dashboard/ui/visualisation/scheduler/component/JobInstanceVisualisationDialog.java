@@ -20,6 +20,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -57,14 +58,14 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
     private ContextProfileService contextProfileService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SplitContextInstanceVisualisation splitContextInstanceVisualisation;
-
+    private GlobalEventService globalEventService;
     private SchedulerStatusDiv statusDiv;
 
     public JobInstanceVisualisationDialog(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                                           ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService,
                                           SystemEventLogger systemEventLogger, LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                                           JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                                          ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService) {
+                                          ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService, GlobalEventService globalEventService) {
         this.setHeight("98vh");
         this.setWidth("98vw");
 
@@ -133,6 +134,11 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
             throw new IllegalArgumentException("contextProfileService cannot be null!");
         }
 
+        this.globalEventService = globalEventService;
+        if(this.globalEventService == null) {
+            throw new IllegalArgumentException("globalEventService cannot be null!");
+        }
+
         layout = new VerticalLayout();
         this.layout.getStyle().set("padding-top", "0px");
         layout.setSizeFull();
@@ -157,9 +163,9 @@ public class JobInstanceVisualisationDialog extends AbstractCloseableResizableDi
 
         this.layout.add(this.statusDiv);
 
-        this.splitContextInstanceVisualisation = new SplitContextInstanceVisualisation(scheduledContextInstanceService, moduleMetaDataService, scheduledProcessManagementService,
-            configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, logStreamingService, rootContextInstance, schedulerJobInstanceService,
-            jobInitiationService, contextProfileService, jobUtilsService, scheduledContextService);
+        this.splitContextInstanceVisualisation = new SplitContextInstanceVisualisation(this.scheduledContextInstanceService, this.moduleMetaDataService, this.scheduledProcessManagementService,
+            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService, rootContextInstance, this.schedulerJobInstanceService,
+            this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService);
         this.splitContextInstanceVisualisation.initialiseVisualisation();
         this.splitContextInstanceVisualisation.setVisible(true);
         this.splitContextInstanceVisualisation.contextOpened(contextInstance);

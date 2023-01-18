@@ -22,6 +22,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -58,6 +59,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
     private ContextService contextService = new ContextService();
     private SchedulerStatusDiv statusDiv;
     private ContextProfileService contextProfileService;
+    private GlobalEventService globalEventService;
 
     /**
      * Constructor
@@ -80,7 +82,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
                                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                                               LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService,
                                               JobInitiationService jobInitiationService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                                              ContextProfileService contextProfileService) {
+                                              ContextProfileService contextProfileService, GlobalEventService globalEventService) {
         this.setHeight("98vh");
         this.setWidth("98vw");
 
@@ -144,6 +146,11 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
             throw new IllegalArgumentException("contextProfileService cannot be null!");
         }
 
+        this.globalEventService = globalEventService;
+        if(this.globalEventService == null) {
+            throw new IllegalArgumentException("globalEventService cannot be null!");
+        }
+
         this.layout = new VerticalLayout();
         this.layout.getStyle().set("padding-top", "0px");
 
@@ -175,7 +182,7 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
 
         this.schedulerInstanceVisualisation =  new ContextSchedulerInstanceVisualisation(this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
-            this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.contextProfileService);
+            this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.contextProfileService, this.globalEventService);
         this.schedulerInstanceVisualisation.createSchedulerVisualisation(this.rootContextInstance, this.contextInstance, this);
 
         this.layout.add(schedulerInstanceVisualisation);
@@ -202,7 +209,8 @@ public class ContextInstanceVisualisationDialog extends AbstractCloseableResizab
                                 ContextInstanceVisualisationDialog contextInstanceVisualisationDialog
                                     = new ContextInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService, this.configurationRestService
                                     , this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService
-                                    , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.contextProfileService);
+                                    , this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.contextProfileService
+                                    , this.globalEventService);
 
                                 contextInstanceVisualisationDialog.createSchedulerVisualisation(this.rootContextInstance, this.contextInstance);
                                 contextInstanceVisualisationDialog.open();
