@@ -587,7 +587,12 @@ public class SolrSchedulerJobServiceImplTest extends SolrTestCaseJ4 {
             int resetCount = 0;
             for (int i = 0; i < results.getResultList().size(); i++) {
                 SchedulerJobRecord job = (SolrSchedulerJobRecordImpl) results.getResultList().get(i);
-                assertEquals(contextId + "agentName" + resetCount, job.getAgentName());
+                if(job.getJob() instanceof GlobalEventJob) {
+                    assertEquals(JobConstants.GLOBAL_EVENT, job.getAgentName());
+                }
+                else {
+                    assertEquals(contextId + "agentName" + resetCount, job.getAgentName());
+                }
                 assertEquals(contextId, job.getContextName());
                 if (job.getJob() instanceof SolrFileEventDrivenJobImpl) {
                     FileEventDrivenJob fileJob = (FileEventDrivenJob) job.getJob();

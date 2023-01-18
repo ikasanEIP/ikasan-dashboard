@@ -59,6 +59,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.*;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -111,6 +112,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private JobInitiationService jobInitiationService;
     private ModuleMetaDataService moduleMetaDataService;
     private LogStreamingService logStreamingService;
+    private GlobalEventService globalEventService;
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
@@ -163,7 +165,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                                            JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobProvisionService jobProvisionService,
                                            UserService userService, SecurityService securityService, JobUtilsService jobUtilsService, String zipWorkingDirectory,
                                            EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
-                                           Map<String, String> schedulerJobExecutionEnvironmentLabel) {
+                                           Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -248,6 +250,10 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.emailNotificationContextService = emailNotificationContextService;
         if (this.emailNotificationContextService == null) {
             throw new IllegalArgumentException("emailNotificationContextService cannot be null!");
+        }
+        this.globalEventService = globalEventService;
+        if (this.globalEventService == null) {
+            throw new IllegalArgumentException("globalEventService cannot be null!");
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
@@ -418,46 +424,41 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             , this.contextInstancesTab, this.jobTemplatesTab, this.statisticsTab);
 
         tabs.addSelectedChangeListener(event -> {
-//            try {
-                if(tabs.getSelectedTab().equals(this.contextInstancesTab)) {
-                    this.aceEditor.setVisible(false);
-                    this.schedulerVisualisationDiv.setVisible(false);
-                    this.contextInstanceGridWidget.setVisible(true);
-                    this.schedulerJobGridWidget.setVisible(false);
-                    this.contextTemplateStatisticsWidget.setVisible(false);
-                }
-                else if(tabs.getSelectedTab().equals(this.statisticsTab)) {
-                    this.aceEditor.setVisible(false);
-                    this.schedulerVisualisationDiv.setVisible(false);
-                    this.contextInstanceGridWidget.setVisible(false);
-                    this.schedulerJobGridWidget.setVisible(false);
-                    this.contextTemplateStatisticsWidget.setVisible(true);
-                }
-                else if(tabs.getSelectedTab().equals(this.rawContextTab)) {
-                    this.aceEditor.setVisible(true);
-                    this.schedulerVisualisationDiv.setVisible(false);
-                    this.contextInstanceGridWidget.setVisible(false);
-                    this.schedulerJobGridWidget.setVisible(false);
-                    this.contextTemplateStatisticsWidget.setVisible(false);
-                }
-                else if(tabs.getSelectedTab().equals(this.visualisationTab)) {
-                    this.aceEditor.setVisible(false);
-                    this.schedulerVisualisationDiv.setVisible(true);
-                    this.contextInstanceGridWidget.setVisible(false);
-                    this.schedulerJobGridWidget.setVisible(false);
-                    this.contextTemplateStatisticsWidget.setVisible(false);
-                }
-                else if(tabs.getSelectedTab().equals(this.jobTemplatesTab)) {
-                    this.aceEditor.setVisible(false);
-                    this.schedulerVisualisationDiv.setVisible(false);
-                    this.contextInstanceGridWidget.setVisible(false);
-                    this.schedulerJobGridWidget.setVisible(true);
-                    this.contextTemplateStatisticsWidget.setVisible(false);
-                }
-//            }
-//            catch (Exception e){
-//                e.printStackTrace();
-//            }
+            if(tabs.getSelectedTab().equals(this.contextInstancesTab)) {
+                this.aceEditor.setVisible(false);
+                this.schedulerVisualisationDiv.setVisible(false);
+                this.contextInstanceGridWidget.setVisible(true);
+                this.schedulerJobGridWidget.setVisible(false);
+                this.contextTemplateStatisticsWidget.setVisible(false);
+            }
+            else if(tabs.getSelectedTab().equals(this.statisticsTab)) {
+                this.aceEditor.setVisible(false);
+                this.schedulerVisualisationDiv.setVisible(false);
+                this.contextInstanceGridWidget.setVisible(false);
+                this.schedulerJobGridWidget.setVisible(false);
+                this.contextTemplateStatisticsWidget.setVisible(true);
+            }
+            else if(tabs.getSelectedTab().equals(this.rawContextTab)) {
+                this.aceEditor.setVisible(true);
+                this.schedulerVisualisationDiv.setVisible(false);
+                this.contextInstanceGridWidget.setVisible(false);
+                this.schedulerJobGridWidget.setVisible(false);
+                this.contextTemplateStatisticsWidget.setVisible(false);
+            }
+            else if(tabs.getSelectedTab().equals(this.visualisationTab)) {
+                this.aceEditor.setVisible(false);
+                this.schedulerVisualisationDiv.setVisible(true);
+                this.contextInstanceGridWidget.setVisible(false);
+                this.schedulerJobGridWidget.setVisible(false);
+                this.contextTemplateStatisticsWidget.setVisible(false);
+            }
+            else if(tabs.getSelectedTab().equals(this.jobTemplatesTab)) {
+                this.aceEditor.setVisible(false);
+                this.schedulerVisualisationDiv.setVisible(false);
+                this.contextInstanceGridWidget.setVisible(false);
+                this.schedulerJobGridWidget.setVisible(true);
+                this.contextTemplateStatisticsWidget.setVisible(false);
+            }
         });
     }
 
@@ -595,7 +596,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                                                      LogStreamingService logStreamingService, JobInitiationService jobInitiationService) {
         this.contextInstanceGridWidget = new ContextInstanceGridWidget(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, this.contextTemplate, this.schedulerJobInstanceService,
-            jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService);
+            jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService);
         this.contextInstanceGridWidget.setWidthFull();
         this.contextInstanceGridWidget.setHeight("75vh");
         this.contextInstanceGridWidget.setVisible(false);

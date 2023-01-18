@@ -33,6 +33,7 @@ import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -58,6 +59,7 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private ScheduledContextService scheduledContextService;
     private JobUtilsService jobUtilsService;
+    private GlobalEventService globalEventService;
 
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private ContextProfileService contextProfileService;
@@ -87,7 +89,8 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
                               MetaDataService metaDataRestService, SystemEventLogger systemEventLogger,
                               SchedulerJobInstanceService schedulerJobInstanceService, LogStreamingService logStreamingService,
                               JobInitiationService jobInitiationService, ScheduledContextService scheduledContextService,
-                              JobUtilsService jobUtilsService, ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService) {
+                              JobUtilsService jobUtilsService, ScheduledContextInstanceService scheduledContextInstanceService, ContextProfileService contextProfileService,
+                              GlobalEventService globalEventService) {
         this.contextInstance = contextInstance;
         if(this.contextInstance == null) {
             throw new IllegalArgumentException("contextInstance cannot be null!");
@@ -158,6 +161,11 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
             throw new IllegalArgumentException("contextProfileService cannot be null!");
         }
 
+        this.globalEventService = globalEventService;
+        if(this.globalEventService == null) {
+            throw new IllegalArgumentException("globalEventService cannot be null!");
+        }
+
         this.init();
     }
 
@@ -213,7 +221,8 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
                                 try {
                                     JobInstanceVisualisationDialog jobTemplateVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
-                                        this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService, this.contextProfileService);
+                                        this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService, this.contextProfileService,
+                                        this.globalEventService);
                                     jobTemplateVisualisationDialog.createSchedulerVisualisation(contextInstance, ContextHelper.getChildContextInstance(contextName, contextInstance));
                                     jobTemplateVisualisationDialog.open();
                                 }
@@ -257,7 +266,8 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
                                 try {
                                     JobInstanceVisualisationDialog jobTemplateVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
                                         this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
-                                        this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService, this.contextProfileService);
+                                        this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService, this.contextProfileService,
+                                        this.globalEventService);
                                     jobTemplateVisualisationDialog.createSchedulerVisualisation(contextInstance, ContextHelper.getChildContextInstance(lockHolder.getSchedulerJobInitiationEvent()
                                         .getInternalEventDrivenJob().getChildContextName(), contextInstance));
                                     jobTemplateVisualisationDialog.open();

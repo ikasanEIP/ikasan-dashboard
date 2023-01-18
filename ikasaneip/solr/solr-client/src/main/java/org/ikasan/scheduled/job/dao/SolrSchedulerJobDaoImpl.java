@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Optional;
 
 public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
     implements SchedulerJobDao<SchedulerJobRecord> {
@@ -55,18 +56,24 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
         queryBuffer.append(OPEN_BRACKET);
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(JobConstants.FILE_EVENT_DRIVEN_JOB).append("\" ");
-        queryBuffer.append(OR).append(" ");
+        queryBuffer.append(OR);
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB).append("\" ");
-        queryBuffer.append(OR).append(" ");
+        queryBuffer.append(OR);
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB).append("\" ");
-        queryBuffer.append(OR).append(" ");
+        queryBuffer.append(OR);
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(JobConstants.GLOBAL_EVENT_JOB).append("\" ");
         queryBuffer.append(CLOSE_BRACKET);
-        queryBuffer.append(AND).append(" ").append(COMPONENT_NAME).append(COLON);
+        queryBuffer.append(AND).append(OPEN_BRACKET);
+
+        queryBuffer.append(COMPONENT_NAME).append(COLON);
         queryBuffer.append("\"").append(contextName).append("\" ");
+        queryBuffer.append(OR);
+        queryBuffer.append(COMPONENT_NAME).append(COLON).append(JobConstants.GLOBAL_EVENT);
+
+        queryBuffer.append(CLOSE_BRACKET);
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(queryBuffer.toString());
@@ -109,6 +116,7 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
     public SearchResults<? extends SchedulerJobRecord> findByFilter(SchedulerJobSearchFilter filter, int limit, int offset, String sortColumn, String sortDirection) {
         StringBuffer queryBuffer = new StringBuffer();
 
+        queryBuffer.append(OPEN_BRACKET);
         if(filter.getJobTypeFilter() == null || filter.getJobTypeFilter().isEmpty()) {
             queryBuffer.append(OPEN_BRACKET);
             queryBuffer.append(TYPE + COLON);
@@ -136,7 +144,8 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
             else if(filter.getJobTypeFilter().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB)) {
                 queryBuffer.append(TYPE + COLON);
                 queryBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB).append("\" ");
-            } else if(filter.getJobTypeFilter().equals(JobConstants.GLOBAL_EVENT_JOB)) {
+            }
+            else if(filter.getJobTypeFilter().equals(JobConstants.GLOBAL_EVENT_JOB)) {
                 queryBuffer.append(TYPE + COLON);
                 queryBuffer.append("\"").append(JobConstants.GLOBAL_EVENT_JOB).append("\" ");
             }
@@ -153,11 +162,15 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
 
         if(filter.getContextSearchFilter() != null && !filter.getContextSearchFilter().isEmpty()) {
             queryBuffer.append(AND)
+                .append(OPEN_BRACKET)
                 .append(COMPONENT_NAME)
                 .append(COLON)
-                .append(WILDCARD)
                 .append(filter.getContextSearchFilter())
-                .append(WILDCARD);
+                .append(OR)
+                .append(COMPONENT_NAME)
+                .append(COLON)
+                .append(JobConstants.GLOBAL_EVENT)
+                .append(CLOSE_BRACKET);
         }
 
         if(filter.isHeld()) {
@@ -187,6 +200,8 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
                 .append(COLON)
                 .append(filter.isParticipatesInLock());
         }
+
+        queryBuffer.append(CLOSE_BRACKET);
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(queryBuffer.toString());
@@ -227,20 +242,28 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
         queryBuffer.append(OPEN_BRACKET);
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(JobConstants.FILE_EVENT_DRIVEN_JOB).append("\" ");
-        queryBuffer.append(OR).append(" ");
+        queryBuffer.append(OR);
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(JobConstants.INTERNAL_EVENT_DRIVEN_JOB).append("\" ");
-        queryBuffer.append(OR).append(" ");
+        queryBuffer.append(OR);
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB).append("\" ");
-        queryBuffer.append(OR).append(" ");
+        queryBuffer.append(OR);
         queryBuffer.append(TYPE + COLON);
         queryBuffer.append("\"").append(JobConstants.GLOBAL_EVENT_JOB).append("\" ");
         queryBuffer.append(CLOSE_BRACKET);
-        queryBuffer.append(AND).append(" ").append(FLOW_NAME).append(COLON);
+
+        queryBuffer.append(AND).append(FLOW_NAME).append(COLON);
         queryBuffer.append("\"").append(jobName).append("\" ");
-        queryBuffer.append(AND).append(" ").append(COMPONENT_NAME).append(COLON);
+
+
+        queryBuffer.append(AND).append(OPEN_BRACKET);
+
+        queryBuffer.append(COMPONENT_NAME).append(COLON);
         queryBuffer.append("\"").append(contextId).append("\" ");
+        queryBuffer.append(OR).append(COMPONENT_NAME).append(COLON).append(JobConstants.GLOBAL_EVENT);
+
+        queryBuffer.append(CLOSE_BRACKET);
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(queryBuffer.toString());

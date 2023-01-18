@@ -5,13 +5,13 @@
     "logicalGrouping" : {
       "logicalGrouping" : null,
       "and" : [ {
-        "identifier" : "agentName2-jobName2"
+        "identifier" : "GLOBAL_EVENT-jobName2"
       }],
       "or" : null,
       "not" : null
     }
   },{
-    "jobIdentifier" : "agentName2-jobName2",
+    "jobIdentifier" : "GLOBAL_EVENT-jobName2",
     "logicalGrouping" : {
       "logicalGrouping" : null,
       "and" : [ {
@@ -44,8 +44,8 @@
     "skip" : false,
     "scheduledProcessEvent" : null
   }, {
-    "identifier" : "agentName2-jobName2",
-    "agentName" : "agentName2",
+    "identifier" : "GLOBAL_EVENT-jobName2",
+    "agentName" : "GLOBAL_EVENT",
     "jobName" : "jobName2",
     "held" : false,
     "skip" : false,

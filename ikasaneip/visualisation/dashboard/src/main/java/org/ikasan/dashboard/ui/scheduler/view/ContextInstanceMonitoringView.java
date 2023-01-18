@@ -20,6 +20,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -101,6 +102,9 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
     private ModuleMetaDataService moduleMetadataService;
 
     @Resource
+    private GlobalEventService globalEventService;
+
+    @Resource
     private SchedulerService schedulerService;
 
     private ContextInstanceDashboardWidget contextInstanceDashboardWidget;
@@ -125,7 +129,7 @@ public class ContextInstanceMonitoringView extends VerticalLayout implements Bef
             this.schedulerJobInstanceService, this.scheduledContextInstanceService, "",
             this.moduleMetaDataService, this.logStreamingService,
             this.jobInitiationService, this.contextProfileService,
-            this.jobUtilsService, this.scheduledContextService, true);
+            this.jobUtilsService, this.scheduledContextService, true, this.globalEventService);
 
         this.getElement().getStyle().set("padding-top", "0px");
         board = new Board();

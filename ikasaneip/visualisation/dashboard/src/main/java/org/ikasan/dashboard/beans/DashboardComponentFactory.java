@@ -24,6 +24,7 @@ import org.ikasan.metrics.dao.SolrMetricsDao;
 import org.ikasan.metrics.service.SolrMetricsServiceImpl;
 import org.ikasan.module.metadata.dao.SolrModuleMetadataDao;
 import org.ikasan.module.metadata.service.SolrModuleMetadataServiceImpl;
+import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
 import org.ikasan.replay.dao.SolrReplayAuditDao;
 import org.ikasan.replay.dao.SolrReplayDao;
 import org.ikasan.replay.service.SolrReplayAuditServiceImpl;
@@ -46,6 +47,7 @@ import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.wiretap.WiretapEvent;
 import org.ikasan.systemevent.dao.SolrSystemEventDao;
 import org.ikasan.systemevent.service.SolrSystemEventServiceImpl;
@@ -322,6 +324,11 @@ public class DashboardComponentFactory
         return this.createSolrSystemEventServiceImpl();
     }
 
+
+    @Bean
+    public GlobalEventService globalEventService() {
+        return new GlobalEventServiceImpl();
+    }
 
     private SolrSystemEventServiceImpl createSolrSystemEventServiceImpl()
     {

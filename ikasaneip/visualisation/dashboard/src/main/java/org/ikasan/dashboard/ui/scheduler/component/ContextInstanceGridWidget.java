@@ -32,6 +32,7 @@ import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.ScheduledContextInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
@@ -51,6 +52,7 @@ public class ContextInstanceGridWidget extends Div {
     private ContextProfileService contextProfileService;
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
+    private GlobalEventService globalEventService;
 
 
     /**
@@ -78,7 +80,7 @@ public class ContextInstanceGridWidget extends Div {
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
                                  JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobUtilsService jobUtilsService,
-                                 ScheduledContextService scheduledContextService) {
+                                 ScheduledContextService scheduledContextService, GlobalEventService globalEventService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if (this.scheduledContextInstanceService == null) {
@@ -103,6 +105,10 @@ public class ContextInstanceGridWidget extends Div {
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
             throw new IllegalArgumentException("scheduledContextService cannot be null!");
+        }
+        this.globalEventService = globalEventService;
+        if (this.globalEventService == null) {
+            throw new IllegalArgumentException("globalEventService cannot be null!");
         }
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -181,7 +187,7 @@ public class ContextInstanceGridWidget extends Div {
                 ContextInstanceDialog contextInstanceDialog = new ContextInstanceDialog(this.scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, scheduledContextInstanceRecord.getContextInstance(), this.contextTemplate, schedulerJobInstanceService
-                    , this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService);
+                    , this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService);
 
                 contextInstanceDialog.open();
             });
