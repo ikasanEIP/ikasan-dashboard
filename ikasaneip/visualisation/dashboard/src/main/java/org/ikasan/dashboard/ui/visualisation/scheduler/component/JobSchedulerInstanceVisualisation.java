@@ -1,10 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
-import org.ikasan.dashboard.ui.scheduler.component.ContextInstanceWidget;
-import org.ikasan.dashboard.ui.scheduler.component.FileEventJobInstanceDialog;
-import org.ikasan.dashboard.ui.scheduler.component.InternalEventDrivenJobInstanceDialog;
-import org.ikasan.dashboard.ui.scheduler.component.QuartzDrivenScheduledJobInstanceDialog;
+import org.ikasan.dashboard.ui.scheduler.component.*;
 import org.ikasan.dashboard.ui.scheduler.listener.ContextSelectedListener;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextInstanceDraw2dAdapter;
@@ -20,11 +17,13 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.instance.model.GlobalEventJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstance;
 import org.ikasan.spec.scheduled.instance.model.SchedulerJobInstanceRecord;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
 import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.search.SearchResults;
@@ -61,9 +60,9 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
     public JobSchedulerInstanceVisualisation(String dynamicImagePath, ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService
         , ConfigurationService configurationRestService, ModuleControlService moduleControlRestService, MetaDataService metaDataRestService, SystemEventLogger systemEventLogger
         , LogStreamingService logStreamingService, SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService, JobUtilsService jobUtilsService
-        , ScheduledContextService scheduledContextService) {
+        , ScheduledContextService scheduledContextService, GlobalEventService globalEventService) {
         super(dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService
-            , systemEventLogger, logStreamingService, schedulerJobInstanceService, jobInitiationService, jobUtilsService, scheduledContextService);
+            , systemEventLogger, logStreamingService, schedulerJobInstanceService, jobInitiationService, jobUtilsService, scheduledContextService, globalEventService);
 
         this.contextSelectedListeners = new ArrayList<>();
     }
@@ -145,6 +144,9 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
         }
         else if(canvasItemDoubleClickEvent.getFigure().getUserData().getItemType().equals(UserData.QUARTZ_EVENT_DRIVEN_JOB)) {
             this.openQuartzScheduledJob(canvasItemDoubleClickEvent.getFigure().getUserData().getIdentifier());
+        }
+        else if(canvasItemDoubleClickEvent.getFigure().getUserData().getItemType().equals(UserData.GLOBAL_EVENT_DRIVEN_JOB)) {
+            this.openGlobalEventJob(canvasItemDoubleClickEvent.getFigure().getUserData().getIdentifier());
         }
 
         super.doubleClickEvent(canvasItemDoubleClickEvent);
@@ -292,6 +294,16 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
 
         quartzDrivenScheduledJobInstanceDialog.setJob(schedulerJobRecord);
         quartzDrivenScheduledJobInstanceDialog.open();
+    }
+
+    private void openGlobalEventJob(String identifier) {
+        SchedulerJobInstanceRecord schedulerJobRecord = this.loadJob(identifier, UserData.GLOBAL_EVENT_DRIVEN_JOB);
+
+        GlobalEventJobInstanceDialog globalEventJobInstanceDialog = new GlobalEventJobInstanceDialog(systemEventLogger, schedulerJobInstanceService, this.globalEventService
+            , this.parentContextInstance);
+        globalEventJobInstanceDialog.setJob(schedulerJobRecord);
+
+        globalEventJobInstanceDialog.open();
     }
 
     public void addContextSelectedListener(ContextSelectedListener listener) {

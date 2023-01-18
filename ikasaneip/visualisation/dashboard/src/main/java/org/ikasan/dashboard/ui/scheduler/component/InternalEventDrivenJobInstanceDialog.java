@@ -139,7 +139,6 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
     private Button viewErrorLogButton;
     private Button viewOutputLogButton;
     private Button viewProcessEventButton;
-
     private Button viewExecutionDetailsButton;
 
     private ScheduledProcessEvent scheduledProcessEvent;
@@ -221,7 +220,7 @@ public class InternalEventDrivenJobInstanceDialog extends AbstractCloseableResiz
 
         this.internalEventDrivenJobInstance = new SolrInternalEventDrivenJobInstanceImpl();
 
-        authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
     }
 
     private void init() {

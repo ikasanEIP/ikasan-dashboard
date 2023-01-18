@@ -21,6 +21,7 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
+import org.ikasan.job.orchestration.model.job.GlobalEventJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
 import org.ikasan.job.orchestration.service.ContextService;
@@ -34,10 +35,7 @@ import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
-import org.ikasan.spec.scheduled.job.model.FileEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.InternalEventDrivenJob;
-import org.ikasan.spec.scheduled.job.model.QuartzScheduleDrivenJob;
-import org.ikasan.spec.scheduled.job.model.SchedulerJob;
+import org.ikasan.spec.scheduled.job.model.*;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -369,6 +367,17 @@ public class JobTemplateVisualisationDialog extends AbstractCloseableResizableDi
             this.jobSynchronisationRequiredListeners.forEach(listener ->
                 quartzDrivenScheduledJobDialog.addJobSynchronisationRequiredListener(listener));
             quartzDrivenScheduledJobDialog.open();
+        });
+        jobTypesSubMenu.addItem(getTranslation("menu-item.global-job", UI.getCurrent().getLocale()), event -> {
+            GlobalEventJobDialog globalEventJobDialog = new GlobalEventJobDialog(null, this.scheduledProcessManagementService,
+                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService);
+            globalEventJobDialog.addSchedulerJobSelectedListener(this);
+
+            GlobalEventJob globalEventJob = new GlobalEventJobImpl();
+            globalEventJob.setContextName(JobConstants.GLOBAL_EVENT);
+
+            globalEventJobDialog.setJob(globalEventJob, EditMode.NEW);
+            globalEventJobDialog.open();
         });
 
         return newJobMenuBar;
