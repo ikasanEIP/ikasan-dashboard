@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceSearchFilterImpl;
@@ -28,23 +29,15 @@ import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.ikasan.spec.search.SearchResults;
-import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.ParseException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 public abstract class ContextInstanceServiceBase {
-    private static final Logger LOG = LoggerFactory.getLogger(ContextInstanceServiceBase.class);
-
     protected final String queueDirectory;
     protected final ScheduledContextInstanceService scheduledContextInstanceService;
     protected final JobInitiationService jobInitiationService;
@@ -59,6 +52,7 @@ public abstract class ContextInstanceServiceBase {
     protected final ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster;
     protected final SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster;
     protected final ContextInstanceSchedulerService contextInstanceSchedulerService;
+    protected final TimeService timeService;
 
     protected final ObjectMapper objectMapper;
 
@@ -76,7 +70,8 @@ public abstract class ContextInstanceServiceBase {
                                       ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
                                       SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
                                       JobLockCacheInitialisationService jobLockCacheInitialisationService,
-                                      ContextInstanceSchedulerService contextInstanceSchedulerService) {
+                                      ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                      TimeService timeService) {
         this.queueDirectory = queueDirectory;
         if (this.queueDirectory == null) {
             throw new IllegalArgumentException("queueDirectory cannot be null!");
@@ -132,6 +127,10 @@ public abstract class ContextInstanceServiceBase {
         this.contextInstanceSchedulerService = contextInstanceSchedulerService;
         if (this.contextInstanceSchedulerService == null) {
             throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
+        }
+        this.timeService = timeService;
+        if (this.timeService == null) {
+            throw new IllegalArgumentException("timeService cannot be null!");
         }
         this.objectMapper = ObjectMapperFactory.newInstance();
     }
@@ -216,43 +215,6 @@ public abstract class ContextInstanceServiceBase {
         }
     }
 
-    protected boolean fallsWithinCronBlackoutWindows(List<String> blackoutWindowCronExpressions, String timezone) {
-        if (blackoutWindowCronExpressions != null && !blackoutWindowCronExpressions.isEmpty()) {
-            Date now = new Date();
-            for (String cronExpression : blackoutWindowCronExpressions) {
-                try {
-                    CronExpression cronExpressionObj = new CronExpression(cronExpression);
-                    if (cronExpressionObj.isSatisfiedBy(now)) {
-                        return true;
-                    }
-                } catch (ParseException e) {
-                    LOG.warn("Failed to parse cronExpression [" + cronExpression + "]. Please fix configuration", e);
-                }
-            }
-        }
-
-        return false;
-    }
-
-    protected boolean fallsWithinDateTimeBlackoutRanges(Map<Long, Long> blackoutDateTimeRanges, String timezone) {
-        if(blackoutDateTimeRanges != null && !blackoutDateTimeRanges.isEmpty())
-        {
-            LocalDateTime now = LocalDateTime.now();
-            ZoneId zone = timezone != null ? ZoneId.of(timezone) : ZoneId.systemDefault();
-            ZoneOffset zoneOffSet = zone.getRules().getOffset(now);
-
-            for(Map.Entry<Long,Long> dateRangeEntry : blackoutDateTimeRanges.entrySet()) {
-                long from = dateRangeEntry.getKey();
-                long to = dateRangeEntry.getValue();
-                long fireTime = now.atZone(zoneOffSet).toInstant().toEpochMilli();
-                if(fireTime >= from && fireTime <= to) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
 
     private JobLockCache initialiseJobLockCache(ContextTemplate context, boolean isRefresh) {
         this.jobLockCacheInitialisationService.initialiseJobLockCache(context, isRefresh);

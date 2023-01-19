@@ -1,6 +1,8 @@
 package org.ikasan.orchestration.service.context.recovery;
 
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker;
+import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -18,6 +20,8 @@ import org.ikasan.spec.scheduled.joblock.service.JobLockCacheInitialisationServi
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Date;
 
 public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServiceBase implements Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(MissingContextInstanceRecoveryRunnable.class);
@@ -38,7 +42,8 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
                                                   ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
                                                   SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
                                                   JobLockCacheInitialisationService jobLockCacheInitialisationService,
-                                                  ContextInstanceSchedulerService contextInstanceSchedulerService) {
+                                                  ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                                  TimeService timeService) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService, moduleMetadataService,
@@ -51,7 +56,8 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
-            contextInstanceSchedulerService);
+            contextInstanceSchedulerService,
+            timeService);
 
         this.scheduledContextRecord = scheduledContextRecord;
     }
@@ -63,10 +69,17 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
 
             ContextInstanceImpl contextInstance = this.objectMapper
                 .readValue(this.objectMapper.writeValueAsBytes(this.scheduledContextRecord.getContext()), ContextInstanceImpl.class);
-
-            if(!this.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone())
-                && !this.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), contextInstance.getTimezone())) {
+            Date now = timeService.getDateNow();
+            // @todo check with mick where the cron expressions are entered
+            if(!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
+                && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(),now)) {
                 initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true);
+
+                // @todo as part of a subsequent Jira, add the cron end date here to the schedule and save so that
+                // we can accurately identify which instances to ressurect upon server restart
+//                QuartzTimeWindowChecker.getNextExecution(contextInstance.getTimeWindowEnd(), contextInstance.getTimezone());
+//                contextInstance.setEndTime();
+
                 contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), contextInstance.getTimeWindowEnd(), contextInstance.getTimezone(), contextInstance.getId());
             }
             else {
