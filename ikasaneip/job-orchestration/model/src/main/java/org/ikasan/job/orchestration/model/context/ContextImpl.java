@@ -15,6 +15,8 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     protected String name;
     protected String description;
     protected String timezone;
+    // blackoutWindowDateTimeRanges - The UTC millisecond timestamp begin -> end for which a blackout occurs
+    // Map<beginMilliSecondTimestamp -> endMilliSecondTimestamp>
     protected Map<Long, Long> blackoutWindowDateTimeRanges;
     protected List<String> blackoutWindowCronExpressions;
     protected List<JobDependency> jobDependencies;

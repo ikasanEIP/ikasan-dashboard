@@ -40,7 +40,10 @@
  */
 package org.ikasan.orchestration.service.context.recovery;
 
+import com.esotericsoftware.minlog.Log;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker;
+import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -68,13 +71,12 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-
-import static org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker.withinOperatingWindow;
-
 public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRecoveryService {
     private static final Logger LOG = LoggerFactory.getLogger(ContextInstanceRecoveryServiceImpl.class);
+    private static final long FORTY_EIGHT_HOURS_IN_MILLIS = 172800000;
 
     private final ExecutorService executor = Executors.newCachedThreadPool();
+
 
     public ContextInstanceRecoveryServiceImpl(String queueDirectory,
                                               ScheduledContextInstanceService scheduledContextInstanceService,
@@ -89,7 +91,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                               ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
                                               SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
                                               JobLockCacheInitialisationService jobLockCacheInitialisationService,
-                                              ContextInstanceSchedulerService contextInstanceSchedulerService) {
+                                              ContextInstanceSchedulerService contextInstanceSchedulerService,
+                                              TimeService timeService) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService,
@@ -103,16 +106,16 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
-            contextInstanceSchedulerService);
+            contextInstanceSchedulerService,
+            timeService);
+
     }
 
     /**
      * Re-create an instances that should be running as at now.
-     *
      * Currently, if the end window for a job has passed, or the start window is future to now
      * (which is common of 1 * * ... i.e. every minute) then instances are not brought back to life, which means
      * events gathered on the agents for old instances will cause issues on the scheduler.
-     *
      * Likewise, if the dashboard has been down until after the plan has ended, all the status information will be lost.
      */
     public void recoverInstances() {
@@ -120,6 +123,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
             .getScheduledContextInstancesByStatus(List.of(InstanceStatus.WAITING, InstanceStatus.RUNNING, InstanceStatus.ERROR));
 
         Map<String, List<ScheduledContextInstanceRecord>> contextNameToInstances = new HashMap<>();
+
         for (ScheduledContextInstanceRecord scheduledContextInstanceRecord : contextInstanceRecords.getResultList()) {
             List<ScheduledContextInstanceRecord> scheduledContextInstanceRecords = contextNameToInstances.get(scheduledContextInstanceRecord.getContextName());
             if (scheduledContextInstanceRecords == null) {
@@ -129,65 +133,68 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
             }
         }
 
-        // outdated statement - TODO this represents an exception case  - there should never be more than one instance WAITING OR RUNNING OR ERROR
-        // @Mick @todo - Now, we CAN have more than one instance running that we need to re-hydrate, what strategy do you feel we should we adopt for this
-        // could try to bring back all that have end time = 0 and/or all that have end trigger less than last update to Solr
+        long cutoffTime = System.currentTimeMillis() - FORTY_EIGHT_HOURS_IN_MILLIS;
+
+        // @todo This is a temporary measure to reduce the 'noise' when ressurecting instances upon a dashboard recovery
+        // The real fix here is to set the end time for the instance, and use that when the deashboard recovers to see if the
+        // end time is not breached, agreed with Mick this will be done in the next Jira.
         List<ScheduledContextInstanceRecord> newestInstancePerContextName = new ArrayList<>();
         for (String contextName : contextNameToInstances.keySet()) {
             List<ScheduledContextInstanceRecord> contextInstances = contextNameToInstances.get(contextName);
             // get the most recent based on created timestamp
-            ScheduledContextInstanceRecord scheduledContextInstanceRecord = contextInstances.stream()
+            ScheduledContextInstanceRecord recentContextInstances = contextInstances.stream()
+                .filter(x -> x.getTimestamp() > cutoffTime)
                 .sorted(Comparator.comparing(ScheduledContextInstanceRecord::getTimestamp).reversed())
                 .collect(Collectors.toList())
                 .get(0);
-            newestInstancePerContextName.add(scheduledContextInstanceRecord);
+            newestInstancePerContextName.add(recentContextInstances);
         }
-
-        LOG.info("Recovering instances for: "
-            + newestInstancePerContextName.stream().map(ScheduledContextInstanceRecord::getContextName).collect(Collectors.toList()));
 
         Map<String, ScheduledContextInstanceRecord> contextNameToInstanceMap
             = newestInstancePerContextName.stream().collect(Collectors.toMap(ScheduledContextInstanceRecord::getContextName, record -> record));
         SearchResults<ScheduledContextRecord> scheduledContextRecords = (SearchResults<ScheduledContextRecord>) this.scheduledContextService.findAll();
 
-        Date now = new Date();
+        Date now = timeService.getDateNow();
         for (ScheduledContextRecord scheduledContextRecord : scheduledContextRecords.getResultList()) {
             ContextTemplate context = scheduledContextRecord.getContext();
 
             // We do not recover disabled contexts!
-            if(context.isDisabled()) continue;
+            if(context.isDisabled()) {
+                Log.info("Not Recovering context " + scheduledContextRecord.getContextName() + " instance ID " + scheduledContextRecord.getId() + " because the context is disabled");
+            } else {
+                ScheduledContextInstanceRecord scheduledContextInstanceRecord = contextNameToInstanceMap.get(scheduledContextRecord.getContextName());
+                // if outside the operating window instances will be created when ContextInstanceRegistrationServiceImpl.register is triggered
+                if (QuartzTimeWindowChecker.withinOperatingWindow(context.getTimezone(), context.getTimeWindowStart(), context.getTimeWindowEnd(), now)) {
+                    if (scheduledContextInstanceRecord != null) {
+                        try {
+                            ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
+                            // @todo check with mick where the cron expressions are entered
+                            if (!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
+                                && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), now)) {
+                                initialiseContextMachine(context, contextInstance, false);
+                                contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), contextInstance.getTimeWindowEnd(), contextInstance.getTimezone(), contextInstance.getId());
+                                LOG.info(String.format("Recovering context [%s] instance id [%s]", contextInstance.getName(), contextInstance.getId()));
+                            } else {
+                                LOG.info(String.format("Not Recovering context [%s] instance ID [%s] falls withing a blackout time window and will not be registered!", contextInstance.getName(), contextInstance.getId()));
+                            }
 
-            ScheduledContextInstanceRecord scheduledContextInstanceRecord = contextNameToInstanceMap.get(scheduledContextRecord.getContextName());
-            // if outside the operating window instances will be created when ContextInstanceRegistrationServiceImpl.register runs
-            if (withinOperatingWindow(context.getTimeWindowStart(), context.getTimeWindowEnd(), now)) {
-                if (scheduledContextInstanceRecord != null) {
-                    try {
-                        ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
-                        LOG.info(String.format("Recovering instance [%s] id [%s]", contextInstance.getName(), contextInstance.getId()));
-
-                        if(!this.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone())
-                            && !this.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), contextInstance.getTimezone())) {
-                            initialiseContextMachine(context, contextInstance, false);
-                            contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), contextInstance.getTimeWindowEnd(), contextInstance.getTimezone(), contextInstance.getId());
+                        } catch (Exception e) {
+                            // todo probably want to send a notification here.
+                            LOG.error(String.format("Not Recovering context [%s] instance ID [%s] due to an ", scheduledContextInstanceRecord.getContextName(), scheduledContextInstanceRecord.getContextInstanceId()), e);
                         }
-                        else {
-                            LOG.info(String.format("ContextTemplate [%s] falls withing a blackout time window and will not be registered!", context.getName()));
-                        }
-
-                    } catch (Exception e) {
-                        // todo probably want to send a notification here.
-                        LOG.error(String.format("An error has occurred recovering context instance [%s]!", scheduledContextInstanceRecord.getContextName()), e);
+                    } else {
+                        // we have a context record without an instance which should not be the case
+                        String message = String.format("Recovering context [%s] does not have an instance. Creating instance now!", scheduledContextRecord.getContextName());
+                        LOG.info(message);
+                        executor.execute(new MissingContextInstanceRecoveryRunnable(
+                            this.queueDirectory, this.scheduledContextInstanceService, this.jobInitiationService, this.moduleMetadataService, this.internalEventDrivenJobService,
+                            this.contextParametersInstanceService, this.contextInstancePublicationService, this.jobLockCacheService, this.scheduledContextService,
+                            scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster,
+                            this.jobLockCacheInitialisationService, this.contextInstanceSchedulerService, this.timeService
+                        ));
                     }
                 } else {
-                    // we have a context record without an instance which should not be the case
-                    String message = String.format("Context [%s] does not have an instance. Creating instance now!", scheduledContextRecord.getContextName());
-                    LOG.info(message);
-                    executor.execute(new MissingContextInstanceRecoveryRunnable(
-                        this.queueDirectory, this.scheduledContextInstanceService, this.jobInitiationService, this.moduleMetadataService, this.internalEventDrivenJobService,
-                        this.contextParametersInstanceService, this.contextInstancePublicationService, this.jobLockCacheService, this.scheduledContextService,
-                        scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster,
-                        this.jobLockCacheInitialisationService, this.contextInstanceSchedulerService
-                    ));
+                    Log.info("Not Recovering context " + scheduledContextRecord.getContextName() + " instance ID " + scheduledContextRecord.getId() + " because we are now outside it time window");
                 }
             }
         }
