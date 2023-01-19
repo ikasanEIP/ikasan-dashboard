@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.core.machine.JobLogicMachine;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
@@ -22,7 +23,10 @@ import org.ikasan.spec.scheduled.core.listener.SchedulerJobInstanceStateChangeEv
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.*;
-import org.ikasan.spec.scheduled.instance.service.*;
+import org.ikasan.spec.scheduled.instance.service.ContextInstancePublicationService;
+import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
+import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
+import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.service.InternalEventDrivenJobService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.joblock.service.JobLockCacheService;
@@ -81,6 +85,8 @@ public class MissingContextInstanceRecoveryRunnableTest {
 
     @Mock
     private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    @Mock
+    private TimeService timeService;
 
     private MissingContextInstanceRecoveryRunnable backFiller;
 
@@ -120,7 +126,8 @@ public class MissingContextInstanceRecoveryRunnableTest {
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
-            contextInstanceSchedulerService
+            contextInstanceSchedulerService,
+            timeService
         );
 
         assertTrue(ContextMachineCache.instance().cacheIsEmpty());
@@ -206,7 +213,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
     }
 
     @Test
-    public void should_create_instance_and_populate_params_and_save_instance_with_no_agents() throws Exception {
+    public void should_create_instance_and_populate_params_and_save_instance_with_no_agents() {
         // set up
         SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(0);
         schedulerJobInstanceService.save(internalEventDrivenJobRecordSearchResults.getResultList());

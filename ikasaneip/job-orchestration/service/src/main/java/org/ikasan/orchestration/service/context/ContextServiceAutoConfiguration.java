@@ -1,6 +1,7 @@
 package org.ikasan.orchestration.service.context;
 
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.orchestration.service.context.recovery.ContextInstanceRecoveryServiceImpl;
 import org.ikasan.orchestration.service.context.register.ContextInstanceRegistrationServiceImpl;
 import org.ikasan.orchestration.service.context.reset.ContextResetServiceImpl;
@@ -35,6 +36,10 @@ public class ContextServiceAutoConfiguration {
         return new JobLockCacheInitialisationServiceImpl(jobLockCacheService);
     }
 
+    @Bean TimeService timeService() {
+        return new TimeService();
+    }
+
     @Bean
     public ContextInstanceRecoveryServiceImpl contextInstanceRecoveryService(
         ScheduledContextInstanceService scheduledContextInstanceService,
@@ -49,7 +54,8 @@ public class ContextServiceAutoConfiguration {
         ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
         SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
         JobLockCacheInitialisationService jobLockCacheInitialisationService,
-        ContextInstanceSchedulerService contextInstanceSchedulerService) {
+        ContextInstanceSchedulerService contextInstanceSchedulerService,
+        TimeService timeService) {
 
         return new ContextInstanceRecoveryServiceImpl(queueDirectory,
             scheduledContextInstanceService,
@@ -64,7 +70,8 @@ public class ContextServiceAutoConfiguration {
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
-            contextInstanceSchedulerService
+            contextInstanceSchedulerService,
+            timeService
         );
     }
 
@@ -82,7 +89,8 @@ public class ContextServiceAutoConfiguration {
         ContextInstanceStateChangeEventBroadcaster contextInstanceStateChangeEventBroadcaster,
         SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
         JobLockCacheInitialisationService jobLockCacheInitialisationService,
-        ContextInstanceSchedulerService contextInstanceSchedulerService) {
+        ContextInstanceSchedulerService contextInstanceSchedulerService,
+        TimeService timeService) {
 
         return new ContextInstanceRegistrationServiceImpl(queueDirectory,
             scheduledContextInstanceService,
@@ -97,7 +105,8 @@ public class ContextServiceAutoConfiguration {
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
-            contextInstanceSchedulerService
+            contextInstanceSchedulerService,
+            timeService
         );
     }
 
