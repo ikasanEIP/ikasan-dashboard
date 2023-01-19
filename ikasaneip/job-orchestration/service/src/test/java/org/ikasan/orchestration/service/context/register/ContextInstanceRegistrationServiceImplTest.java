@@ -5,6 +5,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.core.machine.JobLogicMachine;
 import org.ikasan.job.orchestration.model.cache.JobLockCacheDataImpl;
@@ -46,14 +47,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.time.ZonedDateTime.now;
 import static org.ikasan.orchestration.service.utils.TestUtils.AGENT_URL;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -96,6 +96,8 @@ public class ContextInstanceRegistrationServiceImplTest {
 
     @Mock
     private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    @Mock
+    private TimeService timeService;
     private ContextInstanceRegistrationServiceImpl contextInstanceRegistrationService;
 
     private SchedulerJobInstanceService schedulerJobInstanceService;
@@ -125,7 +127,8 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
-            contextInstanceSchedulerService);
+            contextInstanceSchedulerService,
+            timeService);
         ContextMachineCache.instance().resetAllCache();
         assertTrue(ContextMachineCache.instance().cacheIsEmpty());
     }
@@ -323,6 +326,13 @@ public class ContextInstanceRegistrationServiceImplTest {
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+
+        String timeZone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timeZone));
+        // Pretend we are in London
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+        context.setTimezone(timeZone);
+
         record.setContext(context);
         record.setContextName(contextName);
         when(scheduledContextService.findById(contextName)).thenReturn(record);
@@ -407,6 +417,14 @@ public class ContextInstanceRegistrationServiceImplTest {
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+
+        String timeZone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timeZone));
+        // Pretend we are in London
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+        context.setTimezone(timeZone);
+
+
         record.setContext(context);
         record.setContextName(contextName);
         when(scheduledContextService.findById(contextName)).thenReturn(record);
@@ -490,16 +508,17 @@ public class ContextInstanceRegistrationServiceImplTest {
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         String timezone = "Asia/Singapore";
-
-        LocalDateTime now = LocalDateTime.now();
-        ZoneId zone = ZoneId.of(timezone);
-        ZoneOffset zoneOffSet = zone.getRules().getOffset(now);
-
+        ZonedDateTime zdtNowInSingapore = now(ZoneId.of(timezone));
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         context.setTimezone(timezone);
 
-        context.setBlackoutWindowDateTimeRanges(Map.of(LocalDateTime.now().minus(Duration.ofMinutes(200)).atZone(zoneOffSet).toInstant().toEpochMilli(),
-            LocalDateTime.now().minus(Duration.ofMinutes(100)).atZone(zoneOffSet).toInstant().toEpochMilli()));
+        // Pretend we are in Singapore
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInSingapore.toInstant()));
+
+        // The time in the windows is saved in UTC i.e. seconds from epoch
+        context.setBlackoutWindowDateTimeRanges(
+            Map.of( zdtNowInSingapore.minus(Duration.ofMinutes(200)).toInstant().toEpochMilli(),
+                zdtNowInSingapore.minus(Duration.ofMinutes(100)).toInstant().toEpochMilli()));
 
         record.setContext(context);
         record.setContextName(contextName);
@@ -552,7 +571,6 @@ public class ContextInstanceRegistrationServiceImplTest {
             contextParametersInstanceService,
             contextInstancePublicationService,
             scheduledContextService,
-            //schedulerJobInstanceService,
             jobLockCacheService,
             contextInstanceStateChangeEventBroadcaster,
             schedulerJobStateChangeEventBroadcaster
@@ -586,6 +604,12 @@ public class ContextInstanceRegistrationServiceImplTest {
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        String timeZone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timeZone));
+        // Pretend we are in London
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+        context.setTimezone(timeZone);
+
         record.setContext(context);
         record.setContextName(contextName);
         when(scheduledContextService.findById(contextName)).thenReturn(record);
@@ -631,6 +655,12 @@ public class ContextInstanceRegistrationServiceImplTest {
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        String timeZone = "Europe/London";
+        ZonedDateTime zdtNowInLondon = now(ZoneId.of(timeZone));
+        // Pretend we are in London
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInLondon.toInstant()));
+        context.setTimezone(timeZone);
+
         record.setContext(context);
         record.setContextName(contextName);
         when(scheduledContextService.findById(contextName)).thenReturn(record);
@@ -678,16 +708,17 @@ public class ContextInstanceRegistrationServiceImplTest {
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
 
         String timezone = "Asia/Singapore";
-
-        LocalDateTime now = LocalDateTime.now();
-        ZoneId zone = ZoneId.of(timezone);
-        ZoneOffset zoneOffSet = zone.getRules().getOffset(now);
-
+        ZonedDateTime zdtNowInSingapore = now(ZoneId.of(timezone));
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         context.setTimezone(timezone);
 
-        context.setBlackoutWindowDateTimeRanges(Map.of(LocalDateTime.now().minus(Duration.ofMinutes(200)).atZone(zoneOffSet).toInstant().toEpochMilli(),
-            LocalDateTime.now().plus(Duration.ofMinutes(200)).atZone(zoneOffSet).toInstant().toEpochMilli()));
+        // Pretend we are in Singapore
+        when(timeService.getDateNow()).thenReturn(Date.from(zdtNowInSingapore.toInstant()));
+
+        // The time in the windows is saved in UTC i.e. seconds from epoch
+        context.setBlackoutWindowDateTimeRanges(
+            Map.of( zdtNowInSingapore.minus(Duration.ofMinutes(200)).toInstant().toEpochMilli(),
+                    zdtNowInSingapore.plus(Duration.ofMinutes(200)).toInstant().toEpochMilli()));
 
         record.setContext(context);
         record.setContextName(contextName);

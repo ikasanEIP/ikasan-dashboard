@@ -38,16 +38,16 @@ import static org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker.
 
     private static final Logger LOG = LoggerFactory.getLogger(ContextProvisionServiceImpl.class);
 
-    private ScheduledContextService scheduledContextService;
-    private ModuleMetaDataService moduleMetadataService;
-    private SchedulerJobService schedulerJobService;
-    private JobProvisionModuleService jobProvisionModuleRestService;
-    private ContextInstanceRegistrationService contextInstanceRegistrationService;
-    private ContextProfileService contextProfileService;
-    private EmailNotificationDetailsService emailNotificationDetailsService;
-    private EmailNotificationContextService emailNotificationContextService;
-    private boolean uploadProvisionJobs;
-    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+    private final ScheduledContextService scheduledContextService;
+    private final ModuleMetaDataService moduleMetadataService;
+    private final SchedulerJobService schedulerJobService;
+    private final JobProvisionModuleService jobProvisionModuleRestService;
+    private final ContextInstanceRegistrationService contextInstanceRegistrationService;
+    private final ContextProfileService contextProfileService;
+    private final EmailNotificationDetailsService emailNotificationDetailsService;
+    private final EmailNotificationContextService emailNotificationContextService;
+    private final boolean uploadProvisionJobs;
+    private final ContextInstanceSchedulerService contextInstanceSchedulerService;
 
     public ContextProvisionServiceImpl(
                                        ScheduledContextService scheduledContextService,
@@ -105,7 +105,7 @@ import static org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker.
 
     /**
      * Called when a plan is imported and requested to be provisioned on the agents.
-     * @param contextBundle
+     * @param contextBundle to provision
      */
     public void provisionContext(ContextBundle contextBundle) {
         try {
@@ -148,7 +148,7 @@ import static org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker.
             contextInstanceSchedulerService.registerStartJobAndTrigger(jobName, contextBundle.getContextTemplate().getTimeWindowStart(),
                 contextBundle.getContextTemplate().getTimezone());
 
-            if (withinOperatingWindow(contextBundle.getContextTemplate().getTimeWindowStart(), contextBundle.getContextTemplate().getTimeWindowEnd(), new Date())) {
+            if (withinOperatingWindow(contextBundle.getContextTemplate().getTimezone(), contextBundle.getContextTemplate().getTimeWindowStart(), contextBundle.getContextTemplate().getTimeWindowEnd(), new Date())) {
                 // NOTE: this will create a new context machine and instance and initialise it so overwriting existing context machine
                 contextInstanceRegistrationService.register(jobName);
             }
