@@ -26,6 +26,7 @@ public class JobContextParamsSetupConfiguration {
     private SpringCloudConfigRefreshService springCloudConfigRefreshService;
     private List<String> jobContextConfigRepoEnvironment;
     private String configServerUrl;
+    public static final String CIPHER_TAG = "{cipher}";
 
     public JobContextParamsSetupConfiguration(SpringCloudConfigRefreshService springCloudConfigRefreshService,
                                               List<String> jobContextConfigRepoEnvironment,
@@ -142,7 +143,17 @@ public class JobContextParamsSetupConfiguration {
                 if(key.isEmpty()) {
                     logger.warn("ATTENTION: Added Mapping with empty key and with value [{}] from the file [{}]", value, fileName);
                 }
-                mappings.put(key, value);
+                
+                if (StringUtils.startsWith(value, CIPHER_TAG) && StringUtils.length(value) > 8) {
+                    // If the value start with {cipher} then assume we have an encryted value to be decrypted.
+                    String decryptedValue = value;
+                    if (springCloudConfigRefreshService != null &&  StringUtils.isNotBlank(configServerUrl)) {
+                        decryptedValue = springCloudConfigRefreshService.decrypt(configServerUrl, StringUtils.removeStart(value, CIPHER_TAG));
+                    }
+                    mappings.put(key, decryptedValue);
+                } else {
+                    mappings.put(key, value);   
+                }
             }
         });
         return mappings;

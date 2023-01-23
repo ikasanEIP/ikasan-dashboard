@@ -39,8 +39,8 @@ public class SchedulerContextParametersPropertiesProvider extends Properties {
         this.spelExpressionMap = spelExpressionMap == null ? Collections.emptyMap() : spelExpressionMap;
 
         String message = String.format("Creating SchedulerContextParametersPropertiesProvider configuration with use jobsToSkip %b, " +
-            "jobsToSkips %s, replaceContextParameters %b, parametersToReplace %s, spelExpressionMap %s",
-            this.useSkipJobs, this.jobsToSkip, this.replaceContextParameters, this.jobContextParamsSetupConfiguration.getParamsToReplace(), this.spelExpressionMap);
+            "jobsToSkips %s, replaceContextParameters %b, parametersToReplaceContext %s, spelExpressionMap %s",
+            this.useSkipJobs, this.jobsToSkip, this.replaceContextParameters, this.jobContextParamsSetupConfiguration.getParamsToReplace().keySet(), this.spelExpressionMap);
         LOG.info(message);
     }
 

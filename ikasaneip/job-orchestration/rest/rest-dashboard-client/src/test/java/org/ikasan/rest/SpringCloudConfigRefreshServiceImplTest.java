@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.ikasan.job.orchestration.rest.client.SpringCloudConfigRefreshServiceImpl;
 import org.ikasan.spec.scheduled.job.service.SpringCloudConfigRefreshService;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -208,5 +209,89 @@ public class SpringCloudConfigRefreshServiceImplTest {
         verify(postRequestedFor(urlEqualTo("/actuator/refresh"))
             .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
+    }
+
+    @Test
+    public void test_decrypt_successful() {
+        stubFor(post(urlEqualTo("/decrypt"))
+            .withRequestBody(containing("Pa5sW0rD"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("password")));
+
+        String result = uut.decrypt(contextBaseUrl, "Pa5sW0rD");
+
+        Assert.assertEquals("password", result);
+
+        verify(postRequestedFor(urlEqualTo("/decrypt")));
+    }
+
+    @Test
+    public void test_decrypt_empty_response() {
+        stubFor(post(urlEqualTo("/decrypt"))
+            .withRequestBody(containing("Pa5sW0rD"))
+            .willReturn(aResponse()
+                .withStatus(204)));
+
+        String result = uut.decrypt(contextBaseUrl, "Pa5sW0rD");
+
+        // As response is null, return the original value
+        Assert.assertEquals("Pa5sW0rD", result);
+
+        verify(postRequestedFor(urlEqualTo("/decrypt")));
+    }
+
+    /**
+     * Even though it is a 403, do not throw an error and return the original input value
+     */
+    @Test
+    public void test_decrypt_403_do_nothing() {
+        stubFor(post(urlEqualTo("/decrypt"))
+            .withRequestBody(containing("Pa5sW0rD"))
+            .willReturn(aResponse()
+                .withStatus(403)));
+
+        String result = uut.decrypt(contextBaseUrl, "Pa5sW0rD");
+
+        // As there was an error, return the original value
+        Assert.assertEquals("Pa5sW0rD", result);
+
+        verify(postRequestedFor(urlEqualTo("/decrypt")));
+    }
+
+    /**
+     * Even though it is a 404, do not throw an error and return the original input value
+     */
+    @Test
+    public void test_decrypt_404_do_nothing() {
+        stubFor(post(urlEqualTo("/decrypt"))
+            .withRequestBody(containing("Pa5sW0rD"))
+            .willReturn(aResponse()
+                .withStatus(404)));
+
+        String result = uut.decrypt(contextBaseUrl, "Pa5sW0rD");
+
+        // As there was an error, return the original value
+        Assert.assertEquals("Pa5sW0rD", result);
+
+        verify(postRequestedFor(urlEqualTo("/decrypt")));
+    }
+
+    /**
+     * Even though it is a 500 internal server error, do not throw an error and return the original input value
+     */
+    @Test
+    public void test_decrypt_500_do_nothing() {
+        stubFor(post(urlEqualTo("/decrypt"))
+            .withRequestBody(containing("Pa5sW0rD"))
+            .willReturn(aResponse()
+                .withStatus(500)));
+
+        String result = uut.decrypt(contextBaseUrl, "Pa5sW0rD");
+
+        // As there was an error, return the original value
+        Assert.assertEquals("Pa5sW0rD", result);
+
+        verify(postRequestedFor(urlEqualTo("/decrypt")));
     }
 }
