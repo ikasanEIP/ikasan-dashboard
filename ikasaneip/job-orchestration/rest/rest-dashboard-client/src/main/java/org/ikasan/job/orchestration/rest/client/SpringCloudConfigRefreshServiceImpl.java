@@ -34,6 +34,7 @@ public class SpringCloudConfigRefreshServiceImpl implements SpringCloudConfigRef
        Using this API and using the profile [default] to trigger the config-service to update the baseDir */
     public static final String REFRESH_URL = "/{applicationPattern}/default/";
     
+    public static final String DECRYPTED_URL = "/decrypt";
     public static final String ACTUATOR_REFRESH = "/actuator/refresh";
 
     private RestTemplate restTemplate;
@@ -66,6 +67,27 @@ public class SpringCloudConfigRefreshServiceImpl implements SpringCloudConfigRef
         catch(RestClientException e) {
             LOGGER.warn("Issue refreshing config services with the applicationPattern [{}]. URL called: [{}] with response [{}]",
                 applicationPattern, url, e.getLocalizedMessage());
+        }
+    }
+    
+    @Override
+    public String decrypt(String contextUrl, String encryptedValue) {
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity request = new HttpEntity(encryptedValue, headers);
+        String url = contextUrl + DECRYPTED_URL;
+
+        try {
+            String decryptedValue = restTemplate.postForObject(url, request, String.class);
+            if (decryptedValue == null) {
+                throw new RestClientException("Decrypted value cannot return null");
+            }
+            return decryptedValue;
+        }
+        catch(RestClientException e) {
+            LOGGER.warn("Issue decrypting the value [{}] from config services with error response [{}]",
+                encryptedValue, e.getLocalizedMessage());
+            // Return the encrypted value
+            return encryptedValue;
         }
     }
     

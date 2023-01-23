@@ -228,6 +228,10 @@ public class SchedulerContextParametersPropertiesProviderTest {
                 //Do Nothing
             }
             @Override
+            public String decrypt(String contextUrl, String encryptedValue) {
+                return encryptedValue;
+            }
+            @Override
             public void actuatorRefresh() {
                 //Do Nothing
             }
