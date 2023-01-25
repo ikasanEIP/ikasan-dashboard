@@ -12,6 +12,7 @@ import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
 import org.ikasan.job.orchestration.model.instance.SchedulerJobInstanceImpl;
 import org.ikasan.job.orchestration.model.notification.GenericNotificationDetails;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
+import org.ikasan.notification.TestUtils;
 import org.ikasan.notification.monitor.mock.ScheduledContextInstanceServiceTestImpl;
 import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
@@ -75,6 +76,7 @@ public class StateChangeMonitorTest {
 
     @Before
     public void setup() throws IOException {
+        TestUtils.resetContextMachineCache();
         objectMapper = ObjectMapperFactory.newInstance();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
