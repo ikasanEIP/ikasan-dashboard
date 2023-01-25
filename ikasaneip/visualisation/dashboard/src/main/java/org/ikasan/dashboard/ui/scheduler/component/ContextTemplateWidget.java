@@ -123,7 +123,7 @@ public class ContextTemplateWidget extends Div {
                                  ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
                                  SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs, ContextInstanceRegistrationService contextInstanceRegistrationService,
                                  EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
-                                 Map<String, String> schedulerJobExecutionEnvironmentLabel, , SpringCloudConfigRefreshService springCloudConfigRefreshService, GlobalEventService globalEventService) {
+                                 Map<String, String> schedulerJobExecutionEnvironmentLabel, SpringCloudConfigRefreshService springCloudConfigRefreshService, GlobalEventService globalEventService) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
