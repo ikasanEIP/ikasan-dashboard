@@ -135,19 +135,21 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
 
         long cutoffTime = System.currentTimeMillis() - FORTY_EIGHT_HOURS_IN_MILLIS;
 
-        // @todo This is a temporary measure to reduce the 'noise' when ressurecting instances upon a dashboard recovery
-        // The real fix here is to set the end time for the instance, and use that when the deashboard recovers to see if the
+        // @todo This is a temporary measure to reduce the 'noise' when resurrecting instances upon a dashboard recovery
+        // The real fix here is to set the end time for the instance, and use that when the dashboard recovers to see if the
         // end time is not breached, agreed with Mick this will be done in the next Jira.
         List<ScheduledContextInstanceRecord> newestInstancePerContextName = new ArrayList<>();
         for (String contextName : contextNameToInstances.keySet()) {
             List<ScheduledContextInstanceRecord> contextInstances = contextNameToInstances.get(contextName);
             // get the most recent based on created timestamp
-            ScheduledContextInstanceRecord recentContextInstances = contextInstances.stream()
+            List<ScheduledContextInstanceRecord> recentContextInstances = contextInstances.stream()
                 .filter(x -> x.getTimestamp() > cutoffTime)
                 .sorted(Comparator.comparing(ScheduledContextInstanceRecord::getTimestamp).reversed())
-                .collect(Collectors.toList())
-                .get(0);
-            newestInstancePerContextName.add(recentContextInstances);
+                .collect(Collectors.toList());
+
+            if(recentContextInstances.size() > 0) {
+                newestInstancePerContextName.add(recentContextInstances.get(0));
+            }
         }
 
         Map<String, ScheduledContextInstanceRecord> contextNameToInstanceMap
@@ -155,6 +157,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
         SearchResults<ScheduledContextRecord> scheduledContextRecords = (SearchResults<ScheduledContextRecord>) this.scheduledContextService.findAll();
 
         Date now = timeService.getDateNow();
+        super.removeAllContextInstancesFromAgent();
         for (ScheduledContextRecord scheduledContextRecord : scheduledContextRecords.getResultList()) {
             ContextTemplate context = scheduledContextRecord.getContext();
 

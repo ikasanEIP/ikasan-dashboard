@@ -148,7 +148,8 @@ import static org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker.
             contextInstanceSchedulerService.registerStartJobAndTrigger(jobName, contextBundle.getContextTemplate().getTimeWindowStart(),
                 contextBundle.getContextTemplate().getTimezone());
 
-            if (withinOperatingWindow(contextBundle.getContextTemplate().getTimezone(), contextBundle.getContextTemplate().getTimeWindowStart(), contextBundle.getContextTemplate().getTimeWindowEnd(), new Date())) {
+            if (withinOperatingWindow(contextBundle.getContextTemplate().getTimezone(), contextBundle.getContextTemplate().getTimeWindowStart()
+                , contextBundle.getContextTemplate().getTimeWindowEnd(), new Date())) {
                 // NOTE: this will create a new context machine and instance and initialise it so overwriting existing context machine
                 contextInstanceRegistrationService.register(jobName);
             }
