@@ -22,6 +22,7 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
     private static final String REST_URL = "/rest/contextInstance";
     private static final String REST_URL_SAVE = REST_URL + "/save";
     private static final String REST_URL_REMOVE = REST_URL + "/remove";
+    private static final String REST_URL_REMOVE_ALL = REST_URL + "/removeAll";
 
     public ContextInstancePublicationRestServiceImpl(Environment environment, HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory) {
         super(environment, httpComponentsClientHttpRequestFactory);
@@ -38,10 +39,12 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
             //TODO figure out if more serious problem i.e. agent is down vs some more serious problem
             // 503/504 is timeout? 408? depends on server setup
         } catch (RestClientResponseException e) {
+            e.printStackTrace();
             String message = String.format("Could not update context parameters for for agent url %s, params %s, responseCode: %d, error: %s",
                 url, instance, e.getRawStatusCode(), e.getMessage());
             LOGGER.warn(message);
         } catch (Exception e) {
+            e.printStackTrace();
             String message = String.format("Could not update context parameters for for agent url %s, params %s, error: %s",
                 url, instance, e.getMessage());
             LOGGER.warn(message);
@@ -66,12 +69,41 @@ public class ContextInstancePublicationRestServiceImpl extends ModuleRestService
             //TODO figure out if more serious problem i.e. agent is down vs some more serious problem
             // 503/504 is timeout? 408? depends on server setup
         } catch (RestClientResponseException e) {
+            e.printStackTrace();
             String message = String.format("Could not remove instance from agent for agent url %s, name %s, responseCode: %d, error: %s",
                 url, contextInstance.getName(), e.getRawStatusCode(), e.getMessage());
             LOGGER.warn(message);
         } catch (Exception e) {
+            e.printStackTrace();
             String message = String.format("Could not remove instance from agent for agent url %s, name %s, error: %s",
                 url, contextInstance.getName(), e.getMessage());
+            LOGGER.warn(message);
+        }
+    }
+
+    @Override
+    public void removeAll(String contextUrl) {
+        HttpHeaders headers = createHttpHeaders();
+        HttpEntity entity = new HttpEntity(headers);
+        String url = contextUrl + REST_URL_REMOVE_ALL;
+        try {
+            String urlTemplate = UriComponentsBuilder.fromHttpUrl(url)
+                .encode()
+                .toUriString();
+            Map<String, String> parameters = new HashMap<>();
+
+            restTemplate.exchange(urlTemplate, HttpMethod.DELETE, entity, String.class, parameters);
+            //TODO figure out if more serious problem i.e. agent is down vs some more serious problem
+            // 503/504 is timeout? 408? depends on server setup
+        } catch (RestClientResponseException e) {
+            e.printStackTrace();
+            String message = String.format("Could not remove all context instances from agent for agent url %s, responseCode: %d, error: %s",
+                url, e.getRawStatusCode(), e.getMessage());
+            LOGGER.warn(message);
+        } catch (Exception e) {
+            e.printStackTrace();
+            String message = String.format("Could not remove all context instances from agent for agent url %s, error: %s",
+                url, e.getMessage());
             LOGGER.warn(message);
         }
     }

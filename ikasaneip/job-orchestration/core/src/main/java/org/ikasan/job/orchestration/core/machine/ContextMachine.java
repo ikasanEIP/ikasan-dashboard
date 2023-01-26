@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ListenableFuture;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ikasan.bigqueue.BigQueueImpl;
 import org.ikasan.bigqueue.IBigQueue;
@@ -183,6 +184,9 @@ public class ContextMachine {
         if(this.context != null) {
             ContextService contextService = new ContextService();
             this.context = scheduledContextService.findByName(this.context.getName()).getContext();
+
+            ContextInstance previousContextInstance = SerializationUtils.clone(this.contextInstance);
+
             this.contextInstance = contextService.getContextInstance(contextService.getContextTemplateString(this.context));
             this.contextInstance.setId(UUID.randomUUID().toString());
             ContextHelper.enrichJobs(contextInstance);
@@ -223,6 +227,10 @@ public class ContextMachine {
             List<ContextParameterInstance> allContextParameters = contextParametersInstanceService
                 .getAllContextParameters(contextInstance.getName());
             contextInstance.setContextParameters(allContextParameters);
+
+            // Remove the previous context instance from all agents
+            this.agents.values().forEach(agent
+                -> this.contextInstancePublicationService.remove(agent.getUrl(), previousContextInstance));
 
             // Propagate the new context instance to all agents.
             this.agents.values().forEach(agent

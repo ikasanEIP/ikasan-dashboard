@@ -154,6 +154,9 @@ public class ContextInstanceRecoveryServiceImplTest {
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(0, false);
         when(scheduledContextService.findAll()).thenReturn(contextResults);
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
 
         // execute
         contextInstanceRecoveryServiceImpl.recoverInstances();
@@ -162,6 +165,8 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
         verify(timeService).getDateNow();
+        verify(contextInstancePublicationService, times(3)).removeAll(anyString());
+        verify(moduleMetadataService, times(1)).find(any(), any(), eq(-1), eq(-1));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -198,6 +203,9 @@ public class ContextInstanceRecoveryServiceImplTest {
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
         jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
 
         // execute
         contextInstanceRecoveryServiceImpl.recoverInstances();
@@ -206,6 +214,8 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
         verify(executor).execute(any(MissingContextInstanceRecoveryRunnable.class));
+        verify(moduleMetadataService, times(1)).find(any(), any(), eq(-1), eq(-1));
+        verify(contextInstancePublicationService, times(3)).removeAll(anyString());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -240,6 +250,9 @@ public class ContextInstanceRecoveryServiceImplTest {
         JobLockCacheImpl jobLockInstance = JobLockCacheImpl.instance();
         jobLockInstance.setJobLockCacheService(jobLockCacheService);
         jobLockCacheRecord.setJobLockCache((JobLockCacheData) ReflectionTestUtils.getField(jobLockInstance, "jobLockCacheData"));
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
 
         // execute
         contextInstanceRecoveryServiceImpl.recoverInstances();
@@ -247,6 +260,8 @@ public class ContextInstanceRecoveryServiceImplTest {
         // verify
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
+        verify(contextInstancePublicationService, times(3)).removeAll(anyString());
+        verify(moduleMetadataService, times(1)).find(any(), any(), eq(-1), eq(-1));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -277,6 +292,9 @@ public class ContextInstanceRecoveryServiceImplTest {
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, true);
         when(scheduledContextService.findAll()).thenReturn(contextResults);
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
 
         // execute
         contextInstanceRecoveryServiceImpl.recoverInstances();
@@ -285,6 +303,8 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
         verify(timeService).getDateNow();
+        verify(contextInstancePublicationService, times(3)).removeAll(anyString());
+        verify(moduleMetadataService, times(1)).find(any(), any(), eq(-1), eq(-1));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -316,6 +336,9 @@ public class ContextInstanceRecoveryServiceImplTest {
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(1, true);
         when(scheduledContextService.findAll()).thenReturn(contextResults);
         when(timeService.getDateNow()).thenReturn(Date.from(now(ZoneId.of("Europe/London")).toInstant()));
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
 
         // execute
         contextInstanceRecoveryServiceImpl.recoverInstances();
@@ -323,6 +346,8 @@ public class ContextInstanceRecoveryServiceImplTest {
         // verify
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
+        verify(contextInstancePublicationService, times(3)).removeAll(anyString());
+        verify(moduleMetadataService, times(1)).find(any(), any(), eq(-1), eq(-1));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -383,10 +408,11 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(contextParametersInstanceService).getAllContextParameters("ContextName1");
         verify(contextParametersInstanceService).getAllContextParameters("ContextName2");
         verify(contextParametersInstanceService).getAllContextParameters("ContextName3");
-        verify(moduleMetadataService, times(3)).find(any(), any(), eq(-1), eq(-1));
+        verify(moduleMetadataService, times(4)).find(any(), any(), eq(-1), eq(-1));
         verify(timeService).getDateNow();
         verify(scheduledContextInstanceService, times(3)).save(any(ScheduledContextInstanceRecord.class));
         verify(contextInstancePublicationService, times(9)).publish(any(String.class), any(ContextInstance.class));
+        verify(contextInstancePublicationService, times(3)).removeAll(anyString());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
@@ -437,7 +463,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         // verify
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
-        verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
+        verify(moduleMetadataService, times(2)).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
         verify(contextParametersInstanceService).getAllContextParameters("ContextName1");
         verify(timeService).getDateNow();
@@ -478,6 +504,9 @@ public class ContextInstanceRecoveryServiceImplTest {
         when(scheduledContextInstanceService.getScheduledContextInstancesByStatus(getStatusesToLookFor())).thenReturn(instanceResults);
         ScheduledContextRecordTestSearchResults contextResults = new ScheduledContextRecordTestSearchResults(0, true);
         when(scheduledContextService.findAll()).thenReturn(contextResults);
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1)))
+            .thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1"), TestUtils.createModuleMetaData("2")
+                , TestUtils.createModuleMetaData("3")), 3, 0));
 
         // execute
         contextInstanceRecoveryServiceImpl.recoverInstances();
@@ -485,6 +514,8 @@ public class ContextInstanceRecoveryServiceImplTest {
         // verify
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
+        verify(contextInstancePublicationService, times(3)).removeAll(anyString());
+        verify(moduleMetadataService, times(1)).find(any(), any(), eq(-1), eq(-1));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,
