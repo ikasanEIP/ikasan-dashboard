@@ -1,6 +1,7 @@
 package org.ikasan.orchestration.service.context;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import liquibase.pro.packaged.L;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
@@ -236,6 +237,17 @@ public abstract class ContextInstanceServiceBase {
         return agents;
     }
 
+    private HashMap<String, ModuleMetaData> getAllAgents() {
+        HashMap<String, ModuleMetaData> agents = new HashMap<>();
+
+        ModuleMetadataSearchResults searchResults = moduleMetadataService
+            .find(List.of(), ModuleType.SCHEDULER_AGENT, -1, -1);
+
+        searchResults.getResultList().forEach(agent -> agents.put(agent.getName(), agent));
+
+        return agents;
+    }
+
     private Map<String, InternalEventDrivenJobInstance> getInternalJobs(String contextInstanceId) {
         SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
         filter.setContextInstanceId(contextInstanceId);
@@ -260,6 +272,16 @@ public abstract class ContextInstanceServiceBase {
             .map(globalEventJobRecord -> (GlobalEventJobInstance) globalEventJobRecord.getSchedulerJobInstance())
             .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity()));
         return globalEventJobMap;
+    }
+
+    protected void removeAllContextInstancesFromAgent() {
+        HashMap<String, ModuleMetaData> agents = this.getAllAgents();
+        if (!agents.keySet().isEmpty()) {
+            for (String key : agents.keySet()) {
+                ModuleMetaData agent = agents.get(key);
+                contextInstancePublicationService.removeAll(agent.getUrl());
+            }
+        }
     }
 
     private void propagateContextInstanceToAgents(ContextInstance contextInstance, HashMap<String, ModuleMetaData> agents) {
