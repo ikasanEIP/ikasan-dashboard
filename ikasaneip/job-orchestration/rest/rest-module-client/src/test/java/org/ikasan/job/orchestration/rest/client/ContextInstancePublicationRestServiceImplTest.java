@@ -118,6 +118,40 @@ public class ContextInstancePublicationRestServiceImplTest {
             .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
     }
 
+    @Test
+    public void remove_all_returns_200() {
+        stubFor(delete(urlEqualTo("/rest/contextInstance/removeAll"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(
+                aResponse()
+                    .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                    .withStatus(200)));
+
+        uut.removeAll(contextBaseUrl);
+
+        verify(deleteRequestedFor(urlEqualTo("/rest/contextInstance/removeAll"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
+    }
+
+    @Test
+    public void remove_all_returns_error() {
+        stubFor(delete(urlEqualTo("/rest/contextInstance/removeAll"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .willReturn(
+                aResponse()
+                    .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
+                    .withStatus(403)));
+
+        uut.removeAll(contextBaseUrl);
+
+        verify(deleteRequestedFor(urlEqualTo("/rest/contextInstance/removeAll"))
+            .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(MediaType.APPLICATION_JSON.toString()))
+            .withHeader(HttpHeaders.ACCEPT, equalTo(MediaType.APPLICATION_JSON.toString())));
+    }
+
     private ContextInstance createInstanceWithParams(String contextId) {
         ContextInstance instance = new ContextInstanceImpl();
         instance.setId(contextId);
