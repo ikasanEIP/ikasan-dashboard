@@ -158,11 +158,13 @@ public abstract class ContextInstanceServiceBase {
 
         internalJobs.entrySet().forEach(job -> {
             if(job.getValue().isSkip()) {
+                // FIXME this may cause null pointer exception if the child context name is reused. So we need to decide if all context names need to be unique. This will not recover
                 ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), instance);
                 child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setSkip(job.getValue().isSkip());
                 child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
             }
             if(job.getValue().isHeld()) {
+                // FIXME this may cause null pointer exception if the child context name is reused. So we need to decide if all context names need to be unique. This will not recover
                 ContextInstance child = ContextHelper.getChildContextInstance(job.getValue().getChildContextName(), instance);
                 child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setHeld(job.getValue().isHeld());
                 child.getScheduledJobsMap().get(job.getValue().getIdentifier()).setStatus(job.getValue().getStatus());
