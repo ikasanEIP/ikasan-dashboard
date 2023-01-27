@@ -72,6 +72,7 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     public static final String AND = " AND ";
     public static final String OR = " OR ";
     public static final String TO = " TO ";
+    public static final String NOT = "!";
 
     public static final String OPEN_BRACKET = "(";
     public static final String CLOSE_BRACKET = ")";
@@ -79,9 +80,10 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
     public static final String COLON = ":";
     public static final String WILDCARD = "*";
 
+    public static final int DO_NOT_EXPIRE = -1;
+    public static final String DO_NOT_EXPIRE_STRING = "\"-1\"";
     protected SolrClient solrClient = null;
     protected int daysToKeep = 7;
-
     protected String solrUsername;
     protected String solrPassword;
 
@@ -464,6 +466,8 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         StringBuffer query = new StringBuffer();
         query.append(TYPE).append(COLON).append(type);
         query.append(AND);
+        query.append(NOT).append(EXPIRY).append(COLON).append(DO_NOT_EXPIRE_STRING);
+        query.append(AND);
         query.append(EXPIRY).append(COLON).append("{").append("*").append(TO).append(currentTime).append("}");
 
         this.deleteByQuery(query.toString());
@@ -514,6 +518,8 @@ public abstract class SolrDaoBase<T> implements SolrInitialisationService
         long currentTime = System.currentTimeMillis();
 
         StringBuffer query = new StringBuffer();
+        query.append(NOT).append(EXPIRY).append(COLON).append(DO_NOT_EXPIRE_STRING);
+        query.append(AND);
         query.append(EXPIRY).append(COLON).append("{").append("*").append(TO).append(currentTime).append("}");
 
         this.deleteByQuery(query.toString());
