@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
+import static org.ikasan.spec.solr.SolrDaoBase.DO_NOT_EXPIRE;
+
 /**
  * Created by Ikasan Development Team on 04/08/2017.
  */
@@ -120,6 +122,43 @@ public class SolrGeneralSearchDaoTest extends SolrTestCaseJ4
 
     @Test
     @DirtiesContext
+    public void test_delete_expired_records_by_type_not_expire() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "1");
+            doc.addField("type", "type");
+            doc.addField("expiry", DO_NOT_EXPIRE);
+            server.add("ikasan", doc);
+            doc = new SolrInputDocument();
+            doc.addField("id", "2");
+            doc.addField("type", "type");
+            doc.addField("expiry", 0l);
+            server.add("ikasan", doc);
+            doc = new SolrInputDocument();
+            doc.addField("id", "3");
+            doc.addField("type", "type");
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+            server.commit();
+
+            assertEquals(3, server.query(new SolrQuery("*:*")).getResults().getNumFound());
+            assertEquals(3  , server.query("ikasan", new SolrQuery("*:*")).getResults().getNumFound());
+
+            dao = new SolrGeneralDaoImpl();
+            dao.setSolrClient(server);
+            dao.removeExpired("type");
+
+            assertEquals(2, server.query(new SolrQuery("*:*")).getResults().getNumFound());
+            assertEquals(2, server.query("ikasan", new SolrQuery("*:*")).getResults().getNumFound());
+        }
+    }
+
+    @Test
+    @DirtiesContext
     public void test_delete_expired_records() throws Exception {
 
         try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
@@ -152,6 +191,44 @@ public class SolrGeneralSearchDaoTest extends SolrTestCaseJ4
 
             assertEquals(1, server.query(new SolrQuery("*:*")).getResults().getNumFound());
             assertEquals(1, server.query("ikasan", new SolrQuery("*:*")).getResults().getNumFound());
+
+        }
+    }
+
+    @Test
+    @DirtiesContext
+    public void test_delete_expired_records_not_expire() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField("id", "1");
+            doc.addField("type", "type");
+            doc.addField("expiry", DO_NOT_EXPIRE);
+            server.add("ikasan", doc);
+            doc = new SolrInputDocument();
+            doc.addField("id", "2");
+            doc.addField("type", "type");
+            doc.addField("expiry", 0l);
+            server.add("ikasan", doc);
+            doc = new SolrInputDocument();
+            doc.addField("id", "3");
+            doc.addField("type", "type");
+            doc.addField("expiry", System.currentTimeMillis() + 10000000l);
+            server.add("ikasan", doc);
+            server.commit();
+
+            assertEquals(3, server.query(new SolrQuery("*:*")).getResults().getNumFound());
+            assertEquals(3  , server.query("ikasan", new SolrQuery("*:*")).getResults().getNumFound());
+
+            dao = new SolrGeneralDaoImpl();
+            dao.setSolrClient(server);
+            dao.removeExpired();
+
+            assertEquals(2, server.query(new SolrQuery("*:*")).getResults().getNumFound());
+            assertEquals(2, server.query("ikasan", new SolrQuery("*:*")).getResults().getNumFound());
 
         }
     }

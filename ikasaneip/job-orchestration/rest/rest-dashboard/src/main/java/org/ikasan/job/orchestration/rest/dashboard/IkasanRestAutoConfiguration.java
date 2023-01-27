@@ -66,8 +66,8 @@ import org.ikasan.bigqueue.IBigQueue;
 @Configuration
 public class IkasanRestAutoConfiguration {
 
-    @Resource
-    private BatchInsert scheduledProcessEventBatchInsert;
+//    @Resource
+//    private BatchInsert scheduledProcessEventBatchInsert;
 
     @Resource
     private IBigQueue inboundQueue;
@@ -99,10 +99,10 @@ public class IkasanRestAutoConfiguration {
     @Resource
     private ContextProfileService contextProfileService;
 
-    @Bean
-    public ScheduledProcessEventController scheduledProcessEventController() {
-        return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert, this.inboundQueue);
-    }
+//    @Bean
+//    public ScheduledProcessEventController scheduledProcessEventController() {
+//        return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert, this.inboundQueue);
+//    }
 
     @Bean
     SchedulerJobProvisionController schedulerJobProvisionController() {
