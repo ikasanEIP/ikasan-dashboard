@@ -4,6 +4,7 @@ import org.ikasan.rest.dashboard.JwtAuthenticationEntryPoint;
 import org.ikasan.rest.dashboard.JwtRequestFilter;
 import org.ikasan.security.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -17,6 +18,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import javax.annotation.Resource;
 
 /**
  * Extended to handle multi-http security described by
@@ -42,19 +45,19 @@ public class SecurityConfiguration
 
     private static final String LOGOUT_SUCCESS_URL = "/login";
 
-    @Autowired
+    @Resource
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-    @Autowired
+    @Resource
     private JwtRequestFilter jwtRequestFilter;
 
-    @Autowired
+    @Resource
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
+    @Resource
     private UserService userService;
 
-    @Autowired
+    @Resource
     private AuthenticationProvider ikasanAuthenticationProvider;
 
     /**

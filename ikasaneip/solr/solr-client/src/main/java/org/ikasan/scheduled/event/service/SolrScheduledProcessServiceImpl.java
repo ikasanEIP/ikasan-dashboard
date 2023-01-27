@@ -163,20 +163,6 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
             throw new RuntimeException(String.format("Could not load scheduled consumer configuration for agent[%s], job[%s]", agent, flow));
         }
 
-//        ConfigurationMetaData<List<ConfigurationParameterMetaData>> processExecutionBrokerConfigurationMetaData
-//            = this.getConfigurationForAgentFlowComponent(agent, flow, "Process Execution Broker");
-//
-//        if(processExecutionBrokerConfigurationMetaData == null) {
-//            throw new RuntimeException(String.format("Could not load process execution broker configuration for agent[%s], job[%s]", agent, flow));
-//        }
-//
-//        ConfigurationMetaData<List<ConfigurationParameterMetaData>> blackoutRouterConfigurationMetaData
-//            = this.getConfigurationForAgentFlowComponent(agent, flow, "Blackout Router");
-//
-//        if(blackoutRouterConfigurationMetaData == null) {
-//            throw new RuntimeException(String.format("Could not load blackout router configuration for agent[%s], job[%s]", agent, flow));
-//        }
-
         List<UpcomingScheduledProcess> results = new ArrayList<>();
 
         AtomicReference<String> cronExpressionString = new AtomicReference<>();
@@ -206,12 +192,6 @@ public class SolrScheduledProcessServiceImpl extends SolrServiceBase implements 
         scheduledConsumerConfigurationMetaData.getParameters().stream()
             .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("description"))
             .findFirst().ifPresent(value -> jobDescription.set((String)value.getValue()));
-
-//        AtomicReference<String> commandLine = new AtomicReference<>();
-//
-//        processExecutionBrokerConfigurationMetaData.getParameters().stream()
-//            .filter(configurationParameterMetaData -> configurationParameterMetaData.getName().equals("commandLine"))
-//            .findFirst().ifPresent(value -> commandLine.set((String)value.getValue()));
 
         if(startTime < System.currentTimeMillis()) {
             startTime = System.currentTimeMillis();
