@@ -137,9 +137,14 @@ public class QuartzTimeWindowChecker {
     }
 
     private static ExecutionTime getExecutionTime(String cronExpression) {
-        CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(QUARTZ);
-        CronParser cronParser = new CronParser(cronDefinition);
-        Cron parse = cronParser.parse(cronExpression);
-        return ExecutionTime.forCron(parse);
+        try {
+            CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(QUARTZ);
+            CronParser cronParser = new CronParser(cronDefinition);
+            Cron parse = cronParser.parse(cronExpression);
+            return ExecutionTime.forCron(parse);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Can not parse quartz expression " + cronExpression, e);
+        }
+    
     }
 }

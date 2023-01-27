@@ -88,7 +88,12 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
         super.dashboardJobDetailsMap.put(job.getJobName(), jobDetail);
         super.dashboardJobsMap.put(jobDetail.getKey().toString(), job);
         LOG.info(String.format("Registering context instance job [%s]", jobDetail.getKey().getName()));
-        this.addJob(jobDetail);
+        try {
+            this.addJob(jobDetail);
+        } catch (RuntimeException e) {
+            //TODO alert that we were not able to re-schedule the start up job
+            LOG.warn("Unable to register the start trigger job for the context instance job [{}]", jobDetail.getKey().getName(), e);
+        }
     }
 
     /**
@@ -107,6 +112,11 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
         super.dashboardJobDetailsMap.put(endJob.getJobName(), endJobDetail);
         super.dashboardJobsMap.put(endJobDetail.getKey().toString(), endJob);
         LOG.info(String.format("Registering context instance job [%s] and instance [%s]", endJobDetail.getKey().getName(), contextInstanceId));
-        this.scheduleEndTrigger(endJobDetail, contextInstanceId);
+        try {
+            this.scheduleEndTrigger(endJobDetail, contextInstanceId);
+        } catch (RuntimeException e) {
+            //TODO alert that we were not able to re-schedule the start up job
+            LOG.warn("Unable to register the end trigger job for the context instance job [{}]", endJobDetail.getKey().getName(), e);
+        }
     }
 }
