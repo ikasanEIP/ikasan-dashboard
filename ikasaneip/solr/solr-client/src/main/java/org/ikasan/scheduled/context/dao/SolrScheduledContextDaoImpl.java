@@ -50,7 +50,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
         document.addField(CREATED_DATE_TIME, scheduledContextRecord.getTimestamp());
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
         document.addField(MODIFIED_BY, scheduledContextRecord.getModifiedBy());
-        document.setField(EXPIRY, expiry);
+        document.setField(EXPIRY, DO_NOT_EXPIRE);
 
         logger.debug(String.format("Converted scheduled context record to SolrDocument[%s]", document));
         return document;

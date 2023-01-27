@@ -66,32 +66,33 @@ public class IkasanRestAutoConfiguration
     @Value("${scheduled.job.context.queue.directory}")
     private String queueDir;
 
-    @Resource
+    @Resource(name="errorOccurrenceBatchInsert")
     private BatchInsert errorOccurrenceBatchInsert;
 
-    @Resource
+    @Resource(name="replayEventBatchInsert")
     private BatchInsert replayEventBatchInsert;
 
-    @Resource
+    @Resource(name="exclusionEventBatchInsert")
     private BatchInsert exclusionEventBatchInsert;
 
-    @Resource
+    @Resource(name="wiretapEventBatchInsert")
     private BatchInsert wiretapEventBatchInsert;
 
-    @Resource
+    @Resource(name="systemEventBatchInsert")
     private BatchInsert systemEventBatchInsert;
 
-    @Resource
+    @Resource(name="moduleMetadataBatchInsert")
     private BatchInsert moduleMetadataBatchInsert;
 
-    @Resource
+    @Resource(name="configurationMetadataBatchInsert")
     private BatchInsert configurationMetadataBatchInsert;
 
-    @Resource
+    @Resource(name="flowInvocationMetricBatchInsert")
     private BatchInsert flowInvocationMetricBatchInsert;
 
-    @Resource
-    private BatchInsert scheduledProcessEventBatchInsert;
+//    @Resource
+//    @Qualifier("moduleMetadataService")
+//    private BatchInsert scheduledProcessEventBatchInsert;
 
     @Resource
     private ContextParametersInstanceService contextParametersInstanceService;
@@ -150,7 +151,7 @@ public class IkasanRestAutoConfiguration
     }
 
     @Bean
-    public ModulesController modulesController( )
+    public ModulesController modulesController()
     {
         return new ModulesController(moduleMetadataService);
     }
@@ -193,7 +194,7 @@ public class IkasanRestAutoConfiguration
         return new JwtAuthenticationController(authenticationManager, jwtTokenUtil, userService);
     }
 
-    @Bean
+    @Bean("jwtAuthenticationEntryPoint")
     public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint() {
         return new JwtAuthenticationEntryPoint();
     }
