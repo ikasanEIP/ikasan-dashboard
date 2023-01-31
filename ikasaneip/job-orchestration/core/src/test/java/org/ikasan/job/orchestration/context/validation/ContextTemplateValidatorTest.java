@@ -197,4 +197,22 @@ public class ContextTemplateValidatorTest extends AbstractTest {
             throw e;
         }
     }
+
+    @Test(expected = InvalidContextTemplateException.class)
+    public void test_duplicate_contexts_names() throws IOException, InvalidContextTemplateException {
+        ContextService contextService = new ContextService();
+
+        ContextTemplate contextTemplate = contextService
+            .getContextTemplate(loadDataFile("/data/context_duplicate.json"));
+        ContextTemplateValidator validator = new ContextTemplateValidator();
+
+        try {
+            validator.validate(contextTemplate);
+        }
+        catch (InvalidContextTemplateException e) {
+            Assert.assertEquals("The context template is invalid!\nThe context name [Context2] has been repeated [2] times within the template. Context Names needs to be unique.\n"
+                , e.getMessage());
+            throw e;
+        }
+    }
 }
