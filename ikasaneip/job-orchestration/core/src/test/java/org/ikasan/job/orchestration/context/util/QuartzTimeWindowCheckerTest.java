@@ -179,7 +179,7 @@ public class QuartzTimeWindowCheckerTest {
         assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), EVERYDAY_AT_6_AM, EVERY_SECOND_DURING_THE_HOUR_OF_15, myDate.parse("2022-05-18T16:00:00")), is(false));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void throws_parse_exception_invalid_expression_start() throws ParseException {
         SimpleDateFormat myDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         myDate.setTimeZone(TimeZone.getTimeZone("Europe/London"));
@@ -187,7 +187,7 @@ public class QuartzTimeWindowCheckerTest {
         assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "* * ? * * *", "* * * ? * * *", myDate.parse("1970-01-18T05:59:59")), is(true));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void throws_parse_exception_invalid_expression_end() throws ParseException {
         SimpleDateFormat myDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         myDate.setTimeZone(TimeZone.getTimeZone("Europe/London"));
