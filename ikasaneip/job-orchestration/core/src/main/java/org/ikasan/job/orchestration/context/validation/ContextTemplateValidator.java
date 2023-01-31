@@ -15,6 +15,7 @@ public class ContextTemplateValidator {
     private StringBuffer errorReport = new StringBuffer("The context template is invalid!\n");
     private List<ContextError> errors = new ArrayList<>();
     private boolean inError = false;
+    List<String> childContextName = new ArrayList<>();
 
     /**
      * Method to validate a context template.
@@ -29,10 +30,13 @@ public class ContextTemplateValidator {
 
         this.assertThatContextJobsPresentInContextForAllJobDependencies(contextTemplate);
 
+        childContextName.add(contextTemplate.getName());
         if(contextTemplate.getContexts() != null) {
             contextTemplate.getContexts().forEach(contextTemplate1 -> validateChildContext(contextTemplate1));
         }
 
+        assertThatAllContextNamesAreUnique();
+        
         if(this.inError) {
             throw new InvalidContextTemplateException(errorReport.toString(), this.errors);
         }
@@ -76,6 +80,7 @@ public class ContextTemplateValidator {
     private void validateChildContext(ContextTemplate contextTemplate) {
         this.assertThatContextJobsPresentInContextForAllJobDependencies(contextTemplate);
 
+        childContextName.add(contextTemplate.getName());
         if(contextTemplate.getContexts() != null) {
             contextTemplate.getContexts().forEach(contextTemplate1 -> validateChildContext(contextTemplate1));
         }
@@ -228,6 +233,29 @@ public class ContextTemplateValidator {
         }
     }
 
+    /**
+     * Check to make sure that all context names defined are unique
+     */
+    private void assertThatAllContextNamesAreUnique() {
+        // Map to keep track of the contextNames
+        Map<String, Integer> childContextNameMap = new HashMap<>();
+        for (String s : childContextName) {
+            if (childContextNameMap.containsKey(s)) {
+                childContextNameMap.put(s, childContextNameMap.get(s).intValue() + 1);
+            } else {
+                childContextNameMap.put(s, 1);
+            }
+        }
+
+        for (Map.Entry<String, Integer> entry : childContextNameMap.entrySet()) {
+            if (entry.getValue() > 1) {
+                inError = true;
+                errorReport.append("The context name [" + entry.getKey() + "] has been repeated ["+ entry.getValue() +"] times within the template. " +
+                    "Context Names needs to be unique.\n");
+            }
+        }
+    }
+    
     private void manageLogicalGrouping(LogicalGrouping logicalGrouping, Set<String> jobs) {
         if(logicalGrouping.getLogicalGrouping() != null) {
             manageLogicalGrouping(logicalGrouping.getLogicalGrouping(), jobs);
