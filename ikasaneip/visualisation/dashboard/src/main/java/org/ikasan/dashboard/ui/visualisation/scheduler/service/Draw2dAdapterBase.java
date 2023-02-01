@@ -1152,7 +1152,7 @@ public abstract class Draw2dAdapterBase {
             image = "frontend/images/time_black.png";
         }
         else if(schedulerJob instanceof GlobalEventJob || schedulerJob instanceof GlobalEventJobInstance) {
-            image = "frontend/images/global_job.png";
+            image = "frontend/images/global-job.png";
         }
 
         return image;
