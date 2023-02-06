@@ -23,9 +23,12 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import liquibase.pro.packaged.L;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.scheduler.util.NewSchedulerJobEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobTemplateVisualisationDialog;
+import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.job.orchestration.util.ObjectMapperFactory;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -39,6 +42,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
 import org.ikasan.spec.scheduled.instance.model.InternalEventDrivenJobInstance;
@@ -61,6 +65,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class SchedulerJobGridWidget extends Div {
 
     private Registration newSchedulerJobEventBroadcasterRegistration;
+    private Registration contextSaveBroadcasterRegistration;
     private SchedulerJobFilteringGrid schedulerJobFilteringGrid;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private IkasanAuthentication authentication;
@@ -87,6 +92,9 @@ public class SchedulerJobGridWidget extends Div {
     private LogStreamingService logStreamingService;
 
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
+
+    private Button enableQuartzScheduledJobsButton;
+    private Button disableQuartzScheduledJobsButton;
 
     /**
      * Constructor
@@ -633,24 +641,26 @@ public class SchedulerJobGridWidget extends Div {
         .setFlexGrow(1);
         this.schedulerJobFilteringGrid.addColumn(new ComponentRenderer<>(schedulerJobRecord -> {
                 VerticalLayout labelLayout = new VerticalLayout();
+                SchedulerStatusDiv schedulerStatusDiv = new SchedulerStatusDiv();
+                schedulerStatusDiv.getElement().getStyle().set("font-size", "10pt");
+                schedulerStatusDiv.getElement().getStyle().set("margin-top", "1px");
+                schedulerStatusDiv.getElement().getStyle().set("margin-bottom", "1px");
+                schedulerStatusDiv.setWidth("100%");
+
 
                 if(schedulerJobRecord.isSkipped()) {
-                    SchedulerStatusDiv schedulerStatusDiv = new SchedulerStatusDiv();
-                    schedulerStatusDiv.getElement().getStyle().set("font-size", "10pt");
-                    schedulerStatusDiv.getElement().getStyle().set("margin-top", "1px");
-                    schedulerStatusDiv.getElement().getStyle().set("margin-bottom", "1px");
-                    schedulerStatusDiv.setWidth("100%");
                     schedulerStatusDiv.setStatus(InstanceStatus.SKIPPED);
                     labelLayout.add(schedulerStatusDiv);
                 }
 
                 if(schedulerJobRecord.isHeld()) {
-                    SchedulerStatusDiv schedulerStatusDiv = new SchedulerStatusDiv();
-                    schedulerStatusDiv.getElement().getStyle().set("font-size", "10pt");
-                    schedulerStatusDiv.getElement().getStyle().set("margin-top", "1px");
-                    schedulerStatusDiv.getElement().getStyle().set("margin-bottom", "1px");
-                    schedulerStatusDiv.setWidth("100%");
                     schedulerStatusDiv.setStatus(InstanceStatus.ON_HOLD);
+                    labelLayout.add(schedulerStatusDiv);
+                }
+
+                if(this.contextTemplate.isQuartzScheduleDrivenJobsDisabledForContext() &&
+                    schedulerJobRecord.getType().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB)) {
+                    schedulerStatusDiv.setStatus(InstanceStatus.DISABLED);
                     labelLayout.add(schedulerStatusDiv);
                 }
 
@@ -743,7 +753,9 @@ public class SchedulerJobGridWidget extends Div {
         buttonLayout.setMargin(false);
         buttonLayout.setPadding(false);
 
-        Button enableAllSkippedButton = new Button(getTranslation("button.enabled-all-skipped", UI.getCurrent().getLocale()));
+        Button enableAllSkippedButton = new Button(getTranslation("button.enabled-all-skipped", UI.getCurrent().getLocale()),
+            VaadinIcon.PLAY.create());
+        enableAllSkippedButton.setIconAfterText(true);
         enableAllSkippedButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.enabled-all-skipped-header", UI.getCurrent().getLocale()));
@@ -777,7 +789,9 @@ public class SchedulerJobGridWidget extends Div {
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
-        Button holdAllButton = new Button(getTranslation("button.hold-all", UI.getCurrent().getLocale()));
+        Button holdAllButton = new Button(getTranslation("button.hold-all", UI.getCurrent().getLocale()),
+            VaadinIcon.HAND.create());
+        holdAllButton.setIconAfterText(true);
         holdAllButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.hold-all-jobs-header", UI.getCurrent().getLocale()));
@@ -811,7 +825,9 @@ public class SchedulerJobGridWidget extends Div {
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
-        Button releaseAllHeldButton = new Button(getTranslation("button.release-all-held", UI.getCurrent().getLocale()));
+        Button releaseAllHeldButton = new Button(getTranslation("button.release-all-held", UI.getCurrent().getLocale()),
+            VaadinIcon.HANDS_UP.create());
+        releaseAllHeldButton.setIconAfterText(true);
         releaseAllHeldButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.release-all-jobs-header", UI.getCurrent().getLocale()));
@@ -845,9 +861,84 @@ public class SchedulerJobGridWidget extends Div {
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
+        this.enableQuartzScheduledJobsButton = new Button(getTranslation("button.enable-quartz-scheduled-jobs"
+            , UI.getCurrent().getLocale()), VaadinIcon.PLAY.create());
+        enableQuartzScheduledJobsButton.setIconAfterText(true);
+        enableQuartzScheduledJobsButton.setVisible(false);
+
+        this.disableQuartzScheduledJobsButton = new Button(getTranslation("button.disable-quartz-scheduled-jobs"
+            , UI.getCurrent().getLocale()), VaadinIcon.BAN.create());
+        disableQuartzScheduledJobsButton.setIconAfterText(true);
+        disableQuartzScheduledJobsButton.setVisible(false);
+
+        this.setButtonVisibility();
+
+        enableQuartzScheduledJobsButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.enable-scheduled-jobs-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.enable-scheduled-jobs-job-plan-body", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                boolean error = false;
+                try {
+                    this.scheduledContextService.enableScheduledJobs(contextTemplate, authentication.getName());
+                    enableQuartzScheduledJobsButton.setVisible(false);
+                    disableQuartzScheduledJobsButton.setVisible(true);
+                    this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_TEMPLATE_SCHEDULED_JOBS_ENABLED, String.format("Context Template Name[%s]"
+                        , contextTemplate.getName()), this.authentication.getName());
+                    ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    error = true;
+                } finally {
+                    if (error) {
+                        NotificationHelper.showUserNotification(getTranslation("notification.disable-scheduled-jobs-error"
+                            , UI.getCurrent().getLocale()));
+                    } else {
+                        NotificationHelper.showUserNotification(getTranslation("notification.disabled-scheduled-successfully"
+                            , UI.getCurrent().getLocale()));
+                    }
+                }
+            });
+        });
+
+        disableQuartzScheduledJobsButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.disable-scheduled-jobs-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.disable-scheduled-jobs-job-plan-body", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                    boolean error = false;
+                    try {
+                        this.scheduledContextService.disableScheduledJobs(contextTemplate, authentication.getName());
+                        enableQuartzScheduledJobsButton.setVisible(true);
+                        disableQuartzScheduledJobsButton.setVisible(false);
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_TEMPLATE_SCHEDULED_JOBS_DISABLED, String.format("Context Template Name[%s]"
+                            , contextTemplate.getName()), this.authentication.getName());
+                        ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        error = true;
+                    } finally {
+                        if (error) {
+                            NotificationHelper.showUserNotification(getTranslation("notification.disable-scheduled-jobs-error"
+                                , UI.getCurrent().getLocale()));
+                        } else {
+                            NotificationHelper.showUserNotification(getTranslation("notification.disabled-scheduled-successfully"
+                                , UI.getCurrent().getLocale()));
+                        }
+                    }
+            });
+        });
+
         Button refreshButton = this.createRefreshButton();
 
-        buttonLayout.add(enableAllSkippedButton, holdAllButton, releaseAllHeldButton,  refreshButton);
+        buttonLayout.add(enableAllSkippedButton, holdAllButton, releaseAllHeldButton
+            , enableAllSkippedButton, disableQuartzScheduledJobsButton, enableQuartzScheduledJobsButton, refreshButton);
 
         buttonWrapper.add(buttonLayout);
         buttonWrapper.setHorizontalComponentAlignment(FlexComponent.Alignment.END, buttonLayout);
@@ -869,6 +960,23 @@ public class SchedulerJobGridWidget extends Div {
         return refreshJobsButton;
     }
 
+    private void setButtonVisibility() {
+        if(this.contextTemplate.isQuartzScheduleDrivenJobsDisabledForContext()
+            && ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE)){
+            enableQuartzScheduledJobsButton.setVisible(true);
+            disableQuartzScheduledJobsButton.setVisible(false);
+        }
+        else if(!this.contextTemplate.isQuartzScheduleDrivenJobsDisabledForContext()
+            && ComponentSecurityVisibility.hasAuthorisation(this.authentication, SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE)){
+            enableQuartzScheduledJobsButton.setVisible(false);
+            disableQuartzScheduledJobsButton.setVisible(true);
+        }
+    }
+
     /**
      * Refresh the grid contents.
      */
@@ -881,12 +989,21 @@ public class SchedulerJobGridWidget extends Div {
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
 
-        newSchedulerJobEventBroadcasterRegistration = NewSchedulerJobEventBroadcaster.register
-            (event -> {
-                if(ui.isAttached()) {
-                    ui.access(() -> this.schedulerJobFilteringGrid.getDataProvider().refreshAll());
-                }
-            });
+        newSchedulerJobEventBroadcasterRegistration = NewSchedulerJobEventBroadcaster.register(event -> {
+            if(ui.isAttached()) {
+                ui.access(() -> this.schedulerJobFilteringGrid.getDataProvider().refreshAll());
+            }
+        });
+
+        this.contextSaveBroadcasterRegistration = ContextTemplateSavedEventBroadcaster.register(contextTemplate -> {
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    this.contextTemplate = contextTemplate;
+                    this.setButtonVisibility();
+                    this.schedulerJobFilteringGrid.refresh();
+                });
+            }
+        });
 
     }
 

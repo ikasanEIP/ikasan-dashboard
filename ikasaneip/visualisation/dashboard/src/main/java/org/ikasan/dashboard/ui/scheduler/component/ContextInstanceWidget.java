@@ -28,11 +28,9 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
+import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
-import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
-import org.ikasan.dashboard.ui.util.DateFormatter;
-import org.ikasan.dashboard.ui.util.SecurityConstants;
-import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SplitContextInstanceVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
@@ -78,6 +76,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     public static final String AUDIT_TAB = "auditTab";
     private Registration contextInstanceStateChangeRegistration;
     private Registration schedulerJobInstanceStateChangeRegistration;
+
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private FormLayout formLayout;
@@ -646,7 +645,6 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         releaseContextButton.setIconAfterText(true);
         releaseContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
 
-
         releaseContextButton.addClickListener(event -> {
             ContextMachine contextMachine = ContextMachineCache.instance()
                 .getByContextInstanceId(this.contextInstance.getId());
@@ -688,7 +686,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                                 dialog.close();
 
                                 if (finalError) {
-                                    NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-released-error"
+                                    NotificationHelper.showErrorNotification(getTranslation("notification.all-jobs-released-error"
                                         , UI.getCurrent().getLocale()));
                                 } else {
                                     NotificationHelper.showUserNotification(getTranslation("notification.all-jobs-successfully-released"
@@ -704,6 +702,111 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         ComponentSecurityVisibility.applySecurity(releaseContextButton, SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
+
+        Button enableQuartzScheduledJobsButton = new Button(getTranslation("button.enable-quartz-scheduled-jobs"
+            , UI.getCurrent().getLocale()), VaadinIcon.PLAY.create());
+        enableQuartzScheduledJobsButton.setIconAfterText(true);
+        enableQuartzScheduledJobsButton.setVisible(false);
+
+        Button disableQuartzScheduledJobsButton = new Button(getTranslation("button.disable-quartz-scheduled-jobs"
+            , UI.getCurrent().getLocale()), VaadinIcon.BAN.create());
+        disableQuartzScheduledJobsButton.setIconAfterText(true);
+        disableQuartzScheduledJobsButton.setVisible(false);
+
+        ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
+
+        if(contextMachine == null) {
+            enableQuartzScheduledJobsButton.setVisible(false);
+            disableQuartzScheduledJobsButton.setVisible(false);
+        }
+        else if(contextMachine.getContext().isQuartzScheduleDrivenJobsDisabledForContext()
+            && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE)){
+            enableQuartzScheduledJobsButton.setVisible(true);
+            disableQuartzScheduledJobsButton.setVisible(false);
+        }
+        else if(!contextMachine.getContext().isQuartzScheduleDrivenJobsDisabledForContext()
+            && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+            SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE)){
+            enableQuartzScheduledJobsButton.setVisible(false);
+            disableQuartzScheduledJobsButton.setVisible(true);
+        }
+
+        enableQuartzScheduledJobsButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.enable-scheduled-jobs-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.enable-scheduled-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                ContextMachine machine = ContextMachineCache.instance()
+                    .getByContextInstanceId(this.contextInstance.getId());
+
+                if (machine != null) {
+                    boolean error = false;
+                    try {
+                        machine.enableQuartzBasedJobs();
+                        enableQuartzScheduledJobsButton.setVisible(false);
+                        disableQuartzScheduledJobsButton.setVisible(true);
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_SCHEDULED_JOBS_ENABLED, String.format("Context Instance Name[%s], Context Instance Identifier[%s]"
+                            , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
+                        ContextInstanceSavedEventBroadcaster.broadcast(ContextMachineCache.instance()
+                            .getByContextInstanceId(this.contextInstance.getId()).getContext());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        error = true;
+                    } finally {
+                        if (error) {
+                            NotificationHelper.showUserNotification(getTranslation("notification.enable-scheduled-jobs-error"
+                                , UI.getCurrent().getLocale()));
+                        } else {
+                            NotificationHelper.showUserNotification(getTranslation("notification.enabled-scheduled-successfully"
+                                , UI.getCurrent().getLocale()));
+                        }
+                    }
+                }
+            });
+        });
+
+        disableQuartzScheduledJobsButton.addClickListener(event -> {
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.disable-scheduled-jobs-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.disable-scheduled-jobs-body", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                ContextMachine machine = ContextMachineCache.instance()
+                    .getByContextInstanceId(this.contextInstance.getId());
+
+                if (machine != null) {
+                    boolean error = false;
+                    try {
+                        machine.disableQuartzBasedJobs();
+                        enableQuartzScheduledJobsButton.setVisible(true);
+                        disableQuartzScheduledJobsButton.setVisible(false);
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_SCHEDULED_JOBS_DISABLED, String.format("Context Instance Name[%s], Context Instance Identifier[%s]"
+                            , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
+                        ContextInstanceSavedEventBroadcaster.broadcast(ContextMachineCache.instance()
+                            .getByContextInstanceId(this.contextInstance.getId()).getContext());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        error = true;
+                    } finally {
+                        if (error) {
+                            NotificationHelper.showUserNotification(getTranslation("notification.disable-scheduled-jobs-error"
+                                , UI.getCurrent().getLocale()));
+                        } else {
+                            NotificationHelper.showUserNotification(getTranslation("notification.disabled-scheduled-successfully"
+                                , UI.getCurrent().getLocale()));
+                        }
+                    }
+                }
+            });
+        });
 
         Button resetContextButton = new Button(getTranslation("button.reset-context", UI.getCurrent().getLocale()), VaadinIcon.TIME_BACKWARD.create());
         resetContextButton.setIconAfterText(true);
@@ -725,17 +828,17 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             confirmDialog.open();
 
             confirmDialog.addConfirmListener(confirmEvent -> {
-                ContextMachine contextMachine = ContextMachineCache.instance()
+                ContextMachine machine = ContextMachineCache.instance()
                     .getByContextInstanceId(this.contextInstance.getId());
-                if (contextMachine != null) {
+                if (machine != null) {
                     try {
-                        contextMachine.setDryRunParameters(null);
-                        contextMachine.getContext().setEndTime(System.currentTimeMillis());
-                        this.saveContextInstance(contextMachine.getContext(), InstanceStatus.ENDED);
+                        machine.setDryRunParameters(null);
+                        machine.getContext().setEndTime(System.currentTimeMillis());
+                        this.saveContextInstance(machine.getContext(), InstanceStatus.ENDED);
                         this.statusDiv.setStatus(InstanceStatus.ENDED);
-                        ContextMachineCache.instance().remove(contextMachine);
-                        contextMachine.resetContextInstance(hold.getValue());
-                        ContextMachineCache.instance().put(contextMachine);
+                        ContextMachineCache.instance().remove(machine);
+                        machine.resetContextInstance(hold.getValue());
+                        ContextMachineCache.instance().put(machine);
                         String route = RouteConfiguration.forSessionScope()
                             .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
                                 .getFirstByContextName(this.contextInstance.getName()).getContext().getId() + "_scheduledContextInstance");
@@ -756,7 +859,8 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.add(jobLockDashboard, holdContextButton, releaseContextButton, resetContextButton);
+        buttonLayout.add(jobLockDashboard, holdContextButton, releaseContextButton, enableQuartzScheduledJobsButton,
+            disableQuartzScheduledJobsButton, resetContextButton);
         buttonLayout.setMargin(false);
         buttonLayout.setPadding(false);
 

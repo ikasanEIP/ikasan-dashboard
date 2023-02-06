@@ -984,7 +984,7 @@ public class ContextInstanceRegistrationServiceImplTest {
 
         ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
         ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
-        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, JobLockCacheImpl.instance(), null,
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, JobLockCacheImpl.instance(), null,
             null, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
 
         ContextMachineCache.instance().put(contextMachine);

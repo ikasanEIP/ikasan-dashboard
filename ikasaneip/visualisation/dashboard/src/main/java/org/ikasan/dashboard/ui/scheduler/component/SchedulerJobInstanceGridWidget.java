@@ -19,6 +19,7 @@ import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
+import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceVisualisationDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerJobLogFileViewerDialog;
@@ -66,6 +67,7 @@ public class SchedulerJobInstanceGridWidget extends Div {
     Logger logger = LoggerFactory.getLogger(SchedulerJobInstanceGridWidget.class);
 
     private Registration schedulerJobStateChangeRegistration;
+    private Registration contextInstanceSaveBroadcasterRegistration;
     private SchedulerJobInstanceFilteringGrid schedulerJobInstanceFilteringGrid;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private SchedulerJobInstanceService schedulerJobInstanceService;
@@ -744,7 +746,14 @@ public class SchedulerJobInstanceGridWidget extends Div {
             schedulerStatusDiv.getElement().getStyle().set("margin-top", "1px");
             schedulerStatusDiv.getElement().getStyle().set("margin-bottom", "1px");
             schedulerStatusDiv.setWidth("100%");
-            schedulerStatusDiv.setStatus(schedulerJobInstanceRecord.getStatus());
+
+            if(this.contextInstance.isQuartzScheduleDrivenJobsDisabledForContext() &&
+                schedulerJobInstanceRecord.getType().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE)) {
+                schedulerStatusDiv.setStatus(InstanceStatus.DISABLED);
+            }
+            else {
+                schedulerStatusDiv.setStatus(schedulerJobInstanceRecord.getStatus());
+            }
 
             horizontalLayout.add(schedulerStatusDiv);
             return horizontalLayout;
@@ -761,7 +770,9 @@ public class SchedulerJobInstanceGridWidget extends Div {
             , SolrSchedulerJobInstanceSearchFilterImpl.JOB_TYPE_MAPPINGS.entrySet(), "type");
         this.schedulerJobInstanceFilteringGrid.addSelectGridFiltering(hr, schedulerJobSearchFilter::setStatus
             , Arrays.asList(InstanceStatus.values()).stream().map(instanceStatus -> instanceStatus.name())
-                    .filter(instanceStatus -> !instanceStatus.equals(InstanceStatus.SKIPPED_COMPLETE.name()) && !instanceStatus.equals(InstanceStatus.SKIPPED_RUNNING.name()))
+                    .filter(instanceStatus -> !instanceStatus.equals(InstanceStatus.SKIPPED_COMPLETE.name())
+                        && !instanceStatus.equals(InstanceStatus.SKIPPED_RUNNING.name())
+                        && !instanceStatus.equals(InstanceStatus.DISABLED.name()))
                     .collect(Collectors.toList()), "status");
         this.schedulerJobInstanceFilteringGrid.addCheckboxGridFiltering(hr, schedulerJobSearchFilter::setTargetResidingContextOnly, "targeted");
         this.schedulerJobInstanceFilteringGrid.addCheckboxGridFiltering(hr, schedulerJobSearchFilter::setParticipatesInLock, "isInLock");
@@ -1028,11 +1039,31 @@ public class SchedulerJobInstanceGridWidget extends Div {
                 }
             }
         });
+
+        this.contextInstanceSaveBroadcasterRegistration = ContextInstanceSavedEventBroadcaster.register(contextInstance -> {
+            if(ui.isAttached()) {
+                ui.access(() -> {
+                    this.contextInstance = contextInstance;
+                    this.refresh();
+                });
+            }
+        });
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        this.schedulerJobStateChangeRegistration.remove();
-        this.schedulerJobStateChangeRegistration = null;
+        if(this.schedulerJobStateChangeRegistration != null) {
+            this.schedulerJobStateChangeRegistration.remove();
+            this.schedulerJobStateChangeRegistration = null;
+        }
+
+        if(this.contextInstanceSaveBroadcasterRegistration != null) {
+            this.contextInstanceSaveBroadcasterRegistration.remove();
+            this.contextInstanceSaveBroadcasterRegistration = null;
+        }
+    }
+
+    public void refresh() {
+        this.schedulerJobInstanceFilteringGrid.getDataProvider().refreshAll();
     }
 }

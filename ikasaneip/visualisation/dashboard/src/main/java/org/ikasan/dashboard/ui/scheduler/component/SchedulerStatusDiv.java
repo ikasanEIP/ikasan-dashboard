@@ -99,5 +99,11 @@ public class SchedulerStatusDiv extends Div {
             super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.ENDED.name()
                 , this.current.getLocale()));
         }
+        else if(status.equals(InstanceStatus.DISABLED.name())) {
+            super.getElement().getStyle().set("background-color", "#000000");
+            super.getElement().getStyle().set("color", "#FFF");
+            super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.DISABLED.name()
+                , this.current.getLocale()));
+        }
     }
 }

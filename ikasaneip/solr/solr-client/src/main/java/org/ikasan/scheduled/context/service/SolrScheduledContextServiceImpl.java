@@ -2,6 +2,7 @@ package org.ikasan.scheduled.context.service;
 
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextDao;
 import org.ikasan.spec.scheduled.context.dao.ScheduledContextViewDao;
+import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextSearchFilter;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextViewRecord;
@@ -72,5 +73,28 @@ public class SolrScheduledContextServiceImpl implements ScheduledContextService 
     @Override
     public ScheduledContextRecord cloneContext(String contextName, String clonedContextName) {
         return null;
+    }
+
+    @Override
+    public void enableScheduledJobs(ContextTemplate contextTemplate, String modifiedBy) {
+        this.enableDisableScheduledJobs(contextTemplate, modifiedBy, false);
+    }
+
+    @Override
+    public void disableScheduledJobs(ContextTemplate contextTemplate, String modifiedBy) {
+        this.enableDisableScheduledJobs(contextTemplate, modifiedBy, true);
+    }
+
+    /**
+     * Helper method to enable/disable scheduled jobs.
+     *
+     * @param disabled
+     */
+    private void enableDisableScheduledJobs(ContextTemplate contextTemplate, String modifiedBy, boolean disabled) {
+        contextTemplate.setQuartzScheduleDrivenJobsDisabledForContext(disabled);
+        ScheduledContextRecord scheduledContextRecord = this.findByName(contextTemplate.getName());
+        scheduledContextRecord.setContext(contextTemplate);
+        scheduledContextRecord.setModifiedBy(modifiedBy);
+        this.save(scheduledContextRecord);
     }
 }
