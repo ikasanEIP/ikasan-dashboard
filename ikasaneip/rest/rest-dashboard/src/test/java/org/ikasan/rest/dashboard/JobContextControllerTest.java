@@ -112,10 +112,10 @@ public class JobContextControllerTest extends  AbstractRestMvcTest {
         contextTemplate2.setName("context-template-2");
 
 
-        ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, null, null, null
+        ContextMachine contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, null, null, null, null
             ,null,AGENTS_MAP,null, null, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
-        ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, null, null, null
+        ContextMachine contextMachine2 = new ContextMachine(contextTemplate2, contextInstance2, null, null, null, null
             ,null,AGENTS_MAP,null, null, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
 
@@ -136,39 +136,6 @@ public class JobContextControllerTest extends  AbstractRestMvcTest {
         String expected = objectMapper.writeValueAsString(objectMapper.readValue(loadDataFile("/data/job-context-instances-by-agentName.json"), Map.class));
         String actual = mvcResult.getResponse().getContentAsString();
 
-        JSONAssert.assertEquals(expected, actual, true);
+        JSONAssert.assertEquals(expected, actual, false);
     }
-
-    // @Mick I think these maybe no longer needed ?
-//    @Test
-//    public void test_get_all() throws Exception {
-//
-//        String uri = "/rest/jobContext/getAll";
-//
-//        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
-//
-//        int status = mvcResult.getResponse().getStatus();
-//        assertEquals(HttpStatus.OK.value(), status);
-//
-//        String expected = objectMapper.writeValueAsString(objectMapper.readValue(loadDataFile("/data/job-context-instances-all.json"), Map.class));
-//        String actual = mvcResult.getResponse().getContentAsString();
-//
-//        JSONAssert.assertEquals(expected, actual, true);
-//    }
-//
-//    @Test
-//    public void test_get_by_context_name() throws Exception {
-//
-//        String uri = "/rest/jobContext/getByContextName?contextName=context-instance-1";
-//
-//        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get(uri)).andReturn();
-//
-//        int status = mvcResult.getResponse().getStatus();
-//        assertEquals(HttpStatus.OK.value(), status);
-//
-//        String expected = objectMapper.writeValueAsString(objectMapper.readValue(loadDataFile("/data/job-context-instance-1.json"), Map.class));
-//        String actual = mvcResult.getResponse().getContentAsString();
-//
-//        JSONAssert.assertEquals(expected, actual, true);
-//    }
 }

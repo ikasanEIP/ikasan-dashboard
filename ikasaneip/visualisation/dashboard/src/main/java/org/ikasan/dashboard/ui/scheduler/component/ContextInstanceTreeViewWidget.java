@@ -26,27 +26,25 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
+import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.JobInstanceVisualisationDialog;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
-import org.ikasan.job.orchestration.model.event.SchedulerJobInitiationEventImpl;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.util.ContextHelper;
-import org.ikasan.orchestration.service.context.global.GlobalEventServiceImpl;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
+import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
 import org.ikasan.spec.metadata.ModuleMetaData;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.context.model.Context;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextInstanceStateChangeEvent;
-import org.ikasan.spec.scheduled.event.model.SchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
@@ -56,6 +54,7 @@ import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.JobInitiationService;
 import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
+import org.ikasan.spec.search.SearchResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vaadin.olli.FileDownloadWrapper;
@@ -86,6 +85,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private Logger logger = LoggerFactory.getLogger(ContextInstanceTreeViewWidget.class);
     private Registration schedulerJobStateChangeRegistration;
     private Registration contextInstanceStateChangeRegistration;
+    private Registration contextInstanceSaveBroadcasterRegistration;
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private ModuleMetaDataService moduleMetaDataService;
     private ScheduledProcessManagementService scheduledProcessManagementService;
@@ -545,7 +545,13 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     horizontalLayout.add(statusDiv);
                     horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, statusDiv);
 
-                    statusDiv.setStatus(schedulerJobInstance.getStatus());
+                    if(this.contextInstance.isQuartzScheduleDrivenJobsDisabledForContext() &&
+                        schedulerJobInstanceRecord.getType().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE)) {
+                        statusDiv.setStatus(InstanceStatus.DISABLED);
+                    }
+                    else {
+                        statusDiv.setStatus(schedulerJobInstance.getStatus());
+                    }
 
                     ComponentKey componentKey = new ComponentKey(schedulerJobInstance.getContextName()
                         , schedulerJobInstance.getChildContextName(), schedulerJobInstance.getJobName());
@@ -570,7 +576,13 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                     horizontalLayout.add(statusDiv);
                     horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.START, statusDiv);
 
-                    statusDiv.setStatus(schedulerJobInstance.getStatus());
+                    if(this.contextInstance.isQuartzScheduleDrivenJobsDisabledForContext() &&
+                        schedulerJobInstanceRecord.getType().equals(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE)) {
+                        statusDiv.setStatus(InstanceStatus.DISABLED);
+                    }
+                    else {
+                        statusDiv.setStatus(schedulerJobInstance.getStatus());
+                    }
 
                     ComponentKey componentKey = new ComponentKey(PRECEDING_ITEM_COMPONENT+schedulerJobInstance.getContextName()
                         , schedulerJobInstance.getChildContextName(), schedulerJobInstance.getJobName());
@@ -1475,6 +1487,12 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
             this.manageContextInstanceStateChangeEvent(ui, contextInstanceStateChangeEvent);
         });
+
+        contextInstanceSaveBroadcasterRegistration = ContextInstanceSavedEventBroadcaster.register(contextInstance -> {
+            this.contextInstance = contextInstance;
+            this.enableDisableScheduledJobs(contextInstance, ui);
+            this.createTreeGridDataProvider().refreshAll();
+        });
     }
 
     @Override
@@ -1487,6 +1505,11 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         if(this.contextInstanceStateChangeRegistration != null) {
             this.contextInstanceStateChangeRegistration.remove();
             this.contextInstanceStateChangeRegistration = null;
+        }
+
+        if(this.contextInstanceSaveBroadcasterRegistration != null) {
+            this.contextInstanceSaveBroadcasterRegistration.remove();
+            this.contextInstanceSaveBroadcasterRegistration = null;
         }
     }
 
@@ -1671,6 +1694,43 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             .forEach(entry -> result.put(entry.getKey(), (InternalEventDrivenJob) entry.getValue()));
 
         return result;
+    }
+
+    private void enableDisableScheduledJobs(ContextInstance contextInstance, UI ui) {
+        SchedulerJobInstanceSearchFilter filter = new SolrSchedulerJobInstanceSearchFilterImpl();
+        filter.setJobType(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
+        filter.setContextInstanceId(contextInstance.getId());
+        SearchResults<SchedulerJobInstanceRecord> results = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter
+            (filter, -1, -1, null, null);
+
+        results.getResultList().forEach(scheduledJobInstance -> {
+            ComponentKey key = new ComponentKey(contextInstance.getName(),
+                scheduledJobInstance.getChildContextName(), scheduledJobInstance.getJobName());
+            ComponentKey precedingJobKey = new ComponentKey(PRECEDING_ITEM_COMPONENT+contextInstance.getName(),
+                scheduledJobInstance.getChildContextName(), scheduledJobInstance.getJobName());
+
+            if(statusDivMap.containsKey(key)) {
+                ui.access(() -> {
+                    if(contextInstance.isQuartzScheduleDrivenJobsDisabledForContext()) {
+                        statusDivMap.get(key).setStatus(InstanceStatus.DISABLED);
+                    }
+                    else {
+                        statusDivMap.get(key).setStatus(scheduledJobInstance.getStatus());
+                    }
+                });
+            }
+
+            if(statusDivMap.containsKey(precedingJobKey)) {
+                ui.access(() -> {
+                    if(contextInstance.isQuartzScheduleDrivenJobsDisabledForContext()) {
+                        statusDivMap.get(precedingJobKey).setStatus(InstanceStatus.DISABLED);
+                    }
+                    else {
+                        statusDivMap.get(precedingJobKey).setStatus(scheduledJobInstance.getStatus());
+                    }
+                });
+            }
+        });
     }
 
     /**

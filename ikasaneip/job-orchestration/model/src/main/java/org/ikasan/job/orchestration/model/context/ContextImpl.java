@@ -25,6 +25,7 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     protected String timeWindowStart;
     protected String timeWindowEnd;
     protected String environmentGroup;
+    protected boolean isQuartzScheduleDrivenJobsDisabledForContext;
 
     @Override
     public String getName() {
@@ -139,6 +140,16 @@ public class ContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends Sch
     @Override
     public void setEnvironmentGroup(String environmentGroup) {
         this.environmentGroup = environmentGroup;
+    }
+
+    @Override
+    public boolean isQuartzScheduleDrivenJobsDisabledForContext() {
+        return isQuartzScheduleDrivenJobsDisabledForContext;
+    }
+
+    @Override
+    public void setQuartzScheduleDrivenJobsDisabledForContext(boolean quartzScheduleDrivenJobsDisabledForContext) {
+        isQuartzScheduleDrivenJobsDisabledForContext = quartzScheduleDrivenJobsDisabledForContext;
     }
 
     @Override

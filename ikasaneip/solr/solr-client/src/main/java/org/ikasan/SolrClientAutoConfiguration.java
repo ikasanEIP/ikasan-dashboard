@@ -105,6 +105,9 @@ public class SolrClientAutoConfiguration {
     @Value("#{${scheduler.job.execution.environment.label}}")
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
 
+    @Value("${notify.scheduled.events.batch.insert.listeners:false}")
+    private boolean notifyBatchInsertListeners;
+
     @Bean
     public JobLockCacheService jobLockCacheService() {
         SolrJobLockCacheDaoImpl solrJobLockCacheDao = new SolrJobLockCacheDaoImpl();
@@ -133,6 +136,37 @@ public class SolrClientAutoConfiguration {
         solrScheduledContextViewDao.setSolrPassword(solrPassword);
 
         return new SolrScheduledContextServiceImpl(solrScheduledContextDao, solrScheduledContextViewDao);
+    }
+
+    @Bean("scheduledProcessEventBatchInsert")
+    public SolrScheduledProcessServiceImpl solrScheduledProcessEventService()
+    {
+        SolrScheduledProcessEventDao dao = new SolrScheduledProcessEventDao();
+        dao.initStandalone(solrUrl, 30);
+        dao.setSolrUsername(solrUsername);
+        dao.setSolrPassword(solrPassword);
+
+        SolrModuleMetadataDao solrModuleMetadataDao = new SolrModuleMetadataDao();
+        solrModuleMetadataDao.initStandalone(solrUrl, 30);
+        solrModuleMetadataDao.setSolrUsername(solrUsername);
+        solrModuleMetadataDao.setSolrPassword(solrPassword);
+
+        SolrComponentConfigurationMetadataDao solrComponentConfigurationMetadataDao = new SolrComponentConfigurationMetadataDao();
+        solrComponentConfigurationMetadataDao.initStandalone(solrUrl, 30);
+        solrComponentConfigurationMetadataDao.setSolrUsername(solrUsername);
+        solrComponentConfigurationMetadataDao.setSolrPassword(solrPassword);
+
+        SolrBusinessStreamMetadataDao solrBusinessStreamMetadataDao = new SolrBusinessStreamMetadataDao();
+        solrBusinessStreamMetadataDao.initStandalone(solrUrl, 30);
+        solrBusinessStreamMetadataDao.setSolrUsername(solrUsername);
+        solrBusinessStreamMetadataDao.setSolrPassword(solrPassword);
+
+        SolrScheduledProcessServiceImpl service = new SolrScheduledProcessServiceImpl(dao, solrModuleMetadataDao
+            , solrComponentConfigurationMetadataDao, solrBusinessStreamMetadataDao, notifyBatchInsertListeners);
+        service.setSolrUsername(solrUsername);
+        service.setSolrPassword(solrPassword);
+
+        return service;
     }
 
     @Bean

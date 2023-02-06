@@ -1,4 +1,4 @@
-package org.ikasan.scheduled.context.dao;
+package org.ikasan.scheduled.context.service;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.SolrTestCaseJ4;
@@ -6,10 +6,13 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest;
 import org.apache.solr.core.NodeConfig;
+import org.ikasan.scheduled.context.dao.SolrScheduledContextDaoImpl;
+import org.ikasan.scheduled.context.dao.SolrScheduledContextViewDaoImpl;
 import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
 import org.ikasan.scheduled.context.model.SolrContextTemplateImpl;
 import org.ikasan.scheduled.context.model.SolrJobLockImpl;
 import org.ikasan.scheduled.context.model.SolrScheduledContextRecordImpl;
+import org.ikasan.scheduled.context.service.SolrScheduledContextServiceImpl;
 import org.ikasan.scheduled.util.ScheduledObjectMapperFactory;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
@@ -28,9 +31,11 @@ import java.util.List;
 
 import static org.ikasan.scheduled.context.dao.SolrScheduledContextDaoImpl.SCHEDULED_CONTEXT;
 
-public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
+public class SolrScheduledContextServiceImplTest extends SolrTestCaseJ4 {
 
     private SolrScheduledContextDaoImpl dao;
+
+    private SolrScheduledContextServiceImpl scheduledContextService;
 
     private NodeConfig config;
 
@@ -61,6 +66,11 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
 
         dao = new SolrScheduledContextDaoImpl();
         dao.setSolrClient(server);
+
+        SolrScheduledContextViewDaoImpl contextViewDao = new SolrScheduledContextViewDaoImpl();
+        contextViewDao.setSolrClient(server);
+
+        this.scheduledContextService = new SolrScheduledContextServiceImpl(dao, contextViewDao);
     }
 
     @Test
@@ -79,9 +89,9 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setTimestamp(1000000L);
             scheduledContextRecord.setContext(solrContextTemplate);
 
-            this.dao.save(scheduledContextRecord);
+            this.scheduledContextService.save(scheduledContextRecord);
 
-            ScheduledContextRecord found = this.dao.findById("contextName");
+            ScheduledContextRecord found = this.scheduledContextService.findById("contextName");
 
             Assert.assertEquals("contextName-" + SCHEDULED_CONTEXT, found.getId());
             Assert.assertEquals("contextName", found.getContextName());
@@ -95,9 +105,9 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             contextTemplate.setDisabled(true);
             contextTemplate.setQuartzScheduleDrivenJobsDisabledForContext(true);
             scheduledContextRecord.setContext(contextTemplate);
-            this.dao.save(scheduledContextRecord);
+            this.scheduledContextService.save(scheduledContextRecord);
 
-            found = this.dao.findById("contextName");
+            found = this.scheduledContextService.findById("contextName");
 
             Assert.assertEquals("contextName-" + SCHEDULED_CONTEXT, found.getId());
             Assert.assertEquals("contextName", found.getContextName());
@@ -108,6 +118,86 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             Assert.assertEquals(1000000L, found.getTimestamp());
 
             Assert.assertNull(this.dao.findById("bad_id"));
+        }
+    }
+
+    @Test
+    public void test_disable_scheduled_jobs() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
+            solrContextTemplate.setName("contextName");
+            solrContextTemplate.setJobLocks(List.of(new SolrJobLockImpl()));
+            solrContextTemplate.setDisabled(false);
+            SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setContext(solrContextTemplate);
+
+            this.scheduledContextService.save(scheduledContextRecord);
+
+            this.scheduledContextService.disableScheduledJobs(solrContextTemplate, "user");
+
+            ScheduledContextRecord found = this.scheduledContextService.findById("contextName");
+
+            Assert.assertEquals("contextName-" + SCHEDULED_CONTEXT, found.getId());
+            Assert.assertEquals("contextName", found.getContextName());
+            Assert.assertEquals("contextName", found.getContext().getName());
+            Assert.assertEquals(false, found.isDisabled());
+            Assert.assertEquals(true, found.isQuartzScheduleDrivenJobsDisabledForContext());
+            Assert.assertEquals(true, found.getContext().isQuartzScheduleDrivenJobsDisabledForContext());
+            Assert.assertEquals(false, found.getContext().isDisabled());
+            Assert.assertEquals("user", found.getModifiedBy());
+            Assert.assertEquals(1000000L, found.getTimestamp());
+        }
+    }
+
+    @Test
+    public void test_enable_scheduled_jobs() throws Exception {
+
+        try (EmbeddedSolrServer server = new EmbeddedSolrServer(config, "ikasan"))
+        {
+            init(server);
+
+            SolrContextTemplateImpl solrContextTemplate = new SolrContextTemplateImpl();
+            solrContextTemplate.setName("contextName");
+            solrContextTemplate.setJobLocks(List.of(new SolrJobLockImpl()));
+            solrContextTemplate.setDisabled(false);
+            solrContextTemplate.setQuartzScheduleDrivenJobsDisabledForContext(true);
+            SolrScheduledContextRecordImpl scheduledContextRecord = new SolrScheduledContextRecordImpl();
+            scheduledContextRecord.setContextName("contextName");
+            scheduledContextRecord.setTimestamp(1000000L);
+            scheduledContextRecord.setContext(solrContextTemplate);
+
+            this.scheduledContextService.save(scheduledContextRecord);
+
+            ScheduledContextRecord found = this.scheduledContextService.findById("contextName");
+
+            Assert.assertEquals("contextName-" + SCHEDULED_CONTEXT, found.getId());
+            Assert.assertEquals("contextName", found.getContextName());
+            Assert.assertEquals("contextName", found.getContext().getName());
+            Assert.assertEquals(false, found.isDisabled());
+            Assert.assertEquals(true, found.isQuartzScheduleDrivenJobsDisabledForContext());
+            Assert.assertEquals(true, found.getContext().isQuartzScheduleDrivenJobsDisabledForContext());
+            Assert.assertEquals(false, found.getContext().isDisabled());
+            Assert.assertEquals(1000000L, found.getTimestamp());
+
+            this.scheduledContextService.enableScheduledJobs(solrContextTemplate, "user");
+
+            found = this.scheduledContextService.findById("contextName");
+
+            Assert.assertEquals("contextName-" + SCHEDULED_CONTEXT, found.getId());
+            Assert.assertEquals("contextName", found.getContextName());
+            Assert.assertEquals("contextName", found.getContext().getName());
+            Assert.assertEquals(false, found.isDisabled());
+            Assert.assertEquals(false, found.isQuartzScheduleDrivenJobsDisabledForContext());
+            Assert.assertEquals(false, found.getContext().isQuartzScheduleDrivenJobsDisabledForContext());
+            Assert.assertEquals(false, found.getContext().isDisabled());
+            Assert.assertEquals("user", found.getModifiedBy());
+            Assert.assertEquals(1000000L, found.getTimestamp());
         }
     }
 
@@ -126,7 +216,7 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setContextName("contextName1");
             scheduledContextRecord.setTimestamp(1000000L);
             scheduledContextRecord.setContext(solrContextTemplate);
-            this.dao.save(scheduledContextRecord);
+            this.scheduledContextService.save(scheduledContextRecord);
 
             solrContextTemplate = new SolrContextTemplateImpl();
             solrContextTemplate.setName("contextName2");
@@ -134,9 +224,9 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setContextName("contextName2");
             scheduledContextRecord.setTimestamp(1000000L);
             scheduledContextRecord.setContext(solrContextTemplate);
-            this.dao.save(scheduledContextRecord);
+            this.scheduledContextService.save(scheduledContextRecord);
 
-            SearchResults<ScheduledContextRecord> found =  this.dao.findAll();
+            SearchResults<? extends ScheduledContextRecord> found =  this.scheduledContextService.findAll();
 
             Assert.assertEquals(2, found.getResultList().size());
         }
@@ -157,7 +247,7 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setContextName("contextName1");
             scheduledContextRecord.setTimestamp(1000000L);
             scheduledContextRecord.setContext(solrContextTemplate);
-            this.dao.save(scheduledContextRecord);
+            this.scheduledContextService.save(scheduledContextRecord);
 
             solrContextTemplate = new SolrContextTemplateImpl();
             solrContextTemplate.setName("contextName2");
@@ -165,17 +255,17 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setContextName("contextName2");
             scheduledContextRecord.setTimestamp(1000000L);
             scheduledContextRecord.setContext(solrContextTemplate);
-            this.dao.save(scheduledContextRecord);
+            this.scheduledContextService.save(scheduledContextRecord);
 
-            SearchResults<ScheduledContextRecord> found =  this.dao.findAll(100, 0);
-
-            Assert.assertEquals(2, found.getResultList().size());
-
-            found =  this.dao.findAll(-1, -1);
+            SearchResults<? extends ScheduledContextRecord> found =  this.scheduledContextService.findAll(100, 0);
 
             Assert.assertEquals(2, found.getResultList().size());
 
-            found =  this.dao.findAll(0, 0);
+            found =  this.scheduledContextService.findAll(-1, -1);
+
+            Assert.assertEquals(2, found.getResultList().size());
+
+            found =  this.scheduledContextService.findAll(0, 0);
 
             Assert.assertEquals(0, found.getResultList().size());
         }
@@ -196,7 +286,7 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setContextName("Context-Locks-1");
             scheduledContextRecord.setTimestamp(1000000L);
             scheduledContextRecord.setContext(solrContextTemplate);
-            this.dao.save(scheduledContextRecord);
+            this.scheduledContextService.save(scheduledContextRecord);
 
             solrContextTemplate
                 = ScheduledObjectMapperFactory.newInstance()
@@ -206,9 +296,9 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setContextName("contextName2");
             scheduledContextRecord.setTimestamp(1000000L);
             scheduledContextRecord.setContext(solrContextTemplate);
-            this.dao.save(scheduledContextRecord);
+            this.scheduledContextService.save(scheduledContextRecord);
 
-            ScheduledContextRecord found = this.dao.findByName("Context-Locks-1");
+            ScheduledContextRecord found = this.scheduledContextService.findByName("Context-Locks-1");
 
             Assert.assertEquals("Context-Locks-1", found.getContextName());
             Assert.assertEquals("Context-Locks-1", found.getContext().getName());
@@ -230,7 +320,7 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setContextName("Context-Locks-1");
             scheduledContextRecord.setTimestamp(1000000L);
             scheduledContextRecord.setContext(solrContextTemplate);
-            this.dao.save(scheduledContextRecord);
+            this.scheduledContextService.save(scheduledContextRecord);
 
             solrContextTemplate
                 = ScheduledObjectMapperFactory.newInstance()
@@ -240,16 +330,16 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setContextName("contextName2");
             scheduledContextRecord.setTimestamp(1000000L);
             scheduledContextRecord.setContext(solrContextTemplate);
-            this.dao.save(scheduledContextRecord);
+            this.scheduledContextService.save(scheduledContextRecord);
 
             ScheduledContextRecord found = this.dao.findByName("Context-Locks-1");
 
             Assert.assertEquals("Context-Locks-1", found.getContextName());
             Assert.assertEquals("Context-Locks-1", found.getContext().getName());
 
-            this.dao.deleteContext("Context-Locks-1");
+            this.scheduledContextService.deleteContext("Context-Locks-1");
 
-            found = this.dao.findByName("Context-Locks-1");
+            found = this.scheduledContextService.findByName("Context-Locks-1");
 
             Assert.assertNull(found);
         }
@@ -270,7 +360,7 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setContextName("Context-Locks-1");
             scheduledContextRecord.setTimestamp(1000000L);
             scheduledContextRecord.setContext(solrContextTemplate);
-            this.dao.save(scheduledContextRecord);
+            this.scheduledContextService.save(scheduledContextRecord);
 
             solrContextTemplate
                 = ScheduledObjectMapperFactory.newInstance()
@@ -280,7 +370,7 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             scheduledContextRecord.setContextName("contextName2");
             scheduledContextRecord.setTimestamp(1000000L);
             scheduledContextRecord.setContext(solrContextTemplate);
-            this.dao.save(scheduledContextRecord);
+            this.scheduledContextService.save(scheduledContextRecord);
 
             ScheduledContextSearchFilterImpl filter = new ScheduledContextSearchFilterImpl();
             filter.setContextName("Context-Locks-1");
@@ -292,14 +382,14 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
 
             filter.setContextName("Context-Loc");
-            found = this.dao.findByFilter(filter, 100, 0, null, null);
+            found = this.scheduledContextService.findByFilter(filter, 100, 0, null, null);
 
             Assert.assertEquals(1, found.getResultList().size());
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContext().getName());
 
             filter.setContextName("xt-Locks-1");
-            found = this.dao.findByFilter(filter, 100, 0, null, null);
+            found = this.scheduledContextService.findByFilter(filter, 100, 0, null, null);
 
             Assert.assertEquals(1, found.getResultList().size());
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
@@ -308,7 +398,7 @@ public class SolrScheduledContextDaoTest extends SolrTestCaseJ4 {
             filter.setContextName(null);
             filter.setContextNames(List.of("Context-Locks-1", "Context-Locks-2", "Context-Locks-3"));
 
-            found = this.dao.findByFilter(filter, 100, 0, null, null);
+            found = this.scheduledContextService.findByFilter(filter, 100, 0, null, null);
 
             Assert.assertEquals(1, found.getResultList().size());
             Assert.assertEquals("Context-Locks-1", found.getResultList().get(0).getContextName());
