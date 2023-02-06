@@ -63,6 +63,9 @@ import static org.ikasan.quartz.AbstractDashboardSchedulerService.CONTEXT_INSTAN
 
 public class ContextMachine {
     private Logger logger = LoggerFactory.getLogger(ContextMachine.class);
+
+    public static final String MANUAL_SUBMISSION = "group (manual fire)";
+
     private ContextInstance contextInstance;
     private JobLogicMachine jobLogicMachine;
     private ContextInstanceToContextInstanceStatusConverter statusConverter;
@@ -88,6 +91,7 @@ public class ContextMachine {
     private DryRunParameters dryRunParameters;
     private Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstances;
     private Map<String, GlobalEventJobInstance> globalEventJobInstanceMap;
+    private Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap;
     private Map<String, ModuleMetaData> agents;
     private String queueDir;
     private JobLockCache jobLockCache;
@@ -99,6 +103,7 @@ public class ContextMachine {
 
     public ContextMachine(ContextTemplate context, ContextInstance contextInstance, ScheduledContextInstanceService scheduledContextInstanceService,
                           Map<String, GlobalEventJobInstance> globalEventJobInstanceMap,
+                          Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap,
                           Map<String, InternalEventDrivenJobInstance> internalEventDrivenJobInstances, String queueDir,
                           Map<String, ModuleMetaData> agents, JobLockCache jobLockCache,
                           ContextParametersInstanceService contextParametersInstanceService,
@@ -111,6 +116,10 @@ public class ContextMachine {
         this.globalEventJobInstanceMap = globalEventJobInstanceMap;
         if (this.globalEventJobInstanceMap == null) {
             this.globalEventJobInstanceMap = new HashMap<>(); // Empty Hashmap if the value is null.
+        }
+        this.quartzScheduleDrivenJobInstanceMap = quartzScheduleDrivenJobInstanceMap;
+        if (this.quartzScheduleDrivenJobInstanceMap == null) {
+            this.quartzScheduleDrivenJobInstanceMap = new HashMap<>(); // Empty Hashmap if the value is null.
         }
         this.agents = agents;
         this.queueDir = queueDir;
@@ -462,6 +471,22 @@ public class ContextMachine {
      */
     public boolean isDryRun() {
         return this.dryRunParameters != null;
+    }
+
+    /**
+     * Method to disable the quartz based jobs associated with the context instance.
+     */
+    public void disableQuartzBasedJobs() {
+        this.contextInstance.setQuartzScheduleDrivenJobsDisabledForContext(true);
+        this.saveContext();
+    }
+
+    /**
+     * Method to enable the quartz based jobs associated with the context instance.
+     */
+    public void enableQuartzBasedJobs() {
+        this.contextInstance.setQuartzScheduleDrivenJobsDisabledForContext(false);
+        this.saveContext();
     }
 
     /**
@@ -822,7 +847,18 @@ public class ContextMachine {
 
         MutableBoolean lockRaised = new MutableBoolean(false);
 
-        List<SchedulerJobInitiationEvent> events = this.getInitiationEvents(this.contextInstance, scheduledProcessEvent, lockRaised, true);
+        List<SchedulerJobInitiationEvent> events = new ArrayList<>();
+        if(scheduledProcessEvent.getJobGroup() != null &&
+            !scheduledProcessEvent.getJobGroup().equals(MANUAL_SUBMISSION) &&
+            this.contextInstance.isQuartzScheduleDrivenJobsDisabledForContext() &&
+            this.quartzScheduleDrivenJobInstanceMap.containsKey(scheduledProcessEvent.getAgentName()
+                + "-" + scheduledProcessEvent.getJobName())) {
+            logger.info("Ignoring quartz scheduled job [{}] for context [{}] with instance id [{}]. Quartz based scheduler jobs" +
+                " are ignored for this context.", scheduledProcessEvent.getJobName(), this.contextInstance.getName(), this.contextInstance.getId());
+        }
+        else {
+            events = this.getInitiationEvents(this.contextInstance, scheduledProcessEvent, lockRaised, true);
+        }
 
         List<SchedulerJobInitiationEvent> finalEvents = new ArrayList<>();
 

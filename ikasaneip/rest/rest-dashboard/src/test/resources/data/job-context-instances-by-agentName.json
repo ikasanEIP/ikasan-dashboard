@@ -60,6 +60,7 @@
     "startTime": 0,
     "endTime": 0,
     "status": "WAITING",
-    "heldJobs": {}
+    "heldJobs": {},
+    "quartzScheduleDrivenJobsDisabledForContext": false
   }
 }
