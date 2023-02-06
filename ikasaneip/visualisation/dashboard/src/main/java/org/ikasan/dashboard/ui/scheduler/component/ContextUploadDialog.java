@@ -165,13 +165,20 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
                     }
                 });
 
+                Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = this.getQuartzBasedJobs(contextInstance.getId());
+                quartzScheduleDrivenJobInstanceMap.values().forEach(job -> {
+                    if(!agents.containsKey(job.getAgentName())) {
+                        agents.put(job.getAgentName(), moduleMetaDataService.findById(job.getAgentName()));
+                    }
+                });
+
                 // if we are uploading a new context we add the all the locks
                 JobLockCache jobLockCache = JobLockCacheImpl.instance();
                 jobLockCache.setJobLockCacheService(jobLockCacheService);
                 jobLockCache.addLocks(contextTemplate.getAllNestedJobLocks());
 
                 ContextMachine contextMachine = new ContextMachine(contextTemplate, contextInstance, scheduledContextInstanceService, globalEventJobMap
-                    , internalEventDrivenJobMap, this.queueDir, agents, jobLockCache, this.contextParametersInstanceService, this.scheduledContextService
+                    , quartzScheduleDrivenJobInstanceMap, internalEventDrivenJobMap, this.queueDir, agents, jobLockCache, this.contextParametersInstanceService, this.scheduledContextService
                     , this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
                 contextMachine.init();
 
@@ -241,5 +248,30 @@ public class ContextUploadDialog extends AbstractCloseableResizableDialog {
             .map(globalEventJobRecord -> (GlobalEventJobInstance) globalEventJobRecord.getSchedulerJobInstance())
             .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity()));
         return globalEventJobMap;
+    }
+
+    private Map<String, QuartzScheduleDrivenJobInstance> getQuartzBasedJobs(String contextInstanceId) {
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        filter.setJobType(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults
+            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+        Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
+            .map(internalEventDrivenJobRecord -> (QuartzScheduleDrivenJobInstance)internalEventDrivenJobRecord.getSchedulerJobInstance())
+            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity()));
+
+        filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setJobType(JobConstants.FILE_EVENT_DRIVEN_JOB_INSTANCE);
+        internalEventDrivenJobRecordSearchResults
+            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+        Map<String, QuartzScheduleDrivenJobInstance> fileEventDrivenJobs = internalEventDrivenJobRecordSearchResults.getResultList().stream()
+            .map(internalEventDrivenJobRecord -> (QuartzScheduleDrivenJobInstance)internalEventDrivenJobRecord.getSchedulerJobInstance())
+            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (a1, a2) -> a1));
+
+        quartzScheduleDrivenJobInstanceMap.putAll(fileEventDrivenJobs);
+
+        return quartzScheduleDrivenJobInstanceMap;
     }
 }

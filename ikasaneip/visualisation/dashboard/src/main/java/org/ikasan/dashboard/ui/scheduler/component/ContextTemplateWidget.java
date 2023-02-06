@@ -12,7 +12,9 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -22,6 +24,7 @@ import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateEnableDisableEventBroadcaster;
+import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.*;
@@ -73,6 +76,9 @@ import java.util.stream.Collectors;
 public class ContextTemplateWidget extends Div {
 
     private Registration contextEnableBroadcasterRegistration;
+
+    private Registration contextSaveBroadcasterRegistration;
+
     private ContextTemplateFilteringGrid contextTemplateFilteringGrid;
     private ScheduledContextService scheduledContextService;
     private ContextProfileService contextProfileService;
@@ -81,6 +87,7 @@ public class ContextTemplateWidget extends Div {
     private JobUtilsService jobUtilsService;
     private SchedulerJobService schedulerJobService;
     private GlobalEventService globalEventService;
+    private SystemEventLogger systemEventLogger;
     private String zipWorkingDirectory;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
     private EmailNotificationDetailsService emailNotificationDetailsService;
@@ -168,6 +175,10 @@ public class ContextTemplateWidget extends Div {
         this.globalEventService = globalEventService;
         if (this.globalEventService == null) {
             throw new IllegalArgumentException("globalEventService cannot be null!");
+        }
+        this.systemEventLogger = systemEventLogger;
+        if (this.systemEventLogger == null) {
+            throw new IllegalArgumentException("systemEventLogger cannot be null!");
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
@@ -405,15 +416,107 @@ public class ContextTemplateWidget extends Div {
 
             layout.add(clone);
 
-            Icon chart = IconDecorator.decorate(new Icon(VaadinIcon.CHART), getTranslation("tooltip.contexts-statistics", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
-            ComponentSecurityVisibility.applySecurity(this.authentication, chart, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
-                , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_READ);
-            chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
-                UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
-                underConstructionDialog.open();
+            Icon enableQuartzScheduledJobsButton = IconDecorator.decorate(new Icon(VaadinIcon.PLAY)
+                , getTranslation("tooltip.job-plan-scheduled-jobs-enabled", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            enableQuartzScheduledJobsButton.setVisible(false);
+
+            layout.add(enableQuartzScheduledJobsButton);
+
+            Icon disableQuartzScheduledJobsButton = IconDecorator.decorate(new Icon(VaadinIcon.BAN)
+                , getTranslation("tooltip.job-plan-scheduled-jobs-disabled", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            disableQuartzScheduledJobsButton.setVisible(false);
+
+            layout.add(disableQuartzScheduledJobsButton);
+
+            if(scheduledContextRecord.getContext().isQuartzScheduleDrivenJobsDisabledForContext()
+                && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE)){
+                enableQuartzScheduledJobsButton.setVisible(true);
+                disableQuartzScheduledJobsButton.setVisible(false);
+            }
+            else if(!scheduledContextRecord.getContext().isQuartzScheduleDrivenJobsDisabledForContext()
+                && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE)){
+                enableQuartzScheduledJobsButton.setVisible(false);
+                disableQuartzScheduledJobsButton.setVisible(true);
+            }
+
+            enableQuartzScheduledJobsButton.addClickListener(event -> {
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog.enable-scheduled-jobs-header", UI.getCurrent().getLocale()));
+                confirmDialog.setText(getTranslation("confirm-dialog.enable-scheduled-jobs-job-plan-body", UI.getCurrent().getLocale()));
+                confirmDialog.setCancelable(true);
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent -> {
+                    boolean error = false;
+                    try {
+                        ContextTemplate contextTemplate = scheduledContextRecord.getContext();
+                        this.scheduledContextService.enableScheduledJobs(contextTemplate, authentication.getName());
+                        enableQuartzScheduledJobsButton.setVisible(false);
+                        disableQuartzScheduledJobsButton.setVisible(true);
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_TEMPLATE_SCHEDULED_JOBS_ENABLED, String.format("Context Template Name[%s]"
+                            , contextTemplate.getName()), this.authentication.getName());
+                        ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        error = true;
+                    } finally {
+                        if (error) {
+                            NotificationHelper.showUserNotification(getTranslation("notification.disable-scheduled-jobs-error"
+                                , UI.getCurrent().getLocale()));
+                        } else {
+                            NotificationHelper.showUserNotification(getTranslation("notification.disabled-scheduled-successfully"
+                                , UI.getCurrent().getLocale()));
+                        }
+                    }
+                });
             });
 
-            layout.add(chart);
+            disableQuartzScheduledJobsButton.addClickListener(event -> {
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog.disable-scheduled-jobs-header", UI.getCurrent().getLocale()));
+                confirmDialog.setText(getTranslation("confirm-dialog.disable-scheduled-jobs-job-plan-body", UI.getCurrent().getLocale()));
+                confirmDialog.setCancelable(true);
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent -> {
+                    boolean error = false;
+                    try {
+                        ContextTemplate contextTemplate = scheduledContextRecord.getContext();
+                        this.scheduledContextService.disableScheduledJobs(contextTemplate, authentication.getName());
+                        enableQuartzScheduledJobsButton.setVisible(true);
+                        disableQuartzScheduledJobsButton.setVisible(false);
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_TEMPLATE_SCHEDULED_JOBS_DISABLED, String.format("Context Template Name[%s]"
+                            , contextTemplate.getName()), this.authentication.getName());
+                        ContextTemplateSavedEventBroadcaster.broadcast(contextTemplate);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        error = true;
+                    } finally {
+                        if (error) {
+                            NotificationHelper.showUserNotification(getTranslation("notification.disable-scheduled-jobs-error"
+                                , UI.getCurrent().getLocale()));
+                        } else {
+                            NotificationHelper.showUserNotification(getTranslation("notification.disabled-scheduled-successfully"
+                                , UI.getCurrent().getLocale()));
+                        }
+                    }
+                });
+            });
+
+            // todo at some point we will provide a statistics view.
+//            Icon chart = IconDecorator.decorate(new Icon(VaadinIcon.CHART), getTranslation("tooltip.contexts-statistics", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+//            ComponentSecurityVisibility.applySecurity(this.authentication, chart, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
+//                , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_READ);
+//            chart.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+//                UnderConstructionDialog underConstructionDialog = new UnderConstructionDialog();
+//                underConstructionDialog.open();
+//            });
+//
+//            layout.add(chart);
 
             Icon export = IconDecorator.decorate(new Icon(VaadinIcon.DOWNLOAD_ALT), getTranslation("tooltip.export-jobs-and-associated-artifacts", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
             ComponentSecurityVisibility.applySecurity(this.authentication, export, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
@@ -482,6 +585,27 @@ public class ContextTemplateWidget extends Div {
             .setFlexGrow(2);
 
         this.contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
+            VerticalLayout verticalLayout = new VerticalLayout();
+            verticalLayout.setPadding(false);
+            verticalLayout.setWidthFull();
+
+            Icon disabledIcon = IconDecorator.decorate(VaadinIcon.BAN.create()
+                , getTranslation("tooltip.job-plan-scheduled-jobs-disabled", UI.getCurrent().getLocale())
+                , "16pt", IkasanColours.SCHEDULER_ERROR);
+
+            if(scheduledContextRecord.isQuartzScheduleDrivenJobsDisabledForContext()) {
+                verticalLayout.add(disabledIcon);
+                verticalLayout.setHorizontalComponentAlignment(FlexComponent.Alignment.CENTER, disabledIcon);
+            }
+
+            return verticalLayout;
+        }))
+        .setResizable(true)
+        .setHeader(getTranslation("table-header.scheduled-jobs-disabled", UI.getCurrent().getLocale()))
+        .setSortable(false)
+        .setWidth("150px");
+
+        this.contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
 
             Text text = new Text(scheduledContextRecord.getModifiedBy());
@@ -489,10 +613,10 @@ public class ContextTemplateWidget extends Div {
             horizontalLayout.add(text);
             return horizontalLayout;
         }))
-            .setResizable(true)
-            .setHeader(getTranslation("table-header.modified-by", UI.getCurrent().getLocale()))
-            .setSortable(true)
-            .setFlexGrow(1);
+        .setResizable(true)
+        .setHeader(getTranslation("table-header.modified-by", UI.getCurrent().getLocale()))
+        .setSortable(true)
+        .setFlexGrow(1);
 
         this.contextTemplateFilteringGrid.addColumn(new ComponentRenderer<>(scheduledContextRecord -> {
                 Button enabled = new Button(getTranslation("button.enabled", UI.getCurrent().getLocale()));
@@ -699,6 +823,12 @@ public class ContextTemplateWidget extends Div {
     protected void onAttach(AttachEvent attachEvent) {
         UI ui = attachEvent.getUI();
         this.contextEnableBroadcasterRegistration = ContextTemplateEnableDisableEventBroadcaster.register(flowState -> {
+            if(ui.isAttached()) {
+                ui.access(() -> this.contextTemplateFilteringGrid.getDataProvider().refreshAll());
+            }
+        });
+
+        this.contextSaveBroadcasterRegistration = ContextTemplateSavedEventBroadcaster.register(contextTemplate -> {
             if(ui.isAttached()) {
                 ui.access(() -> this.contextTemplateFilteringGrid.getDataProvider().refreshAll());
             }

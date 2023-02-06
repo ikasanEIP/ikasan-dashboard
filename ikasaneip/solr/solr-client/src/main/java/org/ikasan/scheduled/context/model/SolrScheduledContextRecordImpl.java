@@ -36,6 +36,9 @@ public class SolrScheduledContextRecordImpl implements ScheduledContextRecord {
     @Field(SolrDaoBase.DISABLED)
     private boolean disabled = false;
 
+    @Field(SolrDaoBase.QUARTZ_SCHEDULED_JOBS_DISABLED)
+    private boolean isQuartzScheduleDrivenJobsDisabledForContext = false;
+
     @Override
     public String getId() {
         return this.id;
@@ -104,6 +107,11 @@ public class SolrScheduledContextRecordImpl implements ScheduledContextRecord {
     @Override
     public boolean isDisabled() {
         return disabled;
+    }
+
+    @Override
+    public boolean isQuartzScheduleDrivenJobsDisabledForContext() {
+        return isQuartzScheduleDrivenJobsDisabledForContext;
     }
 
     @Override

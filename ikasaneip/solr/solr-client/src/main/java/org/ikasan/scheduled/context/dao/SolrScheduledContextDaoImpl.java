@@ -40,6 +40,7 @@ public class SolrScheduledContextDaoImpl extends SolrDaoBase<ScheduledContextRec
             ContextTemplate contextTemplate = scheduledContextRecord.getContext();
             document.addField(PAYLOAD_CONTENT, this.getPayloadContents(contextTemplate));
             document.addField(DISABLED, contextTemplate.isDisabled());
+            document.addField(QUARTZ_SCHEDULED_JOBS_DISABLED, contextTemplate.isQuartzScheduleDrivenJobsDisabledForContext());
         }
         catch (JsonProcessingException e) {
             throw new SolrEntityConversionException(String.format("Cannot convert FileEventDrivenJob to string! [%s]"
