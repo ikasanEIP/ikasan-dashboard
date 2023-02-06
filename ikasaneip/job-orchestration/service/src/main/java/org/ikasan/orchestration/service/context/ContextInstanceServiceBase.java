@@ -170,9 +170,10 @@ public abstract class ContextInstanceServiceBase {
             }
         });
 
-        Map<String, GlobalEventJobInstance> globalEventJobMap = getGlobalEventJobs(instance.getId());
+        Map<String, GlobalEventJobInstance> globalEventJobMap = this.getGlobalEventJobs(instance.getId());
+        Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = this.getQuartzBasedJobs(instance.getId());
 
-        ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, internalJobs, queueDirectory, agents,
+        ContextMachine contextMachine = new ContextMachine(context, instance, scheduledContextInstanceService, globalEventJobMap, quartzScheduleDrivenJobInstanceMap, internalJobs, queueDirectory, agents,
             initialiseJobLockCache(context, isInitialContextInstantiation), contextParametersInstanceService, this.scheduledContextService, this.schedulerJobInstanceService,
             this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
         contextMachine.init();
@@ -257,6 +258,20 @@ public abstract class ContextInstanceServiceBase {
             .map(internalEventDrivenJobRecord -> (InternalEventDrivenJobInstance)internalEventDrivenJobRecord.getSchedulerJobInstance())
             .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity()));
         return internalEventDrivenJobMap;
+    }
+
+    private Map<String, QuartzScheduleDrivenJobInstance> getQuartzBasedJobs(String contextInstanceId) {
+        SchedulerJobInstanceSearchFilter filter = new SchedulerJobInstanceSearchFilterImpl();
+        filter.setContextInstanceId(contextInstanceId);
+        filter.setJobType(JobConstants.QUARTZ_SCHEDULE_DRIVEN_JOB_INSTANCE);
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults
+            = this.schedulerJobInstanceService.getScheduledContextInstancesByFilter(filter, -1, -1, null, null);
+
+        Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
+            .map(internalEventDrivenJobRecord -> (QuartzScheduleDrivenJobInstance)internalEventDrivenJobRecord.getSchedulerJobInstance())
+            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity()));
+
+        return quartzScheduleDrivenJobInstanceMap;
     }
 
     private Map<String, GlobalEventJobInstance> getGlobalEventJobs(String contextInstanceId) {

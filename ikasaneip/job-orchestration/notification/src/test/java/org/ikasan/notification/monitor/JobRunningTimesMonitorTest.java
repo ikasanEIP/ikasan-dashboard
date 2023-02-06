@@ -109,7 +109,7 @@ public class JobRunningTimesMonitorTest {
         monitorManagement = new MonitorManagement();
         monitorManagement.registerMonitor(jobRunningTimesMonitor);
 
-        contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,null
+        contextMachine1 = new ContextMachine(contextTemplate1, contextInstance1, new ScheduledContextInstanceServiceTestImpl(), null,null, null
             ,"./target",null,null, null, this.scheduledContextService, this.schedulerJobInstanceService
             , this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
         contextMachine1.init();

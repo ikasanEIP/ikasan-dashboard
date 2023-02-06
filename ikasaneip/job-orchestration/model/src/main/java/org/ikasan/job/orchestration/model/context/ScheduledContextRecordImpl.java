@@ -21,6 +21,7 @@ public class ScheduledContextRecordImpl implements ScheduledContextRecord {
     private long modifiedTimestamp;
     private String modifiedBy;
     private boolean disabled = false;
+    private boolean isQuartzScheduleDrivenJobsDisabledForContext = false;
 
     @Override
     public String getId() {
@@ -94,5 +95,14 @@ public class ScheduledContextRecordImpl implements ScheduledContextRecord {
 
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
+    }
+
+    @Override
+    public boolean isQuartzScheduleDrivenJobsDisabledForContext() {
+        return isQuartzScheduleDrivenJobsDisabledForContext;
+    }
+
+    public void setQuartzScheduleDrivenJobsDisabledForContext(boolean quartzScheduleDrivenJobsDisabledForContext) {
+        isQuartzScheduleDrivenJobsDisabledForContext = quartzScheduleDrivenJobsDisabledForContext;
     }
 }
