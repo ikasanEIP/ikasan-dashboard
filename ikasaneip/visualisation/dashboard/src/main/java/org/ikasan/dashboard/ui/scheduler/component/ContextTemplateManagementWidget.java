@@ -55,6 +55,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
@@ -709,6 +710,28 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                 contextTemplateDialog.setContextTemplate(this.contextTemplate);
                 contextTemplateDialog.open();
             })
+            .getElement()
+            .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+
+        actions.addItem(getTranslation("button.manage-context-parameters", UI.getCurrent().getLocale()),
+                menuItemClickEvent -> {
+                    ContextParameterDialog contextTemplateDialog = new ContextParameterDialog(true);
+                    contextTemplateDialog.initParams(this.contextTemplate.getContextParameters());
+                    contextTemplateDialog.open();
+
+                    contextTemplateDialog.addOpenedChangeListener(event -> {
+                        if(!event.isOpened() && contextTemplateDialog.isSaveClose()) {
+                            this.contextTemplate.setContextParameters(contextTemplateDialog.getContextParameters());
+
+                            ScheduledContextRecord scheduledContextRecord = this.scheduledContextService
+                                .findByName(this.contextTemplate.getName());
+                            scheduledContextRecord.setContext(this.contextTemplate);
+                            this.scheduledContextService.save(scheduledContextRecord);
+                        }
+                    });
+                })
             .getElement()
             .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
