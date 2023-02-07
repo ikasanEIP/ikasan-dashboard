@@ -405,9 +405,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
         verify(contextParametersInstanceService, times(3)).populateContextParameters();
-        verify(contextParametersInstanceService).getAllContextParameters("ContextName1");
-        verify(contextParametersInstanceService).getAllContextParameters("ContextName2");
-        verify(contextParametersInstanceService).getAllContextParameters("ContextName3");
+        verify(contextParametersInstanceService, times(3)).populateContextParametersOnContextInstance(any(ContextInstance.class));
         verify(moduleMetadataService, times(4)).find(any(), any(), eq(-1), eq(-1));
         verify(timeService).getDateNow();
         verify(scheduledContextInstanceService, times(3)).save(any(ScheduledContextInstanceRecord.class));
@@ -465,7 +463,7 @@ public class ContextInstanceRecoveryServiceImplTest {
         verify(scheduledContextService).findAll();
         verify(moduleMetadataService, times(2)).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
-        verify(contextParametersInstanceService).getAllContextParameters("ContextName1");
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class));
         verify(timeService).getDateNow();
 
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);

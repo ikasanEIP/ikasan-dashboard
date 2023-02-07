@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.model.ContextParameterInstance;
 import org.ikasan.spec.scheduled.instance.service.ContextParametersInstanceService;
 
@@ -33,5 +34,10 @@ public class TestContextParametersInstanceService implements ContextParametersIn
 
     public void addParamsToContext(String contextName, List<ContextParameterInstance> contextParams) {
         params.put(contextName, contextParams);
+    }
+
+    @Override
+    public void populateContextParametersOnContextInstance(ContextInstance contextInstance) {
+
     }
 }
