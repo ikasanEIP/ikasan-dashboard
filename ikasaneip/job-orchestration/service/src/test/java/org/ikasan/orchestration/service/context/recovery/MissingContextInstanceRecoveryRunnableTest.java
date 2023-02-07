@@ -152,7 +152,6 @@ public class MissingContextInstanceRecoveryRunnableTest {
                 , TestUtils.createModuleMetaData("3")), 3, 0));
 
         List<ContextParameterInstance> params = TestUtils.createParams();
-        when(contextParametersInstanceService.getAllContextParameters(contextName)).thenReturn(params);
 
         ContextInstanceImpl contextInstance = this.objectMapper
             .readValue(this.objectMapper.writeValueAsBytes(record.getContext()), ContextInstanceImpl.class);
@@ -164,10 +163,10 @@ public class MissingContextInstanceRecoveryRunnableTest {
         // verify
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
-        verify(contextParametersInstanceService).getAllContextParameters(contextName);
-        verify(contextParametersUpdateService).publish(eq(AGENT_URL + "1"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
-        verify(contextParametersUpdateService).publish(eq(AGENT_URL + "2"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
-        verify(contextParametersUpdateService).publish(eq(AGENT_URL + "3"), argThat(new CustomBackFillerMatcher(contextInstance, contextName)));
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class));
+        verify(contextParametersUpdateService).publish(eq(AGENT_URL + "1"), any(ContextInstance.class));
+        verify(contextParametersUpdateService).publish(eq(AGENT_URL + "2"), any(ContextInstance.class));
+        verify(contextParametersUpdateService).publish(eq(AGENT_URL + "3"), any(ContextInstance.class));
 
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
         verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
@@ -230,7 +229,7 @@ public class MissingContextInstanceRecoveryRunnableTest {
         verify(scheduledContextInstanceService, times(2)).save(any());
         verify(moduleMetadataService).find(any(), any(), eq(-1), eq(-1));
         verify(contextParametersInstanceService).populateContextParameters();
-        verify(contextParametersInstanceService).getAllContextParameters(contextName);
+        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class));
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
             jobInitiationService,

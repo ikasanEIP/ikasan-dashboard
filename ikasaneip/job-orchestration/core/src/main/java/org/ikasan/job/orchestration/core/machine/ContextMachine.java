@@ -233,9 +233,12 @@ public class ContextMachine {
                 }
             });
 
-            List<ContextParameterInstance> allContextParameters = contextParametersInstanceService
-                .getAllContextParameters(contextInstance.getName());
-            contextInstance.setContextParameters(allContextParameters);
+//            List<ContextParameterInstance> allContextParameters = contextParametersInstanceService
+//                .getAllContextParameters(contextInstance.getName());
+//            // todo sort out blending of context parameters
+//            contextInstance.getContextParameters().addAll(allContextParameters);
+
+            contextParametersInstanceService.populateContextParametersOnContextInstance(contextInstance);
 
             // Remove the previous context instance from all agents
             this.agents.values().forEach(agent
