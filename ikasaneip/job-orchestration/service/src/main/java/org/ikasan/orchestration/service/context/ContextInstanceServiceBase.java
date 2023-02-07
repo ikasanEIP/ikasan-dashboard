@@ -310,7 +310,6 @@ public abstract class ContextInstanceServiceBase {
 
     private void setContextParametersOnInstance(ContextInstance contextInstance) {
         contextParametersInstanceService.populateContextParameters();
-        List<ContextParameterInstance> allContextParameters = contextParametersInstanceService.getAllContextParameters(contextInstance.getName());
-        contextInstance.setContextParameters(allContextParameters);
+        contextParametersInstanceService.populateContextParametersOnContextInstance(contextInstance);
     }
 }
