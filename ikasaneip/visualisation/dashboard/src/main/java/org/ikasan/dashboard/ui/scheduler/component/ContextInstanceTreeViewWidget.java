@@ -300,7 +300,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 this.setImageBackgroundColour(image, schedulerJobInstance.getStatus());
                 horizontalLayout.setVerticalComponentAlignment(FlexComponent.Alignment.CENTER, image);
 
-                this.jobImageMap.put(new ComponentKey(this.contextInstance.getName()
+                this.jobImageMap.put(new ComponentKey(schedulerJobInstance instanceof GlobalEventJobInstance ? JobConstants.GLOBAL_EVENT : this.contextInstance.getName()
                     , schedulerJobInstance.getChildContextName(), schedulerJobInstance.getJobName()), image);
 
                 Label jobNameLabel =  new Label(((SchedulerJobInstance)value).getJobName());
@@ -1740,11 +1740,23 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * @param jobInstanceStateChangeEvent the event received when a jobs state changes.
      */
     private void manageJobStatusStateChangeEvent(UI ui, SchedulerJobInstanceStateChangeEvent jobInstanceStateChangeEvent) {
-        ComponentKey key = new ComponentKey(jobInstanceStateChangeEvent.getContextInstance().getName(),
-            jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
-        ComponentKey precedingJobKey = new ComponentKey(PRECEDING_ITEM_COMPONENT+jobInstanceStateChangeEvent.getContextInstance().getName(),
-            jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
+        ComponentKey key;
+        ComponentKey precedingJobKey;
 
+        if(jobInstanceStateChangeEvent.getSchedulerJobInstance().getAgentName().equals(JobConstants.GLOBAL_EVENT)) {
+            key = new ComponentKey(JobConstants.GLOBAL_EVENT, jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName()
+                , jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
+
+            precedingJobKey = new ComponentKey(PRECEDING_ITEM_COMPONENT+JobConstants.GLOBAL_EVENT,
+                jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
+        }
+        else {
+            key = new ComponentKey(jobInstanceStateChangeEvent.getContextInstance().getName(),
+                jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
+
+            precedingJobKey = new ComponentKey(PRECEDING_ITEM_COMPONENT+jobInstanceStateChangeEvent.getContextInstance().getName(),
+                jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName());
+        }
 
         SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService.findByContextIdJobNameChildContextName(jobInstanceStateChangeEvent.getContextInstance().getId()
             , jobInstanceStateChangeEvent.getSchedulerJobInstance().getJobName(), jobInstanceStateChangeEvent.getSchedulerJobInstance().getChildContextName());
