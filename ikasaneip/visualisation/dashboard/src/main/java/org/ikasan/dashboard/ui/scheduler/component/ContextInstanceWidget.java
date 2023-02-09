@@ -437,7 +437,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
 
         this.tabs = new Tabs();
         this.tabs.add(this.treeTab, this.visualisationTab, this.rawContextTab
-            , this.jobsTab, this.statisticsTab, this.auditTab);
+            , this.jobsTab/**, todo will introduce statisticsTab in future iteration this.statisticsTab */, this.auditTab);
 
         tabs.addSelectedChangeListener(event -> {
             if(tabs.getSelectedTab().equals(this.statisticsTab)) {

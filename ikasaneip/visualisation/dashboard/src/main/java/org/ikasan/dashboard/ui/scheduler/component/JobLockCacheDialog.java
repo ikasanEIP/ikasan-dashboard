@@ -13,6 +13,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.shared.Registration;
+import org.apache.commons.lang3.StringUtils;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.util.IkasanColours;
@@ -195,6 +196,11 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
                     verticalLayout.setSpacing(false);
                     verticalLayout.setPadding(false);
 
+                    if(jobLockHolder.getLockHolders() == null) {
+                        logger.info("Lock Holders is Null! Job Lock Name[{}], Context Name[{}], Context Instance Id[{}]", jobLockHolder.getLockName()
+                            , this.contextInstance.getName(), this.contextInstance.getId());
+                    }
+
                     if(jobLockHolder.getLockHolders() != null
                         && !jobLockHolder.getLockHolders().isEmpty()) {
                         jobLockHolder.getLockHolders().forEach(lockHolder -> {
@@ -202,7 +208,20 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
                             String jobIdentifier = lockHolder.substring(0
                                 , lockHolder.indexOf(JobLockCacheImpl.CONTEXT_ID));
 
+                            if(jobLockHolder.getSchedulerJobs() == null) {
+                                logger.info("Lock Holder Scheduler Jobs are Null! Job Lock Name[{}], Context Name[{}], Context Instance Id[{}]", jobLockHolder.getLockName()
+                                    , this.contextInstance.getName(), this.contextInstance.getId());
+                                return;
+                            }
+
                             List<SchedulerJob> schedulerJobs = jobLockHolder.getSchedulerJobs().get(contextName);
+
+                            if(schedulerJobs == null) {
+                                String keys = StringUtils.join(jobLockHolder.getSchedulerJobs().values(), ',');
+                                logger.info("Could not obtain scheduler jobs from lock holder scheduler jobs using key[{}]. Job Lock Name[{}], Context Name[{}], Context Instance Id[{}]. " +
+                                        "The keys contained in the scheduler job map are[{}]", contextName, jobLockHolder.getLockName(), this.contextInstance.getName(), this.contextInstance.getId(), keys);
+                                return;
+                            }
 
                             SchedulerJob job = schedulerJobs.stream()
                                 .filter(schedulerJob -> jobIdentifier.equals(schedulerJob.getIdentifier()))
