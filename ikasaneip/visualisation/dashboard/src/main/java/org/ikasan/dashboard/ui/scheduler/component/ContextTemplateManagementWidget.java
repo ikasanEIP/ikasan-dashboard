@@ -429,7 +429,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
 
         this.tabs = new Tabs();
         this.tabs.add(this.visualisationTab, this.rawContextTab
-            , this.contextInstancesTab, this.jobTemplatesTab, this.statisticsTab);
+            , this.contextInstancesTab, this.jobTemplatesTab/**, todo will introduce statisticsTab in future iteration this.statisticsTab*/);
 
         tabs.addSelectedChangeListener(event -> {
             if(tabs.getSelectedTab().equals(this.contextInstancesTab)) {
