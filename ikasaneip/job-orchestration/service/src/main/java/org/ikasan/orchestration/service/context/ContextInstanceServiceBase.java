@@ -271,7 +271,7 @@ public abstract class ContextInstanceServiceBase {
 
         Map<String, QuartzScheduleDrivenJobInstance> quartzScheduleDrivenJobInstanceMap = internalEventDrivenJobRecordSearchResults.getResultList().stream()
             .map(internalEventDrivenJobRecord -> (QuartzScheduleDrivenJobInstance)internalEventDrivenJobRecord.getSchedulerJobInstance())
-            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity()));
+            .collect(Collectors.toMap(key -> key.getIdentifier(), Function.identity(), (a1, a2) -> a1));
 
         return quartzScheduleDrivenJobInstanceMap;
     }
@@ -285,7 +285,7 @@ public abstract class ContextInstanceServiceBase {
 
         Map<String, GlobalEventJobInstance> globalEventJobMap = globalEventJobRecordSearchResults.getResultList().stream()
             .map(globalEventJobRecord -> (GlobalEventJobInstance) globalEventJobRecord.getSchedulerJobInstance())
-            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity()));
+            .collect(Collectors.toMap(key -> key.getIdentifier() + "-" + key.getChildContextName(), Function.identity(), (a1, a2) -> a1));
         return globalEventJobMap;
     }
 
