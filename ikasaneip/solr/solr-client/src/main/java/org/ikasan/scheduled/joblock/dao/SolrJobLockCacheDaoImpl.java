@@ -17,8 +17,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SolrJobLockCacheDaoImpl extends SolrDaoBase<JobLockCacheRecord> implements JobLockCacheDao {
 
-    public static final String JOB_LOCK_CACHE_TYPE = "jobLockCache";
-    public static final String JOB_LOCK_CACHE_ID = "jobLockCacheIdentifier";
+    public static final String JOB_LOCK_CACHE_TYPE = "jockLockCache";
+    public static final String JOB_LOCK_CACHE_ID = "jockLockCacheIdentifier";
     private static final ObjectMapper OBJECT_MAPPER = ScheduledObjectMapperFactory.newInstance();
     private static final Logger LOG = LoggerFactory.getLogger(SolrJobLockCacheDaoImpl.class);
 
