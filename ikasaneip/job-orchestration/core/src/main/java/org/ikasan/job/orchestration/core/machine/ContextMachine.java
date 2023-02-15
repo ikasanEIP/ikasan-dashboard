@@ -1149,9 +1149,11 @@ public class ContextMachine {
      * environment.
      *
      * @param schedulerJobInitiationEvent
+     * @param ignoreEnvironmentGroup set to true to target all active context instance regardless of what group it belongs to.
+     * @param forceSending set to true to override the checking of globalEventJobInstance, used when event comes from outside the current context machine
      * @throws IOException
      */
-    public void broadcastGlobalEvents(SchedulerJobInitiationEvent schedulerJobInitiationEvent) throws IOException {
+    public void broadcastGlobalEvents(SchedulerJobInitiationEvent schedulerJobInitiationEvent, boolean ignoreEnvironmentGroup, boolean forceSending) throws IOException {
         /* This block of code will Orchestrate when the event is a Global Event. This will create a
          * ContextualisedScheduledProcessEvent for the global event and send it to all active Contexts available in the
          * ContextMachineCache for a given environment group. This event will be set to Success. */
@@ -1171,16 +1173,17 @@ public class ContextMachine {
             }
         }
 
-        // Only action if this is a global event, else do nothing
-        if (globalEventJobInstance != null) {
+        // Only attempt to send the global event to other context instance if the global event exist in this context, or if "forceSending" is set to true.
+        if (globalEventJobInstance != null || forceSending) {
             logger.info("Job [{}] is a Global Event Job - Do not send to the agent [{}] and attempt to send to all Active Contexts by Environment Group",
                 schedulerJobInitiationEvent.getJobName(), schedulerJobInitiationEvent.getAgentUrl());
-            logger.info("[{}] Context is part of the EnvironmentGroup [{}]. Will send to Contexts with the same Environment Group",
-                context.getName(), context.getEnvironmentGroup());
+            logger.info("[{}] Context is part of the EnvironmentGroup [{}]. ignoreEnvironmentGroup is set to [{}]. " +
+                    "Will send to Contexts with the same Environment Group if ignoreEnvironmentGroup = false",
+                context.getName(), context.getEnvironmentGroup(), ignoreEnvironmentGroup);
 
-            // Get all active context instances the given environment group.
+            // Get all active context instances for the given environment group. If ignoreEnvironmentGroup is true, then get everything running
             List<String> contextInstanceInContextMachineCache =
-                ContextMachineCache.instance().getListOfContextInstanceIdByEnvironmentGroup(context.getEnvironmentGroup());
+                ContextMachineCache.instance().getListOfContextInstanceIdByEnvironmentGroup(context.getEnvironmentGroup(), ignoreEnvironmentGroup);
 
             // Search each context instance if the Global Event also exist. If it does, create an event for it.
             for(String contextInstanceIdFromCache : contextInstanceInContextMachineCache) {
@@ -1264,7 +1267,7 @@ public class ContextMachine {
                         outboundQueue.enqueue(serialised.getBytes());
                         logger.debug("Outbound queue size: " + outboundQueue.size());
                     } else {
-                        broadcastGlobalEvents(schedulerJobInitiationEvent);
+                        broadcastGlobalEvents(schedulerJobInitiationEvent, false, false);
                     }
                 }
 
