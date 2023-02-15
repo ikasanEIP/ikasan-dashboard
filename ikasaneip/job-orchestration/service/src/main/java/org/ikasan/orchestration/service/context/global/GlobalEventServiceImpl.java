@@ -9,6 +9,8 @@ import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GlobalEventServiceImpl implements GlobalEventService {
 
@@ -27,9 +29,39 @@ public class GlobalEventServiceImpl implements GlobalEventService {
         }
 
         try {
-            contextMachine.broadcastGlobalEvents(schedulerJobInitiationEvent);
+            contextMachine.broadcastGlobalEvents(schedulerJobInitiationEvent, false, false);
         }
         catch (IOException e) {
+            throw new GlobalEventServiceException("An exception has occurred broadcast global events", e);
+        }
+    }
+
+    /**
+     * Used to raise a global event regardless of what environment it needs to target. It will broadcast it to all active
+     * context instances that are currently running
+     * @param globalJobName name of the global event job name
+     */
+    @Override
+    public void raiseGlobalEventJob(String globalJobName) {
+
+        ConcurrentHashMap<String, ContextMachine> contextMachineMap = ContextMachineCache.instance().getContextInstanceByContextInstanceIdCache();
+        if(contextMachineMap == null || contextMachineMap.size() == 0) {
+            throw new GlobalEventServiceException(String.format("Could not resolve context instance from the context instance cache"));
+        }
+
+        // As we are going to send it to all Context Machine regardless of environment group, find any Context Machine
+        // in the cache and attempt to send. The Context Machine for that instance will handle
+        // the firing of the events to all other Contexts Instance
+        Map.Entry<String, ContextMachine> firstContextMachine = contextMachineMap.entrySet().iterator().next();
+
+        SchedulerJobInitiationEvent schedulerJobInitiationEvent = new SchedulerJobInitiationEventImpl();
+        schedulerJobInitiationEvent.setAgentName(JobConstants.GLOBAL_EVENT);
+        schedulerJobInitiationEvent.setJobName(globalJobName);
+        schedulerJobInitiationEvent.setContextInstanceId(firstContextMachine.getValue().getContext().getId());
+
+        try {
+            firstContextMachine.getValue().broadcastGlobalEvents(schedulerJobInitiationEvent, true, true);
+        } catch (IOException e) {
             throw new GlobalEventServiceException("An exception has occurred broadcast global events", e);
         }
     }
