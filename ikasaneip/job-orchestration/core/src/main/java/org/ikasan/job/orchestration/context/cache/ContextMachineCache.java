@@ -32,6 +32,11 @@ public class ContextMachineCache
         return INSTANCE;
     }
 
+    /** Get all Context Instances in the cache */
+    public ConcurrentHashMap<String, ContextMachine> getContextInstanceByContextInstanceIdCache() {
+        return contextInstanceByContextInstanceIdCache;
+    }
+
     private final ConcurrentHashMap<String, ContextMachine> contextInstanceByContextInstanceIdCache;
     private final Set<String> contextNames;
 
@@ -99,18 +104,22 @@ public class ContextMachineCache
     /**
      * Gets a list of ContextInstances based on which environmentGroup they belong to.
      * @param environmentGroup To check the cache
+     * @param ignoreEnvironmentGroup set to true to target all active context instance regardless of what group it belongs to.
      * @return list of contextInstanceId in the cache that belongs to the environmentGroup
      */
-    public List<String> getListOfContextInstanceIdByEnvironmentGroup(String environmentGroup) {
+    public List<String> getListOfContextInstanceIdByEnvironmentGroup(String environmentGroup, boolean ignoreEnvironmentGroup) {
 
         List<String> contextInstanceIdList = new ArrayList<>();
         contextInstanceByContextInstanceIdCache.forEach((contextInstance, contextMachine) -> {
-                if (StringUtils.equalsIgnoreCase(contextMachine.getContext().getEnvironmentGroup(), environmentGroup)) {
+                // ignoreEnvironmentGroup = true when ignore the environment group and return all context instances
+                if (ignoreEnvironmentGroup) {
+                    contextInstanceIdList.add(contextInstance);
+                } else if (StringUtils.equalsIgnoreCase(contextMachine.getContext().getEnvironmentGroup(), environmentGroup)) {
                     contextInstanceIdList.add(contextInstance);
                 }
             });
-        logger.debug("Found {} context instances that belongs to the environment group [{}].",
-            contextInstanceIdList.size(), environmentGroup);
+        logger.debug("Found {} context instances. environmentGroup=[{}], ignoreEnvironmentGroup=[{}]",
+            contextInstanceIdList.size(), environmentGroup, ignoreEnvironmentGroup);
         return contextInstanceIdList;
     }
 

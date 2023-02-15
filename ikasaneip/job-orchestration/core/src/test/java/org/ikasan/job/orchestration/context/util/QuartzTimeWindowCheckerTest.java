@@ -25,6 +25,21 @@ public class QuartzTimeWindowCheckerTest {
     private final ZoneId LONDON = ZoneId.of("Europe/London");
     private final ZoneId AUSTRALIA = ZoneId.of("Australia/Sydney");
 
+    /**
+     * A custom test to put in adhoc cron expression to see what withinOperatingWindow will return.
+     */
+    @Test
+    public void test_custom_withinOperatingWindow() throws ParseException {
+        SimpleDateFormat myDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        myDate.setTimeZone(TimeZone.getTimeZone("Europe/London"));
+
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(),
+            "27 2 18 8 FEB ? *", "0 30 6 8 FEB ? 2024", myDate.parse("2023-02-08T20:34:00")), is(true));
+
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(),
+            "0 30 11 8 * ? *", "0 59 7 ? * * 2024", myDate.parse("2023-02-08T14:34:00")), is(false));
+    }
+
     @Test
     public void is_within_an_operating_window_of_5_minutes() throws ParseException {
         SimpleDateFormat myDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");

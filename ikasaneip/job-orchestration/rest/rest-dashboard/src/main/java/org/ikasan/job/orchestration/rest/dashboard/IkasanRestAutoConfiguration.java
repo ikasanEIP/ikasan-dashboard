@@ -50,6 +50,7 @@ import org.ikasan.security.service.UserService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.context.service.ContextStatusService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
@@ -99,9 +100,12 @@ public class IkasanRestAutoConfiguration {
     @Resource
     private ContextProfileService contextProfileService;
 
+    @Resource
+    private GlobalEventService globalEventService;
+
     @Bean
     public ScheduledProcessEventController scheduledProcessEventController() {
-        return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert, this.inboundQueue);
+        return new ScheduledProcessEventController(this.scheduledProcessEventBatchInsert, this.inboundQueue, this.globalEventService);
     }
 
     @Bean

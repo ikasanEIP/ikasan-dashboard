@@ -52,6 +52,7 @@ import org.ikasan.spec.bigqueue.message.BigQueueMessage;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.scheduled.event.model.ContextualisedScheduledProcessEvent;
 import org.ikasan.spec.scheduled.event.model.ScheduledProcessEvent;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -83,7 +84,9 @@ public class ScheduledProcessEventController
 
     protected IBigQueue inboundQueue;
 
-    public ScheduledProcessEventController(BatchInsert<ScheduledProcessEvent> batchInsert, IBigQueue inboundQueue)
+    private GlobalEventService globalEventService;
+
+    public ScheduledProcessEventController(BatchInsert<ScheduledProcessEvent> batchInsert, IBigQueue inboundQueue, GlobalEventService globalEventService)
     {
         this.batchInsert = batchInsert;
         if (this.batchInsert == null)
@@ -94,6 +97,11 @@ public class ScheduledProcessEventController
         if (this.inboundQueue == null)
         {
             throw new IllegalArgumentException("inboundQueue cannot be null!");
+        }
+        this.globalEventService = globalEventService;
+        if (this.globalEventService == null)
+        {
+            throw new IllegalArgumentException("globalEventService cannot be null!");
         }
         this.mapper = ObjectMapperFactory.newInstance();
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -143,6 +151,29 @@ public class ScheduledProcessEventController
             e.printStackTrace();
             return new ResponseEntity(
                 new ErrorDto("An error has occurred attempting to perform a batch insert of ScheduledProcessEvents! Error message ["
+                    + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    /**
+     * Allows an external service to issue a PUT request with the name of a Global Job Event to be sent to
+     * all running Context Machines
+     * @param globalEventJobName
+     * @return http status, OK or BAD_REQUEST
+     */
+    @RequestMapping(method = RequestMethod.PUT,
+        value = "/event/globalScheduled")
+    @PreAuthorize("hasAnyAuthority('ALL','WebServiceAdmin')")
+    public ResponseEntity globalScheduledEvent(@RequestBody String globalEventJobName) {
+
+        try {
+            logger.info("Received Global Event Job Name from external sources - {}", globalEventJobName);
+            this.globalEventService.raiseGlobalEventJob(globalEventJobName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity(
+                new ErrorDto("An error has occurred attempting to send global event to all active context instances ["
                     + e.getMessage() + "]"), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity(HttpStatus.OK);
