@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -88,7 +89,7 @@ public class GlobalEventServiceImplTest {
 
     @Test(expected = GlobalEventServiceException.class)
     public void test_exception_io_exception_broadcast() throws IOException {
-        doThrow(new IOException("test")).when(contextMachine1).broadcastGlobalEvents(any());
+        doThrow(new IOException("test")).when(contextMachine1).broadcastGlobalEvents(any(), eq(false), eq(false));
         globalEventService.raiseGlobalEventJob(new GlobalEventJobInstanceImpl(), "context1");
     }
 
@@ -96,6 +97,49 @@ public class GlobalEventServiceImplTest {
     public void test_broadcast_success() throws IOException {
         globalEventService.raiseGlobalEventJob(new GlobalEventJobInstanceImpl(), "context1");
 
-        verify(contextMachine1).broadcastGlobalEvents(any());
+        verify(contextMachine1).broadcastGlobalEvents(any(), eq(false), eq(false));
     }
+
+    @Test
+    public void test_broadcast_job_name_success() throws IOException {
+
+        // Remove some context machine so when mocking we know the exact context machine to use in this mock
+        ContextMachineCache.instance().remove(contextMachine1);
+        ContextMachineCache.instance().remove(contextMachine2);
+        ContextMachineCache.instance().remove(contextMachine3);
+        ContextMachineCache.instance().remove(contextMachine4);
+
+        globalEventService.raiseGlobalEventJob("some_event");
+
+        verify(contextMachine5).broadcastGlobalEvents(any(), eq(true), eq(true));
+
+    }
+
+    @Test(expected = GlobalEventServiceException.class)
+    public void test_broadcast_no_context_exist_success() throws IOException {
+
+        // Remove all context machine from cache
+        ContextMachineCache.instance().remove(contextMachine1);
+        ContextMachineCache.instance().remove(contextMachine2);
+        ContextMachineCache.instance().remove(contextMachine3);
+        ContextMachineCache.instance().remove(contextMachine4);
+        ContextMachineCache.instance().remove(contextMachine5);
+
+        globalEventService.raiseGlobalEventJob("some_event");
+    }
+
+    @Test(expected = GlobalEventServiceException.class)
+    public void test_broadcast_job_name_io_exception() throws IOException {
+
+        doThrow(new IOException("test")).when(contextMachine3).broadcastGlobalEvents(any(), eq(true), eq(true));
+
+        // Remove all context machine from cache
+        ContextMachineCache.instance().remove(contextMachine1);
+        ContextMachineCache.instance().remove(contextMachine2);
+        ContextMachineCache.instance().remove(contextMachine4);
+        ContextMachineCache.instance().remove(contextMachine5);
+
+        globalEventService.raiseGlobalEventJob("some_event");
+    }
+
 }

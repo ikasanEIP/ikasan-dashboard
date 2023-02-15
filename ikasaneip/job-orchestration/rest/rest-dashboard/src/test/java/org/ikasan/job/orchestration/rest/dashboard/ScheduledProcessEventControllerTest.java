@@ -4,9 +4,12 @@ package org.ikasan.job.orchestration.rest.dashboard;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ikasan.bigqueue.IBigQueue;
+import org.ikasan.orchestration.service.context.global.GlobalEventServiceException;
+import org.ikasan.spec.scheduled.job.service.GlobalEventService;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -47,6 +50,9 @@ public class ScheduledProcessEventControllerTest extends AbstractRestMvcTest
     @MockBean
     private IBigQueue inboundQueue;
 
+    @MockBean
+    private GlobalEventService globalEventService;
+
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -84,5 +90,32 @@ public class ScheduledProcessEventControllerTest extends AbstractRestMvcTest
         assertEquals(HttpStatus.BAD_REQUEST.value(), status);
         String content = mvcResult.getResponse().getContentAsString();
         assertThat(content,  containsString( "An error has occurred attempting to perform a batch insert of ScheduledProcessEvents!"));
+    }
+
+    @Test
+    public void test_global_event() throws Exception
+    {
+        String uri = "/rest/event/globalScheduled";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri)
+            .contentType(MediaType.TEXT_PLAIN_VALUE).content("SOME_EXTERNAL_EVENT_AVAILABLE")).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.OK.value(), status);
+    }
+
+    @Test
+    public void test_bad_global_event() throws Exception
+    {
+        Mockito.doThrow(new GlobalEventServiceException("some error")).when(globalEventService).raiseGlobalEventJob("SOME_EXTERNAL_EVENT_AVAILABLE");
+        String uri = "/rest/event/globalScheduled";
+
+        MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri)
+            .contentType(MediaType.TEXT_PLAIN_VALUE).content("SOME_EXTERNAL_EVENT_AVAILABLE")).andReturn();
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(HttpStatus.BAD_REQUEST.value(), status);
+        String content = mvcResult.getResponse().getContentAsString();
+        assertThat(content,  containsString( "An error has occurred attempting to send global event to all active context instances [some error]"));
     }
 }
