@@ -47,7 +47,7 @@ public class SolrEmailNotificationContextDaoImpl extends SolrDaoBase<EmailNotifi
         document.addField(CREATED_DATE_TIME, emailNotificationContextRecord.getTimestamp());
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
         document.addField(MODIFIED_BY, emailNotificationContextRecord.getModifiedBy());
-        document.setField(EXPIRY, expiry);
+        document.setField(EXPIRY, DO_NOT_EXPIRE);
 
         LOGGER.debug(String.format("Converted scheduled context record to SolrDocument[%s]", document));
         return document;
