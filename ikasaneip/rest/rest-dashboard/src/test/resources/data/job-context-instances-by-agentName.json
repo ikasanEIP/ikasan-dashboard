@@ -18,15 +18,18 @@
       }
     ],
     "timeWindowStart": null,
-    "timeWindowEnd": null,
+    "contextTtlMilliseconds": 0,
     "environmentGroup": null,
     "id": "UUID2",
     "createdDateTime": 22,
     "updatedDateTime": 222,
     "startTime": 0,
+    "projectedEndTime": 0,
     "endTime": 0,
     "status": "WAITING",
-    "heldJobs": {}
+    "heldJobs": {},
+    "runContextUntilManuallyEnded": false,
+    "quartzScheduleDrivenJobsDisabledForContext": false
   },
   "UUID1": {
     "contexts": [],
@@ -52,15 +55,17 @@
       }
     ],
     "timeWindowStart": null,
-    "timeWindowEnd": null,
+    "contextTtlMilliseconds": 0,
     "environmentGroup": null,
     "id": "UUID1",
     "createdDateTime": 11,
     "updatedDateTime": 111,
     "startTime": 0,
+    "projectedEndTime": 0,
     "endTime": 0,
     "status": "WAITING",
     "heldJobs": {},
+    "runContextUntilManuallyEnded": false,
     "quartzScheduleDrivenJobsDisabledForContext": false
   }
 }

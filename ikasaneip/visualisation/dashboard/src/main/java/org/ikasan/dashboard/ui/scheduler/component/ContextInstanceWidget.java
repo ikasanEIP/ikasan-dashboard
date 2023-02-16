@@ -16,6 +16,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
@@ -35,6 +36,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.component.SplitContextIns
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
@@ -104,8 +106,11 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
-    private TextField endWindowCronExpressionTf;
+    private IntegerField contextTtlMinutes;
+    private IntegerField contextTtlHours;
+    private IntegerField contextTtlDays;
     private TextField startTimeTf;
+    private TextField projectedEndTimeTf;
     private TextField endTimeTf;
 
     private TextField timezoneTf;
@@ -308,12 +313,26 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             .bind(ContextInstance::getTimeWindowStart, ContextInstance::setTimeWindowStart);
         this.startWindowCronExpressionTf.setEnabled(false);
 
+        this.contextTtlDays = new IntegerField(getTranslation("label.duration-days", UI.getCurrent().getLocale()));
+        this.contextTtlDays.getElement().getThemeList().add("always-float-label");
+        this.contextTtlDays.setValue(ContextDurationUtils.getDays(this.contextTemplate.getContextTtlMilliseconds()));
+        this.contextTtlDays.setEnabled(false);
+        this.contextTtlHours = new IntegerField(getTranslation("label.duration-hours", UI.getCurrent().getLocale()));
+        this.contextTtlHours.getElement().getThemeList().add("always-float-label");
+        this.contextTtlHours.setValue(ContextDurationUtils.getHours(this.contextTemplate.getContextTtlMilliseconds()));
+        this.contextTtlHours.setEnabled(false);
+        this.contextTtlMinutes = new IntegerField(getTranslation("label.duration-minutes", UI.getCurrent().getLocale()));
+        this.contextTtlMinutes.getElement().getThemeList().add("always-float-label");
+        this.contextTtlMinutes.setValue(ContextDurationUtils.getMinutes(this.contextTemplate.getContextTtlMilliseconds()));
+        this.contextTtlMinutes.setEnabled(false);
 
-        this.endWindowCronExpressionTf = new TextField(getTranslation("label.time-window-end", UI.getCurrent().getLocale()));
-        this.endWindowCronExpressionTf.getElement().getThemeList().add("always-float-label");
-        binder.forField(endWindowCronExpressionTf)
-            .bind(ContextInstance::getTimeWindowEnd, ContextInstance::setTimeWindowEnd);
-        this.endWindowCronExpressionTf.setEnabled(false);
+
+//        this.endWindowCronExpressionTf = new TextField(getTranslation("label.time-window-end", UI.getCurrent().getLocale()));
+//        this.endWindowCronExpressionTf.getElement().getThemeList().add("always-float-label");
+//        // todo
+////        binder.forField(endWindowCronExpressionTf)
+////            .bind(ContextInstance::getTimeWindowEnd, ContextInstance::setTimeWindowEnd);
+//        this.endWindowCronExpressionTf.setEnabled(false);
 
         this.timezoneTf = new TextField(getTranslation("label.timezone", UI.getCurrent().getLocale()));
         this.timezoneTf.getElement().getThemeList().add("always-float-label");
@@ -327,6 +346,13 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             this.startTimeTf.setValue(DateFormatter.instance().getFormattedDate(this.contextInstance.getStartTime()));
         }
         this.startTimeTf.setEnabled(false);
+
+        this.projectedEndTimeTf = new TextField(getTranslation("label.projected-end-date-time", UI.getCurrent().getLocale()));
+        this.projectedEndTimeTf.getElement().getThemeList().add("always-float-label");
+        if(this.contextInstance.getProjectedEndTime() > 0) {
+            this.projectedEndTimeTf.setValue(DateFormatter.instance().getFormattedDate(this.contextInstance.getProjectedEndTime()));
+        }
+        this.projectedEndTimeTf.setEnabled(false);
 
         this.endTimeTf = new TextField(getTranslation("label.end-date-time", UI.getCurrent().getLocale()));
         this.endTimeTf.getElement().getThemeList().add("always-float-label");
@@ -368,17 +394,20 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
 
         formLayout.setResponsiveSteps(
             // Use four columns by default
-            new FormLayout.ResponsiveStep("0", 10)
+            new FormLayout.ResponsiveStep("0", 11)
         );
 
         this.formLayout.setWidth("100%");
 
         this.formLayout.add(this.contextInstanceId, 4);
         this.formLayout.add(this.startWindowCronExpressionTf, 2);
-        this.formLayout.add(this.endWindowCronExpressionTf, 2);
+        this.formLayout.add(this.contextTtlDays, 1);
+        this.formLayout.add(this.contextTtlHours, 1);
+        this.formLayout.add(this.contextTtlMinutes, 1);
         this.formLayout.add(this.timezoneTf, 2);
         this.formLayout.add(this.descriptionTa, 4);
         this.formLayout.add(this.startTimeTf, 2);
+        this.formLayout.add(this.projectedEndTimeTf, 2);
         this.formLayout.add(this.endTimeTf, 2);
 
         CollapsableLayout collapsableLayout = new CollapsableLayout();
@@ -808,6 +837,23 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             });
         });
 
+        Button contextInstanceEndButton = new Button("End Context");
+        contextInstanceEndButton.setIconAfterText(true);
+        contextInstanceEndButton.setVisible(this.contextInstance.isRunContextUntilManuallyEnded());
+        contextInstanceEndButton.addClickListener(event -> {
+
+        });
+
+        Button ignoreContextInstanceEndButton = new Button("End Context Manually");
+        ignoreContextInstanceEndButton.setIconAfterText(true);
+        ignoreContextInstanceEndButton.setVisible(!this.contextInstance.isRunContextUntilManuallyEnded());
+        ignoreContextInstanceEndButton.addClickListener(event -> {
+            this.contextInstance.setRunContextUntilManuallyEnded(true);
+            this.saveContextInstance(this.contextInstance, this.contextInstance.getStatus());
+            ignoreContextInstanceEndButton.setVisible(false);
+            contextInstanceEndButton.setVisible(true);
+        });
+
         Button resetContextButton = new Button(getTranslation("button.reset-context", UI.getCurrent().getLocale()), VaadinIcon.TIME_BACKWARD.create());
         resetContextButton.setIconAfterText(true);
         resetContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
@@ -860,7 +906,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.add(jobLockDashboard, holdContextButton, releaseContextButton, enableQuartzScheduledJobsButton,
-            disableQuartzScheduledJobsButton, resetContextButton);
+            disableQuartzScheduledJobsButton, contextInstanceEndButton, ignoreContextInstanceEndButton, resetContextButton);
         buttonLayout.setMargin(false);
         buttonLayout.setPadding(false);
 

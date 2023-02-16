@@ -20,7 +20,7 @@ public class ContextTemplateBuilder {
     protected List<ContextParameter> contextParameters = new ArrayList<>();
     protected List<SchedulerJob> scheduledJobs = new ArrayList<>();
     protected String timeWindowStartCronExpression;
-    protected String timeWindowEndCronExpression;
+    protected long contextTtlMilliseconds;
     protected Map<Long, Long> blackoutWindowDateTimeRanges = new HashMap<>();
     protected List<String> blackoutWindowCronExpressions = new ArrayList<>();
     protected List<JobLock> jobLocks = new ArrayList<>();
@@ -97,8 +97,8 @@ public class ContextTemplateBuilder {
         return this;
     }
 
-    public ContextTemplateBuilder withTimeWindowEndCronExpression(String timeWindowEndCronExpression) {
-        this.timeWindowEndCronExpression = timeWindowEndCronExpression;
+    public ContextTemplateBuilder withContextTtlMilliseconds(long contextTtlMilliseconds) {
+        this.contextTtlMilliseconds = contextTtlMilliseconds;
         return this;
     }
 
@@ -166,7 +166,7 @@ public class ContextTemplateBuilder {
         contextTemplate.setDescription(this.description);
         contextTemplate.setTimezone(this.timezone);
         contextTemplate.setTimeWindowStart(this.timeWindowStartCronExpression);
-        contextTemplate.setTimeWindowEnd(this.timeWindowEndCronExpression);
+        contextTemplate.setContextTtlMilliseconds(this.contextTtlMilliseconds);
         contextTemplate.setContextDependencies(this.contextDependencies);
         contextTemplate.setContexts(this.contexts);
         contextTemplate.setContextParameters(this.contextParameters);
