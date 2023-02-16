@@ -1,6 +1,7 @@
 package org.ikasan.orchestration.service.context.recovery;
 
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker;
 import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.model.instance.ContextInstanceImpl;
@@ -75,12 +76,8 @@ public class MissingContextInstanceRecoveryRunnable extends ContextInstanceServi
                 && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(),now)) {
                 initialiseContextMachine(scheduledContextRecord.getContext(), contextInstance, true);
 
-                // @todo as part of a subsequent Jira, add the cron end date here to the schedule and save so that
-                // we can accurately identify which instances to ressurect upon server restart
-//                QuartzTimeWindowChecker.getNextExecution(contextInstance.getTimeWindowEnd(), contextInstance.getTimezone());
-//                contextInstance.setEndTime();
-
-                contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), contextInstance.getTimeWindowEnd(), contextInstance.getTimezone(), contextInstance.getId());
+                contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
+                    , contextInstance.getTimezone(), contextInstance.getId());
             }
             else {
                 LOG.info(String.format("ContextTemplate [%s] falls withing a blackout time window and will not be registered!"

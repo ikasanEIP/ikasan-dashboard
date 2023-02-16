@@ -1,8 +1,38 @@
 {
-  "name" : "Parent Context",
-  "description" : "Context Template Description",
   "contexts" : [ {
+    "contexts" : [ ],
+    "scheduledJobs" : [ {
+      "agentName" : "AgentName",
+      "jobName" : "Job1",
+      "childContextNames" : [ ],
+      "startupControlType" : "AUTOMATIC",
+      "skippedContexts" : { },
+      "heldContexts" : { },
+      "identifier" : "AgentName-Job1",
+      "jobDescription" : "Job1 Description"
+    }, {
+      "agentName" : "AgentName",
+      "jobName" : "Job2",
+      "childContextNames" : [ ],
+      "startupControlType" : "AUTOMATIC",
+      "skippedContexts" : { },
+      "heldContexts" : { },
+      "identifier" : "AgentName-Job2",
+      "jobDescription" : "Job2 Description"
+    }, {
+      "agentName" : "AgentName",
+      "jobName" : "Job3",
+      "childContextNames" : [ ],
+      "startupControlType" : "AUTOMATIC",
+      "skippedContexts" : { },
+      "heldContexts" : { },
+      "identifier" : "AgentName-Job3",
+      "jobDescription" : "Job3 Description"
+    } ],
+    "jobLocks" : [ ],
     "name" : "Context Template 1",
+    "blackoutWindowDateTimeRanges" : { },
+    "blackoutWindowCronExpressions" : [ ],
     "jobDependencies" : [ {
       "jobIdentifier" : "AgentName-Job2"
     }, {
@@ -17,24 +47,63 @@
         } ]
       }
     } ],
+    "contextDependencies" : [ ],
+    "contextParameters" : [ ],
+    "contextTtlMilliseconds" : 0,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
+  }, {
+    "contexts" : [ ],
     "scheduledJobs" : [ {
       "agentName" : "AgentName",
-      "jobName" : "Job1",
-      "identifier" : "AgentName-Job1",
-      "jobDescription" : "Job1 Description"
+      "jobName" : "Job4",
+      "childContextNames" : [ ],
+      "startupControlType" : "AUTOMATIC",
+      "skippedContexts" : { },
+      "heldContexts" : { },
+      "identifier" : "AgentName-Job4",
+      "jobDescription" : "Job4 Description"
     }, {
       "agentName" : "AgentName",
-      "jobName" : "Job2",
-      "identifier" : "AgentName-Job2",
-      "jobDescription" : "Job2 Description"
+      "jobName" : "Job5",
+      "childContextNames" : [ ],
+      "startupControlType" : "AUTOMATIC",
+      "skippedContexts" : { },
+      "heldContexts" : { },
+      "identifier" : "AgentName-Job5",
+      "jobDescription" : "Job5 Description"
     }, {
       "agentName" : "AgentName",
-      "jobName" : "Job3",
-      "identifier" : "AgentName-Job3",
-      "jobDescription" : "Job3 Description"
-    } ]
-  }, {
+      "jobName" : "Job6",
+      "childContextNames" : [ ],
+      "startupControlType" : "AUTOMATIC",
+      "skippedContexts" : { },
+      "heldContexts" : { },
+      "identifier" : "AgentName-Job6",
+      "jobDescription" : "Job6 Description"
+    }, {
+      "agentName" : "AgentName",
+      "jobName" : "Job7",
+      "childContextNames" : [ ],
+      "startupControlType" : "AUTOMATIC",
+      "skippedContexts" : { },
+      "heldContexts" : { },
+      "identifier" : "AgentName-Job7",
+      "jobDescription" : "Job7 Description"
+    }, {
+      "agentName" : "AgentName",
+      "jobName" : "Job8",
+      "childContextNames" : [ ],
+      "startupControlType" : "AUTOMATIC",
+      "skippedContexts" : { },
+      "heldContexts" : { },
+      "identifier" : "AgentName-Job8",
+      "jobDescription" : "Job8 Description"
+    } ],
+    "jobLocks" : [ ],
     "name" : "Context Template 2",
+    "blackoutWindowDateTimeRanges" : { },
+    "blackoutWindowCronExpressions" : [ ],
     "jobDependencies" : [ {
       "jobIdentifier" : "AgentName-Job4"
     }, {
@@ -65,33 +134,19 @@
         } ]
       }
     } ],
-    "scheduledJobs" : [ {
-      "agentName" : "AgentName",
-      "jobName" : "Job4",
-      "identifier" : "AgentName-Job4",
-      "jobDescription" : "Job4 Description"
-    }, {
-      "agentName" : "AgentName",
-      "jobName" : "Job5",
-      "identifier" : "AgentName-Job5",
-      "jobDescription" : "Job5 Description"
-    }, {
-      "agentName" : "AgentName",
-      "jobName" : "Job6",
-      "identifier" : "AgentName-Job6",
-      "jobDescription" : "Job6 Description"
-    }, {
-      "agentName" : "AgentName",
-      "jobName" : "Job7",
-      "identifier" : "AgentName-Job7",
-      "jobDescription" : "Job7 Description"
-    }, {
-      "agentName" : "AgentName",
-      "jobName" : "Job8",
-      "identifier" : "AgentName-Job8",
-      "jobDescription" : "Job8 Description"
-    } ]
+    "contextDependencies" : [ ],
+    "contextParameters" : [ ],
+    "contextTtlMilliseconds" : 0,
+    "disabled" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
   } ],
+  "scheduledJobs" : [ ],
+  "jobLocks" : [ ],
+  "name" : "Parent Context",
+  "description" : "Context Template Description",
+  "blackoutWindowDateTimeRanges" : { },
+  "blackoutWindowCronExpressions" : [ ],
+  "jobDependencies" : [ ],
   "contextDependencies" : [ {
     "contextIdentifier" : "Context Template 1",
     "contextDependencyName" : "parent context dependency",
@@ -118,5 +173,7 @@
     "defaultValue" : "value"
   } ],
   "timeWindowStart" : "* * 6 ? * * *",
-  "timeWindowEnd" : "* * 15 ? * * *"
+  "contextTtlMilliseconds" : 100000,
+  "disabled" : false,
+  "quartzScheduleDrivenJobsDisabledForContext" : false
 }

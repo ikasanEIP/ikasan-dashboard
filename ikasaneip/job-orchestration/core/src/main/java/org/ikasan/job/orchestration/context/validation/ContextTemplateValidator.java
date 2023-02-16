@@ -101,11 +101,11 @@ public class ContextTemplateValidator {
                 .append("] must contain a time window start cron expression.\n");
         }
 
-        if(contextTemplate.getTimeWindowEnd() == null || contextTemplate.getTimeWindowEnd().isEmpty()) {
-            this.inError = true;
-            this.errorReport.append("Context[").append(contextTemplate.getName())
-                .append("] must contain a time window end cron expression.\n");
-        }
+//        if(contextTemplate.getTimeWindowEnd() == null || contextTemplate.getTimeWindowEnd().isEmpty()) {
+//            this.inError = true;
+//            this.errorReport.append("Context[").append(contextTemplate.getName())
+//                .append("] must contain a time window end cron expression.\n");
+//        }
     }
 
     /**
@@ -121,11 +121,11 @@ public class ContextTemplateValidator {
                 .append("] must not contain a time window start cron expression. This field can only be present in the root context.\n");
         }
 
-        if(contextTemplate.getTimeWindowEnd() != null && !contextTemplate.getTimeWindowEnd().isEmpty()) {
-            this.inError = true;
-            this.errorReport.append("Context[").append(contextTemplate.getName())
-                .append("] must not contain a time window end cron expression. This field can only be present in the root context.\n");
-        }
+//        if(contextTemplate.getTimeWindowEnd() != null && !contextTemplate.getTimeWindowEnd().isEmpty()) {
+//            this.inError = true;
+//            this.errorReport.append("Context[").append(contextTemplate.getName())
+//                .append("] must not contain a time window end cron expression. This field can only be present in the root context.\n");
+//        }
     }
 
     /**

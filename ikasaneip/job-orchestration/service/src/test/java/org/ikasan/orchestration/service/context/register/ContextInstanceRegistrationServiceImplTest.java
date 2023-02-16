@@ -971,7 +971,7 @@ public class ContextInstanceRegistrationServiceImplTest {
     }
 
     @Test
-    public void deregsiter_should_save_instance_as_ended() throws Exception {
+    public void deregister_should_save_instance_as_ended() throws Exception {
         // set up
         String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
         jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
@@ -1015,6 +1015,44 @@ public class ContextInstanceRegistrationServiceImplTest {
         );
 
         assertTrue(ContextMachineCache.instance().cacheIsEmpty());
+    }
+
+    @Test
+    public void deregister_ignore_as_instance_marked_as_manual_end() throws Exception {
+        // set up
+        String jsonContext = new String(new ClassPathResource("context.json").getInputStream().readAllBytes());
+        jsonContext = jsonContext.replace("\"name\": \"CONTEXT-1436221681\"", "\"name\" : \"" + contextName + "\"");
+
+        ContextTemplateImpl context = objectMapper.readValue(jsonContext, ContextTemplateImpl.class);
+        ContextInstanceImpl contextInstance = objectMapper.readValue(jsonContext, ContextInstanceImpl.class);
+        contextInstance.setRunContextUntilManuallyEnded(true);
+        ContextMachine contextMachine = new ContextMachine(context, contextInstance, null, null, null, null, null, null, JobLockCacheImpl.instance(), null,
+            null, this.schedulerJobInstanceService, this.jobLockCacheInitialisationService, this.contextInstancePublicationService);
+
+        ContextMachineCache.instance().put(contextMachine);
+
+        SearchResults<SchedulerJobInstanceRecord> internalEventDrivenJobRecordSearchResults = new InternalEventDrivenJobTestSearchResults(1);
+        when(moduleMetadataService.find(any(), any(), eq(-1), eq(-1))).thenReturn(new ModuleMetadataSearchResults(List.of(TestUtils.createModuleMetaData("1")), 0, 0));
+
+        // execute
+        contextInstanceRegistrationService.deRegisterByName(contextName);
+
+        // verify
+        verifyNoMoreInteractions(
+            scheduledContextInstanceService,
+            jobInitiationService,
+            moduleMetadataService,
+            internalEventDrivenJobService,
+            contextParametersInstanceService,
+            contextInstancePublicationService,
+            scheduledContextService,
+            contextInstanceStateChangeEventBroadcaster,
+            schedulerJobStateChangeEventBroadcaster
+        );
+
+        assertFalse(ContextMachineCache.instance().cacheIsEmpty());
+        assertEquals(InstanceStatus.WAITING, ContextMachineCache.instance()
+            .getByContextInstanceId(contextInstance.getId()).getContext().getStatus());
     }
 
     @Test

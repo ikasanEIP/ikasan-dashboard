@@ -203,6 +203,7 @@ public abstract class ContextInstanceServiceBase {
 
         if (isInitialContextInstantiation) {
             instance.setStartTime(System.currentTimeMillis());
+            instance.setProjectedEndTime(instance.getStartTime()+instance.getContextTtlMilliseconds());
             this.saveContextInstance(instance, InstanceStatus.WAITING);
         }
 
