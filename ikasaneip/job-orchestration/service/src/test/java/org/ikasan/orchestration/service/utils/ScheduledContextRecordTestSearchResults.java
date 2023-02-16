@@ -40,10 +40,10 @@ public class ScheduledContextRecordTestSearchResults<ANY> implements SearchResul
             context.setName(CONTEXT_NAME + i);
             if (outsideOfOperatingWindow) {
                 context.setTimeWindowStart("59 59 23 ? * * *");
-                context.setTimeWindowEnd("59 59 23 ? * * *");
+                context.setContextTtlMilliseconds(1L);
             } else {
                 context.setTimeWindowStart("* * 0 ? * * *");
-                context.setTimeWindowEnd("* * 23 ? * * *");
+                context.setContextTtlMilliseconds(82800000L);
             }
             record.setContext(context);
             results.add(record);

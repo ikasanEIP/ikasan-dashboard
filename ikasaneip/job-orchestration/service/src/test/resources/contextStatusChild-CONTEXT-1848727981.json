@@ -136,13 +136,17 @@
     } ],
     "contextDependencies" : [ ],
     "contextParameters" : [ ],
+    "contextTtlMilliseconds" : 0,
     "id" : "UUID",
     "createdDateTime" : 1665669706022,
     "updatedDateTime" : 1665669706022,
     "startTime" : 0,
+    "projectedEndTime" : 0,
     "endTime" : 0,
     "status" : "WAITING",
-    "heldJobs" : { }
+    "heldJobs" : { },
+    "runContextUntilManuallyEnded" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
   }, {
     "contexts" : [ ],
     "scheduledJobs" : [ {
@@ -224,13 +228,17 @@
     } ],
     "contextDependencies" : [ ],
     "contextParameters" : [ ],
+    "contextTtlMilliseconds" : 0,
     "id" : "UUID",
     "createdDateTime" : 1665669706022,
     "updatedDateTime" : 1665669706022,
     "startTime" : 0,
+    "projectedEndTime" : 0,
     "endTime" : 0,
     "status" : "WAITING",
-    "heldJobs" : { }
+    "heldJobs" : { },
+    "runContextUntilManuallyEnded" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
   }, {
     "contexts" : [ ],
     "scheduledJobs" : [ {
@@ -270,25 +278,32 @@
     } ],
     "contextDependencies" : [ ],
     "contextParameters" : [ ],
+    "contextTtlMilliseconds" : 0,
     "id" : "UUID",
     "createdDateTime" : 1665669706022,
     "updatedDateTime" : 1665669706022,
     "startTime" : 0,
+    "projectedEndTime" : 0,
     "endTime" : 0,
     "status" : "WAITING",
-    "heldJobs" : { }
+    "heldJobs" : { },
+    "runContextUntilManuallyEnded" : false,
+    "quartzScheduleDrivenJobsDisabledForContext" : false
   } ],
   "scheduledJobs" : [ ],
   "jobLocks" : [ ],
   "name" : "CONTEXT-1848727981",
   "contextDependencies" : [ ],
   "contextParameters" : [ ],
+  "contextTtlMilliseconds" : 0,
   "id" : "UUID",
   "createdDateTime" : 1665669706022,
   "updatedDateTime" : 1665669706022,
   "startTime" : 0,
+  "projectedEndTime" : 0,
   "endTime" : 0,
   "status" : "WAITING",
   "heldJobs" : { },
+  "runContextUntilManuallyEnded" : false,
   "quartzScheduleDrivenJobsDisabledForContext" : false
 }

@@ -1,46 +1,70 @@
 package org.ikasan.job.orchestration.context.util;
 
+import com.cronutils.builder.CronBuilder;
 import com.cronutils.model.Cron;
+import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
+import org.joda.time.Seconds;
 import org.quartz.CronExpression;
 
 import java.text.ParseException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalField;
+import java.time.temporal.TemporalUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
 import static com.cronutils.model.CronType.QUARTZ;
+import static com.cronutils.model.field.expression.FieldExpressionFactory.*;
+
 
 public class QuartzTimeWindowChecker {
     /**
      * Determine if the reference dateTime is within the start and end cron expressions.
      * @param timezone to use to adjust referenceDateTime
      * @param startTimeCronExpression to check
-     * @param endTimeCronExpression to check
+     * @param contextTtl to check
      * @param referenceDateTime to which we are comparing, note that date is not always UTC, just depends on how it is created.
      *                          This method does not require the date/time to be UTC, it will be adjusted according to timezone
      * @return true if the reference date / time is within the range, false otherwise
      */
-    public static boolean withinOperatingWindow(String timezone, String startTimeCronExpression, String endTimeCronExpression, Date referenceDateTime) {
+    public static boolean withinOperatingWindow(String timezone, String startTimeCronExpression, long contextTtl, Date referenceDateTime) {
         ZoneId zoneId = timezone != null ? ZoneId.of(timezone) : ZoneId.systemDefault();
         ZonedDateTime referenceZDateTime = ZonedDateTime.ofInstant(referenceDateTime.toInstant(), zoneId);
 
         ZonedDateTime nextExecutionStart = getNextExecution(startTimeCronExpression, referenceZDateTime);
         ZonedDateTime previousExecutionStart = getPreviousExecution(startTimeCronExpression, referenceZDateTime);
-        ZonedDateTime executionEnd = getNextExecution(endTimeCronExpression, referenceZDateTime);
 
-        ZonedDateTime startExecution = nextExecutionStart.isAfter(executionEnd) ? previousExecutionStart : nextExecutionStart;
+        String endTimeCronExpressionFromPrevious = CronUtils.buildCronFromOriginalWithMillisecondOffset(previousExecutionStart.toEpochSecond()*1000
+            , contextTtl, timezone);
+        String endTimeCronExpressionFromNext = CronUtils.buildCronFromOriginalWithMillisecondOffset(nextExecutionStart.toEpochSecond()*1000
+            , contextTtl, timezone);
 
-        if (isOnFireTime(zoneId, startTimeCronExpression, endTimeCronExpression, referenceDateTime)) {
+
+        ZonedDateTime executionEndFromPrevious = getNextExecution(endTimeCronExpressionFromPrevious, referenceZDateTime);
+        ZonedDateTime executionEndFromNext = getNextExecution(endTimeCronExpressionFromNext, referenceZDateTime);
+
+        ZonedDateTime startExecution;
+
+        if(executionEndFromPrevious != null) {
+            startExecution = nextExecutionStart.isAfter(executionEndFromPrevious) || nextExecutionStart.equals(executionEndFromPrevious) ? previousExecutionStart : nextExecutionStart;
+        }
+        else {
+            startExecution = previousExecutionStart.isAfter(executionEndFromNext) ? previousExecutionStart : nextExecutionStart;
+        }
+
+        if (isOnFireTime(zoneId, startTimeCronExpression, endTimeCronExpressionFromPrevious, referenceDateTime)) {
             return true;
         } else {
-            return referenceZDateTime.isAfter(startExecution) && referenceZDateTime.isBefore(executionEnd);
+            return referenceZDateTime.isAfter(startExecution) && referenceZDateTime.isBefore(executionEndFromPrevious);
         }
     }
 
@@ -141,10 +165,10 @@ public class QuartzTimeWindowChecker {
             CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(QUARTZ);
             CronParser cronParser = new CronParser(cronDefinition);
             Cron parse = cronParser.parse(cronExpression);
+
             return ExecutionTime.forCron(parse);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Can not parse quartz expression " + cronExpression, e);
         }
-    
     }
 }

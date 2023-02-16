@@ -1,6 +1,200 @@
 {
+  "contexts" : [ ],
+  "scheduledJobs" : [ {
+    "agentName" : "scheduler-agent",
+    "jobName" : "File Arrive Job",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "Job1 Description",
+    "identifier" : "scheduler-agent-File Arrive Job"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-0",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-job-0"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-1",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-job-1"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-2",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-job-2"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-3",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-job-3"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-4",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-job-4"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-5",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-job-5"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-6",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-job-6"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-7",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-job-7"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-8",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-job-8"
+  }, {
+    "agentName" : "scheduler-agent",
+    "jobName" : "job-9",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-job-9"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-0",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-2-job-0"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-1",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-2-job-1"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-2",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-2-job-2"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-3",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-2-job-3"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-4",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-2-job-4"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-5",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-2-job-5"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-6",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-2-job-6"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-7",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-2-job-7"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-8",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-2-job-8"
+  }, {
+    "agentName" : "scheduler-agent-2",
+    "jobName" : "job-9",
+    "childContextNames" : [ ],
+    "startupControlType" : "AUTOMATIC",
+    "skippedContexts" : { },
+    "heldContexts" : { },
+    "jobDescription" : "A simple internal job!",
+    "identifier" : "scheduler-agent-2-job-9"
+  } ],
+  "jobLocks" : [ ],
   "name" : "test-context",
   "description" : "Context Template Description",
+  "blackoutWindowDateTimeRanges" : { },
+  "blackoutWindowCronExpressions" : [ ],
   "jobDependencies" : [ {
     "jobIdentifier" : "scheduler-agent-File Arrive Job"
   }, {
@@ -144,6 +338,7 @@
       } ]
     }
   } ],
+  "contextDependencies" : [ ],
   "contextParameters" : [ {
     "name" : "param1",
     "defaultValue" : "value"
@@ -160,133 +355,8 @@
     "name" : "param5",
     "defaultValue" : "value"
   } ],
-  "scheduledJobs" : [ {
-    "agentName" : "scheduler-agent",
-    "jobName" : "File Arrive Job",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-File Arrive Job",
-    "jobDescription" : "Job1 Description"
-  }, {
-    "agentName" : "scheduler-agent",
-    "jobName" : "job-0",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-job-0",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent",
-    "jobName" : "job-1",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-job-1",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent",
-    "jobName" : "job-2",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-job-2",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent",
-    "jobName" : "job-3",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-job-3",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent",
-    "jobName" : "job-4",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-job-4",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent",
-    "jobName" : "job-5",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-job-5",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent",
-    "jobName" : "job-6",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-job-6",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent",
-    "jobName" : "job-7",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-job-7",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent",
-    "jobName" : "job-8",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-job-8",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent",
-    "jobName" : "job-9",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-job-9",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent-2",
-    "jobName" : "job-0",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-2-job-0",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent-2",
-    "jobName" : "job-1",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-2-job-1",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent-2",
-    "jobName" : "job-2",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-2-job-2",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent-2",
-    "jobName" : "job-3",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-2-job-3",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent-2",
-    "jobName" : "job-4",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-2-job-4",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent-2",
-    "jobName" : "job-5",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-2-job-5",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent-2",
-    "jobName" : "job-6",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-2-job-6",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent-2",
-    "jobName" : "job-7",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-2-job-7",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent-2",
-    "jobName" : "job-8",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-2-job-8",
-    "jobDescription" : "A simple internal job!"
-  }, {
-    "agentName" : "scheduler-agent-2",
-    "jobName" : "job-9",
-    "startupControlType" : "AUTOMATIC",
-    "identifier" : "scheduler-agent-2-job-9",
-    "jobDescription" : "A simple internal job!"
-  } ],
   "timeWindowStart" : "* * 6 ? * * *",
-  "timeWindowEnd" : "* * 15 ? * * *"
+  "contextTtlMilliseconds" : 100000,
+  "disabled" : false,
+  "quartzScheduleDrivenJobsDisabledForContext" : false
 }

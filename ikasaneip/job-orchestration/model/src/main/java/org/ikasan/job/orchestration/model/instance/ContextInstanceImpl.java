@@ -18,7 +18,9 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
     private long createdDateTime;
     private long updatedDateTime;
     private long startTime;
+    private long projectedEndTime;
     private long endTime;
+    private boolean isRunContextUntilManuallyEnded;
     private String timezone;
     private InstanceStatus status;
     private Map<String, SchedulerJobInitiationEvent> heldJobs;
@@ -79,6 +81,26 @@ public class  ContextInstanceImpl extends ContextImpl<ContextInstance, ContextPa
     @Override
     public void setEndTime(long endTime) {
         this.endTime = endTime;
+    }
+
+    @Override
+    public long getProjectedEndTime() {
+        return projectedEndTime;
+    }
+
+    @Override
+    public void setProjectedEndTime(long projectedEndTime) {
+        this.projectedEndTime = projectedEndTime;
+    }
+
+    @Override
+    public boolean isRunContextUntilManuallyEnded() {
+        return isRunContextUntilManuallyEnded;
+    }
+
+    @Override
+    public void setRunContextUntilManuallyEnded(boolean runContextUntilManuallyEnded) {
+        isRunContextUntilManuallyEnded = runContextUntilManuallyEnded;
     }
 
     @Override

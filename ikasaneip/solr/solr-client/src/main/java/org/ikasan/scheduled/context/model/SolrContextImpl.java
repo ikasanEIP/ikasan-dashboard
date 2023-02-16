@@ -19,7 +19,7 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     protected List<ContextDependency> contextDependencies = new ArrayList<>();
     protected List<CONTEXT_PARAM> contextParameters = new ArrayList<>() ;
     protected String timeWindowStart;
-    protected String timeWindowEnd;
+    protected long contextTtlMilliseconds;
     protected String environmentGroup;
     private boolean isQuartzScheduleDrivenJobsDisabledForContext = false;
 
@@ -119,13 +119,13 @@ public class SolrContextImpl<CONTEXT extends Context, CONTEXT_PARAM, JOB extends
     }
 
     @Override
-    public String getTimeWindowEnd() {
-        return timeWindowEnd;
+    public long getContextTtlMilliseconds() {
+        return contextTtlMilliseconds;
     }
 
     @Override
-    public void setTimeWindowEnd(String timeWindowEnd) {
-        this.timeWindowEnd = timeWindowEnd;
+    public void setContextTtlMilliseconds(long contextTtlMilliseconds) {
+        this.contextTtlMilliseconds = contextTtlMilliseconds;
     }
 
     @Override

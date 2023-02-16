@@ -215,10 +215,11 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
         this.endWindowCronExpressionTf = new TextField(getTranslation("label.time-window-end", UI.getCurrent().getLocale()));
         this.endWindowCronExpressionTf.getElement().getThemeList().add("always-float-label");
         this.endWindowCronExpressionTf.setSuffixComponent(endWindowCronBuilderIcon);
-        binder.forField(endWindowCronExpressionTf)
-            .asRequired(getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
-            .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
-            .bind(ContextTemplate::getTimeWindowEnd, ContextTemplate::setTimeWindowEnd);
+        // todo
+//        binder.forField(endWindowCronExpressionTf)
+//            .asRequired(getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
+//            .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
+//            .bind(ContextTemplate::getTimeWindowEnd, ContextTemplate::setTimeWindowEnd);
 
         binder.readBean(this.contextTemplate);
 

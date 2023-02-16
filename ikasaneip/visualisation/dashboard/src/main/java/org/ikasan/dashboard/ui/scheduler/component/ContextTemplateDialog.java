@@ -14,6 +14,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
@@ -28,6 +29,7 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateTimeUtil;
 import org.ikasan.dashboard.ui.util.IconDecorator;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
+import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
 import org.ikasan.job.orchestration.model.context.ContextTemplateImpl;
 import org.ikasan.job.orchestration.model.context.ScheduledContextRecordImpl;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
@@ -48,7 +50,9 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
-    private TextField endWindowCronExpressionTf;
+    private IntegerField contextTtlMinutes;
+    private IntegerField contextTtlHours;
+    private IntegerField contextTtlDays;
     private DateTimePicker blackoutWindowStartTime;
     private DateTimePicker blackoutWindowEndTime;
     private ComboBox<DateTimeUtil.TimezonePair> timezoneCb;
@@ -97,7 +101,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
     private void init() {
         this.blackoutWindowDateTimePairs = new ArrayList<>();
         this.setHeight("740px");
-        this.setWidth("90vw");
+        this.setWidth("95vw");
 
         super.showResize(false);
         super.setResizable(false);
@@ -211,25 +215,20 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
             .bind(ContextTemplate::getTimeWindowStart, ContextTemplate::setTimeWindowStart);
 
-        Icon endWindowCronBuilderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), getTranslation("tooltip.build-cron-expression", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
-        endWindowCronBuilderIcon.addClickListener(event -> {
-            CronBuilderDialog dialog = new CronBuilderDialog();
-            dialog.init(this.endWindowCronExpressionTf.getValue());
-            dialog.open();
-
-            dialog.addOpenedChangeListener(openedChangeEvent -> {
-                if(!openedChangeEvent.isOpened() && dialog.isSaveClose()) {
-                    this.endWindowCronExpressionTf.setValue(dialog.getCronExpression());
-                }
-            });
-        });
-        this.endWindowCronExpressionTf = new TextField(getTranslation("label.time-window-end", UI.getCurrent().getLocale()));
-        this.endWindowCronExpressionTf.getElement().getThemeList().add("always-float-label");
-        this.endWindowCronExpressionTf.setSuffixComponent(endWindowCronBuilderIcon);
-        binder.forField(endWindowCronExpressionTf)
-            .asRequired(getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
-            .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
-            .bind(ContextTemplate::getTimeWindowEnd, ContextTemplate::setTimeWindowEnd);
+        this.contextTtlDays = new IntegerField(getTranslation("label.duration-days", UI.getCurrent().getLocale()));
+        this.contextTtlDays.getElement().getThemeList().add("always-float-label");
+        this.contextTtlDays.setMin(0);
+        this.contextTtlDays.setRequiredIndicatorVisible(true);
+        this.contextTtlHours = new IntegerField(getTranslation("label.duration-hours", UI.getCurrent().getLocale()));
+        this.contextTtlHours.getElement().getThemeList().add("always-float-label");
+        this.contextTtlHours.setRequiredIndicatorVisible(true);
+        this.contextTtlHours.setMin(0);
+        this.contextTtlHours.setMax(23);
+        this.contextTtlMinutes = new IntegerField(getTranslation("label.duration-minutes", UI.getCurrent().getLocale()));
+        this.contextTtlMinutes.getElement().getThemeList().add("always-float-label");
+        this.contextTtlMinutes.setRequiredIndicatorVisible(true);
+        this.contextTtlMinutes.setMin(0);
+        this.contextTtlMinutes.setMax(59);
 
         binder.readBean(this.contextTemplate);
 
@@ -314,14 +313,17 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             new FormLayout.ResponsiveStep("500px", 20)
         );
         this.formLayout.setWidth("100%");
-        this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.endWindowCronExpressionTf, this.timezoneCb, this.descriptionTa,
-            blackoutWindowsGrid, addDateTimePairButton);
-        this.formLayout.setColspan(this.contextNameTf, 8);
-        this.formLayout.setColspan(this.startWindowCronExpressionTf, 4);
-        this.formLayout.setColspan(this.endWindowCronExpressionTf, 4);
+        this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.contextTtlDays, this.contextTtlHours
+            , this.contextTtlMinutes, this.timezoneCb, this.descriptionTa, blackoutWindowsGrid, addDateTimePairButton);
+
+        this.formLayout.setColspan(this.contextNameTf, 7);
+        this.formLayout.setColspan(this.startWindowCronExpressionTf, 3);
+        this.formLayout.setColspan(this.contextTtlDays, 2);
+        this.formLayout.setColspan(this.contextTtlHours, 2);
+        this.formLayout.setColspan(this.contextTtlMinutes, 2);
         this.formLayout.setColspan(this.timezoneCb, 4);
-        this.formLayout.setColspan(this.descriptionTa, 8);
-        this.formLayout.setColspan(blackoutWindowsGrid, 11);
+        this.formLayout.setColspan(this.descriptionTa, 7);
+        this.formLayout.setColspan(blackoutWindowsGrid, 12);
         this.formLayout.setColspan(addDateTimePairButton, 1);
     }
 
@@ -344,6 +346,9 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         });
 
         contextTemplate.setBlackoutWindowDateTimeRanges(blackoutWindowRanges);
+
+        this.contextTemplate.setContextTtlMilliseconds(ContextDurationUtils.getMilliseconds(this.contextTtlDays.getValue()
+            , this.contextTtlHours.getValue(), this.contextTtlMinutes.getValue()));
     }
 
     /**
@@ -366,6 +371,10 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         else {
             this.timezoneCb.setValue(DateTimeUtil.getTimezonePairForZoneId(ZoneId.systemDefault().getId()));
         }
+
+        this.contextTtlDays.setValue(ContextDurationUtils.getDays(this.contextTemplate.getContextTtlMilliseconds()));
+        this.contextTtlHours.setValue(ContextDurationUtils.getHours(this.contextTemplate.getContextTtlMilliseconds()));
+        this.contextTtlMinutes.setValue(ContextDurationUtils.getMinutes(this.contextTemplate.getContextTtlMilliseconds()));
 
         this.blackoutWindowsGrid.getDataProvider().refreshAll();
     }
