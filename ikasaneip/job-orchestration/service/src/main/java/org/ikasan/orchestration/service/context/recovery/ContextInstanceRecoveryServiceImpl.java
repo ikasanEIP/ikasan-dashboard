@@ -42,6 +42,7 @@ package org.ikasan.orchestration.service.context.recovery;
 
 import com.esotericsoftware.minlog.Log;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker;
 import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.orchestration.service.context.ContextInstanceServiceBase;
@@ -168,7 +169,7 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                 ScheduledContextInstanceRecord scheduledContextInstanceRecord = contextNameToInstanceMap.get(scheduledContextRecord.getContextName());
                 // if outside the operating window instances will be created when ContextInstanceRegistrationServiceImpl.register is triggered
                 try {
-                    if (QuartzTimeWindowChecker.withinOperatingWindow(context.getTimezone(), context.getTimeWindowStart(), context.getTimeWindowEnd(), now)) {
+                    if (QuartzTimeWindowChecker.withinOperatingWindow(context.getTimezone(), context.getTimeWindowStart(), context.getContextTtlMilliseconds(), now)) {
                         if (scheduledContextInstanceRecord != null) {
                             try {
                                 ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
@@ -176,7 +177,8 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                 if (!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
                                     && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), now)) {
                                     initialiseContextMachine(context, contextInstance, false);
-                                    contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), contextInstance.getTimeWindowEnd(), contextInstance.getTimezone(), contextInstance.getId());
+                                    contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
+                                        , contextInstance.getTimezone(), contextInstance.getId());
                                     LOG.info(String.format("Recovering context [%s] instance id [%s]", contextInstance.getName(), contextInstance.getId()));
                                 } else {
                                     LOG.info(String.format("Not Recovering context [%s] instance ID [%s] falls withing a blackout time window and will not be registered!", contextInstance.getName(), contextInstance.getId()));

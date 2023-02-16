@@ -252,6 +252,7 @@ public class ContextMachine {
             this.jobLockCacheInitialisationService.initialiseJobLockCache(this.context, true);
 
             this.contextInstance.setStartTime(System.currentTimeMillis());
+            this.contextInstance.setProjectedEndTime(this.contextInstance.getStartTime()+this.contextInstance.getContextTtlMilliseconds());
 
             this.saveContext();
         }

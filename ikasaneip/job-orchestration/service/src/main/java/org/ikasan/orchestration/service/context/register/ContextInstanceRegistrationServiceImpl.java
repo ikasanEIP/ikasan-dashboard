@@ -44,6 +44,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
+import org.ikasan.job.orchestration.context.util.CronUtils;
 import org.ikasan.job.orchestration.context.util.QuartzTimeWindowChecker;
 import org.ikasan.job.orchestration.context.util.TimeService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
@@ -133,7 +134,6 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             LOG.info(String.format("Could not find context machine for context Instance ID [%s], so therefore nothing to de-register.", contextInstanceId));
             return;
         }
-        LOG.info(String.format("De registering context Instance ID [%s], plan name [%s]", contextInstanceId, contextMachine.getContext().getName()));
 
         final ContextInstance instance = contextMachine.getContext();
         if (instance == null) {
@@ -141,6 +141,15 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             LOG.error(messages);
             throw new RuntimeException(messages);
         }
+
+        if(instance.isRunContextUntilManuallyEnded()) {
+            String messages = String.format("Context Instance ID [%s] with name[%s] has been marked to be manually ended, so therefore nothing to de-register."
+                , contextInstanceId, instance.getName());
+            LOG.info(messages);
+            return;
+        }
+
+        LOG.info(String.format("De registering context Instance ID [%s], plan name [%s]", contextInstanceId, contextMachine.getContext().getName()));
 
         removeAgentInstances(instance);
         saveContextInstance(instance, InstanceStatus.ENDED);
@@ -181,12 +190,14 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             ContextTemplate context = objectMapper.readValue(scheduledContextRecordContext, ContextTemplateImpl.class);
             ContextInstanceImpl contextInstance = objectMapper.readValue(scheduledContextRecordContext, ContextInstanceImpl.class);
 
+
             Date now = timeService.getDateNow();
             // @todo check with mick where the cron expressions are entered
             if(!QuartzTimeWindowChecker.fallsWithinCronBlackoutWindows(contextInstance.getBlackoutWindowCronExpressions(), contextInstance.getTimezone(), now)
                 && !QuartzTimeWindowChecker.fallsWithinDateTimeBlackoutRanges(contextInstance.getBlackoutWindowDateTimeRanges(), now)) {
                 initialiseContextMachine(context, contextInstance, true);
-                contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), contextInstance.getTimeWindowEnd(), contextInstance.getTimezone(), contextInstance.getId());
+                contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
+                    , contextInstance.getTimezone(), contextInstance.getId());
                 LOG.info(String.format("Registering context instance [%s] for context [%s]", contextInstance.getId(), contextName));
                 return contextInstance.getId();
             }
