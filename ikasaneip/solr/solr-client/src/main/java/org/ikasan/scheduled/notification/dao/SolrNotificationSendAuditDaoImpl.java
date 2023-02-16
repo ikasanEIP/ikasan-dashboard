@@ -44,7 +44,7 @@ public class SolrNotificationSendAuditDaoImpl extends SolrDaoBase<NotificationSe
         document.addField(CREATED_DATE_TIME, notificationSendAuditRecord.getTimestamp());
         document.addField(UPDATED_DATE_TIME, System.currentTimeMillis());
         document.addField(MODIFIED_BY, notificationSendAuditRecord.getModifiedBy());
-        document.setField(EXPIRY, expiry);
+        document.setField(EXPIRY, DO_NOT_EXPIRE);
 
         logger.debug(String.format("Converted scheduled context record to SolrDocument[%s]", document));
         return document;
