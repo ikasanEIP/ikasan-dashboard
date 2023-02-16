@@ -31,11 +31,11 @@ deploy:
       branch: 3.2.x
   # deploy develop 3.2.x to oss
   - provider: script
-    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Pall -B  -V --settings .settings.xml
+    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Pall -B  -V -q --settings .settings.xml
     on:
       branch: 3.3.x
   - provider: script
-    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Pall -B  -V --settings .settings.xml
+    script: mvn --file ikasaneip/pom.xml deploy -DskipTests=true -Djava.security.egd=file:/dev/./urandom -Pall -B  -V -q --settings .settings.xml
     on:
       branch: 3.3.x-scheduler-working-branch
   # Push release to oss
