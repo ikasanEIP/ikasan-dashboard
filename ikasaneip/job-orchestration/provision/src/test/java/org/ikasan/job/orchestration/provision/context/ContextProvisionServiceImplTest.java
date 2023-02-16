@@ -90,7 +90,7 @@ public class ContextProvisionServiceImplTest {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
-        contextTemplate.setTimeWindowEnd("0 0 0 ? * * *");
+        contextTemplate.setContextTtlMilliseconds(1L);
         contextTemplate.setName(contextName);
 
         List<SchedulerJob> contextJobs = new ArrayList<>();
@@ -139,7 +139,7 @@ public class ContextProvisionServiceImplTest {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
-        contextTemplate.setTimeWindowEnd("0 0 0 ? * * *");
+        contextTemplate.setContextTtlMilliseconds(1L);
         contextTemplate.setTimezone("Asia/Singapore");
         contextTemplate.setName(contextName);
 
@@ -190,7 +190,7 @@ public class ContextProvisionServiceImplTest {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
-        contextTemplate.setTimeWindowEnd("59 59 23 ? * * *");
+        contextTemplate.setContextTtlMilliseconds(86400000);
         contextTemplate.setName(contextName);
 
         List<SchedulerJob> contextJobs = new ArrayList<>();
@@ -244,7 +244,7 @@ public class ContextProvisionServiceImplTest {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
-        contextTemplate.setTimeWindowEnd("59 59 23 ? * * *");
+        contextTemplate.setContextTtlMilliseconds(86400000);
         contextTemplate.setTimezone("Asia/Singapore");
         contextTemplate.setName(contextName);
 
@@ -295,7 +295,7 @@ public class ContextProvisionServiceImplTest {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
-        contextTemplate.setTimeWindowEnd("59 59 23 ? * * *");
+        contextTemplate.setContextTtlMilliseconds(86400000);
         contextTemplate.setName(contextName);
 
         List<SchedulerJob> contextJobs = new ArrayList<>();
@@ -373,7 +373,7 @@ public class ContextProvisionServiceImplTest {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
-        contextTemplate.setTimeWindowEnd("59 59 23 ? * * *");
+        contextTemplate.setContextTtlMilliseconds(86400000);
         contextTemplate.setName(contextName);
 
         List<SchedulerJob> contextJobs = new ArrayList<>();
@@ -430,7 +430,7 @@ public class ContextProvisionServiceImplTest {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
-        contextTemplate.setTimeWindowEnd("59 59 23 ? * * *");
+        contextTemplate.setContextTtlMilliseconds(86400000);
         contextTemplate.setName(contextName);
 
         List<SchedulerJob> contextJobs = new ArrayList<>();
@@ -471,7 +471,7 @@ public class ContextProvisionServiceImplTest {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
-        contextTemplate.setTimeWindowEnd("59 59 23 ? * * *");
+        contextTemplate.setContextTtlMilliseconds(86400000);
         contextTemplate.setName(contextName);
 
         List<SchedulerJob> contextJobs = new ArrayList<>();
@@ -534,7 +534,7 @@ public class ContextProvisionServiceImplTest {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
-        contextTemplate.setTimeWindowEnd("59 59 23 ? * * *");
+        contextTemplate.setContextTtlMilliseconds(86400000);
         contextTemplate.setName(contextName);
 
         List<SchedulerJob> contextJobs = new ArrayList<>();
@@ -600,7 +600,7 @@ public class ContextProvisionServiceImplTest {
         ContextTemplateImpl contextTemplate = new ContextTemplateImpl();
         String contextName = "ContextName";
         contextTemplate.setTimeWindowStart("0 0 0 ? * * *");
-        contextTemplate.setTimeWindowEnd("59 59 23 ? * * *");
+        contextTemplate.setContextTtlMilliseconds(86400000);
         contextTemplate.setName(contextName);
 
         List<SchedulerJob> contextJobs = new ArrayList<>();

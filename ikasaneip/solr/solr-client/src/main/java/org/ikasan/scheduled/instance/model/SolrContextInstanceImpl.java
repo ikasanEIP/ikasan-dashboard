@@ -21,6 +21,8 @@ public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, Co
     private long updatedDateTime;
     private long startTime = 0L;
     private long endTime = 0L;
+    private long projectedEndTime = 0L;
+    private boolean isRunContextUntilManuallyEnded;
     private String timezone;
     private InstanceStatus status;
     private Map<String, SchedulerJobInitiationEvent> heldJobs;
@@ -80,6 +82,26 @@ public class SolrContextInstanceImpl extends SolrContextImpl<ContextInstance, Co
     @Override
     public void setEndTime(long endTime) {
         this.endTime = endTime;
+    }
+
+    @Override
+    public long getProjectedEndTime() {
+        return projectedEndTime;
+    }
+
+    @Override
+    public void setProjectedEndTime(long projectedEndTime) {
+        this.projectedEndTime = projectedEndTime;
+    }
+
+    @Override
+    public boolean isRunContextUntilManuallyEnded() {
+        return isRunContextUntilManuallyEnded;
+    }
+
+    @Override
+    public void setRunContextUntilManuallyEnded(boolean runContextUntilManuallyEnded) {
+        isRunContextUntilManuallyEnded = runContextUntilManuallyEnded;
     }
 
     @Override

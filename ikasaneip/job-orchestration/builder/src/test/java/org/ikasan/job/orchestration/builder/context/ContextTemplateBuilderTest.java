@@ -20,7 +20,7 @@ public class ContextTemplateBuilderTest extends AbstractTest {
         ContextTemplate contextTemplate = contextTemplateBuilder.withName("Context Template Name")
             .withDescription("Context Template Description")
             .withTimeWindowStartCronExpression("* * 6 ? * * *")
-            .withTimeWindowEndCronExpression("* * 15 ? * * *")
+            .withContextTtlMilliseconds(100000L)
 
             // add some context parameters
             .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withDefaultValue("value").build())
@@ -52,7 +52,7 @@ public class ContextTemplateBuilderTest extends AbstractTest {
         ContextTemplate contextTemplate1 = contextTemplateBuilder.withName("Context Template Name")
             .withDescription("Context Template Description")
             .withTimeWindowStartCronExpression("* * 6 ? * * *")
-            .withTimeWindowEndCronExpression("* * 15 ? * * *")
+            .withContextTtlMilliseconds(100000L)
 
             // add some context parameters
             .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withDefaultValue("value").build())
@@ -168,7 +168,7 @@ public class ContextTemplateBuilderTest extends AbstractTest {
         ContextTemplate contextTemplate1 = contextTemplateBuilder.withName("test-context")
             .withDescription("Context Template Description")
             .withTimeWindowStartCronExpression("* * 6 ? * * *")
-            .withTimeWindowEndCronExpression("* * 15 ? * * *")
+            .withContextTtlMilliseconds(100000L)
 
             // add some context parameters
             .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withDefaultValue("value").build())
@@ -550,7 +550,7 @@ public class ContextTemplateBuilderTest extends AbstractTest {
         ContextTemplate contextTemplate1 = contextTemplateBuilder.withName("Context Template Name")
             .withDescription("Context Template Description")
             .withTimeWindowStartCronExpression("* * 6 ? * * *")
-            .withTimeWindowEndCronExpression("* * 15 ? * * *")
+            .withContextTtlMilliseconds(100000L)
 
             // add some context parameters
             .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withDefaultValue("value").build())
@@ -780,7 +780,7 @@ public class ContextTemplateBuilderTest extends AbstractTest {
         ContextTemplate parentContext = contextTemplateBuilder.withName("Parent Context")
             .withDescription("Context Template Description")
             .withTimeWindowStartCronExpression("* * 6 ? * * *")
-            .withTimeWindowEndCronExpression("* * 15 ? * * *")
+            .withContextTtlMilliseconds(100000L)
 
             // add some context parameters
             .addContextParameter(contextTemplateBuilder.getContextParameterBuilder().withName("param1").withDefaultValue("value").build())

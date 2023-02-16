@@ -21,6 +21,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
@@ -38,6 +39,7 @@ import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcast
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.ContextSchedulerVisualisation;
 import org.ikasan.dashboard.ui.visualisation.scheduler.component.SchedulerVisualisation;
+import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
 import org.ikasan.job.orchestration.model.job.FileEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.InternalEventDrivenJobImpl;
 import org.ikasan.job.orchestration.model.job.QuartzScheduleDrivenJobImpl;
@@ -119,7 +121,9 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
-    private TextField endWindowCronExpressionTf;
+    private IntegerField contextTtlMinutes;
+    private IntegerField contextTtlHours;
+    private IntegerField contextTtlDays;
     private Div schedulerVisualisationDiv;
     private Tab visualisationTab;
     private Tab rawContextTab;
@@ -314,10 +318,18 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         binder.forField(startWindowCronExpressionTf)
             .bind(ContextTemplate::getTimeWindowStart, ContextTemplate::setTimeWindowStart);
 
-        this.endWindowCronExpressionTf = new TextField(getTranslation("label.time-window-end", UI.getCurrent().getLocale()));
-        this.endWindowCronExpressionTf.setEnabled(false);
-        binder.forField(endWindowCronExpressionTf)
-            .bind(ContextTemplate::getTimeWindowEnd, ContextTemplate::setTimeWindowEnd);
+        this.contextTtlDays = new IntegerField(getTranslation("label.duration-days", UI.getCurrent().getLocale()));
+        this.contextTtlDays.getElement().getThemeList().add("always-float-label");
+        this.contextTtlDays.setValue(ContextDurationUtils.getDays(this.contextTemplate.getContextTtlMilliseconds()));
+        this.contextTtlDays.setEnabled(false);
+        this.contextTtlHours = new IntegerField(getTranslation("label.duration-hours", UI.getCurrent().getLocale()));
+        this.contextTtlHours.getElement().getThemeList().add("always-float-label");
+        this.contextTtlHours.setValue(ContextDurationUtils.getHours(this.contextTemplate.getContextTtlMilliseconds()));
+        this.contextTtlHours.setEnabled(false);
+        this.contextTtlMinutes = new IntegerField(getTranslation("label.duration-minutes", UI.getCurrent().getLocale()));
+        this.contextTtlMinutes.getElement().getThemeList().add("always-float-label");
+        this.contextTtlMinutes.setValue(ContextDurationUtils.getMinutes(this.contextTemplate.getContextTtlMilliseconds()));
+        this.contextTtlMinutes.setEnabled(false);
 
         this.timezoneCb = new ComboBox<>(getTranslation("label.timezone", UI.getCurrent().getLocale()));
         ComboBox.ItemFilter<DateTimeUtil.TimezonePair> filter = (element, filterString) ->
@@ -373,14 +385,16 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.formLayout.setResponsiveSteps(
             new FormLayout.ResponsiveStep("500px", 20)
         );
-        this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.endWindowCronExpressionTf
-            , this.timezoneCb, this.descriptionTa, this.blackoutWindowsGrid);
-        this.formLayout.setColspan(this.contextNameTf, 8);
-        this.formLayout.setColspan(this.startWindowCronExpressionTf, 4);
-        this.formLayout.setColspan(this.endWindowCronExpressionTf, 4);
+        this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.contextTtlDays, this.contextTtlHours
+            , this.contextTtlMinutes, this.timezoneCb, this.descriptionTa, this.blackoutWindowsGrid);
+        this.formLayout.setColspan(this.contextNameTf, 7);
+        this.formLayout.setColspan(this.startWindowCronExpressionTf, 3);
+        this.formLayout.setColspan(this.contextTtlDays, 2);
+        this.formLayout.setColspan(this.contextTtlHours, 2);
+        this.formLayout.setColspan(this.contextTtlMinutes, 2);
         this.formLayout.setColspan(this.timezoneCb, 4);
-        this.formLayout.setColspan(this.descriptionTa, 8);
-        this.formLayout.setColspan(this.blackoutWindowsGrid, 12);
+        this.formLayout.setColspan(this.descriptionTa, 7);
+        this.formLayout.setColspan(this.blackoutWindowsGrid, 13);
 
         CollapsableLayout collapsableLayout = new CollapsableLayout();
         add(collapsableLayout);
