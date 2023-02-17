@@ -24,6 +24,7 @@ install:
   - mvn -U  --file ikasaneip/pom.xml --settings .settings.xml test -Dmaven.javadoc.skip=true -Djava.security.egd=file:/dev/./urandom -Dvaadin.proKey=mick_stewart73@hotmail.com/pro-e7494afe-55d8-4b7a-8a76-5dfbed55f637 -Pall -B -V
 
 deploy:
+  - skip_cleanup: true
   # deploy develop 3.1.x to oss
   - provider: script
     skip_cleanup: true
