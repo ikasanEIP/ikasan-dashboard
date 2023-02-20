@@ -35,10 +35,10 @@ public class QuartzTimeWindowCheckerTest {
         myDate.setTimeZone(TimeZone.getTimeZone("Europe/London"));
 
         assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(),
-            "27 2 18 8 FEB ? *", "0 30 6 8 FEB ? 2024", myDate.parse("2023-02-08T20:34:00")), is(true));
+            "27 2 18 8 FEB ? *", 31536000000L, myDate.parse("2023-02-08T20:34:00")), is(true));
 
         assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(),
-            "0 30 11 8 * ? *", "0 59 7 ? * * 2024", myDate.parse("2023-02-08T14:34:00")), is(false));
+            "0 30 11 8 * ? *", 300000L, myDate.parse("2023-02-08T14:34:00")), is(false));
     }
 
     @Test
