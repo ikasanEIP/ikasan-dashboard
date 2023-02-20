@@ -17,6 +17,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
@@ -93,6 +94,9 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
     @Resource
     private GlobalEventService globalEventService;
 
+    @Resource
+    private ContextInstanceRegistrationService contextInstanceRegistrationService;
+
     private ContextInstanceWidget contextInstanceWidget;
 
     private ContextTemplate contextTemplate;
@@ -130,12 +134,12 @@ public class ContextInstanceView extends VerticalLayout implements BeforeEnterOb
                 this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
                     , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
-                    , this.jobUtilsService, this.scheduledContextService, this.selectedTab, this.jobStatus, this.globalEventService);
+                    , this.jobUtilsService, this.scheduledContextService, this.selectedTab, this.jobStatus, this.globalEventService, this.contextInstanceRegistrationService);
             } else {
                 this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, ""
                     , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, contextInstance, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
-                    , this.jobUtilsService, this.scheduledContextService, this.globalEventService);
+                    , this.jobUtilsService, this.scheduledContextService, this.globalEventService, this.contextInstanceRegistrationService);
             }
 
             this.getStyle().set("padding-top", "0px");

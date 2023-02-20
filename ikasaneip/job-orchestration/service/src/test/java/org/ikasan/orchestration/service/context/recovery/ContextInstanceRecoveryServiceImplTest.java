@@ -16,6 +16,7 @@ import org.ikasan.orchestration.service.context.JobLockCacheInitialisationServic
 import org.ikasan.orchestration.service.utils.*;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
 import org.ikasan.spec.metadata.ModuleMetadataSearchResults;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.core.listener.ContextInstanceStateChangeEventListener;
 import org.ikasan.spec.scheduled.core.listener.SchedulerJobInitiationEventRaisedListener;
@@ -101,6 +102,9 @@ public class ContextInstanceRecoveryServiceImplTest {
     @Mock
     private TimeService timeService;
 
+    @Mock
+    private ContextInstanceRegistrationService contextInstanceRegistrationService;
+
     private final ObjectMapper objectMapper = ObjectMapperFactory.newInstance();
 
     private ContextInstanceRecoveryServiceImpl contextInstanceRecoveryServiceImpl;
@@ -130,7 +134,8 @@ public class ContextInstanceRecoveryServiceImplTest {
             schedulerJobStateChangeEventBroadcaster,
             jobLockCacheInitialisationService,
             contextInstanceSchedulerService,
-            timeService
+            timeService,
+            contextInstanceRegistrationService
         );
 
         ReflectionTestUtils.setField(contextInstanceRecoveryServiceImpl, "executor", executor);

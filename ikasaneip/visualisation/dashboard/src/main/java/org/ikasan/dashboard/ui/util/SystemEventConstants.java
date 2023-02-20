@@ -74,4 +74,7 @@ public class SystemEventConstants
     public static final String CONTEXT_TEMPLATE_SCHEDULED_JOBS_ENABLED = "Context template scheduled jobs enabled";
     public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_DISABLED = "Context instance scheduled jobs disabled";
     public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_ENABLED = "Context instance scheduled jobs enabled";
+    public static final String CONTEXT_INSTANCE_MANUALLY_ENDED = "Context instance manually ended";
+    public static final String CONTEXT_INSTANCE_DURATION_IGNORED = "Context instance duration ignored";
+
 }

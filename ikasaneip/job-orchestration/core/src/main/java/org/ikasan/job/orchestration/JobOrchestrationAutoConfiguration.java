@@ -57,6 +57,9 @@ public class JobOrchestrationAutoConfiguration {
     @Resource
     JtaTransactionManager transactionManager;
 
+    @Resource
+
+
     @Value("${use.skip.jobs.flag:false}")
     private boolean useSkipJobs;
 
