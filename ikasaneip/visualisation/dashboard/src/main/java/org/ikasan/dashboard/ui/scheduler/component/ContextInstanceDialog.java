@@ -13,6 +13,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -32,11 +33,12 @@ public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
-                                 JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, GlobalEventService globalEventService) {
+                                 JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, GlobalEventService globalEventService,
+                                 ContextInstanceRegistrationService contextInstanceRegistrationService) {
         this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService
-            , jobUtilsService, scheduledContextService, globalEventService);
+            , jobUtilsService, scheduledContextService, globalEventService, contextInstanceRegistrationService);
         this.init();
     }
 
@@ -45,11 +47,12 @@ public class ContextInstanceDialog extends AbstractCloseableResizableDialog {
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
-                                 JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, String selectedTab, String jobStatus, GlobalEventService globalEventService) {
+                                 JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, String selectedTab, String jobStatus, GlobalEventService globalEventService,
+                                 ContextInstanceRegistrationService contextInstanceRegistrationService) {
         this.contextInstanceWidget = new ContextInstanceWidget(scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService
-            , jobUtilsService, scheduledContextService, selectedTab, jobStatus, globalEventService);
+            , jobUtilsService, scheduledContextService, selectedTab, jobStatus, globalEventService, contextInstanceRegistrationService);
         this.init();
     }
 

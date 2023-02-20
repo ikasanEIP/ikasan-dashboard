@@ -23,12 +23,14 @@ import com.vaadin.flow.shared.Registration;
 import org.ikasan.dashboard.security.SecurityUtils;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.general.component.ProgressIndicatorDialog;
+import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateEnableDisableEventBroadcaster;
 import org.ikasan.dashboard.ui.scheduler.util.ContextTemplateSavedEventBroadcaster;
 import org.ikasan.dashboard.ui.scheduler.view.ContextInstanceView;
 import org.ikasan.dashboard.ui.scheduler.view.ContextTemplateManagementView;
 import org.ikasan.dashboard.ui.util.*;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.orchestration.service.context.util.ContextExportZipUtils;
 import org.ikasan.scheduled.context.model.ScheduledContextSearchFilterImpl;
@@ -79,6 +81,8 @@ public class ContextTemplateWidget extends Div {
 
     private Registration contextSaveBroadcasterRegistration;
 
+    private Registration contextInstanceSaveBroadcasterRegistration;
+
     private ContextTemplateFilteringGrid contextTemplateFilteringGrid;
     private ScheduledContextService scheduledContextService;
     private ContextProfileService contextProfileService;
@@ -87,6 +91,7 @@ public class ContextTemplateWidget extends Div {
     private JobUtilsService jobUtilsService;
     private SchedulerJobService schedulerJobService;
     private GlobalEventService globalEventService;
+    private ContextInstanceSchedulerService contextInstanceSchedulerService;
     private SystemEventLogger systemEventLogger;
     private String zipWorkingDirectory;
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
@@ -130,7 +135,8 @@ public class ContextTemplateWidget extends Div {
                                  ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
                                  SecurityService securityService, JobUtilsService jobUtilsService, boolean provisionJobs, ContextInstanceRegistrationService contextInstanceRegistrationService,
                                  EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
-                                 Map<String, String> schedulerJobExecutionEnvironmentLabel, SpringCloudConfigRefreshService springCloudConfigRefreshService, GlobalEventService globalEventService) {
+                                 Map<String, String> schedulerJobExecutionEnvironmentLabel, SpringCloudConfigRefreshService springCloudConfigRefreshService, GlobalEventService globalEventService,
+                                 ContextInstanceSchedulerService contextInstanceSchedulerService) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -179,6 +185,10 @@ public class ContextTemplateWidget extends Div {
         this.systemEventLogger = systemEventLogger;
         if (this.systemEventLogger == null) {
             throw new IllegalArgumentException("systemEventLogger cannot be null!");
+        }
+        this.contextInstanceSchedulerService = contextInstanceSchedulerService;
+        if (this.contextInstanceSchedulerService == null) {
+            throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
@@ -657,6 +667,8 @@ public class ContextTemplateWidget extends Div {
                                 , this.authentication.getName());
                             this.scheduledContextService.save(refreshedScheduledContextRecord);
                             this.contextInstanceRegistrationService.register(contextTemplate.getName());
+                            this.contextInstanceSchedulerService.registerStartJobAndTrigger(contextTemplate.getName(), contextTemplate.getTimeWindowStart(),
+                                contextTemplate.getTimezone());
                             contextTemplateFilteringGrid.getDataProvider().refreshAll();
                             this.updateActiveContextMenu();
                             ContextTemplateEnableDisableEventBroadcaster.broadcast(scheduledContextRecord.getContext());
@@ -699,12 +711,16 @@ public class ContextTemplateWidget extends Div {
                                 scheduledContextRecord.setContext(contextTemplate);
                                 scheduledContextRecord.setModifiedBy(authentication.getName());
                                 this.jobProvisionService.removeJobs(contextTemplate.getName());
-                                ContextMachine contextMachine = ContextMachineCache.instance()
-                                    .getFirstByContextName(contextTemplate.getName());
-                                if (contextMachine != null) {
-                                    ContextMachineCache.instance().remove(contextMachine);
-                                    contextMachine.teardown();
+                                List<ContextMachine> contextMachines = ContextMachineCache.instance()
+                                    .getAllByContextName(contextTemplate.getName());
+
+                                for(ContextMachine contextMachine: contextMachines) {
+                                    if (contextMachine != null) {
+                                        ContextMachineCache.instance().remove(contextMachine);
+                                        contextMachine.teardown();
+                                    }
                                 }
+
                                 this.scheduledContextService.save(scheduledContextRecord);
                                 contextTemplateFilteringGrid.getDataProvider().refreshAll();
                                 this.updateActiveContextMenu();
@@ -788,12 +804,12 @@ public class ContextTemplateWidget extends Div {
         boolean canAccessAllJobPlans = SecurityUtils.canAccessAllJobPlans(authentication);
         Set<String> accessibleJobPlans = SecurityUtils.getAccessibleJobPlans(authentication);
 
-        ContextMachineCache.instance().contextNames().forEach(name -> {
-            if (canAccessAllJobPlans || accessibleJobPlans.contains(name)) {
-                this.activeContextSubMenu.addItem(name, itemClickEvent -> {
+        ContextMachineCache.instance().contextInstanceIdentifiers().forEach(identifier -> {
+            ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(identifier);
+            if (canAccessAllJobPlans || accessibleJobPlans.contains(contextMachine.getContext().getName())) {
+                this.activeContextSubMenu.addItem(contextMachine.getContext().getName() + " (" + identifier + ")", itemClickEvent -> {
                     String route = RouteConfiguration.forSessionScope()
-                        .getUrl(ContextInstanceView.class, ContextMachineCache.instance()
-                            .getFirstByContextName(name).getContext().getId() + "_scheduledContextInstance");
+                        .getUrl(ContextInstanceView.class, contextMachine.getContext().getId() + "_scheduledContextInstance");
 
                     getUI().ifPresent(ui -> ui.getPage().open(route));
                 });
@@ -833,6 +849,9 @@ public class ContextTemplateWidget extends Div {
                 ui.access(() -> this.contextTemplateFilteringGrid.getDataProvider().refreshAll());
             }
         });
+
+        this.contextInstanceSaveBroadcasterRegistration = ContextInstanceSavedEventBroadcaster
+            .register(contextInstance -> this.updateActiveContextMenu());
     }
 
     @Override
@@ -840,6 +859,14 @@ public class ContextTemplateWidget extends Div {
         if(this.contextEnableBroadcasterRegistration != null) {
             this.contextEnableBroadcasterRegistration.remove();
             this.contextEnableBroadcasterRegistration = null;
+        }
+        if(this.contextSaveBroadcasterRegistration != null) {
+            this.contextSaveBroadcasterRegistration.remove();
+            this.contextSaveBroadcasterRegistration = null;
+        }
+        if(this.contextInstanceSaveBroadcasterRegistration != null) {
+            this.contextInstanceSaveBroadcasterRegistration.remove();
+            this.contextInstanceSaveBroadcasterRegistration = null;
         }
     }
 }

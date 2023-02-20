@@ -1,32 +1,27 @@
 package org.ikasan.job.orchestration.context.util;
 
-import com.cronutils.builder.CronBuilder;
 import com.cronutils.model.Cron;
-import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
-import org.joda.time.Seconds;
 import org.quartz.CronExpression;
 
 import java.text.ParseException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalField;
-import java.time.temporal.TemporalUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
 import static com.cronutils.model.CronType.QUARTZ;
-import static com.cronutils.model.field.expression.FieldExpressionFactory.*;
 
 
 public class QuartzTimeWindowChecker {
+
+    public static final long TWENTY_FOUR_HOURS_MILLISECONDS = 24 * 60 * 60 * 1000;
+
     /**
      * Determine if the reference dateTime is within the start and end cron expressions.
      * @param timezone to use to adjust referenceDateTime
@@ -50,21 +45,17 @@ public class QuartzTimeWindowChecker {
 
 
         ZonedDateTime executionEndFromPrevious = getNextExecution(endTimeCronExpressionFromPrevious, referenceZDateTime);
+        if(executionEndFromPrevious == null) {
+            executionEndFromPrevious = getPreviousExecution(endTimeCronExpressionFromPrevious, referenceZDateTime);
+        }
         ZonedDateTime executionEndFromNext = getNextExecution(endTimeCronExpressionFromNext, referenceZDateTime);
 
-        ZonedDateTime startExecution;
-
-        if(executionEndFromPrevious != null) {
-            startExecution = nextExecutionStart.isAfter(executionEndFromPrevious) || nextExecutionStart.equals(executionEndFromPrevious) ? previousExecutionStart : nextExecutionStart;
-        }
-        else {
-            startExecution = previousExecutionStart.isAfter(executionEndFromNext) ? previousExecutionStart : nextExecutionStart;
-        }
-
-        if (isOnFireTime(zoneId, startTimeCronExpression, endTimeCronExpressionFromPrevious, referenceDateTime)) {
+        if (isOnFireTime(zoneId, startTimeCronExpression, endTimeCronExpressionFromPrevious, referenceDateTime) ||
+            isOnFireTime(zoneId, startTimeCronExpression, endTimeCronExpressionFromNext, referenceDateTime)) {
             return true;
         } else {
-            return referenceZDateTime.isAfter(startExecution) && referenceZDateTime.isBefore(executionEndFromPrevious);
+            return (executionEndFromPrevious != null && referenceZDateTime.isAfter(previousExecutionStart) && referenceZDateTime.isBefore(executionEndFromPrevious))
+                || (referenceZDateTime.isAfter(nextExecutionStart) && referenceZDateTime.isBefore(executionEndFromNext));
         }
     }
 
@@ -132,6 +123,7 @@ public class QuartzTimeWindowChecker {
 
     /**
      * Determine if the supplied reference date time is on the fire time (exactly) of either the cron start or end expressions
+     *
      * @param zoneId used to adjust reference date time to mate the time zone associated with the cron expressions
      * @param startTimeCronExpression to check
      * @param endTimeCronExpression to check
@@ -146,6 +138,7 @@ public class QuartzTimeWindowChecker {
 
     /**
      * Given the cron expression and a time zone reference date/time, provide the most recent matching previous date time to the referenceZonedDateTime
+     *
      * @param cronExpression to evaluate
      * @param referenceZonedDateTime to use
      * @return a ZonedDateTime or null
@@ -155,11 +148,23 @@ public class QuartzTimeWindowChecker {
         return executionTime.lastExecution(referenceZonedDateTime).orElse(null);
     }
 
+    /**
+     * Given the cron expression and a time zone reference date/time, provide the most recent matching next date time to the referenceZonedDateTime
+     * @param cronExpression
+     * @param referenceZonedDateTime
+     * @return
+     */
     protected static ZonedDateTime getNextExecution(String cronExpression, ZonedDateTime referenceZonedDateTime) {
         ExecutionTime executionTime = getExecutionTime(cronExpression);
         return executionTime.nextExecution(referenceZonedDateTime).orElse(null);
     }
 
+    /**
+     * Get the actual execution time for a given cron expression.
+     *
+     * @param cronExpression
+     * @return
+     */
     private static ExecutionTime getExecutionTime(String cronExpression) {
         try {
             CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(QUARTZ);
