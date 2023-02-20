@@ -49,6 +49,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.SchedulerJobInstanceStateChangeEvent;
 import org.ikasan.spec.scheduled.instance.model.*;
@@ -102,6 +103,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     private LogStreamingService logStreamingService;
     private SchedulerJobService schedulerJobService;
     private GlobalEventService globalEventService;
+    private ContextInstanceRegistrationService contextInstanceRegistrationService;
     private TextField contextInstanceId;
     private TextField contextNameTf;
     private TextArea descriptionTa;
@@ -157,11 +159,11 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
                                  ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
-                                 String selectedTab, String jobStatus, GlobalEventService globalEventService) {
+                                 String selectedTab, String jobStatus, GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService) {
         this(scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService, scheduledProcessManagementService,
             configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger, schedulerJobService,
             logStreamingService, contextInstance, contextTemplate, schedulerJobInstanceService, jobInitiationService,
-            contextProfileService, jobUtilsService, scheduledContextService, globalEventService);
+            contextProfileService, jobUtilsService, scheduledContextService, globalEventService, contextInstanceRegistrationService);
         this.selectedTab = selectedTab;
         this.jobStatus = jobStatus;
     }
@@ -192,7 +194,8 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextInstance contextInstance, ContextTemplate contextTemplate,
                                  SchedulerJobInstanceService schedulerJobInstanceService, JobInitiationService jobInitiationService,
-                                 ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, GlobalEventService globalEventService) {
+                                 ContextProfileService contextProfileService, JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
+                                 GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if (this.scheduledContextInstanceService == null) {
@@ -262,6 +265,10 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         if (this.globalEventService == null) {
             throw new IllegalArgumentException("globalEventService cannot be null!");
         }
+        this.contextInstanceRegistrationService = contextInstanceRegistrationService;
+        if (this.contextInstanceRegistrationService == null) {
+            throw new IllegalArgumentException("contextInstanceRegistrationService cannot be null!");
+        }
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
@@ -326,13 +333,6 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
         this.contextTtlMinutes.setValue(ContextDurationUtils.getMinutes(this.contextTemplate.getContextTtlMilliseconds()));
         this.contextTtlMinutes.setEnabled(false);
 
-
-//        this.endWindowCronExpressionTf = new TextField(getTranslation("label.time-window-end", UI.getCurrent().getLocale()));
-//        this.endWindowCronExpressionTf.getElement().getThemeList().add("always-float-label");
-//        // todo
-////        binder.forField(endWindowCronExpressionTf)
-////            .bind(ContextInstance::getTimeWindowEnd, ContextInstance::setTimeWindowEnd);
-//        this.endWindowCronExpressionTf.setEnabled(false);
 
         this.timezoneTf = new TextField(getTranslation("label.timezone", UI.getCurrent().getLocale()));
         this.timezoneTf.getElement().getThemeList().add("always-float-label");
@@ -837,21 +837,61 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             });
         });
 
-        Button contextInstanceEndButton = new Button("End Context");
+        Button contextInstanceEndButton = new Button(getTranslation("label.manually-end-job-plan", UI.getCurrent().getLocale()), VaadinIcon.STOP.create());
         contextInstanceEndButton.setIconAfterText(true);
-        contextInstanceEndButton.setVisible(this.contextInstance.isRunContextUntilManuallyEnded());
+        contextInstanceEndButton.setVisible(this.contextInstance.isRunContextUntilManuallyEnded() && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_ADMIN));
         contextInstanceEndButton.addClickListener(event -> {
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog.end-job-plan-header", UI.getCurrent().getLocale()));
+                confirmDialog.setText(getTranslation("confirm-dialog.end-job-plan-body", UI.getCurrent().getLocale()));
+                confirmDialog.setCancelable(true);
+                confirmDialog.open();
 
+                confirmDialog.addConfirmListener(confirmEvent -> {
+                    try {
+                        this.contextInstanceRegistrationService.deregisterManually(this.contextInstance.getId());
+
+                        this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_MANUALLY_ENDED, String.format("Context Instance Name[%s], Context Instance Identifier[%s]"
+                            , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
+                        NotificationHelper.showUserNotification(getTranslation("notification.job-plan-ended-successfully", UI.getCurrent().getLocale()));
+                        ContextInstanceSavedEventBroadcaster.broadcast(contextInstance);
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        NotificationHelper.showErrorNotification(getTranslation("notification.job-plan-ended-error", UI.getCurrent().getLocale()));
+                    }
+                });
         });
 
-        Button ignoreContextInstanceEndButton = new Button("End Context Manually");
+        Button ignoreContextInstanceEndButton = new Button(getTranslation("label.ignore-job-plan-duration"
+            , UI.getCurrent().getLocale()), VaadinIcon.CONTROLLER.create());
         ignoreContextInstanceEndButton.setIconAfterText(true);
-        ignoreContextInstanceEndButton.setVisible(!this.contextInstance.isRunContextUntilManuallyEnded());
+        ignoreContextInstanceEndButton.setVisible(!this.contextInstance.isRunContextUntilManuallyEnded() && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+            SecurityConstants.SCHEDULER_ADMIN));
         ignoreContextInstanceEndButton.addClickListener(event -> {
-            this.contextInstance.setRunContextUntilManuallyEnded(true);
-            this.saveContextInstance(this.contextInstance, this.contextInstance.getStatus());
-            ignoreContextInstanceEndButton.setVisible(false);
-            contextInstanceEndButton.setVisible(true);
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setHeader(getTranslation("confirm-dialog.ignore-job-plan-duration-header", UI.getCurrent().getLocale()));
+            confirmDialog.setText(getTranslation("confirm-dialog.ignore-job-plan-duration-body", UI.getCurrent().getLocale()));
+            confirmDialog.setCancelable(true);
+            confirmDialog.open();
+
+            confirmDialog.addConfirmListener(confirmEvent -> {
+                try {
+                    this.contextInstance.setRunContextUntilManuallyEnded(true);
+                    this.saveContextInstance(this.contextInstance, this.contextInstance.getStatus());
+                    ignoreContextInstanceEndButton.setVisible(false);
+                    contextInstanceEndButton.setVisible(true);
+                    this.systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_DURATION_IGNORED, String.format("Context Instance Name[%s], Context Instance Identifier[%s]"
+                        , contextInstance.getName(), contextInstance.getId()), this.authentication.getName());
+                    NotificationHelper.showErrorNotification(getTranslation("notification.job-plan-duration-ignored", UI.getCurrent().getLocale()));
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    NotificationHelper.showErrorNotification(getTranslation("notification.job-plan-duration-ignored-error", UI.getCurrent().getLocale()));
+                }
+
+            });
         });
 
         Button resetContextButton = new Button(getTranslation("button.reset-context", UI.getCurrent().getLocale()), VaadinIcon.TIME_BACKWARD.create());

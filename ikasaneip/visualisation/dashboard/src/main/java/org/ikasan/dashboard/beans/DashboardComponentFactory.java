@@ -9,6 +9,7 @@ import org.ikasan.configuration.metadata.dao.SolrComponentConfigurationMetadataD
 import org.ikasan.configuration.metadata.service.SolrComponentConfigurationMetadataServiceImpl;
 import org.ikasan.dashboard.cache.FlowStateCache;
 import org.ikasan.dashboard.ui.scheduler.model.CalendarConfiguration;
+import org.ikasan.dashboard.ui.scheduler.util.ContextInstanceSavedEventBroadcasterImpl;
 import org.ikasan.dashboard.ui.util.DashboardCacheAdapter;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.ContextInstanceStateChangeEventBroadcasterImpl;
 import org.ikasan.dashboard.ui.visualisation.scheduler.service.JobLockCacheEventBroadcasterImpl;
@@ -44,6 +45,7 @@ import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.persistence.BatchInsert;
 import org.ikasan.spec.replay.ReplayEvent;
 import org.ikasan.spec.scheduled.context.model.JobLockCache;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.JobLockCacheEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
@@ -148,6 +150,11 @@ public class DashboardComponentFactory
     @Bean
     public SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster() {
         return new SchedulerJobStateChangeEventBroadcasterImpl();
+    }
+
+    @Bean
+    public ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster() {
+        return new ContextInstanceSavedEventBroadcasterImpl();
     }
 
     @Bean

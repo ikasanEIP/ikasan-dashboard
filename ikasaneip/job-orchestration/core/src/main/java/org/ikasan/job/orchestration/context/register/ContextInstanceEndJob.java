@@ -21,9 +21,11 @@ public class ContextInstanceEndJob implements DashboardJob {
     private final String cronExpressionEndTime;
     private String timezone;
     private final ContextInstanceRegistrationService contextInstanceRegistrationService;
+    private final ContextInstanceSchedulerService contextInstanceSchedulerService;
 
     public ContextInstanceEndJob(String jobName, String cronExpressionEndTime, String timezone
-        , ContextInstanceRegistrationService contextInstanceRegistrationService) {
+        , ContextInstanceRegistrationService contextInstanceRegistrationService
+        , ContextInstanceSchedulerService contextInstanceSchedulerService) {
 
         this.jobName = jobName;
         if (this.jobName == null) {
@@ -43,6 +45,10 @@ public class ContextInstanceEndJob implements DashboardJob {
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
         if (this.contextInstanceRegistrationService == null) {
             throw new IllegalArgumentException("contextInstanceRegistrationService cannot be null!");
+        }
+        this.contextInstanceSchedulerService = contextInstanceSchedulerService;
+        if (this.contextInstanceSchedulerService == null) {
+            throw new IllegalArgumentException("contextInstanceSchedulerService cannot be null!");
         }
     }
 
@@ -64,9 +70,14 @@ public class ContextInstanceEndJob implements DashboardJob {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         try {
+            if (context != null) {
+                contextInstanceSchedulerService.removeEndJobTrigger(context.getTrigger());
+            }
+
             final String contextInstanceId = (String)context.getTrigger().getJobDataMap().get(CONTEXT_INSTANCE_ID);
             LOG.info("Executing jobExecutionContext end context " + jobName + " context Instance ID [" + contextInstanceId + "]");
-            contextInstanceRegistrationService.deRegisterById(contextInstanceId, context);
+
+            contextInstanceRegistrationService.deRegisterById(contextInstanceId);
         } catch (Exception e) {
             // TODO hook in notification here
             LOG.error(String.format("An error has occurred executing ContextInstanceEndJob[%s]", e.getMessage()), e);
