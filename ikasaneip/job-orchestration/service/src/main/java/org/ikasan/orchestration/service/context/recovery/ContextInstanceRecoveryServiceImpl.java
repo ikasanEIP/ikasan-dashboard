@@ -202,8 +202,11 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                     }
                 } catch (Exception e) {
                     // todo probably want to send a notification here.
-                    LOG.error(String.format("Not Recovering context [%s] instance ID [%s] due an issue with the definition of the cron expression for the time windows."
-                        , scheduledContextInstanceRecord.getContextName(), scheduledContextInstanceRecord.getContextInstanceId()), e);
+                    e.printStackTrace();
+                    if(scheduledContextInstanceRecord != null) {
+                        LOG.error(String.format("Not Recovering context [%s] instance ID [%s] due an issue with the definition of the cron expression for the time windows."
+                            , scheduledContextInstanceRecord.getContextName(), scheduledContextInstanceRecord.getContextInstanceId()), e);
+                    }
                 }
             }
         }
