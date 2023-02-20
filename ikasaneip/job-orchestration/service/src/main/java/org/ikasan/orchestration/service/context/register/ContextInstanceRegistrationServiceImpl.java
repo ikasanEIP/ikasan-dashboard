@@ -56,6 +56,7 @@ import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.ScheduledContextRecord;
 import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.service.ContextInstanceSavedEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.event.service.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
@@ -74,6 +75,7 @@ import java.util.Date;
 
 public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServiceBase implements ContextInstanceRegistrationService {
     private static final Log LOG = LogFactory.getLog(ContextInstanceRegistrationServiceImpl.class);
+    private ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster;
 
     public ContextInstanceRegistrationServiceImpl(String queueDirectory,
                                                   ScheduledContextInstanceService scheduledContextInstanceService,
@@ -89,7 +91,8 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                                                   SchedulerJobStateChangeEventBroadcaster schedulerJobStateChangeEventBroadcaster,
                                                   JobLockCacheInitialisationService jobLockCacheInitialisationService,
                                                   ContextInstanceSchedulerService contextInstanceSchedulerService,
-                                                  TimeService timeService) {
+                                                  TimeService timeService,
+                                                  ContextInstanceSavedEventBroadcaster contextInstanceSavedEventBroadcaster) {
         super(queueDirectory,
             scheduledContextInstanceService,
             jobInitiationService,
@@ -105,30 +108,49 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             jobLockCacheInitialisationService,
             contextInstanceSchedulerService,
             timeService);
+
+        this.contextInstanceSavedEventBroadcaster = contextInstanceSavedEventBroadcaster;
+        if (this.contextInstanceSavedEventBroadcaster == null) {
+            throw new IllegalArgumentException("contextInstanceSavedEventBroadcaster cannot be null!");
+        }
     }
     /**
      * Remove the all contextInstance associated with this context name, all jobsDetails & triggers.
-     * This will be invoked, for example, by the UI
+     * This will be invoked, for example, by the UI.
+     *
      * @param contextName / plan for which we need to deregister.
      */
     @Override
     public void deRegisterByName(String contextName) {
         for(ContextMachine contextMachine : ContextMachineCache.instance().getAllByContextName(contextName)) {
-            deRegisterById(contextMachine.getContext().getId(), null);
+            deRegisterById(contextMachine.getContext().getId());
         }
         contextInstanceSchedulerService.removeJob(contextName);
     }
 
+    @Override
+    public void deregisterManually(String contextInstanceId) {
+        this._deRegisterById(contextInstanceId, true);
+    }
+
     /**
      * Remove the contextInstance associated with the context instance ID
-     * This will be invoked from a plan end cron trigger
+     * This will be invoked from a plan end cron trigger.
+     *
      * @param contextInstanceId / plan for which we need to deregister.
      */
     @Override
-    public void deRegisterById(String contextInstanceId, JobExecutionContext context) {
-        if (context != null) {
-            contextInstanceSchedulerService.removeEndJobTrigger(context.getTrigger());
-        }
+    public void deRegisterById(String contextInstanceId) {
+        this._deRegisterById(contextInstanceId, false);
+    }
+
+    /**
+     * Remove the contextInstance associated with the context instance ID
+     * This will be invoked from a plan end cron trigger.
+     *
+     * @param contextInstanceId / plan for which we need to deregister.
+     */
+    private void _deRegisterById(String contextInstanceId, boolean endManually) {
         final ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(contextInstanceId);
         if (contextMachine == null) {
             LOG.info(String.format("Could not find context machine for context Instance ID [%s], so therefore nothing to de-register.", contextInstanceId));
@@ -142,7 +164,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
             throw new RuntimeException(messages);
         }
 
-        if(instance.isRunContextUntilManuallyEnded()) {
+        if(instance.isRunContextUntilManuallyEnded() && !endManually) {
             String messages = String.format("Context Instance ID [%s] with name[%s] has been marked to be manually ended, so therefore nothing to de-register."
                 , contextInstanceId, instance.getName());
             LOG.info(messages);
@@ -155,6 +177,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
         saveContextInstance(instance, InstanceStatus.ENDED);
         super.jobLockCacheInitialisationService.removeJobLocksFromCache(instance);
         ContextMachineCache.instance().remove(contextMachine);
+        this.contextInstanceSavedEventBroadcaster.broadcast(instance);
         try {
             contextMachine.teardown();
         } catch (Exception e) {
@@ -167,6 +190,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
      * Create a new instance of the plan and register it.
      * This will be invoked when a plan start trigger fires.
      * It will fire even if the plan is disabled, but will not create a new context.
+     *
      * @param contextName i.e. plan to create instance for
      * @return the context instance ID if a new context instance was created, null otherwise.
      */
@@ -199,6 +223,7 @@ public class ContextInstanceRegistrationServiceImpl extends ContextInstanceServi
                 contextInstanceSchedulerService.registerEndJobAndTrigger(contextInstance.getName(), CronUtils.buildCronFromOriginal(contextInstance.getProjectedEndTime(), contextInstance.getTimezone())
                     , contextInstance.getTimezone(), contextInstance.getId());
                 LOG.info(String.format("Registering context instance [%s] for context [%s]", contextInstance.getId(), contextName));
+                this.contextInstanceSavedEventBroadcaster.broadcast(contextInstance);
                 return contextInstance.getId();
             }
             else {

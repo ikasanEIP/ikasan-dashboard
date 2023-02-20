@@ -53,6 +53,16 @@ public class QuartzTimeWindowCheckerTest {
     }
 
     @Test
+    public void is_within_an_operating_window_of_exceeding_1_day() throws ParseException {
+        SimpleDateFormat myDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        myDate.setTimeZone(TimeZone.getTimeZone("Europe/London"));
+
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), AT_14_35_00, 93600000L, myDate.parse("2022-05-18T15:34:00")), is(true));
+
+
+    }
+
+    @Test
     public void is_within_operating_window_very_small_window() throws ParseException {
         SimpleDateFormat myDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         myDate.setTimeZone(TimeZone.getTimeZone("Europe/London"));
@@ -111,16 +121,15 @@ public class QuartzTimeWindowCheckerTest {
     }
 
     @Test
-    @Ignore
     public void is_within_operating_window_every_second_all_day() throws ParseException {
         SimpleDateFormat myDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         myDate.setTimeZone(TimeZone.getTimeZone("Europe/London"));
 
-        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "* * 0 ? * * *", 1000L, myDate.parse("2022-05-18T23:59:59")), is(true));
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "* * * ? * * *", 1000L, myDate.parse("2022-05-18T23:59:59")), is(true));
 
-        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "* * 0 ? * * *", 1000L, myDate.parse("2022-05-18T00:00:00")), is(true));
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "* * * ? * * *", 1000L, myDate.parse("2022-05-18T00:00:00")), is(true));
 
-        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "* * 0 ? * * *", 1000L, myDate.parse("2022-05-18T12:12:12")), is(true));
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "* * * ? * * *", 1000L, myDate.parse("2022-05-18T12:12:12")), is(true));
     }
 
     @Test
@@ -134,18 +143,17 @@ public class QuartzTimeWindowCheckerTest {
     }
 
     @Test
-    @Ignore
     public void is_within_operating_window_every_hour_on_the_hour() throws ParseException {
         SimpleDateFormat myDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         myDate.setTimeZone(TimeZone.getTimeZone("Europe/London"));
 
-        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "0 0 * ? * * *", 3600000, myDate.parse("2022-05-18T05:59:59")), is(false));
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "0 0 * ? * * *", 3500000, myDate.parse("2022-05-18T05:59:59")), is(false));
 
-        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "0 0 * ? * * *", 36000000, myDate.parse("2022-05-18T06:00:00")), is(true));
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "0 0 * ? * * *", 3500000, myDate.parse("2022-05-18T06:00:00")), is(true));
 
-        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "0 0 * * * ? *", 36000000, myDate.parse("2022-05-18T07:59:59")), is(false));
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "0 0 * * * ? *", 3500000, myDate.parse("2022-05-18T07:59:59")), is(false));
 
-        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "0 0 * * * ? *", 36000000, myDate.parse("2022-05-18T07:00:00")), is(true));
+        assertThat(QuartzTimeWindowChecker.withinOperatingWindow(LONDON.toString(), "0 0 * * * ? *", 3500000, myDate.parse("2022-05-18T07:00:00")), is(true));
     }
 
     @Test
