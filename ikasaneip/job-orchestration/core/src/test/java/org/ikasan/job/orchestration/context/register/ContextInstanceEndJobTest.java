@@ -22,6 +22,9 @@ public class ContextInstanceEndJobTest {
     @Mock
     private ContextInstanceRegistrationService contextInstanceRegistrationService;
 
+    @Mock
+    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+
     private ContextInstanceEndJob contextInstanceEndJob;
 
     private String contextName;
@@ -33,7 +36,7 @@ public class ContextInstanceEndJobTest {
         contextName = RandomStringUtils.randomAlphabetic(22);
         timezone = RandomStringUtils.randomAlphabetic(22);
         contextInstanceEndJob = new ContextInstanceEndJob(contextName + END_JOB_EXTENSION, "0 0 2 ? * * *"
-            , timezone, contextInstanceRegistrationService);
+            , timezone, contextInstanceRegistrationService, contextInstanceSchedulerService);
     }
 
     @Test
@@ -59,6 +62,6 @@ public class ContextInstanceEndJobTest {
         jobExecutionContext.setTrigger(newTrigger().usingJobData(jobDataMap).build());
         contextInstanceEndJob.execute(jobExecutionContext);
 
-        verify(contextInstanceRegistrationService).deRegisterById("xx", jobExecutionContext);
+        verify(contextInstanceRegistrationService).deRegisterById("xx");
     }
 }

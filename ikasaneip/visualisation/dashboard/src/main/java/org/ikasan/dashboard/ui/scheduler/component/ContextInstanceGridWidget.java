@@ -26,6 +26,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.model.ContextInstanceSearchFilter;
 import org.ikasan.spec.scheduled.instance.model.InstanceStatus;
@@ -39,6 +40,7 @@ import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -53,6 +55,8 @@ public class ContextInstanceGridWidget extends Div {
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
     private GlobalEventService globalEventService;
+
+    private ContextInstanceRegistrationService contextInstanceRegistrationService;
 
 
     /**
@@ -80,7 +84,7 @@ public class ContextInstanceGridWidget extends Div {
                                  MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
                                  LogStreamingService logStreamingService, ContextTemplate contextTemplate, SchedulerJobInstanceService schedulerJobInstanceService,
                                  JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobUtilsService jobUtilsService,
-                                 ScheduledContextService scheduledContextService, GlobalEventService globalEventService) {
+                                 ScheduledContextService scheduledContextService, GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService) {
 
         this.scheduledContextInstanceService = scheduledContextInstanceService;
         if (this.scheduledContextInstanceService == null) {
@@ -109,6 +113,10 @@ public class ContextInstanceGridWidget extends Div {
         this.globalEventService = globalEventService;
         if (this.globalEventService == null) {
             throw new IllegalArgumentException("globalEventService cannot be null!");
+        }
+        this.contextInstanceRegistrationService = contextInstanceRegistrationService;
+        if (this.contextInstanceRegistrationService == null) {
+            throw new IllegalArgumentException("contextInstanceRegistrationService cannot be null!");
         }
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
@@ -187,7 +195,7 @@ public class ContextInstanceGridWidget extends Div {
                 ContextInstanceDialog contextInstanceDialog = new ContextInstanceDialog(this.scheduledContextInstanceService, dynamicImagePath, moduleMetaDataService
                     , scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                     , schedulerJobService, logStreamingService, scheduledContextInstanceRecord.getContextInstance(), this.contextTemplate, schedulerJobInstanceService
-                    , this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService);
+                    , this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, this.globalEventService, this.contextInstanceRegistrationService);
 
                 contextInstanceDialog.open();
             });

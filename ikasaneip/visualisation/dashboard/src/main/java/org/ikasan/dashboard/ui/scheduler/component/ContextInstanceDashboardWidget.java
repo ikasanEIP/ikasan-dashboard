@@ -35,6 +35,7 @@ import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.model.*;
@@ -75,6 +76,7 @@ public class ContextInstanceDashboardWidget extends Div {
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
     private GlobalEventService globalEventService;
+    private ContextInstanceRegistrationService contextInstanceRegistrationService;
     private TextField contextNameTf = new TextField();
     private TextField contextInstanceIdTf = new TextField();
     private StatusFilter statusFilter = new StatusFilter();
@@ -96,7 +98,8 @@ public class ContextInstanceDashboardWidget extends Div {
                                           SchedulerJobInstanceService schedulerJobInstanceService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath,
                                           ModuleMetaDataService moduleMetaDataService, LogStreamingService logStreamingService,
                                           JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
-                                          JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, boolean fullscreen, GlobalEventService globalEventService) {
+                                          JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, boolean fullscreen, GlobalEventService globalEventService,
+                                          ContextInstanceRegistrationService contextInstanceRegistrationService) {
 
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         if(this.scheduledProcessManagementService ==  null) {
@@ -164,6 +167,10 @@ public class ContextInstanceDashboardWidget extends Div {
         }
         this.globalEventService = globalEventService;
         if (this.globalEventService == null) {
+            throw new IllegalArgumentException("globalEventService cannot be null!");
+        }
+        this.contextInstanceRegistrationService = contextInstanceRegistrationService;
+        if (this.contextInstanceRegistrationService == null) {
             throw new IllegalArgumentException("globalEventService cannot be null!");
         }
 
@@ -463,7 +470,8 @@ public class ContextInstanceDashboardWidget extends Div {
         ContextTemplate contextTemplate = this.scheduledContextService.findByName(contextInstanceAggregateJobStatus.getContextInstanceName()).getContext();
         ContextInstanceDialog contextInstanceDialog = new ContextInstanceDialog(this.scheduledContextInstanceService, this.dynamicImagePath, this.moduleMetaDataService, this.scheduledProcessManagementService,
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService, contextInstance, contextTemplate,
-            this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, contextInstanceWidgetTab, status.name(), this.globalEventService);
+            this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService, this.jobUtilsService, this.scheduledContextService, contextInstanceWidgetTab, status.name(), this.globalEventService,
+            this.contextInstanceRegistrationService);
 
         contextInstanceDialog.open();
     }

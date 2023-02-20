@@ -19,6 +19,7 @@ import org.ikasan.dashboard.ui.util.ComponentSecurityVisibility;
 import org.ikasan.dashboard.ui.util.DateFormatter;
 import org.ikasan.dashboard.ui.util.SecurityConstants;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
+import org.ikasan.job.orchestration.context.register.ContextInstanceSchedulerService;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.SecurityService;
 import org.ikasan.security.service.UserService;
@@ -163,6 +164,9 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
     @Resource
     private GlobalEventService globalEventService;
 
+    @Resource
+    private ContextInstanceSchedulerService contextInstanceSchedulerService;
+
     @Value("${ikasan.dashboard.unzip.and.provision.jobs:true}")
     private boolean uploadProvisionJobs;
 
@@ -170,13 +174,10 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
 
     private ContextTemplateWidget contextTemplateWidget;
 
-//    private ContextDebugWidget contextDebugWidget;
-
     private Board contextDebugBoard;
 
     private Tab schedulerDashboardTab;
     private Tab contextTemplateTab;
-//    private Tab contextDebugTab;
     private Tabs tabs;
 
     private boolean initialised = false;
@@ -197,7 +198,7 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             , this.scheduledProcessManagementService, this.configurationRestService, this.moduleControlRestService, this.metaDataRestService
             , this.systemEventLogger, this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
             "", this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService, this.jobUtilsService,
-            this.scheduledContextService, this.globalEventService);
+            this.scheduledContextService, this.globalEventService, this.contextInstanceRegistrationService);
 
         this.schedulerAgentDashboardView.addClassName("styled");
         this.schedulerAgentDashboardView.setSizeFull();
@@ -213,7 +214,8 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.schedulerJobService, this.logStreamingService,
             this.scheduledContextInstanceService, this.schedulerJobInstanceService, this.jobInitiationService, this.zipWorkingDirectory, this.contextProvisionService,
             this.contextProfileService, this.jobProvisionService, userService, securityService, this.jobUtilsService, this.uploadProvisionJobs, this.contextInstanceRegistrationService,
-            this.emailNotificationDetailsService, this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.springCloudConfigRefreshService, this.globalEventService);
+            this.emailNotificationDetailsService, this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.springCloudConfigRefreshService, this.globalEventService,
+            this.contextInstanceSchedulerService);
         this.contextTemplateWidget.setVisible(false);
 
 
@@ -221,10 +223,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         this.schedulerDashboardTab.setId("schedulerDashboardTab");
         this.contextTemplateTab = new Tab(getTranslation("tab.label.job-plans", UI.getCurrent().getLocale()));
         this.contextTemplateTab.setId("contextTemplateTab");
-//        this.contextDebugTab = new Tab(getTranslation("tab.label.job-plan-debug", UI.getCurrent().getLocale()));
-//        this.contextDebugTab.setId("contextDebugTab");
-//        ComponentSecurityVisibility.applySecurity(contextDebugTab, SecurityConstants.ALL_AUTHORITY,
-//            SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_ALL_ADMIN);
 
         this.tabs = new Tabs(schedulerDashboardTab, this.contextTemplateTab);
 
@@ -237,10 +235,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
             tabsToPages.values().forEach(page -> page.setVisible(false));
             com.vaadin.flow.component.Component selectedPage = tabsToPages.get(tabs.getSelectedTab());
             selectedPage.setVisible(true);
-
-//            if(selectedPage.equals(contextDebugBoard)) {
-//                this.contextDebugWidget.updateContextDropdownContents();
-//            }
         });
 
         IronIcon addIcon = IronIcons.ADD.create();
@@ -264,15 +258,6 @@ public class SchedulerView extends VerticalLayout implements BeforeEnterObserver
         if(!initialised) {
             this.init();
             this.schedulerAgentDashboardView.beforeEnter(beforeEnterEvent);
-
-//            this.contextDebugWidget = new ContextDebugWidget(this.scheduledContextInstanceService, this.jobInitiationService
-//                , this.scheduledContextService, this.systemEventLogger, this.internalEventDrivenJobService, this.queueDirectory
-//                , this.moduleMetaDataService, this.jobLockCacheService, this.contextInstanceService, this.scheduledProcessManagementService,
-//                this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.schedulerJobService,
-//                this.logStreamingService, this.contextParametersInstanceService, this.schedulerJobInstanceService, this.jobUtilsService,
-//                this.jobLockCacheInitialisationService);
-//
-//            this.contextDebugBoard.addRow(this.contextDebugWidget);
             initialised = true;
         }
     }

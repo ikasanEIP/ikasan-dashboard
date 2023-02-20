@@ -15,6 +15,7 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationService;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
@@ -25,6 +26,8 @@ import org.ikasan.spec.scheduled.job.service.JobUtilsService;
 import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
 import org.springframework.beans.factory.annotation.Value;
+
+import javax.annotation.Resource;
 
 @CssImport("./styles/dashboard-view.css")
 @CssImport(value="./styles/chart-styling.css", themeFor = "vaadin-chart", include = "vaadin-chart-default-theme")
@@ -40,9 +43,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     private MetaDataService metaDataRestService;
     private SchedulerService schedulerService;
     private SchedulerJobService schedulerJobService;
-
     private SystemEventLogger systemEventLogger;
-
     private SchedulerJobInstanceService schedulerJobInstanceService;
     private ScheduledContextInstanceService scheduledContextInstanceService;
     private String dynamicImagePath;
@@ -53,6 +54,8 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
     private JobUtilsService jobUtilsService;
     private ScheduledContextService scheduledContextService;
     private GlobalEventService globalEventService;
+
+    private ContextInstanceRegistrationService contextInstanceRegistrationService;
 
     private Board board;
 
@@ -75,7 +78,8 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                                        SchedulerJobInstanceService schedulerJobInstanceService, ScheduledContextInstanceService scheduledContextInstanceService, String dynamicImagePath,
                                        ModuleMetaDataService moduleMetaDataService, LogStreamingService logStreamingService,
                                        JobInitiationService jobInitiationService, ContextProfileService contextProfileService,
-                                       JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService, GlobalEventService globalEventService) {
+                                       JobUtilsService jobUtilsService, ScheduledContextService scheduledContextService,
+                                       GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService) {
         this.moduleMetadataService = moduleMetadataService;
         this.scheduledProcessManagementService = scheduledProcessManagementService;
         this.configurationRestService = configurationRestService;
@@ -94,6 +98,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
         this.jobUtilsService = jobUtilsService;
         this.scheduledContextService = scheduledContextService;
         this.globalEventService = globalEventService;
+        this.contextInstanceRegistrationService = contextInstanceRegistrationService;
 
         board = new Board();
         board.addClassName("styled");
@@ -113,7 +118,7 @@ public class SchedulerAgentDashboardView extends HorizontalLayout implements Bef
                 , this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger
                 , this.schedulerService, this.schedulerJobService, this.schedulerJobInstanceService, this.scheduledContextInstanceService,
                 this.dynamicImagePath, this.moduleMetaDataService, this.logStreamingService, this.jobInitiationService, this.contextProfileService,
-                this.jobUtilsService, this.scheduledContextService, false, this.globalEventService));
+                this.jobUtilsService, this.scheduledContextService, false, this.globalEventService, this.contextInstanceRegistrationService));
 
             initialised = true;
         }

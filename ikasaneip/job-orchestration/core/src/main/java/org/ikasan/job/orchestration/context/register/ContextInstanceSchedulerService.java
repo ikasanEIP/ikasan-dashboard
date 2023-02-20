@@ -105,7 +105,8 @@ public class ContextInstanceSchedulerService extends AbstractDashboardSchedulerS
      * @param contextInstanceId used to pair the destroy context instance with the correct create context instance.
      */
     public void registerEndJobAndTrigger(String contextName, String cronExpressionToTriggerJob, String timezone, String contextInstanceId) {
-        ContextInstanceEndJob endJob = new ContextInstanceEndJob(contextName + END_JOB_EXTENSION, cronExpressionToTriggerJob, timezone, this.contextInstanceRegistrationService);
+        ContextInstanceEndJob endJob = new ContextInstanceEndJob(contextName + END_JOB_EXTENSION, cronExpressionToTriggerJob, timezone
+            , this.contextInstanceRegistrationService, this);
         JobDetail endJobDetail = this.scheduledJobFactory.createJobDetail(endJob, ContextInstanceEndJob.class, endJob.getJobName(), CONTEXT_GROUP);
 
         // Overwrite if already in map
