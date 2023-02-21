@@ -1392,9 +1392,14 @@ public class ContextMachine {
     }
 
     private void addInboundListener() {
-        inboundListenableFuture = this.inboundQueue.peekAsync();
-        this.inboundQueueMessageRunner = new InboundQueueMessageRunner();
-        inboundListenableFuture.addListener(inboundQueueMessageRunner, this.contextExecutor);
+        try {
+            inboundListenableFuture = this.inboundQueue.peekAsync();
+            this.inboundQueueMessageRunner = new InboundQueueMessageRunner();
+            inboundListenableFuture.addListener(inboundQueueMessageRunner, this.contextExecutor);
+        }
+        catch (Exception e) {
+            logger.warn("Could not add inbound listener for context machine. This is likely due to the context instance being ended.", e);
+        }
     }
 
     protected void addOutboundListener() {

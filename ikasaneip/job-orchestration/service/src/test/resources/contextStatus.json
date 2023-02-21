@@ -1900,7 +1900,7 @@
   "contextDependencies" : [ ],
   "contextParameters" : [ ],
   "timeWindowStart" : "* * 6 ? * * *",
-  "contextTtlMilliseconds" : 0,
+  "contextTtlMilliseconds" : 86400000,
   "id" : "UUID",
   "createdDateTime" : 1665669706022,
   "updatedDateTime" : 1665669706022,
