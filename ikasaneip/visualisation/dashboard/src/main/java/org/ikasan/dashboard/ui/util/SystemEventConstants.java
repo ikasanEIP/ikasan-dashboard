@@ -69,12 +69,13 @@ public class SystemEventConstants
     public static final String SCHEDULED_JOB_RESET = "Scheduled job reset";
     public static final String USER_ADDED_TO_CONTEXT_PROFILE = "User added to context profile";
     public static final String USER_REMOVED_FROM_CONTEXT_PROFILE = "User removed from context profile";
-    public static final String CONTEXT_JOB_LOCKS_MODIFICATION = "Context template job lock modification";
-    public static final String CONTEXT_TEMPLATE_SCHEDULED_JOBS_DISABLED = "Context template scheduled jobs disabled";
-    public static final String CONTEXT_TEMPLATE_SCHEDULED_JOBS_ENABLED = "Context template scheduled jobs enabled";
-    public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_DISABLED = "Context instance scheduled jobs disabled";
-    public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_ENABLED = "Context instance scheduled jobs enabled";
-    public static final String CONTEXT_INSTANCE_MANUALLY_ENDED = "Context instance manually ended";
-    public static final String CONTEXT_INSTANCE_DURATION_IGNORED = "Context instance duration ignored";
+    public static final String CONTEXT_JOB_LOCKS_MODIFICATION = "Job plan job lock modification";
+    public static final String CONTEXT_TEMPLATE_SCHEDULED_JOBS_DISABLED = "Job plan scheduled jobs disabled";
+    public static final String CONTEXT_TEMPLATE_SCHEDULED_JOBS_ENABLED = "Job plan scheduled jobs enabled";
+    public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_DISABLED = "Job plan instance scheduled jobs disabled";
+    public static final String CONTEXT_INSTANCE_SCHEDULED_JOBS_ENABLED = "Job plan instance scheduled jobs enabled";
+    public static final String CONTEXT_INSTANCE_MANUALLY_ENDED = "Job plan instance manually ended";
+    public static final String CONTEXT_INSTANCE_DURATION_IGNORED = "Job plan instance duration ignored";
+    public static final String CONTEXT_INSTANCE_MANUALLY_CREATED = "Job plan instance manually created";
 
 }

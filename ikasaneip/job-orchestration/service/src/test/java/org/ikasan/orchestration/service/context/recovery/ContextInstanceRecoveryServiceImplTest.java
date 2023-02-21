@@ -409,12 +409,12 @@ public class ContextInstanceRecoveryServiceImplTest {
         // verify
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
-        verify(contextParametersInstanceService, times(3)).populateContextParameters();
-        verify(contextParametersInstanceService, times(3)).populateContextParametersOnContextInstance(any(ContextInstance.class));
-        verify(moduleMetadataService, times(4)).find(any(), any(), eq(-1), eq(-1));
+        verify(contextParametersInstanceService, times(12)).populateContextParameters();
+        verify(contextParametersInstanceService, times(12)).populateContextParametersOnContextInstance(any(ContextInstance.class));
+        verify(moduleMetadataService, times(13)).find(any(), any(), eq(-1), eq(-1));
         verify(timeService).getDateNow();
-        verify(scheduledContextInstanceService, times(3)).save(any(ScheduledContextInstanceRecord.class));
-        verify(contextInstancePublicationService, times(9)).publish(any(String.class), any(ContextInstance.class));
+        verify(scheduledContextInstanceService, times(12)).save(any(ScheduledContextInstanceRecord.class));
+        verify(contextInstancePublicationService, times(36)).publish(any(String.class), any(ContextInstance.class));
         verify(contextInstancePublicationService, times(3)).removeAll(anyString());
 
         verifyNoMoreInteractions(scheduledContextInstanceService,
@@ -466,13 +466,13 @@ public class ContextInstanceRecoveryServiceImplTest {
         // verify
         verify(scheduledContextInstanceService).getScheduledContextInstancesByStatus(getStatusesToLookFor());
         verify(scheduledContextService).findAll();
-        verify(moduleMetadataService, times(2)).find(any(), any(), eq(-1), eq(-1));
-        verify(contextParametersInstanceService).populateContextParameters();
-        verify(contextParametersInstanceService).populateContextParametersOnContextInstance(any(ContextInstance.class));
+        verify(moduleMetadataService, times(3)).find(any(), any(), eq(-1), eq(-1));
+        verify(contextParametersInstanceService, times(2)).populateContextParameters();
+        verify(contextParametersInstanceService, times(2)).populateContextParametersOnContextInstance(any(ContextInstance.class));
         verify(timeService).getDateNow();
 
         ArgumentCaptor<ScheduledContextInstanceRecord> contextInstanceCaptor = ArgumentCaptor.forClass(ScheduledContextInstanceRecord.class);
-        verify(scheduledContextInstanceService).save(contextInstanceCaptor.capture());
+        verify(scheduledContextInstanceService, times(2)).save(contextInstanceCaptor.capture());
         ScheduledContextInstanceRecord actualContextInstanceRecord = contextInstanceCaptor.getValue();
         assertEquals("ContextName1", actualContextInstanceRecord.getContextName());
         assertEquals(WAITING.name(), actualContextInstanceRecord.getStatus());

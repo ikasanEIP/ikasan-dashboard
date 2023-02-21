@@ -12,6 +12,7 @@ import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.server.VaadinSession;
 import org.ikasan.dashboard.ui.general.component.AbstractCloseableResizableDialog;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.*;
