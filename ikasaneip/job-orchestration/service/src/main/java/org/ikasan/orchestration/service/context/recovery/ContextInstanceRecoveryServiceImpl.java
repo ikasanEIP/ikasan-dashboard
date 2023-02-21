@@ -178,14 +178,13 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                 if (scheduledContextInstanceRecords != null) {
                     for (ScheduledContextInstanceRecord scheduledContextInstanceRecord : scheduledContextInstanceRecords) {
                         try {
-                            if(scheduledContextInstanceRecord != null
-                                && (scheduledContextInstanceRecord.getContextInstance().getProjectedEndTime() == 0 || scheduledContextInstanceRecord.getContextInstance().getProjectedEndTime() < System.currentTimeMillis())
+                            if((scheduledContextInstanceRecord.getContextInstance().getProjectedEndTime() == 0 || scheduledContextInstanceRecord.getContextInstance().getProjectedEndTime() < System.currentTimeMillis())
                                 && !scheduledContextInstanceRecord.getContextInstance().isRunContextUntilManuallyEnded()) {
                                 LOG.info("Removing context instance[{}], with name[{}] as the projected end time has been passed and the context is not marked to run until manually ended.");
                                 this.contextInstanceRegistrationService.deRegisterById(scheduledContextInstanceRecord.getContextInstanceId());
                             }
                             else if (QuartzTimeWindowChecker.withinOperatingWindow(context.getTimezone(), context.getTimeWindowStart(), context.getContextTtlMilliseconds(), now)
-                                || (scheduledContextInstanceRecord != null && scheduledContextInstanceRecord.getContextInstance().isRunContextUntilManuallyEnded())) {
+                                || (scheduledContextInstanceRecord.getContextInstance().isRunContextUntilManuallyEnded())) {
                                 if (scheduledContextInstanceRecord != null) {
                                     try {
                                         ContextInstance contextInstance = scheduledContextInstanceRecord.getContextInstance();
@@ -206,16 +205,6 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                                         // todo probably want to send a notification here.
                                         LOG.error(String.format("Not Recovering context [%s] instance ID [%s] due to an ", scheduledContextInstanceRecord.getContextName(), scheduledContextInstanceRecord.getContextInstanceId()), e);
                                     }
-                                } else {
-                                    // we have a context record without an instance which should not be the case
-                                    String message = String.format("Recovering context [%s] does not have an instance. Creating instance now!", scheduledContextRecord.getContextName());
-                                    LOG.info(message);
-                                    executor.execute(new MissingContextInstanceRecoveryRunnable(
-                                        this.queueDirectory, this.scheduledContextInstanceService, this.jobInitiationService, this.moduleMetadataService, this.internalEventDrivenJobService,
-                                        this.contextParametersInstanceService, this.contextInstancePublicationService, this.jobLockCacheService, this.scheduledContextService,
-                                        scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster,
-                                        this.jobLockCacheInitialisationService, this.contextInstanceSchedulerService, this.timeService
-                                    ));
                                 }
                             } else {
                                 Log.info("Not Recovering context " + scheduledContextRecord.getContextName() + " instance ID " + scheduledContextRecord.getId() + " because we are now outside it time window");
@@ -229,6 +218,17 @@ public class ContextInstanceRecoveryServiceImpl extends ContextInstanceServiceBa
                             }
                         }
                     }
+                }
+                else if (QuartzTimeWindowChecker.withinOperatingWindow(context.getTimezone(), context.getTimeWindowStart(), context.getContextTtlMilliseconds(), now)) {
+                    // we have a context record without an instance which should not be the case
+                    String message = String.format("Recovering context [%s] does not have an instance. Creating instance now!", scheduledContextRecord.getContextName());
+                    LOG.info(message);
+                    executor.execute(new MissingContextInstanceRecoveryRunnable(
+                        this.queueDirectory, this.scheduledContextInstanceService, this.jobInitiationService, this.moduleMetadataService, this.internalEventDrivenJobService,
+                        this.contextParametersInstanceService, this.contextInstancePublicationService, this.jobLockCacheService, this.scheduledContextService,
+                        scheduledContextRecord, this.schedulerJobInstanceService, this.contextInstanceStateChangeEventBroadcaster, this.schedulerJobStateChangeEventBroadcaster,
+                        this.jobLockCacheInitialisationService, this.contextInstanceSchedulerService, this.timeService
+                    ));
                 }
             }
         }

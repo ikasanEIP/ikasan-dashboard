@@ -1059,7 +1059,8 @@
     }
   ],
   "timeWindowStart": "* * 6 ? * * *",
-  "timeWindowEnd": "* * 15 ? * * *",
+  "projectedEndTime": 0,
+  "contextTtlMilliseconds": 86400000,
   "jobLocks": [
     {
       "name": "AC_DEV4.AC_BB_LK",

@@ -41,10 +41,10 @@ public class ContextInstanceTestSearchResults implements SearchResults<Scheduled
             if (insideOperatingWindow) {
                 // make operating window 24 hours
                 jsonContext = jsonContext.replaceAll("\"timeWindowStart\".*", "\"timeWindowStart\" : \"" + "* * 0 ? * * *" + "\"" + ",");
-                jsonContext = jsonContext.replaceAll("\"timeWindowEnd\".*", "\"timeWindowEnd\" : \"" + "* * 23 ? * * *" + "\"" + ",");
+                jsonContext = jsonContext.replaceAll("\"projectedEndTime\".*", "\"projectedEndTime\" : " + (System.currentTimeMillis() + 86400000) + ",");
             } else {
                 jsonContext = jsonContext.replaceAll("\"timeWindowStart\".*", "\"timeWindowStart\" : \"" + "59 59 23 ? * * *" + "\"" + ",");
-                jsonContext = jsonContext.replaceAll("\"timeWindowEnd\".*", "\"timeWindowEnd\" : \"" + "59 59 23 ? * * *" + "\"" + ",");
+                jsonContext = jsonContext.replaceAll("\"projectedEndTime\".*", "\"projectedEndTime\" : " + System.currentTimeMillis() + ",");
             }
 
             ContextInstanceImpl contextInstance;

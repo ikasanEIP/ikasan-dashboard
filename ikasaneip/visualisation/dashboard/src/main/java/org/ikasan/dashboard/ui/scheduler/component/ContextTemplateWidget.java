@@ -556,7 +556,7 @@ public class ContextTemplateWidget extends Div {
             layout.add(exportWrapper);
 
             Icon newWindow = IconDecorator.decorate(new Icon(VaadinIcon.EXTERNAL_LINK), getTranslation("tooltip.open-in-new-window", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
-            ComponentSecurityVisibility.applySecurity(this.authentication, export, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
+            ComponentSecurityVisibility.applySecurity(this.authentication, newWindow, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
                 , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_READ);
             newWindow.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
                 String route = RouteConfiguration.forSessionScope()
@@ -566,6 +566,39 @@ public class ContextTemplateWidget extends Div {
             });
 
             layout.add(newWindow);
+
+            Icon newContextInstance = IconDecorator.decorate(new Icon(VaadinIcon.PLUS), getTranslation("tooltip.create-new-job-plan-instance", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");
+            ComponentSecurityVisibility.applySecurity(this.authentication, newContextInstance, SecurityConstants.ALL_AUTHORITY, SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN
+                , SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ, SecurityConstants.SCHEDULER_READ);
+            newContextInstance.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                ConfirmDialog confirmDialog = new ConfirmDialog();
+                confirmDialog.setHeader(getTranslation("confirm-dialog.create-new-context-instance-header", UI.getCurrent().getLocale()));
+                confirmDialog.setText(String.format(getTranslation("confirm-dialog.create-new-context-instance-body", UI.getCurrent().getLocale()), scheduledContextRecord.getContextName()));
+                confirmDialog.setCancelable(true);
+                confirmDialog.open();
+
+                confirmDialog.addConfirmListener(confirmEvent -> {
+                    String contextInstanceId = null;
+                    try {
+                        contextInstanceId = this.contextInstanceRegistrationService.register(scheduledContextRecord.getContextName());
+                        systemEventLogger.logEvent(SystemEventConstants.CONTEXT_INSTANCE_MANUALLY_CREATED, String.format("Job Plan Name[%s] - New Instance Manually Created[%s]"
+                            , scheduledContextRecord.getContextName(), contextInstanceId), this.authentication.getName());
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        NotificationHelper.showErrorNotification(getTranslation("notification.error-creating-job-plan-instance", UI.getCurrent().getLocale()));
+                    }
+
+                    if(contextInstanceId != null) {
+                        String route = RouteConfiguration.forSessionScope()
+                            .getUrl(ContextInstanceView.class, contextInstanceId + "_scheduledContextInstance");
+
+                        getUI().ifPresent(ui -> ui.getPage().open(route));
+                    }
+                });
+            });
+
+            layout.add(newContextInstance);
 
             layout.setWidth("250px");
             return layout;
