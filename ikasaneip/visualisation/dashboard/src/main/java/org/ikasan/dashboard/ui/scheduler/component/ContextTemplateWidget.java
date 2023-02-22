@@ -424,7 +424,8 @@ public class ContextTemplateWidget extends Div {
                 cloneContextTemplateDialog.open();
             });
 
-            layout.add(clone);
+            // todo clone not exposed until issues resolved
+            //layout.add(clone);
 
             Icon enableQuartzScheduledJobsButton = IconDecorator.decorate(new Icon(VaadinIcon.PLAY)
                 , getTranslation("tooltip.job-plan-scheduled-jobs-enabled", UI.getCurrent().getLocale()), "16pt", "rgba(0, 0, 0, 1.0)");

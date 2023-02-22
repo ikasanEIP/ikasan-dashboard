@@ -10,6 +10,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
@@ -44,7 +45,10 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
-    private TextField endWindowCronExpressionTf;
+
+    private IntegerField contextTtlMinutes;
+    private IntegerField contextTtlHours;
+    private IntegerField contextTtlDays;
 
     private ContextTemplate contextTemplate = new ContextTemplateImpl();
     private Binder<ContextTemplate> binder = new Binder<>(ContextTemplate.class);
@@ -75,7 +79,7 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
         this.contextTemplate = contextToClone.getContext();
         this.contextTemplate.setName(null);
 
-        this.setHeight("340px");
+        this.setHeight("440px");
         this.setWidth("90vw");
 
         super.showResize(false);
@@ -95,9 +99,18 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
         cloneButton.addClickListener((ComponentEventListener<ClickEvent<Button>>) buttonClickEvent ->  {
             IkasanAuthentication authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
+            this.contextTtlDays.setInvalid(this.contextTtlDays.isInvalid() || this.contextTtlDays.getValue() == null);
+            this.contextTtlHours.setInvalid(contextTtlHours.isInvalid() || this.contextTtlHours.getValue() == null);
+            this.contextTtlMinutes.setInvalid(contextTtlMinutes.isInvalid() || this.contextTtlMinutes.getValue() == null);
+
             if(this.binder.validate().isOk()) {
                 try {
                     binder.writeBean(this.contextTemplate);
+                    if(this.contextTtlDays.isInvalid() || this.contextTtlHours.isInvalid() || this.contextTtlMinutes.isInvalid()) {
+                        NotificationHelper.showErrorNotification(getTranslation("error.error-validating-context-template-form"
+                            , UI.getCurrent().getLocale()));
+                        return;
+                    }
                 } catch (ValidationException e) {
                     e.printStackTrace();
                     NotificationHelper.showErrorNotification(getTranslation("error.error-validating-context-template-form"
@@ -105,6 +118,7 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
                     return;
                 }
 
+                boolean inError = false;
                 try {
                     ScheduledContextRecord scheduledContextRecord = new ScheduledContextRecordImpl();
                     scheduledContextRecord.setContext(this.contextTemplate);
@@ -132,22 +146,24 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
                     });
 
                     this.schedulerJobService.save(clonedJobs, authentication.getName());
-                    this.contextProfileService.save(searchResults.getResultList());
                     this.scheduledContextService.save(scheduledContextRecord);
 
                     this.contextInstanceRegistrationService.register(this.contextTemplate.getName());
                 }
                 catch (Exception e) {
                     e.printStackTrace();
+                    inError = true;
                     NotificationHelper.showErrorNotification(getTranslation("error.error-creating-new-context-template"
                         , UI.getCurrent().getLocale()));
                 }
 
                 this.contextTemplateFilteringGrid.getDataProvider().refreshAll();
 
-                NotificationHelper.showUserNotification(getTranslation("notification.context-template-created-successfully"
-                    , UI.getCurrent().getLocale()));
-                this.close();
+                if(!inError) {
+                    NotificationHelper.showUserNotification(getTranslation("notification.context-template-created-successfully"
+                        , UI.getCurrent().getLocale()));
+                    this.close();
+                }
             }
         });
 
@@ -156,6 +172,8 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.add(cloneButton, cancelButton);
+        buttonLayout.getElement().getStyle().set("position", "absolute");
+        buttonLayout.getElement().getStyle().set("bottom", "20px");
         buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, cloneButton, cancelButton);
         layout.add(buttonLayout);
 
@@ -200,31 +218,33 @@ public class CloneContextTemplateDialog extends AbstractCloseableResizableDialog
             .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
             .bind(ContextTemplate::getTimeWindowStart, ContextTemplate::setTimeWindowStart);
 
-        Icon endWindowCronBuilderIcon = IconDecorator.decorate(VaadinIcon.BUILDING_O.create(), getTranslation("tooltip.build-cron-expression", UI.getCurrent().getLocale()), "14pt", "rgba(241, 90, 35, 1.0)");
-        endWindowCronBuilderIcon.addClickListener(event -> {
-            CronBuilderDialog dialog = new CronBuilderDialog();
-            dialog.init(this.endWindowCronExpressionTf.getValue());
-            dialog.open();
+        this.contextTtlDays = new IntegerField(getTranslation("label.duration-days", UI.getCurrent().getLocale()));
+        this.contextTtlDays.getElement().getThemeList().add("always-float-label");
+        this.contextTtlDays.setMin(0);
+        this.contextTtlDays.setRequiredIndicatorVisible(true);
+        this.contextTtlDays.setErrorMessage(getTranslation("error.context-ttl-days", UI.getCurrent().getLocale()));
+        this.contextTtlHours = new IntegerField(getTranslation("label.duration-hours", UI.getCurrent().getLocale()));
+        this.contextTtlHours.getElement().getThemeList().add("always-float-label");
+        this.contextTtlHours.setRequiredIndicatorVisible(true);
+        this.contextTtlHours.setMin(0);
+        this.contextTtlHours.setMax(23);
+        this.contextTtlHours.setErrorMessage(getTranslation("error.context-ttl-hours", UI.getCurrent().getLocale()));
+        this.contextTtlMinutes = new IntegerField(getTranslation("label.duration-minutes", UI.getCurrent().getLocale()));
+        this.contextTtlMinutes.getElement().getThemeList().add("always-float-label");
+        this.contextTtlMinutes.setRequiredIndicatorVisible(true);
+        this.contextTtlMinutes.setMin(0);
+        this.contextTtlMinutes.setMax(59);
+        this.contextTtlMinutes.setErrorMessage(getTranslation("error.context-ttl-minutes", UI.getCurrent().getLocale()));
 
-            dialog.addOpenedChangeListener(openedChangeEvent -> {
-                if(!openedChangeEvent.isOpened() && dialog.isSaveClose()) {
-                    this.endWindowCronExpressionTf.setValue(dialog.getCronExpression());
-                }
-            });
-        });
-        this.endWindowCronExpressionTf = new TextField(getTranslation("label.time-window-end", UI.getCurrent().getLocale()));
-        this.endWindowCronExpressionTf.getElement().getThemeList().add("always-float-label");
-        this.endWindowCronExpressionTf.setSuffixComponent(endWindowCronBuilderIcon);
-        // todo
-//        binder.forField(endWindowCronExpressionTf)
-//            .asRequired(getTranslation("error.missing-cron-expression", UI.getCurrent().getLocale()))
-//            .withValidator(value -> CronExpression.isValidExpression(value), getTranslation("error.invalid-cron-expression", UI.getCurrent().getLocale()))
-//            .bind(ContextTemplate::getTimeWindowEnd, ContextTemplate::setTimeWindowEnd);
+        HorizontalLayout ttlLayout = new HorizontalLayout(contextTtlDays, contextTtlHours, contextTtlMinutes);
+        ttlLayout.setWidthFull();
+        ttlLayout.setPadding(false);
+        ttlLayout.setMargin(false);
 
         binder.readBean(this.contextTemplate);
 
         this.formLayout = new FormLayout();
         this.formLayout.setWidth("100%");
-        this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.descriptionTa, this.endWindowCronExpressionTf);
+        this.formLayout.add(this.contextNameTf, this.startWindowCronExpressionTf, this.descriptionTa, ttlLayout);
     }
 }
