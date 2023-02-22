@@ -100,7 +100,7 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
      */
     private void init() {
         this.blackoutWindowDateTimePairs = new ArrayList<>();
-        this.setHeight("740px");
+        this.setHeight("780px");
         this.setWidth("95vw");
 
         super.showResize(false);
@@ -146,6 +146,8 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.add(saveButton, cancelButton);
+        buttonLayout.getElement().getStyle().set("position", "absolute");
+        buttonLayout.getElement().getStyle().set("bottom", "20px");
         buttonLayout.setVerticalComponentAlignment(FlexComponent.Alignment.END, saveButton, cancelButton);
         Divider divider = new Divider();
         divider.getStyle().set("background-color", "rgba(0, 0, 0, 0.28)");
@@ -219,16 +221,19 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
         this.contextTtlDays.getElement().getThemeList().add("always-float-label");
         this.contextTtlDays.setMin(0);
         this.contextTtlDays.setRequiredIndicatorVisible(true);
+        this.contextTtlDays.setErrorMessage(getTranslation("error.context-ttl-days", UI.getCurrent().getLocale()));
         this.contextTtlHours = new IntegerField(getTranslation("label.duration-hours", UI.getCurrent().getLocale()));
         this.contextTtlHours.getElement().getThemeList().add("always-float-label");
         this.contextTtlHours.setRequiredIndicatorVisible(true);
         this.contextTtlHours.setMin(0);
         this.contextTtlHours.setMax(23);
+        this.contextTtlHours.setErrorMessage(getTranslation("error.context-ttl-hours", UI.getCurrent().getLocale()));
         this.contextTtlMinutes = new IntegerField(getTranslation("label.duration-minutes", UI.getCurrent().getLocale()));
         this.contextTtlMinutes.getElement().getThemeList().add("always-float-label");
         this.contextTtlMinutes.setRequiredIndicatorVisible(true);
         this.contextTtlMinutes.setMin(0);
         this.contextTtlMinutes.setMax(59);
+        this.contextTtlMinutes.setErrorMessage(getTranslation("error.context-ttl-minutes", UI.getCurrent().getLocale()));
 
         binder.readBean(this.contextTemplate);
 
@@ -443,9 +448,15 @@ public class ContextTemplateDialog extends AbstractCloseableResizableDialog {
             this.timezoneCb.setInvalid(false);
         }
 
+        this.contextTtlDays.setInvalid(this.contextTtlDays.isInvalid() || this.contextTtlDays.getValue() == null);
+        this.contextTtlHours.setInvalid(contextTtlHours.isInvalid() || this.contextTtlHours.getValue() == null);
+        this.contextTtlMinutes.setInvalid(contextTtlMinutes.isInvalid() || this.contextTtlMinutes.getValue() == null);
+
+
         boolean isValid = this.binder.validate().isOk();
 
-        return isValid && blackoutWindowsDefined.get() && timezoneValid && blackoutWindowsValid.get();
+        return isValid && blackoutWindowsDefined.get() && timezoneValid && blackoutWindowsValid.get()
+            && !this.contextTtlHours.isInvalid() && !this.contextTtlHours.isInvalid() && !this.contextTtlMinutes.isInvalid();
     }
 
     /**
