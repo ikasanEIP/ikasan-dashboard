@@ -94,6 +94,7 @@ public class IkasanAppLayout extends AppLayoutRouterLayout<LeftLayouts.LeftHybri
             UI.getCurrent().navigate("");
             VaadinSession.getCurrent().getSession().invalidate();
             UI.getCurrent().getPage().executeJs("window.location.href=''");
+            UI.getCurrent().getSession().close();
         });
 
 

@@ -165,7 +165,7 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
                 .append(OPEN_BRACKET)
                 .append(COMPONENT_NAME)
                 .append(COLON)
-                .append(filter.getContextSearchFilter())
+                .append("\"").append(filter.getContextSearchFilter()).append("\"")
                 .append(OR)
                 .append(COMPONENT_NAME)
                 .append(COLON)

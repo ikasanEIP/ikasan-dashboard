@@ -1497,6 +1497,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
+        logger.info("Detaching ContextInstanceTreeView");
         if(this.schedulerJobStateChangeRegistration != null) {
             this.schedulerJobStateChangeRegistration.remove();
             this.schedulerJobStateChangeRegistration = null;
@@ -1511,6 +1512,52 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             this.contextInstanceSaveBroadcasterRegistration.remove();
             this.contextInstanceSaveBroadcasterRegistration = null;
         }
+
+        if(this.jobImageMap != null) {
+            this.jobImageMap.clear();
+            this.jobImageMap = null;
+        }
+
+        if(this.schedulerJobIconMap != null) {
+            this.schedulerJobIconMap.clear();
+            this.schedulerJobIconMap = null;
+        }
+
+        if(this.statusDivMap != null) {
+            this.statusDivMap.clear();
+            this.statusDivMap = null;
+        }
+
+        if(this.schedulerStatusFreeTextDivMap != null) {
+            this.schedulerStatusFreeTextDivMap.clear();
+            this.schedulerStatusFreeTextDivMap = null;
+        }
+
+        if(this.startTimes != null) {
+            this.startTimes.clear();
+            this.startTimes = null;
+        }
+
+        if(this.endTimes != null) {
+            this.endTimes.clear();
+            this.endTimes = null;
+        }
+
+        if(this.manuallySubmittedBy != null) {
+            this.manuallySubmittedBy.clear();
+            this.manuallySubmittedBy = null;
+        }
+
+        if(this.grid != null) {
+            this.grid = null;
+        }
+
+        if(this.expandedNodes != null) {
+            this.expandedNodes.clear();
+            this.expandedNodes = null;
+        }
+
+        logger.info("Finished detaching ContextInstanceTreeView");
     }
 
     /**
