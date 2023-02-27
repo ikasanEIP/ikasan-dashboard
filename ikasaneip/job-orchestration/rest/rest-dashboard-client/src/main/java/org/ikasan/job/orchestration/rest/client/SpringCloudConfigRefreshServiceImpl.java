@@ -33,7 +33,7 @@ public class SpringCloudConfigRefreshServiceImpl implements SpringCloudConfigRef
        https://docs.spring.io/spring-cloud-config/docs/current/reference/html/#_pattern_matching_and_multiple_repositories 
        Using this API and using the profile [default] to trigger the config-service to update the baseDir */
     public static final String REFRESH_URL = "/{applicationPattern}/default/";
-    
+    public static final String ENCRYPTED_URL = "/encrypt";
     public static final String DECRYPTED_URL = "/decrypt";
     public static final String ACTUATOR_REFRESH = "/actuator/refresh";
 
@@ -88,6 +88,29 @@ public class SpringCloudConfigRefreshServiceImpl implements SpringCloudConfigRef
                 encryptedValue, e.getLocalizedMessage());
             // Return the encrypted value
             return encryptedValue;
+        }
+    }
+
+    @Override
+    public String encrypt(String valueToEncrypt) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+
+        HttpEntity request = new HttpEntity(valueToEncrypt, headers);
+        String configServiceUrl = environment.getProperty("spring.config.server.url");
+        String url = configServiceUrl + ENCRYPTED_URL;
+
+        try {
+            String encryptedValue = restTemplate.postForObject(url, request, String.class);
+            if (encryptedValue == null) {
+                throw new RestClientException("Encrypted value cannot return null");
+            }
+            return encryptedValue;
+        }
+        catch(RestClientException e) {
+            String errorResponse = "Issue encrypting the value using config services with error response [" + e.getLocalizedMessage() + "]";
+            LOGGER.warn(errorResponse);
+            return errorResponse;
         }
     }
     

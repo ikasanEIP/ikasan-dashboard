@@ -41,6 +41,7 @@ public class SpringCloudConfigRefreshServiceImplTest {
         Mockito.doReturn("test").when(environment).getProperty("ikasan.dashboard.extract.username");
         Mockito.doReturn("test").when(environment).getProperty("ikasan.dashboard.extract.password");
         Mockito.doReturn(contextBaseUrl).when(environment).getProperty("ikasan.dashboard.extract.base.url");
+        Mockito.doReturn(contextBaseUrl).when(environment).getProperty("spring.config.server.url");
     }
 
     @Test
@@ -294,4 +295,89 @@ public class SpringCloudConfigRefreshServiceImplTest {
 
         verify(postRequestedFor(urlEqualTo("/decrypt")));
     }
+
+    @Test
+    public void test_encrypt_successful() {
+        stubFor(post(urlEqualTo("/encrypt"))
+            .withRequestBody(containing("password"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("AQAqrD0tjxuYvid2QphgaQnaF9yne15o/4xSMKpYsvVTpqhCIwy")));
+
+        String result = uut.encrypt("password");
+
+        Assert.assertEquals("AQAqrD0tjxuYvid2QphgaQnaF9yne15o/4xSMKpYsvVTpqhCIwy", result);
+
+        verify(postRequestedFor(urlEqualTo("/encrypt")));
+    }
+
+    @Test
+    public void test_encrypt_empty_response() {
+        stubFor(post(urlEqualTo("/encrypt"))
+            .withRequestBody(containing("password"))
+            .willReturn(aResponse()
+                .withStatus(204)));
+
+        String result = uut.encrypt("password");
+
+        // As response is null, return the original value
+        Assert.assertEquals("Issue encrypting the value using config services with error response [Encrypted value cannot return null]", result);
+
+        verify(postRequestedFor(urlEqualTo("/encrypt")));
+    }
+
+    /**
+     * Even though it is a 403, do not throw an error and return the original input value
+     */
+    @Test
+    public void test_encrypt_403_do_nothing() {
+        stubFor(post(urlEqualTo("/encrypt"))
+            .withRequestBody(containing("password"))
+            .willReturn(aResponse()
+                .withStatus(403)));
+
+        String result = uut.encrypt("password");
+
+        // As there was an error, return the original value
+        Assert.assertEquals("Issue encrypting the value using config services with error response [403 Forbidden: [no body]]", result);
+
+        verify(postRequestedFor(urlEqualTo("/encrypt")));
+    }
+
+    /**
+     * Even though it is a 404, do not throw an error and return the original input value
+     */
+    @Test
+    public void test_encrypt_404_do_nothing() {
+        stubFor(post(urlEqualTo("/encrypt"))
+            .withRequestBody(containing("password"))
+            .willReturn(aResponse()
+                .withStatus(404)));
+
+        String result = uut.encrypt("password");
+
+        // As there was an error, return the original value
+        Assert.assertEquals("Issue encrypting the value using config services with error response [404 Not Found: [no body]]", result);
+
+        verify(postRequestedFor(urlEqualTo("/encrypt")));
+    }
+
+    /**
+     * Even though it is a 500 internal server error, do not throw an error and return the original input value
+     */
+    @Test
+    public void test_encrypt_500_do_nothing() {
+        stubFor(post(urlEqualTo("/encrypt"))
+            .withRequestBody(containing("password"))
+            .willReturn(aResponse()
+                .withStatus(500)));
+
+        String result = uut.encrypt("password");
+
+        // As there was an error, return the original value
+        Assert.assertEquals("Issue encrypting the value using config services with error response [500 Server Error: [no body]]", result);
+
+        verify(postRequestedFor(urlEqualTo("/encrypt")));
+    }
+
 }
