@@ -18,10 +18,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.general.SchedulerService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.service.GlobalEventService;
-import org.ikasan.spec.scheduled.job.service.JobInitiationService;
-import org.ikasan.spec.scheduled.job.service.JobUtilsService;
-import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.job.service.*;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -39,12 +36,12 @@ public class ContextTemplateManagementDialog extends AbstractCloseableResizableD
                                            JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobProvisionService jobProvisionService, UserService userService,
                                            SecurityService securityService, JobUtilsService jobUtilsService, String zipWorkingDirectory, EmailNotificationDetailsService emailNotificationDetailsService,
                                            EmailNotificationContextService emailNotificationContextService, Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService,
-                                           ContextInstanceRegistrationService contextInstanceRegistrationService) {
+                                           ContextInstanceRegistrationService contextInstanceRegistrationService, SpringCloudConfigRefreshService springCloudConfigRefreshService) {
         this.contextTemplateManagementWidget = new ContextTemplateManagementWidget(scheduledContextService, scheduledContextInstanceService, dynamicImagePath
             , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
             , schedulerJobService, logStreamingService, contextTemplate, schedulerJobInstanceService, jobInitiationService, contextProfileService, jobProvisionService
             , userService, securityService, jobUtilsService, zipWorkingDirectory, emailNotificationDetailsService, emailNotificationContextService, schedulerJobExecutionEnvironmentLabel, globalEventService
-            , contextInstanceRegistrationService);
+            , contextInstanceRegistrationService, springCloudConfigRefreshService);
 
         this.setHeight("95vh");
         this.setWidth("90vw");

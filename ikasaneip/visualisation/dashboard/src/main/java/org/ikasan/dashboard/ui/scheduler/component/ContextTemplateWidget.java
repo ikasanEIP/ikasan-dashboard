@@ -352,6 +352,7 @@ public class ContextTemplateWidget extends Div {
                     , schedulerJobService, logStreamingService, scheduledContextRecord.getContext(), schedulerJobInstanceService, jobInitiationService, this.contextProfileService
                     , this.jobProvisionService, userService, securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
                     , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService
+                    , this.springCloudConfigRefreshService
                 );
                 contextTemplateManagementDialog.open();
             });
