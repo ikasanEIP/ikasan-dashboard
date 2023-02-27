@@ -23,10 +23,7 @@ import org.ikasan.spec.scheduled.context.service.ContextInstanceRegistrationServ
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
-import org.ikasan.spec.scheduled.job.service.GlobalEventService;
-import org.ikasan.spec.scheduled.job.service.JobInitiationService;
-import org.ikasan.spec.scheduled.job.service.JobUtilsService;
-import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.job.service.*;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.service.ContextProfileService;
@@ -125,6 +122,9 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     @Resource
     private GlobalEventService globalEventService;
 
+    @Resource
+    private SpringCloudConfigRefreshService springCloudConfigRefreshService;
+
     private ContextTemplateManagementWidget contextTemplateManagementWidget;
 
     private ContextTemplate contextTemplate;
@@ -158,7 +158,8 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
                 , moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService, metaDataRestService, systemEventLogger
                 , schedulerJobService, logStreamingService, contextTemplate, this.schedulerJobInstanceService, this.jobInitiationService, this.contextProfileService
                 , this.jobProvisionService, this.userService, this.securityService, this.jobUtilsService, this.zipWorkingDirectory, this.emailNotificationDetailsService
-                , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService);
+                , this.emailNotificationContextService, this.schedulerJobExecutionEnvironmentLabel, this.globalEventService, this.contextInstanceRegistrationService
+                , springCloudConfigRefreshService);
 
             this.getElement().getStyle().set("padding-top", "0px");
             this.add(this.contextTemplateManagementWidget);

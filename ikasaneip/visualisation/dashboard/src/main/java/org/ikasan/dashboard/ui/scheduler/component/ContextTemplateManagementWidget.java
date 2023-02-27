@@ -63,10 +63,7 @@ import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
 import org.ikasan.spec.scheduled.job.model.*;
-import org.ikasan.spec.scheduled.job.service.GlobalEventService;
-import org.ikasan.spec.scheduled.job.service.JobInitiationService;
-import org.ikasan.spec.scheduled.job.service.JobUtilsService;
-import org.ikasan.spec.scheduled.job.service.SchedulerJobService;
+import org.ikasan.spec.scheduled.job.service.*;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationContextService;
 import org.ikasan.spec.scheduled.notification.service.EmailNotificationDetailsService;
 import org.ikasan.spec.scheduled.profile.model.ContextProfileRecord;
@@ -118,6 +115,7 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
     private ModuleMetaDataService moduleMetaDataService;
     private LogStreamingService logStreamingService;
     private GlobalEventService globalEventService;
+    private SpringCloudConfigRefreshService springCloudConfigRefreshService;
     private TextField contextNameTf;
     private TextArea descriptionTa;
     private TextField startWindowCronExpressionTf;
@@ -172,7 +170,8 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
                                            JobInitiationService jobInitiationService, ContextProfileService contextProfileService, JobProvisionService jobProvisionService,
                                            UserService userService, SecurityService securityService, JobUtilsService jobUtilsService, String zipWorkingDirectory,
                                            EmailNotificationDetailsService emailNotificationDetailsService, EmailNotificationContextService emailNotificationContextService,
-                                           Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService) {
+                                           Map<String, String> schedulerJobExecutionEnvironmentLabel, GlobalEventService globalEventService, ContextInstanceRegistrationService contextInstanceRegistrationService,
+                                           SpringCloudConfigRefreshService springCloudConfigRefreshService) {
 
         this.scheduledContextService = scheduledContextService;
         if (this.scheduledContextService == null) {
@@ -266,6 +265,11 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
         this.contextInstanceRegistrationService = contextInstanceRegistrationService;
         if (this.contextInstanceRegistrationService == null) {
             throw new IllegalArgumentException("contextInstanceRegistrationService cannot be null!");
+        }
+
+        this.springCloudConfigRefreshService = springCloudConfigRefreshService;
+        if (this.springCloudConfigRefreshService == null) {
+            throw new IllegalArgumentException("springCloudConfigRefreshService cannot be null!");
         }
 
         this.schedulerJobExecutionEnvironmentLabel = schedulerJobExecutionEnvironmentLabel;
@@ -750,6 +754,16 @@ public class ContextTemplateManagementWidget extends VerticalLayout implements J
             .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
                 SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
                 SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE));
+
+        actions.addItem(getTranslation("label.encrypt-context-parameters-values", UI.getCurrent().getLocale()),
+                menuItemClickEvent -> {
+                    ContextParameterEncryptDialog contextParameterEncryptDialog = new ContextParameterEncryptDialog(springCloudConfigRefreshService);
+                    contextParameterEncryptDialog.open();
+                })
+            .getElement()
+            .setAttribute("disabled", !ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+                SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
+                SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ));
 
         actions.addItem(getTranslation("button.manage-job-locks", UI.getCurrent().getLocale()),
             menuItemClickEvent -> {
