@@ -41,6 +41,7 @@ import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
 import org.ikasan.job.orchestration.model.instance.ScheduledContextInstanceRecordImpl;
 import org.ikasan.job.orchestration.service.ContextService;
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.security.service.authentication.IkasanAuthentication;
 import org.ikasan.spec.metadata.ModuleMetaDataService;
@@ -114,8 +115,15 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
     private TextField startTimeTf;
     private TextField projectedEndTimeTf;
     private TextField endTimeTf;
-
     private TextField timezoneTf;
+
+    private Button holdContextButton;
+    private Button releaseContextButton;
+    private Button enableQuartzScheduledJobsButton;
+    private Button disableQuartzScheduledJobsButton;
+    private Button contextInstanceEndButton;
+    private Button ignoreContextInstanceEndButton;
+    private Button resetContextButton;
 
     private Tab treeTab;
     private Tab visualisationTab;
@@ -618,11 +626,11 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN, SecurityConstants.SCHEDULER_READ,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE, SecurityConstants.SCHEDULER_ALL_READ);
 
-        Button holdContextButton = new Button(getTranslation("button.hold-context"
+        this.holdContextButton = new Button(getTranslation("button.hold-context"
             , UI.getCurrent().getLocale()), VaadinIcon.HAND.create());
-        holdContextButton.setIconAfterText(true);
-        holdContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
-        holdContextButton.addClickListener(event -> {
+        this.holdContextButton.setIconAfterText(true);
+        this.holdContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+        this.holdContextButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.hold-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.hold-jobs-body", UI.getCurrent().getLocale()));
@@ -669,12 +677,12 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
-        Button releaseContextButton = new Button(getTranslation("button.release-all-held-jobs"
+        this.releaseContextButton = new Button(getTranslation("button.release-all-held-jobs"
             , UI.getCurrent().getLocale()), VaadinIcon.HANDS_UP.create());
-        releaseContextButton.setIconAfterText(true);
-        releaseContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+        this.releaseContextButton.setIconAfterText(true);
+        this.releaseContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
 
-        releaseContextButton.addClickListener(event -> {
+        this.releaseContextButton.addClickListener(event -> {
             ContextMachine contextMachine = ContextMachineCache.instance()
                 .getByContextInstanceId(this.contextInstance.getId());
             if (contextMachine != null) {
@@ -732,21 +740,21 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             SecurityConstants.SCHEDULER_WRITE, SecurityConstants.SCHEDULER_ADMIN,
             SecurityConstants.SCHEDULER_ALL_ADMIN, SecurityConstants.SCHEDULER_ALL_WRITE);
 
-        Button enableQuartzScheduledJobsButton = new Button(getTranslation("button.enable-quartz-scheduled-jobs"
+        this.enableQuartzScheduledJobsButton = new Button(getTranslation("button.enable-quartz-scheduled-jobs"
             , UI.getCurrent().getLocale()), VaadinIcon.PLAY.create());
-        enableQuartzScheduledJobsButton.setIconAfterText(true);
-        enableQuartzScheduledJobsButton.setVisible(false);
+        this.enableQuartzScheduledJobsButton.setIconAfterText(true);
+        this.enableQuartzScheduledJobsButton.setVisible(false);
 
-        Button disableQuartzScheduledJobsButton = new Button(getTranslation("button.disable-quartz-scheduled-jobs"
+        this.disableQuartzScheduledJobsButton = new Button(getTranslation("button.disable-quartz-scheduled-jobs"
             , UI.getCurrent().getLocale()), VaadinIcon.BAN.create());
-        disableQuartzScheduledJobsButton.setIconAfterText(true);
-        disableQuartzScheduledJobsButton.setVisible(false);
+        this.disableQuartzScheduledJobsButton.setIconAfterText(true);
+        this.disableQuartzScheduledJobsButton.setVisible(false);
 
         ContextMachine contextMachine = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId());
 
         if(contextMachine == null) {
-            enableQuartzScheduledJobsButton.setVisible(false);
-            disableQuartzScheduledJobsButton.setVisible(false);
+            this.enableQuartzScheduledJobsButton.setVisible(false);
+            this.disableQuartzScheduledJobsButton.setVisible(false);
         }
         else if(contextMachine.getContext().isQuartzScheduleDrivenJobsDisabledForContext()
             && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
@@ -837,11 +845,11 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             });
         });
 
-        Button contextInstanceEndButton = new Button(getTranslation("label.manually-end-job-plan", UI.getCurrent().getLocale()), VaadinIcon.STOP.create());
-        contextInstanceEndButton.setIconAfterText(true);
-        contextInstanceEndButton.setVisible(this.contextInstance.isRunContextUntilManuallyEnded() && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+        this.contextInstanceEndButton = new Button(getTranslation("label.manually-end-job-plan", UI.getCurrent().getLocale()), VaadinIcon.STOP.create());
+        this.contextInstanceEndButton.setIconAfterText(true);
+        this.contextInstanceEndButton.setVisible(this.contextInstance.isRunContextUntilManuallyEnded() && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_ADMIN));
-        contextInstanceEndButton.addClickListener(event -> {
+        this.contextInstanceEndButton.addClickListener(event -> {
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog.end-job-plan-header", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog.end-job-plan-body", UI.getCurrent().getLocale()));
@@ -864,12 +872,12 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                 });
         });
 
-        Button ignoreContextInstanceEndButton = new Button(getTranslation("label.ignore-job-plan-duration"
+        this.ignoreContextInstanceEndButton = new Button(getTranslation("label.ignore-job-plan-duration"
             , UI.getCurrent().getLocale()), VaadinIcon.CONTROLLER.create());
-        ignoreContextInstanceEndButton.setIconAfterText(true);
-        ignoreContextInstanceEndButton.setVisible(!this.contextInstance.isRunContextUntilManuallyEnded() && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
+        this.ignoreContextInstanceEndButton.setIconAfterText(true);
+        this.ignoreContextInstanceEndButton.setVisible(!this.contextInstance.isRunContextUntilManuallyEnded() && ComponentSecurityVisibility.hasAuthorisation(SecurityConstants.ALL_AUTHORITY,
             SecurityConstants.SCHEDULER_ADMIN));
-        ignoreContextInstanceEndButton.addClickListener(event -> {
+        this.ignoreContextInstanceEndButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.ignore-job-plan-duration-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.ignore-job-plan-duration-body", UI.getCurrent().getLocale()));
@@ -894,10 +902,10 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
             });
         });
 
-        Button resetContextButton = new Button(getTranslation("button.reset-context", UI.getCurrent().getLocale()), VaadinIcon.TIME_BACKWARD.create());
-        resetContextButton.setIconAfterText(true);
-        resetContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
-        resetContextButton.addClickListener(event -> {
+        this.resetContextButton = new Button(getTranslation("button.reset-context", UI.getCurrent().getLocale()), VaadinIcon.TIME_BACKWARD.create());
+        this.resetContextButton.setIconAfterText(true);
+        this.resetContextButton.setVisible(!this.contextInstance.getStatus().equals(InstanceStatus.ENDED));
+        this.resetContextButton.addClickListener(event -> {
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog-header.reset-context", UI.getCurrent().getLocale()));
 
@@ -1067,14 +1075,26 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                     ui.access(() -> {
                         if (this.contextInstance.getId().equals(contextInstanceStateChangeEvent.getContextInstance().getId())) {
                             this.contextInstance = contextInstanceStateChangeEvent.getContextInstance();
+                            ContextHelper.enrichJobs(this.contextInstance);
                             this.statusDiv.setStatus(contextInstanceStateChangeEvent.getNewStatus());
                         } else {
                             ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId());
                             if (record != null) {
                                 this.contextInstance = record.getContextInstance();
+                                ContextHelper.enrichJobs(this.contextInstance);
                             }
                         }
                         this.updateJson(this.contextInstance);
+
+                        if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
+                            this.contextInstanceEndButton.setVisible(false);
+                            this.resetContextButton.setVisible(false);
+                            this.ignoreContextInstanceEndButton.setVisible(false);
+                            this.disableQuartzScheduledJobsButton.setVisible(false);
+                            this.holdContextButton.setVisible(false);
+                            this.releaseContextButton.setVisible(false);
+                            this.enableQuartzScheduledJobsButton.setVisible(false);
+                        }
                     });
                 }
             }
@@ -1086,6 +1106,7 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                     ScheduledContextInstanceRecord record = this.scheduledContextInstanceService.findById(this.contextInstance.getId());
                     if (record != null) {
                         this.contextInstance = record.getContextInstance();
+                        ContextHelper.enrichJobs(this.contextInstance);
                         this.updateJson(this.contextInstance);
                     }
                 });

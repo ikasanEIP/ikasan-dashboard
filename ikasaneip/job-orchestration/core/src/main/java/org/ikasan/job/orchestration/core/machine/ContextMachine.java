@@ -482,6 +482,14 @@ public class ContextMachine {
      */
     public void disableQuartzBasedJobs() {
         this.contextInstance.setQuartzScheduleDrivenJobsDisabledForContext(true);
+        this.quartzScheduleDrivenJobInstanceMap.values().forEach(quartzScheduleDrivenJobInstance -> {
+            SchedulerJobInstance schedulerJobInstance = ContextHelper.getSchedulerJobInstance(quartzScheduleDrivenJobInstance.getJobName(),
+                quartzScheduleDrivenJobInstance.getChildContextName(), contextInstance);
+
+            if(schedulerJobInstance != null) {
+                schedulerJobInstance.setStatus(InstanceStatus.DISABLED);
+            }
+        });
         this.saveContext();
     }
 
@@ -490,6 +498,14 @@ public class ContextMachine {
      */
     public void enableQuartzBasedJobs() {
         this.contextInstance.setQuartzScheduleDrivenJobsDisabledForContext(false);
+        this.quartzScheduleDrivenJobInstanceMap.values().forEach(quartzScheduleDrivenJobInstance -> {
+            SchedulerJobInstance schedulerJobInstance = ContextHelper.getSchedulerJobInstance(quartzScheduleDrivenJobInstance.getJobName(),
+                quartzScheduleDrivenJobInstance.getChildContextName(), contextInstance);
+
+            if(schedulerJobInstance != null) {
+                schedulerJobInstance.setStatus(InstanceStatus.WAITING);
+            }
+        });
         this.saveContext();
     }
 
@@ -1095,7 +1111,7 @@ public class ContextMachine {
             .forEach(listener -> listener.onContextInstanceStateChangeEvent(event)));
     }
 
-    private void saveContext() {
+    public void saveContext() {
         ScheduledContextInstanceRecord scheduledContextInstanceRecord
             = new ScheduledContextInstanceRecordImpl();
         scheduledContextInstanceRecord.setContextName(this.contextInstance.getName());

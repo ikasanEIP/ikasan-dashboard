@@ -34,6 +34,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateCha
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
+import org.ikasan.job.orchestration.util.AggregateContextInstanceStatus;
 import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
 import org.ikasan.scheduled.instance.model.SolrSchedulerJobInstanceSearchFilterImpl;
@@ -101,6 +102,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
     private Map<ComponentKey, Image> jobImageMap;
     private Map<ComponentKey, Map<String, Icon>> schedulerJobIconMap;
     private Map<ComponentKey, SchedulerStatusDiv> statusDivMap;
+    private Map<ComponentKey, SchedulerStatusIconDiv> statusIconDivMap;
     private Map<ComponentKey, InstanceStatus> instanceStatusMap;
     private Map<ComponentKey, SchedulerStatusFreeTextDiv> schedulerStatusFreeTextDivMap;
     private Map<ComponentKey, Div> startTimes;
@@ -201,6 +203,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         this.jobImageMap = new HashMap<>();
         this.schedulerJobIconMap = new HashMap<>();
         this.statusDivMap = new HashMap<>();
+        this.statusIconDivMap = new HashMap<>();
         this.instanceStatusMap = new HashMap<>();
         this.schedulerStatusFreeTextDivMap = new HashMap<>();
         this.startTimes = new HashMap<>();
@@ -349,6 +352,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         grid.addComponentColumn(value -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
+            horizontalLayout.setWidth("200px");
             if (value instanceof ContextInstance) {
                 this.getContextInstanceActionComponents((ContextInstance) value, horizontalLayout);
             }
@@ -526,7 +530,62 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             .setFlexGrow(1);
         grid.addComponentColumn(value -> {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
-                if(value instanceof SchedulerJobInstance) {
+                if(value instanceof  ContextInstance) {
+                    AggregateContextInstanceStatus aggregateContextInstanceStatus
+                        = ContextHelper.getAggregateContextInstanceStatus((ContextInstance)value);
+
+                    SchedulerStatusIconDiv disabledStatusDiv = new SchedulerStatusIconDiv();
+                    disabledStatusDiv.getElement().getStyle().set("font-size", "8pt");
+                    disabledStatusDiv.getElement().getStyle().set("margin-top", "1px");
+                    disabledStatusDiv.getElement().getStyle().set("margin-bottom", "1px");
+                    disabledStatusDiv.setStatus(InstanceStatus.DISABLED);
+                    disabledStatusDiv.setVisible(false);
+
+                    horizontalLayout.add(disabledStatusDiv);
+
+                    ComponentKey componentKey = new ComponentKey(this.contextInstance.getName()
+                        , ((ContextInstance) value).getName(), InstanceStatus.DISABLED.name());
+                    this.statusIconDivMap.put(componentKey, disabledStatusDiv);
+
+                    SchedulerStatusIconDiv skippedStatusDiv = new SchedulerStatusIconDiv();
+                    skippedStatusDiv.getElement().getStyle().set("font-size", "8pt");
+                    skippedStatusDiv.getElement().getStyle().set("margin-top", "1px");
+                    skippedStatusDiv.getElement().getStyle().set("margin-bottom", "1px");
+                    skippedStatusDiv.setStatus(InstanceStatus.SKIPPED);
+                    skippedStatusDiv.setVisible(false);
+
+                    horizontalLayout.add(skippedStatusDiv);
+
+                    componentKey = new ComponentKey(this.contextInstance.getName()
+                        , ((ContextInstance) value).getName(), InstanceStatus.SKIPPED.name());
+                    this.statusIconDivMap.put(componentKey, skippedStatusDiv);
+
+                    SchedulerStatusIconDiv onHoldStatusDiv = new SchedulerStatusIconDiv();
+                    onHoldStatusDiv.getElement().getStyle().set("font-size", "8pt");
+                    onHoldStatusDiv.getElement().getStyle().set("margin-top", "1px");
+                    onHoldStatusDiv.getElement().getStyle().set("margin-bottom", "1px");
+                    onHoldStatusDiv.setStatus(InstanceStatus.ON_HOLD);
+                    onHoldStatusDiv.setVisible(false);
+
+                    componentKey = new ComponentKey(this.contextInstance.getName()
+                        , ((ContextInstance) value).getName(), InstanceStatus.ON_HOLD.name());
+                    this.statusIconDivMap.put(componentKey, onHoldStatusDiv);
+
+                    horizontalLayout.add(onHoldStatusDiv);
+
+                    if(aggregateContextInstanceStatus.isDisabledJobs()) {
+                        disabledStatusDiv.setVisible(true);
+                    }
+
+                    if(aggregateContextInstanceStatus.isSkippedJobs()) {
+                        skippedStatusDiv.setVisible(true);
+                    }
+
+                    if(aggregateContextInstanceStatus.isHeldJobs()) {
+                        onHoldStatusDiv.setVisible(true);
+                    }
+                }
+                else if(value instanceof SchedulerJobInstance) {
                     SchedulerJobInstance schedulerJobInstance = (SchedulerJobInstance)value;
                     SchedulerJobInstanceRecord schedulerJobInstanceRecord = this.schedulerJobInstanceService
                         .findByContextIdJobNameChildContextName(this.contextInstance.getId()
@@ -837,11 +896,15 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
                         if (updatedJobs.size() > 0) {
                             updatedJobs.forEach(schedulerJobInstanceRecord -> {
+                                SchedulerJobInstance schedulerJobInstance = ContextHelper.getSchedulerJobInstance(schedulerJobInstanceRecord.getJobName(),
+                                    schedulerJobInstanceRecord.getChildContextName(), ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext());
+                                schedulerJobInstance.setStatus(InstanceStatus.ON_HOLD);
                                 SchedulerJobInstanceStateChangeEvent schedulerJobInstanceStateChangeEvent
                                     = new SchedulerJobInstanceStateChangeEventImpl(schedulerJobInstanceRecord.getSchedulerJobInstance(),
                                     this.contextInstance, InstanceStatus.WAITING, InstanceStatus.ON_HOLD);
                                 SchedulerJobStateChangeEventBroadcaster.broadcast(schedulerJobInstanceStateChangeEvent);
                             });
+                            ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).saveContext();
                         }
                     }
                 }
@@ -939,8 +1002,6 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
      * @param layout
      */
     protected void getJobInstanceActionComponents(ComponentKey key, SchedulerJobInstanceRecord schedulerJobInstanceRecord, HorizontalLayout layout) {
-        layout.setWidthFull();
-
         if(!this.schedulerJobIconMap.containsKey(key)) {
             this.schedulerJobIconMap.put(key, new HashMap<>());
         }
@@ -1482,16 +1543,22 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         UI ui = attachEvent.getUI();
         schedulerJobStateChangeRegistration = SchedulerJobStateChangeEventBroadcaster.register(jobInstanceStateChangeEvent -> {
             manageJobStatusStateChangeEvent(ui, jobInstanceStateChangeEvent);
+            manageContextStatusIndicators(ui);
         });
 
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
             this.manageContextInstanceStateChangeEvent(ui, contextInstanceStateChangeEvent);
+            manageContextStatusIndicators(ui);
         });
 
         contextInstanceSaveBroadcasterRegistration = ContextInstanceSavedEventBroadcaster.register(contextInstance -> {
-            this.contextInstance = contextInstance;
-            this.enableDisableScheduledJobs(contextInstance, ui);
-            this.createTreeGridDataProvider().refreshAll();
+            if(contextInstance.getId().equals(this.contextInstance.getId())) {
+                this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+                ContextHelper.enrichJobs(contextInstance);
+                this.enableDisableScheduledJobs(this.contextInstance, ui);
+                manageContextStatusIndicators(ui);
+                this.createTreeGridDataProvider().refreshAll();
+            }
         });
     }
 
@@ -1934,6 +2001,39 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
                 this.instanceStatusMap.put(key, contextInstanceStateChangeEvent.getNewStatus());
             }
         }
+    }
+
+    private void manageContextStatusIndicators(UI ui) {
+        this.statusIconDivMap.keySet().forEach(componentKey -> {
+            if(ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()) != null) {
+                ContextInstance instance = (ContextInstance) ContextHelper.getChildContext(componentKey.getChildContextName()
+                    , ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext());
+
+                if (instance != null) {
+                    AggregateContextInstanceStatus aggregateContextInstanceStatus = ContextHelper.getAggregateContextInstanceStatus(instance);
+
+                    if (componentKey.getJobName().equals(InstanceStatus.ON_HOLD.name())) {
+                        if (aggregateContextInstanceStatus.isHeldJobs()) {
+                            ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(true));
+                        } else {
+                            ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(false));
+                        }
+                    } else if (componentKey.getJobName().equals(InstanceStatus.SKIPPED.name())) {
+                        if (aggregateContextInstanceStatus.isSkippedJobs()) {
+                            ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(true));
+                        } else {
+                            ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(false));
+                        }
+                    } else if (componentKey.getJobName().equals(InstanceStatus.DISABLED.name())) {
+                        if (aggregateContextInstanceStatus.isDisabledJobs()) {
+                            ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(true));
+                        } else {
+                            ui.access(() -> this.statusIconDivMap.get(componentKey).setVisible(false));
+                        }
+                    }
+                }
+            }
+        });
     }
 
     /**
