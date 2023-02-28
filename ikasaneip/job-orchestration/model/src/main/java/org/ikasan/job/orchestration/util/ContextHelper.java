@@ -91,6 +91,35 @@ public class ContextHelper {
             -> !contextTransition.getContexts().isEmpty()).distinct().collect(Collectors.toList());
     }
 
+    public static AggregateContextInstanceStatus getAggregateContextInstanceStatus(ContextInstance contextInstance) {
+        AggregateContextInstanceStatus aggregateContextInstanceStatus = new AggregateContextInstanceStatus();
+        getAggregateContextInstanceStatus(contextInstance, aggregateContextInstanceStatus);
+
+        return aggregateContextInstanceStatus;
+    }
+
+    private static void getAggregateContextInstanceStatus(ContextInstance contextInstance, AggregateContextInstanceStatus aggregateContextInstanceStatus) {
+        if(contextInstance.getScheduledJobs() != null) {
+            contextInstance.getScheduledJobs().forEach(schedulerJobInstance -> {
+                if(schedulerJobInstance.getStatus().equals(InstanceStatus.DISABLED)) {
+                    aggregateContextInstanceStatus.setDisabledJobs();
+                }
+                else if(schedulerJobInstance.getStatus().equals(InstanceStatus.ON_HOLD)) {
+                    aggregateContextInstanceStatus.setHeldJobs();
+                }
+                else if(schedulerJobInstance.getStatus().equals(InstanceStatus.SKIPPED)) {
+                    aggregateContextInstanceStatus.setSkippedJobs();
+                }
+            });
+        }
+
+        if(contextInstance.getContexts() != null) {
+            contextInstance.getContexts().forEach(child -> {
+                getAggregateContextInstanceStatus(child, aggregateContextInstanceStatus);
+            });
+        }
+    }
+
     /**
      * This helper method returns a map of jobs within a context that are not
      * present within any logical constructs within the context.
