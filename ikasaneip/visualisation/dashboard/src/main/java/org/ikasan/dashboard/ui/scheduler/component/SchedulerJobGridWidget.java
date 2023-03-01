@@ -1013,5 +1013,10 @@ public class SchedulerJobGridWidget extends Div {
             this.newSchedulerJobEventBroadcasterRegistration.remove();
             this.newSchedulerJobEventBroadcasterRegistration = null;
         }
+
+        if(this.contextSaveBroadcasterRegistration != null) {
+            this.contextSaveBroadcasterRegistration.remove();
+            this.contextSaveBroadcasterRegistration = null;
+        }
     }
 }
