@@ -69,6 +69,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.cronutils.model.CronType.QUARTZ;
+import static org.ikasan.scheduled.instance.dao.SolrScheduledContextInstanceDaoImpl.SCHEDULED_CONTEXT_INSTANCE;
 
 public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInstanceActionWidget {
     private static final String PRECEDING_ITEM_COMPONENT = "PRECEDING_ITEM_COMPONENT";
@@ -531,8 +532,17 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         grid.addComponentColumn(value -> {
                 HorizontalLayout horizontalLayout = new HorizontalLayout();
                 if(value instanceof  ContextInstance) {
+                    ContextInstance instance;
+                    if(ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+                        instance = ContextHelper.getChildContextInstance(((ContextInstance) value).getName()
+                            , ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext());
+                    }
+                    else {
+                        instance = (ContextInstance) value;
+                    }
+
                     AggregateContextInstanceStatus aggregateContextInstanceStatus
-                        = ContextHelper.getAggregateContextInstanceStatus((ContextInstance)value);
+                        = ContextHelper.getAggregateContextInstanceStatus(instance);
 
                     SchedulerStatusIconDiv disabledStatusDiv = new SchedulerStatusIconDiv();
                     disabledStatusDiv.getElement().getStyle().set("font-size", "8pt");
@@ -881,6 +891,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         Icon hold = IconDecorator.decorate(new Icon(VaadinIcon.HAND), getTranslation("tooltip.hold-all-nested-jobs", UI.getCurrent().getLocale()
             , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
         hold.addClickListener(event -> {
+            if(!this.canPerformAction()) {
+                return;
+            }
             ConfirmDialog confirmDialog = new ConfirmDialog();
             confirmDialog.setHeader(getTranslation("confirm-dialog.hold-jobs-header", UI.getCurrent().getLocale()));
             confirmDialog.setText(getTranslation("confirm-dialog.hold-jobs-body", UI.getCurrent().getLocale()));
@@ -933,6 +946,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         Icon release = IconDecorator.decorate(new Icon(VaadinIcon.HANDS_UP), getTranslation("tooltip.release-all-nested-jobs", UI.getCurrent().getLocale()
             , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
         release.addClickListener(event -> {
+            if(!this.canPerformAction()) {
+                return;
+            }
             List<SchedulerJobInstanceRecord> jobsToReleaseWithinContext = schedulerJobInstanceService.getJobsToReleaseWithinContext(ContextMachineCache
                 .instance().getByContextInstanceId(this.contextInstance.getId()).getContext(), contextInstance.getName());
 
@@ -1052,6 +1068,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             skip = IconDecorator.decorate(new Icon(VaadinIcon.BAN), getTranslation("tooltip.skip-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
 
             skip.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(!this.canPerformAction()) {
+                    return;
+                }
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog-header.skip-job", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog-text.skip-job", UI.getCurrent().getLocale()));
@@ -1076,6 +1095,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             enable = IconDecorator.decorate(new Icon(VaadinIcon.PLAY), getTranslation("tooltip.enable-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             enable.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE));
             enable.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(!this.canPerformAction()) {
+                    return;
+                }
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog-header.enable-job", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog-text.enable-job", UI.getCurrent().getLocale()));
@@ -1101,6 +1123,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             hold = IconDecorator.decorate(new Icon(VaadinIcon.HAND), getTranslation("tooltip.hold-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             hold.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE));
             hold.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(!this.canPerformAction()) {
+                    return;
+                }
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog-header.hold-job", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog-text.hold-job", UI.getCurrent().getLocale()));
@@ -1126,6 +1151,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             release = IconDecorator.decorate(new Icon(VaadinIcon.HANDS_UP), getTranslation("tooltip.release-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             release.setVisible(schedulerJobInstanceRecord.getType().equals(JobConstants.INTERNAL_EVENT_DRIVEN_JOB_INSTANCE));
             release.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(!this.canPerformAction()) {
+                    return;
+                }
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog-header.release-job", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog-text.release-job", UI.getCurrent().getLocale()));
@@ -1151,6 +1179,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         if(!iconMap.containsKey(SUBMIT_ICON)) {
             submit = IconDecorator.decorate(new Icon(VaadinIcon.PAPERPLANE), getTranslation("tooltip.submit-job", UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             submit.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(!this.canPerformAction()) {
+                    return;
+                }
                 if (schedulerJobInstanceRecord.getSchedulerJobInstance() instanceof InternalEventDrivenJobInstance) {
                     InternalEventDrivenJobSubmissionDialog internalEventDrivenJobSubmissionDialog = new InternalEventDrivenJobSubmissionDialog(this.systemEventLogger,
                         this.moduleMetaDataService, this.contextInstance, this.jobInitiationService, schedulerJobInstanceRecord, this.schedulerJobInstanceService);
@@ -1364,6 +1395,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             reset = IconDecorator.decorate(new Icon(VaadinIcon.ARROW_BACKWARD), getTranslation("tooltip.reset-job"
                 , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             reset.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(!this.canPerformAction()) {
+                    return;
+                }
                 ConfirmDialog confirmDialog = new ConfirmDialog();
                 confirmDialog.setHeader(getTranslation("confirm-dialog.reset-job-header", UI.getCurrent().getLocale()));
                 confirmDialog.setText(getTranslation("confirm-dialog.reset-job-body", UI.getCurrent().getLocale()));
@@ -1391,6 +1425,9 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
             submitDownstreamJobs = IconDecorator.decorate(new Icon(VaadinIcon.FAST_FORWARD), getTranslation("button.initiate-downstream-jobs"
                 , UI.getCurrent().getLocale()), "14pt", "rgba(0, 0, 0, 1.0)");
             submitDownstreamJobs.addClickListener((ComponentEventListener<ClickEvent<Icon>>) iconClickEvent -> {
+                if(!this.canPerformAction()) {
+                    return;
+                }
                 submitDownstreamJobs((InternalEventDrivenJobInstance) schedulerJobInstanceRecord.getSchedulerJobInstance());
             });
 
@@ -1401,6 +1438,29 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         }
 
         layout.add(submitDownstreamJobs);
+    }
+
+    /**
+     * Helper method to confirm that actions can be performed on a job plan
+     * @return
+     */
+    private boolean canPerformAction() {
+        if(!ContextMachineCache.instance().containsInstanceIdentifier(this.contextInstance.getId())) {
+            this.contextInstance = this.scheduledContextInstanceService
+                .findById(this.contextInstance.getId()+ "_" + SCHEDULED_CONTEXT_INSTANCE).getContextInstance();
+            if(this.contextInstance.getStatus().equals(InstanceStatus.ENDED)) {
+                NotificationHelper.showUserNotification(getTranslation("notification.cannot-perform-action-against-ended-plan"
+                    , UI.getCurrent().getLocale()));
+                return false;
+            }
+            else {
+                NotificationHelper.showErrorNotification(getTranslation("error.cannot-locate-job-plan-instance-in-cache-and-is-not-ended"
+                    , UI.getCurrent().getLocale()));
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -1547,13 +1607,16 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
         });
 
         contextInstanceStateChangeRegistration = ContextInstanceStateChangeEventBroadcaster.register(contextInstanceStateChangeEvent -> {
-            this.manageContextInstanceStateChangeEvent(ui, contextInstanceStateChangeEvent);
-            manageContextStatusIndicators(ui);
+            if(contextInstanceStateChangeEvent.getContextInstance().getId().equals(this.contextInstance.getId())) {
+                this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+                this.manageContextInstanceStateChangeEvent(ui, contextInstanceStateChangeEvent);
+                manageContextStatusIndicators(ui);
+            }
         });
 
         contextInstanceSaveBroadcasterRegistration = ContextInstanceSavedEventBroadcaster.register(contextInstance -> {
             if(contextInstance.getId().equals(this.contextInstance.getId())) {
-                this.contextInstance = ContextMachineCache.instance().getByContextInstanceId(this.contextInstance.getId()).getContext();
+                this.contextInstance = contextInstance;
                 ContextHelper.enrichJobs(contextInstance);
                 this.enableDisableScheduledJobs(this.contextInstance, ui);
                 manageContextStatusIndicators(ui);

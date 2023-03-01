@@ -41,68 +41,20 @@ public class SchedulerStatusIconDiv extends Div {
     public void setStatus(String status) {
         if(status == null) return;
 
-        if(status.equals(InstanceStatus.COMPLETE.name())) {
-            super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_COMPLETE);
-            super.getElement().getStyle().set("color", "#FFF");
-            super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.COMPLETE.name()
-                , this.current.getLocale()));
-        }
-        else if(status.equals(InstanceStatus.WAITING.name())) {
-            super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_WAITING);
-            super.getElement().getStyle().set("color", "#000000");
-            super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.WAITING.name()
-                , this.current.getLocale()));
-        }
-        else if(status.equals(InstanceStatus.ERROR.name())) {
-            super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ERROR);
-            super.getElement().getStyle().set("color", "#FFF");
-            super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.ERROR.name()
-                , this.current.getLocale()));
-        }
-        else if(status.equals(InstanceStatus.ON_HOLD.name())) {
+        if(status.equals(InstanceStatus.ON_HOLD.name())) {
             super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ON_HOLD);
             super.getElement().getStyle().set("color", "#FFF");
-            super.add(IconDecorator.decorate(VaadinIcon.HAND.create(), "test", "14pt", "#FFF"));
-        }
-        else if(status.equals(InstanceStatus.RUNNING.name())) {
-            super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_RUNNING);
-            super.getElement().getStyle().set("color", "#FFF");
-            super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.RUNNING.name()
-                , this.current.getLocale()));
-        }
-        else if(status.equals(InstanceStatus.LOCK_QUEUED.name())) {
-            super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_LOCK_QUEUED);
-            super.getElement().getStyle().set("color", "#FFF");
-            super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.LOCK_QUEUED.name()
-                , this.current.getLocale()));
+            super.add(IconDecorator.decorate(VaadinIcon.HAND.create(), getTranslation("tooltip.context-nested-on-hold", UI.getCurrent().getLocale()), "14pt", "#FFF"));
         }
         else if(status.equals(InstanceStatus.SKIPPED.name()) || status.equals(InstanceStatus.SKIPPED_RUNNING.name())) {
             super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_SKIPPED);
             super.getElement().getStyle().set("color", "#FFF");
-            super.add(IconDecorator.decorate(VaadinIcon.BAN.create(), "test", "14pt", "#FFF"));
-        }
-        else if(status.equals(InstanceStatus.SKIPPED_COMPLETE.name())) {
-            super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_SKIPPED);
-            super.getElement().getStyle().set("color", "#FFF");
-            super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.SKIPPED_COMPLETE.name()
-                , this.current.getLocale()));
-        }
-        else if(status.equals(InstanceStatus.RELEASED.name())) {
-            super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_RELEASED);
-            super.getElement().getStyle().set("color", "#000000");
-            super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.RELEASED.name()
-                , this.current.getLocale()));
-        }
-        else if(status.equals(InstanceStatus.ENDED.name())) {
-            super.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_ENDED);
-            super.getElement().getStyle().set("color", "#FFF");
-            super.setText(this.i18NProvider.getTranslation(STATUS_TRANSLATE_PREFIX + InstanceStatus.ENDED.name()
-                , this.current.getLocale()));
+            super.add(IconDecorator.decorate(VaadinIcon.BAN.create(), getTranslation("tooltip.context-nested-skipped", UI.getCurrent().getLocale()), "14pt", "#FFF"));
         }
         else if(status.equals(InstanceStatus.DISABLED.name())) {
             super.getElement().getStyle().set("background-color", "#000000");
             super.getElement().getStyle().set("color", "#FFF");
-            super.add(IconDecorator.decorate(VaadinIcon.CLOCK.create(), "test", "14pt", "#FFF"));
+            super.add(IconDecorator.decorate(VaadinIcon.CLOCK.create(), getTranslation("tooltip.context-nested-disabled", UI.getCurrent().getLocale()), "14pt", "#FFF"));
         }
     }
 }
