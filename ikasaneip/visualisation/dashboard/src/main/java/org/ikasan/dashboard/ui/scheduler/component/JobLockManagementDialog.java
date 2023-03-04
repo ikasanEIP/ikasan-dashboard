@@ -6,6 +6,7 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -72,12 +73,9 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
     private ContextProfileService contextProfileService;
     private UserService userService;
     private SecurityService securityService;
-
     private JobProvisionService jobProvisionService;
     private ScheduledContextService scheduledContextService;
-
     private Map<String, String> schedulerJobExecutionEnvironmentLabel;
-
     private ComboBox<JobLock> comboBox;
     private Grid<SchedulerJob> grid;
 
@@ -293,6 +291,21 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
            }
         });
 
+        Checkbox exclusiveLockCb = new Checkbox(getTranslation("label.exclusive", UI.getCurrent().getLocale()));
+        exclusiveLockCb.setEnabled(false);
+        exclusiveLockCb.addValueChangeListener(checkboxBooleanComponentValueChangeEvent -> {
+            if(checkboxBooleanComponentValueChangeEvent.getValue()) {
+                lockCountTf.setEnabled(false);
+                lockCountTf.setValue(null);
+            }
+            else {
+                lockCountTf.setEnabled(true);
+                lockCountTf.setValue(1);
+            }
+
+            this.updateExclusive(checkboxBooleanComponentValueChangeEvent.getValue());
+        });
+
         Button newJobLockButton = new Button(getTranslation("button.new-job-lock", UI.getCurrent().getLocale()), VaadinIcon.LOCK.create());
         newJobLockButton.setIconAfterText(true);
         newJobLockButton.addClickListener(event -> {
@@ -328,13 +341,14 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
         formLayout.setHeight("180px");
         formLayout.setResponsiveSteps(
             // Use four columns by default
-            new FormLayout.ResponsiveStep("0", 4)
+            new FormLayout.ResponsiveStep("0", 5)
         );
         H3 jobLockManagementLabel = new H3(getTranslation("label.job-lock-management", UI.getCurrent().getLocale()));
         jobLockManagementLabel.getElement().getStyle().set("margin-top", "10px");
-        formLayout.add(jobLockManagementLabel, 4);
+        formLayout.add(jobLockManagementLabel, 5);
         formLayout.add(comboBox, 2);
         formLayout.add(lockCountTf, 1);
+        formLayout.add(exclusiveLockCb, 1);
 
         Button deleteJobLockButton = new Button(getTranslation("button.delete-selected-job-lock", UI.getCurrent().getLocale()), VaadinIcon.TRASH.create());
         deleteJobLockButton.setIconAfterText(true);
@@ -392,12 +406,17 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
             if(event.getValue() != null) {
                 lockCountTf.setEnabled(true);
                 lockCountTf.setValue(event.getValue().getLockCount());
+                exclusiveLockCb.setEnabled(true);
+                exclusiveLockCb.setValue(event.getValue().isExclusiveJobLock());
                 this.populateGrid(event.getValue(), filterTf.getValue());
                 addJobButton.setEnabled(true);
                 deleteJobLockButton.setEnabled(true);
             }
             else {
+                exclusiveLockCb.setValue(false);
+                exclusiveLockCb.setEnabled(false);
                 lockCountTf.setEnabled(false);
+                lockCountTf.setValue(null);
                 addJobButton.setEnabled(false);
                 deleteJobLockButton.setEnabled(false);
             }
@@ -468,6 +487,12 @@ public class JobLockManagementDialog extends AbstractCloseableResizableDialog im
     public void updateLockCount(int lockCount) {
         JobLock jobLock = this.comboBox.getValue();
         jobLock.setLockCount(lockCount);
+        this.saveContextTemplate();
+    }
+
+    public void updateExclusive(boolean exclusive) {
+        JobLock jobLock = this.comboBox.getValue();
+        jobLock.setExclusiveJobLock(exclusive);
         this.saveContextTemplate();
     }
 

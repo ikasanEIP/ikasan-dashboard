@@ -353,7 +353,7 @@ public class ContextInstanceTreeViewWidget extends AbstractGridSchedulerJobInsta
 
         grid.addComponentColumn(value -> {
             HorizontalLayout horizontalLayout = new HorizontalLayout();
-            horizontalLayout.setWidth("200px");
+            horizontalLayout.setWidth("300px");
             if (value instanceof ContextInstance) {
                 this.getContextInstanceActionComponents((ContextInstance) value, horizontalLayout);
             }

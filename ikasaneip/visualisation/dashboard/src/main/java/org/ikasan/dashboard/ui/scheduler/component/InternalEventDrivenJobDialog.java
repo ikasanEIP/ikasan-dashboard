@@ -472,8 +472,10 @@ public class InternalEventDrivenJobDialog extends AbstractCloseableResizableDial
         internalEventDrivenJob.setIdentifier(internalEventDrivenJob.getAgentName()+"-"+internalEventDrivenJob.getJobName());
 
         this.schedulerJobService.saveInternalEventDrivenJob(internalEventDrivenJob, authentication.getName());
-        this.schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName(this.parentContextTemplate.getName(),
-            internalEventDrivenJob.getJobName());
+        if(parentContextTemplate != null) {
+            this.schedulerJobRecord = this.schedulerJobService.findByContextNameAndJobName(this.parentContextTemplate.getName(),
+                internalEventDrivenJob.getJobName());
+        }
      }
 
     /**

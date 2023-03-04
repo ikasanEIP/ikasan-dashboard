@@ -15,6 +15,7 @@ public class JobLockHolderImpl extends AbstractJobLockHolder implements JobLockH
     private String lockName;
     private int lockCount = 1;
     private final Set<String> lockHolders = new HashSet<>();
+    private boolean exclusiveJobLock = false;
     private Queue<ContextualisedSchedulerJobInitiationEvent> queuedSchedulerJobInitiationEvents = new LinkedList<>();
 
     @Override
@@ -35,6 +36,16 @@ public class JobLockHolderImpl extends AbstractJobLockHolder implements JobLockH
     @Override
     public void setLockCount(int lockCount) {
         this.lockCount = lockCount;
+    }
+
+    @Override
+    public boolean isExclusiveJobLock() {
+        return exclusiveJobLock;
+    }
+
+    @Override
+    public void setExclusiveJobLock(boolean exclusiveJobLock) {
+        this.exclusiveJobLock = exclusiveJobLock;
     }
 
     @Override

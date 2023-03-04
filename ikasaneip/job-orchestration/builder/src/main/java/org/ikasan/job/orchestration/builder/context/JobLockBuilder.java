@@ -15,6 +15,8 @@ public class JobLockBuilder {
     private Map<String, List<SchedulerJob>> schedulerJobs;
     private int lockCount = 1;
 
+    private boolean exclusiveJobLock;
+
     public JobLockBuilder() {
     }
 
@@ -41,11 +43,17 @@ public class JobLockBuilder {
         return this;
     }
 
+    public JobLockBuilder withExclusiveJobLock(boolean exclusiveJobLock) {
+        this.exclusiveJobLock = exclusiveJobLock;
+        return this;
+    }
+
     public List<JobLock> build() {
         JobLock jobLock = new JobLockImpl();
-        jobLock.setName(lockName);
-        jobLock.setJobs(schedulerJobs);
-        jobLock.setLockCount(lockCount);
+        jobLock.setName(this.lockName);
+        jobLock.setJobs(this.schedulerJobs);
+        jobLock.setLockCount(this.lockCount);
+        jobLock.setExclusiveJobLock(this.exclusiveJobLock);
         return List.of(jobLock);
     }
 }

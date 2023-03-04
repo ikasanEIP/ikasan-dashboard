@@ -231,17 +231,19 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
             this.jobLockCache.release(jobIdentifier, contextInstance.getName());
 
             // Now determine if there are any queued initiation events waiting for the lock to be released.
-            ContextualisedSchedulerJobInitiationEvent queuedEvent = this.jobLockCache.pollSchedulerJobInitiationEventWaitQueue
+            List<ContextualisedSchedulerJobInitiationEvent> queuedEvents = this.jobLockCache.pollSchedulerJobInitiationEventWaitQueue
                 (jobIdentifier, contextInstance.getName());
 
-            if (queuedEvent != null) {
+            if (queuedEvents != null) {
                 // Having determined that there is a queued event, it then takes a lock.
-                this.jobLockCache.lock(queuedEvent.getSchedulerJobInitiationEvent()
-                    .getInternalEventDrivenJob().getIdentifier(), queuedEvent.getContextName());
+                queuedEvents.forEach(contextualisedSchedulerJobInitiationEvent -> {
+                    this.jobLockCache.lock(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent()
+                        .getInternalEventDrivenJob().getIdentifier(), contextualisedSchedulerJobInitiationEvent.getContextName());
 
-                // And finally we add it to the finalSchedulerJobInitiationEvents so that the initiation event will be sent to
-                // the relevant agent.
-                finalSchedulerJobInitiationEvents.add(queuedEvent.getSchedulerJobInitiationEvent());
+                    // And finally we add it to the finalSchedulerJobInitiationEvents so that the initiation event will be sent to
+                    // the relevant agent.
+                    finalSchedulerJobInitiationEvents.add(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent());
+                });
             }
         }
 
