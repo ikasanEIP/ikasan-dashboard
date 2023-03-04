@@ -1043,8 +1043,10 @@ public class SchedulerJobInstanceGridWidget extends Div {
         this.contextInstanceSaveBroadcasterRegistration = ContextInstanceSavedEventBroadcaster.register(contextInstance -> {
             if(ui.isAttached()) {
                 ui.access(() -> {
-                    this.contextInstance = contextInstance;
-                    this.refresh();
+                    if(this.contextInstance.getName().equals(contextInstance.getName())) {
+                        this.contextInstance = contextInstance;
+                        this.refresh();
+                    }
                 });
             }
         });
