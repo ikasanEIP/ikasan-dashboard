@@ -36,6 +36,7 @@ import org.ikasan.dashboard.ui.visualisation.scheduler.component.SplitContextIns
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.ContextInstanceStateChangeEventBroadcaster;
 import org.ikasan.dashboard.ui.visualisation.scheduler.util.SchedulerJobStateChangeEventBroadcaster;
 import org.ikasan.job.orchestration.context.cache.ContextMachineCache;
+import org.ikasan.job.orchestration.context.cache.JobLockCacheImpl;
 import org.ikasan.job.orchestration.context.util.ContextDurationUtils;
 import org.ikasan.job.orchestration.core.machine.ContextMachine;
 import org.ikasan.job.orchestration.model.event.SchedulerJobInstanceStateChangeEventImpl;
@@ -929,6 +930,9 @@ public class ContextInstanceWidget extends VerticalLayout implements BeforeEnter
                         machine.setDryRunParameters(null);
                         machine.getContext().setEndTime(System.currentTimeMillis());
                         this.saveContextInstance(machine.getContext(), InstanceStatus.ENDED);
+                        machine.getContext().getAllNestedJobLocks().forEach(jobLockInstance -> {
+                            JobLockCacheImpl.instance().resetLock(jobLockInstance.getName());
+                        });
                         this.statusDiv.setStatus(InstanceStatus.ENDED);
                         ContextMachineCache.instance().remove(machine);
                         machine.resetContextInstance(hold.getValue());
