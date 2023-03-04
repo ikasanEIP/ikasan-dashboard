@@ -12,6 +12,8 @@ public class SolrJobLockHolderImpl extends AbstractJobLockHolder implements JobL
     private String lockName;
     private int lockCount = 1;
     private final Set<String> lockHolders = new HashSet<>();
+
+    private boolean exclusiveJobLock = false;
     private Queue<ContextualisedSchedulerJobInitiationEvent> contextualisedSchedulerJobInitiationEvents
         = new LinkedList<>();
 
@@ -45,6 +47,16 @@ public class SolrJobLockHolderImpl extends AbstractJobLockHolder implements JobL
 
     public boolean removeLockHolder(String jobIdentifier) {
         return lockHolders.remove(jobIdentifier);
+    }
+
+    @Override
+    public boolean isExclusiveJobLock() {
+        return exclusiveJobLock;
+    }
+
+    @Override
+    public void setExclusiveJobLock(boolean exclusiveJobLock) {
+        this.exclusiveJobLock = exclusiveJobLock;
     }
 
     @Override
