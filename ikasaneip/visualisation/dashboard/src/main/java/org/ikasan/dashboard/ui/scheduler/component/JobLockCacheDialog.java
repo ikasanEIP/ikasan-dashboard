@@ -28,8 +28,10 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
+import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
+import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.instance.model.ContextInstance;
 import org.ikasan.spec.scheduled.instance.service.ScheduledContextInstanceService;
 import org.ikasan.spec.scheduled.instance.service.SchedulerJobInstanceService;
@@ -42,7 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
@@ -185,7 +187,22 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
             .setHeader(getTranslation("table-header.lock-name", UI.getCurrent().getLocale()))
             .setKey("lockName")
             .setFlexGrow(4);
-        grid.addColumn(JobLockHolder::getLockCount)
+        grid.addColumn(new ComponentRenderer<>(
+            jobLockHolder -> {
+                VerticalLayout verticalLayout = new VerticalLayout();
+                verticalLayout.setWidth("100%");
+                verticalLayout.setSpacing(false);
+                verticalLayout.setPadding(false);
+
+                if(jobLockHolder.isExclusiveJobLock()) {
+                    verticalLayout.add(new Text(getTranslation("label.exclusive", UI.getCurrent().getLocale())));
+                }
+                else {
+                    verticalLayout.add(new Text(Integer.toString(jobLockHolder.getLockCount())));
+                }
+
+                return verticalLayout;
+            }))
             .setHeader(getTranslation("table-header.lock-count", UI.getCurrent().getLocale()))
             .setKey("lockCount")
             .setFlexGrow(1);
@@ -196,14 +213,26 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
                     verticalLayout.setSpacing(false);
                     verticalLayout.setPadding(false);
 
-                    if(jobLockHolder.getLockHolders() == null) {
+                    Set<String> jobLockHolders = new HashSet<>();
+
+                    if(jobLockHolder.isExclusiveJobLock()) {
+                        if(JobLockCacheImpl.instance().getJobLockCacheData()
+                            .getExclusiveLockHolder() != null) {
+                            jobLockHolders = JobLockCacheImpl.instance().getJobLockCacheData()
+                                .getExclusiveLockHolder().getLockHolders();
+                        }
+                    }
+                    else {
+                        jobLockHolders = jobLockHolder.getLockHolders();
+                    }
+
+                    if(jobLockHolders == null) {
                         logger.info("Lock Holders is Null! Job Lock Name[{}], Context Name[{}], Context Instance Id[{}]", jobLockHolder.getLockName()
                             , this.contextInstance.getName(), this.contextInstance.getId());
                     }
 
-                    if(jobLockHolder.getLockHolders() != null
-                        && !jobLockHolder.getLockHolders().isEmpty()) {
-                        jobLockHolder.getLockHolders().forEach(lockHolder -> {
+                    if(jobLockHolders != null && !jobLockHolders.isEmpty()) {
+                        jobLockHolders.forEach(lockHolder -> {
                             String contextName = lockHolder.substring(lockHolder.indexOf(JobLockCacheImpl.CONTEXT_ID)+JobLockCacheImpl.CONTEXT_ID.length());
                             String jobIdentifier = lockHolder.substring(0
                                 , lockHolder.indexOf(JobLockCacheImpl.CONTEXT_ID));
@@ -268,9 +297,24 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
                     verticalLayout.setSpacing(false);
                     verticalLayout.setPadding(false);
 
-                    if(jobLockHolder.getSchedulerJobInitiationEventWaitQueue() != null
-                        && !jobLockHolder.getSchedulerJobInitiationEventWaitQueue().isEmpty()) {
-                        jobLockHolder.getSchedulerJobInitiationEventWaitQueue().forEach(lockHolder -> {
+                    Queue<ContextualisedSchedulerJobInitiationEvent> contextualisedSchedulerJobInitiationEventQueue
+                        = new LinkedList<>();
+
+                    if(jobLockHolder.isExclusiveJobLock()) {
+                        if(JobLockCacheImpl.instance().getJobLockCacheData()
+                            .getExclusiveLockSchedulerJobInitiationEventWaitQueue() != null) {
+                            contextualisedSchedulerJobInitiationEventQueue = JobLockCacheImpl.instance().getJobLockCacheData()
+                                .getExclusiveLockSchedulerJobInitiationEventWaitQueue();
+                        }
+                    }
+                    else {
+                        contextualisedSchedulerJobInitiationEventQueue
+                            = jobLockHolder.getSchedulerJobInitiationEventWaitQueue();
+                    }
+
+                    if(contextualisedSchedulerJobInitiationEventQueue != null
+                        && !contextualisedSchedulerJobInitiationEventQueue.isEmpty()) {
+                        contextualisedSchedulerJobInitiationEventQueue.forEach(lockHolder -> {
                             Button queuedJobButton = new Button(lockHolder.getSchedulerJobInitiationEvent()
                                 .getInternalEventDrivenJob().getJobName());
                             queuedJobButton.setIcon(VaadinIcon.SITEMAP.create());
