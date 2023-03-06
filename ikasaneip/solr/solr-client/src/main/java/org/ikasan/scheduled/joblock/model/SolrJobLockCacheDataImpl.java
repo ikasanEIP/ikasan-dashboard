@@ -1,5 +1,6 @@
 package org.ikasan.scheduled.joblock.model;
 
+import org.ikasan.job.orchestration.model.context.JobLockHolderImpl;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
 import org.ikasan.spec.scheduled.joblock.model.JobLockCacheData;
@@ -15,7 +16,7 @@ public class SolrJobLockCacheDataImpl implements JobLockCacheData {
     private Queue<ContextualisedSchedulerJobInitiationEvent> exclusiveLockSchedulerJobInitiationEventWaitQueue
         = new LinkedList<>();
 
-    private JobLockHolder exclusiveLockHolder;
+    private JobLockHolder exclusiveLockHolder = new JobLockHolderImpl();
 
     @Override
     public ConcurrentHashMap<String, String> getJobLocksByIdentifier() {
@@ -54,6 +55,6 @@ public class SolrJobLockCacheDataImpl implements JobLockCacheData {
 
     @Override
     public void setExclusiveLockHolder(JobLockHolder exclusiveLockHolder) {
-        this.exclusiveLockHolder = exclusiveLockHolder;
+        if(exclusiveLockHolder != null) this.exclusiveLockHolder = exclusiveLockHolder;
     }
 }
