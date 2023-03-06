@@ -28,7 +28,6 @@ import org.ikasan.spec.module.client.ConfigurationService;
 import org.ikasan.spec.module.client.LogStreamingService;
 import org.ikasan.spec.module.client.MetaDataService;
 import org.ikasan.spec.module.client.ModuleControlService;
-import org.ikasan.spec.scheduled.context.model.JobLockCache;
 import org.ikasan.spec.scheduled.context.model.JobLockHolder;
 import org.ikasan.spec.scheduled.context.service.ScheduledContextService;
 import org.ikasan.spec.scheduled.event.model.ContextualisedSchedulerJobInitiationEvent;
@@ -45,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
@@ -245,10 +245,14 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
 
                             List<SchedulerJob> schedulerJobs = jobLockHolder.getSchedulerJobs().get(contextName);
 
-                            if(schedulerJobs == null) {
+                            if(schedulerJobs == null && jobLockHolder.isExclusiveJobLock()) {
+                                verticalLayout.add(new Text(getTranslation("label.exclusive-lock-held", UI.getCurrent().getLocale())));
+                                return;
+                            }
+                            else if(schedulerJobs == null) {
                                 String keys = StringUtils.join(jobLockHolder.getSchedulerJobs().values(), ',');
                                 logger.info("Could not obtain scheduler jobs from lock holder scheduler jobs using key[{}]. Job Lock Name[{}], Context Name[{}], Context Instance Id[{}]. " +
-                                        "The keys contained in the scheduler job map are[{}]", contextName, jobLockHolder.getLockName(), this.contextInstance.getName(), this.contextInstance.getId(), keys);
+                                    "The keys contained in the scheduler job map are[{}]", contextName, jobLockHolder.getLockName(), this.contextInstance.getName(), this.contextInstance.getId(), keys);
                                 return;
                             }
 
@@ -314,32 +318,45 @@ public class JobLockCacheDialog extends AbstractCloseableResizableDialog {
 
                     if(contextualisedSchedulerJobInitiationEventQueue != null
                         && !contextualisedSchedulerJobInitiationEventQueue.isEmpty()) {
-                        contextualisedSchedulerJobInitiationEventQueue.forEach(lockHolder -> {
-                            Button queuedJobButton = new Button(lockHolder.getSchedulerJobInitiationEvent()
-                                .getInternalEventDrivenJob().getJobName());
-                            queuedJobButton.setIcon(VaadinIcon.SITEMAP.create());
-                            queuedJobButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_LOCK_QUEUED);
-                            queuedJobButton.getElement().getStyle().set("color", IkasanColours.WHITE);
-                            queuedJobButton.getElement().getStyle().set("margin-bottom", "5px");
-                            queuedJobButton.getElement().setAttribute("title", lockHolder.getSchedulerJobInitiationEvent()
-                                .getInternalEventDrivenJob().getChildContextName());
-                            verticalLayout.add(queuedJobButton);
+                        AtomicBoolean initialIteration = new AtomicBoolean(true);
 
-                            queuedJobButton.addClickListener(event -> {
-                                try {
-                                    JobInstanceVisualisationDialog jobTemplateVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
-                                        this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
-                                        this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService, this.contextProfileService,
-                                        this.globalEventService);
-                                    jobTemplateVisualisationDialog.createSchedulerVisualisation(contextInstance, ContextHelper.getChildContextInstance(lockHolder.getSchedulerJobInitiationEvent()
-                                        .getInternalEventDrivenJob().getChildContextName(), contextInstance));
-                                    jobTemplateVisualisationDialog.open();
-                                }
-                                catch (IOException e) {
-                                    e.printStackTrace();
-                                    NotificationHelper.showErrorNotification(getTranslation("error.cannot-open-visualisation", UI.getCurrent().getLocale()));
-                                }
-                            });
+                        contextualisedSchedulerJobInitiationEventQueue.forEach(contextualisedSchedulerJobInitiationEvent -> {
+                            if(!jobLockHolder.isExclusiveJobLock() || (jobLockHolder.isExclusiveJobLock() && jobLockHolder.getSchedulerJobs()
+                                    .containsKey(contextualisedSchedulerJobInitiationEvent.getContextName()) &&
+                                jobLockHolder.getSchedulerJobs()
+                                    .get(contextualisedSchedulerJobInitiationEvent.getContextName()).stream()
+                                    .filter(schedulerJob -> schedulerJob.getJobName().equals(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent().getJobName()))
+                                    .findFirst().isPresent())) {
+                                Button queuedJobButton = new Button(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent()
+                                    .getInternalEventDrivenJob().getJobName());
+                                queuedJobButton.setIcon(VaadinIcon.SITEMAP.create());
+                                queuedJobButton.getElement().getStyle().set("background-color", IkasanColours.SCHEDULER_LOCK_QUEUED);
+                                queuedJobButton.getElement().getStyle().set("color", IkasanColours.WHITE);
+                                queuedJobButton.getElement().getStyle().set("margin-bottom", "5px");
+                                queuedJobButton.getElement().setAttribute("title", contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent()
+                                    .getInternalEventDrivenJob().getChildContextName());
+                                verticalLayout.add(queuedJobButton);
+
+                                queuedJobButton.addClickListener(event -> {
+                                    try {
+                                        JobInstanceVisualisationDialog jobTemplateVisualisationDialog = new JobInstanceVisualisationDialog(this.moduleMetaDataService, this.scheduledProcessManagementService,
+                                            this.configurationRestService, this.moduleControlRestService, this.metaDataRestService, this.systemEventLogger, this.logStreamingService,
+                                            this.schedulerJobInstanceService, this.jobInitiationService, this.jobUtilsService, this.scheduledContextService, this.scheduledContextInstanceService, this.contextProfileService,
+                                            this.globalEventService);
+                                        jobTemplateVisualisationDialog.createSchedulerVisualisation(contextInstance, ContextHelper.getChildContextInstance(contextualisedSchedulerJobInitiationEvent.getSchedulerJobInitiationEvent()
+                                            .getInternalEventDrivenJob().getChildContextName(), contextInstance));
+                                        jobTemplateVisualisationDialog.open();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                        NotificationHelper.showErrorNotification(getTranslation("error.cannot-open-visualisation", UI.getCurrent().getLocale()));
+                                    }
+                                });
+                            }
+                            else if(jobLockHolder.isExclusiveJobLock() && initialIteration.get()) {
+                                verticalLayout.add(new Text(getTranslation("label.no-exclusive-jobs-queued", UI.getCurrent().getLocale())));
+                            }
+
+                            initialIteration.set(false);
                         });
                     }
                     else {

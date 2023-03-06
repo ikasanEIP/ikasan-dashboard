@@ -48,7 +48,7 @@ public class SolrJobLockCacheDaoImpl extends SolrDaoBase<JobLockCacheRecord> imp
         }
 
         document.setField(UPDATED_DATE_TIME, System.currentTimeMillis());
-        document.setField(EXPIRY, expiry);
+        document.setField(EXPIRY, DO_NOT_EXPIRE);
 
         LOG.debug(String.format("Converted JobLockCacheRecord to SolrDocument[%s]", document));
         return document;
