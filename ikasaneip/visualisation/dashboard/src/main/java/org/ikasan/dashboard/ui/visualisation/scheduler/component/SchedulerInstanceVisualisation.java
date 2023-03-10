@@ -248,7 +248,7 @@ public abstract class SchedulerInstanceVisualisation extends VerticalLayout impl
         this.nodeConnectionIndicators.add(nodeConnectorIndicator);
         String boundaryIdentifier = UUID.randomUUID().toString();
         this.nodeConnectionIndicators.add(boundaryIdentifier);
-        this.designerCanvas.addBoundaryToFigure(itemIdentifier, boundaryIdentifier, 200, 200,
+            this.designerCanvas.addBoundaryToFigure(itemIdentifier, boundaryIdentifier, 200, 200,
             "--", IkasanColours.IKASAN_ORANGE_50, scrollTo);
     }
 

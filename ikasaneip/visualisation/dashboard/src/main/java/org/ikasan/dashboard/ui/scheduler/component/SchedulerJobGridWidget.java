@@ -196,7 +196,7 @@ public class SchedulerJobGridWidget extends Div {
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
         this.createGrid(moduleMetaDataService, scheduledProcessManagementService, configurationRestService, moduleControlRestService
-            , metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService, contextTemplate);
+            , metaDataRestService, systemEventLogger, schedulerJobService, logStreamingService);
 
         this.schedulerJobFilteringGrid.init();
 
@@ -222,12 +222,11 @@ public class SchedulerJobGridWidget extends Div {
      * @param systemEventLogger
      * @param schedulerJobService
      * @param logStreamingService
-     * @param contextTemplate
      */
     private void createGrid(ModuleMetaDataService moduleMetaDataService, ScheduledProcessManagementService scheduledProcessManagementService,
                             ConfigurationService configurationRestService, ModuleControlService moduleControlRestService,
                             MetaDataService metaDataRestService, SystemEventLogger systemEventLogger, SchedulerJobService schedulerJobService,
-                            LogStreamingService logStreamingService, ContextTemplate contextTemplate) {
+                            LogStreamingService logStreamingService) {
         // Create a modulesGrid bound to the list
         SolrSchedulerJobSearchFilterImpl schedulerJobSearchFilter = new SolrSchedulerJobSearchFilterImpl();
         schedulerJobFilteringGrid = new SchedulerJobFilteringGrid(schedulerJobService, schedulerJobSearchFilter);

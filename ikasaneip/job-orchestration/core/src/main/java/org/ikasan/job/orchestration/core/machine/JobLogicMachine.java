@@ -185,6 +185,7 @@ public class JobLogicMachine extends AbstractLogicMachine<SchedulerJobInstance> 
                             schedulerJobInitiationEvents.add(event);
                         }
                     }
+                    // todo only raise jobs in a waiting state
                     else if (!jobInstance.isInitiationEventRaised() ||
                         (internalEventDrivenJob != null
                             && internalEventDrivenJob.isJobRepeatable()

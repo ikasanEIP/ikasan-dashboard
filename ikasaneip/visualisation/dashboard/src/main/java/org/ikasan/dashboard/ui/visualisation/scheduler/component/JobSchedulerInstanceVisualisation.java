@@ -1,5 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
+import com.vaadin.flow.component.UI;
+import liquibase.pro.packaged.U;
 import org.ikasan.dashboard.ui.general.component.NotificationHelper;
 import org.ikasan.dashboard.ui.scheduler.component.*;
 import org.ikasan.dashboard.ui.scheduler.listener.ContextSelectedListener;
@@ -80,7 +82,7 @@ public class JobSchedulerInstanceVisualisation extends SchedulerInstanceVisualis
                 this.removeAll();
             }
 
-            this.designerCanvas = new DesignerCanvas("canvas-viewport-"+ UUID.randomUUID(), this.dynamicImagePath, true);
+            this.designerCanvas = new DesignerCanvas("canvas-viewport-"+ UUID.randomUUID(), this.dynamicImagePath, true, UI.getCurrent());
             this.designerCanvas.clear();
 
             if (contextInstance.getScheduledJobs() != null && !contextInstance.getScheduledJobs().isEmpty()) {

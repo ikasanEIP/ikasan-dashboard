@@ -1,11 +1,11 @@
 package org.ikasan.job.orchestration.context.validation;
 
+import org.ikasan.job.orchestration.util.ContextHelper;
 import org.ikasan.spec.scheduled.context.model.ContextTemplate;
 import org.ikasan.spec.scheduled.context.model.LogicalGrouping;
+import org.ikasan.spec.scheduled.job.model.SchedulerJob;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
  */
 public class ContextTemplateValidator {
     private StringBuffer errorReport = new StringBuffer("The context template is invalid!\n");
+    private List<ContextError> errors = new ArrayList<>();
     private boolean inError = false;
 
     /**
@@ -22,6 +23,10 @@ public class ContextTemplateValidator {
      * @throws InvalidContextTemplateException
      */
     public void validate(ContextTemplate contextTemplate) throws InvalidContextTemplateException {
+        this.inError = false;
+        this.errors = new ArrayList<>();
+        this.errorReport = new StringBuffer("The context template is invalid!\n");
+
         this.assertThatContextJobsPresentInContextForAllJobDependencies(contextTemplate);
 
         if(contextTemplate.getContexts() != null) {
@@ -29,7 +34,37 @@ public class ContextTemplateValidator {
         }
 
         if(this.inError) {
-            throw new InvalidContextTemplateException(errorReport.toString());
+            throw new InvalidContextTemplateException(errorReport.toString(), this.errors);
+        }
+    }
+
+    public void validateJobs(ContextTemplate contextTemplate, List<SchedulerJob> jobTemplates)
+        throws InvalidContextTemplateException {
+        this.inError = false;
+        this.errors = new ArrayList<>();
+        this.errorReport = new StringBuffer("The context template is invalid!\n");
+
+        List<SchedulerJob> schedulerJobs = ContextHelper.getAllJobs(contextTemplate);
+
+        Set<String> jobTemplatesSet = jobTemplates.stream().map(job -> job.getJobName()).collect(Collectors.toSet());
+        Set<String> contextTemplatesJobSet = schedulerJobs.stream().map(job -> job.getJobName()).collect(Collectors.toSet());
+
+        contextTemplatesJobSet.removeAll(jobTemplatesSet);
+
+        if(!contextTemplatesJobSet.isEmpty()) {
+            contextTemplatesJobSet.forEach(jobName -> {
+                List<String> contexts = ContextHelper.getContextsWhereJobFilterMatchResides(contextTemplate, jobName);
+
+                contexts.forEach(contextName -> {
+                    this.errorReport.append(String.format("Job[%s] appears in job " +
+                        "plan but there is no job template defined for it in the database!\n", jobName));
+                    ContextError contextError = new ContextError(contextName, String.format("Job[%s] appears in job " +
+                        "plan but there is no job template defined for it in the database!", jobName), jobName);
+                    this.errors.add(contextError);
+                });
+            });
+
+            throw new InvalidContextTemplateException(errorReport.toString(), this.errors);
         }
     }
 
@@ -151,7 +186,7 @@ public class ContextTemplateValidator {
 
         if(contextTemplate.getJobDependencies() != null) {
             contextTemplate.getJobDependencies().forEach(jobDependency -> {
-                jobs.add(jobDependency.getJobIdentifier());
+                if(jobDependency.getJobIdentifier() != null) jobs.add(jobDependency.getJobIdentifier());
                 if(jobDependency.getLogicalGrouping() != null) {
                     this.manageLogicalGrouping(jobDependency.getLogicalGrouping(), jobs);
                 }
@@ -165,9 +200,15 @@ public class ContextTemplateValidator {
 
         if(!contextJobs.isEmpty()) {
             this.inError = true;
-            contextJobs.forEach(jobIdentifier -> this.errorReport.append("Context[").append(contextTemplate.getName())
-                .append("] The following job [").append(jobIdentifier).append("] appears in the scheduler jobs collection" +
-                    ", but is not defined in any job dependencies.\n"));
+
+            contextJobs.forEach(jobIdentifier -> {
+                StringBuffer error = new StringBuffer();
+                error.append("Context[").append(contextTemplate.getName())
+                    .append("] The following job [").append(jobIdentifier).append("] appears in the scheduler jobs collection" +
+                        ", but is not defined in any job dependencies.");
+                this.errorReport.append(error).append("\n");
+                this.errors.add(new ContextError(contextTemplate.getName(), error.toString()));
+            });
         }
 
         Set<String> contextJobs2 = new HashSet<>();
@@ -176,36 +217,45 @@ public class ContextTemplateValidator {
         jobs.removeAll(contextJobs2);
         if(!jobs.isEmpty()) {
             this.inError = true;
-            jobs.forEach(jobIdentifier -> this.errorReport.append("Context[").append(contextTemplate.getName())
-                .append("] The following job [").append(jobIdentifier).append("] appears in a job dependency" +
-                    ", but is not defined in the scheduler job collection.\n"));
+            jobs.forEach(jobIdentifier -> {
+                StringBuffer error = new StringBuffer();
+                error.append("Context[").append(contextTemplate.getName())
+                    .append("] The following job [").append(jobIdentifier).append("] appears in a job dependency" +
+                        ", but is not defined in the scheduler job collection.");
+                this.errorReport.append(error).append("\n");
+                this.errors.add(new ContextError(contextTemplate.getName(), error.toString()));
+            });
         }
     }
 
     private void manageLogicalGrouping(LogicalGrouping logicalGrouping, Set<String> jobs) {
+        if(logicalGrouping.getLogicalGrouping() != null) {
+            manageLogicalGrouping(logicalGrouping.getLogicalGrouping(), jobs);
+        }
+
         if(logicalGrouping.getAnd() != null) {
             logicalGrouping.getAnd().forEach(and -> {
-                jobs.add(and.getIdentifier());
-                if(logicalGrouping.getLogicalGrouping() != null) {
-                    manageLogicalGrouping(logicalGrouping.getLogicalGrouping(), jobs);
+                if(and.getIdentifier() != null)jobs.add(and.getIdentifier());
+                if(and.getLogicalGrouping() != null) {
+                    manageLogicalGrouping(and.getLogicalGrouping(), jobs);
                 }
             });
         }
 
         if(logicalGrouping.getOr() != null) {
             logicalGrouping.getOr().forEach(or -> {
-                jobs.add(or.getIdentifier());
-                if(logicalGrouping.getLogicalGrouping() != null) {
-                    manageLogicalGrouping(logicalGrouping, jobs);
+                if(or.getIdentifier() != null)jobs.add(or.getIdentifier());
+                if(or.getLogicalGrouping() != null) {
+                    manageLogicalGrouping(or.getLogicalGrouping(), jobs);
                 }
             });
         }
 
         if(logicalGrouping.getNot() != null) {
             logicalGrouping.getNot().forEach(not -> {
-                jobs.add(not.getIdentifier());
-                if(logicalGrouping.getLogicalGrouping() != null) {
-                    manageLogicalGrouping(logicalGrouping, jobs);
+                if(not.getIdentifier() != null)jobs.add(not.getIdentifier());
+                if(not.getLogicalGrouping() != null) {
+                    manageLogicalGrouping(not.getLogicalGrouping(), jobs);
                 }
             });
         }
