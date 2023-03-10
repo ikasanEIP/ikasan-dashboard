@@ -802,6 +802,42 @@ public class ContextHelper {
         }
     }
 
+    public static List<SchedulerJob> getAllJobs(ContextTemplate context) {
+        List<SchedulerJob> contextMap = new ArrayList<>();
+
+        if(context.getScheduledJobsMap() != null
+            && !context.getScheduledJobsMap().isEmpty()) {
+            context.getScheduledJobsMap().entrySet().forEach(entry -> {
+                contextMap.add(entry.getValue());
+            });
+        }
+
+        if(context.getContexts() != null) {
+            context.getContexts().forEach(c -> {
+                getAllJobs(c, contextMap);
+            });
+        }
+
+        return contextMap;
+    }
+
+
+    private static void getAllJobs(ContextTemplate context, List<SchedulerJob> contextMap) {
+        if(context.getScheduledJobsMap() != null
+            && !context.getScheduledJobsMap().isEmpty()) {
+            context.getScheduledJobsMap().entrySet().forEach(entry -> {
+                contextMap.add(entry.getValue());
+            });
+        }
+
+        if(context.getContexts() != null) {
+            context.getContexts().forEach(c -> {
+                getAllJobs(c, contextMap);
+            });
+        }
+    }
+
+
     public static SchedulerJobInstance getSchedulerJobInstance(String jobName, String childContextName, ContextInstance contextInstance) {
         ContextInstance instance = ContextHelper.getChildContextInstance(childContextName, contextInstance);
         if (instance != null) {

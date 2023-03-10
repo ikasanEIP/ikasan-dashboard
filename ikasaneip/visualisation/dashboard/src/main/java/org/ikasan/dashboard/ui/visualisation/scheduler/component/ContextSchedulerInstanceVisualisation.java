@@ -1,6 +1,7 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -75,7 +76,7 @@ public class ContextSchedulerInstanceVisualisation extends SchedulerInstanceVisu
             }
 
             this.designerCanvas = new DesignerCanvas("canvas-viewport-"+ UUID.randomUUID(),
-                this.dynamicImagePath, true);
+                this.dynamicImagePath, true, UI.getCurrent());
 
             this.designerCanvas.setCanvasJson(adapter.adaptContext(contextInstance));
 
