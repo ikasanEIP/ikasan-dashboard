@@ -196,6 +196,10 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
      * @param contextTemplate
      */
     public void createSchedulerVisualisation(ContextTemplate parentContext, ContextTemplate contextTemplate, Dialog parent, boolean edit) throws IOException {
+        this.createSchedulerVisualisation(parentContext, contextTemplate, parent, edit, UI.getCurrent());
+    }
+
+    public void createSchedulerVisualisation(ContextTemplate parentContext, ContextTemplate contextTemplate, Dialog parent, boolean edit, UI ui) throws IOException {
         this.parentContextTemplate = parentContext;
         this.contextTemplate = contextTemplate;
         this.parent = parent;
@@ -204,10 +208,10 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
 
         this.authentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-        init();
+        init(ui);
     }
 
-    protected abstract void init() throws IOException;
+    protected abstract void init(UI ui) throws IOException;
 
     protected Component initCanvasActions() {
         HorizontalLayout actions = new HorizontalLayout();
@@ -244,7 +248,7 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         try {
-            this.init();
+            this.init(beforeEnterEvent.getUI());
         }
         catch (IOException e) {
             logger.warn("Could not initialise scheduler visualisation!", e);
@@ -346,6 +350,20 @@ public abstract class SchedulerVisualisation extends VerticalLayout implements B
         catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void addBoundaryToItem(String itemIdentifier, boolean scrollTo) {
+        this.nodeConnectionIndicators.forEach(nodeConnectionIndicator
+            -> this.designerCanvas.removeFigure(nodeConnectionIndicator));
+
+        this.nodeConnectionIndicators.clear();
+
+        String nodeConnectorIndicator = UUID.randomUUID().toString();
+        this.nodeConnectionIndicators.add(nodeConnectorIndicator);
+        String boundaryIdentifier = UUID.randomUUID().toString();
+        this.nodeConnectionIndicators.add(boundaryIdentifier);
+        this.designerCanvas.addBoundaryToFigure(itemIdentifier, boundaryIdentifier, 200, 200,
+            "--", IkasanColours.IKASAN_ORANGE_50, scrollTo);
     }
 
     private void openContextTemplateVisualisation(ContextTemplate contextTemplate) {

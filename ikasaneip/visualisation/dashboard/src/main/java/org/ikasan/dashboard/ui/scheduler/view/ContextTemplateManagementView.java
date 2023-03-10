@@ -139,6 +139,7 @@ public class ContextTemplateManagementView extends VerticalLayout implements Bef
     public ContextTemplateManagementView() {
         this.setSpacing(false);
         this.setMargin(false);
+        this.setSizeFull();
 
         this.ikasanAuthentication = (IkasanAuthentication) SecurityContextHolder.getContext().getAuthentication();
     }

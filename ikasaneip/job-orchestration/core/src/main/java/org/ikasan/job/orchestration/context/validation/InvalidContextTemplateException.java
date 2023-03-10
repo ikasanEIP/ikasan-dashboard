@@ -1,20 +1,34 @@
 package org.ikasan.job.orchestration.context.validation;
 
+import java.util.List;
+import java.util.Map;
+
 public class InvalidContextTemplateException extends Exception {
 
-    public InvalidContextTemplateException(String message) {
+    private List<ContextError> contextErrors;
+
+    public InvalidContextTemplateException(String message, List<ContextError> contextErrors) {
         super(message);
+        this.contextErrors = contextErrors;
     }
 
-    public InvalidContextTemplateException(String message, Throwable cause) {
+    public InvalidContextTemplateException(String message, Throwable cause, List<ContextError> contextErrors) {
         super(message, cause);
+        this.contextErrors = contextErrors;
     }
 
-    public InvalidContextTemplateException(Throwable cause) {
+    public InvalidContextTemplateException(Throwable cause, List<ContextError> contextErrors) {
         super(cause);
+        this.contextErrors = contextErrors;
     }
 
-    public InvalidContextTemplateException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public InvalidContextTemplateException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace,
+                                           List<ContextError> contextErrors) {
         super(message, cause, enableSuppression, writableStackTrace);
+        this.contextErrors = contextErrors;
+    }
+
+    public List<ContextError> getContextErrors() {
+        return contextErrors;
     }
 }

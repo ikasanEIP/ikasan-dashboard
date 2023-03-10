@@ -3,6 +3,7 @@ package org.ikasan.scheduled.job.dao;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ikasan.scheduled.job.model.SolrSchedulerJobRecordImpl;
+import org.ikasan.solr.util.SolrSpecialCharacterEscapeUtil;
 import org.ikasan.spec.scheduled.job.dao.SchedulerJobDao;
 import org.ikasan.spec.scheduled.job.model.JobConstants;
 import org.ikasan.spec.scheduled.job.model.SchedulerJobRecord;
@@ -156,7 +157,7 @@ public class SolrSchedulerJobDaoImpl extends SolrDaoBase<SchedulerJobRecord>
                 .append(FLOW_NAME)
                 .append(COLON)
                 .append(WILDCARD)
-                .append(filter.getJobNameFilter())
+                .append(SolrSpecialCharacterEscapeUtil.escape(filter.getJobNameFilter()))
                 .append(WILDCARD);
         }
 

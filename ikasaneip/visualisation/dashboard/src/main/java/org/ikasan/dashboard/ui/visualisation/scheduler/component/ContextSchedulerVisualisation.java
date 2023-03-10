@@ -1,5 +1,6 @@
 package org.ikasan.dashboard.ui.visualisation.scheduler.component;
 
+import com.vaadin.flow.component.UI;
 import org.ikasan.dashboard.ui.util.SystemEventLogger;
 import org.ikasan.designer.DesignerCanvas;
 import org.ikasan.scheduled.event.service.ScheduledProcessManagementService;
@@ -42,19 +43,17 @@ public class ContextSchedulerVisualisation extends SchedulerVisualisation {
             , schedulerJobExecutionEnvironmentLabel);
     }
 
-    protected void init() throws IOException {
+    protected void init(UI ui) throws IOException {
         if(!initialised && contextTemplate != null) {
 
             if (this.designerCanvas != null) {
                 this.removeAll();
             }
 
-            this.designerCanvas = new DesignerCanvas(this, null, "canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, !this.edit);
+            this.designerCanvas = new DesignerCanvas(this, null, "canvas-viewport-"+ UUID.randomUUID().toString(), this.dynamicImagePath, !this.edit, ui);
             this.designerCanvas.addCanvasInitialisedListener(this);
 
-            //if(contextTemplate.getContexts() != null && !contextTemplate.getContexts().isEmpty()) {
-                this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
-            //}
+            this.designerCanvas.setCanvasJson(adapter.adaptContext(contextTemplate));
 
             this.designerCanvas.addCanvasItemDoubleClickEventListener(this);
             this.designerCanvas.addCanvasItemRightClickEventListener(this);
